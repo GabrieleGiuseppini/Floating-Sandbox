@@ -814,4 +814,62 @@ TEST(ImageToolsTests, ResizeNicer_Smaller1W_Smaller2H)
         ));
 }
 
-// TODO: ResizeNicer_Smaller2W_Smaller2H
+TEST(ImageToolsTests, ResizeNicer_Smaller2W_Smaller2H)
+{
+    RgbaImageData sourceImage(12, 12);
+    uint8_t c = 10;
+    for (uint8_t y = 0; y < sourceImage.Size.height; ++y)
+    {
+        for (uint8_t x = 0; x < sourceImage.Size.width; ++x)
+        {
+            sourceImage[{x, y}] = rgbaColor(c, c, c, c);
+            ++c;
+        }
+    }
+
+    RgbaImageData destImage = ImageTools::ResizeNicer(
+        sourceImage,
+        ImageSize(3, 3));
+
+    // Verify
+
+    // 0-3 @ 0-3
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(0, 0)].r),
+        std::roundf(
+            ((10 + 11 + 12 + 13) / 4.0f
+            + (22 + 23 + 24 + 25) / 4.0f
+            + (34 + 35 + 36 + 37) / 4.0f
+            + (46 + 47 + 48 + 49) / 4.0f) / 4.0f
+        ));
+
+    // 4-7 @ 0-3
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(1, 0)].r),
+        std::roundf(
+            ((14 + 15 + 16 + 17) / 4.0f
+            + (26 + 27 + 28 + 29) / 4.0f
+            + (38 + 39 + 40 + 41) / 4.0f
+            + (50 + 51 + 52 + 53) / 4.0f) / 4.0f
+        ));
+
+    // 4-7 @ 4-7
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(1, 1)].r),
+        std::roundf(
+            ((62 + 63 + 64 + 65) / 4.0f
+            + (74 + 75 + 76 + 77) / 4.0f
+            + (86 + 87 + 88 + 89) / 4.0f
+            + (98 + 99 + 100 + 101) / 4.0f) / 4.0f
+        ));
+
+    // 8-11 @ 8-11
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(2, 2)].r),
+        std::roundf(
+            ((114 + 115 + 116 + 117) / 4.0f
+            + (126 + 127 + 128 + 129) / 4.0f
+            + (138 + 139 + 140 + 141) / 4.0f
+            + (150 + 151 + 152 + 153) / 4.0f) / 4.0f
+        ));
+}
