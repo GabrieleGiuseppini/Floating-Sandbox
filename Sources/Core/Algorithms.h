@@ -2621,9 +2621,9 @@ inline void MixVec4f_NeonVectorized(
     float * restrict vectorOutput,
     float weight) noexcept
 {
-    float32x2_t v1 = vld1_f32(vector1);
-    float32x2_t const v2 = vld1_f32(vector2);
-    float32x2_t const w = vdupq_n_f32(weight);
+    float32x4_t v1 = vld1q_f32(vector1);
+    float32x4_t const v2 = vld1q_f32(vector2);
+    float32x4_t const w = vdupq_n_f32(weight);
 
     v1 = vaddq_f32(
         v1,
@@ -2631,7 +2631,7 @@ inline void MixVec4f_NeonVectorized(
             vsubq_f32(v2, v1),
             w));
 
-    vst4q_f32(vectorOutput, v1);
+    vst1q_f32(vectorOutput, v1);
 }
 #endif
 
