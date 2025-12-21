@@ -19,20 +19,8 @@ class ImageTools
 {
 public:
 
-    enum class FilterKind
-    {
-        Nearest,
-        Bilinear
-    };
-
     template<typename TImageData>
     static TImageData Resize(
-        TImageData const & image,
-        ImageSize const & newSize,
-        FilterKind filter);
-
-    template<typename TImageData>
-    static TImageData ResizeNicer(
         TImageData const & image,
         ImageSize const & newSize);
 

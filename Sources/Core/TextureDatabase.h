@@ -140,8 +140,7 @@ struct TextureFrame
             resizedMetadata,
             ImageTools::Resize(
                 TextureData,
-                resizedMetadata.Size,
-                ImageTools::FilterKind::Bilinear));
+                resizedMetadata.Size));
     }
 };
 

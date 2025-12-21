@@ -1398,8 +1398,7 @@ RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImageAndMakePreview(
         ReadPngImage(shipDefinitionInputStream, imageDataSize));
     return ImageTools::Resize(
         trimmed,
-        trimmed.Size.ShrinkToFit(maxSize),
-        ImageTools::FilterKind::Bilinear);
+        trimmed.Size.ShrinkToFit(maxSize));
 }
 
 void ShipDefinitionFormatDeSerializer::ReadFileHeader(

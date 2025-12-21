@@ -107,8 +107,7 @@ SwitchboardPanel::SwitchboardPanel(
                 auto backgroundImage = GameAssetManager::LoadPngImageRgba(backgroundBitmapFilepath);
                 auto backgroundBitmapThumb1 = ImageTools::Resize(
                     backgroundImage,
-                    backgroundImage.Size.ScaleToWidth(128),
-                    ImageTools::FilterKind::Bilinear);
+                    backgroundImage.Size.ScaleToWidth(128));
 
                 auto backgroundBitmapThumb2 = ImageTools::Truncate(std::move(backgroundBitmapThumb1), ImageSize(64, 32));
 

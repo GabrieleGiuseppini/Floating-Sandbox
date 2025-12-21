@@ -2556,8 +2556,7 @@ RgbaImageData WorldRenderContext::InternalMakeThumbnail(
 
     RgbaImageData const templateImage = ImageTools::Resize(
         imageData,
-        templateSize,
-        ImageTools::FilterKind::Bilinear);
+        templateSize);
 
     //
     // Repeat template to fill thumbnail

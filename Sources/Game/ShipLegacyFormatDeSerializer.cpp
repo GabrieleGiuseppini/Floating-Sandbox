@@ -105,8 +105,7 @@ RgbaImageData ShipLegacyFormatDeSerializer::LoadPreviewImage(
     RgbaImageData originalPreviewImage = GameAssetManager::LoadPngImageRgba(previewFilePath);
     RgbaImageData previewImage = ImageTools::Resize(
         originalPreviewImage,
-        originalPreviewImage.Size.ShrinkToFit(maxSize),
-        ImageTools::FilterKind::Bilinear);
+        originalPreviewImage.Size.ShrinkToFit(maxSize));
 
     // Trim
     return ImageTools::TrimWhiteOrTransparent(std::move(previewImage));

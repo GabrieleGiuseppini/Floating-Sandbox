@@ -1,6 +1,7 @@
 TODO
 - Improved bulkiness of tsunami's and interactive waves
 	- And added a new setting to customize it at will
+- Improved resolution of ship previews
 
 1.19.2
 - Added new "LightningStrike" tool - conjures lightnings against the ship
