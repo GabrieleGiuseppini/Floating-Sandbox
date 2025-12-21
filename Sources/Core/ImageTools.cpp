@@ -53,7 +53,6 @@ TImageData ImageTools::ResizeNicer(
     //                                      so use BoxFilter
     //
 
-    using color_type = typename TImageData::element_type;
     using f_color_type = typename TImageData::element_type::f_vector_type;
     using image_data_f = Buffer2D<typename TImageData::element_type::f_vector_type, struct ImageTag>;
 
@@ -460,7 +459,7 @@ RgbImageData ImageTools::ToRgb(RgbaImageData const & imageData)
 //////////////////////////////////////////////////////////////////////////
 
 template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
-static void ImageTools::InternalResizeDimension_Bilinear(
+void ImageTools::InternalResizeDimension_Bilinear(
     int srcSize,
     int tgtSize,
     float tgtToSrc,
@@ -509,7 +508,7 @@ static void ImageTools::InternalResizeDimension_Bilinear(
 }
 
 template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
-static void ImageTools::InternalResizeDimension_BoxFilter(
+void ImageTools::InternalResizeDimension_BoxFilter(
     int srcSize,
     float srcToTgt,
     float tgtToSrc,
@@ -748,7 +747,7 @@ TImageData ImageTools::InternalFromFloat(Buffer2D<typename TImageData::element_t
     size_t const sz = imageData.GetLinearSize();
     for (size_t i = 0; i < sz; ++i)
     {
-        *(trg + i) = TImageData::element_type(*(src + i));
+        *(trg + i) = typename TImageData::element_type(*(src + i));
     }
 
     return result;
@@ -770,7 +769,7 @@ TImageData ImageTools::InternalFromFloat(
     {
         for (int x = 0; x < w; ++x)
         {
-            *(trg + x) = TImageData::element_type(*(src + x));
+            *(trg + x) = typename TImageData::element_type(*(src + x));
         }
 
         src += wSkip;
