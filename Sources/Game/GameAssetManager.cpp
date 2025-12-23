@@ -35,7 +35,7 @@ GameAssetManager::GameAssetManager(std::filesystem::path const & textureRoot)
 {
 }
 
-picojson::value GameAssetManager::LoadTetureDatabaseSpecification(std::string const & databaseName) const
+picojson::value GameAssetManager::LoadTextureDatabaseSpecification(std::string const & databaseName) const
 {
     return LoadJson(mTextureRoot / databaseName / "database.json");
 }
@@ -102,7 +102,7 @@ RgbImageData GameAssetManager::LoadMaterialTexture(std::string const & frameRela
     return LoadPngImageRgb(MakeMaterialTexturesRootPath() / frameRelativePath);
 }
 
-picojson::value GameAssetManager::LoadTetureAtlasSpecification(std::string const & textureDatabaseName) const
+picojson::value GameAssetManager::LoadTextureAtlasSpecification(std::string const & textureDatabaseName) const
 {
     return LoadJson(mTextureRoot / "Atlases" / MakeAtlasSpecificationFilename(textureDatabaseName));
 }

@@ -39,7 +39,7 @@ public:
 	};
 
 	// Texture databases
-	virtual picojson::value LoadTetureDatabaseSpecification(std::string const & databaseName) const = 0;
+	virtual picojson::value LoadTextureDatabaseSpecification(std::string const & databaseName) const = 0;
 	virtual ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameRelativePath) const = 0;
 	virtual RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath) const = 0;
 	virtual std::vector<AssetDescriptor> EnumerateTextureDatabaseFrames(std::string const & databaseName) const = 0;
@@ -49,7 +49,7 @@ public:
 	virtual RgbImageData LoadMaterialTexture(std::string const & frameRelativePath) const = 0;
 
 	// Texture atlases
-	virtual picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) const = 0;
+	virtual picojson::value LoadTextureAtlasSpecification(std::string const & textureDatabaseName) const = 0;
 	virtual RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) const = 0;
 
 	// Shaders

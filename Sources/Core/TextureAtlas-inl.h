@@ -202,7 +202,7 @@ TextureAtlas<TTextureDatabase> TextureAtlas<TTextureDatabase>::Deserialize(IAsse
     // Metadata
     //
 
-    picojson::value metadataJsonValue = assetManager.LoadTetureAtlasSpecification(TTextureDatabase::DatabaseName);
+    picojson::value metadataJsonValue = assetManager.LoadTextureAtlasSpecification(TTextureDatabase::DatabaseName);
     if (!metadataJsonValue.is<picojson::object>())
     {
         throw GameException("Atlas metadata json is not an object");

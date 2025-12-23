@@ -7,7 +7,7 @@
 #include <set>
 #include <stdexcept>
 
-picojson::value TestAssetManager::LoadTetureDatabaseSpecification(std::string const & databaseName) const
+picojson::value TestAssetManager::LoadTextureDatabaseSpecification(std::string const & databaseName) const
 {
     return Utils::ParseJSONString(GetDatabase(databaseName).DatabaseJson);
 }
@@ -65,7 +65,7 @@ RgbImageData TestAssetManager::LoadMaterialTexture(std::string const & frameRela
     return RgbImageData(0, 0);
 }
 
-picojson::value TestAssetManager::LoadTetureAtlasSpecification(std::string const & textureDatabaseName) const
+picojson::value TestAssetManager::LoadTextureAtlasSpecification(std::string const & textureDatabaseName) const
 {
     assert(false); // Not needed by tests, so far
     (void)textureDatabaseName;
