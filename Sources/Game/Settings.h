@@ -506,7 +506,7 @@ private:
 };
 
 /*
- * This class implements a container of settings thay are managed
+ * This class implements a container of settings that are managed
  * together.
  *
  * A settings container is aligned with an enum that provides "ID's"
