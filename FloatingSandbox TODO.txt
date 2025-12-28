@@ -36,7 +36,7 @@
 			+ WorldRenderContext::ApplyViewModelChanges
 			+ shaders			
 
-	= Texture preview improvement work (*)
+	+ Texture preview improvement work (*)
 
 	- Fix SettingsDialog/Russian-Ukrainian issue from Denis
 
@@ -65,11 +65,21 @@
 	- Try Android font
 
 	- Fishes on wreck (see paper in Malta book)
+		- Alternative:
+			- @Fishes
+			- Every X (sim time, ~20s):
+				- Take largest N AABBs (N~=3)
+				- Compare with state maintained for the largest N AABBs (== position of center) ("CandidateWrecks" set)
+				- Those that stay within threshold for more than T (T~=20s) are added to ActiveWrecks set
+				- Those that are outside of threshold (even if just once) are removed from ActiveWrecks set
+			- When a shoal needs to decide a new destination, it checks the ActiveWrecks set first; if anything is found within a range R, that's the new destination
+			- Shoal can keep re-checking for destination from time to time, like it probably does now
 
-	- Ocean rendering:
-		- Check if the 20ms for upload we see on Dell when ocean high detail is enabled, are due to uploading cloud shadows asynchronously
-			- Test: buffer cloud shadows into a member, and then upload at on-render-thread upload
-			- Check also on Moto
+	= Ocean rendering:
+		X Check if the 20ms for upload we see on Dell when ocean high detail is enabled, are due to uploading cloud shadows asynchronously
+			+ Test: buffer cloud shadows into a member, and then upload at on-render-thread upload
+			X Test on old Dell
+				+ No, the cost is really the texture upload
 		- See how it would look if cloud shadows at night would be visible via moonlight
 			- If goes through: port to Android
 	- Ocean render optimizations:
