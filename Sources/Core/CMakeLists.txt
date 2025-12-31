@@ -80,6 +80,7 @@ set  (SOURCES
 	TextureAtlas-inl.h
 	TextureDatabase.h
 	TextureDatabase-inl.h
+	ThreadSafeQueue.h
 	ThreadManager.cpp
 	ThreadManager.h
 	ThreadPool.cpp
