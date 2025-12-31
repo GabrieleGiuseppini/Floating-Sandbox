@@ -783,9 +783,12 @@ void Npcs::UpdateNpcPhysics(
                     MaintainOverLand(
                         *npcState,
                         static_cast<int>(p),
-                        homeShip,
                         currentSimulationTime,
                         simulationParameters);
+
+                    // Note: NPC might have exploded now
+                    if (!npcState->IsActive())
+                        break;
                 }
             }
 
@@ -1993,7 +1996,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                     * SimulationParameters::HumanNpcGeometry::HeadLengthFraction;
             }
 
-            float const waterHeight = mParentWorld.GetOceanSurface().GetHeightAt(testParticlePosition.x);
+            float const waterHeight = mParentWorld.GetOceanSurface().GetHeightAt(Clamp(testParticlePosition.x, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth));
             float const particleDepth = waterHeight - testParticlePosition.y;
             anyWaterness = Clamp(particleDepth, 0.0f, BuoyancyInterfaceWidth) / BuoyancyInterfaceWidth; // Same as uwCoefficient
 
@@ -4232,10 +4235,12 @@ void Npcs::MaintainNpcUnfolded(
 void Npcs::MaintainOverLand(
     StateType & npc,
     int npcParticleOrdinal,
-    Ship const & homeShip,
     float currentSimulationTime,
     SimulationParameters const & simulationParameters)
 {
+    // Particle is supposed to be free
+    assert(!npc.ParticleMesh.Particles[npcParticleOrdinal].ConstrainedState.has_value());
+
     ElementIndex const p = npc.ParticleMesh.Particles[npcParticleOrdinal].ParticleIndex;
     auto const & pos = mParticles.GetPosition(p);
 
@@ -4312,9 +4317,6 @@ void Npcs::MaintainOverLand(
                 currentSimulationTime,
                 simulationParameters);
         }
-
-        // Become free - so to avoid bouncing back and forth
-        TransitionParticleToFreeState(npc, npcParticleOrdinal, homeShip);
     }
 }
 

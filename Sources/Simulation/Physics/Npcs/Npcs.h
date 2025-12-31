@@ -2007,7 +2007,6 @@ private:
 	inline void MaintainOverLand(
 		StateType & npc,
 		int npcParticleOrdinal,
-		Ship const & homeShip,
 		float currentSimulationTime,
 		SimulationParameters const & simulationParameters);
 

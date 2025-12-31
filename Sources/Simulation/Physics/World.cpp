@@ -242,8 +242,11 @@ void World::OnBlast(
         for (float r = 0.0f; r <= radius; r += 0.5f)
         {
             float const d = displacement * (1.0f - r / radius);
-            DisplaceOceanSurfaceAt(centerPosition.x - r, d);
-            DisplaceOceanSurfaceAt(centerPosition.x + r, d);
+
+            if (centerPosition.x - r >= -SimulationParameters::HalfMaxWorldWidth)
+                DisplaceOceanSurfaceAt(centerPosition.x - r, d);
+            if (centerPosition.x + r <= SimulationParameters::HalfMaxWorldWidth)
+                DisplaceOceanSurfaceAt(centerPosition.x + r, d);
         }
     }
 
