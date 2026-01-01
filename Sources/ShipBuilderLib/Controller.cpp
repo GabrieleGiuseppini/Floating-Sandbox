@@ -1816,6 +1816,7 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
         auto originalLayerClone = mModelController->CloneElectricalLayer();
         auto const cloneByteSize = originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0;
 
+        // Create undo action
         mUndoStack.Push(
             title,
             cloneByteSize,

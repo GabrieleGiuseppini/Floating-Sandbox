@@ -40,6 +40,53 @@
 
 	- Fix SettingsDialog/Russian-Ukrainian issue from Denis
 
+	- ShipBuilder:
+		- Make Undo survive return to game and back
+			- Requires undo stack to be owned by MainFrame, rather than by Controller; latter takes it as &
+		- Add pixel measurement next to ship measurement (*)
+
+	- Try perlin on rot - just in shader:
+		rot = rot * (0.5 + 0.5 * sample)
+
+	- AntiGravity tool
+		+ Make branch: anti_gravity_field
+		= First, test feasibility
+			+ Fixed min mass (so light materials have more force, thus move more and break)
+			- Try with mass imbalance; possible funcs f(m):
+				- f: 0 at 0, growing slowly with m => then mass = mass - f(m)
+			- Try with segment
+		- If ok:
+			! Physics::ForceFields manages N force fields; UI (tool) statelessly adds/removes from it
+			- Simulation/Physics/ForceFields
+				- Container/manager of N force fields
+					- Max N in SimulationParameters as new limit
+				- TryAdd(start position):
+					- If one in radius (which depend on zoom): pick that one
+						- AntiGravityField type: reset line to zero length
+						- Return its ID
+					- Else: if has room for a new one: create a new one
+						- Return its ID
+					- Else: kill the oldest one and replace it with new
+						- Return its ID
+				- Modify(ID, end position)
+				- Upload():
+					- Each time there has been a change, re-uploads all the N fields; otherwise, they are sticky
+			- WorldRenderContext: AntiGravityField(s)
+				! Treated as a physical entity, not as a UI thing
+				- Start/Upload/End
+					- Sticky; each Start marks as dirty (or whatever is the mechanism used by the others)
+					- Each field is 3 quads (left and right; middle)
+					- Thickness is fully in world coords
+				- Shader
+
+	- DoDisplaceWater setting should also control Fishes and NPCs
+		- ...find if anything else displaces water without checking toggle
+
+	- See perf impact with double the world
+		- Check on old Dell
+
+	- Try Android font
+
 	- Improvements from Bandit:
 		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
 		- Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
@@ -49,20 +96,6 @@
 	- Marine life: above water and on slope look weird
 		! Obviously - we flatten them horizontally
 
-	- ShipBuilder:
-		- Add pixel measurement next to ship measurement (*)
-		- Make Undo survive return to game and back
-
-	- Try perlin on rot - just in shader:
-		rot = rot * (0.5 + 0.5 * sample)
-
-	- DoDisplaceWater setting should also control Fishes and NPCs
-		- ...find if anything else displaces water without checking toggle
-
-	- See perf impact with double the world
-		- Check on old Dell
-
-	- Try Android font
 
 	- Fishes on wreck (see paper in Malta book)
 		- Alternative:
@@ -112,7 +145,7 @@
 	- Look at non-anti-aliased borders
 		! On my new dell, also 1.18 shows non-anti-aliased borders - so it's a problem with my box
 
-	= See if fire may emit Heavy smoke
+	= See if fire may emit Heavy / black smoke
 		! Gist:
 			! Smoke shuld be drawn behind flames => "Z Issue"
 				- TODO: write solution here, which includes preliminary PlaneId rearc so that triangle ("main") planes start from 1 and everything in the background
@@ -144,17 +177,6 @@
 	- New materials (*)
 
 	- Watertight doors should stay put even after unpowered (or new type altogether)
-
-	- AntiGravity TODOHERE: bomb or tool?
-		+ Make branch: anti_gravity_field
-		- First, test feasibility
-			+ Fixed min mass (so light materials have more force, thus move more and break)
-			- Try with mass imbalance; possible funcs f(m):
-				- f: 0 at 0, growing slowly with m => then mass = mass - f(m)
-			- Try with segment
-		- If ok:
-			- Line shader:
-				- Progress with chaotic noise
 	
 	- Test: underwater forces based on waves (derivative @ surface plus damper for depth)
 		- Just test feasibility
