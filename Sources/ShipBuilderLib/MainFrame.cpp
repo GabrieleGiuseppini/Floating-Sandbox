@@ -80,6 +80,7 @@ MainFrame::MainFrame(
     , mIsShiftKeyDown(false)
     // State
     , mWorkbenchState(materialDatabase, *this)
+    , mUndoStack()
 {
     progressCallback(0.0f, ProgressMessageType::LoadingShipBuilder);
 
@@ -5749,6 +5750,7 @@ void MainFrame::DoNewShip()
         shipName,
         *mOpenGLManager,
         mWorkbenchState,
+        mUndoStack,
         *this,
         mShipTexturizer,
         mGameAssetManager);
@@ -5784,6 +5786,7 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
         std::move(*shipDefinition),
         *mOpenGLManager,
         mWorkbenchState,
+        mUndoStack,
         *this,
         mShipTexturizer,
         mGameAssetManager);

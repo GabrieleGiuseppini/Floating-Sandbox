@@ -9,6 +9,7 @@
 #include "IUserInterface.h"
 #include "OpenGLManager.h"
 #include "ShipNameNormalizer.h"
+#include "UndoStack.h"
 #include "WorkbenchState.h"
 
 #include "UI/CompositeMaterialPalette.h"
@@ -66,7 +67,7 @@ namespace ShipBuilder {
  * - Owns Controller
  * - Very thin, calls into Controller for each high-level interaction (e.g. new tool selected, tool setting changed) and for each mouse event
  * - Implements IUserInterface with interface needed by Controller, e.g. to make UI state changes, to capture the mouse, to update visualization of undo stack
- * - Owns WorkbenchState
+ * - Owns WorkbenchState and UndoStack (the latter so that undo actions may survive flipping back-and-forth between builder and game)
  * - Implements ship load/save, giving/getting whole ShipDefinition to/from Controller
  */
 class MainFrame final : public wxFrame, public IUserInterface
@@ -520,6 +521,7 @@ private:
     //
 
     WorkbenchState mWorkbenchState;
+    UndoStack mUndoStack;
 
     std::optional<std::filesystem::path> mCurrentShipFilePath;
 };

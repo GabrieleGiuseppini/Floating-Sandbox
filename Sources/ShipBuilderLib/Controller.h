@@ -41,7 +41,7 @@ namespace ShipBuilder {
  * - Main Frame calls into Controller for each user interaction, including button clicks
  *      - Controller->Main Frame callbacks via IUserInterface
  * - Maintains UI state (e.g. grid toggle, visible layers), instructing View
- * - Maintains Undo stack (not individual entries), and orchestrates undo stack visualization with IUserInterface
+ * - Uses Undo stack (not individual entries), which is owned by caller, and orchestrates undo stack visualization with IUserInterface
  * - Maintains interaction state, implemented via Tools
  * - Owns SelectionManager pseudo-tool
  * - Owns ClipboardManager pseudo-tool
@@ -54,6 +54,7 @@ public:
         std::string const & shipName,
         OpenGLManager & openGLManager,
         WorkbenchState & workbenchState,
+        UndoStack & undoStack,
         IUserInterface & userInterface,
         ShipTexturizer const & shipTexturizer,
         GameAssetManager const & resourceLocator);
@@ -62,6 +63,7 @@ public:
         ShipDefinition && shipDefinition,
         OpenGLManager & openGLManager,
         WorkbenchState & workbenchState,
+        UndoStack & undoStack,
         IUserInterface & userInterface,
         ShipTexturizer const & shipTexturizer,
         GameAssetManager const & resourceLocator);
@@ -321,6 +323,7 @@ private:
         std::unique_ptr<ModelController> modelController,
         OpenGLManager & openGLManager,
         WorkbenchState & workbenchState,
+        UndoStack & undoStack,
         IUserInterface & userInterface,
         GameAssetManager const & resourceLocator);
 
@@ -387,9 +390,9 @@ private:
 
     std::unique_ptr<View> mView;
     std::unique_ptr<ModelController> mModelController;
-    UndoStack mUndoStack;
     SelectionManager mSelectionManager;
     WorkbenchState & mWorkbenchState;
+    UndoStack & mUndoStack;
     IUserInterface & mUserInterface;
 
     GameAssetManager const & mGameAssetManager;

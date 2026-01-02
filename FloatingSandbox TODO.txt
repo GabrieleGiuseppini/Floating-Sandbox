@@ -40,9 +40,10 @@
 
 	- Fix SettingsDialog/Russian-Ukrainian issue from Denis
 
-	- ShipBuilder:
-		- Make Undo survive return to game and back
-			- Requires undo stack to be owned by MainFrame, rather than by Controller; latter takes it as &
+	= ShipBuilder:
+		+ Make Undo survive return to game and back
+			+ Requires undo stack to be owned by MainFrame, rather than by Controller; latter takes it as &
+			+ Changelist
 		- Add pixel measurement next to ship measurement (*)
 
 	- Try perlin on rot - just in shader:
@@ -57,10 +58,11 @@
 			- Try with segment
 		- If ok:
 			! Physics::ForceFields manages N force fields; UI (tool) statelessly adds/removes from it
+			- Cursor
 			- Simulation/Physics/ForceFields
 				- Container/manager of N force fields
 					- Max N in SimulationParameters as new limit
-				- TryAdd(start position):
+				- BeginPlaceAntiGravityField(start position):
 					- If one in radius (which depend on zoom): pick that one
 						- AntiGravityField type: reset line to zero length
 						- Return its ID
@@ -68,7 +70,10 @@
 						- Return its ID
 					- Else: kill the oldest one and replace it with new
 						- Return its ID
-				- Modify(ID, end position)
+				- PlaceAntiGravityField(ID, end position)
+				- EndPlaceAntiGravityField(ID, end position)
+					- If end position very close to start (wrt same world radius that depends on zoom): delete it
+					- Else: finalize it
 				- Upload():
 					- Each time there has been a change, re-uploads all the N fields; otherwise, they are sticky
 			- WorldRenderContext: AntiGravityField(s)

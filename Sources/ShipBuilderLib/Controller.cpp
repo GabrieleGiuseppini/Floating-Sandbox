@@ -28,6 +28,7 @@ std::unique_ptr<Controller> Controller::CreateNew(
     std::string const & shipName,
     OpenGLManager & openGLManager,
     WorkbenchState & workbenchState,
+    UndoStack & undoStack,
     IUserInterface & userInterface,
     ShipTexturizer const & shipTexturizer,
     GameAssetManager const & resourceLocator)
@@ -42,6 +43,7 @@ std::unique_ptr<Controller> Controller::CreateNew(
             std::move(modelController),
             openGLManager,
             workbenchState,
+            undoStack,
             userInterface,
             resourceLocator));
 
@@ -52,6 +54,7 @@ std::unique_ptr<Controller> Controller::CreateForShip(
     ShipDefinition && shipDefinition,
     OpenGLManager & openGLManager,
     WorkbenchState & workbenchState,
+    UndoStack & undoStack,
     IUserInterface & userInterface,
     ShipTexturizer const & shipTexturizer,
     GameAssetManager const & resourceLocator)
@@ -65,6 +68,7 @@ std::unique_ptr<Controller> Controller::CreateForShip(
             std::move(modelController),
             openGLManager,
             workbenchState,
+            undoStack,
             userInterface,
             resourceLocator));
 
@@ -75,13 +79,14 @@ Controller::Controller(
     std::unique_ptr<ModelController> modelController,
     OpenGLManager & openGLManager,
     WorkbenchState & workbenchState,
+    UndoStack & undoStack,
     IUserInterface & userInterface,
     GameAssetManager const & resourceLocator)
     : mView()
     , mModelController(std::move(modelController))
-    , mUndoStack()
     , mSelectionManager(userInterface)
     , mWorkbenchState(workbenchState)
+    , mUndoStack(undoStack)
     , mUserInterface(userInterface)
     , mGameAssetManager(resourceLocator)
     // State
