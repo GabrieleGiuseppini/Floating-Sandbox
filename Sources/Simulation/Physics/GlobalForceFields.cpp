@@ -12,7 +12,7 @@
 namespace Physics {
 
 GlobalForceFields::GlobalForceFields()
-    : mIsDirtyForRendering(false)
+    : mIsDirtyForRendering(true) // Force first upload
     , mAntiGravityFields()
 {
 }
