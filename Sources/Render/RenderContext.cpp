@@ -531,6 +531,8 @@ void RenderContext::Draw(float currentSimulationTime)
 
                 mWorldRenderContext->RenderPrepareUnderwaterPlants(currentSimulationTime, renderParameters);
 
+                mWorldRenderContext->RenderPrepareAntiGravityFields(currentSimulationTime, renderParameters);
+
                 mWorldRenderContext->RenderPrepareAMBombPreImplosions(renderParameters);
 
                 mWorldRenderContext->RenderPrepareCrossesOfLight(renderParameters);
@@ -583,6 +585,8 @@ void RenderContext::Draw(float currentSimulationTime)
                 {
                     mWorldRenderContext->RenderDrawOcean(false, renderParameters);
                 }
+
+                mWorldRenderContext->RenderDrawAntiGravityFields(renderParameters);
 
                 mWorldRenderContext->RenderDrawAMBombPreImplosions(renderParameters);
 

@@ -55,6 +55,9 @@ WorldRenderContext::WorldRenderContext(
     , mUnderwaterPlantDynamicVertexBuffer()
     , mUnderwaterPlantDynamicVBO()
     , mUnderwaterPlantDynamicVBOAllocatedVertexSize(0u)
+    , mAntiGravityFieldVertexBuffer()
+    , mAntiGravityFieldVBO()
+    , mIsAntiGravityFieldVertexBufferDirty(false) // Will be eventually uploaded
     , mAMBombPreImplosionVertexBuffer()
     , mAMBombPreImplosionVBO()
     , mAMBombPreImplosionVBOAllocatedVertexSize(0u)
@@ -80,6 +83,7 @@ WorldRenderContext::WorldRenderContext(
     , mOceanDetailedVAO()
     , mFishVAO()
     , mUnderwaterPlantVAO()
+    , mAntiGravityFieldVAO()
     , mAMBombPreImplosionVAO()
     , mCrossOfLightVAO()
     , mAABBVAO()
@@ -124,7 +128,7 @@ WorldRenderContext::WorldRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[15];
+    GLuint vbos[16];
     glGenBuffers(15, vbos);
     mSkyVBO = vbos[0];
     mStarVBO = vbos[1];
@@ -136,11 +140,12 @@ WorldRenderContext::WorldRenderContext(
     mFishVBO = vbos[7];
     mUnderwaterPlantStaticVBO = vbos[8];
     mUnderwaterPlantDynamicVBO = vbos[9];
-    mAMBombPreImplosionVBO = vbos[10];
-    mCrossOfLightVBO = vbos[11];
-    mAABBVBO = vbos[12];
-    mRainVBO = vbos[13];
-    mWorldBorderVBO = vbos[14];
+    mAntiGravityFieldVBO = vbos[10];
+    mAMBombPreImplosionVBO = vbos[11];
+    mCrossOfLightVBO = vbos[12];
+    mAABBVBO = vbos[13];
+    mRainVBO = vbos[14];
+    mWorldBorderVBO = vbos[15];
 
     //
     // Initialize Sky VAO
@@ -461,6 +466,37 @@ WorldRenderContext::WorldRenderContext(
         }
     }
 
+    //
+    // Initialize AntiGravityField VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mAntiGravityFieldVAO = tmpGLuint;
+
+        glBindVertexArray(*mAntiGravityFieldVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mAntiGravityFieldVBO);
+        static_assert(sizeof(AntiGravityFieldVertex) == (2 + 2 + 1) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::AntiGravityField1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::AntiGravityField1), 4, GL_FLOAT, GL_FALSE, sizeof(AntiGravityFieldVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::AntiGravityField2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::AntiGravityField2), 1, GL_FLOAT, GL_FALSE, sizeof(AntiGravityFieldVertex), (void *)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
+        ////mGlobalRenderContext.GetElementIndices().Bind()
+
+        glBindVertexArray(0);
+
+        // Set texture parameters
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AntiGravityField>();
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::AntiGravityField>();
+    }
 
     //
     // Initialize AM Bomb Implosion VAO
@@ -944,6 +980,23 @@ void WorldRenderContext::UploadUnderwaterPlantStaticVertexAttributesStart(size_t
 void WorldRenderContext::UploadUnderwaterPlantStaticVertexAttributesEnd()
 {
     // Nop
+}
+
+void WorldRenderContext::UploadAntiGravityFieldsStart()
+{
+    //
+    // Anti-gravity fields are sticky, and we clear them when we upload
+    //
+
+    mAntiGravityFieldVertexBuffer.clear();
+    mIsAntiGravityFieldVertexBufferDirty = true;
+
+}
+
+void WorldRenderContext::UploadAntiGravityFieldsEnd()
+{
+    assert((mAntiGravityFieldVertexBuffer.size() % 6) == 0);
+    mGlobalRenderContext.GetElementIndices().EnsureSize(mAntiGravityFieldVertexBuffer.size() / 6);
 }
 
 void WorldRenderContext::UploadAABBsStart(size_t aabbCount)
@@ -1756,6 +1809,59 @@ void WorldRenderContext::RenderDrawUnderwaterPlants(RenderParameters const & /*r
     }
 }
 
+void WorldRenderContext::RenderPrepareAntiGravityFields(
+    float currentSimulationTime,
+    RenderParameters const & /*renderParameters*/)
+{
+    if (!mAntiGravityFieldVertexBuffer.empty())
+    {
+        if (mIsAntiGravityFieldVertexBufferDirty)
+        {
+            if (!mAntiGravityFieldVertexBuffer.empty())
+            {
+                // Re-allocate VBO buffer and upload
+
+                glBindBuffer(GL_ARRAY_BUFFER, *mAntiGravityFieldVBO);
+
+                glBufferData(GL_ARRAY_BUFFER, mAntiGravityFieldVertexBuffer.size() * sizeof(AntiGravityFieldVertex), mAntiGravityFieldVertexBuffer.data(), GL_STATIC_DRAW);
+                CheckOpenGLError();
+
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            }
+        }
+
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AntiGravityField>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::AntiGravityField, GameShaderSets::ProgramParameterKind::SimulationTime>(currentSimulationTime);
+    }
+}
+
+void WorldRenderContext::RenderDrawAntiGravityFields(RenderParameters const & /*renderParameters*/)
+{
+    if (!mAntiGravityFieldVertexBuffer.empty())
+    {
+        glBindVertexArray(*mAntiGravityFieldVAO);
+
+        // Intel bug: cannot associate with VAO
+        mGlobalRenderContext.GetElementIndices().Bind();
+
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AntiGravityField>();
+
+        // Activate noise texture
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
+        glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_8_1024_073));
+
+        assert((mAntiGravityFieldVertexBuffer.size() % 4) == 0);
+        glDrawElements(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(mAntiGravityFieldVertexBuffer.size() / 4 * 6),
+            GL_UNSIGNED_INT,
+            (GLvoid *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+}
+
 void WorldRenderContext::RenderPrepareAMBombPreImplosions(RenderParameters const & /*renderParameters*/)
 {
     if (!mAMBombPreImplosionVertexBuffer.empty())
@@ -2098,6 +2204,10 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::UnderwaterPlant>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AntiGravityField>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::AntiGravityField, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AMBombPreImplosion>();

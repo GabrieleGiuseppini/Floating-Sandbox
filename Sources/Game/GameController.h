@@ -247,6 +247,10 @@ public:
     bool ApplyLaserCannonThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates, std::optional<float> strength) override;
     void DrawTo(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) override;
     void SwirlAt(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) override;
+    ElementIndex BeginPlaceAntiGravityField(DisplayLogicalCoordinates const & startScreenCoordinates) override;
+    void UpdatePlaceAntiGravityField(ElementIndex antiGravityFieldId, DisplayLogicalCoordinates const & endScreenCoordinates) override;
+    void EndPlaceAntiGravityField(ElementIndex antiGravityFieldId, DisplayLogicalCoordinates const & endScreenCoordinates) override;
+    void AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId) override;
     void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void RemoveAllPins() override;
     std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) override;

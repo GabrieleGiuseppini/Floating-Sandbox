@@ -105,6 +105,13 @@ ToolController::ToolController(
             gameAssetManager));
 
     mAllTools.emplace_back(
+        std::make_unique<AntiGravityFieldTool>(
+            *this,
+            gameController,
+            soundController,
+            gameAssetManager));
+
+    mAllTools.emplace_back(
         std::make_unique<PinTool>(
             *this,
             gameController,

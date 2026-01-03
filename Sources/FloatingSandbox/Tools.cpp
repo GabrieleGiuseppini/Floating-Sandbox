@@ -334,6 +334,24 @@ void SwirlTool::ApplyTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// Anti-Gravity Field
+////////////////////////////////////////////////////////////////////////
+
+AntiGravityFieldTool::AntiGravityFieldTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    GameAssetManager const & gameAssetManager)
+    : Tool(
+        ToolType::AntiGravityField,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mCursorImage(WxHelpers::LoadCursorImage("anti_gravity_field_cursor", 15, 15, gameAssetManager))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // Pin
 ////////////////////////////////////////////////////////////////////////
 

@@ -30,6 +30,7 @@ World::World(
     , mStorm(*this, mSimulationEventHandler)
     , mWind(mSimulationEventHandler)
     , mClouds()
+    , mGlobalForceFields()
     , mOceanSurface(*this, mSimulationEventHandler)
     , mOceanFloor(std::move(oceanFloorHeightMap))
     , mFishes(fishSpeciesDatabase, mSimulationEventHandler)
@@ -779,6 +780,33 @@ void World::SwirlAt(
             targetPos,
             strength);
     }
+}
+
+ElementIndex World::BeginPlaceAntiGravityField(
+    vec2f const & startPos,
+    float searchRadius)
+{
+    return mGlobalForceFields.BeginPlaceAntiGravityField(startPos, searchRadius);
+}
+
+void World::UpdatePlaceAntiGravityField(
+    ElementIndex antiGravityFieldId,
+    vec2f const & endPos)
+{
+    mGlobalForceFields.UpdatePlaceAntiGravityField(antiGravityFieldId, endPos);
+}
+
+void World::EndPlaceAntiGravityField(
+    ElementIndex antiGravityFieldId,
+    vec2f const & endPos,
+    float searchRadius)
+{
+    mGlobalForceFields.EndPlaceAntiGravityField(antiGravityFieldId, endPos, searchRadius, mCurrentSimulationTime);
+}
+
+void World::AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId)
+{
+    mGlobalForceFields.AbortPlaceAntiGravityField(antiGravityFieldId);
 }
 
 void World::TogglePinAt(
@@ -1547,6 +1575,14 @@ void World::Update(
 
     mUnderwaterPlants.Update(mCurrentSimulationTime, mWind, mOceanSurface, mOceanFloor, simulationParameters);
 
+    // Global force fields
+    {
+        for (auto & ship : mAllShips)
+        {
+            mGlobalForceFields.Update(*ship);
+        }
+    }
+
     //
     // Signal update end (for quantities/state that needed to persist during whole Update cycle)
     //
@@ -1583,6 +1619,8 @@ void World::RenderUpload(
     }
 
     mClouds.Upload(renderContext);
+
+    mGlobalForceFields.Upload(renderContext);
 
     mOceanFloor.Upload(simulationParameters, renderContext);
 

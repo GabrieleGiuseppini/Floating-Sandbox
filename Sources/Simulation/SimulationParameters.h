@@ -723,6 +723,7 @@ struct SimulationParameters
     static size_t constexpr MaxGadgets = 64u;
     static size_t constexpr MaxPinnedPoints = 64u;
     static size_t constexpr MaxThanosSnaps = 8u;
+    static size_t constexpr MaxAntiGravityForceFields = 4u;
 
     static unsigned int constexpr EngineControllerTelegraphDegreesOfFreedom = 11;
     static_assert((EngineControllerTelegraphDegreesOfFreedom % 2) != 0); // Make sure there's room for central position, and it's symmetric

@@ -14,6 +14,7 @@ enum class ProgramKind
 {
     AABBs = 0,
     AMBombPreImplosion,
+    AntiGravityField,
     CloudsBasic,
     CloudsDetailed,
     CrossOfLight,
@@ -231,6 +232,9 @@ enum class VertexAttributeKind : std::uint32_t
     UnderwaterPlantStatic1 = 0,
     UnderwaterPlantStatic2 = 1,
     UnderwaterPlantDynamic1 = 2,
+
+    AntiGravityField1 = 0,
+    AntiGravityField2 = 1,
 
     AMBombPreImplosion1 = 0,
     AMBombPreImplosion2 = 1,

@@ -49,40 +49,47 @@
 	- Try perlin on rot - just in shader:
 		rot = rot * (0.5 + 0.5 * sample)
 
-	- AntiGravity tool
+	= AntiGravity tool
 		+ Make branch: anti_gravity_field
 		= First, test feasibility
 			+ Fixed min mass (so light materials have more force, thus move more and break)
 			- Try with mass imbalance; possible funcs f(m):
 				- f: 0 at 0, growing slowly with m => then mass = mass - f(m)
 			- Try with segment
-		- If ok:
+		= If ok:
 			! Physics::ForceFields manages N force fields; UI (tool) statelessly adds/removes from it
-			- Cursor
-			- Simulation/Physics/ForceFields
-				- Container/manager of N force fields
-					- Max N in SimulationParameters as new limit
-				- BeginPlaceAntiGravityField(start position):
-					- If one in radius (which depend on zoom): pick that one
-						- AntiGravityField type: reset line to zero length
-						- Return its ID
-					- Else: if has room for a new one: create a new one
-						- Return its ID
+			+ Cursor
+			= Simulation/Physics/ForceFields
+				+ Container/manager of N force fields
+					+ Max N in SimulationParameters as new limit
+				= BeginPlaceAntiGravityField(start position):
+					+ If one in radius (which depend on zoom): pick that one
+						+ AntiGravityField type: reset line to zero length
+						+ Return its ID
+					+ Else: if has room for a new one: create a new one
+						+ Return its ID
 					- Else: kill the oldest one and replace it with new
 						- Return its ID
-				- PlaceAntiGravityField(ID, end position)
-				- EndPlaceAntiGravityField(ID, end position)
-					- If end position very close to start (wrt same world radius that depends on zoom): delete it
-					- Else: finalize it
-				- Upload():
-					- Each time there has been a change, re-uploads all the N fields; otherwise, they are sticky
-			- WorldRenderContext: AntiGravityField(s)
+				+ UpdatePlaceAntiGravityField(ID, end position)
+				+ EndPlaceAntiGravityField(ID, end position)
+					+ If end position very close to start (wrt same world radius that depends on zoom): delete it
+					+ Else: finalize it
+				+ AbortPlaceAntiGravityField(ID)
+				= Update(Ship & ship)
+					= Ship::ApplyAntiGravityField(vec2f startPos, vec2f endPos)
+				+ Upload():
+					+ Each time there has been a change, re-uploads all the N fields; otherwise, they are sticky
+			= WorldRenderContext: AntiGravityField(s)
 				! Treated as a physical entity, not as a UI thing
-				- Start/Upload/End
-					- Sticky; each Start marks as dirty (or whatever is the mechanism used by the others)
-					- Each field is 3 quads (left and right; middle)
-					- Thickness is fully in world coords
-				- Shader
+				+ Start/Upload/End
+					+ Sticky; each Start marks as dirty (or whatever is the mechanism used by the others)
+					+ Each field is 3 quads (left and right; middle)
+					+ Thickness is fully in world coords
+				+ RenderPrepare/RenderDraw
+				+ Update orthomatrix
+				= Shader
+			- Sound (via events)
+				- TODO
 
 	- DoDisplaceWater setting should also control Fishes and NPCs
 		- ...find if anything else displaces water without checking toggle

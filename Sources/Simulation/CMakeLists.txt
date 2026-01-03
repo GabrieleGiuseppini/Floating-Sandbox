@@ -66,6 +66,8 @@ set  (PHYSICS_SOURCES
 	Physics/Gadget.h
 	Physics/Gadgets.cpp
 	Physics/Gadgets.h
+	Physics/GlobalForceFields.cpp
+	Physics/GlobalForceFields.h
 	Physics/ImpactBombGadget.cpp
 	Physics/ImpactBombGadget.h
 	Physics/IShipPhysicsHandler.h

@@ -19,6 +19,8 @@ ProgramKind ShaderNameToProgramKind(std::string const & str)
         return ProgramKind::AABBs;
     else if (lstr == "am_bomb_preimplosion")
         return ProgramKind::AMBombPreImplosion;
+    else if (lstr == "anti_gravity_field")
+        return ProgramKind::AntiGravityField;
     else if (lstr == "clouds_basic")
         return ProgramKind::CloudsBasic;
     else if (lstr == "clouds_detailed")
@@ -225,6 +227,8 @@ std::string ProgramKindToStr(ProgramKind program)
             return "AABBs";
         case ProgramKind::AMBombPreImplosion:
             return "AMBombPreImplosion";
+        case ProgramKind::AntiGravityField:
+            return "AntiGravityField";
         case ProgramKind::CloudsBasic:
             return "CloudsBasic";
         case ProgramKind::CloudsDetailed:
@@ -708,6 +712,10 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
         return VertexAttributeKind::AMBombPreImplosion1;
     else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion2"))
         return VertexAttributeKind::AMBombPreImplosion2;
+    else if (Utils::CaseInsensitiveEquals(str, "AntiGravityField1"))
+        return VertexAttributeKind::AntiGravityField1;
+    else if (Utils::CaseInsensitiveEquals(str, "AntiGravityField2"))
+        return VertexAttributeKind::AntiGravityField2;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight1"))
         return VertexAttributeKind::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))

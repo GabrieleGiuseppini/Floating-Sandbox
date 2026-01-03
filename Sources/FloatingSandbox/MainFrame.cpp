@@ -453,6 +453,11 @@ MainFrame::MainFrame(
             }
 
             {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Anti-Gravity Field"), wxS("\t0"), "anti_gravity_field_cursor", ToolType::AntiGravityField, false);
+                ADD_PLAIN_ACCELERATOR_KEY('0', menuItem);
+            }
+
+            {
                 auto menuItem = ADD_TOOL_MENUITEM(_("Toggle Pin"), wxS("\tP"), "pin_cursor", ToolType::Pin, false);
                 ADD_PLAIN_ACCELERATOR_KEY('P', menuItem);
             }

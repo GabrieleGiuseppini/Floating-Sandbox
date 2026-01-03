@@ -1188,6 +1188,48 @@ void GameController::SwirlAt(
         mSimulationParameters);
 }
 
+static int constexpr AntiGravityFieldSearchRadiusPixels = 15; // To have a screen- constant-size geometry
+
+ElementIndex GameController::BeginPlaceAntiGravityField(DisplayLogicalCoordinates const & startScreenCoordinates)
+{
+    vec2f const worldStartCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
+    float const worldSearchRadius = mRenderContext->ScreenOffsetToWorldOffset(AntiGravityFieldSearchRadiusPixels);
+
+    // Apply action
+    assert(!!mWorld);
+    return mWorld->BeginPlaceAntiGravityField(worldStartCoordinates, worldSearchRadius);
+}
+
+void GameController::UpdatePlaceAntiGravityField(
+    ElementIndex antiGravityFieldId,
+    DisplayLogicalCoordinates const & endScreenCoordinates)
+{
+    vec2f const worldEndCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->UpdatePlaceAntiGravityField(antiGravityFieldId, worldEndCoordinates);
+}
+
+void GameController::EndPlaceAntiGravityField(
+    ElementIndex antiGravityFieldId,
+    DisplayLogicalCoordinates const & endScreenCoordinates)
+{
+    vec2f const worldEndCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
+    float const worldSearchRadius = mRenderContext->ScreenOffsetToWorldOffset(AntiGravityFieldSearchRadiusPixels);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->EndPlaceAntiGravityField(antiGravityFieldId, worldEndCoordinates, worldSearchRadius);
+}
+
+void GameController::AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId)
+{
+    // Apply action
+    assert(!!mWorld);
+    mWorld->AbortPlaceAntiGravityField(antiGravityFieldId);
+}
+
 void GameController::TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);

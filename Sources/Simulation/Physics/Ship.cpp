@@ -1151,6 +1151,13 @@ void Ship::ApplyQueuedInteractionForces(SimulationParameters const & simulationP
     {
         switch (interaction.Type)
         {
+            case Interaction::InteractionType::AntiGravityField:
+            {
+                ApplyAntiGravityField(interaction.Arguments.AntiGravityField);
+
+                break;
+            }
+
             case Interaction::InteractionType::Blast:
             {
                 ApplyBlastAt(interaction.Arguments.Blast, simulationParameters);

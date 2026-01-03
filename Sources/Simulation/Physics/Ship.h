@@ -225,6 +225,10 @@ public:
         vec2f const & targetPos,
         float strength);
 
+    void ApplyAntiGravityField(
+        vec2f const & startPos,
+        vec2f const & endPos);
+
     bool TogglePinAt(
         vec2f const & targetPos,
         SimulationParameters const & simulationParameters);
@@ -346,6 +350,7 @@ private:
     {
         enum class InteractionType
         {
+            AntiGravityField,
             Blast,
             Draw,
             Pull,
@@ -356,6 +361,22 @@ private:
 
         union ArgumentsUnion
         {
+            struct AntiGravityFieldArguments
+            {
+                vec2f StartPos;
+                vec2f EndPos;
+
+                AntiGravityFieldArguments(
+                    vec2f const & startPos,
+                    vec2f const & endPos)
+                    : StartPos(startPos)
+                    , EndPos(endPos)
+                {
+                }
+            };
+
+            AntiGravityFieldArguments AntiGravityField;
+
             struct BlastArguments
             {
                 vec2f CenterPos;
@@ -422,6 +443,11 @@ private:
 
             SwirlArguments Swirl;
 
+            ArgumentsUnion(AntiGravityFieldArguments antiGravityField)
+                : AntiGravityField(antiGravityField)
+            {
+            }
+
             ArgumentsUnion(BlastArguments blast)
                 : Blast(blast)
             {}
@@ -439,6 +465,12 @@ private:
             {}
 
         } Arguments;
+
+        Interaction(ArgumentsUnion::AntiGravityFieldArguments antiGravityField)
+            : Type(InteractionType::AntiGravityField)
+            , Arguments(antiGravityField)
+        {
+        }
 
         Interaction(ArgumentsUnion::BlastArguments blast)
             : Type(InteractionType::Blast)
@@ -463,7 +495,7 @@ private:
             , Arguments(swirl)
         {
         }
-    };
+};
 
     std::list<Interaction> mQueuedInteractions;
 
@@ -474,6 +506,8 @@ private:
     void Pull(Interaction::ArgumentsUnion::PullArguments const & args);
 
     void SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args);
+
+    void ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldArguments const & args);
 
 private:
 

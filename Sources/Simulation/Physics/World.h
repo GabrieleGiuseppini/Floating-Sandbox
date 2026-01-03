@@ -287,6 +287,21 @@ public:
         float strengthFraction,
         SimulationParameters const & simulationParameters);
 
+    ElementIndex BeginPlaceAntiGravityField(
+        vec2f const & startPos,
+        float searchRadius);
+
+    void UpdatePlaceAntiGravityField(
+        ElementIndex antiGravityFieldId,
+        vec2f const & endPos);
+
+    void EndPlaceAntiGravityField(
+        ElementIndex antiGravityFieldId,
+        vec2f const & endPos,
+        float searchRadius);
+
+    void AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId);
+
     void TogglePinAt(
         vec2f const & targetPos,
         SimulationParameters const & simulationParameters);
@@ -523,6 +538,7 @@ private:
     Storm mStorm;
     Wind mWind;
     Clouds mClouds;
+    GlobalForceFields mGlobalForceFields;
     OceanSurface mOceanSurface;
     OceanFloor mOceanFloor;
     Fishes mFishes;

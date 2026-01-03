@@ -701,6 +701,97 @@ public:
             radius);
     }
 
+    void UploadAntiGravityFieldsStart();
+
+    void UploadAntiGravityField(
+        vec2f const & startPos,
+        vec2f const & endPos)
+    {
+        // TODO: where other constants live
+        float constexpr AntiGravityFieldThicknessWorld = 5.0f;
+
+        vec2f const centerPos = (startPos + endPos) / 2.0f;
+        vec2f const displacementVector = (endPos - startPos);
+        float const displacementLength = displacementVector.length();
+        vec2f const direction = displacementVector.normalise(displacementLength);
+        vec2f const vDisplacementHalf = direction.to_perpendicular() * AntiGravityFieldThicknessWorld / 2.0f;
+        float const width = std::max(displacementLength, AntiGravityFieldThicknessWorld);
+
+        // Along central H axis
+        vec2f const p0 = centerPos - direction * width / 2.0f;
+        vec2f const p1 = p0 + direction * AntiGravityFieldThicknessWorld / 2.0f;
+        vec2f const p3 = centerPos + direction * width / 2.0f;
+        vec2f const p2 = p3 - direction * AntiGravityFieldThicknessWorld / 2.0f;
+
+        // Left quad
+        // Left-top
+        mAntiGravityFieldVertexBuffer.emplace_back(
+            p0 - vDisplacementHalf,
+            vec2f(0.0f, 1.0f),
+            0.0f);
+        // Left-bottom
+        mAntiGravityFieldVertexBuffer.emplace_back(
+            p0 + vDisplacementHalf,
+            vec2f(0.0f, 0.0f),
+            0.0f);
+        // Right-top
+        mAntiGravityFieldVertexBuffer.emplace_back(
+            p1 - vDisplacementHalf,
+            vec2f(0.5f, 1.0f),
+            AntiGravityFieldThicknessWorld / 2.0f);
+        // Right-bottom
+        mAntiGravityFieldVertexBuffer.emplace_back(
+            p1 + vDisplacementHalf,
+            vec2f(0.5f, 0.0f),
+            AntiGravityFieldThicknessWorld / 2.0f);
+
+        // Mid quad
+        // Left-top
+        mAntiGravityFieldVertexBuffer.emplace_back(
+            p1 - vDisplacementHalf,
+            vec2f(0.5f, 1.0f),
+            AntiGravityFieldThicknessWorld / 2.0f);
+        // Left-bottom
+        mAntiGravityFieldVertexBuffer.emplace_back(
+            p1 + vDisplacementHalf,
+            vec2f(0.5f, 0.0f),
+            AntiGravityFieldThicknessWorld / 2.0f);
+        // Right-top
+        mAntiGravityFieldVertexBuffer.emplace_back(
+            p2 - vDisplacementHalf,
+            vec2f(0.5f, 1.0f),
+            width - AntiGravityFieldThicknessWorld / 2.0f);
+        // Right-bottom
+        mAntiGravityFieldVertexBuffer.emplace_back(
+            p2 + vDisplacementHalf,
+            vec2f(0.5f, 0.0f),
+            width - AntiGravityFieldThicknessWorld / 2.0f);
+
+        // Right quad
+        // Left-top
+        mAntiGravityFieldVertexBuffer.emplace_back(
+            p2 - vDisplacementHalf,
+            vec2f(0.5f, 1.0f),
+            width - AntiGravityFieldThicknessWorld / 2.0f);
+        // Left-bottom
+        mAntiGravityFieldVertexBuffer.emplace_back(
+            p2 + vDisplacementHalf,
+            vec2f(0.5f, 0.0f),
+            width - AntiGravityFieldThicknessWorld / 2.0f);
+        // Right-top
+        mAntiGravityFieldVertexBuffer.emplace_back(
+            p3 - vDisplacementHalf,
+            vec2f(1.0f, 1.0f),
+            width);
+        // Right-bottom
+        mAntiGravityFieldVertexBuffer.emplace_back(
+            p3 + vDisplacementHalf,
+            vec2f(1.0f, 0.0f),
+            width);
+    }
+
+    void UploadAntiGravityFieldsEnd();
+
     inline void UploadCrossOfLight(
         vec2f const & centerPosition,
         float progress,
@@ -808,6 +899,9 @@ public:
 
     void RenderPrepareUnderwaterPlants(float currentSimulationTime, RenderParameters const & renderParameters);
     void RenderDrawUnderwaterPlants(RenderParameters const & renderParameters);
+
+    void RenderPrepareAntiGravityFields(float currentSimulationTime, RenderParameters const & renderParameters);
+    void RenderDrawAntiGravityFields(RenderParameters const & renderParameters);
 
     void RenderPrepareAMBombPreImplosions(RenderParameters const & renderParameters);
     void RenderDrawAMBombPreImplosions(RenderParameters const & renderParameters);
@@ -1140,6 +1234,22 @@ private:
         }
     };
 
+    struct AntiGravityFieldVertex
+    {
+        vec2f position;
+        vec2f fieldSpaceCoords;
+        float worldXExtent;
+
+        AntiGravityFieldVertex(
+            vec2f _position,
+            vec2f _fieldSpaceCoords,
+            float _worldXExtent)
+            : position(_position)
+            , fieldSpaceCoords(_fieldSpaceCoords)
+            , worldXExtent(_worldXExtent)
+        {}
+    };
+
     struct AMBombPreImplosionVertex
     {
         vec2f vertex;
@@ -1271,6 +1381,10 @@ private:
     GameOpenGLVBO mUnderwaterPlantDynamicVBO;
     size_t mUnderwaterPlantDynamicVBOAllocatedVertexSize;
 
+    std::vector<AntiGravityFieldVertex> mAntiGravityFieldVertexBuffer;
+    GameOpenGLVBO mAntiGravityFieldVBO;
+    bool mIsAntiGravityFieldVertexBufferDirty;
+
     std::vector<AMBombPreImplosionVertex> mAMBombPreImplosionVertexBuffer;
     GameOpenGLVBO mAMBombPreImplosionVBO;
     size_t mAMBombPreImplosionVBOAllocatedVertexSize;
@@ -1305,6 +1419,7 @@ private:
     GameOpenGLVAO mOceanDetailedVAO;
     GameOpenGLVAO mFishVAO;
     GameOpenGLVAO mUnderwaterPlantVAO;
+    GameOpenGLVAO mAntiGravityFieldVAO;
     GameOpenGLVAO mAMBombPreImplosionVAO;
     GameOpenGLVAO mCrossOfLightVAO;
     GameOpenGLVAO mAABBVAO;

@@ -43,6 +43,7 @@ enum class ToolType : std::uint32_t
     FireExtinguisher,
     Grab,
     Swirl,
+    AntiGravityField,
     Pin,
     InjectPressure,
     FloodHose,
@@ -1848,6 +1849,86 @@ private:
     wxImage const mUpMinusCursorImage;
     wxImage const mDownPlusCursorImage;
     wxImage const mDownMinusCursorImage;
+};
+
+class AntiGravityFieldTool final : public Tool
+{
+public:
+
+    AntiGravityFieldTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        GameAssetManager const & gameAssetManager);
+
+public:
+
+    void Initialize(InputState const & /*inputState*/) override
+    {
+        mEngagementData.reset();
+
+        mToolCursorManager.SetToolCursor(mCursorImage);
+    }
+
+    void Deinitialize() override
+    {
+        if (mEngagementData.has_value())
+        {
+            // Abort
+            mGameController.AbortPlaceAntiGravityField(mEngagementData->CurrentForceFieldId);
+        }
+    }
+
+    void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override
+    { }
+
+    void OnMouseMove(InputState const & inputState) override
+    {
+        if (mEngagementData.has_value())
+        {
+            mGameController.UpdatePlaceAntiGravityField(mEngagementData->CurrentForceFieldId, inputState.MousePosition);
+        }
+    }
+
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        assert(!mEngagementData.has_value());
+
+        mEngagementData.emplace(
+            mGameController.BeginPlaceAntiGravityField(inputState.MousePosition));
+    }
+
+    void OnLeftMouseUp(InputState const & inputState) override
+    {
+        if (mEngagementData.has_value())
+        {
+            mGameController.EndPlaceAntiGravityField(mEngagementData->CurrentForceFieldId, inputState.MousePosition);
+
+            mEngagementData.reset();
+        }
+    }
+
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    struct EngagementData
+    {
+        ElementIndex CurrentForceFieldId;
+
+        EngagementData(
+            ElementIndex currentForceFieldId)
+            : CurrentForceFieldId(currentForceFieldId)
+        {
+        }
+    };
+
+    // Our state
+    std::optional<EngagementData> mEngagementData;
+
+    // The cursors
+    wxImage const mCursorImage;
 };
 
 class PinTool final : public OneShotTool

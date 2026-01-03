@@ -1107,6 +1107,25 @@ public:
         mWorldRenderContext->UploadUnderwaterPlantRotationAngle(rotationAngle);
     }
 
+    inline void UploadAntiGravityFieldsStart()
+    {
+        mWorldRenderContext->UploadAntiGravityFieldsStart();
+    }
+
+    inline void UploadAntiGravityField(
+        vec2f const & startPos,
+        vec2f const & endPos)
+    {
+        mWorldRenderContext->UploadAntiGravityField(
+            startPos,
+            endPos);
+    }
+
+    inline void UploadAntiGravityFieldsEnd()
+    {
+        mWorldRenderContext->UploadAntiGravityFieldsEnd();
+    }
+
     inline void UploadAMBombPreImplosion(
         vec2f const & centerPosition,
         float progress,
