@@ -87,9 +87,22 @@ void main()
     // Focus
     noise = pow(noise, 7.0);
 
+    // TODOTEST
+    /*
     // Colorise
 //    perturbationAngle -= 0.5;
-    vec4 col = vec4(1.0, 1.0 - perturbationAngle, 1.0 - perturbationAngle, noise * alpha);
+    //vec4 col = vec4(1.0, 1.0 - perturbationAngle, 1.0 - perturbationAngle, noise * alpha);
+     vec4 col = vec4(1.0 - perturbationAngle, 1.0 - perturbationAngle, 1.0, noise * alpha);
+    */
+
+    perturbationAngle -= 0.5;
+    float p = (1.0 - perturbationAngle); // 0..2
+    vec4 col = vec4(        
+        p,
+        p,
+        1.0, 
+        noise * alpha);
+    col = vec4(mix(vec3(0.), col.rgb, col.a), 1.0);
     
     ///////////////////////////////////////////////
     
