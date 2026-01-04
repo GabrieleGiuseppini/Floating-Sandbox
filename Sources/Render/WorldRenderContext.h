@@ -708,7 +708,7 @@ public:
         vec2f const & endPos)
     {
         // TODO: where other constants live
-        float constexpr AntiGravityFieldThicknessWorld = 5.0f;
+        float constexpr AntiGravityFieldThicknessWorld = 10.0f;
 
         vec2f const centerPos = (startPos + endPos) / 2.0f;
         vec2f const displacementVector = (endPos - startPos);

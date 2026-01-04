@@ -1141,7 +1141,6 @@ void NotificationRenderContext::RenderDrawMultiNotification()
         {
             // Setup custom blending
             glBlendFunc(GL_SRC_COLOR, GL_ONE);
-            glBlendEquation(GL_FUNC_ADD);
 
             doResetBlending = true;
         }
@@ -1154,7 +1153,6 @@ void NotificationRenderContext::RenderDrawMultiNotification()
         {
             // Reset blending
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glBlendEquation(GL_FUNC_ADD);
         }
 
         glBindVertexArray(0);

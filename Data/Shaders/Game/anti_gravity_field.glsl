@@ -54,38 +54,44 @@ void main()
     //
     
     #define PERTURBATION_RESOLUTION 0.01
-    #define PERTURBATION_SPEED 0.005
+    #define PERTURBATION_SPEED 0.009
     
-    //vec2 perturbationCoords = vec2(vertexWorldXExtent * PERTURBATION_RESOLUTION - paramSimulationTime * PERTURBATION_SPEED, 0.0);
-    //float perturbationAngle = 0.4 * (texture2D(iChannel1, perturbationCoords).r * 2.0 - 1.0);    
-    //vertexWorldXExtent += perturbationAngle * sin(vertexFieldSpaceYCentered * 3.14/2.);
+    vec2 perturbationCoords = vec2(
+        vertexWorldXExtent * PERTURBATION_RESOLUTION - paramSimulationTime * PERTURBATION_SPEED, 
+        paramSimulationTime * PERTURBATION_SPEED);
+    float perturbationAngle = 0.8 * (texture2D(paramNoiseTexture, perturbationCoords).r * 2.0 - 1.0);    
+    float vertexWorldXExtentPerturbated = vertexWorldXExtent + perturbationAngle * vertexFieldSpaceYCentered;
     
     
     //
     // Calculate noise coords
     //
     
-    #define H_RESOLUTION 25.0
-    #define SPEED 1.0 / 40.0
-    #define Thickness 0.1
+    #define H_RESOLUTION 40.0
+    #define SPEED 1.0 / 30.0
+    
+    float noiseYFactor = 0.15;
     
     float bottomHalfXOffset = step(vertexFieldSpaceCoords.y, 0.5) * 0.5;
-    float noiseY = vertexFieldSpaceYCentered * Thickness; // 0->1   
-    //float compressedNoiseY = smoothstep(0.0, 1.0, noiseY * 0.2) / 0.2;
+    float noiseY = vertexFieldSpaceYCentered * noiseYFactor;
     float compressedNoiseY = smoothstep(0.0, 1.0, noiseY * 0.5) / 0.5;
     
     vec2 noiseCoords = vec2(
-        vertexWorldXExtent / H_RESOLUTION + bottomHalfXOffset,
+        vertexWorldXExtentPerturbated / H_RESOLUTION + bottomHalfXOffset,
         compressedNoiseY - paramSimulationTime * SPEED);
     float noise = texture2D(paramNoiseTexture, noiseCoords).x;
     
     // Add center h line
-    noise = mix(1.0, noise, min(noiseY * 5.0, 1.0));
+    noise = mix(1.0, noise, vertexFieldSpaceYCentered);
     
     // Focus
     noise = pow(noise, 7.0);
+
+    // Colorise
+//    perturbationAngle -= 0.5;
+    vec4 col = vec4(1.0, 1.0 - perturbationAngle, 1.0 - perturbationAngle, noise * alpha);
     
     ///////////////////////////////////////////////
     
-    gl_FragColor = vec4(1.0, 1.0, 1.0, noise * alpha);
+    gl_FragColor = col;
 }
