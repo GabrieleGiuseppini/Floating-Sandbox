@@ -1033,8 +1033,49 @@ void Ship::ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldAr
 
     // VERSION 1
 
-    // - Tapers off with (short) distance between point and force field segment
-    // - Lighter mass has a higher max velocity
+    //// - Tapers off with (short) distance between point and force field segment
+    //// - Lighter mass has a higher max velocity
+
+    //float const segmentSquaredLength = (args.StartPos - args.EndPos).squareLength();
+    //if (segmentSquaredLength == 0.0f)
+    //{
+    //    return;
+    //}
+
+    //for (auto pointIndex : mPoints)
+    //{
+    //    // Consider the line extending the segment, parameterized as P1 + t (P2 - P1).
+    //    // We find projection of point P onto the line.
+    //    // It falls where t = [(P-P1) . (P2-P)] / |P2-P1|^2
+    //    // We clamp t from [0,1] to handle points outside the segment P1-P2.
+    //    const float t = std::max(0.0f, std::min(1.0f, (mPoints.GetPosition(pointIndex) - args.StartPos).dot(args.EndPos - args.StartPos) / segmentSquaredLength));
+    //    vec2f const projection = args.StartPos + (args.EndPos - args.StartPos) * t;  // Projection falls on the segment
+    //    vec2f const projectionDirectionNormalized = (projection - mPoints.GetPosition(pointIndex)).normalise();
+    //    float const distance = (projection - mPoints.GetPosition(pointIndex)).length();
+    //    float const m = mPoints.GetMass(pointIndex);
+
+    //    float const m2 = std::max(m - m * m * (100.0f / (700.0f * 700.0f)), 0.0f);
+    //    vec2f force = projectionDirectionNormalized * SimulationParameters::GravityMagnitude * m2;
+
+    //    //float const massDamper = (1.0f - SmoothStep(0.0f, 1000.0f, m)) * 20.0f;
+    //    float const massDamper = (1.0f - LinearStep(100.0f, 700.0f, m)) * 50.0f;
+    //    float const forceDamper = std::min(distance / 20.0f, 1.0f);
+    //    float const targetVelocityMagnitude = 1.5f * forceDamper * massDamper;
+
+    //    vec2f const & currentVelocity = mPoints.GetVelocity(pointIndex);
+    //    vec2f const targetVelocity = projectionDirectionNormalized * targetVelocityMagnitude;
+    //    //vec2f const desiredVelocity = currentVelocity + (targetVelocity - currentVelocity) * 0.03f;
+    //    vec2f const desiredVelocity = currentVelocity + (targetVelocity - currentVelocity) * 0.1f;
+    //    vec2f const requiredAcceleration = (desiredVelocity - currentVelocity) / SimulationParameters::SimulationStepTimeDuration<float>;
+    //    force += requiredAcceleration * m2;
+
+    //    mPoints.AddStaticForce(pointIndex, force);
+    //}
+
+
+    // VERSION 2
+
+    // - With plain anti-gravity
 
     float const segmentSquaredLength = (args.StartPos - args.EndPos).squareLength();
     if (segmentSquaredLength == 0.0f)
@@ -1054,20 +1095,21 @@ void Ship::ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldAr
         float const distance = (projection - mPoints.GetPosition(pointIndex)).length();
         float const m = mPoints.GetMass(pointIndex);
 
-        float const m2 = std::max(m - m * m * (100.0f / (700.0f * 700.0f)), 0.0f);
-        vec2f force = projectionDirectionNormalized * SimulationParameters::GravityMagnitude * m2;
+        // Counteract gravity, but towards the segment
+        vec2f force = projectionDirectionNormalized * SimulationParameters::GravityMagnitude * m;
 
-        //float const massDamper = (1.0f - SmoothStep(0.0f, 1000.0f, m)) * 20.0f;
-        float const massDamper = (1.0f - LinearStep(100.0f, 700.0f, m)) * 50.0f;
-        float const forceDamper = std::min(distance / 20.0f, 1.0f);
-        float const targetVelocityMagnitude = 1.5f * forceDamper * massDamper;
+        //
+        // Calculate our magic force
+
+        float const massDamper = (1.0f - LinearStep(100.0f, 700.0f, m));
+        float const distanceDamper = std::min(distance / 20.0f, 1.0f);
+        float const targetVelocityMagnitude = 50.0f * distanceDamper * massDamper;
 
         vec2f const & currentVelocity = mPoints.GetVelocity(pointIndex);
         vec2f const targetVelocity = projectionDirectionNormalized * targetVelocityMagnitude;
-        //vec2f const desiredVelocity = currentVelocity + (targetVelocity - currentVelocity) * 0.03f;
         vec2f const desiredVelocity = currentVelocity + (targetVelocity - currentVelocity) * 0.1f;
         vec2f const requiredAcceleration = (desiredVelocity - currentVelocity) / SimulationParameters::SimulationStepTimeDuration<float>;
-        force += requiredAcceleration * m2;
+        force += requiredAcceleration * m;
 
         mPoints.AddStaticForce(pointIndex, force);
     }
