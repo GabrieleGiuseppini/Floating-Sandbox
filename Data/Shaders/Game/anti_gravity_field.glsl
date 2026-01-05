@@ -59,7 +59,8 @@ void main()
     vec2 perturbationCoords = vec2(
         vertexWorldXExtent * PERTURBATION_RESOLUTION - paramSimulationTime * PERTURBATION_SPEED, 
         paramSimulationTime * PERTURBATION_SPEED);
-    float perturbationAngle = 0.8 * (texture2D(paramNoiseTexture, perturbationCoords).r * 2.0 - 1.0);    
+    float perturbationNoise = texture2D(paramNoiseTexture, perturbationCoords).r; // 0..1
+    float perturbationAngle = 0.8 * (perturbationNoise * 2.0 - 1.0);    
     float vertexWorldXExtentPerturbated = vertexWorldXExtent + perturbationAngle * vertexFieldSpaceYCentered;
     
     
@@ -67,7 +68,7 @@ void main()
     // Calculate noise coords
     //
     
-    #define H_RESOLUTION 40.0
+    #define H_RESOLUTION 20.0
     #define SPEED 1.0 / 30.0
     
     float noiseYFactor = 0.15;
@@ -75,6 +76,7 @@ void main()
     float bottomHalfXOffset = step(vertexFieldSpaceCoords.y, 0.5) * 0.5;
     float noiseY = vertexFieldSpaceYCentered * noiseYFactor;
     float compressedNoiseY = smoothstep(0.0, 1.0, noiseY * 0.5) / 0.5;
+    //float compressedNoiseY = noiseY;
     
     vec2 noiseCoords = vec2(
         vertexWorldXExtentPerturbated / H_RESOLUTION + bottomHalfXOffset,
@@ -86,25 +88,9 @@ void main()
     
     // Focus
     noise = pow(noise, 7.0);
-
-    // TODOTEST
-    /*
-    // Colorise
-//    perturbationAngle -= 0.5;
-    //vec4 col = vec4(1.0, 1.0 - perturbationAngle, 1.0 - perturbationAngle, noise * alpha);
-     vec4 col = vec4(1.0 - perturbationAngle, 1.0 - perturbationAngle, 1.0, noise * alpha);
-    */
-
-    perturbationAngle -= 0.5;
-    float p = (1.0 - perturbationAngle); // 0..2
-    vec4 col = vec4(        
-        p,
-        p,
-        1.0, 
-        noise * alpha);
-    col = vec4(mix(vec3(0.), col.rgb, col.a), 1.0);
     
     ///////////////////////////////////////////////
     
-    gl_FragColor = col;
+    // glBlendFunc(GL_ONE, GL_ONE)
+    gl_FragColor = vec4(vec3(noise*alpha), 1.);
 }

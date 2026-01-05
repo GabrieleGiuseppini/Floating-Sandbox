@@ -51,11 +51,11 @@
 
 	= AntiGravity tool
 		+ Make branch: anti_gravity_field
-		= First, test feasibility
+		+ First, test feasibility
 			+ Fixed min mass (so light materials have more force, thus move more and break)
-			- Try with mass imbalance; possible funcs f(m):
-				- f: 0 at 0, growing slowly with m => then mass = mass - f(m)
-			- Try with segment
+			! Try with mass imbalance; possible funcs f(m):
+				! f: 0 at 0, growing slowly with m => then mass = mass - f(m)
+			+ Try with segment
 		= If ok:
 			! Physics::ForceFields manages N force fields; UI (tool) statelessly adds/removes from it
 			+ Cursor
@@ -77,6 +77,17 @@
 				+ AbortPlaceAntiGravityField(ID)
 				= Update(Ship & ship)
 					= Ship::ApplyAntiGravityField(vec2f startPos, vec2f endPos)
+						- Try rewrite:
+							- No anti-G force as a test, might not be needed (unless velocity forcing is too little when G is present)
+							- Calculate target V:
+								- function of mass: more mass, more V
+							- Calculate forceDamper:
+								- function of distance: 
+									- d=0-40: linearly 0->1
+									- d=40-MaxWorldHeight/2: linearly 1->0
+							- force = force required for V impart * forceDamper
+
+					- Try discontinuity w/metal
 				+ Upload():
 					+ Each time there has been a change, re-uploads all the N fields; otherwise, they are sticky
 			= WorldRenderContext: AntiGravityField(s)
@@ -88,6 +99,11 @@
 				+ RenderPrepare/RenderDraw
 				+ Update orthomatrix
 				= Shader
+					+ Find way to do that saturation with mix
+						+ Note: when x2=col > 1.0 and coeff leans towards x2, mix will "pull up" x1
+						+ See if there's a blend func
+					- Try color variations
+					- Optimize
 			- Sound (via events)
 				- TODO
 

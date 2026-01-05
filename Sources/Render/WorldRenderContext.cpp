@@ -1839,6 +1839,8 @@ void WorldRenderContext::RenderDrawAntiGravityFields(RenderParameters const & /*
 {
     if (!mAntiGravityFieldVertexBuffer.empty())
     {
+        glBlendFunc(GL_ONE, GL_ONE);
+
         glBindVertexArray(*mAntiGravityFieldVAO);
 
         // Intel bug: cannot associate with VAO
@@ -1859,6 +1861,8 @@ void WorldRenderContext::RenderDrawAntiGravityFields(RenderParameters const & /*
         CheckOpenGLError();
 
         glBindVertexArray(0);
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 }
 
