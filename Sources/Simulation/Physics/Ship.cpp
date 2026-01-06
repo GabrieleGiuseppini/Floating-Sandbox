@@ -1153,7 +1153,7 @@ void Ship::ApplyQueuedInteractionForces(SimulationParameters const & simulationP
         {
             case Interaction::InteractionType::AntiGravityField:
             {
-                ApplyAntiGravityField(interaction.Arguments.AntiGravityField);
+                ApplyAntiGravityField(interaction.Arguments.AntiGravityField, simulationParameters);
 
                 break;
             }

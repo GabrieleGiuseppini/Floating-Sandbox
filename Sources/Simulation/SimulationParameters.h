@@ -688,6 +688,10 @@ struct SimulationParameters
     static float constexpr MinWindMakerToolWindSpeed = 20.0f;
     static float constexpr MaxWindMakerToolWindSpeed = 200.0f;
 
+    float AntiGravityFieldAccelerationAdjustment;
+    static float constexpr MinAntiGravityFieldAccelerationAdjustment = 0.1f;
+    static float constexpr MaxAntiGravityFieldAccelerationAdjustment = 10.0f;
+
     bool IsUltraViolentMode;
 
     float MoveToolInertia;

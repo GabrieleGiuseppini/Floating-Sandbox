@@ -133,6 +133,7 @@ SimulationParameters::SimulationParameters()
     , BlastToolForceAdjustment(1.0f)
     , ScrubRotToolRadius(5.0f)
     , WindMakerToolWindSpeed(80.0f)
+    , AntiGravityFieldAccelerationAdjustment(1.0f)
     , IsUltraViolentMode(false)
     , MoveToolInertia(3.0f)
     // Computation

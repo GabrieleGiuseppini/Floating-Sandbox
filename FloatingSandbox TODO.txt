@@ -77,15 +77,15 @@
 				+ AbortPlaceAntiGravityField(ID)
 				= Update(Ship & ship)
 					= Ship::ApplyAntiGravityField(vec2f startPos, vec2f endPos)
-						- Pyramid forceDamper:
+						- Pyramid forceDamper - REALLY?
 							- d=0-40: linearly 0->1
 							- d=40-1000: 1
 							- d=1000-MaxWorldHeight/2: linearly 1->0
+						- Target height wrt line depending on mass - planet rings!
 						- Make it dance around equilibrium: add a Hooke force
-
-					- Try discontinuity w/metal
 				+ Upload():
 					+ Each time there has been a change, re-uploads all the N fields; otherwise, they are sticky
+				+ Fix removal
 			= WorldRenderContext: AntiGravityField(s)
 				! Treated as a physical entity, not as a UI thing
 				+ Start/Upload/End
@@ -98,7 +98,6 @@
 					+ Find way to do that saturation with mix
 						+ Note: when x2=col > 1.0 and coeff leans towards x2, mix will "pull up" x1
 						+ See if there's a blend func
-					- Try color variations
 					- Optimize
 			- Sound (via events)
 				- TODO

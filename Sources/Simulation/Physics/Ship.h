@@ -507,7 +507,7 @@ private:
 
     void SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args);
 
-    void ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldArguments const & args);
+    void ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldArguments const & args, SimulationParameters const & simulationParameters);
 
 private:
 

@@ -1188,7 +1188,7 @@ void GameController::SwirlAt(
         mSimulationParameters);
 }
 
-static int constexpr AntiGravityFieldSearchRadiusPixels = 15; // To have a screen- constant-size geometry
+static int constexpr AntiGravityFieldSearchRadiusPixels = 25; // To have a screen- constant-size geometry
 
 ElementIndex GameController::BeginPlaceAntiGravityField(DisplayLogicalCoordinates const & startScreenCoordinates)
 {
