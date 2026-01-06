@@ -1102,10 +1102,9 @@ void Ship::ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldAr
         float const distanceDamper = std::min(distance / 20.0f, 1.0f);
 
         // Calculate mass damper
-        // TODO: more discontinuous
         // TODO: metal discontinuity
         float const m = mPoints.GetMass(pointIndex);
-        float constexpr MinMassDamper = 0.35f;
+        float constexpr MinMassDamper = 0.25f;
         float const ls = LinearStep(10.0f, 800.0f, m);
         float const massDamper = MinMassDamper + ls * ls * (1.0f - MinMassDamper); // 1 when heavy, 0.35 when light
 
@@ -1115,15 +1114,17 @@ void Ship::ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldAr
         //
         // Calculate our magic force
         //
+        // We add a force to impose a specific velocity towards the force field segment, leaving untouched
+        // the current velocity component orthogonal to that
+        //
 
         // TODO: simulation parameter
-        float const targetVelocityMagnitude = 15.0f * distanceDamper * massDamper;
-
+        float const targetVelocityMagnitudeInDirection = 15.0f * distanceDamper * massDamper;
         vec2f const & currentVelocity = mPoints.GetVelocity(pointIndex);
-        vec2f const targetVelocity = projectionDirectionNormalized * targetVelocityMagnitude;
-        float constexpr DesiredVelocityConvergenceRate = 0.2f; // The higher, the more breakage
-        vec2f const desiredVelocity = currentVelocity + (targetVelocity - currentVelocity) * DesiredVelocityConvergenceRate;
-        vec2f const requiredAcceleration = (desiredVelocity - currentVelocity) / SimulationParameters::SimulationStepTimeDuration<float>;
+        float const currentVelocityMagnitudeInDirection = currentVelocity.dot(projectionDirectionNormalized);
+        float constexpr DesiredVelocityConvergenceRate = 0.3f; // The higher, the more breakage
+        float const desiredVelocityMagnitudeInDirection = currentVelocityMagnitudeInDirection + (targetVelocityMagnitudeInDirection - currentVelocityMagnitudeInDirection) * DesiredVelocityConvergenceRate;
+        vec2f const requiredAcceleration = projectionDirectionNormalized * (desiredVelocityMagnitudeInDirection - currentVelocityMagnitudeInDirection) / SimulationParameters::SimulationStepTimeDuration<float>;
         force += requiredAcceleration * m;
 
         mPoints.AddStaticForce(pointIndex, force);
