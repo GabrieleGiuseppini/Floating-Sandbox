@@ -1085,7 +1085,7 @@ void Ship::ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldAr
 
     for (auto pointIndex : mPoints)
     {
-        vec2f const p = mPoints.GetPosition(pointIndex);
+        vec2f const & p = mPoints.GetPosition(pointIndex);
 
         // Consider the line extending the segment, parameterized as P1 + t (P2 - P1).
         // We find projection of point P onto the line.
@@ -1101,12 +1101,11 @@ void Ship::ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldAr
         // TODO: make it dance around equilibrium
         float const distanceDamper = std::min(distance / 20.0f, 1.0f);
 
-        // Calculate mass damper
-        // TODO: metal discontinuity
+        // Calculate mass damper: 0.25 when light, 1.0 when heavy - so light particles stay behind
         float const m = mPoints.GetMass(pointIndex);
         float constexpr MinMassDamper = 0.25f;
         float const ls = LinearStep(10.0f, 800.0f, m);
-        float const massDamper = MinMassDamper + ls * ls * (1.0f - MinMassDamper); // 1 when heavy, 0.35 when light
+        float const massDamper = MinMassDamper + ls * ls * (1.0f - MinMassDamper);
 
         // Counteract gravity, but towards the segment
         vec2f force = projectionDirectionNormalized * SimulationParameters::GravityMagnitude * m * distanceDamper;

@@ -68,7 +68,7 @@ void main()
     // Calculate noise coords
     //
     
-    #define H_RESOLUTION 20.0
+    #define H_RESOLUTION 50.0
     #define SPEED 1.0 / 30.0
     
     float noiseYFactor = 0.15;

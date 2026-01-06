@@ -77,15 +77,11 @@
 				+ AbortPlaceAntiGravityField(ID)
 				= Update(Ship & ship)
 					= Ship::ApplyAntiGravityField(vec2f startPos, vec2f endPos)
-						- Try rewrite:
-							- No anti-G force as a test, might not be needed (unless velocity forcing is too little when G is present)
-							- Calculate target V:
-								- function of mass: more mass, more V
-							- Calculate forceDamper:
-								- function of distance: 
-									- d=0-40: linearly 0->1
-									- d=40-MaxWorldHeight/2: linearly 1->0
-							- force = force required for V impart * forceDamper
+						- Pyramid forceDamper:
+							- d=0-40: linearly 0->1
+							- d=40-1000: 1
+							- d=1000-MaxWorldHeight/2: linearly 1->0
+						- Make it dance around equilibrium: add a Hooke force
 
 					- Try discontinuity w/metal
 				+ Upload():
