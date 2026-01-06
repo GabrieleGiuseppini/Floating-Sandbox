@@ -1085,14 +1085,16 @@ void Ship::ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldAr
 
     for (auto pointIndex : mPoints)
     {
+        vec2f const p = mPoints.GetPosition(pointIndex);
+
         // Consider the line extending the segment, parameterized as P1 + t (P2 - P1).
         // We find projection of point P onto the line.
         // It falls where t = [(P-P1) . (P2-P)] / |P2-P1|^2
         // We clamp t from [0,1] to handle points outside the segment P1-P2.
-        const float t = std::max(0.0f, std::min(1.0f, (mPoints.GetPosition(pointIndex) - args.StartPos).dot(args.EndPos - args.StartPos) / segmentSquaredLength));
+        const float t = Clamp((p - args.StartPos).dot(args.EndPos - args.StartPos) / segmentSquaredLength, 0.0f, 1.0f);
         vec2f const projection = args.StartPos + (args.EndPos - args.StartPos) * t;  // Projection falls on the segment
-        vec2f const projectionDirectionNormalized = (projection - mPoints.GetPosition(pointIndex)).normalise();
-        float const distance = (projection - mPoints.GetPosition(pointIndex)).length();
+        float const distance = (projection - p).length();
+        vec2f const projectionDirectionNormalized = (projection - p).normalise(distance);
 
         // Calculate distance damper
         // TODO: pyramid
@@ -1104,7 +1106,8 @@ void Ship::ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldAr
         // TODO: metal discontinuity
         float const m = mPoints.GetMass(pointIndex);
         float constexpr MinMassDamper = 0.35f;
-        float const massDamper = MinMassDamper + LinearStep(10.0f, 800.0f, m) * (1.0f - MinMassDamper); // 1 when heavy, 0.35 when light
+        float const ls = LinearStep(10.0f, 800.0f, m);
+        float const massDamper = MinMassDamper + ls * ls * (1.0f - MinMassDamper); // 1 when heavy, 0.35 when light
 
         // Counteract gravity, but towards the segment
         vec2f force = projectionDirectionNormalized * SimulationParameters::GravityMagnitude * m * distanceDamper;
