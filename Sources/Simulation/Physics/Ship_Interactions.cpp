@@ -1114,7 +1114,7 @@ void Ship::ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldAr
         //
 
         // TODO: simulation parameter
-        float const targetVelocityMagnitude = 20.0f * distanceDamper * massDamper;
+        float const targetVelocityMagnitude = 15.0f * distanceDamper * massDamper;
 
         vec2f const & currentVelocity = mPoints.GetVelocity(pointIndex);
         vec2f const targetVelocity = projectionDirectionNormalized * targetVelocityMagnitude;
