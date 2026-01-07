@@ -1,9 +1,9 @@
 /***************************************************************************************
  * Original Author:     Gabriele Giuseppini
- * Created:             2021-10-23
+ * Created:             2026-01-07
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#include "ResizeDialog.h"
+#include "ResizeCanvasDialog.h"
 
 #include "../WorkbenchState.h"
 
@@ -16,26 +16,27 @@
 
 namespace ShipBuilder {
 
-ResizeDialog::ResizeDialog(
-    wxWindow * parent,
-    GameAssetManager const & gameAssetManager)
-    : mGameAssetManager(gameAssetManager)
-    , mSourceSize(0, 0)
+IntegralRectSize ResizeCanvasDialog::GetTargetSize() const
 {
-    Create(
-        parent,
-        wxID_ANY,
-        wxEmptyString,
-        wxDefaultPosition,
-        wxSize(400, 200),
-        wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP);
+    return IntegralRectSize(
+        mTargetWidthSpinBox->GetValue(),
+        mTargetHeightSpinBox->GetValue());
+}
 
-    SetBackgroundColour(GetDefaultAttributes().colBg);
+IntegralCoordinates ResizeCanvasDialog::GetOffset() const
+{
+    auto const topLeftOffset = mShipCanvasResizeVisualizationControl->GetOffset();
+    auto const targetSize = GetTargetSize();
 
-    wxBoxSizer * dialogVSizer = new wxBoxSizer(wxVERTICAL);
+    return IntegralCoordinates(
+        topLeftOffset.x,
+        targetSize.height - (topLeftOffset.y + mShipSize.height));
+}
 
-    dialogVSizer->AddSpacer(20);
-
+void ResizeCanvasDialog::InternalCreateLayout(
+    wxBoxSizer * dialogVSizer,
+    GameAssetManager const & gameAssetManager)
+{
     // Top ribbon
     {
         wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -168,12 +169,12 @@ ResizeDialog::ResizeDialog(
                             {
                                 // Calculate height when preserving source aspect ratio
                                 int const newHeight = std::max(
-                                    static_cast<int>(std::round(static_cast<float>(value * mSourceSize.height) / static_cast<float>(mSourceSize.width))),
+                                    static_cast<int>(std::round(static_cast<float>(value * mShipSize.height) / static_cast<float>(mShipSize.width))),
                                     1);
                                 mTargetHeightSpinBox->SetValue(newHeight);
                             }
 
-                            mShipResizeVisualizationControl->SetTargetSize(
+                            mShipCanvasResizeVisualizationControl->SetTargetSize(
                                 IntegralRectSize(
                                     value,
                                     mTargetHeightSpinBox->GetValue()));
@@ -212,12 +213,12 @@ ResizeDialog::ResizeDialog(
                             {
                                 // Calculate width when preserving source aspect ratio
                                 int const newWidth = std::max(
-                                    static_cast<int>(std::round(static_cast<float>(value * mSourceSize.width) / static_cast<float>(mSourceSize.height))),
+                                    static_cast<int>(std::round(static_cast<float>(value * mShipSize.width) / static_cast<float>(mShipSize.height))),
                                     1);
                                 mTargetWidthSpinBox->SetValue(newWidth);
                             }
 
-                            mShipResizeVisualizationControl->SetTargetSize(
+                            mShipCanvasResizeVisualizationControl->SetTargetSize(
                                 IntegralRectSize(
                                     mTargetWidthSpinBox->GetValue(),
                                     value));
@@ -242,12 +243,12 @@ ResizeDialog::ResizeDialog(
                         {
                             // Calculate height when preserving source aspect ratio
                             int const newHeight = std::max(
-                                static_cast<int>(std::round(static_cast<float>(mTargetWidthSpinBox->GetValue() * mSourceSize.height) / static_cast<float>(mSourceSize.width))),
+                                static_cast<int>(std::round(static_cast<float>(mTargetWidthSpinBox->GetValue() * mShipSize.height) / static_cast<float>(mShipSize.width))),
                                 1);
                             mTargetHeightSpinBox->SetValue(newHeight);
 
                             // Tell viz controller
-                            mShipResizeVisualizationControl->SetTargetSize(
+                            mShipCanvasResizeVisualizationControl->SetTargetSize(
                                 IntegralRectSize(
                                     mTargetWidthSpinBox->GetValue(),
                                     newHeight));
@@ -295,7 +296,7 @@ ResizeDialog::ResizeDialog(
                         [this, button, anchorCoordinates](wxCommandEvent &)
                         {
                             // Tell control
-                            mShipResizeVisualizationControl->SetAnchor(anchorCoordinates);
+                            mShipCanvasResizeVisualizationControl->SetAnchor(anchorCoordinates);
 
                             // Reconciliate UI
                             ReconciliateUIWithAnchorCoordinates(anchorCoordinates);
@@ -329,7 +330,7 @@ ResizeDialog::ResizeDialog(
 
     // Visualization
     {
-        mShipResizeVisualizationControl = new ShipResizeVisualizationControl(
+        mShipCanvasResizeVisualizationControl = new ShipCanvasResizeVisualizationControl(
             this,
             400,
             200,
@@ -339,102 +340,44 @@ ResizeDialog::ResizeDialog(
             });
 
         dialogVSizer->Add(
-            mShipResizeVisualizationControl,
+            mShipCanvasResizeVisualizationControl,
             0,
             wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
             10);
     }
-
-    dialogVSizer->AddSpacer(20);
-
-    // Buttons
-    {
-        wxBoxSizer * buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
-
-        buttonsSizer->AddSpacer(20);
-
-        {
-            auto button = new wxButton(this, wxID_ANY, _("OK"));
-            button->Bind(wxEVT_BUTTON, &ResizeDialog::OnOkButton, this);
-            buttonsSizer->Add(button, 0);
-        }
-
-        buttonsSizer->AddSpacer(20);
-
-        {
-            auto button = new wxButton(this, wxID_ANY, _("Cancel"));
-            button->Bind(wxEVT_BUTTON, &ResizeDialog::OnCancelButton, this);
-            buttonsSizer->Add(button, 0);
-        }
-
-        buttonsSizer->AddSpacer(20);
-
-        dialogVSizer->Add(buttonsSizer, 0, wxALIGN_CENTER_HORIZONTAL);
-    }
-
-    dialogVSizer->AddSpacer(20);
-
-    //
-    // Finalize dialog
-    //
-
-    SetSizerAndFit(dialogVSizer);
-
-    Centre(wxCENTER_ON_SCREEN | wxBOTH);
 }
 
-bool ResizeDialog::ShowModalForResize(
+void ResizeCanvasDialog::InternalReconciliateUI(
     RgbaImageData const & image,
-    IntegralRectSize const & targetSize)
+    ShipSpaceSize const & shipSize)
 {
-    mSourceSize = IntegralRectSize(image.Size.width, image.Size.height);
+    mShipSize = shipSize;
 
-    ReconciliateUI(image, targetSize, ModeType::ForResize);
+    // Source size
+    mSourceWidthTextCtrl->SetValue(std::to_string(image.Size.width));
+    mSourceHeightTextCtrl->SetValue(std::to_string(image.Size.height));
 
-    return wxDialog::ShowModal() == wxID_OK;
+    // Target size (we begin with same)
+    mTargetWidthSpinBox->SetValue(shipSize.width);
+    mTargetHeightSpinBox->SetValue(shipSize.height);
+
+    // Anchor - centered
+    IntegralCoordinates centerAnchorCoordinates(1, 1);
+    ReconciliateUIWithAnchorCoordinates(centerAnchorCoordinates);
+
+    // Viz control
+    mShipCanvasResizeVisualizationControl->Initialize(
+        image,
+        IntegralRectSize(shipSize.width, shipSize.height),
+        centerAnchorCoordinates); // Anchor - centered
 }
 
-bool ResizeDialog::ShowModalForTexture(
-    RgbaImageData const & image,
-    IntegralRectSize const & targetSize)
+void ResizeCanvasDialog::InternalOnClose()
 {
-    mSourceSize = IntegralRectSize(image.Size.width, image.Size.height);
-
-    ReconciliateUI(image, targetSize, ModeType::ForTexture);
-
-    return wxDialog::ShowModal() == wxID_OK;
+    mShipCanvasResizeVisualizationControl->Deinitialize();
 }
 
-IntegralRectSize ResizeDialog::GetTargetSize() const
-{
-    return IntegralRectSize(
-        mTargetWidthSpinBox->GetValue(),
-        mTargetHeightSpinBox->GetValue());
-}
-
-IntegralCoordinates ResizeDialog::GetOffset() const
-{
-    auto const topLeftOffset = mShipResizeVisualizationControl->GetOffset();
-    auto const targetSize = GetTargetSize();
-
-    return IntegralCoordinates(
-        topLeftOffset.x,
-        targetSize.height - (topLeftOffset.y + mSourceSize.height));
-}
-
-void ResizeDialog::OnOkButton(wxCommandEvent & /*event*/)
-{
-    mShipResizeVisualizationControl->Deinitialize();
-    EndModal(wxID_OK);
-}
-
-void ResizeDialog::OnCancelButton(wxCommandEvent & /*event*/)
-{
-    mShipResizeVisualizationControl->Deinitialize();
-    EndModal(wxID_CANCEL);
-}
-
-void ResizeDialog::ReconciliateUIWithAnchorCoordinates(std::optional<IntegralCoordinates> const & anchorCoordinates)
+void ResizeCanvasDialog::ReconciliateUIWithAnchorCoordinates(std::optional<IntegralCoordinates> const & anchorCoordinates)
 {
     // Reconciliate toggle state
     for (int y = 0; y < 3; ++y)
@@ -448,49 +391,6 @@ void ResizeDialog::ReconciliateUIWithAnchorCoordinates(std::optional<IntegralCoo
             }
         }
     }
-}
-
-void ResizeDialog::ReconciliateUI(
-    RgbaImageData const & image,
-    IntegralRectSize const & targetSize,
-    ModeType mode)
-{
-    // Title
-    switch (mode)
-    {
-        case ModeType::ForResize:
-        {
-            SetTitle(_("Resize Ship"));
-            break;
-        }
-
-        case ModeType::ForTexture:
-        {
-            SetTitle(_("Center Texture"));
-            break;
-        }
-    }
-
-    // Source size
-    mSourceWidthTextCtrl->SetValue(std::to_string(image.Size.width));
-    mSourceHeightTextCtrl->SetValue(std::to_string(image.Size.height));
-
-    // Target size
-    mTargetWidthSpinBox->SetValue(targetSize.width);
-    mTargetWidthSpinBox->Enable(mode == ModeType::ForResize);
-    mTargetHeightSpinBox->SetValue(targetSize.height);
-    mTargetHeightSpinBox->Enable(mode == ModeType::ForResize);
-    mTargetSizeDimensionLockButton->Enable(mode == ModeType::ForResize);
-
-    // Anchor - centered
-    IntegralCoordinates centerAnchorCoordinates(1, 1);
-    ReconciliateUIWithAnchorCoordinates(centerAnchorCoordinates);
-
-    // Viz control
-    mShipResizeVisualizationControl->Initialize(
-        image,
-        targetSize,
-        centerAnchorCoordinates); // Anchor - centered
 }
 
 }

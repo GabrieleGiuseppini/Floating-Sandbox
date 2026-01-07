@@ -48,7 +48,6 @@ private:
 
     EditSpinBox<int> * mNewShipSizeWidthSpinBox;
     EditSpinBox<int> * mNewShipSizeHeightSpinBox;
-    wxCheckBox * mDoTextureAlignmentOptimizationCheckBox;
     wxColourPickerCtrl * mCanvasBackgroundColorColourPicker;
     wxBitmapComboBox * mPresetColorsComboBox;
 

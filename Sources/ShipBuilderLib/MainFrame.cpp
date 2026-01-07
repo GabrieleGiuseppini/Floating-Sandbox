@@ -5452,53 +5452,54 @@ void MainFrame::ImportExteriorTextureLayerFromImage()
                 return;
             }
 
-            // Calculate target size == size of texture when maintaining same aspect ratio as ship's,
-            // preferring to not cut
-            ShipSpaceSize const & shipSize = mController->GetModelController().GetShipSize();
-            IntegralRectSize targetSize = (image.Size.width * shipSize.height >= image.Size.height * shipSize.width)
-                ? IntegralRectSize(image.Size.width, image.Size.width * shipSize.height / shipSize.width) // Keeping this width would require greater height (no clipping), and thus we want to keep this width
-                : IntegralRectSize(image.Size.height * shipSize.width / shipSize.height, image.Size.height); // Keeping this width would require smaller height (hence clipping), and thus we want to keep the height instead
+            //
+            // Ask user how to resize
+            //
 
-            // Check if the target size does not match the current texture size
-            if (targetSize.width != image.Size.width
-                || targetSize.height != image.Size.height)
+            if (!mResizeTextureDialog)
             {
-                //
-                // Ask user how to resize
-                //
-
-                if (!mResizeDialog)
-                {
-                    mResizeDialog = std::make_unique<ResizeDialog>(this, mGameAssetManager);
-                }
-
-                if (mResizeDialog->ShowModalForTexture(image, targetSize))
-                {
-                    //
-                    // Resize
-                    //
-
-                    auto const originOffset = mResizeDialog->GetOffset();
-
-                    image = image.MakeReframed(
-                        ImageSize(targetSize.width, targetSize.height),
-                        ImageCoordinates(originOffset.x, originOffset.y),
-                        rgbaColor::zero());
-                }
+                mResizeTextureDialog = ResizeTextureDialog::Create(this, mGameAssetManager);
             }
 
-            //
-            // Optimize alignment, if enabled
-            //
+            // Open dialog and ask user
+            if (!mResizeTextureDialog->ShowModal(image, mController->GetModelController().GetShipSize()))
+            {
+                // User aborted
+                return;
+            }
 
-            RgbaImageData newImage = mWorkbenchState.GetDoTextureAlignmentOptimization()
-                ? TextureAlignmentOptimizer::OptimizeAlignment(image, shipSize)
-                : image.Clone();
+            if (mResizeTextureDialog->GetDoMaintainAspectRatio())
+            {
+                //
+                // Reframe texture
+                //
+
+                // TODOHERE: reframe
+                ////
+                //// Resize
+                ////
+
+                //auto const originOffset = mResizeDialog->GetOffset();
+
+                //image = image.MakeReframed(
+                //    ImageSize(targetSize.width, targetSize.height),
+                //    ImageCoordinates(originOffset.x, originOffset.y),
+                //    rgbaColor::zero());
+            }
+
+            if (mResizeTextureDialog->GetDoOptimizeForStructure())
+            {
+                //
+                // Optimize alignment
+                //
+
+                image = TextureAlignmentOptimizer::OptimizeAlignment(image, mController->GetModelController().GetShipSize());
+            }
 
             // Set texture
             mController->SetExteriorTextureLayer(
                 _("Import Exterior Layer"),
-                TextureLayerData(std::move(newImage)),
+                TextureLayerData(std::move(image)),
                 std::nullopt);
         }
         catch (std::runtime_error const & exc)
@@ -5522,19 +5523,16 @@ void MainFrame::OnPreferences()
 
 void MainFrame::OnShipCanvasResize()
 {
-    if (!mResizeDialog)
+    if (!mResizeCanvasDialog)
     {
-        mResizeDialog = std::make_unique<ResizeDialog>(this, mGameAssetManager);
+        mResizeCanvasDialog = ResizeCanvasDialog::Create(this, mGameAssetManager);
     }
 
     // Make ship preview
     auto const shipPreviewImage = mController->MakePreview();
 
-    // Start with target size == current ship size
-    auto const shipSize = mController->GetModelController().GetShipSize();
-    IntegralRectSize const initialTargetSize(shipSize.width, shipSize.height);
-
-    if (!mResizeDialog->ShowModalForResize(*shipPreviewImage, initialTargetSize))
+    // Open dialog and ask user
+    if (!mResizeCanvasDialog->ShowModal(*shipPreviewImage, mController->GetModelController().GetShipSize()))
     {
         // User aborted
         return;
@@ -5544,8 +5542,8 @@ void MainFrame::OnShipCanvasResize()
     // Resize
     //
 
-    auto const targetSize = mResizeDialog->GetTargetSize();
-    auto const originOffset = mResizeDialog->GetOffset();
+    auto const targetSize = mResizeCanvasDialog->GetTargetSize();
+    auto const originOffset = mResizeCanvasDialog->GetOffset();
 
     mController->ResizeShip(
         ShipSpaceSize(targetSize.width, targetSize.height),

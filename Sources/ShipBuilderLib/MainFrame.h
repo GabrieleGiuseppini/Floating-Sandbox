@@ -16,7 +16,8 @@
 #include "UI/ElectricalPanelEditDialog.h"
 #include "UI/ModelValidationDialog.h"
 #include "UI/PreferencesDialog.h"
-#include "UI/ResizeDialog.h"
+#include "UI/ResizeCanvasDialog.h"
+#include "UI/ResizeTextureDialog.h"
 #include "UI/RibbonToolbarButton.h"
 #include "UI/ShipPropertiesEditDialog.h"
 #include "UI/StatusBar.h"
@@ -492,7 +493,8 @@ private:
     std::unique_ptr<ShipSaveDialog> mShipSaveDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
     std::unique_ptr<PreferencesDialog> mPreferencesDialog;
-    std::unique_ptr<ResizeDialog> mResizeDialog;
+    std::unique_ptr<ResizeCanvasDialog> mResizeCanvasDialog;
+    std::unique_ptr<ResizeTextureDialog> mResizeTextureDialog;
     std::unique_ptr<ShipPropertiesEditDialog> mShipPropertiesEditDialog;
     std::unique_ptr<ModelValidationDialog> mModelValidationDialog;
     std::unique_ptr<ElectricalPanelEditDialog> mElectricalPanelEditDialog;

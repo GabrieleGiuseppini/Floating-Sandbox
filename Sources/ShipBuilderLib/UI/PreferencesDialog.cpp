@@ -127,44 +127,6 @@ PreferencesDialog::PreferencesDialog(
             }
         }
 
-        // Texture alignment optimizations
-        {
-            // Label
-            {
-                auto label = new wxStaticText(this, wxID_ANY, _("Optimize exterior layer texture on import:"));
-
-                sizer->Add(
-                    label,
-                    wxGBPosition(1, 0),
-                    wxGBSpan(1, 1),
-                    wxALIGN_CENTER_VERTICAL | wxALIGN_LEFT);
-            }
-
-            {
-                sizer->Add(SeparatorColumnWidth, 0, wxGBPosition(1, 1), wxGBSpan(1, 1));
-            }
-
-            // Checkbox
-            {
-                mDoTextureAlignmentOptimizationCheckBox = new wxCheckBox(this, wxID_ANY, wxEmptyString);
-
-                mDoTextureAlignmentOptimizationCheckBox->SetToolTip(_("When enabled, textures imported into the exterior layer are slightly modified to optimize coverage by the structure layer."));
-
-                mDoTextureAlignmentOptimizationCheckBox->Bind(
-                    wxEVT_CHECKBOX,
-                    [this](wxCommandEvent &)
-                    {
-                        // No need to react
-                    });
-
-                sizer->Add(
-                    mDoTextureAlignmentOptimizationCheckBox,
-                    wxGBPosition(1, 2),
-                    wxGBSpan(1, 1),
-                    wxALIGN_CENTER_VERTICAL | wxALIGN_LEFT);
-            }
-        }
-
         // Canvas BG color
         {
             // Label
@@ -173,7 +135,7 @@ PreferencesDialog::PreferencesDialog(
 
                 sizer->Add(
                     label,
-                    wxGBPosition(2, 0),
+                    wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     wxALIGN_CENTER_VERTICAL | wxALIGN_LEFT);
             }
@@ -202,7 +164,7 @@ PreferencesDialog::PreferencesDialog(
 
                 sizer->Add(
                     mCanvasBackgroundColorColourPicker,
-                    wxGBPosition(2, 2),
+                    wxGBPosition(1, 2),
                     wxGBSpan(1, 2),
                     wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
             }
@@ -213,7 +175,7 @@ PreferencesDialog::PreferencesDialog(
 
                 sizer->Add(
                     label,
-                    wxGBPosition(2, 4),
+                    wxGBPosition(1, 4),
                     wxGBSpan(1, 2),
                     wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
             }
@@ -255,7 +217,7 @@ PreferencesDialog::PreferencesDialog(
 
                 sizer->Add(
                     mPresetColorsComboBox,
-                    wxGBPosition(2, 6),
+                    wxGBPosition(1, 6),
                     wxGBSpan(1, 1),
                     wxALIGN_CENTER_VERTICAL);
             }
@@ -340,8 +302,6 @@ void PreferencesDialog::OnOkButton(wxCommandEvent & /*event*/)
             mNewShipSizeWidthSpinBox->GetValue(),
             mNewShipSizeHeightSpinBox->GetValue()));
 
-    mSessionData->BuilderController.SetDoTextureAlignmentOptimization(mDoTextureAlignmentOptimizationCheckBox->GetValue());
-
     // No need to store canvas BG color, as we set it on-the-fly
 
     //
@@ -398,9 +358,6 @@ void PreferencesDialog::ReconciliateUI(WorkbenchState const & workbenchState)
     // New ship size
     mNewShipSizeWidthSpinBox->SetValue(workbenchState.GetNewShipSize().width);
     mNewShipSizeHeightSpinBox->SetValue(workbenchState.GetNewShipSize().height);
-
-    // Texture alignment optimization
-    mDoTextureAlignmentOptimizationCheckBox->SetValue(workbenchState.GetDoTextureAlignmentOptimization());
 
     // Canvas background color
     auto const bgColor = workbenchState.GetCanvasBackgroundColor();

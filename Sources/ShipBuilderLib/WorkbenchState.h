@@ -461,16 +461,6 @@ public:
         return 4096;
     }
 
-    bool GetDoTextureAlignmentOptimization() const
-    {
-        return mDoTextureAlignmentOptimization;
-    }
-
-    void SetDoTextureAlignmentOptimization(bool value)
-    {
-        mDoTextureAlignmentOptimization = value;
-    }
-
     UnitsSystem GetDisplayUnitsSystem() const
     {
         return mDisplayUnitsSystem;
@@ -551,7 +541,6 @@ private:
 
     // Misc
     ShipSpaceSize mNewShipSize;
-    bool mDoTextureAlignmentOptimization;
     UnitsSystem mDisplayUnitsSystem;
     std::vector<std::filesystem::path> mShipLoadDirectories;
 };

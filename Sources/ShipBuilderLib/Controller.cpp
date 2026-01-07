@@ -1485,11 +1485,6 @@ void Controller::SetNewShipSize(ShipSpaceSize size)
     mWorkbenchState.SetNewShipSize(size);
 }
 
-void Controller::SetDoTextureAlignmentOptimization(bool isEnabled)
-{
-    mWorkbenchState.SetDoTextureAlignmentOptimization(isEnabled);
-}
-
 void Controller::SetCanvasBackgroundColor(rgbColor const & color)
 {
     mWorkbenchState.SetCanvasBackgroundColor(color);

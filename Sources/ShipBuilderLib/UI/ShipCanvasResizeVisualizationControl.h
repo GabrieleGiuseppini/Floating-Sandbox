@@ -17,11 +17,11 @@
 
 namespace ShipBuilder {
 
-class ShipResizeVisualizationControl : public wxPanel
+class ShipCanvasResizeVisualizationControl : public wxPanel
 {
 public:
 
-    ShipResizeVisualizationControl(
+    ShipCanvasResizeVisualizationControl(
         wxWindow * parent,
         int width,
         int height,
@@ -38,7 +38,7 @@ public:
         std::optional<IntegralCoordinates> anchorCoordinates);
 
     void Deinitialize();
-    
+
     void SetTargetSize(IntegralRectSize const & targetSize);
     void SetAnchor(std::optional<IntegralCoordinates> const & anchorCoordinates); // wrt. top-left corner
 

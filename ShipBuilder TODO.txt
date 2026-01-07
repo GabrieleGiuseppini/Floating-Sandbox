@@ -693,20 +693,41 @@
 	- Test User Ships folder
 
 - Misc:
-	- Layer import:
+	= Layer import:
 		! Goal: export->import should be fully idempotent
 			! Make optimization explicit (remove from preferences)
 			! Make choice to maintain aspect ratio explicit (instead of having to Cancel to continue w/no resize)
-		- New dialog: TextureImportDialog
-			- 3 choices:
-				- Maintain aspect ratio: shows target sizes
-				- Optimize
-					- Remove from preferences then
-				- Do nothing - import as-is
+		= New dialog: TextureImportDialog
+			+ Split existing ResizeDialog:
+				+ BaseResizeDialog:
+					+ cctor():
+						- Calls virtual LayoutContent(wxBoxSizer * dialogVSizer, gameAssetManager)
+					+ Owns visualization control (mShipResizeVisualizationControl)
+				+ ResizeTextureDialog
+				+ ResizeCanvasDialog
+			+ ResizeCanvasDialog: nuke all texture things
+			= ResizeTextureDialog: 
+				+ Nuke all canvas things
+				+ Checbox: maintain aspect ratio
+				+ Checkbox: optimize
+				+ Returns (or exports) the two bools
+				- Viz control
+		+ Remove optimize from preferences, workbench state
+		- MainFrame:
+			= Show Canvas dialog, like now
+			= Show Texture dialog
+				+ Unconditionally
+				- Process results (locally, like now)
+
+		- Test:
+			- MaintainAspectRatio ckbox disabled when re-importing self
+			- Localization of caption
+
+		- Add to changelist
 	- Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
 	- Once selected, selection could be moved right away, instead of having to copy'n'paste
 	- Localization:
-		- See if can do separate extraction into separate file, which then is loaded at all times by LocalizationManager together with the other one 
+		- See if can do separate extraction into separate file, which then is loaded at all times by LocalizationManager together with the other one
 	- Ruler: pick a scale (pixels to meter of original ship), then you choose how long the ruler
 		- L shaped: horizontal and vertical
 		- Ruler sticks to the canvas

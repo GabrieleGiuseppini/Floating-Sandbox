@@ -45,6 +45,8 @@ set (SHIPBUILDER_LIB_SOURCES
 set (UI_SOURCES
 	UI/AskPasswordDialog.cpp
 	UI/AskPasswordDialog.h
+	UI/BaseResizeDialog.cpp
+	UI/BaseResizeDialog.h
 	UI/CompositeMaterialPalette.cpp
 	UI/CompositeMaterialPalette.h
 	UI/ElectricalPanelEditDialog.cpp
@@ -61,17 +63,21 @@ set (UI_SOURCES
 	UI/NewShipNameDialog.h
 	UI/PreferencesDialog.cpp
 	UI/PreferencesDialog.h
-	UI/ResizeDialog.cpp
-	UI/ResizeDialog.h
+	UI/ResizeCanvasDialog.cpp
+	UI/ResizeCanvasDialog.h
+	UI/ResizeTextureDialog.cpp
+	UI/ResizeTextureDialog.h
 	UI/RibbonToolbarButton.h
+	UI/ShipCanvasResizeVisualizationControl.cpp
+	UI/ShipCanvasResizeVisualizationControl.h
 	UI/ShipNameSuggestionDialog.cpp
 	UI/ShipNameSuggestionDialog.h
 	UI/ShipOffsetVisualizationControl.cpp
 	UI/ShipOffsetVisualizationControl.h
 	UI/ShipPropertiesEditDialog.cpp
 	UI/ShipPropertiesEditDialog.h
-	UI/ShipResizeVisualizationControl.cpp
-	UI/ShipResizeVisualizationControl.h
+	UI/ShipTextureResizeVisualizationControl.cpp
+	UI/ShipTextureResizeVisualizationControl.h
 	UI/StatusBar.cpp
 	UI/StatusBar.h
 	UI/WaterlineAnalysisOutcomeVisualizationControl.cpp

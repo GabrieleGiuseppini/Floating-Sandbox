@@ -20,7 +20,6 @@ WorkbenchState::WorkbenchState(
     : mClipboardManager(userInterface)
     ////////////////////////
     , mNewShipSize(0, 0) // Set later
-    , mDoTextureAlignmentOptimization(true) // Set later
 {
     // Default structural foreground material: first structural material
     assert(!materialDatabase.GetStructuralMaterialPalette().Categories.empty()
@@ -94,7 +93,6 @@ WorkbenchState::WorkbenchState(
 
     mDisplayUnitsSystem = UnitsSystem::SI_Celsius;
     mNewShipSize = ShipSpaceSize(200, 100);
-    mDoTextureAlignmentOptimization = true;
 
     //
     // Load preferences

@@ -299,7 +299,6 @@ public:
     void SetCurrentTool(ToolType tool);
 
     void SetNewShipSize(ShipSpaceSize size);
-    void SetDoTextureAlignmentOptimization(bool value);
     void SetCanvasBackgroundColor(rgbColor const & color);
 
     void SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane);

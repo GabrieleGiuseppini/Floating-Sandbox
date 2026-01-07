@@ -3,7 +3,7 @@
  * Created:             2021-12-09
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#include "ShipResizeVisualizationControl.h"
+#include "ShipCanvasResizeVisualizationControl.h"
 
 #include <UILib/WxHelpers.h>
 
@@ -17,7 +17,7 @@ namespace ShipBuilder {
 
 int constexpr TargetMargin = 20;
 
-ShipResizeVisualizationControl::ShipResizeVisualizationControl(
+ShipCanvasResizeVisualizationControl::ShipCanvasResizeVisualizationControl(
     wxWindow * parent,
     int width,
     int height,
@@ -41,10 +41,10 @@ ShipResizeVisualizationControl::ShipResizeVisualizationControl(
             OnChange();
         });
 
-    Bind(wxEVT_PAINT, &ShipResizeVisualizationControl::OnPaint, this);
-    Bind(wxEVT_LEFT_DOWN, &ShipResizeVisualizationControl::OnMouseLeftDown, this);
-    Bind(wxEVT_LEFT_UP, &ShipResizeVisualizationControl::OnMouseLeftUp, this);
-    Bind(wxEVT_MOTION, &ShipResizeVisualizationControl::OnMouseMove, this);
+    Bind(wxEVT_PAINT, &ShipCanvasResizeVisualizationControl::OnPaint, this);
+    Bind(wxEVT_LEFT_DOWN, &ShipCanvasResizeVisualizationControl::OnMouseLeftDown, this);
+    Bind(wxEVT_LEFT_UP, &ShipCanvasResizeVisualizationControl::OnMouseLeftUp, this);
+    Bind(wxEVT_MOTION, &ShipCanvasResizeVisualizationControl::OnMouseMove, this);
 
     // Initialize rendering
 #ifdef __WXMSW__
@@ -55,7 +55,7 @@ ShipResizeVisualizationControl::ShipResizeVisualizationControl(
     mTargetBrush = wxBrush(wxColor(255, 255, 255), wxBRUSHSTYLE_SOLID);
 }
 
-void ShipResizeVisualizationControl::Initialize(
+void ShipCanvasResizeVisualizationControl::Initialize(
     RgbaImageData const & image,
     IntegralRectSize const & targetSize,
     std::optional<IntegralCoordinates> anchorCoordinates)
@@ -69,33 +69,33 @@ void ShipResizeVisualizationControl::Initialize(
     OnChange();
 }
 
-void ShipResizeVisualizationControl::Deinitialize()
+void ShipCanvasResizeVisualizationControl::Deinitialize()
 {
     mImage.Destroy();
     mResizedBitmapClip = wxBitmap();
 }
 
-void ShipResizeVisualizationControl::SetTargetSize(IntegralRectSize const & targetSize)
+void ShipCanvasResizeVisualizationControl::SetTargetSize(IntegralRectSize const & targetSize)
 {
     mTargetSize = targetSize;
 
     OnChange();
 }
 
-void ShipResizeVisualizationControl::SetAnchor(std::optional<IntegralCoordinates> const & anchorCoordinates)
+void ShipCanvasResizeVisualizationControl::SetAnchor(std::optional<IntegralCoordinates> const & anchorCoordinates)
 {
     mAnchorCoordinates = anchorCoordinates;
 
     OnChange();
 }
 
-void ShipResizeVisualizationControl::OnPaint(wxPaintEvent & /*event*/)
+void ShipCanvasResizeVisualizationControl::OnPaint(wxPaintEvent & /*event*/)
 {
     wxPaintDC dc(this);
     Render(dc);
 }
 
-void ShipResizeVisualizationControl::OnMouseLeftDown(wxMouseEvent & event)
+void ShipCanvasResizeVisualizationControl::OnMouseLeftDown(wxMouseEvent & event)
 {
     mCurrentMouseTrajectoryStartDC.emplace(event.GetX(), event.GetY());
 
@@ -106,7 +106,7 @@ void ShipResizeVisualizationControl::OnMouseLeftDown(wxMouseEvent & event)
     }
 }
 
-void ShipResizeVisualizationControl::OnMouseLeftUp(wxMouseEvent & /*event*/)
+void ShipCanvasResizeVisualizationControl::OnMouseLeftUp(wxMouseEvent & /*event*/)
 {
     if (mIsMouseCaptured)
     {
@@ -117,7 +117,7 @@ void ShipResizeVisualizationControl::OnMouseLeftUp(wxMouseEvent & /*event*/)
     mCurrentMouseTrajectoryStartDC.reset();
 }
 
-void ShipResizeVisualizationControl::OnMouseMove(wxMouseEvent & event)
+void ShipCanvasResizeVisualizationControl::OnMouseMove(wxMouseEvent & event)
 {
     if (mCurrentMouseTrajectoryStartDC.has_value())
     {
@@ -145,7 +145,7 @@ void ShipResizeVisualizationControl::OnMouseMove(wxMouseEvent & event)
     }
 }
 
-void ShipResizeVisualizationControl::OnChange()
+void ShipCanvasResizeVisualizationControl::OnChange()
 {
     wxSize const sizeDC = GetSize();
 
@@ -313,7 +313,7 @@ void ShipResizeVisualizationControl::OnChange()
     Refresh(false);
 }
 
-void ShipResizeVisualizationControl::Render(wxDC & dc)
+void ShipCanvasResizeVisualizationControl::Render(wxDC & dc)
 {
     dc.Clear();
 

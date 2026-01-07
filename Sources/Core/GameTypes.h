@@ -498,6 +498,20 @@ struct _IntegralSize
             static_cast<int>(std::roundf(static_cast<float>(this->height) * shrinkFactor)));
     }
 
+    template<typename TOtherIntegralTag>
+    inline _IntegralSize<TIntegralTag> FitToAspectRatioOf(_IntegralSize<TOtherIntegralTag> const & other) const
+    {
+        float const otherWOverH = static_cast<float>(other.width) / static_cast<float>(other.height);
+
+        return (this->width * other.height >= this->height * other.width)
+            ? _IntegralSize<TIntegralTag>(
+                this->width, // Keeping this width would require greater height (no clipping), and thus we want to keep this width
+                static_cast<integral_type>(static_cast<float>(this->width) / otherWOverH))
+            : _IntegralSize<TIntegralTag>( // Keeping this width would require smaller height (hence clipping), and thus we want to keep the height instead
+                static_cast<integral_type>(static_cast<float>(this->height) * otherWOverH),
+                this->height);
+    }
+
     vec2f ToFloat() const
     {
         return vec2f(
