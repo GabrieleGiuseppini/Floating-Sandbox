@@ -46,10 +46,7 @@
 			+ Changelist
 		- Add pixel measurement next to ship measurement (*)
 
-	- Try perlin on rot - just in shader:
-		rot = rot * (0.5 + 0.5 * sample)
-
-	= AntiGravity tool
+	+ AntiGravity tool
 		+ Make branch: anti_gravity_field
 		+ First, test feasibility
 			+ Fixed min mass (so light materials have more force, thus move more and break)
@@ -102,7 +99,7 @@
 						+ See if there's a blend func
 					+ Optimize
 
-		- Merge into master
+		+ Merge into master
 
 	- DoDisplaceWater setting should also control Fishes and NPCs
 		- ...find if anything else displaces water without checking toggle
@@ -1224,6 +1221,13 @@
 
 
 - Gfx:
+
+	- Try perlin on rot - just in shader
+		! It looks good with these params:
+			! Perlin_8_1024_073
+			! float noise = texture2D(paramNoiseTexture, vertexTextureCoords * 10.0).r;     vec3 decayColor = mix(vec3(ROT_GREEN_COLOR), vec3(ROT_BROWN_COLOR), noise);
+			! Lighter ROT_GREEN_COLOR, ~ 0.332, 0.740, 0.207
+		! However, it also impacts rotting for combustion - which is not good. Should either split decay in two, e.g. by adding a new "rot" quantity which changes with decay but only for rotting and not for combustion
 
 	- Auto-focus improvements:
 		- Settings to fine-tune how close (or far) auto-focus should be
