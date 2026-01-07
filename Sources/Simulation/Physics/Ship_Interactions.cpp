@@ -1021,15 +1021,15 @@ void Ship::ApplyAntiGravityField(
         // Counteract gravity, but towards the segment
         vec2f force = projectionDirectionNormalized * SimulationParameters::GravityMagnitude * m;
 
-        // Calculate distance damper
-        // TODO: pyramid
-        // TODO: make it dance around equilibrium
-        float const distanceDamper = std::min(distance / 20.0f, 1.0f);
-
         // Calculate mass damper: 0.25 when light, 1.0 when heavy - so light particles stay behind
-        float constexpr MinMassDamper = 0.25f;
+        float constexpr MinMassDamper = 0.35f;
         float const ls = LinearStep(10.0f, 800.0f, m);
         float const massDamper = MinMassDamper + ls * ls * (1.0f - MinMassDamper);
+
+        // Calculate distance damper - no more action when closer than a limit distance,
+        // which depends on the mass itself
+        float const limitDistance = (18.5f + 7.0f * mPoints.GetRandomNormalizedUniformPersonalitySeed(pointIndex)) * massDamper;
+        float const distanceDamper = LinearStep(limitDistance - limitDistance * 0.2f, limitDistance + limitDistance * 0.2f, distance);
 
         //
         // Calculate our magic force

@@ -77,11 +77,9 @@
 				+ AbortPlaceAntiGravityField(ID)
 				= Update(Ship & ship)
 					= Ship::ApplyAntiGravityField(vec2f startPos, vec2f endPos)
-						- Pyramid forceDamper - REALLY?
-							- d=0-40: linearly 0->1
-							- d=40-1000: 1
-							- d=1000-MaxWorldHeight/2: linearly 1->0
-						- Target height wrt line depending on mass - planet rings!
+						+ Target height wrt line depending on mass - planet rings!
+						- Add multiplier w/shift
+							- Acts on velocity
 						- Make it dance around equilibrium: add a Hooke force
 				+ Upload():
 					+ Each time there has been a change, re-uploads all the N fields; otherwise, they are sticky
