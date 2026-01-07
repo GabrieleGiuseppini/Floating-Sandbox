@@ -26,11 +26,11 @@ public:
     void Update(Ship & ship)
     {
         // Anti-gravity fields
-        for (auto const & antiGravityField : mAntiGravityFields)
+        for (auto & antiGravityField : mAntiGravityFields)
         {
             if (antiGravityField.StartEffectSimulationTime.has_value())
             {
-                InternalApply(antiGravityField, ship);
+                InternalUpdate(antiGravityField, ship);
             }
         }
     }
@@ -51,9 +51,12 @@ public:
         ElementIndex antiGravityFieldId,
         vec2f const & endPos,
         float searchRadius,
+        float strengthMultiplier,
         float currentSimulationTime);
 
     void AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId);
+
+    void BoostAntiGravityFields(float strengthMultiplier);
 
 private:
 
@@ -67,6 +70,7 @@ private:
         vec2f StartPosition;
         vec2f EndPosition;
         std::optional<float> StartEffectSimulationTime; // When set, it's active
+        float StrengthMultiplier; // Continuously decays to 1.0f
 
         AntiGravityField(
             ElementIndex id,
@@ -75,12 +79,13 @@ private:
             , StartPosition(startPosition)
             , EndPosition(startPosition)
             , StartEffectSimulationTime()
+            , StrengthMultiplier(1.0f)
         { }
     };
 
     std::vector<AntiGravityField> mAntiGravityFields;
 
-    void InternalApply(AntiGravityField const & field, Ship & ship);
+    void InternalUpdate(AntiGravityField & field, Ship & ship);
 
     template<typename T>
     auto FindFieldById(ElementIndex id, std::vector<T> & fields)

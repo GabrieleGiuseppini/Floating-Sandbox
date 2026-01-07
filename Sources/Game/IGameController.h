@@ -132,8 +132,9 @@ struct IGameController
     virtual void SwirlAt(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) = 0;
     virtual ElementIndex BeginPlaceAntiGravityField(DisplayLogicalCoordinates const & startScreenCoordinates) = 0;
     virtual void UpdatePlaceAntiGravityField(ElementIndex antiGravityFieldId, DisplayLogicalCoordinates const & startScreenCoordinates) = 0;
-    virtual void EndPlaceAntiGravityField(ElementIndex antiGravityFieldId, DisplayLogicalCoordinates const & startScreenCoordinates) = 0;
+    virtual void EndPlaceAntiGravityField(ElementIndex antiGravityFieldId, DisplayLogicalCoordinates const & startScreenCoordinates, float strengthMultiplier) = 0;
     virtual void AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId) = 0;
+    virtual void BoostAntiGravityFields(float strengthMultiplier) = 0;
     virtual void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
     virtual void RemoveAllPins() = 0;
     virtual std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) = 0;

@@ -1879,8 +1879,13 @@ public:
         }
     }
 
-    void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override
-    { }
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    {
+        if (inputState.IsShiftKeyDown)
+        {
+            mGameController.BoostAntiGravityFields(BoostedMultiplier);
+        }
+    }
 
     void OnMouseMove(InputState const & inputState) override
     {
@@ -1902,16 +1907,22 @@ public:
     {
         if (mEngagementData.has_value())
         {
-            mGameController.EndPlaceAntiGravityField(mEngagementData->CurrentForceFieldId, inputState.MousePosition);
+            mGameController.EndPlaceAntiGravityField(
+                mEngagementData->CurrentForceFieldId,
+                inputState.MousePosition,
+                inputState.IsShiftKeyDown ? BoostedMultiplier : 1.0f);
 
             mEngagementData.reset();
         }
     }
 
     void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+
     void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
+
+    static float constexpr BoostedMultiplier = 10.0f;
 
     struct EngagementData
     {

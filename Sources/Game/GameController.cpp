@@ -1213,14 +1213,15 @@ void GameController::UpdatePlaceAntiGravityField(
 
 void GameController::EndPlaceAntiGravityField(
     ElementIndex antiGravityFieldId,
-    DisplayLogicalCoordinates const & endScreenCoordinates)
+    DisplayLogicalCoordinates const & endScreenCoordinates,
+    float strengthMultiplier)
 {
     vec2f const worldEndCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
     float const worldSearchRadius = mRenderContext->ScreenOffsetToWorldOffset(AntiGravityFieldSearchRadiusPixels);
 
     // Apply action
     assert(!!mWorld);
-    mWorld->EndPlaceAntiGravityField(antiGravityFieldId, worldEndCoordinates, worldSearchRadius);
+    mWorld->EndPlaceAntiGravityField(antiGravityFieldId, worldEndCoordinates, worldSearchRadius, strengthMultiplier);
 }
 
 void GameController::AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId)
@@ -1228,6 +1229,13 @@ void GameController::AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId)
     // Apply action
     assert(!!mWorld);
     mWorld->AbortPlaceAntiGravityField(antiGravityFieldId);
+}
+
+void GameController::BoostAntiGravityFields(float strengthMultiplier)
+{
+    // Apply action
+    assert(!!mWorld);
+    mWorld->BoostAntiGravityFields(strengthMultiplier);
 }
 
 void GameController::TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates)

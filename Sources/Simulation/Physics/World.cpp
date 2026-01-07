@@ -799,14 +799,20 @@ void World::UpdatePlaceAntiGravityField(
 void World::EndPlaceAntiGravityField(
     ElementIndex antiGravityFieldId,
     vec2f const & endPos,
-    float searchRadius)
+    float searchRadius,
+    float strengthMultiplier)
 {
-    mGlobalForceFields.EndPlaceAntiGravityField(antiGravityFieldId, endPos, searchRadius, mCurrentSimulationTime);
+    mGlobalForceFields.EndPlaceAntiGravityField(antiGravityFieldId, endPos, searchRadius, strengthMultiplier, mCurrentSimulationTime);
 }
 
 void World::AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId)
 {
     mGlobalForceFields.AbortPlaceAntiGravityField(antiGravityFieldId);
+}
+
+void World::BoostAntiGravityFields(float strengthMultiplier)
+{
+    mGlobalForceFields.BoostAntiGravityFields(strengthMultiplier);
 }
 
 void World::TogglePinAt(

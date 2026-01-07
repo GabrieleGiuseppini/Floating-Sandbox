@@ -249,8 +249,9 @@ public:
     void SwirlAt(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) override;
     ElementIndex BeginPlaceAntiGravityField(DisplayLogicalCoordinates const & startScreenCoordinates) override;
     void UpdatePlaceAntiGravityField(ElementIndex antiGravityFieldId, DisplayLogicalCoordinates const & endScreenCoordinates) override;
-    void EndPlaceAntiGravityField(ElementIndex antiGravityFieldId, DisplayLogicalCoordinates const & endScreenCoordinates) override;
+    void EndPlaceAntiGravityField(ElementIndex antiGravityFieldId, DisplayLogicalCoordinates const & endScreenCoordinates, float strengthMultiplier) override;
     void AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId) override;
+    void BoostAntiGravityFields(float strengthMultiplier) override;
     void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void RemoveAllPins() override;
     std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) override;

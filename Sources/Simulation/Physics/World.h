@@ -298,9 +298,12 @@ public:
     void EndPlaceAntiGravityField(
         ElementIndex antiGravityFieldId,
         vec2f const & endPos,
-        float searchRadius);
+        float searchRadius,
+        float strengthMultiplier);
 
     void AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId);
+
+    void BoostAntiGravityFields(float strengthMultiplier);
 
     void TogglePinAt(
         vec2f const & targetPos,

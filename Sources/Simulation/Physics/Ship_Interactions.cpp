@@ -982,21 +982,26 @@ void Ship::SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args)
 
 void Ship::ApplyAntiGravityField(
     vec2f const & startPos,
-    vec2f const & endPos)
+    vec2f const & endPos,
+    float strengthMultiplier)
 {
     // Queue interaction
     mQueuedInteractions.emplace_back(
         Interaction::ArgumentsUnion::AntiGravityFieldArguments(
             startPos,
-            endPos));
-
+            endPos,
+            strengthMultiplier));
 }
 
 void Ship::ApplyAntiGravityField(
     Interaction::ArgumentsUnion::AntiGravityFieldArguments const & args,
     SimulationParameters const & simulationParameters)
 {
-    float const targetVelocityMagnitudeBase = 15.0f * simulationParameters.AntiGravityFieldAccelerationAdjustment;
+    float const targetVelocityMagnitudeBase =
+        15.0f
+        * args.StrengthMultiplier
+        * simulationParameters.AntiGravityFieldAccelerationAdjustment
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     float const segmentSquaredLength = (args.StartPos - args.EndPos).squareLength();
     if (segmentSquaredLength == 0.0f)
@@ -1028,7 +1033,7 @@ void Ship::ApplyAntiGravityField(
 
         // Calculate distance damper - no more action when closer than a limit distance,
         // which depends on the mass itself
-        float const limitDistance = (18.5f + 7.0f * mPoints.GetRandomNormalizedUniformPersonalitySeed(pointIndex)) * massDamper;
+        float const limitDistance = (18.5f + 7.0f * mPoints.GetRandomNormalizedUniformPersonalitySeed(pointIndex)) * massDamper / args.StrengthMultiplier;
         float const distanceDamper = LinearStep(limitDistance - limitDistance * 0.2f, limitDistance + limitDistance * 0.2f, distance);
 
         //
@@ -1038,13 +1043,15 @@ void Ship::ApplyAntiGravityField(
         // the current velocity component orthogonal to that
         //
 
-        float const targetVelocityMagnitudeInDirection = targetVelocityMagnitudeBase * distanceDamper * massDamper;
+        //float const targetVelocityMagnitudeInDirection = targetVelocityMagnitudeBase * distanceDamper * massDamper;
+        float const targetVelocityMagnitudeInDirection = targetVelocityMagnitudeBase * massDamper;
         vec2f const & currentVelocity = mPoints.GetVelocity(pointIndex);
         float const currentVelocityMagnitudeInDirection = currentVelocity.dot(projectionDirectionNormalized);
         float constexpr DesiredVelocityConvergenceRate = 0.3f; // The higher, the more breakage
         float const desiredVelocityMagnitudeInDirection = currentVelocityMagnitudeInDirection + (targetVelocityMagnitudeInDirection - currentVelocityMagnitudeInDirection) * DesiredVelocityConvergenceRate;
         vec2f const requiredAcceleration = projectionDirectionNormalized * (desiredVelocityMagnitudeInDirection - currentVelocityMagnitudeInDirection) / SimulationParameters::SimulationStepTimeDuration<float>;
-        force += requiredAcceleration * m;
+        //force += requiredAcceleration * m;
+        force += requiredAcceleration * m * distanceDamper;
 
         mPoints.AddStaticForce(pointIndex, force);
     }

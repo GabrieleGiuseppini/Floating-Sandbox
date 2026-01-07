@@ -227,7 +227,8 @@ public:
 
     void ApplyAntiGravityField(
         vec2f const & startPos,
-        vec2f const & endPos);
+        vec2f const & endPos,
+        float strengthMultiplier);
 
     bool TogglePinAt(
         vec2f const & targetPos,
@@ -365,12 +366,15 @@ private:
             {
                 vec2f StartPos;
                 vec2f EndPos;
+                float StrengthMultiplier;
 
                 AntiGravityFieldArguments(
                     vec2f const & startPos,
-                    vec2f const & endPos)
+                    vec2f const & endPos,
+                    float strengthMultiplier)
                     : StartPos(startPos)
                     , EndPos(endPos)
+                    , StrengthMultiplier(strengthMultiplier)
                 {
                 }
             };

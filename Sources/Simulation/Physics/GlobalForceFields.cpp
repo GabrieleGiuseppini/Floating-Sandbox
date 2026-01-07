@@ -118,6 +118,7 @@ void GlobalForceFields::EndPlaceAntiGravityField(
     ElementIndex antiGravityFieldId,
     vec2f const & endPos,
     float searchRadius,
+    float strengthMultiplier,
     float currentSimulationTime)
 {
     auto fieldSearchIt = FindFieldById(antiGravityFieldId, mAntiGravityFields);
@@ -135,6 +136,7 @@ void GlobalForceFields::EndPlaceAntiGravityField(
     {
         // Activate it
         fieldSearchIt->StartEffectSimulationTime = currentSimulationTime;
+        fieldSearchIt->StrengthMultiplier = strengthMultiplier;
     }
 
     mIsDirtyForRendering = true;
@@ -153,13 +155,27 @@ void GlobalForceFields::AbortPlaceAntiGravityField(ElementIndex antiGravityField
     mIsDirtyForRendering = true;
 }
 
+void GlobalForceFields::BoostAntiGravityFields(float strengthMultiplier)
+{
+    for (auto & antiGravityField : mAntiGravityFields)
+    {
+        if (antiGravityField.StartEffectSimulationTime.has_value())
+        {
+            antiGravityField.StrengthMultiplier = strengthMultiplier;
+        }
+    }
+}
+
 /////////////////////////////////////////////////////////////
 
-void GlobalForceFields::InternalApply(
-    AntiGravityField const & field,
+void GlobalForceFields::InternalUpdate(
+    AntiGravityField & field,
     Ship & ship)
 {
-    ship.ApplyAntiGravityField(field.StartPosition, field.EndPosition);
+    ship.ApplyAntiGravityField(field.StartPosition, field.EndPosition, field.StrengthMultiplier);
+
+    // Decay strength multiplier
+    field.StrengthMultiplier += (1.0f - field.StrengthMultiplier) * 0.05f;
 }
 
 }

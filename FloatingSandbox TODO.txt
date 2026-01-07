@@ -78,8 +78,13 @@
 				= Update(Ship & ship)
 					= Ship::ApplyAntiGravityField(vec2f startPos, vec2f endPos)
 						+ Target height wrt line depending on mass - planet rings!
-						- Add multiplier w/shift
-							- Acts on velocity
+						+ Add multiplier w/shift
+							+ "StrengthMultiplier"
+								+ Both arg and new method to boost
+								+ Stores a non-sticky value into each field
+									+ Decay @ Update()
+							+ Acts on velocity
+							+ Test also UV mode
 						- Make it dance around equilibrium: add a Hooke force
 				+ Upload():
 					+ Each time there has been a change, re-uploads all the N fields; otherwise, they are sticky
@@ -97,8 +102,6 @@
 						+ Note: when x2=col > 1.0 and coeff leans towards x2, mix will "pull up" x1
 						+ See if there's a blend func
 					+ Optimize
-			- Sound (via events)
-				- TODO
 
 	- DoDisplaceWater setting should also control Fishes and NPCs
 		- ...find if anything else displaces water without checking toggle
