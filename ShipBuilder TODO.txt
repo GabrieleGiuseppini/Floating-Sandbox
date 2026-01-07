@@ -711,7 +711,8 @@
 				+ Checbox: maintain aspect ratio
 				+ Checkbox: optimize
 				+ Returns (or exports) the two bools
-				- Viz control
+				= Viz control
+					- FIX: doesn't occupy whole
 		+ Remove optimize from preferences, workbench state
 		- MainFrame:
 			= Show Canvas dialog, like now

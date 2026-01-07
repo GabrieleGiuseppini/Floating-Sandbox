@@ -7,6 +7,7 @@
 
 #include <UILib/WxHelpers.h>
 
+#include <Core/ImageTools.h>
 #include <Core/Vectors.h>
 
 #include <wx/dcclient.h>
@@ -54,7 +55,7 @@ void ShipTextureResizeVisualizationControl::Initialize(
     ShipSpaceSize const & shipSize,
     bool doMaintainAspectRatio)
 {
-    mImage = WxHelpers::MakeImage(image);
+    mImage = std::make_unique<RgbaImageData>(image.Clone());
     mShipSize = shipSize;
     mDoMaintainAspectRatio = doMaintainAspectRatio;
 
@@ -63,7 +64,7 @@ void ShipTextureResizeVisualizationControl::Initialize(
 
 void ShipTextureResizeVisualizationControl::Deinitialize()
 {
-    mImage.Destroy();
+    mImage.reset();
     mThumbnailBitmap = wxBitmap();
 }
 
@@ -76,6 +77,11 @@ void ShipTextureResizeVisualizationControl::SetDoMaintainAspectRatio(bool doMain
 
 void ShipTextureResizeVisualizationControl::OnChange()
 {
+    if (!mImage)
+    {
+        return;
+    }
+
     //
     // Calculate target DC size of thumbnail image, as ShipSize scaled to fit in total DC size (maintaining A/R)
     //
@@ -87,9 +93,11 @@ void ShipTextureResizeVisualizationControl::OnChange()
         return;
     }
 
+    // Whole DC minus margins
     mStageRectDC = wxRect(
         wxPoint(TargetMargin, TargetMargin),
         wxSize(totalSizeDC.GetWidth() - 2 * TargetMargin, totalSizeDC.GetHeight() - 2 * TargetMargin));
+
     ShipSpaceSize const targetThumbnailSizeShip = mShipSize.FitToAspectRatioOf(ImageSize(mStageRectDC.GetWidth(), mStageRectDC.GetHeight()));
     wxSize const targetThumbnailSizeDC = wxSize(targetThumbnailSizeShip.width, targetThumbnailSizeShip.height);
 
@@ -99,26 +107,31 @@ void ShipTextureResizeVisualizationControl::OnChange()
 
     if (mDoMaintainAspectRatio)
     {
-        // TODOHERE
-        mThumbnailBitmap = wxBitmap(
-            mImage
-            .Scale(
-                targetThumbnailSizeDC.GetWidth(),
-                targetThumbnailSizeDC.GetHeight(),
-                wxIMAGE_QUALITY_NEAREST),
-            wxBITMAP_SCREEN_DEPTH);
+        //
+        // Reframe first, then resize
+        //
+
+        ImageSize const reframedSize = mImage->Size.FitToAspectRatioOf(ImageSize(mStageRectDC.GetWidth(), mStageRectDC.GetHeight()));
+        RgbaImageData reframedImage = mImage->MakeReframed(
+            reframedSize,
+            ImageCoordinates(
+                std::max((reframedSize.width - mImage->Size.width) / 2, 0),
+                std::max((reframedSize.height - mImage->Size.height) / 2, 0)),
+            rgbaColor::zero());
+
+        mThumbnailBitmap = WxHelpers::MakeBitmap(
+            ImageTools::Resize(
+                reframedImage,
+                ImageSize(targetThumbnailSizeDC.GetWidth(), targetThumbnailSizeDC.GetHeight())));
     }
     else
     {
         // Just resize
 
-        mThumbnailBitmap = wxBitmap(
-            mImage
-            .Scale(
-                targetThumbnailSizeDC.GetWidth(),
-                targetThumbnailSizeDC.GetHeight(),
-                wxIMAGE_QUALITY_NEAREST),
-            wxBITMAP_SCREEN_DEPTH);
+        mThumbnailBitmap = WxHelpers::MakeBitmap(
+            ImageTools::Resize(
+                *mImage,
+                ImageSize(targetThumbnailSizeDC.GetWidth(), targetThumbnailSizeDC.GetHeight())));
     }
 
     //

@@ -13,6 +13,7 @@
 #include <wx/panel.h>
 
 #include <functional>
+#include <memory>
 #include <optional>
 
 namespace ShipBuilder {
@@ -47,7 +48,7 @@ private:
     wxBrush mTargetBrush;
 
     // State
-    wxImage mImage;
+    std::unique_ptr<RgbaImageData> mImage;
     ShipSpaceSize mShipSize;
     bool mDoMaintainAspectRatio;
 
