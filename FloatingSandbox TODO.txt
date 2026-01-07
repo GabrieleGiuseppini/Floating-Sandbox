@@ -86,7 +86,7 @@
 				+ Upload():
 					+ Each time there has been a change, re-uploads all the N fields; otherwise, they are sticky
 				+ Fix removal
-			= WorldRenderContext: AntiGravityField(s)
+			+ WorldRenderContext: AntiGravityField(s)
 				! Treated as a physical entity, not as a UI thing
 				+ Start/Upload/End
 					+ Sticky; each Start marks as dirty (or whatever is the mechanism used by the others)
@@ -94,11 +94,11 @@
 					+ Thickness is fully in world coords
 				+ RenderPrepare/RenderDraw
 				+ Update orthomatrix
-				= Shader
+				+ Shader
 					+ Find way to do that saturation with mix
 						+ Note: when x2=col > 1.0 and coeff leans towards x2, mix will "pull up" x1
 						+ See if there's a blend func
-					- Optimize
+					+ Optimize
 			- Sound (via events)
 				- TODO
 
