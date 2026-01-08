@@ -713,6 +713,8 @@
 				+ Returns (or exports) the two bools
 				= Viz control
 					- FIX: doesn't occupy whole
+						- See if FitToAspectRatioOf still needed afterwards
+				- See if can rewrite the two Fit() so they are similar
 		+ Remove optimize from preferences, workbench state
 		- MainFrame:
 			= Show Canvas dialog, like now

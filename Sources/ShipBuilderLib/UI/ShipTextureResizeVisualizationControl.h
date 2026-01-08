@@ -56,7 +56,7 @@ private:
     // Calculated members
     //
 
-    wxRect mStageRectDC;
+    wxRect mShipRectDC;
 
     wxBitmap mThumbnailBitmap;
     wxPoint mThumbnailOriginDC;

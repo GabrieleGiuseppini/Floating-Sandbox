@@ -77,7 +77,10 @@ void ShipTextureResizeVisualizationControl::SetDoMaintainAspectRatio(bool doMain
 
 void ShipTextureResizeVisualizationControl::OnChange()
 {
-    if (!mImage)
+    wxSize const totalSizeDC = GetSize();
+    if (totalSizeDC.GetWidth() <= 2 * TargetMargin || totalSizeDC.GetHeight() <= 2 * TargetMargin
+        || mShipSize.width == 0 || mShipSize.height == 0
+        || !mImage)
     {
         return;
     }
@@ -86,20 +89,12 @@ void ShipTextureResizeVisualizationControl::OnChange()
     // Calculate target DC size of thumbnail image, as ShipSize scaled to fit in total DC size (maintaining A/R)
     //
 
-    wxSize const totalSizeDC = GetSize();
-    if (totalSizeDC.GetWidth() <= 2 * TargetMargin || totalSizeDC.GetHeight() <= 2 * TargetMargin
-        || mShipSize.width == 0 || mShipSize.height == 0)
-    {
-        return;
-    }
-
     // Whole DC minus margins
-    mStageRectDC = wxRect(
+    auto const stageRectDC = wxRect(
         wxPoint(TargetMargin, TargetMargin),
         wxSize(totalSizeDC.GetWidth() - 2 * TargetMargin, totalSizeDC.GetHeight() - 2 * TargetMargin));
 
-    ShipSpaceSize const targetThumbnailSizeShip = mShipSize.FitToAspectRatioOf(ImageSize(mStageRectDC.GetWidth(), mStageRectDC.GetHeight()));
-    wxSize const targetThumbnailSizeDC = wxSize(targetThumbnailSizeShip.width, targetThumbnailSizeShip.height);
+    auto const shipRect = mShipSize.Fit(ImageSize(stageRectDC.GetWidth(), stageRectDC.GetHeight()));
 
     //
     // Calculate thumbnail image
@@ -111,7 +106,7 @@ void ShipTextureResizeVisualizationControl::OnChange()
         // Reframe first, then resize
         //
 
-        ImageSize const reframedSize = mImage->Size.FitToAspectRatioOf(ImageSize(mStageRectDC.GetWidth(), mStageRectDC.GetHeight()));
+        ImageSize const reframedSize = mImage->Size.ResizeToAspectRatioOf(shipRect);
         RgbaImageData reframedImage = mImage->MakeReframed(
             reframedSize,
             ImageCoordinates(
@@ -122,25 +117,32 @@ void ShipTextureResizeVisualizationControl::OnChange()
         mThumbnailBitmap = WxHelpers::MakeBitmap(
             ImageTools::Resize(
                 reframedImage,
-                ImageSize(targetThumbnailSizeDC.GetWidth(), targetThumbnailSizeDC.GetHeight())));
+                ImageSize(shipRect.width, shipRect.height)));
     }
     else
     {
-        // Just resize
+        // In reality we won't change the texture size, and rely on OpenGL to do the streching/resizing
+        // for us. We need to visualize this here though
 
         mThumbnailBitmap = WxHelpers::MakeBitmap(
             ImageTools::Resize(
                 *mImage,
-                ImageSize(targetThumbnailSizeDC.GetWidth(), targetThumbnailSizeDC.GetHeight())));
+                ImageSize(shipRect.width, shipRect.height)));
     }
 
     //
-    // Calculate center
+    // Calculate rect and center
     //
 
+    mShipRectDC = wxRect(
+        wxPoint(
+            stageRectDC.x + (stageRectDC.GetWidth() - shipRect.width) / 2,
+            stageRectDC.y + (stageRectDC.GetHeight() - shipRect.height) / 2),
+        wxSize(shipRect.width, shipRect.height));
+
     mThumbnailOriginDC = wxPoint(
-        totalSizeDC.GetWidth() / 2 - targetThumbnailSizeDC.GetWidth() / 2,
-        totalSizeDC.GetHeight() / 2 - targetThumbnailSizeDC.GetHeight() / 2);
+        totalSizeDC.GetWidth() / 2 - mShipRectDC.GetWidth() / 2,
+        totalSizeDC.GetHeight() / 2 - mShipRectDC.GetHeight() / 2);
 
     //
     // Draw
@@ -165,7 +167,7 @@ void ShipTextureResizeVisualizationControl::Render(wxDC & dc)
 
     dc.SetPen(mTargetPen);
     dc.SetBrush(mTargetBrush);
-    dc.DrawRectangle(mStageRectDC);
+    dc.DrawRectangle(mShipRectDC);
 
     //
     // Draw ship
@@ -185,7 +187,7 @@ void ShipTextureResizeVisualizationControl::Render(wxDC & dc)
 
     dc.SetPen(mTargetPen);
     dc.SetBrush(*wxTRANSPARENT_BRUSH);
-    dc.DrawRectangle(mStageRectDC);
+    dc.DrawRectangle(mShipRectDC);
 }
 
 }

@@ -485,7 +485,30 @@ struct _IntegralSize
                     * static_cast<float>(finalWidth))));
     }
 
-    inline _IntegralSize<TIntegralTag> ShrinkToFit(_IntegralSize<TIntegralTag> const & maxSize) const
+    // Returns the size that fits inside the specified size; one dimension (at least) is guaranteed to match the outer size.
+    template<typename TOtherIntegralTag>
+    inline _IntegralSize<TIntegralTag> Fit(_IntegralSize<TOtherIntegralTag> const & outerSize) const
+    {
+        float const outerAspectRatio = static_cast<float>(outerSize.width) / static_cast<float>(outerSize.height);
+        float const ourImageAspectRatio = static_cast<float>(this->width) / static_cast<float>(this->height);
+
+        if (outerAspectRatio >= ourImageAspectRatio) // Outer is more tall than we are, so we have to shrink width
+        {
+            return _IntegralSize<TIntegralTag>(
+                static_cast<integral_type>(std::roundf(static_cast<float>(outerSize.height) * ourImageAspectRatio)),
+                outerSize.height);
+        }
+        else
+        {
+            return _IntegralSize<TIntegralTag>(
+                outerSize.width,
+                static_cast<integral_type>(std::roundf(static_cast<float>(outerSize.width) / ourImageAspectRatio)));
+        }
+    }
+
+    // Returns the size that ensures this size fits inside the specified size, without growing if we are fully contained.
+    template<typename TOtherIntegralTag>
+    inline _IntegralSize<TIntegralTag> ShrinkToFit(_IntegralSize<TOtherIntegralTag> const & maxSize) const
     {
         float wShrinkFactor = static_cast<float>(maxSize.width) / static_cast<float>(this->width);
         float hShrinkFactor = static_cast<float>(maxSize.height) / static_cast<float>(this->height);
@@ -498,8 +521,9 @@ struct _IntegralSize
             static_cast<int>(std::roundf(static_cast<float>(this->height) * shrinkFactor)));
     }
 
+    // Returns this size resized to match the aspect ratio of the specified size; one dimension (at least) is guaranteed to match the original size.
     template<typename TOtherIntegralTag>
-    inline _IntegralSize<TIntegralTag> FitToAspectRatioOf(_IntegralSize<TOtherIntegralTag> const & other) const
+    inline _IntegralSize<TIntegralTag> ResizeToAspectRatioOf(_IntegralSize<TOtherIntegralTag> const & other) const
     {
         float const otherWOverH = static_cast<float>(other.width) / static_cast<float>(other.height);
 
@@ -1069,7 +1093,7 @@ struct FloatSize
     FloatSize fit(FloatSize const & outer) const
     {
         float const outerAspectRatio = outer.width / outer.height;
-        float const ourImageAspectRatio = width / height;
+        float const ourImageAspectRatio = this->width / this->height;
 
         float newWidth;
         float newHeight;

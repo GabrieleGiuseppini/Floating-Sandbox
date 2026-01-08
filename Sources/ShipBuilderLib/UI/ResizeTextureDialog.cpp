@@ -84,7 +84,7 @@ void ResizeTextureDialog::InternalReconciliateUI(
     mMaintainAspectRatioCheckBox->SetValue(doMaintainAspectRatio);
 
     // Enable aspect ratio checkbox only if needed
-    auto const fittedSize = image.Size.FitToAspectRatioOf(shipSize);
+    auto const fittedSize = image.Size.ResizeToAspectRatioOf(shipSize);
     mMaintainAspectRatioCheckBox->Enable(fittedSize != image.Size);
 
     // Viz control
