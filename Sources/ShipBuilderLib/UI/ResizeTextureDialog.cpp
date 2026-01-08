@@ -5,14 +5,9 @@
  ***************************************************************************************/
 #include "ResizeTextureDialog.h"
 
-#include "../WorkbenchState.h"
-
 #include <UILib/WxHelpers.h>
 
 #include <wx/gbsizer.h>
-#include <wx/statbmp.h>
-
-#include <cassert>
 
 namespace ShipBuilder {
 
@@ -20,11 +15,13 @@ void ResizeTextureDialog::InternalCreateLayout(
     wxBoxSizer * dialogVSizer,
     GameAssetManager const & /*gameAssetManager*/)
 {
+    wxGridBagSizer * sizer = new wxGridBagSizer(10, 0);
+
     // Checkboxes
     {
         {
             mMaintainAspectRatioCheckBox = new wxCheckBox(this, wxID_ANY, _("Maintain aspect ratio"));
-            mMaintainAspectRatioCheckBox->SetToolTip(_("Maintains the original aspect ratio of the texture, filling-in extra space with transparent data."));
+            mMaintainAspectRatioCheckBox->SetToolTip(_("Maintain the original aspect ratio of the texture, filling-in extra space with transparent data."));
 
             mMaintainAspectRatioCheckBox->Bind(
                 wxEVT_CHECKBOX,
@@ -34,11 +31,11 @@ void ResizeTextureDialog::InternalCreateLayout(
                     mShipTextureResizeVisualizationControl->SetDoMaintainAspectRatio(event.IsChecked());
                 });
 
-            dialogVSizer->Add(
+            sizer->Add(
                 mMaintainAspectRatioCheckBox,
-                0,
-                wxALIGN_LEFT | wxLEFT,
-                10);
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
         }
 
         {
@@ -48,13 +45,20 @@ void ResizeTextureDialog::InternalCreateLayout(
             // We want it on by default
             mOptimizeForStructureCheckBox->SetValue(true);
 
-            dialogVSizer->Add(
+            sizer->Add(
                 mOptimizeForStructureCheckBox,
-                0,
-                wxALIGN_LEFT | wxLEFT,
-                10);
+                wxGBPosition(1, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
         }
     }
+
+
+    dialogVSizer->Add(
+        sizer,
+        0,
+        wxALIGN_CENTER | wxLEFT,
+        10);
 
     dialogVSizer->AddSpacer(20);
 

@@ -5474,17 +5474,19 @@ void MainFrame::ImportExteriorTextureLayerFromImage()
                 // Reframe texture
                 //
 
-                // TODOHERE: reframe
-                ////
-                //// Resize
-                ////
+                ImageSize const reframedSize = image.Size.ResizeToAspectRatioOf(mController->GetModelController().GetShipSize());
 
-                //auto const originOffset = mResizeDialog->GetOffset();
-
-                //image = image.MakeReframed(
-                //    ImageSize(targetSize.width, targetSize.height),
-                //    ImageCoordinates(originOffset.x, originOffset.y),
-                //    rgbaColor::zero());
+                image = image.MakeReframed(
+                    reframedSize,
+                    ImageCoordinates(
+                        std::max((reframedSize.width - image.Size.width) / 2, 0),
+                        std::max((reframedSize.height - image.Size.height) / 2, 0)),
+                    rgbaColor::zero());
+            }
+            else
+            {
+                // User wants the texture to cover the entire area as-is, i.e. to be streched.
+                // We rely on OpenGL to do that, keeping the texture as-is.
             }
 
             if (mResizeTextureDialog->GetDoOptimizeForStructure())

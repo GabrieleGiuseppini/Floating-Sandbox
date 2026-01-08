@@ -16,6 +16,8 @@
 
 namespace ShipBuilder {
 
+float constexpr MaximumWaste = std::numeric_limits<float>::max() / 10.0f; // Allows for summing
+
 RgbaImageData TextureAlignmentOptimizer::OptimizeAlignment(
 	RgbaImageData const & source,
 	ShipSpaceSize const & structureMeshSize)
@@ -357,13 +359,17 @@ float TextureAlignmentOptimizer::CalculateWasteOnLeftEdge(
 	int structureMeshSize,
 	int textureSize)
 {
-	float waste = 0.0f;
+	float totalWaste = 0.0f;
 	for (auto const & segment : leftXSegments)
 	{
-		waste += CalculateWasteOnLeftEdge(segment.Value, offset, structureMeshSize, textureSize) * static_cast<float>(segment.Length);
+		auto const waste = CalculateWasteOnLeftEdge(segment.Value, offset, structureMeshSize, textureSize);
+		if (waste < MaximumWaste)
+			totalWaste += waste * static_cast<float>(segment.Length);
+		else
+			totalWaste = MaximumWaste;
 	}
 
-	return waste;
+	return totalWaste;
 }
 
 float TextureAlignmentOptimizer::CalculateWasteOnLeftEdge(
@@ -392,7 +398,7 @@ float TextureAlignmentOptimizer::CalculateWasteOnLeftEdge(
 	{
 		// leftX is to the left of the first possible tCenter, and thus the texture is clipped.
 		// We penalize this situation as the worst
-		return std::numeric_limits<float>::max() / 10.0f;
+		return MaximumWaste;
 	}
 
 	// Now calculate t at the center of this ship quad - guaranteed to be to the left of or at tx(o)
@@ -409,13 +415,17 @@ float TextureAlignmentOptimizer::CalculateWasteOnRightEdge(
 	int structureMeshSize,
 	int textureSize)
 {
-	float waste = 0.0f;
+	float totalWaste = 0.0f;
 	for (auto const & segment : rightXSegments)
 	{
-		waste += CalculateWasteOnRightEdge(segment.Value, offset, structureMeshSize, textureSize) * static_cast<float>(segment.Length);
+		float const waste = CalculateWasteOnRightEdge(segment.Value, offset, structureMeshSize, textureSize);
+		if (waste < MaximumWaste)
+			totalWaste += waste * static_cast<float>(segment.Length);
+		else
+			totalWaste = MaximumWaste;
 	}
 
-	return waste;
+	return totalWaste;
 }
 
 float TextureAlignmentOptimizer::CalculateWasteOnRightEdge(
@@ -444,7 +454,7 @@ float TextureAlignmentOptimizer::CalculateWasteOnRightEdge(
 	{
 		// rightX is to the right of tCenter now, and thus the texture is clipped.
 		// We penalize this situation as the worst
-		return std::numeric_limits<float>::max() / 10.0f;
+		return MaximumWaste;
 	}
 
 	// Now calculate t at the center of this ship quad - guaranteed to be to the left of or at tx(o)

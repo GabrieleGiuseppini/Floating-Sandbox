@@ -693,11 +693,11 @@
 	- Test User Ships folder
 
 - Misc:
-	= Layer import:
+	+ Layer import:
 		! Goal: export->import should be fully idempotent
 			! Make optimization explicit (remove from preferences)
 			! Make choice to maintain aspect ratio explicit (instead of having to Cancel to continue w/no resize)
-		= New dialog: TextureImportDialog
+		+ New dialog: TextureImportDialog
 			+ Split existing ResizeDialog:
 				+ BaseResizeDialog:
 					+ cctor():
@@ -706,27 +706,25 @@
 				+ ResizeTextureDialog
 				+ ResizeCanvasDialog
 			+ ResizeCanvasDialog: nuke all texture things
-			= ResizeTextureDialog: 
+			+ ResizeTextureDialog: 
 				+ Nuke all canvas things
 				+ Checbox: maintain aspect ratio
 				+ Checkbox: optimize
 				+ Returns (or exports) the two bools
-				= Viz control
-					- FIX: doesn't occupy whole
-						- See if FitToAspectRatioOf still needed afterwards
-				- See if can rewrite the two Fit() so they are similar
+				+ Viz control
+					+ FIX: doesn't occupy whole
+				+ See if can rewrite the two Fit() so they are similar
+				+ FIX: that crash @ optimizer
 		+ Remove optimize from preferences, workbench state
-		- MainFrame:
-			= Show Canvas dialog, like now
-			= Show Texture dialog
+		+ MainFrame:
+			+ Show Canvas dialog, like now
+			+ Show Texture dialog
 				+ Unconditionally
-				- Process results (locally, like now)
-
-		- Test:
-			- MaintainAspectRatio ckbox disabled when re-importing self
-			- Localization of caption
-
-		- Add to changelist
+				+ Process results (locally, like now)
+		+ Test:
+			+ MaintainAspectRatio ckbox disabled when re-importing self
+			+ Localization of caption
+		+ Add to changelist
 	- Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
 	- Once selected, selection could be moved right away, instead of having to copy'n'paste
 	- Localization:

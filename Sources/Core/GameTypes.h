@@ -490,19 +490,40 @@ struct _IntegralSize
     inline _IntegralSize<TIntegralTag> Fit(_IntegralSize<TOtherIntegralTag> const & outerSize) const
     {
         float const outerAspectRatio = static_cast<float>(outerSize.width) / static_cast<float>(outerSize.height);
-        float const ourImageAspectRatio = static_cast<float>(this->width) / static_cast<float>(this->height);
+        float const ourAspectRatio = static_cast<float>(this->width) / static_cast<float>(this->height);
 
-        if (outerAspectRatio >= ourImageAspectRatio) // Outer is more tall than we are, so we have to shrink width
+        if (outerAspectRatio >= ourAspectRatio) // Outer is more tall than we are, so we have to resize width
         {
             return _IntegralSize<TIntegralTag>(
-                static_cast<integral_type>(std::roundf(static_cast<float>(outerSize.height) * ourImageAspectRatio)),
+                static_cast<integral_type>(std::roundf(static_cast<float>(outerSize.height) * ourAspectRatio)),
                 outerSize.height);
         }
         else
         {
             return _IntegralSize<TIntegralTag>(
                 outerSize.width,
-                static_cast<integral_type>(std::roundf(static_cast<float>(outerSize.width) / ourImageAspectRatio)));
+                static_cast<integral_type>(std::roundf(static_cast<float>(outerSize.width) / ourAspectRatio)));
+        }
+    }
+
+    // Returns this size resized to match the aspect ratio of the specified size; one dimension (at least) is guaranteed to match the original size.
+    template<typename TOtherIntegralTag>
+    inline _IntegralSize<TIntegralTag> ResizeToAspectRatioOf(_IntegralSize<TOtherIntegralTag> const & other) const
+    {
+        float const otherAspectRatio = static_cast<float>(other.width) / static_cast<float>(other.height);
+        float const ourAspectRatio = static_cast<float>(this->width) / static_cast<float>(this->height);
+
+        if (otherAspectRatio >= ourAspectRatio) // Other is more tall than we are, so we have to resize width
+        {
+            return _IntegralSize<TIntegralTag>(
+                static_cast<integral_type>(std::roundf(static_cast<float>(this->height) * otherAspectRatio)),
+                this->height);
+        }
+        else
+        {
+            return _IntegralSize<TIntegralTag>(
+                this->width,
+                static_cast<integral_type>(std::roundf(static_cast<float>(this->width) / otherAspectRatio)));
         }
     }
 
@@ -519,21 +540,6 @@ struct _IntegralSize
         return _IntegralSize<TIntegralTag>(
             static_cast<int>(std::roundf(static_cast<float>(this->width) * shrinkFactor)),
             static_cast<int>(std::roundf(static_cast<float>(this->height) * shrinkFactor)));
-    }
-
-    // Returns this size resized to match the aspect ratio of the specified size; one dimension (at least) is guaranteed to match the original size.
-    template<typename TOtherIntegralTag>
-    inline _IntegralSize<TIntegralTag> ResizeToAspectRatioOf(_IntegralSize<TOtherIntegralTag> const & other) const
-    {
-        float const otherWOverH = static_cast<float>(other.width) / static_cast<float>(other.height);
-
-        return (this->width * other.height >= this->height * other.width)
-            ? _IntegralSize<TIntegralTag>(
-                this->width, // Keeping this width would require greater height (no clipping), and thus we want to keep this width
-                static_cast<integral_type>(static_cast<float>(this->width) / otherWOverH))
-            : _IntegralSize<TIntegralTag>( // Keeping this width would require smaller height (hence clipping), and thus we want to keep the height instead
-                static_cast<integral_type>(static_cast<float>(this->height) * otherWOverH),
-                this->height);
     }
 
     vec2f ToFloat() const

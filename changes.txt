@@ -3,6 +3,7 @@ TODO
 	- And added a new setting to customize it at will
 - Improved resolution of ship previews
 - ShipBuilder:
+	- Re-designed texture import workflow, with clearer instructions for fitting the texture to the ship
 	- Undo actions survive going back and forth to and from game
 - Added 12 new ships
 
