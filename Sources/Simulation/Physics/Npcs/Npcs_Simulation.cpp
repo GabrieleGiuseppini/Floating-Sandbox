@@ -2010,17 +2010,20 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             // Generate waves if on the air-water interface, magnitude
             // proportional to (signed) vertical velocity
 
-            float const verticalVelocity = mParticles.GetVelocity(npcParticle.ParticleIndex).y;
-            float const particleDepthBefore = waterHeight - (particlePosition.y - verticalVelocity * SimulationParameters::SimulationStepTimeDuration<float>);
-            if (particleDepth * particleDepthBefore < 0.0f) // Check if we've just entered/left the air-water interface
+            if (simulationParameters.DoDisplaceWater)
             {
-                float const waveDisplacement =
-                    SmoothStep(0.0f, 6.0f, std::abs(verticalVelocity))
-                    * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
-                    * std::min(1.0f, 2.0f / static_cast<float>(npc.ParticleMesh.Particles.size())) // Other particles in this mesh will generate waves
-                    * 0.6f; // Magic number
+                float const verticalVelocity = mParticles.GetVelocity(npcParticle.ParticleIndex).y;
+                float const particleDepthBefore = waterHeight - (particlePosition.y - verticalVelocity * SimulationParameters::SimulationStepTimeDuration<float>);
+                if (particleDepth * particleDepthBefore < 0.0f) // Check if we've just entered/left the air-water interface
+                {
+                    float const waveDisplacement =
+                        SmoothStep(0.0f, 6.0f, std::abs(verticalVelocity))
+                        * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
+                        * std::min(1.0f, 2.0f / static_cast<float>(npc.ParticleMesh.Particles.size())) // Other particles in this mesh will generate waves
+                        * 0.6f; // Magic number
 
-                mParentWorld.DisplaceOceanSurfaceAt(particlePosition.x, waveDisplacement);
+                    mParentWorld.DisplaceOceanSurfaceAt(particlePosition.x, waveDisplacement);
+                }
             }
         }
 

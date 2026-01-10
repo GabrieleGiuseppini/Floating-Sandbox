@@ -198,7 +198,8 @@ void OceanSurface::Update(
     //
 
     auto const & radialWindField = wind.GetCurrentRadialWindField();
-    if (radialWindField.has_value())
+    if (radialWindField.has_value()
+        && simulationParameters.DoDisplaceWater)
     {
         // We displace the ocean surface where the sphere meets the ocean:
         //

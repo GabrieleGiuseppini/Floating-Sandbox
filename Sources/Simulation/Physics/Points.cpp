@@ -1546,10 +1546,11 @@ void Points::UpdateEphemeralParticles(
                                     0.0f));
 
                             //
-                            // Displace ocean surface, if surfacing
+                            // Displace ocean surface, if surfacing and enabled
                             //
 
-                            if (depth < oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset)
+                            if (simulationParameters.DoDisplaceWater
+                                && depth < oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset)
                             {
                                 mParentWorld.DisplaceOceanSurfaceAt(
                                     GetPosition(pointIndex).x,

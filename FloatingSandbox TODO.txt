@@ -38,13 +38,10 @@
 
 	+ Texture preview improvement work (*)
 
-	- Fix SettingsDialog/Russian-Ukrainian issue from Denis
-
-	= ShipBuilder:
+	+ ShipBuilder:
 		+ Make Undo survive return to game and back
 			+ Requires undo stack to be owned by MainFrame, rather than by Controller; latter takes it as &
 			+ Changelist
-		- Add pixel measurement next to ship measurement (*)
 
 	+ AntiGravity tool
 		+ Make branch: anti_gravity_field
@@ -101,22 +98,23 @@
 
 		+ Merge into master
 
-	- DoDisplaceWater setting should also control Fishes and NPCs
-		- ...find if anything else displaces water without checking toggle
+	+ DoDisplaceWater setting should also control Fishes and NPCs
+		+ NPCs swimming
+		+ Air bubbles
+		+ Fishes
+		+ Radial wind
+
+	- Fix SettingsDialog/Russian-Ukrainian issue from Denis
+		- Have to ask russian and ukrainian translators
 
 	- See perf impact with double the world
 		- Check on old Dell
-
-	- Try Android font
 
 	- Improvements from Bandit:
 		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
 		- Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
 			- See if it's due to too much elasticity
 			- See if it's due to underwater pressure
-
-	- Marine life: above water and on slope look weird
-		! Obviously - we flatten them horizontally
 
 
 	- Fishes on wreck (see paper in Malta book)
@@ -129,6 +127,13 @@
 				- Those that are outside of threshold (even if just once) are removed from ActiveWrecks set
 			- When a shoal needs to decide a new destination, it checks the ActiveWrecks set first; if anything is found within a range R, that's the new destination
 			- Shoal can keep re-checking for destination from time to time, like it probably does now
+
+
+	- Try Android font
+
+	- Marine life: above water and on slope look weird
+		! Obviously - we flatten them horizontally
+
 
 	= Ocean rendering:
 		X Check if the 20ms for upload we see on Dell when ocean high detail is enabled, are due to uploading cloud shadows asynchronously
@@ -1010,10 +1015,6 @@
 	- Windows 11 issue: try to play with vsync
 		- https://stackoverflow.com/questions/589064/how-to-enable-vertical-sync-in-opengl
 		! IS IT GONE BY NOW?
-
-- ShipBuilder:
-	- Add pixel measurement next to ship measurement (*)
-		- Only at the bottom-right reading
 
 - Simulation Optimizations:
 
