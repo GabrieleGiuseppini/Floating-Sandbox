@@ -107,12 +107,12 @@
 	= Fix SettingsDialog/Russian-Ukrainian issue from Denis
 		+ Ask russian and ukrainian translators
 
-	= See perf impact with double the world
+	+ See perf impact with double the world
 		+ Check on old Dell
 			+ Pre: UPD=16.1/16.2; 16.0
 			= Post: UPD=16.1/16.2
-		- Test game
-		- changelist x 2
+		+ Test game
+		+ changelist x 2
 
 	- Improvements from Bandit:
 		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)

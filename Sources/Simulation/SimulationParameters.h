@@ -52,9 +52,9 @@ struct SimulationParameters
     //
 
     // Gravity
-    static vec2f constexpr Gravity = vec2f(0.0f, -9.80f);
-    static vec2f constexpr GravityDir = vec2f(0.0f, -1.0f);
     static float constexpr GravityMagnitude = 9.80f; // m/s
+    static vec2f constexpr GravityDir = vec2f(0.0f, -1.0f);
+    static vec2f constexpr Gravity = GravityDir * GravityMagnitude;
 
     // Air
     static float constexpr AirMass = 1.2754f; // Kg
@@ -710,7 +710,7 @@ struct SimulationParameters
     // Limits
     //
 
-    static float constexpr MaxWorldWidth = 10000.0f;
+    static float constexpr MaxWorldWidth = 20000.0f;
     static float constexpr HalfMaxWorldWidth = MaxWorldWidth / 2.0f;
 
     static float constexpr MaxWorldHeight = 22000.0f;
