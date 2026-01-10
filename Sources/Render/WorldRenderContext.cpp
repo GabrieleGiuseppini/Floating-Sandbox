@@ -129,7 +129,7 @@ WorldRenderContext::WorldRenderContext(
     //
 
     GLuint vbos[16];
-    glGenBuffers(15, vbos);
+    glGenBuffers(16, vbos);
     mSkyVBO = vbos[0];
     mStarVBO = vbos[1];
     mLightningVBO = vbos[2];

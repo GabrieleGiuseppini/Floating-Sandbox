@@ -108,7 +108,11 @@
 		+ Ask russian and ukrainian translators
 
 	= See perf impact with double the world
-		- Check on old Dell
+		+ Check on old Dell
+			+ Pre: UPD=16.1/16.2; 16.0
+			= Post: UPD=16.1/16.2
+		- Test game
+		- changelist x 2
 
 	- Improvements from Bandit:
 		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
@@ -125,7 +129,7 @@
 				- Compare with state maintained for the largest N AABBs (== position of center) ("CandidateWrecks" set)
 				- Those that stay within threshold for more than T (T~=20s) are added to ActiveWrecks set
 				- Those that are outside of threshold (even if just once) are removed from ActiveWrecks set
-			- When a shoal needs to decide a new destination, it checks the ActiveWrecks set first; if anything is found within a range R, that's the new destination
+			- When a shoal needs to decide a new destination, it checks the ActiveWrecks set first; if anything is found within a range R (large), that's the new destination
 			- Shoal can keep re-checking for destination from time to time, like it probably does now
 
 
@@ -1309,13 +1313,12 @@
 
 	+ Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool
 
-	- Less repetitive auto-texturization:
-		- Material textures have to become procedurally-generated
-
+	- Redo material texturization with new "box filter" image resize algorithm (i.e. average of all instead of just interpolation within 2)
 			
 - Dynamics:
 
 	- Sand particles when hitting ground
+		- Ephemerals like smoke, but with "sand clouds"
 
 	- Material system improvements (*)
 		- Descriptions in ShipBuilder palette
