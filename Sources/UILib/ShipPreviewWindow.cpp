@@ -480,29 +480,31 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                     Utils::ToLower(
                         shipPreviewData.Metadata.ShipName));
 
-                // Add author to search map
-                if (shipPreviewData.Metadata.Author.has_value())
-                {
-                    infoTile.SearchStrings.push_back(
-                        Utils::ToLower(
-                            *(shipPreviewData.Metadata.Author)));
-                }
+                // Following has been disabled in 1.19.3 to avoid e.g. MattyTitanic from appearing in "Titanic" searches
 
-                // Add art credits to search map
-                if (shipPreviewData.Metadata.ArtCredits.has_value())
-                {
-                    infoTile.SearchStrings.push_back(
-                        Utils::ToLower(
-                            *(shipPreviewData.Metadata.ArtCredits)));
-                }
+                //// Add author to search map
+                //if (shipPreviewData.Metadata.Author.has_value())
+                //{
+                //    infoTile.SearchStrings.push_back(
+                //        Utils::ToLower(
+                //            *(shipPreviewData.Metadata.Author)));
+                //}
 
-                // Add ship year to search map
-                if (shipPreviewData.Metadata.YearBuilt.has_value())
-                {
-                    infoTile.SearchStrings.push_back(
-                        Utils::ToLower(
-                            *(shipPreviewData.Metadata.YearBuilt)));
-                }
+                //// Add art credits to search map
+                //if (shipPreviewData.Metadata.ArtCredits.has_value())
+                //{
+                //    infoTile.SearchStrings.push_back(
+                //        Utils::ToLower(
+                //            *(shipPreviewData.Metadata.ArtCredits)));
+                //}
+
+                //// Add ship year to search map
+                //if (shipPreviewData.Metadata.YearBuilt.has_value())
+                //{
+                //    infoTile.SearchStrings.push_back(
+                //        Utils::ToLower(
+                //            *(shipPreviewData.Metadata.YearBuilt)));
+                //}
 
                 // Re-sort this info tile
                 ResortInfoTile(infoTileIndex);
