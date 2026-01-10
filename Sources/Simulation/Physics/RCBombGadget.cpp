@@ -227,7 +227,7 @@ void RCBombGadget::Upload(
 
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::RcBombPing, static_cast<uint8_t>(mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),
@@ -250,7 +250,7 @@ void RCBombGadget::Upload(
 
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::RcBombPing, static_cast<uint8_t>(mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),

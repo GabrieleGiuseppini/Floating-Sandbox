@@ -347,7 +347,7 @@ AntiGravityFieldTool::AntiGravityFieldTool(
         toolCursorManager,
         gameController,
         soundController)
-    , mCursorImage(WxHelpers::LoadCursorImage("anti_gravity_field_cursor", 15, 15, gameAssetManager))
+    , mCursorImage(WxHelpers::LoadCursorImage("anti_gravity_field_cursor", 30, 4, gameAssetManager))
 {
 }
 

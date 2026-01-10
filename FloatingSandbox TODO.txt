@@ -104,10 +104,10 @@
 		+ Fishes
 		+ Radial wind
 
-	- Fix SettingsDialog/Russian-Ukrainian issue from Denis
-		- Have to ask russian and ukrainian translators
+	= Fix SettingsDialog/Russian-Ukrainian issue from Denis
+		+ Ask russian and ukrainian translators
 
-	- See perf impact with double the world
+	= See perf impact with double the world
 		- Check on old Dell
 
 	- Improvements from Bandit:
@@ -471,8 +471,8 @@
 
 - Localization:
 	- Italian: Gabriele Giuseppini
-	- Russian: DioxCode (Fallback: Ilya_Voloshin, Faulttix#8691)
-	- Ukrainian: DioxCode, Denis
+	- Russian: DKuz (now Frisk) (was: DioxCode (Fallback: Ilya_Voloshin, Faulttix#8691))
+	- Ukrainian: Denis (was: DioxCode)
 	- Spanish (Latin American): Joadix (Fallback: The G a z e r W o l f)
 	- Portuguese-Brazilian: matheusvhs ("Matheus Silva")
 
