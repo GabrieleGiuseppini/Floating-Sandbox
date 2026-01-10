@@ -6,6 +6,7 @@
 #include "Physics.h"
 
 #include <Core/GameGeometry.h>
+#include <Core/GameMath.h>
 #include <Core/GameRandomEngine.h>
 
 #include <cmath>
@@ -2966,7 +2967,10 @@ void ElectricalElements::UpdateSinks(
                             * SimulationParameters::SimulationStepTimeDuration<float> *SimulationParameters::SimulationStepTimeDuration<float>
                             *0.025f;
 
-                        vec2f const engineOffsetedPosition = enginePosition + engineOffset;
+                        vec2f engineOffsetedPosition = enginePosition + engineOffset;
+                        engineOffsetedPosition = vec2f(
+                            Clamp(engineOffsetedPosition.x, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth),
+                            engineOffsetedPosition.y);
 
                         // New depth at offset
                         float const offsetedEngineDepth = mParentWorld.GetOceanSurface().GetDepth(engineOffsetedPosition);

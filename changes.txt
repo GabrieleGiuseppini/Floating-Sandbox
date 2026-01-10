@@ -4,7 +4,7 @@ TODO
 - Improved bulkiness of tsunami's and interactive waves
 	- And added a new setting to customize it at will
 - Improved resolution of ship previews
-- Fixed a crash when RC bombs are left pinging for too long
+- Fixed the last few crashes known to humanity
 - ShipBuilder:
 	- Re-designed texture import workflow, with clearer options for fitting the texture to the ship
 	- Undo actions survive going back and forth to and from game
