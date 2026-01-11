@@ -1995,7 +1995,8 @@ void Ship::ApplyStaticPressureForces(
     mStaticPressureIterationsCount += 1.0f;
 
     //
-    // 3. Apply forces as dynamic forces - so they only apply to current positions,
+    // 3. Apply forces as dynamic forces - so they only apply to current positions
+    //    (i.e. first iteration of integration and not any subsequent ones),
     //    as these forces are very sensitive to their position, and would generate
     //    phantom forces and torques otherwise
     //

@@ -119,6 +119,35 @@
 		- Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
 			- See if it's due to too much elasticity
 			- See if it's due to underwater pressure
+		- Spec:
+			! https://hal.science/hal-03251375/document
+			- Option 1:
+				! Gist:
+					! Ocean floor: has a soft layer (penetrable) on top of a hard layer (impenetrable) 
+					! Siltness adjustment dictates thickness of soft layer, and thus max penetration
+						! But it's randomized anyway, with a large radius
+					! Elasticity comes into play only after reaching hard layer (after penetration)
+					! The physics is based on kinetic energy of the incoming particle
+						! For example, the degree of penetration depends on kinetic energy
+						! And the more the penetration, the more the reduction in kinetic energy - i.e. in velocity
+					! Sand clouds when hitting the sand layer 
+						! TODO: "...for the first time"?
+			- Option 2:
+				! Gist:
+					! Ocean floor: has a soft layer (penetrable) on top of a hard layer (impenetrable) 
+					! Siltness adjustment dictates thickness of soft layer, and thus max penetration
+						! But it's randomized anyway, with a large radius
+					! Elasticity comes into play only after reaching hard layer (after penetration)
+					! A particle in the silt layer is subject to drag force
+						! The simulation happens at WorldForces calculation; kinda like buoyancy, a force
+						  that comes up if the particle is underneath the silt layer
+					! Ocean floor impacts stay as they are now
+		- Extra's:
+			- Rendering of silt layer above bedrock: land texture becomes an atlas (of two textures: bedrock and silt)
+				- Drawn in same batch as ocean floor, but two separate meshes (with correct texture coords in 2-tile atlas)
+					
+
+
 
 
 	- Fishes on wreck (see paper in Malta book)
