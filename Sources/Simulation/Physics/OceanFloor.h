@@ -189,10 +189,10 @@ private:
     //
 
     // The number of samples
-    static constexpr size_t SamplesCount = SimulationParameters::OceanFloorTerrainSamples<size_t>;
+    static size_t constexpr SamplesCount = SimulationParameters::OceanFloorTerrainSamples<size_t>;
 
     // The x step of the samples
-    static constexpr float Dx = SimulationParameters::MaxWorldWidth / static_cast<float>(SamplesCount - 1);
+    static float constexpr Dx = SimulationParameters::MaxWorldWidth / static_cast<float>(SamplesCount - 1);
 
     // What we store for each sample
     struct Sample

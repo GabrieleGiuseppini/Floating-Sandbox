@@ -125,3 +125,38 @@ TEST(PrecalculatedFunctionTests, LinearlyInterpolatedPeriodic)
     EXPECT_NEAR(sin(2.0f * Pi<float> * -0.67f), pf.GetLinearlyInterpolatedPeriodic(-2.67f), 0.0001);
     EXPECT_NEAR(sin(2.0f * Pi<float> * -0.67f), pf.GetLinearlyInterpolatedPeriodic(-100.67f), 0.0001);
 }
+
+TEST(PrecalculatedFunctionTests, LinearlyInterpolatedPeriodic__NotNegative)
+{
+    PrecalculatedFunction<8192> pf(
+        [](float x)
+        {
+            return sin(2.0f * Pi<float> *x);
+        });
+
+    EXPECT_NEAR(0.0f, pf.GetLinearlyInterpolatedPeriodic<true>(0.0f), 0.0001);
+    EXPECT_NEAR(0.0f, pf.GetLinearlyInterpolatedPeriodic<true>(1.0f), 0.0001);
+    EXPECT_NEAR(0.0f, pf.GetLinearlyInterpolatedPeriodic<true>(2.0f), 0.0001);
+    EXPECT_NEAR(0.0f, pf.GetLinearlyInterpolatedPeriodic<true>(100.0f), 0.0001);
+
+
+    EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolatedPeriodic<true>(0.25f), 0.0001);
+    EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolatedPeriodic<true>(1.25f), 0.0001);
+    EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolatedPeriodic<true>(2.25f), 0.0001);
+    EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolatedPeriodic<true>(100.25f), 0.0001);
+
+    EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolatedPeriodic<true>(0.75f), 0.0001);
+    EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolatedPeriodic<true>(1.75f), 0.0001);
+    EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolatedPeriodic<true>(2.75f), 0.0001);
+    EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolatedPeriodic<true>(100.75f), 0.0001);
+
+    EXPECT_NEAR(sin(2.0f * Pi<float> *0.05f), pf.GetLinearlyInterpolatedPeriodic<true>(0.05f), 0.0001);
+    EXPECT_NEAR(sin(2.0f * Pi<float> *0.05f), pf.GetLinearlyInterpolatedPeriodic<true>(1.05f), 0.0001);
+    EXPECT_NEAR(sin(2.0f * Pi<float> *0.05f), pf.GetLinearlyInterpolatedPeriodic<true>(2.05f), 0.0001);
+    EXPECT_NEAR(sin(2.0f * Pi<float> *0.05f), pf.GetLinearlyInterpolatedPeriodic<true>(100.05f), 0.0001);
+
+    EXPECT_NEAR(sin(2.0f * Pi<float> *0.67f), pf.GetLinearlyInterpolatedPeriodic<true>(0.67f), 0.0001);
+    EXPECT_NEAR(sin(2.0f * Pi<float> *0.67f), pf.GetLinearlyInterpolatedPeriodic<true>(1.67f), 0.0001);
+    EXPECT_NEAR(sin(2.0f * Pi<float> *0.67f), pf.GetLinearlyInterpolatedPeriodic<true>(2.67f), 0.0001);
+    EXPECT_NEAR(sin(2.0f * Pi<float> *0.67f), pf.GetLinearlyInterpolatedPeriodic<true>(100.67f), 0.0001);
+}

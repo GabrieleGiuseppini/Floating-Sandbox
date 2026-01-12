@@ -107,12 +107,26 @@
 	= Fix SettingsDialog/Russian-Ukrainian issue from Denis
 		+ Ask russian and ukrainian translators
 
-	+ See perf impact with double the world
-		+ Check on old Dell
+	= See perf impact with double the world
+		+ REPEAT TEST with double resolution of sea, land
+			! Now: OceanSurface::Update() is 5.62%  --> interp --> 4.33%
+				! GenerateSamples: 3.18% --> interp --> 2.29%
+		= Check on old Dell
 			+ Pre: UPD=16.1/16.2; 16.0
-			= Post: UPD=16.1/16.2
-		+ Test game
+			= Post: UPD=18.1 --> interp --> TODOHERE
+		+ Check on new Dell:
+			+ Pre: UPD=2.10
+			+ Post: UPD=2.29 --> interp --> 2.22
+		- Test game
+			+ Storm
+				- See if can adjust sin args so that at center (x=0) sin wave is smooth
+					- Does it just need offset so that x=0 is at a 2PI boundary? (or 1.0 normalized)
+			- Peaks waves
+			- Peaks floors
 		+ changelist x 2
+		- Re-send beta
+		- Check on phones
+			- If bad, #ifdef @ SimParams to set old world & # of samples
 
 	- Improvements from Bandit:
 		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
@@ -132,6 +146,8 @@
 						! And the more the penetration, the more the reduction in kinetic energy - i.e. in velocity
 					! Sand clouds when hitting the sand layer 
 						! TODO: "...for the first time"?
+				- Problems with this one:
+					- It happens every 2 spring relaxation iterations, very expensive
 			- Option 2:
 				! Gist:
 					! Ocean floor: has a soft layer (penetrable) on top of a hard layer (impenetrable) 
@@ -141,7 +157,23 @@
 					! A particle in the silt layer is subject to drag force
 						! The simulation happens at WorldForces calculation; kinda like buoyancy, a force
 						  that comes up if the particle is underneath the silt layer
-					! Ocean floor impacts stay as they are now
+						! Note: no position change or explicit velocity lowering in this position, just drag force imparting (possibly with capping)
+					! Ocean floor impacts stay as they are now (but without silt calc'ns)
+				- Pro's:
+					- Less complexity at every other spring relaxation iteration
+				- Con's:
+					- If particle zips through silt layer too quickly, we don't notice it
+						- At option 1 we actually reconstruct trajectory, like we do with NPCs
+					- But note that if a particle zips through silt layer, we still detect it underneath and thus we still apply drag,
+					  which will come useful at the subsequent bedrock impact check (as it will have lowered velocity)
+					- Is it so bad? Especially if silt layer is supposed to be large-ish (more than the distance traveled in a big dt)
+
+		- Impl Option 1:
+			- BEFORE ALL: 
+				- Run VS profiler w/ship on bedrock and save results
+				- Re-take Android measurements on all 3 phones
+				- Copy FS Next (world size) to Prev
+
 		- Extra's:
 			- Rendering of silt layer above bedrock: land texture becomes an atlas (of two textures: bedrock and silt)
 				- Drawn in same batch as ocean floor, but two separate meshes (with correct texture coords in 2-tile atlas)

@@ -765,6 +765,10 @@ void OceanSurface::ImpartInteractiveWave(
 
 void OceanSurface::UpdateInteractiveWaves()
 {
+    //
+    // Vectorized in VS 2022
+    //
+
     float * const restrict currentHeightGrowthCoefficientBuffer = mInteractiveWaveCurrentHeightGrowthCoefficient.data();
     float * const restrict sweHeightFieldBuffer = mSWEHeightField.data() + SWEBufferPrefixSize;
 
@@ -1004,9 +1008,46 @@ void OceanSurface::GenerateSamples(
         ? windRipplesWaveHeight / mBasalWaveAmplitude1
         : 0.0f;
 
+    // Avoid negative args for the precalc'd sin, to achieve speedup
+
     float sinArg1 = (mBasalWaveNumber1 * x - mBasalWaveAngularVelocity1 * currentSimulationTime) / (2 * Pi<float>);
+    if (sinArg1 < 0.0f)
+    {
+        float iptr;
+        sinArg1 = 1.0f - std::modf(-sinArg1, &iptr); // -7.8 => 0.2
+    }
+    else
+    {
+        // Just avoid large floats
+        float iptr;
+        sinArg1 = std::modf(sinArg1, &iptr);
+    }
+
     float sinArg2 = (mBasalWaveNumber2 * x - mBasalWaveAngularVelocity2 * currentSimulationTime + secondaryBasalComponentPhase) / (2 * Pi<float>);
+    if (sinArg2 < 0.0f)
+    {
+        float iptr;
+        sinArg2 = 1.0f - std::modf(-sinArg2, &iptr); // -7.8 => 0.2
+    }
+    else
+    {
+        // Just avoid large floats
+        float iptr;
+        sinArg2 = std::modf(sinArg2, &iptr);
+    }
+
     float sinArgRipple = (WindRippleWaveNumber * x - windRipplesAngularVelocity * currentSimulationTime) / (2 * Pi<float>);
+    if (sinArgRipple < 0.0f)
+    {
+        float iptr;
+        sinArgRipple = 1.0f - std::modf(-sinArgRipple, &iptr); // -7.8 => 0.2
+    }
+    else
+    {
+        // Just avoid large floats
+        float iptr;
+        sinArgRipple = std::modf(sinArgRipple, &iptr);
+    }
 
     // sample index = 0
     float previousSampleValue;
@@ -1016,15 +1057,15 @@ void OceanSurface::GenerateSamples(
             * SWEHeightFieldAmplification;
 
         float const basalValue1 =
-            mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArg1);
+            mBasalWaveSin1.GetLinearlyInterpolatedPeriodic<true>(sinArg1);
 
         float const basalValue2 =
             basalWave2AmplitudeCoeff
-            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArg2);
+            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic<true>(sinArg2);
 
         float const rippleValue =
             rippleWaveAmplitudeCoeff
-            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArgRipple);
+            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic<true>(sinArgRipple);
 
         previousSampleValue =
             sweValue
@@ -1035,11 +1076,37 @@ void OceanSurface::GenerateSamples(
         mSamples[0].SampleValue = previousSampleValue;
     }
 
-    float const sinArg1Dx = mBasalWaveNumber1 * Dx / (2 * Pi<float>);
-    float const sinArg2Dx = mBasalWaveNumber2 * Dx / (2 * Pi<float>);
+    float sinArg1Dx = mBasalWaveNumber1 * Dx / (2 * Pi<float>);
+    if (sinArg1Dx < 0.0f)
+    {
+        float iptr;
+        sinArg1Dx = 1.0f - std::modf(-sinArg1Dx, &iptr); // -7.8 => 0.2
+    }
+    else
+    {
+        // Just avoid large floats
+        float iptr;
+        sinArg1Dx = std::modf(sinArg1Dx, &iptr);
+    }
+
+    float sinArg2Dx = mBasalWaveNumber2 * Dx / (2 * Pi<float>);
+    if (sinArg2Dx < 0.0f)
+    {
+        float iptr;
+        sinArg2Dx = 1.0f - std::modf(-sinArg2Dx, &iptr); // -7.8 => 0.2
+    }
+    else
+    {
+        // Just avoid large floats
+        float iptr;
+        sinArg2Dx = std::modf(sinArg2Dx, &iptr);
+    }
+
     float const sinArgRippleDx = WindRippleWaveNumber * Dx / (2 * Pi<float>);
+    assert(sinArgRippleDx >= 0.0f);
 
     // sample index = 1...SamplesCount - 1
+    Sample * const restrict samplesPtr = &(mSamples[0]); // Tiny speedup
     for (size_t i = 1; i < SamplesCount; ++i)
     {
         float const sweValue =
@@ -1048,17 +1115,17 @@ void OceanSurface::GenerateSamples(
 
         sinArg1 += sinArg1Dx;
         float const basalValue1 =
-            mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArg1);
+            mBasalWaveSin1.GetLinearlyInterpolatedPeriodic<true>(sinArg1);
 
         sinArg2 += sinArg2Dx;
         float const basalValue2 =
             basalWave2AmplitudeCoeff
-            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArg2);
+            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic<true>(sinArg2);
 
         sinArgRipple += sinArgRippleDx;
         float const rippleValue =
             rippleWaveAmplitudeCoeff
-            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArgRipple);
+            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic<true>(sinArgRipple);
 
         float const sampleValue =
             sweValue
@@ -1066,8 +1133,8 @@ void OceanSurface::GenerateSamples(
             + basalValue2
             + rippleValue;
 
-        mSamples[i].SampleValue = sampleValue;
-        mSamples[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousSampleValue;
+        samplesPtr[i].SampleValue = sampleValue;
+        samplesPtr[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousSampleValue;
 
         previousSampleValue = sampleValue;
     }

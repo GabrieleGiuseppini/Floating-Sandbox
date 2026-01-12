@@ -293,7 +293,7 @@ private:
 
     // The number of samples for the entire world width;
     // a higher value means more resolution at the expense of Update() and cache misses
-    static size_t constexpr SamplesCount = 16384;
+    static size_t constexpr SamplesCount = SimulationParameters::OceanSurfaceSamples<size_t>;
 
     // The x step of the samples
     static float constexpr Dx = SimulationParameters::MaxWorldWidth / static_cast<float>(SamplesCount - 1);
