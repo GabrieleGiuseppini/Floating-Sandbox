@@ -312,7 +312,7 @@ void UnderwaterPlants::RecalculateBottomYs(OceanFloor const & oceanFloor)
 
 float UnderwaterPlants::CalculateBottomY(float x, OceanFloor const & oceanFloor)
 {
-    return oceanFloor.GetMinHeightAt(x) - 0.2f; // Cover roots underneath semi-transparent ocean floor
+    return oceanFloor.GetHeightAt(x) - 0.2f; // Cover roots underneath semi-transparent ocean floor
 }
 
 void UnderwaterPlants::RecalculateScales(float sizeMultiplier)

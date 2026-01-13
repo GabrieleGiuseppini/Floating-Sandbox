@@ -120,29 +120,6 @@ public:
     }
 
     /*
-     * Assumption: x is in world boundaries.
-     */
-    inline float GetMinHeightAt(float x) const noexcept
-    {
-        assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
-
-        //
-        // Find sample index and return min of sample values
-        //
-
-        // Fractional index in the sample array
-        float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth) / Dx;
-
-        // Integral part
-        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
-        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
-
-        return std::min(
-            mSamples[sampleIndexI].SampleValue,
-            mSamples[sampleIndexI].SampleValue + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue);
-    }
-
-    /*
      * Assumption: x is within world boundaries.
      */
     inline vec2f GetNormalAt(register_int sampleIndexI) const noexcept
