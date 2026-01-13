@@ -123,6 +123,7 @@
 					- Does it just need offset so that x=0 is at a 2PI boundary? (or 1.0 normalized)
 			- Peaks waves
 			- Peaks floors
+				- Try w/max
 		+ changelist x 2
 		- Re-send beta
 		- Check on phones

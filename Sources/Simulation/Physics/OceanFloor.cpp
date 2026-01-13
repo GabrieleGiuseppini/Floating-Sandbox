@@ -115,7 +115,7 @@ void OceanFloor::Upload(
 
         renderContext.UploadLandStart(RenderSlices<size_t>);
 
-        // Calculate dx between each pair of slices with want to upload
+        // Calculate dx between each pair of slices we want to upload
         float const sliceDx = coverageWidth / RenderSlices<float>;
 
         // We do one extra iteration as the number of slices is the number of quads, and the last vertical
