@@ -343,7 +343,7 @@ void GlobalRenderContext::RenderPrepareEnd()
 void GlobalRenderContext::RegeneratePerlin_4_32_043_Noise()
 {
     mPerlinNoise_4_32_043_ToUpload = MakePerlinNoise(
-        IntegralRectSize(1024, 1024),
+        IntegralRectSize(256, 256),
         4,
         32,
         0.43f);
@@ -352,7 +352,7 @@ void GlobalRenderContext::RegeneratePerlin_4_32_043_Noise()
 void GlobalRenderContext::RegeneratePerlin_8_1024_073_Noise()
 {
     mPerlinNoise_8_1024_073_ToUpload = MakePerlinNoise(
-        IntegralRectSize(1024, 1024),
+        IntegralRectSize(256, 256),
         8,
         1024,
         0.73f);
