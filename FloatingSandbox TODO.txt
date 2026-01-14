@@ -104,10 +104,7 @@
 		+ Fishes
 		+ Radial wind
 
-	= Fix SettingsDialog/Russian-Ukrainian issue from Denis
-		+ Ask russian and ukrainian translators
-
-	= See perf impact with double the world
+	+ See perf impact with double the world
 		+ REPEAT TEST with double resolution of sea, land
 			! Now: OceanSurface::Update() is 5.62%  --> interp --> 4.33%
 				! GenerateSamples: 3.18% --> interp --> 2.29%
@@ -172,8 +169,11 @@
 
 		+ Port WorldRenderContext::RenderPrepareOcean optimization to Android
 
-		- Re-send beta
-			- Bump up version
+		+ Re-send beta
+			+ Bump up version
+
+	= Fix SettingsDialog/Russian-Ukrainian issue from Denis
+		+ Ask russian and ukrainian translators
 
 	- Improvements from Bandit:
 		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
