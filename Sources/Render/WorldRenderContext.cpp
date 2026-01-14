@@ -1315,7 +1315,7 @@ void WorldRenderContext::RenderPrepareOcean(RenderParameters const & renderParam
         {
             glBindBuffer(GL_ARRAY_BUFFER, *mOceanBasicSegmentVBO);
 
-            if (mOceanBasicSegmentVBOAllocatedVertexSize != mOceanBasicSegmentBuffer.size())
+            if (mOceanBasicSegmentVBOAllocatedVertexSize < mOceanBasicSegmentBuffer.size())
             {
                 // Re-allocate VBO buffer and upload
                 glBufferData(GL_ARRAY_BUFFER, mOceanBasicSegmentBuffer.size() * sizeof(OceanBasicSegment), mOceanBasicSegmentBuffer.data(), GL_STREAM_DRAW);
@@ -1337,7 +1337,7 @@ void WorldRenderContext::RenderPrepareOcean(RenderParameters const & renderParam
         {
             glBindBuffer(GL_ARRAY_BUFFER, *mOceanDetailedSegmentVBO);
 
-            if (mOceanDetailedSegmentVBOAllocatedVertexSize != mOceanDetailedSegmentBuffer.size())
+            if (mOceanDetailedSegmentVBOAllocatedVertexSize < mOceanDetailedSegmentBuffer.size())
             {
                 // Re-allocate VBO buffer and upload
                 glBufferData(GL_ARRAY_BUFFER, mOceanDetailedSegmentBuffer.size() * sizeof(OceanDetailedSegment), mOceanDetailedSegmentBuffer.data(), GL_STREAM_DRAW);
@@ -1552,7 +1552,7 @@ void WorldRenderContext::RenderPrepareOceanFloor(RenderParameters const & /*rend
 {
     glBindBuffer(GL_ARRAY_BUFFER, *mLandSegmentVBO);
 
-    if (mLandSegmentVBOAllocatedVertexSize != mLandSegmentBuffer.size())
+    if (mLandSegmentVBOAllocatedVertexSize < mLandSegmentBuffer.size())
     {
         // Re-allocate VBO buffer and upload
         glBufferData(GL_ARRAY_BUFFER, mLandSegmentBuffer.size() * sizeof(LandSegment), mLandSegmentBuffer.data(), GL_STREAM_DRAW);
@@ -2386,10 +2386,8 @@ void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & 
         glBindTexture(GL_TEXTURE_2D, *mOceanTextureOpenGLHandle);
         CheckOpenGLError();
 
-        // Upload texture
-        GameOpenGL::UploadMipmappedTexture(
-            std::move(oceanTextureFrame.TextureData),
-            GL_RGB8);
+        // Upload texture - mipmapped
+        GameOpenGL::UploadMipmappedTexture(std::move(oceanTextureFrame.TextureData));
 
         // Set repeat mode
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -2474,10 +2472,8 @@ void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & r
         glBindTexture(GL_TEXTURE_2D, *mLandTextureOpenGLHandle);
         CheckOpenGLError();
 
-        // Upload texture
-        GameOpenGL::UploadMipmappedTexture(
-            std::move(landTextureFrame.TextureData),
-            GL_RGB8);
+        // Upload texture - mipmapped
+        GameOpenGL::UploadMipmappedTexture(std::move(landTextureFrame.TextureData));
 
         // Set repeat mode
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
