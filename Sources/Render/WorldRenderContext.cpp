@@ -38,6 +38,7 @@ WorldRenderContext::WorldRenderContext(
     , mLandSegmentBuffer()
     , mLandSegmentVBO()
     , mLandSegmentVBOAllocatedVertexSize(0u)
+    , mIsLandSegmentVertexBufferDirty(false) // Will eventually be uploaded
     , mOceanBasicSegmentBuffer()
     , mOceanBasicSegmentVBO()
     , mOceanBasicSegmentVBOAllocatedVertexSize(0u)
@@ -908,10 +909,11 @@ void WorldRenderContext::UploadCloudShadows(
 void WorldRenderContext::UploadLandStart(size_t slices)
 {
     //
-    // Last segments are not sticky: we upload them at each frame
+    // Last segments are sticky: we upload them as needed
     //
 
     mLandSegmentBuffer.reset(slices + 1);
+    mIsLandSegmentVertexBufferDirty = true;
 }
 
 void WorldRenderContext::UploadLandEnd()
@@ -1550,24 +1552,31 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
 void WorldRenderContext::RenderPrepareOceanFloor(RenderParameters const & /*renderParameters*/)
 {
-    glBindBuffer(GL_ARRAY_BUFFER, *mLandSegmentVBO);
-
-    if (mLandSegmentVBOAllocatedVertexSize < mLandSegmentBuffer.size())
+    if (mIsLandSegmentVertexBufferDirty)
     {
-        // Re-allocate VBO buffer and upload
-        glBufferData(GL_ARRAY_BUFFER, mLandSegmentBuffer.size() * sizeof(LandSegment), mLandSegmentBuffer.data(), GL_STREAM_DRAW);
-        CheckOpenGLError();
+        assert(mLandSegmentBuffer.size() > 0); // Never expect it to be empty
 
-        mLandSegmentVBOAllocatedVertexSize = mLandSegmentBuffer.size();
-    }
-    else
-    {
-        // No size change, just upload VBO buffer
-        glBufferSubData(GL_ARRAY_BUFFER, 0, mLandSegmentBuffer.size() * sizeof(LandSegment), mLandSegmentBuffer.data());
-        CheckOpenGLError();
-    }
+        glBindBuffer(GL_ARRAY_BUFFER, *mLandSegmentVBO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+        if (mLandSegmentVBOAllocatedVertexSize < mLandSegmentBuffer.size())
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mLandSegmentBuffer.size() * sizeof(LandSegment), mLandSegmentBuffer.data(), GL_STATIC_DRAW);
+            CheckOpenGLError();
+
+            mLandSegmentVBOAllocatedVertexSize = mLandSegmentBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mLandSegmentBuffer.size() * sizeof(LandSegment), mLandSegmentBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        mIsLandSegmentVertexBufferDirty = false;
+    }
 }
 
 void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderParameters)

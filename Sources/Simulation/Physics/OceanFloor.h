@@ -182,8 +182,15 @@ private:
     std::unique_ptr<Sample[]> mSamples;
 
     // Whether the floor samples have changed in the current simulation step;
-    // cleared at end of each simulation step
+    // use for communication with other subsystems.
+    // Cleared at end of each simulation step
     bool mIsDirty;
+
+    //
+    // Rendering
+    //
+
+    bool mutable mIsDirtyForRendering; // We only upload to the GPU when dirty
 
     //
     // The game parameters for which we're current

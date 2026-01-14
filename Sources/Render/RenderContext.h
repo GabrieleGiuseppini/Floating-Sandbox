@@ -981,12 +981,13 @@ public:
 
     inline void UploadLand(
         float x,
-        float yLand)
+        float yLand,
+        float yWorldBottom)
     {
         mWorldRenderContext->UploadLand(
             x,
             yLand,
-            mRenderParameters);
+            yWorldBottom);
     }
 
     inline void UploadLandEnd()

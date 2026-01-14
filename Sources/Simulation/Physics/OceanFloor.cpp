@@ -17,6 +17,7 @@ OceanFloor::OceanFloor(OceanFloorHeightMap && heightMap)
     //  - To allow for our "rough check" at x==max, we need an addressable value for sample[SamplesCount].SampleValue
     , mSamples(new Sample[SamplesCount + 1])
     , mIsDirty(false)
+    , mIsDirtyForRendering(false)
     , mCurrentSeaDepth(0.0f)
     , mCurrentOceanFloorBumpiness(0.0f)
     , mCurrentOceanFloorDetailAmplification(0.0f)
@@ -33,6 +34,7 @@ OceanFloor::OceanFloor(OceanFloorHeightMap && heightMap)
 
     // Remember we're dirty
     mIsDirty = true;
+    mIsDirtyForRendering = true;
 }
 
 void OceanFloor::SetHeightMap(OceanFloorHeightMap const & heightMap)
@@ -45,6 +47,7 @@ void OceanFloor::SetHeightMap(OceanFloorHeightMap const & heightMap)
 
     // Remember we're dirty
     mIsDirty = true;
+    mIsDirtyForRendering = true;
 }
 
 void OceanFloor::Update(SimulationParameters const & simulationParameters)
@@ -77,6 +80,7 @@ void OceanFloor::Update(SimulationParameters const & simulationParameters)
 
         // Remember we are dirty
         mIsDirty = true;
+        mIsDirtyForRendering = true;
     }
 }
 
@@ -89,27 +93,27 @@ void OceanFloor::Upload(
     SimulationParameters const & /*simulationParameters*/,
     RenderContext & renderContext) const
 {
-    // Find index of leftmost sample, and its corresponding world X
-    auto const leftSampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + SimulationParameters::HalfMaxWorldWidth) / Dx);
-    float sampleIndexX = -SimulationParameters::HalfMaxWorldWidth + (Dx * leftSampleIndex);
-
-    // Calculate number of samples required to cover screen from leftmost sample
-    // up to the visible world right (included)
-    float const coverageWidth = renderContext.GetVisibleWorld().BottomRight.x - sampleIndexX;
-    size_t const numberOfSamplesToRender = static_cast<size_t>(std::ceilf(coverageWidth / Dx));
-
-    renderContext.UploadLandStart(numberOfSamplesToRender);
-
-    // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-    // quad side must be at the end of its width
-    for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
+    if (mIsDirtyForRendering)
     {
-        renderContext.UploadLand(
-            sampleIndexX,
-            mSamples[leftSampleIndex + s].SampleValue);
-    }
+        renderContext.UploadLandStart(SamplesCount);
 
-    renderContext.UploadLandEnd();
+        float sampleIndexX = -SimulationParameters::HalfMaxWorldWidth;
+
+        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+        // quad side must be at the end of its width
+        for (size_t s = 0; s <= SamplesCount; ++s, sampleIndexX += Dx)
+        {
+            renderContext.UploadLand(
+                sampleIndexX,
+                mSamples[s].SampleValue,
+                -SimulationParameters::HalfMaxWorldHeight);
+        }
+
+        renderContext.UploadLandEnd();
+
+        // We're not anymore dirty wrt rendering
+        mIsDirtyForRendering = false;
+    }
 }
 
 std::optional<bool> OceanFloor::AdjustTo(
@@ -188,6 +192,7 @@ std::optional<bool> OceanFloor::AdjustTo(
 
     // Remember we're dirty now
     mIsDirty = true;
+    mIsDirtyForRendering = true;
 
     return hasAdjusted;
 }
@@ -231,6 +236,7 @@ void OceanFloor::DisplaceAt(
 
     // Remember we're dirty now
     mIsDirty = true;
+    mIsDirtyForRendering = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

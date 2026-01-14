@@ -143,22 +143,29 @@
 						+ Cleanup code now (don't worry about caching yWorldBottom)
 		+ See if it's land noise that's killing us
 			+ Try smaller noise (*)
-		- Experiment: ocean floor is invariant (all samples, world coords) and sticky, uploaded only when mIsDirtyForRendering
-			- Make it STATIC_DRAW
-			- If ok, port to Android (together with the below)
+		+ Experiment: ocean floor is invariant (all samples, world coords) and sticky, uploaded only when mIsDirtyForRendering
+			+ Make it STATIC_DRAW
+			+ Wrestle with yVisibleWorldBottom
+				+ Nuke RenderParams arg if not needed anymore
+			+ If ok, port to Android (together with the below)
 		X Wave spikes: do we calc "short" off 0 or off cur height?
 			+ It's off 0
 
 		+ Why do we use MinHeight of two ocean floor samples for underwater plants?
 			+ To cover roots?
 		+ changelist x 2
+
+		- Port to Android:
+			- FS code
+			- Smaller Perlin (256, both perlin's)
+			- WorldRenderContext: sticky OceanFloor/Land (dirty buffer indicator)
+
 		- Check on other phones
 			- A53:
 			- A14:
 			- If bad, #ifdef @ SimParams to set old world & # of samples
 
 		+ Port WorldRenderContext::RenderPrepareOcean optimization to Android
-		- Port smaller Perlin to Android
 
 		- Re-send beta
 			- Bump up version

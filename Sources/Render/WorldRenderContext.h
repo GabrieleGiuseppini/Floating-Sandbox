@@ -305,10 +305,8 @@ public:
     inline void UploadLand(
         float x,
         float yLand,
-        RenderParameters const & renderParameters)
+        float yWorldBottom)
     {
-        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorldWithPixelOffset().BottomRight.y;
-
         //
         // Store Land element
         //
@@ -321,7 +319,7 @@ public:
         landSegment.x2 = x;
         // If land is invisible (below), then keep both points at same height, or else interpolated lines
         // will have a slope varying with the y of the visible world bottom
-        float yBottom = yLand >= yVisibleWorldBottom ? yVisibleWorldBottom : yLand;
+        float yBottom = yLand >= yWorldBottom ? yWorldBottom : yLand;
         landSegment.y2 = yBottom;
         landSegment.depth2 = -(yBottom - yLand); // Height of land
     }
@@ -1358,6 +1356,7 @@ private:
     BoundedVector<LandSegment> mLandSegmentBuffer;
     GameOpenGLVBO mLandSegmentVBO;
     size_t mLandSegmentVBOAllocatedVertexSize;
+    bool mIsLandSegmentVertexBufferDirty;
 
     BoundedVector<OceanBasicSegment> mOceanBasicSegmentBuffer;
     GameOpenGLVBO mOceanBasicSegmentVBO;
