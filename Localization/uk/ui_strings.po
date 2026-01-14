@@ -2,16 +2,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-08 16:48+0200\n"
+"PO-Revision-Date: 2026-01-14 17:36+0100\n"
 "Last-Translator: matheusvhs\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.8\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Generator: Poedit 2.4\n"
 "X-Poedit-Basepath: .\n"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:387
@@ -506,7 +506,7 @@ msgstr "Повітря"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2380
 msgid "Air Bubbles Density"
-msgstr "Густина повітряних бульбашок"
+msgstr "Густина  бульбашок"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:186
 msgid "Air and Sky"
@@ -674,7 +674,7 @@ msgstr "Вибух"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:3287
 msgid "Blast Force Adjust"
-msgstr "Регулювання Сили вибуху"
+msgstr "Регулювання  вибуху"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:3313
 msgid "Blast Heat"
@@ -985,7 +985,7 @@ msgstr "Вирізати"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4373
 msgid "Darkening Rate"
-msgstr "Коефіцієнт затемнення дна"
+msgstr "Затемнення дна"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2590
 msgid "Daylight Cycle Duration"
@@ -1291,7 +1291,7 @@ msgstr "Панель редагування"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:739
 msgid "Edit This Ship..."
-msgstr "Редагувати цей корабель..."
+msgstr "Редагувати  корабель..."
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:1537
 msgid ""
@@ -1963,7 +1963,7 @@ msgstr "Висока температура"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4779
 msgid "Heat Boost"
-msgstr "Підвищення температури"
+msgstr "Нагрів"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:994
 msgid "Heat Dissipation Adjust"
@@ -1971,7 +1971,7 @@ msgstr "Регулювання тепловіддачі"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4695
 msgid "Heat Draw Options"
-msgstr "Параметри теплового налаштування"
+msgstr "Тепловое налаштування"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:3576
 msgid "Heat Flow"
@@ -1987,7 +1987,7 @@ msgstr "Тепловиділення (Нагрівання матеріалу)"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4691
 msgid "Heat Overlay"
-msgstr "Теплове накладення"
+msgstr "Тепл. накладення"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:3726
 msgid "HeatBlaster"
@@ -2215,7 +2215,7 @@ msgstr "Шари"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4978
 msgid "Level of Detail"
-msgstr "Рівень деталізації"
+msgstr "Деталізація"
 
 #: ..\Sources\FloatingSandbox\UI\CreditsPanel.cpp:141
 #: ..\Sources\FloatingSandbox\UI\CreditsPanel.cpp:148
@@ -3789,7 +3789,7 @@ msgstr "Рандомізація міцності"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4739
 msgid "Stress Draw Options"
-msgstr "Варіанти малювання стресу"
+msgstr "Варіанти стресу"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4734
 msgid "Stress Overlay"
@@ -3832,7 +3832,7 @@ msgstr "Температура"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4735
 msgid "Tension Overlay"
-msgstr "Накладення натягу"
+msgstr "Натягування"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4197
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4574
