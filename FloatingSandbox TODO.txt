@@ -117,17 +117,48 @@
 		+ Check on new Dell:
 			+ Pre: UPD=2.10
 			+ Post: UPD=2.29 --> interp --> 2.22
-		- Test game
+		= Test game
 			+ Storm
 				- See if can adjust sin args so that at center (x=0) sin wave is smooth
 					- Does it just need offset so that x=0 is at a 2PI boundary? (or 1.0 normalized)
-			- Peaks waves
-			- Peaks floors
-				- Try w/max
+			+ Peaks waves
+			= Peaks floors
+				- NOTE: with these more samples, the minimum possible width of a peak is way smaller - and it looks smaller than before (and *too* small) at "normal" zoom
+					= Try 1:
+						+ Upload all samples simply; revert to 2K samples
+						+ Test game in Debug
+							+ Peaks
+							+ Boundary conditions
+						= Test perf
+							+ New dell
+								+ Prev: 2.1, 0.06, 4.1/4.2 - ZOOMOUT: 0.08, 4.8
+								+ New: 2.3, 0.06, 4.2/4.3 - ZOOMOUT: 0.08, 5.6/5.8 !!!
+							- Old dell
+								- Prev: 15.8/16.8, 0.16/0.20, 13.4/13.9
+								- New: 17.5/17.9, 
+							+ Moto
+								+ Prev: 15.44: 63-70, 0.83/1.0, 4.5 - ZOOMOUT: 1.12, 4.8/4.9
+								+ Port to Android
+								+ New: 14.7/14.9: 66-68, 0.9, 4.2 - ZOOMOUT: 1.20, 4.6/4.7
+						+ Cleanup code now (don't worry about caching yWorldBottom)
+		- See if it's land noise that's killing us
+		- Experiment: ocean floor is invariant (all samples, world coords) and sticky, uploaded only when mIsDirtyForRendering
+			- Make it STATIC_DRAW
+		- Wave spikes: do we calc "short" off 0 or off cur height?
+			- Seems it's off 0
+
+		+ Why do we use MinHeight of two ocean floor samples for underwater plants?
+			+ To cover roots?
 		+ changelist x 2
-		- Re-send beta
-		- Check on phones
+		- Check on other phones
+			- A53:
+			- A14:
 			- If bad, #ifdef @ SimParams to set old world & # of samples
+
+		+ Port WorldRenderContext::RenderPrepareOcean optimization to Android
+
+		- Re-send beta
+			- Bump up version
 
 	- Improvements from Bandit:
 		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
@@ -208,12 +239,12 @@
 				+ No, the cost is really the texture upload
 		- See how it would look if cloud shadows at night would be visible via moonlight
 			- If goes through: port to Android
-	- Ocean render optimizations:
+	- Ocean (and land) render optimizations:
 		+ Baseline: 5.60-5.67-5.80 @ camy~-100
 		X Try perf rendering: ocean vertex buffer padding to be aligned
 			+ 5.60-5.68
-		- Slow rendering: could be due to ocean texture not being mipmapped (bandwidth to transfer texture)
-			- See what LOD is used at default zoom, I'm afraid it's 1
+		+ Slow rendering: could be due to ocean texture not being mipmapped (bandwidth to transfer texture)
+			+ See what LOD is used at default zoom, I'm afraid it's 1
 		- Halve Perlin noise size
 
 	- Try optimization in CollisionOnOceanFloor:

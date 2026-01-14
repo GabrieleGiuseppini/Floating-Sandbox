@@ -9,11 +9,6 @@
 
 namespace Physics {
 
-// The number of slices we want to render the ocean floor as;
-// this is the graphical resolution
-template<typename T>
-static constexpr T RenderSlices = 500;
-
 OceanFloor::OceanFloor(OceanFloorHeightMap && heightMap)
     : mBumpProfile(SamplesCount)
     , mHeightMap(std::move(heightMap))
@@ -94,59 +89,24 @@ void OceanFloor::Upload(
     SimulationParameters const & /*simulationParameters*/,
     RenderContext & renderContext) const
 {
-    //
-    // We want to upload at most RenderSlices slices
-    //
-
     // Find index of leftmost sample, and its corresponding world X
-    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + SimulationParameters::HalfMaxWorldWidth) / Dx);
-    float sampleIndexX = -SimulationParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
+    auto const leftSampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + SimulationParameters::HalfMaxWorldWidth) / Dx);
+    float sampleIndexX = -SimulationParameters::HalfMaxWorldWidth + (Dx * leftSampleIndex);
 
     // Calculate number of samples required to cover screen from leftmost sample
     // up to the visible world right (included)
     float const coverageWidth = renderContext.GetVisibleWorld().BottomRight.x - sampleIndexX;
-    size_t const numberOfSamplesToRender = static_cast<size_t>(ceil(coverageWidth / Dx));
+    size_t const numberOfSamplesToRender = static_cast<size_t>(std::ceilf(coverageWidth / Dx));
 
-    if (numberOfSamplesToRender >= RenderSlices<size_t>)
+    renderContext.UploadLandStart(numberOfSamplesToRender);
+
+    // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+    // quad side must be at the end of its width
+    for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
     {
-        //
-        // Have to take more than 1 sample per slice
-        //
-
-        renderContext.UploadLandStart(RenderSlices<size_t>);
-
-        // Calculate dx between each pair of slices we want to upload
-        float const sliceDx = coverageWidth / RenderSlices<float>;
-
-        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-        // quad side must be at the end of the width
-        for (size_t s = 0;
-            s <= RenderSlices<size_t>;
-            ++s, sampleIndexX = std::min(sampleIndexX + sliceDx, SimulationParameters::HalfMaxWorldWidth))
-        {
-            renderContext.UploadLand(
-                sampleIndexX,
-                GetHeightAt(sampleIndexX));
-        }
-    }
-    else
-    {
-        //
-        // We just upload the required number of samples, which is less than
-        // the max number of slices we're prepared to upload, and we let OpenGL
-        // interpolate on our behalf
-        //
-
-        renderContext.UploadLandStart(numberOfSamplesToRender);
-
-        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-        // quad side must be at the end of the width
-        for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
-        {
-            renderContext.UploadLand(
-                sampleIndexX,
-                mSamples[s + sampleIndex].SampleValue);
-        }
+        renderContext.UploadLand(
+            sampleIndexX,
+            mSamples[leftSampleIndex + s].SampleValue);
     }
 
     renderContext.UploadLandEnd();
