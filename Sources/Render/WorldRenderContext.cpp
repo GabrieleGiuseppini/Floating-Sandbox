@@ -909,7 +909,7 @@ void WorldRenderContext::UploadCloudShadows(
 void WorldRenderContext::UploadLandStart(size_t slices)
 {
     //
-    // Last segments are sticky: we upload them as needed
+    // Land segments are sticky: we upload them as needed
     //
 
     mLandSegmentBuffer.reset(slices + 1);

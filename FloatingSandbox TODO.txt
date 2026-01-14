@@ -155,15 +155,20 @@
 			+ To cover roots?
 		+ changelist x 2
 
-		- Port to Android:
-			- FS code
-			- Smaller Perlin (256, both perlin's)
-			- WorldRenderContext: sticky OceanFloor/Land (dirty buffer indicator)
+		+ Port to Android:
+			+ FS code
+			+ Smaller Perlin (256, both perlin's)
+			+ WorldRenderContext: sticky OceanFloor/Land (dirty buffer indicator)
 
-		- Check on other phones
-			- A53:
-			- A14:
-			- If bad, #ifdef @ SimParams to set old world & # of samples
+		+ Check on other phones
+			+ DO PREV FIRST! And write down new standards
+			+ A53:
+				- Prev: 65/66: 9.9/10.20, 0.16/0.18, 3.8/4.2 -- ZOOMOUT: 0.19, 3.8/4.1
+				- New: 65/66: 9.9/10.6, 0.17, 3.9/4.2 -- ZOOMOUT: 0.17, 3.7/3.9
+			+ A14:
+				- Prev: 47/48: 19/23, 0.3/0.4, 7/8 -- ZOOMOUT: 0.59, 8.4
+				- New: 49/50: 19/22, 0.47/0.5, 8.3/9. -- ZOOMOUT: 0.55, 8.8/9.5
+			X If bad, #ifdef @ SimParams to set old world & # of samples
 
 		+ Port WorldRenderContext::RenderPrepareOcean optimization to Android
 
@@ -177,6 +182,8 @@
 			- See if it's due to underwater pressure
 		- Spec:
 			! https://hal.science/hal-03251375/document
+			! Observations:
+				- max deltaPos observed with impact, calc'd for 1 mechanical iteration is 0.13
 			- Option 1:
 				! Gist:
 					! Ocean floor: has a soft layer (penetrable) on top of a hard layer (impenetrable) 
