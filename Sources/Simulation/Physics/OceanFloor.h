@@ -122,6 +122,76 @@ public:
     /*
      * Assumption: x is within world boundaries.
      */
+    inline std::tuple<float, register_int> GetBedrockHeightIfUnderneathAt(float x, float y) const noexcept
+    {
+        assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
+
+        //
+        // Find sample index and interpolate in-between that sample and the next
+        //
+
+        // Fractional index in the sample array
+        float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth) / Dx;
+
+        // Integral part
+        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+
+        // Rough check (we allocate an extra sample just for this)
+        if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
+        {
+            return std::make_tuple(std::numeric_limits<float>::lowest(), sampleIndexI);
+        }
+
+        // Fractional part within sample index and the next sample index
+        float const sampleIndexDx = sampleIndexF - sampleIndexI;
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
+
+        float const sampleValue =
+            mSamples[sampleIndexI].SampleValue
+            + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+
+        return std::make_tuple(sampleValue, sampleIndexI);
+    }
+
+    /*
+     * Assumption: x is within world boundaries.
+     */
+    inline float GetSiltHeightIfUnderneathAt(float x, float y) const noexcept
+    {
+        assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
+
+        //
+        // Find sample index and interpolate in-between that sample and the next
+        //
+
+        // Fractional index in the sample array
+        float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth) / Dx;
+
+        // Integral part
+        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+
+        // Rough check (we allocate an extra sample just for this)
+        if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
+        {
+            return std::numeric_limits<float>::lowest();
+        }
+
+        // Fractional part within sample index and the next sample index
+        float const sampleIndexDx = sampleIndexF - sampleIndexI;
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
+
+        float const sampleValue =
+            mSamples[sampleIndexI].SampleValue
+            + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+
+        return sampleValue;
+    }
+
+    /*
+     * Assumption: x is within world boundaries.
+     */
     inline vec2f GetNormalAt(register_int sampleIndexI) const noexcept
     {
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);

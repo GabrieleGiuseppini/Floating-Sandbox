@@ -208,6 +208,9 @@
 						  that comes up if the particle is underneath the silt layer
 						! Note: no position change or explicit velocity lowering in this position, just drag force imparting (possibly with capping)
 					! Ocean floor impacts stay as they are now (but without silt calc'ns)
+						! If underneath:
+							! Move point back to pos: move from end pos along -velocity_dir so to reach y=BedrocK
+							! Do bounce velocity as usual
 				- Pro's:
 					- Less complexity at every other spring relaxation iteration
 				- Con's:
@@ -216,20 +219,60 @@
 					- But note that if a particle zips through silt layer, we still detect it underneath and thus we still apply drag,
 					  which will come useful at the subsequent bedrock impact check (as it will have lowered velocity)
 					- Is it so bad? Especially if silt layer is supposed to be large-ish (more than the distance traveled in a big dt)
+						- V distance traveled by particle falling for ~100m: 0.54m
 
-		- Impl Option 1:
-			- BEFORE ALL: 
-				- Run VS profiler w/ship on bedrock and save results
-				- Re-take Android measurements on all 3 phones
-				- Copy FS Next (world size) to Prev
+		= Impl:
+			+ BEFORE ALL: 
+				+ Run VS profiler w/ship on bedrock and save results
+				+ Re-take Android measurements on all 3 phones
+				+ Copy FS Next (world size) to Prev
+			= Try Option 2:
+				= World forces (at particle, not at surface/edge):
+					+ SiltY check, additive to water surface
+					= Option 1: drag forces
+						+ Do basic
+							- Problem: ship destroys itself while burrowing
+						- Max drag magnitude: lower it to allow for burying
+					= Option 2: velocity damping
+						= Do basic
+						- If we go for this, update description at call site: also changes velocities
+					- Option 3: same as 2, but @ HandleCollisionsWithSeaFloor
+						- Watch out drag constant: it's compound
+				- HandleCollisions:
+					= Re-take orig code and simplify as above
+						- TODO: see if easy way to find where to move back, unless we're ahppy with burrowing
+							- Might want to keep this, actually
+
+				- Optimizations:
+					- @ WorldForces:
+						- Calculate sum of drags and multiply once with velocity
+						- To circumvent twice the calc'n of integral sampleIndex for ocean and silt, use the fact that silt resolution i 1/Nth of ocean - and use ocean's integral sample index
+							- At that moment, rewrite silly "IfUnderneathAt"
+			
+			- Cleanup:
+				- OceanFloor.h: GetHeightIfUnderneathAt_TODO
+					- And nuke GetHeightIfUnderneathAt if not used
 
 		- Extra's:
-			- Rendering of silt layer above bedrock: land texture becomes an atlas (of two textures: bedrock and silt)
+			- Rendering of silt layer above bedrock: 
+				! Gist:
+					! 1: Sand layer is opaque but drawn earlier, behind ship
+						! Bedrock layer stays like current: drawn _after_ ship, on top of it
+						! REQUIRES: two batches, NO depth
+					X 2: Sand layer is opaque, drawn (together with bedrock) when we draw current (after ship), but its pixels have a lower depth than ship's
+						X Won't work as ship might have transparent areas which wouldn't be covered by sand
+					X 3: Sand layer is opaque, drawn (together with bedrock) BEFORE ship, but its pixels have a lower depth than ship's, and bedrock pixels have a higher depth
+						! Later-drawn ship would then be covered by land
+						X Requires everything else that need to be covered by bedrock to use depth, too much of a perf hit
+
+
+				- Land texture becomes an atlas (of two textures: bedrock and silt)
+
 				- Drawn in same batch as ocean floor, but two separate meshes (with correct texture coords in 2-tile atlas)
 					
 
 
-
+	- Make those deep fishess texture better aliased (no white border but darker instead)
 
 	- Fishes on wreck (see paper in Malta book)
 		- Alternative:
