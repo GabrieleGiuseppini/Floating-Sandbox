@@ -684,8 +684,10 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
         return VertexAttributeKind::Cloud2;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud3"))
         return VertexAttributeKind::Cloud3;
-    else if (Utils::CaseInsensitiveEquals(str, "Land"))
-        return VertexAttributeKind::Land;
+    else if (Utils::CaseInsensitiveEquals(str, "Land1"))
+        return VertexAttributeKind::Land1;
+    else if (Utils::CaseInsensitiveEquals(str, "Land2"))
+        return VertexAttributeKind::Land2;
     else if (Utils::CaseInsensitiveEquals(str, "OceanBasic"))
         return VertexAttributeKind::OceanBasic;
     else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed1Upper"))

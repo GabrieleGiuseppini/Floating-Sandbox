@@ -27,8 +27,10 @@ RenderParameters::RenderParameters(
 	, OceanRenderDetail(OceanRenderDetailType::Detailed)
 	, ShowShipThroughOcean(false)
 	, LandRenderMode(LandRenderModeType::Texture)
-	, FlatLandColor(0x72, 0x46, 0x05)
-	, LandTextureIndex(6) // Rock Coarse 3
+	, FlatLandBedrockColor(0x72, 0x46, 0x05)
+	, LandBedrockTextureIndex(2) // Rock Coarse 3
+	, FlatLandSiltColor(0xe3, 0xc7, 0x78)
+	, LandSiltTextureIndex(1) // Sand 2
 	, LandRenderDetail(LandRenderDetailType::Detailed)
 	// Ship
 	, ShipViewMode(ShipViewModeType::Exterior)
@@ -63,7 +65,7 @@ RenderParameters::RenderParameters(
 	, AreOceanRenderParametersDirty(true)
 	, IsOceanTextureIndexDirty(true)
 	, AreLandRenderParametersDirty(true)
-	, IsLandTextureIndexDirty(true)
+	, AreLandTextureIndicesDirty(true)
 	, IsLandRenderDetailDirty(true)
 	, IsShipViewModeDirty(true)
 	, IsShipAmbientLightSensitivityDirty(true)
@@ -95,7 +97,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	AreOceanRenderParametersDirty = false;
 	IsOceanTextureIndexDirty = false;
 	AreLandRenderParametersDirty = false;
-	IsLandTextureIndexDirty = false;
+	AreLandTextureIndicesDirty = false;
 	IsLandRenderDetailDirty = false;
 	//
 	IsShipViewModeDirty = false;

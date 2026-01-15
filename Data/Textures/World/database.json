@@ -1,7 +1,7 @@
 [
 
 {
-	"group_name": "Land",
+	"group_name": "LandSilt",
 	"has_own_ambient_light": false,
 	"auto_assign_frame_indices": true,
 	"frames":[
@@ -29,6 +29,20 @@
 			"frame_name_pattern": "land_12",
 			"display_name": "Sand 4"
 		},
+		{
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_11",
+			"display_name": "Stratified 1"
+		}
+	]
+},
+
+{
+	"group_name": "LandBedrock",
+	"has_own_ambient_light": false,
+	"auto_assign_frame_indices": true,
+	"frames":[
 		{
 			"world_width": 100.0,
 			"world_height": 100.0,
@@ -88,12 +102,6 @@
 			"world_height": 100.0,
 			"frame_name_pattern": "land_10",
 			"display_name": "Rock Fine 4"
-		},
-		{
-			"world_width": 100.0,
-			"world_height": 100.0,
-			"frame_name_pattern": "land_11",
-			"display_name": "Stratified 1"
 		},
 		{
 			"world_width": 100.0,

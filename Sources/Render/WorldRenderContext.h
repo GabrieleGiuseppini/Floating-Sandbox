@@ -56,9 +56,14 @@ public:
         return mOceanAvailableThumbnails;
     }
 
-    inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const
+    inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandBedrockAvailableThumbnails() const
     {
-        return mLandAvailableThumbnails;
+        return mLandBedrockAvailableThumbnails;
+    }
+
+    inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandSiltAvailableThumbnails() const
+    {
+        return mLandSiltAvailableThumbnails;
     }
 
     size_t GetUnderwaterPlantsSpeciesCount() const
@@ -303,25 +308,43 @@ public:
     void UploadLandStart(size_t slices);
 
     inline void UploadLand(
+        size_t iSlice,
         float x,
-        float yLand,
+        float ySilt,
+        float yBedrock,
         float yWorldBottom)
     {
         //
-        // Store Land element
+        // Store quads
         //
 
-        LandSegment & landSegment = mLandSegmentBuffer.emplace_back();
+        assert((mLandVertexBuffer.size() % 2) == 0);
 
-        landSegment.x1 = x;
-        landSegment.y1 = yLand;
-        landSegment.depth1 = 0.0f;
-        landSegment.x2 = x;
-        // If land is invisible (below), then keep both points at same height, or else interpolated lines
-        // will have a slope varying with the y of the visible world bottom
-        float yBottom = yLand >= yWorldBottom ? yWorldBottom : yLand;
-        landSegment.y2 = yBottom;
-        landSegment.depth2 = -(yBottom - yLand); // Height of land
+        LandVertex * siltVertex = &(mLandVertexBuffer[iSlice * 2]);
+        LandVertex * bedrockVertex = &(mLandVertexBuffer[mLandVertexBuffer.size() / 2 + iSlice * 2]);
+
+        // TODO: see if can distribute among the two
+        float const surfaceBacksampleStrengthForSilt = (ySilt > yBedrock) ? 1.0f : 0.0f; // If some silt, it does it itself
+
+        // Top-left
+
+        siltVertex[0] = LandVertex{ vec2f(x, ySilt), 0.0f, surfaceBacksampleStrengthForSilt, vec2f(0.0f, 0.0f)};
+        bedrockVertex[0] = LandVertex{ {x, yBedrock}, yBedrock - ySilt, 1.0f - surfaceBacksampleStrengthForSilt, vec2f(0.5f, 0.0f) };
+
+        // Bottom-left
+
+        {
+            // If land is invisible (below), then keep both points at same height, or else interpolated lines
+            // will have a slope varying with the y of the visible world bottom
+            float yBottom = ySilt >= yWorldBottom ? yWorldBottom : ySilt;
+            siltVertex[1] = LandVertex{ {x, yBottom}, -(yBottom - ySilt), surfaceBacksampleStrengthForSilt, vec2f(0.0f, 0.0f) };
+        }
+        {
+            // If land is invisible (below), then keep both points at same height, or else interpolated lines
+            // will have a slope varying with the y of the visible world bottom
+            float yBottom = yBedrock >= yWorldBottom ? yWorldBottom : yBedrock;
+            bedrockVertex[1] = LandVertex{ {x, yBottom}, -(yBottom - yBedrock), 1.0f - surfaceBacksampleStrengthForSilt, vec2f(0.5f, 0.0f) };
+        }
     }
 
     void UploadLandEnd();
@@ -889,7 +912,8 @@ public:
     void RenderDrawOcean(bool opaquely, RenderParameters const & renderParameters);
 
     void RenderPrepareOceanFloor(RenderParameters const & renderParameters);
-    void RenderDrawOceanFloor(RenderParameters const & renderParameters);
+    void RenderDrawOceanFloorSilt(RenderParameters const & renderParameters);
+    void RenderDrawOceanFloorBedrock(RenderParameters const & renderParameters);
 
     void RenderPrepareFishes(RenderParameters const & renderParameters);
     void RenderDrawFishes(RenderParameters const & renderParameters);
@@ -1014,11 +1038,12 @@ private:
     void ApplyOceanDepthDarkeningRateChanges(RenderParameters const & renderParameters);
     void ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
-    void ApplyLandRenderParametersChanges(RenderParameters const & renderParameters);
-    void ApplyLandTextureIndexChanges(RenderParameters const & renderParameters);
+    void ApplyLandTextureIndicesChanges(RenderParameters const & renderParameters);
 
     void RecalculateClearCanvasColor(RenderParameters const & renderParameters);
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
+
+    void InternalRenderDrawOceanFloor(RenderParameters const & renderParameters, size_t isBedrock);
 
     RgbaImageData InternalMakeThumbnail(
         RgbaImageData const & imageData,
@@ -1115,14 +1140,12 @@ private:
         {}
     };
 
-    struct LandSegment
+    struct LandVertex
     {
-        float x1;
-        float y1;
-        float depth1;
-        float x2;
-        float y2;
-        float depth2;
+        vec2f position; // World
+        float depth;
+        float surfaceBacksampleStrength; //  (0..1)
+        vec2f leftTopTextureCoords;
     };
 
     struct OceanBasicSegment
@@ -1353,10 +1376,10 @@ private:
     GameOpenGLVBO mCloudVBO;
     size_t mCloudVBOAllocatedVertexSize;
 
-    BoundedVector<LandSegment> mLandSegmentBuffer;
-    GameOpenGLVBO mLandSegmentVBO;
-    size_t mLandSegmentVBOAllocatedVertexSize;
-    bool mIsLandSegmentVertexBufferDirty;
+    BoundedVector<LandVertex> mLandVertexBuffer; // Two triangle strips: silt followed by bedrock; size always even
+    GameOpenGLVBO mLandVBO;
+    size_t mLandVBOAllocatedVertexSize;
+    bool mIsLandVertexBufferDirty;
 
     BoundedVector<OceanBasicSegment> mOceanBasicSegmentBuffer;
     GameOpenGLVBO mOceanBasicSegmentVBO;
@@ -1438,9 +1461,11 @@ private:
     GameOpenGLTexture mOceanTextureOpenGLHandle;
     size_t mCurrentlyLoadedOceanTextureIndex;
 
-    std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> mLandTextureFrameSpecifications;
-    GameOpenGLTexture mLandTextureOpenGLHandle;
-    size_t mCurrentlyLoadedLandTextureIndex;
+    std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> mLandBedrockTextureFrameSpecifications;
+    std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> mLandSiltTextureFrameSpecifications;
+    GameOpenGLTexture mLandTextureAtlasOpenGLHandle;
+    size_t mCurrentlyLoadedLandBedrockTextureIndex;
+    size_t mCurrentlyLoadedLandSiltTextureIndex;
 
     std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::FishTextureDatabase>> mFishTextureAtlasMetadata;
     GameOpenGLTexture mFishTextureAtlasOpenGLHandle;
@@ -1449,7 +1474,8 @@ private:
 
     // Thumbnails
     std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
-    std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
+    std::vector<std::pair<std::string, RgbaImageData>> mLandBedrockAvailableThumbnails;
+    std::vector<std::pair<std::string, RgbaImageData>> mLandSiltAvailableThumbnails;
 
     //
     // External scalars

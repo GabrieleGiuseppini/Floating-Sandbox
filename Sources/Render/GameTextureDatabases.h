@@ -44,7 +44,8 @@ struct CloudTextureDatabase
 
 enum class WorldTextureGroups : uint16_t
 {
-    Land = 0,
+    LandBedrock = 0,
+    LandSilt = 1,
     Ocean,
 
     _Last = Ocean
@@ -58,8 +59,10 @@ struct WorldTextureDatabase
 
     static WorldTextureGroups StrToTextureGroup(std::string const & str)
     {
-        if (Utils::CaseInsensitiveEquals(str, "Land"))
-            return WorldTextureGroups::Land;
+        if (Utils::CaseInsensitiveEquals(str, "LandBedrock"))
+            return WorldTextureGroups::LandBedrock;
+        else if (Utils::CaseInsensitiveEquals(str, "LandSilt"))
+            return WorldTextureGroups::LandSilt;
         else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
             return WorldTextureGroups::Ocean;
         else

@@ -5081,7 +5081,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     mTextureLandComboBox = new wxBitmapComboBox(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString,
                         wxDefaultPosition, wxSize(140, -1), wxArrayString(), wxCB_READONLY);
-                    for (auto const & entry : mGameControllerSettingsOptions.GetTextureLandAvailableThumbnails())
+                    // TODOHERE
+                    for (auto const & entry : mGameControllerSettingsOptions.GetTextureLandBedrockAvailableThumbnails())
                     {
                         mTextureLandComboBox->Append(
                             entry.first,
@@ -5092,7 +5093,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         wxEVT_COMBOBOX,
                         [this](wxCommandEvent & /*event*/)
                         {
-                            mLiveSettings.SetValue(GameSettings::TextureLandTextureIndex, static_cast<size_t>(mTextureLandComboBox->GetSelection()));
+                            mLiveSettings.SetValue(GameSettings::TextureLandBedrockTextureIndex, static_cast<size_t>(mTextureLandComboBox->GetSelection()));
                             OnLiveSettingsChanged();
                         });
 
@@ -5113,7 +5114,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             auto color = event.GetColour();
 
                             mLiveSettings.SetValue(
-                                GameSettings::FlatLandColor,
+                                GameSettings::FlatLandBedrockColor,
                                 rgbColor(color.Red(), color.Green(), color.Blue()));
 
                             OnLiveSettingsChanged();
@@ -6575,9 +6576,11 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         }
     }
 
-    mTextureLandComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureLandTextureIndex)));
+    // TODOHERE
+    mTextureLandComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureLandBedrockTextureIndex)));
 
-    auto const flatLandColor = settings.GetValue<rgbColor>(GameSettings::FlatLandColor);
+    // TODOHERE
+    auto const flatLandColor = settings.GetValue<rgbColor>(GameSettings::FlatLandBedrockColor);
     mFlatLandColorPicker->SetColour(wxColor(flatLandColor.r, flatLandColor.g, flatLandColor.b));
 
     mLandRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<LandRenderDetailType>(GameSettings::LandRenderDetail) == LandRenderDetailType::Detailed);

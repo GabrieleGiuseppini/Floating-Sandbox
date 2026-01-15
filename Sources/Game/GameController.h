@@ -998,12 +998,19 @@ public:
     LandRenderModeType GetLandRenderMode() const override { return mRenderContext->GetLandRenderMode(); }
     void SetLandRenderMode(LandRenderModeType landRenderMode) override { mRenderContext->SetLandRenderMode(landRenderMode); }
 
-    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const override { return mRenderContext->GetTextureLandAvailableThumbnails(); }
-    size_t GetTextureLandTextureIndex() const override { return mRenderContext->GetTextureLandTextureIndex(); }
-    void SetTextureLandTextureIndex(size_t index) override { mRenderContext->SetTextureLandTextureIndex(index); }
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandBedrockAvailableThumbnails() const override { return mRenderContext->GetTextureLandBedrockAvailableThumbnails(); }
+    size_t GetTextureLandBedrockTextureIndex() const override { return mRenderContext->GetTextureLandBedrockTextureIndex(); }
+    void SetTextureLandBedrockTextureIndex(size_t index) override { mRenderContext->SetTextureLandBedrockTextureIndex(index); }
 
-    rgbColor const & GetFlatLandColor() const override { return mRenderContext->GetFlatLandColor(); }
-    void SetFlatLandColor(rgbColor const & color) override { mRenderContext->SetFlatLandColor(color); }
+    rgbColor const & GetFlatLandBedrockColor() const override { return mRenderContext->GetFlatLandBedrockColor(); }
+    void SetFlatLandBedrockColor(rgbColor const & color) override { mRenderContext->SetFlatLandBedrockColor(color); }
+
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandSiltAvailableThumbnails() const override { return mRenderContext->GetTextureLandSiltAvailableThumbnails(); }
+    size_t GetTextureLandSiltTextureIndex() const override { return mRenderContext->GetTextureLandSiltTextureIndex(); }
+    void SetTextureLandSiltTextureIndex(size_t index) override { mRenderContext->SetTextureLandSiltTextureIndex(index); }
+
+    rgbColor const & GetFlatLandSiltColor() const override { return mRenderContext->GetFlatLandSiltColor(); }
+    void SetFlatLandSiltColor(rgbColor const & color) override { mRenderContext->SetFlatLandSiltColor(color); }
 
     LandRenderDetailType GetLandRenderDetail() const override { return mRenderContext->GetLandRenderDetail(); }
     void SetLandRenderDetail(LandRenderDetailType value) override { mRenderContext->SetLandRenderDetail(value); }

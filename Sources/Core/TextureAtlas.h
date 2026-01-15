@@ -339,6 +339,55 @@ public:
             progressCallback);
     }
 
+    /*
+     * Builds an atlas with the specified database, composed of a power-of-two number of
+     * frames with identical sizes, each having power-of-two dimensions.
+     * Allows for algorithmic generation of texture coordinates (e.g. from within a shader),
+     * without having to rely on a specification.
+     * The atlas produced is suitable for mipmapping.
+     */
+    static TextureAtlas<TTextureDatabase> BuildRegularAtlas(
+        std::vector<TextureFrame<TTextureDatabase>> const & textureFrames,
+        TextureAtlasOptions options)
+    {
+        if (!!(options & TextureAtlasOptions::SuppressDuplicates))
+        {
+            throw GameException("Duplicate suppression is not implemented with regular atlases");
+        }
+
+        auto frameLoader = [&textureFrames](TextureFrameId<TTextureGroups> const & frameId) -> TextureFrame<TTextureDatabase>
+            {
+                for (size_t t = 0; t < textureFrames.size(); t++)
+                {
+                    if (frameId == textureFrames[t].Metadata.FrameId)
+                        return textureFrames[t].Clone();
+                }
+
+                assert(false);
+                throw GameException("Cannot find texture frame");
+            };
+
+        // Build TextureInfo's
+        std::vector<TextureInfo> textureInfos;
+        for (size_t t = 0; t < textureFrames.size(); ++t)
+        {
+            // Note: we'll verify later whether dimensions are suitable for a regular atlas
+            textureInfos.emplace_back(
+                textureFrames[t].Metadata.FrameId,
+                MakeInAtlasSize(textureFrames[t].Metadata.Size, options));
+        }
+
+        // Build specification - verifies whether dimensions are suitable for a regular atlas
+        auto const specification = BuildRegularAtlasSpecification(textureInfos);
+
+        // Build atlas
+        return InternalBuildAtlas(
+            specification,
+            options | TextureAtlasOptions::MipMappable,
+            frameLoader,
+            SimpleProgressCallback::Dummy());
+    }
+
 private:
 
     struct TextureInfo

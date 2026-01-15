@@ -176,8 +176,8 @@
 		+ Ask russian and ukrainian translators
 
 	- Improvements from Bandit:
-		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
-		- Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
+		! Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
+		= Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
 			- See if it's due to too much elasticity
 			- See if it's due to underwater pressure
 		- Spec:
@@ -257,10 +257,7 @@
 						- To circumvent twice the calc'n of integral sampleIndex for ocean and silt, use the fact that silt resolution i 1/Nth of ocean - and use ocean's integral sample index
 							- At that moment, rewrite silly "IfUnderneathAt"
 			
-			- Cleanup:
-				- OceanFloor.h: GetHeightXYZ: see which ones not needed anymore
-
-		- Rendering of silt layer above bedrock: 
+		= Rendering of silt layer above bedrock: 
 			! Gist:
 				! 1: Sand layer is opaque but drawn earlier, behind ship
 					! Bedrock layer stays like current: drawn _after_ ship, on top of it
@@ -271,45 +268,50 @@
 					! Later-drawn ship would then be covered by land
 					X Requires everything else that need to be covered by bedrock to use depth, too much of a perf hit
 
-			- Split World atlas into Ocean, LandBedrock, LandSilt
-				- Folders -- cleaning up target folder
-				- TextureDatabase specs
-			- WorldRenderContext:
-				- Load 3 new atlases instead of one, splitting land Thumbnails in two
-				- RenderParameters: split land
-				- On any land texture index changes:
-					- Build atlas of textures: bedrock and silt
-					- RegularAtlas, need a TextureAtlasBuilder::RegularAtlas override that takes vector of textures
-						- New TextureDatabaseGroup, w/dummy db name: one group and two indices
-				- Buffers:
-					- Vertex struct:
-						- vec2f leftTopTextureCoords
-						- float surfaceBacksampleStrength (0..1)
+			+ Split World atlas into Ocean, LandBedrock, LandSilt
+				+ In json, as new groups
+				+ TextureDatabase Group specs
+			= WorldRenderContext:
+				+ RenderParameters: split land texture index and other params
+					+ Fix defaults
+				= On any land texture index changes:
+					+ Build atlas of textures: bedrock and silt
+					+ RegularAtlas, need a TextureAtlasBuilder::RegularAtlas override that takes vector of textures
+					= Resize textures: land3, ocean_carib_0..4, lava_0..1
+						- TODO: Though having to resize land3 sucks
+					- Fix frame index that we give to atlas builder
+				+ Move setting of Flat land colors to InternalDraw, which sets param based on arg
+				= Buffers:
+					+ Vertex struct:
+						+ vec2f leftTopTextureCoords
+						+ float surfaceBacksampleStrength (0..1)
 					- Upload: now it's quads, not anymore points
-						- Populate vertices
-							- Silt into first half of buffer, bedrock into second half of buffer
-						- Make room in indices (as we'll now use indexed drawing)
-				- RenderDrawLandSilt, RenderDrawLandBedrock: call internal RenderDrawLand(startIndex)
-					- No strips anymore but quad indices
-			- RenderContext:
-				- Split call for drawing land
+						+ Populate vertices
+							+ Silt into first half of buffer, bedrock into second half of buffer
+						X Make room in indices (as we'll now use indexed drawing)
+						- Improvements:
+							- See if can distribute backsample strength
+							- See if UploadLand really needs visible y bottom, or if can use -HalfMaxWorldHeight
+				+ RenderDrawLandSilt, RenderDrawLandBedrock: call internal RenderDrawLand(startIndex)
+					+ Do strips count math
+			+ RenderContext:
+				+ Split call for drawing land
 			- Shader:
-				- Texture:
-					- Calculate coords with fract math
-					- TODOHERE
-				- Flat: TODO
-				- Depth: TODO
-			- GameController:
-				- Settings for land split into two
-				- SettingsManager
-			- SettingsDialog
+				- Texture
+					+ New vertex attributes
+					- Texture:
+						- Calculate coords with fract math
+						- TODOHERE
+				= Flat
+					+ New vertex attributes
+			+ GameController:
+				+ Settings for land split into two
+			+ SettingsManager
+			- SettingsDialog: expose (silt above, bedrock below)
+				- TODOHERE's
 			- Fix themes
 
-			- Land texture becomes an atlas (of two textures: bedrock and silt)
-				- WorldRenderContext:
-					- Split land texture index into two indices
-
-			- Drawn in same batch as ocean floor, but two separate meshes (with correct texture coords in 2-tile atlas)
+			- Finalize default Flat land colors
 
 		- OceanFloor:
 			- Split two SampleValue members into two
@@ -320,6 +322,9 @@
 						- TODOHERE
 			- Upload all members at Upload
 
+
+		- Cleanup:
+			- OceanFloor.h: GetHeightXYZ: see which ones not needed anymore			
 
 	- Make those deep fishess texture better aliased (no white border but darker instead)
 

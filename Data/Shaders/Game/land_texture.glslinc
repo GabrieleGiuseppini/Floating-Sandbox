@@ -4,18 +4,21 @@
 #define out varying
 
 // Inputs
-in vec3 inLand; // Position (vec2), Depth (float) (0 at top, +X at bottom)
+in vec4 inLand1; // Position (vec2), Depth (float) (0 at top, +X at bottom), SurfaceBacksampleStrength (float) (0..1)
+in vec2 inLand2; // LeftTopTextureCoords
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
-out vec3 worldAndDepth;
+out vec4 worldAndDepthAndBacksampleStrength;
+out vec2 leftTopTextureCoords;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
-    worldAndDepth = inLand;
+    gl_Position = paramOrthoMatrix * vec4(inLand1.xy, -1.0, 1.0);
+    worldAndDepthAndBacksampleStrength = inLand1;
+    leftTopTextureCoords = inLand2;
 }
 
 
@@ -28,7 +31,8 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in vec3 worldAndDepth;
+in vec4 worldAndDepthAndBacksampleStrength;
+in vec2 leftTopTextureCoords;
 
 // Textures
 uniform sampler2D paramLandTexture;
@@ -44,15 +48,19 @@ uniform float paramOceanDepthDarkeningRate;
 
 void main()
 {
-    vec2 worldCoords = worldAndDepth.xy;
+    vec2 worldCoords = worldAndDepthAndBacksampleStrength.xy;
 
     // Anti-aliasing
-    float alpha = worldAndDepth.z / (0.2 + abs(fwidth(worldAndDepth.z)));
+    float alpha = worldAndDepthAndBacksampleStrength.z / (0.2 + abs(fwidth(worldAndDepthAndBacksampleStrength.z)));
 
     // Back-sample 10.0 at top, slowly going to zero
-    float sampleIncrement = -10.0 * (1.0 - smoothstep(-2.0, 2.0, worldAndDepth.z));
-    vec2 worldCoords2 = vec2(worldCoords.x, -worldCoords.y + sampleIncrement);
-    vec4 textureColor = texture2D(paramLandTexture, worldCoords2 * paramTextureScaling);
+    float sampleIncrement = -10.0 * (1.0 - smoothstep(-2.0, 2.0, worldAndDepthAndBacksampleStrength.z));
+    vec2 worldCoords2 = vec2(worldCoords.x, -worldCoords.y + sampleIncrement * worldAndDepthAndBacksampleStrength.w);
+
+    // Calculate texture coords, taking into account that we're sampling a horizontal atlas of two quads
+    vec2 textureCoords = worldCoords2 * paramTextureScaling;
+    // TODOHERE: frac
+    vec4 textureColor = texture2D(paramLandTexture, leftTopTextureCoords + textureCoords);
 
 #ifdef DETAILED_LAND
 

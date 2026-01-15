@@ -44,8 +44,10 @@ struct RenderParameters
     bool ShowShipThroughOcean;
 
     LandRenderModeType LandRenderMode;
-    rgbColor FlatLandColor;
-    size_t LandTextureIndex;
+    rgbColor FlatLandBedrockColor;
+    size_t LandBedrockTextureIndex;
+    rgbColor FlatLandSiltColor;
+    size_t LandSiltTextureIndex;
     LandRenderDetailType LandRenderDetail;
 
     //
@@ -93,7 +95,7 @@ struct RenderParameters
     bool AreOceanRenderParametersDirty; // Tracks various ocean render parameters as a whole, for convenience
     bool IsOceanTextureIndexDirty;
     bool AreLandRenderParametersDirty; // Tracks various land render parameters as a whole, for convenience
-    bool IsLandTextureIndexDirty;
+    bool AreLandTextureIndicesDirty; // Either of bedrock, silt
     bool IsLandRenderDetailDirty;
     // Ship
     bool IsShipViewModeDirty;

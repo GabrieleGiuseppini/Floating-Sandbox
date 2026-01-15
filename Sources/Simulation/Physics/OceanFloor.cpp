@@ -104,7 +104,9 @@ void OceanFloor::Upload(
         for (size_t s = 0; s <= SamplesCount; ++s, sampleIndexX += Dx)
         {
             renderContext.UploadLand(
+                s,
                 sampleIndexX,
+                mSamples[s].SampleValue + 20.0f, // TODOHERE
                 mSamples[s].SampleValue,
                 -SimulationParameters::HalfMaxWorldHeight);
         }

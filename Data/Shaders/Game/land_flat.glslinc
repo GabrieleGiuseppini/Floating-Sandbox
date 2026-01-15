@@ -4,7 +4,7 @@
 #define out varying
 
 // Inputs
-in vec3 inLand; // Position (vec2), Depth (float) (0 at top, +X at bottom)
+in vec3 inLand1; // Position (vec2), Depth (float) (0 at top, +X at bottom)
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -14,8 +14,8 @@ out vec3 worldAndDepth;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
-    worldAndDepth = inLand;
+    gl_Position = paramOrthoMatrix * vec4(inLand1.xy, -1.0, 1.0);
+    worldAndDepth = inLand1;
 }
 
 ###FRAGMENT-120

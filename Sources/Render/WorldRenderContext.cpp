@@ -35,10 +35,10 @@ WorldRenderContext::WorldRenderContext(
     , mCloudVertexBuffer()
     , mCloudVBO()
     , mCloudVBOAllocatedVertexSize(0u)
-    , mLandSegmentBuffer()
-    , mLandSegmentVBO()
-    , mLandSegmentVBOAllocatedVertexSize(0u)
-    , mIsLandSegmentVertexBufferDirty(false) // Will eventually be uploaded
+    , mLandVertexBuffer()
+    , mLandVBO()
+    , mLandVBOAllocatedVertexSize(0u)
+    , mIsLandVertexBufferDirty(false) // Will eventually be uploaded
     , mOceanBasicSegmentBuffer()
     , mOceanBasicSegmentVBO()
     , mOceanBasicSegmentVBOAllocatedVertexSize(0u)
@@ -98,15 +98,18 @@ WorldRenderContext::WorldRenderContext(
     , mOceanTextureFrameSpecifications()
     , mOceanTextureOpenGLHandle()
     , mCurrentlyLoadedOceanTextureIndex(std::numeric_limits<size_t>::max())
-    , mLandTextureFrameSpecifications()
-    , mLandTextureOpenGLHandle()
-    , mCurrentlyLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
+    , mLandBedrockTextureFrameSpecifications()
+    , mLandSiltTextureFrameSpecifications()
+    , mLandTextureAtlasOpenGLHandle()
+    , mCurrentlyLoadedLandBedrockTextureIndex(std::numeric_limits<size_t>::max())
+    , mCurrentlyLoadedLandSiltTextureIndex(std::numeric_limits<size_t>::max())
     , mFishTextureAtlasMetadata()
     , mFishTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
     // Thumbnails
     , mOceanAvailableThumbnails()
-    , mLandAvailableThumbnails()
+    , mLandBedrockAvailableThumbnails()
+    , mLandSiltAvailableThumbnails()
     // External scalars
     , mWindSpeedMagnitudeRunningAverage(0.0f)
     , mCurrentSmoothedWindSpeedMagnitude(0.0f)
@@ -135,7 +138,7 @@ WorldRenderContext::WorldRenderContext(
     mStarVBO = vbos[1];
     mLightningVBO = vbos[2];
     mCloudVBO = vbos[3];
-    mLandSegmentVBO = vbos[4];
+    mLandVBO = vbos[4];
     mOceanBasicSegmentVBO = vbos[5];
     mOceanDetailedSegmentVBO = vbos[6];
     mFishVBO = vbos[7];
@@ -272,10 +275,16 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     // Describe vertex attributes
-    glBindBuffer(GL_ARRAY_BUFFER, *mLandSegmentVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Land));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Land), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Land1));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Land1), 4, GL_FLOAT, GL_FALSE, sizeof(LandVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Land2));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Land2), 2, GL_FLOAT, GL_FALSE, sizeof(LandVertex), (void *)(4 * sizeof(float)));
     CheckOpenGLError();
+
+    // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+    // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
+    ////mGlobalRenderContext.GetElementIndices().Bind()
 
     glBindVertexArray(0);
 
@@ -724,14 +733,14 @@ void WorldRenderContext::InitializeWorldTextures()
             std::move(textureThumbnail));
     }
 
-    // Land
+    // Land - Bedrock
 
-    mLandTextureFrameSpecifications = worldTextureDatabase.GetGroup(GameTextureDatabases::WorldTextureGroups::Land).GetFrameSpecifications();
+    mLandBedrockTextureFrameSpecifications = worldTextureDatabase.GetGroup(GameTextureDatabases::WorldTextureGroups::LandBedrock).GetFrameSpecifications();
 
     // Create list of available textures for user
-    for (size_t i = 0; i < mLandTextureFrameSpecifications.size(); ++i)
+    for (size_t i = 0; i < mLandBedrockTextureFrameSpecifications.size(); ++i)
     {
-        auto const & tfs = mLandTextureFrameSpecifications[i];
+        auto const & tfs = mLandBedrockTextureFrameSpecifications[i];
 
         auto originalTextureImage = mAssetManager.LoadTextureDatabaseFrameRGBA(
             GameTextureDatabases::WorldTextureDatabase::DatabaseName,
@@ -741,9 +750,33 @@ void WorldRenderContext::InitializeWorldTextures()
             tfs.Metadata.WorldWidth,
             tfs.Metadata.WorldHeight);
 
-        assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mLandAvailableThumbnails.size());
+        assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mLandBedrockAvailableThumbnails.size());
 
-        mLandAvailableThumbnails.emplace_back(
+        mLandBedrockAvailableThumbnails.emplace_back(
+            tfs.Metadata.DisplayName,
+            std::move(textureThumbnail));
+    }
+
+    // Land - Silt
+
+    mLandSiltTextureFrameSpecifications = worldTextureDatabase.GetGroup(GameTextureDatabases::WorldTextureGroups::LandSilt).GetFrameSpecifications();
+
+    // Create list of available textures for user
+    for (size_t i = 0; i < mLandSiltTextureFrameSpecifications.size(); ++i)
+    {
+        auto const & tfs = mLandSiltTextureFrameSpecifications[i];
+
+        auto originalTextureImage = mAssetManager.LoadTextureDatabaseFrameRGBA(
+            GameTextureDatabases::WorldTextureDatabase::DatabaseName,
+            tfs.RelativePath);
+        auto textureThumbnail = InternalMakeThumbnail(
+            originalTextureImage,
+            tfs.Metadata.WorldWidth,
+            tfs.Metadata.WorldHeight);
+
+        assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mLandSiltAvailableThumbnails.size());
+
+        mLandSiltAvailableThumbnails.emplace_back(
             tfs.Metadata.DisplayName,
             std::move(textureThumbnail));
     }
@@ -912,8 +945,8 @@ void WorldRenderContext::UploadLandStart(size_t slices)
     // Land segments are sticky: we upload them as needed
     //
 
-    mLandSegmentBuffer.reset(slices + 1);
-    mIsLandSegmentVertexBufferDirty = true;
+    mLandVertexBuffer.reset_full((slices + 1) * 2 * 2); // Two vertices per slice, then by Silt, followed by bedrock
+    mIsLandVertexBufferDirty = true;
 }
 
 void WorldRenderContext::UploadLandEnd()
@@ -1057,14 +1090,9 @@ void WorldRenderContext::ProcessParameterChanges(RenderParameters const & render
         ApplyOceanTextureIndexChanges(renderParameters);
     }
 
-    if (renderParameters.AreLandRenderParametersDirty)
+    if (renderParameters.AreLandTextureIndicesDirty)
     {
-        ApplyLandRenderParametersChanges(renderParameters);
-    }
-
-    if (renderParameters.IsLandTextureIndexDirty)
-    {
-        ApplyLandTextureIndexChanges(renderParameters);
+        ApplyLandTextureIndicesChanges(renderParameters);
     }
 }
 
@@ -1552,34 +1580,44 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
 void WorldRenderContext::RenderPrepareOceanFloor(RenderParameters const & /*renderParameters*/)
 {
-    if (mIsLandSegmentVertexBufferDirty)
+    if (mIsLandVertexBufferDirty)
     {
-        assert(mLandSegmentBuffer.size() > 0); // Never expect it to be empty
+        assert(mLandVertexBuffer.size() > 0); // Never expect it to be empty
 
-        glBindBuffer(GL_ARRAY_BUFFER, *mLandSegmentVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
 
-        if (mLandSegmentVBOAllocatedVertexSize < mLandSegmentBuffer.size())
+        if (mLandVBOAllocatedVertexSize < mLandVertexBuffer.size())
         {
             // Re-allocate VBO buffer and upload
-            glBufferData(GL_ARRAY_BUFFER, mLandSegmentBuffer.size() * sizeof(LandSegment), mLandSegmentBuffer.data(), GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mLandVertexBuffer.size() * sizeof(LandVertex), mLandVertexBuffer.data(), GL_STATIC_DRAW);
             CheckOpenGLError();
 
-            mLandSegmentVBOAllocatedVertexSize = mLandSegmentBuffer.size();
+            mLandVBOAllocatedVertexSize = mLandVertexBuffer.size();
         }
         else
         {
             // No size change, just upload VBO buffer
-            glBufferSubData(GL_ARRAY_BUFFER, 0, mLandSegmentBuffer.size() * sizeof(LandSegment), mLandSegmentBuffer.data());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mLandVertexBuffer.size() * sizeof(LandVertex), mLandVertexBuffer.data());
             CheckOpenGLError();
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        mIsLandSegmentVertexBufferDirty = false;
+        mIsLandVertexBufferDirty = false;
     }
 }
 
-void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderParameters)
+void WorldRenderContext::RenderDrawOceanFloorSilt(RenderParameters const & renderParameters)
+{
+    InternalRenderDrawOceanFloor(renderParameters, 0);
+}
+
+void WorldRenderContext::RenderDrawOceanFloorBedrock(RenderParameters const & renderParameters)
+{
+    InternalRenderDrawOceanFloor(renderParameters, 1);
+}
+
+void WorldRenderContext::InternalRenderDrawOceanFloor(RenderParameters const & renderParameters, size_t isBedrock)
 {
     bool isHighQuality = false;
     switch (renderParameters.LandRenderDetail)
@@ -1603,10 +1641,22 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
     {
         case LandRenderModeType::Flat:
         {
+            vec3f const flatColor = isBedrock
+                ? renderParameters.FlatLandBedrockColor.toVec3f()
+                : renderParameters.FlatLandSiltColor.toVec3f();
+
             if (isHighQuality)
+            {
                 mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatDetailed>();
+                mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatDetailed, GameShaderSets::ProgramParameterKind::LandFlatColor>(flatColor);
+
+            }
             else
+            {
                 mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatBasic>();
+                mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatBasic, GameShaderSets::ProgramParameterKind::LandFlatColor>(flatColor);
+            }
+
             break;
         }
 
@@ -1630,7 +1680,8 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
     if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
         glLineWidth(0.1f);
 
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandSegmentBuffer.size()));
+    assert((mLandVertexBuffer.size() % 2) == 0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(4 * mLandVertexBuffer.size() / 2 + isBedrock * (mLandVertexBuffer.size() / 2)));
 
     glBindVertexArray(0);
 }
@@ -2439,35 +2490,36 @@ void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & 
     }
 }
 
-void WorldRenderContext::ApplyLandRenderParametersChanges(RenderParameters const & renderParameters)
+void WorldRenderContext::ApplyLandTextureIndicesChanges(RenderParameters const & renderParameters)
 {
-    // Set land parameters in all land flat programs
-
-    vec3f const flatColor = renderParameters.FlatLandColor.toVec3f();
-
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatBasic, GameShaderSets::ProgramParameterKind::LandFlatColor>(flatColor);
-
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatDetailed, GameShaderSets::ProgramParameterKind::LandFlatColor>(flatColor);
-}
-
-void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & renderParameters)
-{
-    if (renderParameters.LandTextureIndex != mCurrentlyLoadedLandTextureIndex) // Perf: avoid whole dance when just resetting defaults
+    if (renderParameters.LandBedrockTextureIndex != mCurrentlyLoadedLandBedrockTextureIndex // Perf: avoid whole dance when just resetting defaults
+        || renderParameters.LandSiltTextureIndex != mCurrentlyLoadedLandSiltTextureIndex)
     {
         //
-        // Reload the land texture
+        // Rebuild and reload the land texture atlas
         //
 
-        // Destroy previous texture
-        mLandTextureOpenGLHandle.reset();
+        // Destroy previous texture atlas
+        mLandTextureAtlasOpenGLHandle.reset();
 
-        // Clamp the texture index
-        auto clampedLandTextureIndex = std::min(renderParameters.LandTextureIndex, mLandTextureFrameSpecifications.size() - 1);
+        // Clamp the texture indices and load texture images - silt followed by bedrock
+        std::vector<TextureFrame<GameTextureDatabases::WorldTextureDatabase>> textureFrames;
+        auto clampedLandSiltTextureIndex = std::min(renderParameters.LandSiltTextureIndex, mLandSiltTextureFrameSpecifications.size() - 1);
+        textureFrames.emplace_back(mLandSiltTextureFrameSpecifications[clampedLandSiltTextureIndex].LoadFrame(mAssetManager));
+        textureFrames[0].Metadata.FrameId.FrameIndex = 0;
+        auto clampedLandBedrockTextureIndex = std::min(renderParameters.LandBedrockTextureIndex, mLandBedrockTextureFrameSpecifications.size() - 1);
+        textureFrames.emplace_back(mLandBedrockTextureFrameSpecifications[clampedLandBedrockTextureIndex].LoadFrame(mAssetManager));
+        textureFrames[1].Metadata.FrameId.FrameIndex = 1;
 
-        // Load texture image
-        auto landTextureFrame = mLandTextureFrameSpecifications[clampedLandTextureIndex].LoadFrame(mAssetManager);
+        // Build atlas (expecting left-right)
+        auto landTextureAtlas = TextureAtlasBuilder<GameTextureDatabases::WorldTextureDatabase>::BuildRegularAtlas(
+            textureFrames,
+            TextureAtlasOptions::MipMappable);
+
+        // We rely on this when populating vertices
+        assert(
+            landTextureAtlas.Metadata.GetFrameMetadata(textureFrames[0].Metadata.FrameId).TextureCoordinatesBottomLeft.x
+            < landTextureAtlas.Metadata.GetFrameMetadata(textureFrames[1].Metadata.FrameId).TextureCoordinatesBottomLeft.x);
 
         // Activate texture
         mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::LandTexture>();
@@ -2475,17 +2527,17 @@ void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & r
         // Create texture
         GLuint tmpGLuint;
         glGenTextures(1, &tmpGLuint);
-        mLandTextureOpenGLHandle = tmpGLuint;
+        mLandTextureAtlasOpenGLHandle = tmpGLuint;
 
         // Bind texture
-        glBindTexture(GL_TEXTURE_2D, *mLandTextureOpenGLHandle);
+        glBindTexture(GL_TEXTURE_2D, *mLandTextureAtlasOpenGLHandle);
         CheckOpenGLError();
 
         // Upload texture - mipmapped
-        GameOpenGL::UploadMipmappedTexture(std::move(landTextureFrame.TextureData));
+        GameOpenGL::UploadMipmappedTexture(std::move(landTextureAtlas.Image));
 
         // Set repeat mode
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // Doesn't really matter
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         CheckOpenGLError();
 
@@ -2494,21 +2546,22 @@ void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & r
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         CheckOpenGLError();
 
-        // Set texture and texture parameters in all texture shaders
+        // Set texture and texture parameters (from bedrock only...) in all texture shaders
 
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureBasic>();
         mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureBasic, GameShaderSets::ProgramParameterKind::TextureScaling>(
-            1.0f / landTextureFrame.Metadata.WorldWidth,
-            1.0f / landTextureFrame.Metadata.WorldHeight);
+            1.0f / mLandBedrockTextureFrameSpecifications[clampedLandBedrockTextureIndex].Metadata.WorldWidth,
+            1.0f / mLandBedrockTextureFrameSpecifications[clampedLandBedrockTextureIndex].Metadata.WorldHeight);
         mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandTextureBasic>();
 
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureDetailed>();
         mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureDetailed, GameShaderSets::ProgramParameterKind::TextureScaling>(
-            1.0f / landTextureFrame.Metadata.WorldWidth,
-            1.0f / landTextureFrame.Metadata.WorldHeight);
+            1.0f / mLandBedrockTextureFrameSpecifications[clampedLandBedrockTextureIndex].Metadata.WorldWidth,
+            1.0f / mLandBedrockTextureFrameSpecifications[clampedLandBedrockTextureIndex].Metadata.WorldHeight);
         mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandTextureDetailed>();
 
-        mCurrentlyLoadedLandTextureIndex = renderParameters.LandTextureIndex;
+        mCurrentlyLoadedLandBedrockTextureIndex = renderParameters.LandBedrockTextureIndex;
+        mCurrentlyLoadedLandSiltTextureIndex = renderParameters.LandSiltTextureIndex;
     }
 }
 

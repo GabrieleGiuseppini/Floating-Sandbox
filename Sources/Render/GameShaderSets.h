@@ -216,7 +216,8 @@ enum class VertexAttributeKind : std::uint32_t
     Cloud2 = 1,
     Cloud3 = 2,
 
-    Land = 0,
+    Land1 = 0,
+    Land2 = 1,
 
     OceanBasic = 0,
 

@@ -409,31 +409,58 @@ public:
         mRenderParameters.AreLandRenderParametersDirty = true;
     }
 
-    rgbColor const & GetFlatLandColor() const
+    rgbColor const & GetFlatLandBedrockColor() const
     {
-        return mRenderParameters.FlatLandColor;
+        return mRenderParameters.FlatLandBedrockColor;
     }
 
-    void SetFlatLandColor(rgbColor const & color)
+    void SetFlatLandBedrockColor(rgbColor const & color)
     {
-        mRenderParameters.FlatLandColor = color;
+        mRenderParameters.FlatLandBedrockColor = color;
         mRenderParameters.AreLandRenderParametersDirty = true;
     }
 
-    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandBedrockAvailableThumbnails() const
     {
-        return mWorldRenderContext->GetTextureLandAvailableThumbnails();
+        return mWorldRenderContext->GetTextureLandBedrockAvailableThumbnails();
     }
 
-    size_t GetTextureLandTextureIndex() const
+    size_t GetTextureLandBedrockTextureIndex() const
     {
-        return mRenderParameters.LandTextureIndex;
+        return mRenderParameters.LandBedrockTextureIndex;
     }
 
-    void SetTextureLandTextureIndex(size_t index)
+    void SetTextureLandBedrockTextureIndex(size_t index)
     {
-        mRenderParameters.LandTextureIndex = index;
-        mRenderParameters.IsLandTextureIndexDirty = true;
+        mRenderParameters.LandBedrockTextureIndex = index;
+        mRenderParameters.AreLandTextureIndicesDirty = true;
+    }
+
+    rgbColor const & GetFlatLandSiltColor() const
+    {
+        return mRenderParameters.FlatLandSiltColor;
+    }
+
+    void SetFlatLandSiltColor(rgbColor const & color)
+    {
+        mRenderParameters.FlatLandSiltColor = color;
+        mRenderParameters.AreLandRenderParametersDirty = true;
+    }
+
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandSiltAvailableThumbnails() const
+    {
+        return mWorldRenderContext->GetTextureLandSiltAvailableThumbnails();
+    }
+
+    size_t GetTextureLandSiltTextureIndex() const
+    {
+        return mRenderParameters.LandSiltTextureIndex;
+    }
+
+    void SetTextureLandSiltTextureIndex(size_t index)
+    {
+        mRenderParameters.LandSiltTextureIndex = index;
+        mRenderParameters.AreLandTextureIndicesDirty = true;
     }
 
     LandRenderDetailType GetLandRenderDetail() const
@@ -980,13 +1007,17 @@ public:
     }
 
     inline void UploadLand(
+        size_t iSlice,
         float x,
-        float yLand,
+        float ySilt,
+        float yBedrock,
         float yWorldBottom)
     {
         mWorldRenderContext->UploadLand(
+            iSlice,
             x,
-            yLand,
+            ySilt,
+            yBedrock,
             yWorldBottom);
     }
 

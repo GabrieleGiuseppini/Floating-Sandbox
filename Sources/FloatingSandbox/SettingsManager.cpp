@@ -192,8 +192,10 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(rgbColor, FlatOceanColor);
     ADD_GC_SETTING(OceanRenderDetailType, OceanRenderDetail);
     ADD_GC_SETTING(LandRenderModeType, LandRenderMode);
-    ADD_GC_SETTING(size_t, TextureLandTextureIndex);
-    ADD_GC_SETTING(rgbColor, FlatLandColor);
+    ADD_GC_SETTING(size_t, TextureLandBedrockTextureIndex);
+    ADD_GC_SETTING(size_t, TextureLandSiltTextureIndex);
+    ADD_GC_SETTING(rgbColor, FlatLandBedrockColor);
+    ADD_GC_SETTING(rgbColor, FlatLandSiltColor);
     ADD_GC_SETTING(LandRenderDetailType, LandRenderDetail);
     ADD_GC_SETTING(NpcRenderModeType, NpcRenderMode);
     ADD_GC_SETTING(rgbColor, NpcQuadFlatColor);

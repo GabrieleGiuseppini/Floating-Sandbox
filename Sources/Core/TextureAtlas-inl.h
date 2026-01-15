@@ -38,16 +38,21 @@ TextureAtlasMetadata<TTextureDatabase>::TextureAtlasMetadata(
                     && f1.FrameMetadata.FrameId.FrameIndex < f2.FrameMetadata.FrameId.FrameIndex);
         });
 
-    for (size_t frameIndex = 0; frameIndex < mFrameMetadata.size(); ++frameIndex)
+    for (size_t linearFrameIndex = 0; linearFrameIndex < mFrameMetadata.size(); ++linearFrameIndex)
     {
-        size_t groupIndex = static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.Group);
+        size_t const groupIndex = static_cast<size_t>(mFrameMetadata[linearFrameIndex].FrameMetadata.FrameId.Group);
         if (groupIndex >= mFrameMetadataIndices.size())
         {
             mFrameMetadataIndices.resize(groupIndex + 1);
         }
 
-        assert(static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.FrameIndex) == mFrameMetadataIndices.back().size());
-        mFrameMetadataIndices.back().emplace_back(frameIndex);
+        size_t const frameIndex = static_cast<size_t>(mFrameMetadata[linearFrameIndex].FrameMetadata.FrameId.FrameIndex);
+        if (frameIndex >= mFrameMetadataIndices[groupIndex].size())
+        {
+            mFrameMetadataIndices[groupIndex].resize(frameIndex + 1);
+        }
+
+        mFrameMetadataIndices[groupIndex][frameIndex] = linearFrameIndex;
     }
 
     //

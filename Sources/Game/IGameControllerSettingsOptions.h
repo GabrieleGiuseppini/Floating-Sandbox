@@ -334,7 +334,8 @@ struct IGameControllerSettingsOptions
 
     virtual std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const = 0;
 
-    virtual std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const = 0;
+    virtual std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandBedrockAvailableThumbnails() const = 0;
+    virtual std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandSiltAvailableThumbnails() const = 0;
 
     virtual float GetMinShipFlameSizeAdjustment() const = 0;
     virtual float GetMaxShipFlameSizeAdjustment() const = 0;

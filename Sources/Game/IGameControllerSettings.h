@@ -444,11 +444,17 @@ struct IGameControllerSettings
     virtual LandRenderModeType GetLandRenderMode() const = 0;
     virtual void SetLandRenderMode(LandRenderModeType landRenderMode) = 0;
 
-    virtual size_t GetTextureLandTextureIndex() const = 0;
-    virtual void SetTextureLandTextureIndex(size_t index) = 0;
+    virtual size_t GetTextureLandBedrockTextureIndex() const = 0;
+    virtual void SetTextureLandBedrockTextureIndex(size_t index) = 0;
 
-    virtual rgbColor const & GetFlatLandColor() const = 0;
-    virtual void SetFlatLandColor(rgbColor const & color) = 0;
+    virtual size_t GetTextureLandSiltTextureIndex() const = 0;
+    virtual void SetTextureLandSiltTextureIndex(size_t index) = 0;
+
+    virtual rgbColor const & GetFlatLandBedrockColor() const = 0;
+    virtual void SetFlatLandBedrockColor(rgbColor const & color) = 0;
+
+    virtual rgbColor const & GetFlatLandSiltColor() const = 0;
+    virtual void SetFlatLandSiltColor(rgbColor const & color) = 0;
 
     virtual LandRenderDetailType GetLandRenderDetail() const = 0;
     virtual void SetLandRenderDetail(LandRenderDetailType value) = 0;
