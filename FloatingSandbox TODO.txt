@@ -258,26 +258,67 @@
 							- At that moment, rewrite silly "IfUnderneathAt"
 			
 			- Cleanup:
-				- OceanFloor.h: GetHeightIfUnderneathAt_TODO
-					- And nuke GetHeightIfUnderneathAt if not used
+				- OceanFloor.h: GetHeightXYZ: see which ones not needed anymore
 
-		- Extra's:
-			- Rendering of silt layer above bedrock: 
-				! Gist:
-					! 1: Sand layer is opaque but drawn earlier, behind ship
-						! Bedrock layer stays like current: drawn _after_ ship, on top of it
-						! REQUIRES: two batches, NO depth
-					X 2: Sand layer is opaque, drawn (together with bedrock) when we draw current (after ship), but its pixels have a lower depth than ship's
-						X Won't work as ship might have transparent areas which wouldn't be covered by sand
-					X 3: Sand layer is opaque, drawn (together with bedrock) BEFORE ship, but its pixels have a lower depth than ship's, and bedrock pixels have a higher depth
-						! Later-drawn ship would then be covered by land
-						X Requires everything else that need to be covered by bedrock to use depth, too much of a perf hit
+		- Rendering of silt layer above bedrock: 
+			! Gist:
+				! 1: Sand layer is opaque but drawn earlier, behind ship
+					! Bedrock layer stays like current: drawn _after_ ship, on top of it
+					! REQUIRES: two batches, NO depth
+				X 2: Sand layer is opaque, drawn (together with bedrock) when we draw current (after ship), but its pixels have a lower depth than ship's
+					X Won't work as ship might have transparent areas which wouldn't be covered by sand
+				X 3: Sand layer is opaque, drawn (together with bedrock) BEFORE ship, but its pixels have a lower depth than ship's, and bedrock pixels have a higher depth
+					! Later-drawn ship would then be covered by land
+					X Requires everything else that need to be covered by bedrock to use depth, too much of a perf hit
 
+			- Split World atlas into Ocean, LandBedrock, LandSilt
+				- Folders -- cleaning up target folder
+				- TextureDatabase specs
+			- WorldRenderContext:
+				- Load 3 new atlases instead of one, splitting land Thumbnails in two
+				- RenderParameters: split land
+				- On any land texture index changes:
+					- Build atlas of textures: bedrock and silt
+					- RegularAtlas, need a TextureAtlasBuilder::RegularAtlas override that takes vector of textures
+						- New TextureDatabaseGroup, w/dummy db name: one group and two indices
+				- Buffers:
+					- Vertex struct:
+						- vec2f leftTopTextureCoords
+						- float surfaceBacksampleStrength (0..1)
+					- Upload: now it's quads, not anymore points
+						- Populate vertices
+							- Silt into first half of buffer, bedrock into second half of buffer
+						- Make room in indices (as we'll now use indexed drawing)
+				- RenderDrawLandSilt, RenderDrawLandBedrock: call internal RenderDrawLand(startIndex)
+					- No strips anymore but quad indices
+			- RenderContext:
+				- Split call for drawing land
+			- Shader:
+				- Texture:
+					- Calculate coords with fract math
+					- TODOHERE
+				- Flat: TODO
+				- Depth: TODO
+			- GameController:
+				- Settings for land split into two
+				- SettingsManager
+			- SettingsDialog
+			- Fix themes
 
-				- Land texture becomes an atlas (of two textures: bedrock and silt)
+			- Land texture becomes an atlas (of two textures: bedrock and silt)
+				- WorldRenderContext:
+					- Split land texture index into two indices
 
-				- Drawn in same batch as ocean floor, but two separate meshes (with correct texture coords in 2-tile atlas)
-					
+			- Drawn in same batch as ocean floor, but two separate meshes (with correct texture coords in 2-tile atlas)
+
+		- OceanFloor:
+			- Split two SampleValue members into two
+			- Rebuild:
+				- Phase 1: fixed offset, using local constant
+				- Phase 2: nice silt distribution algorithm
+					- Settings:
+						- TODOHERE
+			- Upload all members at Upload
 
 
 	- Make those deep fishess texture better aliased (no white border but darker instead)
