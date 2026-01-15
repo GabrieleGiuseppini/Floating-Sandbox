@@ -2146,10 +2146,25 @@ void Ship::HandleCollisionsWithSeaFloor(
         // TODOTEST: option 2.3
         else if (position.y - 20.0f < oceanFloor.GetSiltHeightIfUnderneathAt(clampedX, position.y - 20.0f))
         {
-            // Silt
+            // TODOTEST: Pure silt damping
+            //// Silt
+            //mPoints.SetVelocity(
+            //    pointIndex,
+            //    mPoints.GetVelocity(pointIndex) * 0.5f); // Medium breakage, and burrows very slowly
+
+            // TODOTEST: Silt with burrow depth
+
+            float const bY = oceanFloor.GetHeightAt(clampedX);
+
+            float constexpr MaxDampingFactor = 0.5f;
+            float constexpr MinDampingFactor = 0.9f;
+            float const dampingFactor = MinDampingFactor + (MaxDampingFactor - MinDampingFactor) * LinearStep(0.0f, 20.0f, 20.f - (position.y - bY));
+
+            //LogMessage("P:", position.y, " B:", bY, " D:", (bY + 20.0f - position.y), " DF:", dampingFactor);
+
             mPoints.SetVelocity(
                 pointIndex,
-                mPoints.GetVelocity(pointIndex) * 0.5f); // Medium breakage, and burrows very slowly
+                mPoints.GetVelocity(pointIndex) * dampingFactor);
         }
     }
 

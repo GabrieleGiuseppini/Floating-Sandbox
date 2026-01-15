@@ -241,7 +241,8 @@
 						- Optimize retrieval of floor: both in one call
 							- First check is for silt; only if underneath silt we also check bedrock
 							- TODO: vel dependency?
-					- Option 4: like 3, but drag depends on burrow depth (between silt and bedrock)
+					= Option 4: like 3, but drag depends on burrow depth (between silt and bedrock)
+						+ Linear deoth => DampCoeff
 						- If we want to simulate Titanic, relation w/depth needs to be non-linear
 						- TODO: vel dependency?
 						
