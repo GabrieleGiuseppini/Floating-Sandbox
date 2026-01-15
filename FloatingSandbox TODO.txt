@@ -236,8 +236,15 @@
 					= Option 2: velocity damping
 						= Do basic
 						- If we go for this, update description at call site: also changes velocities
-					- Option 3: same as 2, but @ HandleCollisionsWithSeaFloor
+					= Option 3: same as 2, but @ HandleCollisionsWithSeaFloor
 						- Watch out drag constant: it's compound
+						- Optimize retrieval of floor: both in one call
+							- First check is for silt; only if underneath silt we also check bedrock
+							- TODO: vel dependency?
+					- Option 4: like 3, but drag depends on burrow depth (between silt and bedrock)
+						- If we want to simulate Titanic, relation w/depth needs to be non-linear
+						- TODO: vel dependency?
+						
 				- HandleCollisions:
 					= Re-take orig code and simplify as above
 						- TODO: see if easy way to find where to move back, unless we're ahppy with burrowing

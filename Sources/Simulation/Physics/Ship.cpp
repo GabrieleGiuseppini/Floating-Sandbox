@@ -1324,42 +1324,44 @@ void Ship::ApplyWorldParticleForces(
         // Silt
         //
 
+        (void)oceanFloor; // TODO
+
         // TODO
-        float constexpr SiltHeight = 20.0f;
-        float const todoYTranslatedForSilt = pointPosition.y - SiltHeight;
+        //float constexpr SiltHeight = 20.0f;
+        //float const todoYTranslatedForSilt = pointPosition.y - SiltHeight;
 
-        float const siltY = oceanFloor.GetSiltHeightIfUnderneathAt(pointPosition.x, todoYTranslatedForSilt);
-        if (todoYTranslatedForSilt < siltY)
-        {
-            //
-            // Drag
-            //
+        //float const siltY = oceanFloor.GetSiltHeightIfUnderneathAt(pointPosition.x, todoYTranslatedForSilt);
+        //if (todoYTranslatedForSilt < siltY)
+        //{
+        //    //
+        //    // Drag
+        //    //
 
-            //// TODO: VERSION 1: DRAG FORCE
-            //// TODO
-            //float constexpr SiltDragCoefficient = 10000.0f;
+        //    //// TODO: VERSION 1: DRAG FORCE
+        //    //// TODO
+        //    //float constexpr SiltDragCoefficient = 10000.0f;
 
-            //// Max drag force magnitude: m * V / dt
-            //float const vMagnitude = mPoints.GetVelocity(pointIndex).length();
-            //vec2f const vDir = mPoints.GetVelocity(pointIndex).normalise(vMagnitude);
-            //float const maxDragForceMagnitude =
-            //    mPoints.GetMass(pointIndex) * vMagnitude
-            //    / SimulationParameters::SimulationStepTimeDuration<float>;
+        //    //// Max drag force magnitude: m * V / dt
+        //    //float const vMagnitude = mPoints.GetVelocity(pointIndex).length();
+        //    //vec2f const vDir = mPoints.GetVelocity(pointIndex).normalise(vMagnitude);
+        //    //float const maxDragForceMagnitude =
+        //    //    mPoints.GetMass(pointIndex) * vMagnitude
+        //    //    / SimulationParameters::SimulationStepTimeDuration<float>;
 
-            //// Drag force
-            //vec2f const dragForce = -vDir * std::min(
-            //    maxDragForceMagnitude * 0.5f,
-            //    //std::max(vMagnitude * vMagnitude * SiltDragCoefficient, vMagnitude * SiltDragCoefficient));
-            //    //vMagnitude * SiltDragCoefficient);
-            //    vMagnitude * vMagnitude * SiltDragCoefficient);
+        //    //// Drag force
+        //    //vec2f const dragForce = -vDir * std::min(
+        //    //    maxDragForceMagnitude * 0.5f,
+        //    //    //std::max(vMagnitude * vMagnitude * SiltDragCoefficient, vMagnitude * SiltDragCoefficient));
+        //    //    //vMagnitude * SiltDragCoefficient);
+        //    //    vMagnitude * vMagnitude * SiltDragCoefficient);
 
-            //staticForce += dragForce;
+        //    //staticForce += dragForce;
 
 
-            // TODO: VERSION 2: VELOCITY DAMPING
-            float constexpr SiltVelocityDamping = 0.1f;
-            mPoints.SetVelocity(pointIndex, mPoints.GetVelocity(pointIndex) * SiltVelocityDamping);
-        }
+        //    // TODO: VERSION 2: VELOCITY DAMPING
+        //    float constexpr SiltVelocityDamping = 0.1f;
+        //    mPoints.SetVelocity(pointIndex, mPoints.GetVelocity(pointIndex) * SiltVelocityDamping);
+        //}
 
         staticForcesBuffer[pointIndex] += staticForce;
     }
@@ -2139,6 +2141,15 @@ void Ship::HandleCollisionsWithSeaFloor(
                     pointIndex,
                     normalResponse + tangentialResponse);
             }
+        }
+
+        // TODOTEST: option 2.3
+        else if (position.y - 20.0f < oceanFloor.GetSiltHeightIfUnderneathAt(clampedX, position.y - 20.0f))
+        {
+            // Silt
+            mPoints.SetVelocity(
+                pointIndex,
+                mPoints.GetVelocity(pointIndex) * 0.5f); // Medium breakage, and burrows very slowly
         }
     }
 
