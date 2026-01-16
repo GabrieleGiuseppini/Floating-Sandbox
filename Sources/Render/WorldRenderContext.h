@@ -323,33 +323,13 @@ public:
         LandVertex * siltVertex = &(mLandVertexBuffer[iSlice * 2]);
         LandVertex * bedrockVertex = &(mLandVertexBuffer[mLandVertexBuffer.size() / 2 + iSlice * 2]);
 
-        // TODO: see if can distribute among the two
-        float const surfaceBacksampleStrengthForSilt = (ySilt > yBedrock) ? 1.0f : 0.0f; // If some silt, it does it itself
-
         // Top-left
-
-        siltVertex[0] = LandVertex{ vec2f(x, ySilt), 0.0f, surfaceBacksampleStrengthForSilt, vec2f(0.0f, 0.0f)};
-
-        bedrockVertex[0] = LandVertex{ {x, yBedrock}, ySilt - yBedrock, 1.0f - surfaceBacksampleStrengthForSilt, vec2f(0.5f, 0.0f) };
+        siltVertex[0] = LandVertex{ vec2f(x, ySilt), 0.0f };
+        bedrockVertex[0] = LandVertex{ {x, yBedrock}, ySilt - yBedrock };
 
         // Bottom-left
-
-        {
-            // If land is invisible (below), then keep both points at same height, or else interpolated lines
-            // will have a slope varying with the y of the visible world bottom
-            //float yBottom = ySilt >= yWorldBottom ? yWorldBottom : ySilt;
-            //siltVertex[1] = LandVertex{ {x, yBottom}, -(yBottom - ySilt), surfaceBacksampleStrengthForSilt, vec2f(0.0f, 0.0f) };
-
-            siltVertex[1] = LandVertex{ {x, yBedrock}, ySilt - yBedrock, surfaceBacksampleStrengthForSilt, vec2f(0.0f, 0.0f) };
-        }
-        {
-            // If land is invisible (below), then keep both points at same height, or else interpolated lines
-            // will have a slope varying with the y of the visible world bottom
-            //float yBottom = yBedrock >= yWorldBottom ? yWorldBottom : yBedrock;
-            //bedrockVertex[1] = LandVertex{ {x, yBottom}, -(yBottom - yBedrock), 1.0f - surfaceBacksampleStrengthForSilt, vec2f(0.5f, 0.0f) };
-
-            bedrockVertex[1] = LandVertex{ {x, yWorldBottom }, ySilt - yWorldBottom, 1.0f - surfaceBacksampleStrengthForSilt, vec2f(0.5f, 0.0f) };
-        }
+        siltVertex[1] = LandVertex{ {x, yBedrock}, ySilt - yBedrock };
+        bedrockVertex[1] = LandVertex{ {x, yWorldBottom }, ySilt - yWorldBottom };
     }
 
     void UploadLandEnd();
@@ -1044,6 +1024,9 @@ private:
     void ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
     void ApplyLandTextureIndicesChanges(RenderParameters const & renderParameters);
+    void UploadLandTexture(
+        size_t textureIndex,
+        std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> const & textureSpecifications);
 
     void RecalculateClearCanvasColor(RenderParameters const & renderParameters);
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
@@ -1150,8 +1133,6 @@ private:
     {
         vec2f position; // World
         float depth;
-        float surfaceBacksampleStrength; //  (0..1)
-        vec2f leftTopTextureCoords;
     };
 
     struct OceanBasicSegment
@@ -1469,10 +1450,10 @@ private:
 
     std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> mLandBedrockTextureFrameSpecifications;
     std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> mLandSiltTextureFrameSpecifications;
-    GameOpenGLTexture mLandTextureAtlasOpenGLHandle;
+    GameOpenGLTexture mLandBedrockTextureOpenGLHandle;
+    GameOpenGLTexture mLandSiltTextureOpenGLHandle;
     size_t mCurrentlyLoadedLandBedrockTextureIndex;
     size_t mCurrentlyLoadedLandSiltTextureIndex;
-    float mCurrentyLoadedLandBedrockTextureCoordsOffsetX;
 
     std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::FishTextureDatabase>> mFishTextureAtlasMetadata;
     GameOpenGLTexture mFishTextureAtlasOpenGLHandle;

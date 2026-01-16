@@ -271,39 +271,36 @@
 			+ Split World atlas into Ocean, LandBedrock, LandSilt
 				+ In json, as new groups
 				+ TextureDatabase Group specs
-			= WorldRenderContext:
+			+ WorldRenderContext:
 				+ RenderParameters: split land texture index and other params
 					+ Fix defaults
-				= On any land texture index changes:
+				+ On any land texture index changes:
 					+ Build atlas of textures: bedrock and silt
 					+ RegularAtlas, need a TextureAtlasBuilder::RegularAtlas override that takes vector of textures
-					= Resize textures: land3, ocean_carib_0..4, lava_0..1
-						- Though having to resize land3 sucks: resize all (from originals) to 1024
-					- Fix frame index that we give to atlas builder
 				+ Move setting of Flat land colors to InternalDraw, which sets param based on arg
-				= Buffers:
+				+ Buffers:
 					+ Vertex struct:
 						+ vec2f leftTopTextureCoords
 						+ float surfaceBacksampleStrength (0..1)
-					- Upload: now it's quads, not anymore points
+					+ Upload: now it's quads, not anymore points
 						+ Populate vertices
 							+ Silt into first half of buffer, bedrock into second half of buffer
 						X Make room in indices (as we'll now use indexed drawing)
-						- Improvements:
-							- See if can distribute backsample strength
-							- See if UploadLand really needs visible y bottom, or if can use -HalfMaxWorldHeight
+						+ Verify:
+							+ Backsampling
+							+ ybottom
 				+ RenderDrawLandSilt, RenderDrawLandBedrock: call internal RenderDrawLand(startIndex)
 					+ Do strips count math
 			+ RenderContext:
 				+ Split call for drawing land
-			- Shader:
-				- Texture
+			= Shader:
+				= Texture
 					+ New vertex attributes
 					+ Texture:
 						+ Calculate coords with fract math
-					- Drop BacksamplingStrength and second texture coord
+					- See some alpha/overlap between junctures
 				= Flat
-					+ New vertex attributes
+					- Final vertex attributes
 			+ GameController:
 				+ Settings for land split into two
 			+ SettingsManager
@@ -317,11 +314,15 @@
 		- OceanFloor:
 			- Split two SampleValue members into two
 			- Rebuild:
-				- Phase 1: fixed offset, using local constant
-				- Phase 2: nice silt distribution algorithm
+				- Milestone 1: fixed offset, using local constant
+				- Milestone 2: nice silt distribution algorithm
 					- Settings:
 						- TODOHERE
 			- Upload all members at Upload
+			- Export:
+				- TODO
+				- Npc: use silt
+				- Underwater plants: use silt
 
 
 		- Cleanup:
