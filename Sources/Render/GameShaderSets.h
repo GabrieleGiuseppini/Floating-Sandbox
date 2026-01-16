@@ -126,7 +126,8 @@ std::string ProgramKindToStr(ProgramKind program);
 
 enum class ProgramParameterKind : std::uint8_t
 {
-    AtlasTile1Dx = 0,
+    Alpha = 0,
+    AtlasTile1Dx,
     AtlasTile1LeftBottomTextureCoordinates,
     AtlasTile1Size,
     AtlasTileGeometryIndexed,

@@ -565,8 +565,6 @@ void RenderContext::Draw(float currentSimulationTime)
                 // Render ocean opaquely, over sky
                 mWorldRenderContext->RenderDrawOcean(true, renderParameters);
 
-                mWorldRenderContext->RenderDrawOceanFloorSilt(renderParameters);
-
                 glEnable(GL_DEPTH_TEST); // Required by ships
 
                 for (auto const & ship : mShips)
@@ -578,7 +576,7 @@ void RenderContext::Draw(float currentSimulationTime)
 
                 mWorldRenderContext->RenderDrawUnderwaterPlants(renderParameters); // To be covered by ocean floor and last ocean layer
 
-                mWorldRenderContext->RenderDrawOceanFloorBedrock(renderParameters);
+                mWorldRenderContext->RenderDrawOceanFloor(renderParameters);
 
                 mWorldRenderContext->RenderDrawFishes(renderParameters);
 

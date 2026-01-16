@@ -897,8 +897,7 @@ public:
     void RenderDrawOcean(bool opaquely, RenderParameters const & renderParameters);
 
     void RenderPrepareOceanFloor(RenderParameters const & renderParameters);
-    void RenderDrawOceanFloorSilt(RenderParameters const & renderParameters);
-    void RenderDrawOceanFloorBedrock(RenderParameters const & renderParameters);
+    void RenderDrawOceanFloor(RenderParameters const & renderParameters);
 
     void RenderPrepareFishes(RenderParameters const & renderParameters);
     void RenderDrawFishes(RenderParameters const & renderParameters);
@@ -1030,9 +1029,6 @@ private:
 
     void RecalculateClearCanvasColor(RenderParameters const & renderParameters);
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
-
-    template<bool ForBedrock>
-    void InternalRenderDrawOceanFloor(RenderParameters const & renderParameters);
 
     RgbaImageData InternalMakeThumbnail(
         RgbaImageData const & imageData,

@@ -1607,19 +1607,12 @@ void WorldRenderContext::RenderPrepareOceanFloor(RenderParameters const & /*rend
     }
 }
 
-void WorldRenderContext::RenderDrawOceanFloorSilt(RenderParameters const & renderParameters)
+void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderParameters)
 {
-    InternalRenderDrawOceanFloor<false>(renderParameters);
-}
+    //
+    // Silt and bedrock, opaque
+    //
 
-void WorldRenderContext::RenderDrawOceanFloorBedrock(RenderParameters const & renderParameters)
-{
-    InternalRenderDrawOceanFloor<true>(renderParameters);
-}
-
-template<bool ForBedrock>
-void WorldRenderContext::InternalRenderDrawOceanFloor(RenderParameters const & renderParameters)
-{
     bool isHighQuality = false;
     switch (renderParameters.LandRenderDetail)
     {
@@ -1638,13 +1631,13 @@ void WorldRenderContext::InternalRenderDrawOceanFloor(RenderParameters const & r
 
     glBindVertexArray(*mLandVAO);
 
+    // Silt
+
     switch (renderParameters.LandRenderMode)
     {
         case LandRenderModeType::Flat:
         {
-            vec3f const flatColor = ForBedrock
-                ? renderParameters.FlatLandBedrockColor.toVec3f()
-                : renderParameters.FlatLandSiltColor.toVec3f();
+            vec3f const flatColor = renderParameters.FlatLandSiltColor.toVec3f();
 
             if (isHighQuality)
             {
@@ -1674,7 +1667,7 @@ void WorldRenderContext::InternalRenderDrawOceanFloor(RenderParameters const & r
 
             // Bind texture
             mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::LandTexture>();
-            glBindTexture(GL_TEXTURE_2D, ForBedrock ? *mLandBedrockTextureOpenGLHandle : *mLandSiltTextureOpenGLHandle);
+            glBindTexture(GL_TEXTURE_2D, *mLandSiltTextureOpenGLHandle);
 
             break;
         }
@@ -1691,11 +1684,48 @@ void WorldRenderContext::InternalRenderDrawOceanFloor(RenderParameters const & r
         glLineWidth(0.1f);
 
     assert((mLandVertexBuffer.size() % 2) == 0);
-    GLint first = (ForBedrock) ? static_cast<GLint>(mLandVertexBuffer.size() / 2) : 0;
 
     glDrawArrays(
         GL_TRIANGLE_STRIP,
-        first,
+        static_cast<GLint>(0),
+        static_cast<GLsizei>(mLandVertexBuffer.size() / 2));
+
+    // Bedrock
+
+    switch (renderParameters.LandRenderMode)
+    {
+        case LandRenderModeType::Flat:
+        {
+            vec3f const flatColor = renderParameters.FlatLandBedrockColor.toVec3f();
+
+            if (isHighQuality)
+            {
+                mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatDetailed, GameShaderSets::ProgramParameterKind::LandFlatColor>(flatColor);
+
+            }
+            else
+            {
+                mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatBasic, GameShaderSets::ProgramParameterKind::LandFlatColor>(flatColor);
+            }
+
+            break;
+        }
+
+        case LandRenderModeType::Texture:
+        {
+            // Bind texture
+            mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::LandTexture>();
+            glBindTexture(GL_TEXTURE_2D, *mLandBedrockTextureOpenGLHandle);
+
+            break;
+        }
+    }
+
+    assert((mLandVertexBuffer.size() % 2) == 0);
+
+    glDrawArrays(
+        GL_TRIANGLE_STRIP,
+        static_cast<GLint>(mLandVertexBuffer.size() / 2),
         static_cast<GLsizei>(mLandVertexBuffer.size() / 2));
 
     glBindVertexArray(0);

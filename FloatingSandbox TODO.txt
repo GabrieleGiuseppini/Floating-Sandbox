@@ -242,7 +242,7 @@
 							- First check is for silt; only if underneath silt we also check bedrock
 							- TODO: vel dependency?
 					= Option 4: like 3, but drag depends on burrow depth (between silt and bedrock)
-						+ Linear deoth => DampCoeff
+						+ Linear depth => DampCoeff
 						- If we want to simulate Titanic, relation w/depth needs to be non-linear
 						- TODO: vel dependency?
 						
@@ -259,38 +259,37 @@
 			
 		= Rendering of silt layer above bedrock: 
 			! Gist:
-				! 1: Sand layer is opaque but drawn earlier, behind ship
+				X 1: Sand layer is opaque but drawn earlier, behind ship
 					! Bedrock layer stays like current: drawn _after_ ship, on top of it
 					! REQUIRES: two batches, NO depth
+					X Wrong: other pieces that fall look weird as they look suspended
 				X 2: Sand layer is opaque, drawn (together with bedrock) when we draw current (after ship), but its pixels have a lower depth than ship's
 					X Won't work as ship might have transparent areas which wouldn't be covered by sand
 				X 3: Sand layer is opaque, drawn (together with bedrock) BEFORE ship, but its pixels have a lower depth than ship's, and bedrock pixels have a higher depth
 					! Later-drawn ship would then be covered by land
 					X Requires everything else that need to be covered by bedrock to use depth, too much of a perf hit
+				! 4: Sand and bedrock layer are draw at the same time, opaque
 
 			+ Split World atlas into Ocean, LandBedrock, LandSilt
 				+ In json, as new groups
 				+ TextureDatabase Group specs
-			+ WorldRenderContext:
+			= WorldRenderContext:
 				+ RenderParameters: split land texture index and other params
 					+ Fix defaults
 				+ On any land texture index changes:
-					+ Build atlas of textures: bedrock and silt
-					+ RegularAtlas, need a TextureAtlasBuilder::RegularAtlas override that takes vector of textures
+					+ Store two (OpenGL) textures: bedrock and silt
 				+ Move setting of Flat land colors to InternalDraw, which sets param based on arg
 				+ Buffers:
-					+ Vertex struct:
-						+ vec2f leftTopTextureCoords
-						+ float surfaceBacksampleStrength (0..1)
-					+ Upload: now it's quads, not anymore points
+					+ Vertex struct: one single vertex
+					+ Upload:
 						+ Populate vertices
 							+ Silt into first half of buffer, bedrock into second half of buffer
-						X Make room in indices (as we'll now use indexed drawing)
 						+ Verify:
 							+ Backsampling
 							+ ybottom
-				+ RenderDrawLandSilt, RenderDrawLandBedrock: call internal RenderDrawLand(startIndex)
+				= RenderDrawLand
 					+ Do strips count math
+					- See if can optimize having to draw twice the triangle strip
 			+ RenderContext:
 				+ Split call for drawing land
 			= Shader:
@@ -300,7 +299,7 @@
 						+ Calculate coords with fract math
 					- See some alpha/overlap between junctures
 				= Flat
-					- Final vertex attributes
+					- TODOHERE
 			+ GameController:
 				+ Settings for land split into two
 			+ SettingsManager

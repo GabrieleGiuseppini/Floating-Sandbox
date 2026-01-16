@@ -36,7 +36,7 @@ uniform sampler2D paramLandTexture;
 uniform sampler2D paramNoiseTexture;
 #endif
 
-// Parameters        
+// Parameters
 uniform float paramEffectiveAmbientLightIntensity;
 uniform vec3 paramEffectiveMoonlightColor;
 uniform vec2 paramTextureScaling;
@@ -47,11 +47,13 @@ void main()
     vec2 worldCoords = worldAndDepth.xy;
 
     // Anti-aliasing
-    float alpha = worldAndDepth.z / (0.2 + abs(fwidth(worldAndDepth.z)));
+    float alpha = min(worldAndDepth.z / (0.2 + abs(fwidth(worldAndDepth.z))), 1.0);
 
     // Sample texture
     float sampleIncrement = -10.0 * (1.0 - smoothstep(-2.0, 2.0, worldAndDepth.z)); // Back-sample 10.0 at top, slowly going to zero
-    vec4 textureColor = texture2D(paramLandTexture, vec2(worldCoords.x, -worldCoords.y + sampleIncrement) * paramTextureScaling);
+    vec4 textureColor = texture2D(
+        paramLandTexture, 
+        vec2(worldCoords.x, -worldCoords.y + sampleIncrement) * paramTextureScaling);
 
 #ifdef DETAILED_LAND
 

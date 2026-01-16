@@ -431,6 +431,8 @@ std::string ProgramKindToStr(ProgramKind program)
 
 ProgramParameterKind StrToProgramParameterKind(std::string const & str)
 {
+    if (str == "Alpha")
+        return ProgramParameterKind::Alpha;
     if (str == "AtlasTile1Dx")
         return ProgramParameterKind::AtlasTile1Dx;
     else if (str == "AtlasTile1LeftBottomTextureCoordinates")
@@ -550,6 +552,8 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
 {
     switch (programParameter)
     {
+        case ProgramParameterKind::Alpha:
+            return "Alpha";
         case ProgramParameterKind::AtlasTile1Dx:
             return "AtlasTile1Dx";
         case ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates:
