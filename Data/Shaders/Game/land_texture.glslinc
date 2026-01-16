@@ -55,12 +55,16 @@ void main()
 
     // Back-sample 10.0 at top, slowly going to zero
     float sampleIncrement = -10.0 * (1.0 - smoothstep(-2.0, 2.0, worldAndDepthAndBacksampleStrength.z));
-    vec2 worldCoords2 = vec2(worldCoords.x, -worldCoords.y + sampleIncrement * worldAndDepthAndBacksampleStrength.w);
+    vec2 worldCoords2 = vec2(worldCoords.x, -worldCoords.y + sampleIncrement);
 
     // Calculate texture coords, taking into account that we're sampling a horizontal atlas of two quads
     vec2 textureCoords = worldCoords2 * paramTextureScaling;
-    // TODOHERE: frac
-    vec4 textureColor = texture2D(paramLandTexture, leftTopTextureCoords + textureCoords);
+    textureCoords = vec2(
+        leftTopTextureCoords.x + fract(textureCoords.x) * 0.5,
+        fract(textureCoords.y));
+
+    // Sample texture
+    vec4 textureColor = texture2D(paramLandTexture, textureCoords);
 
 #ifdef DETAILED_LAND
 

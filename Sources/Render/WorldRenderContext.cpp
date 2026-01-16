@@ -103,6 +103,7 @@ WorldRenderContext::WorldRenderContext(
     , mLandTextureAtlasOpenGLHandle()
     , mCurrentlyLoadedLandBedrockTextureIndex(std::numeric_limits<size_t>::max())
     , mCurrentlyLoadedLandSiltTextureIndex(std::numeric_limits<size_t>::max())
+    , mCurrentyLoadedLandBedrockTextureCoordsOffsetX(0.0f) // Will be recalculated
     , mFishTextureAtlasMetadata()
     , mFishTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
@@ -1609,15 +1610,16 @@ void WorldRenderContext::RenderPrepareOceanFloor(RenderParameters const & /*rend
 
 void WorldRenderContext::RenderDrawOceanFloorSilt(RenderParameters const & renderParameters)
 {
-    InternalRenderDrawOceanFloor(renderParameters, 0);
+    InternalRenderDrawOceanFloor<false>(renderParameters);
 }
 
 void WorldRenderContext::RenderDrawOceanFloorBedrock(RenderParameters const & renderParameters)
 {
-    InternalRenderDrawOceanFloor(renderParameters, 1);
+    InternalRenderDrawOceanFloor<true>(renderParameters);
 }
 
-void WorldRenderContext::InternalRenderDrawOceanFloor(RenderParameters const & renderParameters, size_t isBedrock)
+template<bool ForBedrock>
+void WorldRenderContext::InternalRenderDrawOceanFloor(RenderParameters const & renderParameters)
 {
     bool isHighQuality = false;
     switch (renderParameters.LandRenderDetail)
@@ -1641,7 +1643,7 @@ void WorldRenderContext::InternalRenderDrawOceanFloor(RenderParameters const & r
     {
         case LandRenderModeType::Flat:
         {
-            vec3f const flatColor = isBedrock
+            vec3f const flatColor = ForBedrock
                 ? renderParameters.FlatLandBedrockColor.toVec3f()
                 : renderParameters.FlatLandSiltColor.toVec3f();
 
@@ -1681,7 +1683,20 @@ void WorldRenderContext::InternalRenderDrawOceanFloor(RenderParameters const & r
         glLineWidth(0.1f);
 
     assert((mLandVertexBuffer.size() % 2) == 0);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(4 * mLandVertexBuffer.size() / 2 + isBedrock * (mLandVertexBuffer.size() / 2)));
+    GLint first;
+    if constexpr (ForBedrock)
+    {
+        first = static_cast<GLint>(mLandVertexBuffer.size() / 2);
+    }
+    else
+    {
+        first = 0;
+    }
+
+    glDrawArrays(
+        GL_TRIANGLE_STRIP,
+        first,
+        static_cast<GLsizei>(mLandVertexBuffer.size() / 2));
 
     glBindVertexArray(0);
 }
@@ -2506,13 +2521,11 @@ void WorldRenderContext::ApplyLandTextureIndicesChanges(RenderParameters const &
         std::vector<TextureFrame<GameTextureDatabases::WorldTextureDatabase>> textureFrames;
         auto clampedLandSiltTextureIndex = std::min(renderParameters.LandSiltTextureIndex, mLandSiltTextureFrameSpecifications.size() - 1);
         textureFrames.emplace_back(mLandSiltTextureFrameSpecifications[clampedLandSiltTextureIndex].LoadFrame(mAssetManager));
-        textureFrames[0].Metadata.FrameId.FrameIndex = 0;
         auto clampedLandBedrockTextureIndex = std::min(renderParameters.LandBedrockTextureIndex, mLandBedrockTextureFrameSpecifications.size() - 1);
         textureFrames.emplace_back(mLandBedrockTextureFrameSpecifications[clampedLandBedrockTextureIndex].LoadFrame(mAssetManager));
-        textureFrames[1].Metadata.FrameId.FrameIndex = 1;
 
         // Build atlas (expecting left-right)
-        auto landTextureAtlas = TextureAtlasBuilder<GameTextureDatabases::WorldTextureDatabase>::BuildRegularAtlas(
+        auto landTextureAtlas = TextureAtlasBuilder<GameTextureDatabases::WorldTextureDatabase>::BuildAtlas(
             textureFrames,
             TextureAtlasOptions::MipMappable);
 
@@ -2562,6 +2575,8 @@ void WorldRenderContext::ApplyLandTextureIndicesChanges(RenderParameters const &
 
         mCurrentlyLoadedLandBedrockTextureIndex = renderParameters.LandBedrockTextureIndex;
         mCurrentlyLoadedLandSiltTextureIndex = renderParameters.LandSiltTextureIndex;
+
+        mCurrentyLoadedLandBedrockTextureCoordsOffsetX = landTextureAtlas.Metadata.GetFrameMetadata(textureFrames[1].Metadata.FrameId).TextureCoordinatesBottomLeft.x;
     }
 }
 

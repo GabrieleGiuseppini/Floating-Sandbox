@@ -33,11 +33,11 @@ Floating Sandbox is featured at [GameJolt](https://gamejolt.com/games/floating-s
 
 # Implementation Details
 Some nerdy facts here.
-* The most CPU-hungry algorithms are implemented with x86 instrinsics (targeting SSE-2) to take advantage of vectorized operations; for example, the newtonian integration step operates on 4 floats at a time
+* The most CPU-hungry algorithms are implemented with SSE-2 and NEON instrinsics to take advantage of vectorized operations; for example, the newtonian integration step operates on 4 floats at a time (i.e. on two particles at a time)
 * The physical state of particles and springs is maintained in memory-aligned buffers, grouping quantities together as a function of the main algorithms operating on them - thus improving locality and reducing cache misses
 * The spring relaxation algorithm (aka rigidity simulation) is at the core of the simulation, consuming about 60% of the time spent for the simulation of each single frame. At each frame we solve 40 micro-iterations, each distributed on as many cores as possible and implemented with finely-optimized routines written with x86 and ARM intrinsics; you may read more about these optimizations on [my technical blog](https://gabrielegiuseppini.wordpress.com/2023/04/01/adventures-with-2d-mass-spring-networks-part-i/)
 * As the topology of the ship's mesh changes during the game due to destruction and wrecking, the simulator constantly re-calculates the external boundaries of each connected component via an algorithm that only operates on the neighborhood of topology changes
-* The ocean surface is simulated with modified (Shallow Water Equations)[https://en.wikipedia.org/wiki/Shallow_water_equations] (SWE's), coupled with rigid bodies to generate surface perturbations
+* The ocean surface is simulated with modified [Shallow Water Equations](https://en.wikipedia.org/wiki/Shallow_water_equations) (SWE's), coupled with rigid bodies to generate surface perturbations
 * The physics of NPC's takes place in a [barycentric coordinate system](https://en.wikipedia.org/wiki/Barycentric_coordinate_system), tracing NPC's particles' trajectories within the triangular ship mesh
 * Rendering is implemented with OpenGL (targeting a very old but widely-adopted 2.1) and happens on a separate thread, allowing the game to update the next simulation step while rendering the previous one. All of the final shading is implemented in _glsl_, with many renderings being completely procedural (e.g. flames, lightnings, rain)
 

@@ -329,21 +329,26 @@ public:
         // Top-left
 
         siltVertex[0] = LandVertex{ vec2f(x, ySilt), 0.0f, surfaceBacksampleStrengthForSilt, vec2f(0.0f, 0.0f)};
-        bedrockVertex[0] = LandVertex{ {x, yBedrock}, yBedrock - ySilt, 1.0f - surfaceBacksampleStrengthForSilt, vec2f(0.5f, 0.0f) };
+
+        bedrockVertex[0] = LandVertex{ {x, yBedrock}, ySilt - yBedrock, 1.0f - surfaceBacksampleStrengthForSilt, vec2f(0.5f, 0.0f) };
 
         // Bottom-left
 
         {
             // If land is invisible (below), then keep both points at same height, or else interpolated lines
             // will have a slope varying with the y of the visible world bottom
-            float yBottom = ySilt >= yWorldBottom ? yWorldBottom : ySilt;
-            siltVertex[1] = LandVertex{ {x, yBottom}, -(yBottom - ySilt), surfaceBacksampleStrengthForSilt, vec2f(0.0f, 0.0f) };
+            //float yBottom = ySilt >= yWorldBottom ? yWorldBottom : ySilt;
+            //siltVertex[1] = LandVertex{ {x, yBottom}, -(yBottom - ySilt), surfaceBacksampleStrengthForSilt, vec2f(0.0f, 0.0f) };
+
+            siltVertex[1] = LandVertex{ {x, yBedrock}, ySilt - yBedrock, surfaceBacksampleStrengthForSilt, vec2f(0.0f, 0.0f) };
         }
         {
             // If land is invisible (below), then keep both points at same height, or else interpolated lines
             // will have a slope varying with the y of the visible world bottom
-            float yBottom = yBedrock >= yWorldBottom ? yWorldBottom : yBedrock;
-            bedrockVertex[1] = LandVertex{ {x, yBottom}, -(yBottom - yBedrock), 1.0f - surfaceBacksampleStrengthForSilt, vec2f(0.5f, 0.0f) };
+            //float yBottom = yBedrock >= yWorldBottom ? yWorldBottom : yBedrock;
+            //bedrockVertex[1] = LandVertex{ {x, yBottom}, -(yBottom - yBedrock), 1.0f - surfaceBacksampleStrengthForSilt, vec2f(0.5f, 0.0f) };
+
+            bedrockVertex[1] = LandVertex{ {x, yWorldBottom }, ySilt - yWorldBottom, 1.0f - surfaceBacksampleStrengthForSilt, vec2f(0.5f, 0.0f) };
         }
     }
 
@@ -1043,7 +1048,8 @@ private:
     void RecalculateClearCanvasColor(RenderParameters const & renderParameters);
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
 
-    void InternalRenderDrawOceanFloor(RenderParameters const & renderParameters, size_t isBedrock);
+    template<bool ForBedrock>
+    void InternalRenderDrawOceanFloor(RenderParameters const & renderParameters);
 
     RgbaImageData InternalMakeThumbnail(
         RgbaImageData const & imageData,
@@ -1466,6 +1472,7 @@ private:
     GameOpenGLTexture mLandTextureAtlasOpenGLHandle;
     size_t mCurrentlyLoadedLandBedrockTextureIndex;
     size_t mCurrentlyLoadedLandSiltTextureIndex;
+    float mCurrentyLoadedLandBedrockTextureCoordsOffsetX;
 
     std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::FishTextureDatabase>> mFishTextureAtlasMetadata;
     GameOpenGLTexture mFishTextureAtlasOpenGLHandle;

@@ -278,7 +278,7 @@
 					+ Build atlas of textures: bedrock and silt
 					+ RegularAtlas, need a TextureAtlasBuilder::RegularAtlas override that takes vector of textures
 					= Resize textures: land3, ocean_carib_0..4, lava_0..1
-						- TODO: Though having to resize land3 sucks
+						- Though having to resize land3 sucks: resize all (from originals) to 1024
 					- Fix frame index that we give to atlas builder
 				+ Move setting of Flat land colors to InternalDraw, which sets param based on arg
 				= Buffers:
@@ -299,14 +299,15 @@
 			- Shader:
 				- Texture
 					+ New vertex attributes
-					- Texture:
-						- Calculate coords with fract math
-						- TODOHERE
+					+ Texture:
+						+ Calculate coords with fract math
+					- Drop BacksamplingStrength and second texture coord
 				= Flat
 					+ New vertex attributes
 			+ GameController:
 				+ Settings for land split into two
 			+ SettingsManager
+			- Move plants on top of silt
 			- SettingsDialog: expose (silt above, bedrock below)
 				- TODOHERE's
 			- Fix themes
