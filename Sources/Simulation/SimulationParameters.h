@@ -6,6 +6,7 @@
 #pragma once
 
 #include <Core/GameTypes.h>
+#include <Core/SysSpecifics.h>
 #include <Core/Vectors.h>
 
 #include <chrono>
@@ -573,8 +574,13 @@ struct SimulationParameters
 
     // The number of ocean surface terrain samples for the entire world width;
     // a higher value means more spatial resolution, at the expense of cache misses
+#if FS_IS_PLATFORM_MOBILE()
+    template <typename T>
+    static T constexpr OceanSurfaceSamples = 16384;
+#else
     template <typename T>
     static T constexpr OceanSurfaceSamples = 32768;
+#endif
 
     // The number of ocean floor terrain samples for the entire world width;
     // a higher value means more spatial resolution, at the expense of cache misses
@@ -715,9 +721,16 @@ struct SimulationParameters
     // Limits
     //
 
+    // World width: the larger this is, the more samples we require for world-wide buffers
+    // (such as ocean surface), requiring more CPU at each frame.
+#if FS_IS_PLATFORM_MOBILE()
+    static float constexpr MaxWorldWidth = 10000.0f;
+#else
     static float constexpr MaxWorldWidth = 20000.0f;
+#endif
     static float constexpr HalfMaxWorldWidth = MaxWorldWidth / 2.0f;
 
+    // World height: no real constraints
     static float constexpr MaxWorldHeight = 22000.0f;
     static float constexpr HalfMaxWorldHeight = MaxWorldHeight / 2.0f;
 
