@@ -2156,11 +2156,12 @@ void Ship::HandleCollisionsWithSeaFloor(
 
             float const bY = oceanFloor.GetHeightAt(clampedX);
 
-            float constexpr MaxDampingFactor = 0.5f;
-            float constexpr MinDampingFactor = 0.9f;
+            //float constexpr MaxDampingFactor = 0.5f;
+            //float constexpr MinDampingFactor = 0.9f;
+            float constexpr MaxDampingFactor = 0.8f;
+            float constexpr MinDampingFactor = 0.95f;
             float const dampingFactor = MinDampingFactor + (MaxDampingFactor - MinDampingFactor) * LinearStep(0.0f, 20.0f, 20.f - (position.y - bY));
-
-            //LogMessage("P:", position.y, " B:", bY, " D:", (bY + 20.0f - position.y), " DF:", dampingFactor);
+            //float const dampingFactor = MinDampingFactor + (MaxDampingFactor - MinDampingFactor) * LinearStep(0.0f, 20.f * 20.0f, 20.f * 20.0f - (position.y - bY) * (position.y - bY));
 
             mPoints.SetVelocity(
                 pointIndex,
