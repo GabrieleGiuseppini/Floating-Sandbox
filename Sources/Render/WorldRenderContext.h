@@ -323,13 +323,19 @@ public:
         LandVertex * siltVertex = &(mLandVertexBuffer[iSlice * 2]);
         LandVertex * bedrockVertex = &(mLandVertexBuffer[mLandVertexBuffer.size() / 2 + iSlice * 2]);
 
-        // Top-left
-        siltVertex[0] = LandVertex{ vec2f(x, ySilt), 0.0f };
-        bedrockVertex[0] = LandVertex{ {x, yBedrock}, ySilt - yBedrock };
+        // "Pretend" yBedrock to cover silt a bit, providing a band over which we blend
+        assert(ySilt >= yBedrock);
+        float constexpr MaxTransitionThickness = 10.0f; // Magic
+        float const blendThickness = std::min(ySilt - yBedrock, MaxTransitionThickness);
+        float const blendAlphaStartValue = 1.0f - blendThickness / MaxTransitionThickness; // With zero blendThickness we want to start from 1.0
 
-        // Bottom-left
-        siltVertex[1] = LandVertex{ {x, yBedrock}, ySilt - yBedrock };
-        bedrockVertex[1] = LandVertex{ {x, yWorldBottom }, ySilt - yWorldBottom };
+        // Silt
+        siltVertex[0] = LandVertex{ {x, ySilt}, 0.0f, 1.0f };
+        siltVertex[1] = LandVertex{ {x, yBedrock}, ySilt - yBedrock, 1.0f };
+
+        // Bedrock
+        bedrockVertex[0] = LandVertex{ {x, yBedrock + blendThickness}, ySilt - yBedrock, blendAlphaStartValue };
+        bedrockVertex[1] = LandVertex{ {x, yWorldBottom}, ySilt - yWorldBottom, blendAlphaStartValue + (yBedrock + blendThickness - yWorldBottom)};
     }
 
     void UploadLandEnd();
@@ -1129,6 +1135,7 @@ private:
     {
         vec2f position; // World
         float depth;
+        float interfaceAlpha;
     };
 
     struct OceanBasicSegment

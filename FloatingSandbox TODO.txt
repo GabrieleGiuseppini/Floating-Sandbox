@@ -240,14 +240,14 @@
 						- If we go for this, update description at call site: also changes velocities
 					= Option 3: same as 2, but @ HandleCollisionsWithSeaFloor
 						- Watch out drag constant: it's compound
-						- Optimize retrieval of floor: both in one call
+						+ Optimize retrieval of floor: both in one call
 							- First check is for silt; only if underneath silt we also check bedrock
 							- TODO: vel dependency?
 					= Option 4: like 3, but drag depends on burrow depth (between silt and bedrock)
 						+ Linear depth => DampCoeff
 						X If we want to simulate Titanic, relation w/depth needs to be non-linear
 						- Fine tune here: 
-							- Initial impact must be harder: make it so damping factor is lower (more destructive) with kinetic energy
+							= Initial impact must be harder: make it so damping factor is lower (more destructive) with kinetic energy
 								+ Indicative K (default ship @ ~25m/s): 400000
 						
 				- HandleCollisions:
@@ -293,17 +293,16 @@
 							+ ybottom
 				= RenderDrawLand
 					+ Do strips count math
-					- See if can optimize having to draw twice the triangle strip
+					- See if can optimize having to draw twice the triangle strip (hard tbh, because of mipmap/atlas problem)
 			+ RenderContext:
 				+ Split call for drawing land
 			= Shader:
-				= Texture
+				+ Texture
 					+ New vertex attributes
 					+ Texture:
 						+ Calculate coords with fract math
-					- See some alpha/overlap between junctures
-						- Try with already-sampled Perlin noise
-						- Needs a new vertex member, "interfaceDepth" == distance of y from silt-bedrock interface, positive
+					+ See some alpha/overlap between junctures
+						+ Bedrock is above silt by D, and shader gets that D as a new attribute in 0-1 domain, directly usable as alpha
 				= Flat
 					- TODOHERE
 			+ GameController:

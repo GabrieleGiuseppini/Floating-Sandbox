@@ -277,9 +277,9 @@ WorldRenderContext::WorldRenderContext(
 
     // Describe vertex attributes
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-    static_assert(sizeof(LandVertex) == 3 * sizeof(float));
+    static_assert(sizeof(LandVertex) == 4 * sizeof(float));
     glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Land));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Land), 3, GL_FLOAT, GL_FALSE, sizeof(LandVertex), (void *)0);
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Land), 4, GL_FLOAT, GL_FALSE, sizeof(LandVertex), (void *)0);
     CheckOpenGLError();
 
     // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding

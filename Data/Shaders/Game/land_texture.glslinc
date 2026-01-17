@@ -4,18 +4,18 @@
 #define out varying
 
 // Inputs
-in vec3 inLand; // Position (vec2), Depth (float) (0 at top, +X at bottom)
+in vec4 inLand; // Position (vec2), Depth (float) (0 at top, +X at bottom), InterfaceAlpha
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
-out vec3 worldAndDepth;
+out vec4 worldAndDepthAndInterfaceAlpha;
 
 void main()
 {
     gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
-    worldAndDepth = inLand;
+    worldAndDepthAndInterfaceAlpha = inLand;
 }
 
 
@@ -28,7 +28,7 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in vec3 worldAndDepth;
+in vec4 worldAndDepthAndInterfaceAlpha;
 
 // Textures
 uniform sampler2D paramLandTexture;
@@ -44,13 +44,16 @@ uniform float paramOceanDepthDarkeningRate;
 
 void main()
 {
-    vec2 worldCoords = worldAndDepth.xy;
+    vec2 worldCoords = worldAndDepthAndInterfaceAlpha.xy;
 
     // Anti-aliasing
-    float alpha = min(worldAndDepth.z / (0.2 + abs(fwidth(worldAndDepth.z))), 1.0);
+    float alpha = min(worldAndDepthAndInterfaceAlpha.z / (0.2 + abs(fwidth(worldAndDepthAndInterfaceAlpha.z))), 1.0);
+
+    // Smooth transition between two layers
+    alpha *= worldAndDepthAndInterfaceAlpha.w;
 
     // Sample texture
-    float sampleIncrement = -10.0 * (1.0 - smoothstep(-2.0, 2.0, worldAndDepth.z)); // Back-sample 10.0 at top, slowly going to zero
+    float sampleIncrement = -10.0 * (1.0 - smoothstep(-2.0, 2.0, worldAndDepthAndInterfaceAlpha.z)); // Back-sample 10.0 at top, slowly going to zero
     vec4 textureColor = texture2D(
         paramLandTexture, 
         vec2(worldCoords.x, -worldCoords.y + sampleIncrement) * paramTextureScaling);
