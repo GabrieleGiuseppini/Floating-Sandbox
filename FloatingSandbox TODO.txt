@@ -174,6 +174,8 @@
 
 	= Fix SettingsDialog/Russian-Ukrainian issue from Denis
 		+ Ask russian and ukrainian translators
+		= UK should be final
+		- Waiting for Russian .po
 
 	- Improvements from Bandit:
 		! Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
@@ -245,8 +247,8 @@
 						+ Linear depth => DampCoeff
 						X If we want to simulate Titanic, relation w/depth needs to be non-linear
 						- Fine tune here: 
-							- Harder initial impact? (lower "Min")
-						- TODO: vel dependency?
+							- Initial impact must be harder: make it so damping factor is lower (more destructive) with kinetic energy
+								+ Indicative K (default ship @ ~25m/s): 400000
 						
 				- HandleCollisions:
 					= Re-take orig code and simplify as above
@@ -300,34 +302,42 @@
 					+ Texture:
 						+ Calculate coords with fract math
 					- See some alpha/overlap between junctures
+						- Try with already-sampled Perlin noise
+						- Needs a new vertex member, "interfaceDepth" == distance of y from silt-bedrock interface, positive
 				= Flat
 					- TODOHERE
 			+ GameController:
 				+ Settings for land split into two
 			+ SettingsManager
-			- Move plants on top of silt
+			+ Move plants on top of silt
 			- SettingsDialog: expose (silt above, bedrock below)
 				- TODOHERE's
 			- Fix themes
 
 			- Finalize default Flat land colors
 
-		- OceanFloor:
-			- Split two SampleValue members into two
-			- Rebuild:
-				- Milestone 1: fixed offset, using local constant
+		= OceanFloor:
+			+ Split two SampleValue members into two
+			- Interactions: TODO: decide whether user sets bedrock or silt
+			= @ samples rebuild:
+				+ Milestone 1: fixed offset, using local constant
 				- Milestone 2: nice silt distribution algorithm
 					- Settings:
 						- TODOHERE
-			- Upload all members at Upload
-			- Export:
-				- TODO
-				- Npc: use silt
-				- Underwater plants: use silt
+			+ Upload all members at Upload
+			+ Export:
+				+ Npc: use silt
+				+ Underwater plants: use silt
 
+		- Sand dust upon impact
+			- Ship::HandleCollisionsWithSeaFloor: each run produces zero or 1 point index which had the most kinetic energy decrease because of silt drag, above a threshold
+			- SpringRealaxations stores all into vector, new member of ship
+				- Vector gets cleaned before loop
+			- Then, Ship::Update visits this new vector member and produces ephemerals for each
 
 		- Cleanup:
-			- OceanFloor.h: GetHeightXYZ: see which ones not needed anymore			
+			- All TODOs
+				- Ship.cpp::HandleCollisionsWithSeaFloor
 
 	- Make those deep fishess texture better aliased (no white border but darker instead)
 

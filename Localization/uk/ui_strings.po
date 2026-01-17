@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-14 17:36+0100\n"
+"PO-Revision-Date: 2026-01-17 16:24+0100\n"
 "Last-Translator: matheusvhs\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -1593,7 +1593,7 @@ msgstr "Контролер двигуна"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2656
 msgid "Engine Thrust Adjust"
-msgstr "Регулювання тяги двигуна"
+msgstr "Тяга двигуна"
 
 #: ..\Sources\ShipBuilderLib\UI\MaterialPalette.cpp:788
 msgid "Engine Transmission"
@@ -1903,7 +1903,7 @@ msgstr "Створити Сміття"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2697
 msgid "Generate Engine Wake"
-msgstr "Генерація сліду від лопатей"
+msgstr "Слід від лопастей"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:5681
 msgid "Generate Sparkles"
@@ -1983,7 +1983,7 @@ msgstr "Вироблюване тепло (КДж/с)"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2752
 msgid "Heat Generation Adjust"
-msgstr "Тепловиділення (Нагрівання матеріалу)"
+msgstr "Тепловиділення"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4691
 msgid "Heat Overlay"
@@ -2351,7 +2351,7 @@ msgstr "Люмінесценція"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2806
 msgid "Luminescence Adjust"
-msgstr "Регулювання люмінесценції"
+msgstr "Люмінесценція"
 
 #: ..\Sources\FloatingSandbox\UI\CreditsPanel.cpp:137
 msgid "MUSIC"
@@ -2761,7 +2761,7 @@ msgstr "Експерименти з паралелізму"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:3173
 msgid "Passive Blast Radius Adjust"
-msgstr "Регулювання радіуса пасивного вибуху"
+msgstr "Радіус пасивного вибуху"
 
 #: ..\Sources\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:101
 msgid "Password Protection"
@@ -2924,7 +2924,7 @@ msgstr "Програмується в Амстердамі, Нідерланди
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2682
 msgid "Propellers Work Above Water"
-msgstr "Пропелери працюють над водою"
+msgstr "Пропелери над водою"
 
 #: ..\Sources\ShipBuilderLib\Controller.cpp:218
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:1740
@@ -3536,7 +3536,7 @@ msgstr "Кораблі"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:3067
 msgid "Shoal Radius Adjust"
-msgstr "Регулювання радіуса мілководдя"
+msgstr "Регулювання  мілководдя"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:5542
 msgid "Show AABBs"
@@ -3704,7 +3704,7 @@ msgstr "Розкид"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2833
 msgid "Spread Adjust"
-msgstr "Регулювання Поширення Розповсюдження"
+msgstr "Регулювання Поширення"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:5719
 msgid "Spring Algo Adjust"
@@ -4533,7 +4533,7 @@ msgstr "Водяна помпа"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2725
 msgid "Water Pump Power Adjust"
-msgstr "Потужність водяного насоса"
+msgstr "Потужність  насоса"
 
 #: ..\Sources\ShipBuilderLib\UI\MaterialPalette.cpp:921
 msgid "Water Switch"
