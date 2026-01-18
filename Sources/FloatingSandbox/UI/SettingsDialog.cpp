@@ -1583,26 +1583,26 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Ocean Floor Silt Hardness
+            // Ocean Floor Silt Thickness
             {
-                mOceanFloorSiltHardnessSlider = new SliderControl<float>(
+                mOceanFloorSiltThicknessSlider = new SliderControl<float>(
                     oceanFloorBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Silt Hardness"),
-                    _("Adjusts the hardness of the silt layer on top of the ocean floor, which slowly buries ship wrecks over time. Setting to 1.0 disables completely the simulation of silt."),
+                    _("Silt Thickness"),
+                    _("The thickness of the silt layer above the bedrock (m)."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::OceanFloorSiltHardness, value);
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorSiltThickness, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinOceanFloorSiltHardness(),
-                        mGameControllerSettingsOptions.GetMaxOceanFloorSiltHardness()));
+                        mGameControllerSettingsOptions.GetMinOceanFloorSiltThickness(),
+                        mGameControllerSettingsOptions.GetMaxOceanFloorSiltThickness()));
 
                 oceanFloorSizer->Add(
-                    mOceanFloorSiltHardnessSlider,
+                    mOceanFloorSiltThicknessSlider,
                     wxGBPosition(0, 4),
                     wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
@@ -6391,7 +6391,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mOceanFloorDetailAmplificationSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorDetailAmplification));
     mOceanFloorElasticityCoefficientSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorElasticityCoefficient));
     mOceanFloorFrictionCoefficientSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorFrictionCoefficient));
-    mOceanFloorSiltHardnessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorSiltHardness));
+    mOceanFloorSiltThicknessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorSiltThickness));
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
 
     //

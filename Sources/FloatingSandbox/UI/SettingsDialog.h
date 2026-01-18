@@ -94,7 +94,7 @@ private:
     SliderControl<float> * mOceanFloorDetailAmplificationSlider;
     SliderControl<float> * mOceanFloorElasticityCoefficientSlider;
     SliderControl<float> * mOceanFloorFrictionCoefficientSlider;
-    SliderControl<float> * mOceanFloorSiltHardnessSlider;
+    SliderControl<float> * mOceanFloorSiltThicknessSlider;
     SliderControl<float> * mRotAcceler8rSlider;
 
     // Wind and Waves

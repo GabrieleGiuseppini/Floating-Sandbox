@@ -315,21 +315,33 @@
 
 		= OceanFloor:
 			+ Split two SampleValue members into two
-			- Interactions: target is Bedrock; silt calculated on top of that
-			= @ samples rebuild:
-				+ Milestone 1: fixed offset, using local constant
-				- Milestone 2: nice silt distribution algorithm
-					- Need separate function that does full pass on Bedrock and populates Silt
-					- Settings:
+			! Interactions: target is Bedrock; silt calculated on top of that
+			= Impl:
+				+ CalculateResultantSampleValues: does only Bedrock samples, and then at end calls CalculateSiltSampleValues()
+				= CalculateSiltSampleValues():
+					= Milestone 1: fixed offset
+						+ Applies offset (new SimulationSetting, replaces other: SiltThickness)
+						- Applies sin wave
+					- Milestone 2: nice silt distribution algorithm
 						- TODOHERE
+					- Profile changes (interactions and all):
+						+ SetHeightMap: calls CalculateResultantSampleValues, done
+						+ AdjustTo: calls SetTerrainHeight
+						+ DisplaceAt: calls SetTerrainHeight 
+						- SetTerrainHeight:
+							- TODO: depends on silting distribution algorithm: can we do it locally?
+								- If not, each change needs to be followed by a full call to CalculateSiltSampleValues()
+
 			+ Upload all members at Upload
 			+ Export:
 				+ Npc: use silt
 				+ Underwater plants: use silt
 
+		- FIX: rendering: interface alpha takes too little of overlap; 100% bedrock does not match end of silt layer
 		- SettingsDialog: expose all new settings
-			- Rendering (Texture, FlatColor) (silt above, bedrock below)
-			- Replace existing silt setting(s) with new ones:
+			- Rendering (Texture, FlatColor): split Bedrock and Silt (silt above, bedrock below)
+			- Add/replace new silt settings:
+				= SiltThickness
 				- TODOHERE's
 		- Fix themes
 

@@ -603,9 +603,9 @@ struct SimulationParameters
     static float constexpr MinOceanFloorFrictionCoefficient = 0.05f; // Keeps some sanity at lower end
     static float constexpr MaxOceanFloorFrictionCoefficient = 1.0f;
 
-    float OceanFloorSiltHardness;
-    static float constexpr MinOceanFloorSiltHardness = 0.0f;
-    static float constexpr MaxOceanFloorSiltHardness = 1.0f;
+    float OceanFloorSiltThickness;
+    static float constexpr MinOceanFloorSiltThickness = 0.0f;
+    static float constexpr MaxOceanFloorSiltThickness = 50.0f;
 
     unsigned int NumberOfStars;
     static constexpr unsigned int MinNumberOfStars = 0;

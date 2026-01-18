@@ -204,6 +204,8 @@ private:
             + mHeightMap[sampleIndex] * mCurrentOceanFloorDetailAmplification;
     }
 
+    void CalculateSiltSampleValues();
+
 private:
 
     // The bump profile (ondulating component seafloor);
@@ -252,6 +254,7 @@ private:
     //
 
     float mCurrentSeaDepth;
+    float mCurrentOceanFloorSiltThickness;
     float mCurrentOceanFloorBumpiness;
     float mCurrentOceanFloorDetailAmplification;
 };

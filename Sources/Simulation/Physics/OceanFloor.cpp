@@ -9,9 +9,6 @@
 
 namespace Physics {
 
-// TODOTEST
-float constexpr SiltHeightTODO = 20.0f;
-
 OceanFloor::OceanFloor(OceanFloorHeightMap && heightMap)
     : mBumpProfile(SamplesCount)
     , mHeightMap(std::move(heightMap))
@@ -22,6 +19,7 @@ OceanFloor::OceanFloor(OceanFloorHeightMap && heightMap)
     , mIsDirty(false)
     , mIsDirtyForRendering(false)
     , mCurrentSeaDepth(0.0f)
+    , mCurrentOceanFloorSiltThickness(0.0f)
     , mCurrentOceanFloorBumpiness(0.0f)
     , mCurrentOceanFloorDetailAmplification(0.0f)
 {
@@ -74,10 +72,12 @@ void OceanFloor::Update(SimulationParameters const & simulationParameters)
     // Check whether we need to recalculate the samples
     if (doRecalculateSamples
         || simulationParameters.SeaDepth != mCurrentSeaDepth
+        || simulationParameters.OceanFloorSiltThickness != mCurrentOceanFloorSiltThickness
         || simulationParameters.OceanFloorDetailAmplification != mCurrentOceanFloorDetailAmplification)
     {
         // Update current game parameters
         mCurrentSeaDepth = simulationParameters.SeaDepth;
+        mCurrentOceanFloorSiltThickness = simulationParameters.OceanFloorSiltThickness;
         mCurrentOceanFloorDetailAmplification = simulationParameters.OceanFloorDetailAmplification;
 
         // Recalculate samples
@@ -184,8 +184,6 @@ std::optional<bool> OceanFloor::AdjustTo(
 
         // Decide whether it's a significant change
         // (consumed by tool)
-        // TODOTEST: using bedrock
-        //hasAdjusted |= std::abs(newSampleValue - mSamples[s].SampleValue) > 0.2f;
         hasAdjusted |= std::abs(newSampleValue - mSamples[s].BedrockSampleValue) > 0.2f;
 
         // Translate sample value into terrain change
@@ -262,7 +260,7 @@ void OceanFloor::SetTerrainHeight(
     // Recalculate sample value
     float const newBedrockSampleValue = CalculateResultantBedrockSampleValue(sampleIndex);
     // TODOTEST
-    float const newSiltSampleValue = newBedrockSampleValue + SiltHeightTODO;
+    float const newSiltSampleValue = newBedrockSampleValue + mCurrentOceanFloorSiltThickness;
 
     // Update sample value
     mSamples[sampleIndex].BedrockSampleValue = newBedrockSampleValue;
@@ -306,14 +304,16 @@ void OceanFloor::CalculateBumpProfile()
 
 void OceanFloor::CalculateResultantSampleValues()
 {
+    //
+    // Populate bedrock profile
+    //
+
     // sample index = 0
     float previousBedrockSampleValue;
     {
         previousBedrockSampleValue = CalculateResultantBedrockSampleValue(0);
 
         mSamples[0].BedrockSampleValue = previousBedrockSampleValue;
-        // TODOTEST
-        mSamples[0].SiltSampleValue = previousBedrockSampleValue + SiltHeightTODO;
     }
 
     // sample index = 1...SamplesCount-1
@@ -323,23 +323,43 @@ void OceanFloor::CalculateResultantSampleValues()
 
         mSamples[i].BedrockSampleValue = bedrockSampleValue;
         mSamples[i - 1].BedrockSampleValuePlusOneMinusSampleValue = bedrockSampleValue - previousBedrockSampleValue;
-        // TODOTEST
-        mSamples[i].SiltSampleValue = bedrockSampleValue + SiltHeightTODO;
-        mSamples[i - 1].SiltSampleValuePlusOneMinusSampleValue = mSamples[i - 1].BedrockSampleValuePlusOneMinusSampleValue;
 
         previousBedrockSampleValue = bedrockSampleValue;
     }
 
     assert(mSamples[SamplesCount - 1].BedrockSampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
-    assert(mSamples[SamplesCount - 1].SiltSampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
 
     // Make sure extra sample has same value as previous one
     assert(previousBedrockSampleValue == mSamples[SamplesCount - 1].BedrockSampleValue);
     mSamples[SamplesCount].BedrockSampleValue = previousBedrockSampleValue;
-    // TODOTEST
-    mSamples[SamplesCount].SiltSampleValue = previousBedrockSampleValue + SiltHeightTODO;
-
     assert(mSamples[SamplesCount].BedrockSampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
+
+    // Now calculate Silt profile, on top of bedrock profile
+    CalculateSiltSampleValues();
+}
+
+void OceanFloor::CalculateSiltSampleValues()
+{
+    // sample index = 0
+    float previousSiltSampleValue = mSamples[0].BedrockSampleValue + mCurrentOceanFloorSiltThickness;
+    mSamples[0].SiltSampleValue = previousSiltSampleValue;
+
+    // sample index = 1...SamplesCount-1
+    for (size_t i = 1; i < SamplesCount; ++i)
+    {
+        float const siltSampleValue = mSamples[i].BedrockSampleValue + mCurrentOceanFloorSiltThickness;
+
+        mSamples[i].SiltSampleValue = siltSampleValue;
+        mSamples[i - 1].SiltSampleValuePlusOneMinusSampleValue = siltSampleValue - previousSiltSampleValue;
+
+        previousSiltSampleValue = siltSampleValue;
+    }
+
+    assert(mSamples[SamplesCount - 1].SiltSampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
+
+    // Make sure extra sample has same value as previous one
+    assert(previousSiltSampleValue == mSamples[SamplesCount - 1].SiltSampleValue);
+    mSamples[SamplesCount].SiltSampleValue = previousSiltSampleValue;
     assert(mSamples[SamplesCount].SiltSampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
 }
 

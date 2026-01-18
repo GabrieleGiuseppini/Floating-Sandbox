@@ -789,10 +789,10 @@ public:
     float GetMinOceanFloorFrictionCoefficient() const override { return SimulationParameters::MinOceanFloorFrictionCoefficient; }
     float GetMaxOceanFloorFrictionCoefficient() const override { return SimulationParameters::MaxOceanFloorFrictionCoefficient; }
 
-    float GetOceanFloorSiltHardness() const override { return mSimulationParameters.OceanFloorSiltHardness; }
-    void SetOceanFloorSiltHardness(float value) override { mSimulationParameters.OceanFloorSiltHardness = value; }
-    float GetMinOceanFloorSiltHardness() const override { return SimulationParameters::MinOceanFloorSiltHardness; }
-    float GetMaxOceanFloorSiltHardness() const override { return SimulationParameters::MaxOceanFloorSiltHardness; }
+    float GetOceanFloorSiltThickness() const override { return mSimulationParameters.OceanFloorSiltThickness; }
+    void SetOceanFloorSiltThickness(float value) override { mSimulationParameters.OceanFloorSiltThickness = value; }
+    float GetMinOceanFloorSiltThickness() const override { return SimulationParameters::MinOceanFloorSiltThickness; }
+    float GetMaxOceanFloorSiltThickness() const override { return SimulationParameters::MaxOceanFloorSiltThickness; }
 
     float GetDestroyRadius() const override { return mSimulationParameters.DestroyRadius; }
     void SetDestroyRadius(float value) override { mSimulationParameters.DestroyRadius = value; }

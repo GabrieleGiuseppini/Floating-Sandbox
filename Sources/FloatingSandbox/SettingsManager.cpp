@@ -137,7 +137,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING_WITH_IMMEDIATE(float, OceanFloorDetailAmplification);
     ADD_GC_SETTING(float, OceanFloorElasticityCoefficient);
     ADD_GC_SETTING(float, OceanFloorFrictionCoefficient);
-    ADD_GC_SETTING(float, OceanFloorSiltHardness);
+    ADD_GC_SETTING(float, OceanFloorSiltThickness);
     ADD_GC_SETTING(float, DestroyRadius);
     ADD_GC_SETTING(float, RepairRadius);
     ADD_GC_SETTING(float, RepairSpeedAdjustment);

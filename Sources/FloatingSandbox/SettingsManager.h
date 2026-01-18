@@ -107,7 +107,7 @@ enum class GameSettings : size_t
     OceanFloorDetailAmplification,
     OceanFloorElasticityCoefficient,
     OceanFloorFrictionCoefficient,
-    OceanFloorSiltHardness,
+    OceanFloorSiltThickness,
     DestroyRadius,
     RepairRadius,
     RepairSpeedAdjustment,
