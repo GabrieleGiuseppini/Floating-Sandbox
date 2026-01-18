@@ -4249,9 +4249,11 @@ void Npcs::MaintainOverLand(
 
     // Check if particle is below the sea floor
     //
+    // Note: we use silt as a proxy of the whole floor - i.e. pretend silt is bedrock here ;-)
+    //
     // At this moment the particle is guaranteed to be inside world boundaries
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
-    auto const [isUnderneathFloor, oceanFloorHeight, integralIndex] = oceanFloor.GetHeightIfUnderneathAt(pos.x, pos.y);
+    auto const [isUnderneathFloor, oceanFloorHeight, integralIndex] = oceanFloor.GetSiltHeightIfUnderneathAt(pos.x, pos.y);
     if (isUnderneathFloor)
     {
         // Collision!
@@ -4264,7 +4266,7 @@ void Npcs::MaintainOverLand(
 
         // Calculate sea floor anti-normal
         // (positive points down)
-        vec2f const seaFloorAntiNormal = -oceanFloor.GetNormalAt(integralIndex);
+        vec2f const seaFloorAntiNormal = -oceanFloor.GetSiltNormalAt(integralIndex);
 
         // Calculate the component of the particle's velocity along the anti-normal,
         // i.e. towards the interior of the floor...

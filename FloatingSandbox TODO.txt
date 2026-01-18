@@ -183,7 +183,7 @@
 		= Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
 			- See if it's due to too much elasticity
 			- See if it's due to underwater pressure
-		- Spec:
+		! Spec:
 			! https://hal.science/hal-03251375/document
 			! Observations:
 				- max deltaPos observed with impact, calc'd for 1 mechanical iteration is 0.13
@@ -243,19 +243,22 @@
 						- Watch out drag constant: it's compound
 						+ Optimize retrieval of floor: both in one call
 							- First check is for silt; only if underneath silt we also check bedrock
-							- TODO: vel dependency?
-					= Option 4: like 3, but drag depends on burrow depth (between silt and bedrock)
+					+ Option 4: like 3, but drag depends on burrow depth (between silt and bedrock)
 						+ Linear depth => DampCoeff
 						X If we want to simulate Titanic, relation w/depth needs to be non-linear
-						- Fine tune here: 
-							= Initial impact must be harder: make it so damping factor is lower (more destructive) with kinetic energy
+						+ Fine tune here: 
+							+ Initial impact must be harder: make it so damping factor is lower (more destructive) with kinetic energy
 								+ Indicative K (default ship @ ~25m/s): 400000
-						
-				- HandleCollisions:
-					= Re-take orig code and simplify as above
-						- TODO: see if easy way to find where to move back, unless we're ahppy with burrowing
-							- Might want to keep this, actually
 
+			- Finalize:
+				- Try moving from HandleCollisions to ApplyWorldForces
+
+				- If stay with HandleCollisions:
+					- Cleanup ApplyWorldForces
+					- Check HandleCollisions assembly, especially Clamp and LinearStep
+					- See if time to test vectorized
+
+			- TODOOLD:						
 				- Optimizations:
 					- @ WorldForces:
 						- Calculate sum of drags and multiply once with velocity
@@ -278,7 +281,7 @@
 			+ Split World atlas into Ocean, LandBedrock, LandSilt
 				+ In json, as new groups
 				+ TextureDatabase Group specs
-			= WorldRenderContext:
+			+ WorldRenderContext:
 				+ RenderParameters: split land texture index and other params
 					+ Fix defaults
 				+ On any land texture index changes:
@@ -292,9 +295,8 @@
 						+ Verify:
 							+ Backsampling
 							+ ybottom
-				= RenderDrawLand
+				+ RenderDrawLand
 					+ Do strips count math
-					- See if can optimize having to draw twice the triangle strip (hard tbh, because of mipmap/atlas problem)
 			+ RenderContext:
 				+ Split call for drawing land
 			= Shader:
@@ -310,18 +312,15 @@
 				+ Settings for land split into two
 			+ SettingsManager
 			+ Move plants on top of silt
-			- SettingsDialog: expose (silt above, bedrock below)
-				- TODOHERE's
-			- Fix themes
-
 			- Finalize default Flat land colors
 
 		= OceanFloor:
 			+ Split two SampleValue members into two
-			- Interactions: TODO: decide whether user sets bedrock or silt
+			- Interactions: target is Bedrock; silt calculated on top of that
 			= @ samples rebuild:
 				+ Milestone 1: fixed offset, using local constant
 				- Milestone 2: nice silt distribution algorithm
+					- Need separate function that does full pass on Bedrock and populates Silt
 					- Settings:
 						- TODOHERE
 			+ Upload all members at Upload
@@ -329,15 +328,25 @@
 				+ Npc: use silt
 				+ Underwater plants: use silt
 
+		- SettingsDialog: expose (silt above, bedrock below)
+			- Rendering
+			- Replace existing silt setting(s) with new ones:
+				- TODOHERE's
+		- Fix themes
+
 		- Sand dust upon impact
 			- Ship::HandleCollisionsWithSeaFloor: each run produces zero or 1 point index which had the most kinetic energy decrease because of silt drag, above a threshold
 			- SpringRealaxations stores all into vector, new member of ship
 				- Vector gets cleaned before loop
 			- Then, Ship::Update visits this new vector member and produces ephemerals for each
+		
+			- Try afterwards: also dent silt
 
 		- Cleanup:
-			- All TODOs
-				- Ship.cpp::HandleCollisionsWithSeaFloor
+			- HandleCollisionsWithSeaFloor (All TODOs)
+			- ApplyWorldForces
+
+	- Move tool: fix radius: when ship is very close, move tool does _not_ engage
 
 	- Make those deep fishess texture better aliased (no white border but darker instead)
 

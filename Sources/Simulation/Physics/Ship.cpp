@@ -2070,104 +2070,138 @@ void Ship::HandleCollisionsWithSeaFloor(
 
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
 
+    // TODOTEST
+    float maxKineticEnergy = 0.0f;
+    float maxKEDampingFactor = 0.0f;
+
     for (ElementIndex pointIndex = startPointIndex; pointIndex < endPointIndex; ++pointIndex)
     {
         auto const & position = mPoints.GetPosition(pointIndex);
 
         // Check if point is below the sea floor
-        //
+
         // At this moment the point might be outside of world boundaries,
         // so better clamp its x before sampling ocean floor height
         float const clampedX = Clamp(position.x, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth);
-        auto const [bedrockY, integralIndex] = oceanFloor.GetBedrockHeightIfUnderneathAt(clampedX, position.y);
-        if (position.y < bedrockY)
+        auto const [siltY, bedrockY, integralIndex] = oceanFloor.GetHeightsIfUnderneathAt(clampedX, position.y);
+        if (position.y < siltY)
         {
-            // Collision!
-
-            //
-            // Calculate post-bounce velocity
-            //
+            // We are underneath silt - check if also underneath bedrock
 
             vec2f const pointVelocity = mPoints.GetVelocity(pointIndex);
 
-            // Calculate sea floor anti-normal
-            // (positive points down)
-            vec2f const seaFloorAntiNormal = -oceanFloor.GetNormalAt(integralIndex);
-
-            // Calculate the component of the point's velocity along the anti-normal,
-            // i.e. towards the interior of the floor...
-            float const pointVelocityAlongAntiNormal = pointVelocity.dot(seaFloorAntiNormal);
-
-            // ...if negative, it's already pointing outside the floor, hence we leave it as-is
-            if (pointVelocityAlongAntiNormal > 0.0f)
+            if (position.y < bedrockY)
             {
-                // Decompose point velocity into normal and tangential
-                vec2f const normalVelocity = seaFloorAntiNormal * pointVelocityAlongAntiNormal;
-                vec2f const tangentialVelocity = pointVelocity - normalVelocity;
-
-                // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
-                float const elasticityFactor = mPoints.GetOceanFloorCollisionFactors(pointIndex).ElasticityFactor;
-                vec2f const normalResponse =
-                    normalVelocity
-                    * elasticityFactor; // Already negative
-
-                // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
-                float constexpr KineticThreshold = 2.0f;
-                float const frictionFactor = (std::abs(tangentialVelocity.x) > KineticThreshold || std::abs(tangentialVelocity.y) > KineticThreshold)
-                    ? mPoints.GetOceanFloorCollisionFactors(pointIndex).KineticFrictionFactor
-                    : mPoints.GetOceanFloorCollisionFactors(pointIndex).StaticFrictionFactor;
-                vec2f const tangentialResponse =
-                    tangentialVelocity
-                    * frictionFactor;
-
                 //
-                // Impart final position and velocity
+                // Collision with bedrock!
+                //
+                // Calculate post-bounce velocity
+                //
+                // Note: this implementation of friction imparts directly displacement and velocity,
+                // rather than imparting forces, and is an approximation of real friction in that it's
+                // independent from the force against the surface
                 //
 
-                // TODOHERE: see if can get rid of this and use dx/dy of floor
+                // Calculate sea floor anti-normal
+                // (positive points down)
+                vec2f const seaFloorAntiNormal = -oceanFloor.GetBedrockNormalAt(integralIndex);
 
-                // Move point back along its velocity direction (i.e. towards where it was in the previous step,
-                // which is guaranteed to be more towards the outside), but not too much - or else springs
-                // might start oscillating between the point burrowing down and then bouncing up
-                vec2f deltaPosition = pointVelocity * dt;
-                float const deltaPositionLength = deltaPosition.length();
-                deltaPosition = deltaPosition.normalise_approx(deltaPositionLength) * std::min(deltaPositionLength, 0.01f); // Magic number, empirical
-                mPoints.SetPosition(
-                    pointIndex,
-                    position - deltaPosition);
+                // Calculate the component of the point's velocity along the anti-normal,
+                // i.e. towards the interior of the floor...
+                float const pointVelocityAlongAntiNormal = pointVelocity.dot(seaFloorAntiNormal);
 
-                // Set velocity to resultant collision velocity
+                // ...if negative, it's already pointing outside the floor, hence we leave it as-is
+                if (pointVelocityAlongAntiNormal > 0.0f)
+                {
+                    // Decompose point velocity into normal and tangential
+                    vec2f const normalVelocity = seaFloorAntiNormal * pointVelocityAlongAntiNormal;
+                    vec2f const tangentialVelocity = pointVelocity - normalVelocity;
+
+                    // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
+                    float const elasticityFactor = mPoints.GetOceanFloorCollisionFactors(pointIndex).ElasticityFactor;
+                    vec2f const normalResponse =
+                        normalVelocity
+                        * elasticityFactor; // Already negative
+
+                    // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
+                    float constexpr KineticThreshold = 2.0f;
+                    float const frictionFactor = (std::abs(tangentialVelocity.x) > KineticThreshold || std::abs(tangentialVelocity.y) > KineticThreshold)
+                        ? mPoints.GetOceanFloorCollisionFactors(pointIndex).KineticFrictionFactor
+                        : mPoints.GetOceanFloorCollisionFactors(pointIndex).StaticFrictionFactor;
+                    vec2f const tangentialResponse =
+                        tangentialVelocity
+                        * frictionFactor;
+
+                    //
+                    // Impart final position and velocity
+                    //
+
+                    // Move point back along its velocity direction (i.e. towards where it was in the previous step,
+                    // which is guaranteed to be more towards the outside), but not too much - or else springs
+                    // might start oscillating between the point burrowing down and then bouncing up
+                    vec2f deltaPosition = pointVelocity * dt;
+                    float const deltaPositionLength = deltaPosition.length();
+                    deltaPosition = deltaPosition.normalise_approx(deltaPositionLength) * std::min(deltaPositionLength, 0.01f); // Magic number, empirical
+                    mPoints.SetPosition(
+                        pointIndex,
+                        position - deltaPosition);
+
+                    // Set velocity to resultant collision velocity
+                    mPoints.SetVelocity(
+                        pointIndex,
+                        normalResponse + tangentialResponse);
+                }
+            }
+            else
+            {
+                //
+                // Apply silt physics
+                //
+
+                // Velocity-based hardness
+                float const kineticEnergy = mPoints.GetMass(pointIndex) * mPoints.GetVelocity(pointIndex).squareLength() * 0.5f;
+                float const kineticEnergyHardness = LinearStep(0.0f, 30000.0f, kineticEnergy);
+
+                // Depth-based hardness
+                //
+                // Notes:
+                //  - Depth-based hardness cannot be too much early on - with 0.05 -> 0.2, kinetic energy hardness doesn't break structures,
+                //    but with 0.05-0.05, it does; there's two possible readings:
+                //      - With no depth-based hardness, kinetic energy hardness lasts longer; while with depth-based hardness, velocities get smothered early on;
+                //      - With dept-based hardness, there's less discontinuity in ke hardness (bs?)
+
+                // TODOTEST: testers' version
+                //float constexpr MinDepthHardness = 0.05f; // Very important: dictates magnitude of discontinuity when entering silt for the first ime
+                //float constexpr MaxDepthHardness = 0.2f; // At max depth
+                //float const depthHardness = MinDepthHardness + (MaxDepthHardness - MinDepthHardness) * LinearStep(0.0f, 20.0f, siltY - position.y);
+
+                // TODOHERE: read the above, but we might want to brake more when we're deeper anyway; try: hardness-free in first 1 or 2 meters, then linear hardness
+                float constexpr MinDepthHardness = 0.05f; // Very important: dictates magnitude of discontinuity when entering silt for the first ime
+                float constexpr MaxDepthHardness = 0.2f; // At max depth
+                float constexpr DepthHardnessDepthThreshold = 2.0f; // Start depth hardness at 2m
+                float const depthHardness = MinDepthHardness + (MaxDepthHardness - MinDepthHardness) * LinearStep(DepthHardnessDepthThreshold, 20.0f, siltY - position.y);
+
+                // Resultant
+                float const dampingFactor = 1.0f - std::max(kineticEnergyHardness, depthHardness);
+                assert(dampingFactor >= 0.0f);
                 mPoints.SetVelocity(
                     pointIndex,
-                    normalResponse + tangentialResponse);
+                    mPoints.GetVelocity(pointIndex) * dampingFactor);
+
+                if (kineticEnergy > maxKineticEnergy)
+                {
+                    maxKineticEnergy = kineticEnergy;
+                    maxKEDampingFactor = dampingFactor;
+                }
             }
         }
-
-        // TODOTEST: option 2.3
-        else if (position.y - 20.0f < oceanFloor.GetSiltHeightIfUnderneathAt(clampedX, position.y - 20.0f))
-        {
-            // TODOTEST: Pure silt damping
-            //// Silt
-            //mPoints.SetVelocity(
-            //    pointIndex,
-            //    mPoints.GetVelocity(pointIndex) * 0.5f); // Medium breakage, and burrows very slowly
-
-            // TODOTEST: Silt with burrow depth
-
-            float const bY = oceanFloor.GetHeightAt(clampedX);
-
-            //float constexpr MaxDampingFactor = 0.5f;
-            //float constexpr MinDampingFactor = 0.9f;
-            float constexpr MaxDampingFactor = 0.8f;
-            float constexpr MinDampingFactor = 0.95f;
-            float const dampingFactor = MinDampingFactor + (MaxDampingFactor - MinDampingFactor) * LinearStep(0.0f, 20.0f, 20.f - (position.y - bY));
-            //float const dampingFactor = MinDampingFactor + (MaxDampingFactor - MinDampingFactor) * LinearStep(0.0f, 20.f * 20.0f, 20.f * 20.0f - (position.y - bY) * (position.y - bY));
-
-            mPoints.SetVelocity(
-                pointIndex,
-                mPoints.GetVelocity(pointIndex) * dampingFactor);
-        }
     }
+
+
+
+
+
+
 
     //// Option 1 Rough Sketch
 

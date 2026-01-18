@@ -881,7 +881,7 @@ void Fishes::UpdateDynamics(
 
         // Check ocean floor collision
         float const clampedX = Clamp(fishHeadPosition.x, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth);
-        if (auto const [isUnderneathFloor, oceanFloorHeight, oceanFloorIndexI] = oceanFloor.GetHeightIfUnderneathAt(clampedX, fishHeadPosition.y);
+        if (auto const [isUnderneathFloor, oceanFloorHeight, oceanFloorIndexI] = oceanFloor.GetSiltHeightIfUnderneathAt(clampedX, fishHeadPosition.y);
             isUnderneathFloor // fishHeadPosition.y < oceanFloorHeight
             && fishHeadDepth > fishShoal.MaxWorldDimension * 2.0f)
         {
@@ -890,7 +890,7 @@ void Fishes::UpdateDynamics(
             //
 
             // Calculate sea floor normal (positive points up, out)
-            vec2f const seaFloorNormal = oceanFloor.GetNormalAt(oceanFloorIndexI);
+            vec2f const seaFloorNormal = oceanFloor.GetSiltNormalAt(oceanFloorIndexI);
 
             // Calculate the component of the fish's target velocity along the normal,
             // i.e. towards the outside of the floor...
@@ -1381,7 +1381,7 @@ vec2f Fishes::FindPosition(
                 && position.x <= SimulationParameters::HalfMaxWorldWidth);
 
         if (!aabbSet.Contains(position, AABBMargin)
-            && oceanFloor.GetHeightAt(position.x) < position.y)
+            && oceanFloor.GetSiltHeightAt(position.x) < position.y)
         {
             // Passes all tests
             break;

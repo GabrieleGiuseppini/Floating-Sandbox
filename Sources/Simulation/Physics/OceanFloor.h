@@ -58,9 +58,10 @@ public:
         float yOffset);
 
     /*
+     * Gets the height of the ocean floor, measured from the silt layer. Guaranteed to be above or equal to the bedrock layer.
      * Assumption: x is in world boundaries.
      */
-    inline float GetHeightAt(float x) const noexcept
+    inline float GetSiltHeightAt(float x) const noexcept
     {
         assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
 
@@ -80,14 +81,14 @@ public:
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
         assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
 
-        return mSamples[sampleIndexI].SampleValue
-            + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+        return mSamples[sampleIndexI].SiltSampleValue
+            + mSamples[sampleIndexI].SiltSampleValuePlusOneMinusSampleValue * sampleIndexDx;
     }
 
     /*
      * Assumption: x is within world boundaries.
      */
-    inline std::tuple<bool, float, register_int> GetHeightIfUnderneathAt(float x, float y) const noexcept
+    inline std::tuple<bool, float, register_int> GetSiltHeightIfUnderneathAt(float x, float y) const noexcept
     {
         assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
 
@@ -103,7 +104,7 @@ public:
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
         // Rough check (we allocate an extra sample just for this)
-        if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
+        if (y > mSamples[sampleIndexI].SiltSampleValue && y > mSamples[sampleIndexI + 1].SiltSampleValue)
         {
             return std::make_tuple(false, 0.0f, sampleIndexI);
         }
@@ -113,8 +114,8 @@ public:
         assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
 
         float const sampleValue =
-            mSamples[sampleIndexI].SampleValue
-            + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+            mSamples[sampleIndexI].SiltSampleValue
+            + mSamples[sampleIndexI].SiltSampleValuePlusOneMinusSampleValue * sampleIndexDx;
 
         return std::make_tuple(y < sampleValue, sampleValue, sampleIndexI);
     }
@@ -122,7 +123,7 @@ public:
     /*
      * Assumption: x is within world boundaries.
      */
-    inline std::tuple<float, register_int> GetBedrockHeightIfUnderneathAt(float x, float y) const noexcept
+    inline std::tuple<float, float, register_int> GetHeightsIfUnderneathAt(float x, float y) const noexcept
     {
         assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
 
@@ -137,67 +138,49 @@ public:
         register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
-        // Rough check (we allocate an extra sample just for this)
-        if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
+        // Rough check against silt (we allocate an extra sample just for this): if we're above silt,
+        // we are above bedrock as well
+        if (y > mSamples[sampleIndexI].SiltSampleValue && y > mSamples[sampleIndexI + 1].SiltSampleValue)
         {
-            return std::make_tuple(std::numeric_limits<float>::lowest(), sampleIndexI);
+            return std::make_tuple(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), sampleIndexI);
         }
 
         // Fractional part within sample index and the next sample index
         float const sampleIndexDx = sampleIndexF - sampleIndexI;
         assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
 
-        float const sampleValue =
-            mSamples[sampleIndexI].SampleValue
-            + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+        float const siltSampleValue =
+            mSamples[sampleIndexI].SiltSampleValue
+            + mSamples[sampleIndexI].SiltSampleValuePlusOneMinusSampleValue * sampleIndexDx;
 
-        return std::make_tuple(sampleValue, sampleIndexI);
+        float const bedrockSampleValue =
+            mSamples[sampleIndexI].BedrockSampleValue
+            + mSamples[sampleIndexI].BedrockSampleValuePlusOneMinusSampleValue * sampleIndexDx;
+
+        return std::make_tuple(siltSampleValue, bedrockSampleValue, sampleIndexI);
     }
 
     /*
      * Assumption: x is within world boundaries.
      */
-    inline float GetSiltHeightIfUnderneathAt(float x, float y) const noexcept
-    {
-        assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
-
-        //
-        // Find sample index and interpolate in-between that sample and the next
-        //
-
-        // Fractional index in the sample array
-        float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth) / Dx;
-
-        // Integral part
-        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
-        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
-
-        // Rough check (we allocate an extra sample just for this)
-        if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
-        {
-            return std::numeric_limits<float>::lowest();
-        }
-
-        // Fractional part within sample index and the next sample index
-        float const sampleIndexDx = sampleIndexF - sampleIndexI;
-        assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
-
-        float const sampleValue =
-            mSamples[sampleIndexI].SampleValue
-            + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
-
-        return sampleValue;
-    }
-
-    /*
-     * Assumption: x is within world boundaries.
-     */
-    inline vec2f GetNormalAt(register_int sampleIndexI) const noexcept
+    inline vec2f GetSiltNormalAt(register_int sampleIndexI) const noexcept
     {
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
         return vec2f(
-            -mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue,
+            -mSamples[sampleIndexI].SiltSampleValuePlusOneMinusSampleValue,
+            Dx).normalise_approx();
+    }
+
+    /*
+     * Assumption: x is within world boundaries.
+     */
+    inline vec2f GetBedrockNormalAt(register_int sampleIndexI) const noexcept
+    {
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+
+        return vec2f(
+            -mSamples[sampleIndexI].BedrockSampleValuePlusOneMinusSampleValue,
             Dx).normalise_approx();
     }
 
@@ -211,7 +194,7 @@ private:
 
     void CalculateResultantSampleValues();
 
-    inline float CalculateResultantSampleValue(size_t sampleIndex) const
+    inline float CalculateResultantBedrockSampleValue(size_t sampleIndex) const
     {
         assert(sampleIndex < SamplesCount);
 
@@ -244,8 +227,10 @@ private:
     // What we store for each sample
     struct Sample
     {
-        float SampleValue;
-        float SampleValuePlusOneMinusSampleValue; // Delta w/next
+        float SiltSampleValue;
+        float SiltSampleValuePlusOneMinusSampleValue; // Delta w/next
+        float BedrockSampleValue;
+        float BedrockSampleValuePlusOneMinusSampleValue; // Delta w/next
     };
 
     // The current samples, calculated from the components
