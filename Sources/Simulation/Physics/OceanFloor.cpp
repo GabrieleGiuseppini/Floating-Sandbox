@@ -340,6 +340,8 @@ void OceanFloor::CalculateResultantSampleValues()
 
 void OceanFloor::CalculateSiltSampleValues()
 {
+    float const sinAmplitude = mCurrentOceanFloorSiltThickness / 20.0f;
+
     // sample index = 0
     float previousSiltSampleValue = mSamples[0].BedrockSampleValue + mCurrentOceanFloorSiltThickness;
     mSamples[0].SiltSampleValue = previousSiltSampleValue;
@@ -347,7 +349,9 @@ void OceanFloor::CalculateSiltSampleValues()
     // sample index = 1...SamplesCount-1
     for (size_t i = 1; i < SamplesCount; ++i)
     {
-        float const siltSampleValue = mSamples[i].BedrockSampleValue + mCurrentOceanFloorSiltThickness;
+        float const siltSampleValue =
+            mSamples[i].BedrockSampleValue + mCurrentOceanFloorSiltThickness
+            + sinAmplitude * std::sinf(static_cast<float>(i) / 8.0f * 2.0f * Pi<float>);
 
         mSamples[i].SiltSampleValue = siltSampleValue;
         mSamples[i - 1].SiltSampleValuePlusOneMinusSampleValue = siltSampleValue - previousSiltSampleValue;
