@@ -73,7 +73,7 @@ void main()
     float alpha = min(worldAndDepthAndInterfaceAlpha.z / (0.2 + abs(fwidth(worldAndDepthAndInterfaceAlpha.z))), 1.0);
 
     // Smooth transition between two layers
-    alpha *= worldAndDepthAndInterfaceAlpha.w;
+    alpha *= min(worldAndDepthAndInterfaceAlpha.w, 1.0);
 
     // Apply ambient light
     gl_FragColor = vec4(

@@ -319,11 +319,12 @@
 			= Impl:
 				+ CalculateResultantSampleValues: does only Bedrock samples, and then at end calls CalculateSiltSampleValues()
 				= CalculateSiltSampleValues():
-					= Milestone 1: fixed offset
+					+ Milestone 1: fixed offset
 						+ Applies offset (new SimulationSetting, replaces other: SiltThickness)
-						- Applies sin wave
+						+ Applies sin wave
 					- Milestone 2: nice silt distribution algorithm
 						- TODOHERE
+					- Optimize sin w/dx and precalc'd sin
 					- Profile changes (interactions and all):
 						+ SetHeightMap: calls CalculateResultantSampleValues, done
 						+ AdjustTo: calls SetTerrainHeight
@@ -337,7 +338,6 @@
 				+ Npc: use silt
 				+ Underwater plants: use silt
 
-		- FIX: rendering: interface alpha takes too little of overlap; 100% bedrock does not match end of silt layer
 		- SettingsDialog: expose all new settings
 			- Rendering (Texture, FlatColor): split Bedrock and Silt (silt above, bedrock below)
 			- Add/replace new silt settings:

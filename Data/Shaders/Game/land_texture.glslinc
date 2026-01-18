@@ -50,7 +50,7 @@ void main()
     float alpha = min(worldAndDepthAndInterfaceAlpha.z / (0.2 + abs(fwidth(worldAndDepthAndInterfaceAlpha.z))), 1.0);
 
     // Smooth transition between two layers
-    alpha *= worldAndDepthAndInterfaceAlpha.w;
+    alpha *= min(worldAndDepthAndInterfaceAlpha.w, 1.0);
 
     // Sample texture
     float sampleIncrement = -10.0 * (1.0 - smoothstep(-2.0, 2.0, worldAndDepthAndInterfaceAlpha.z)); // Back-sample 10.0 at top, slowly going to zero

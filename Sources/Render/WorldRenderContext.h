@@ -327,15 +327,15 @@ public:
         assert(ySilt >= yBedrock);
         float constexpr MaxTransitionThickness = 10.0f; // Magic
         float const blendThickness = std::min(ySilt - yBedrock, MaxTransitionThickness);
-        float const blendAlphaStartValue = 1.0f - blendThickness / MaxTransitionThickness; // With zero blendThickness we want to start from 1.0
 
         // Silt
         siltVertex[0] = LandVertex{ {x, ySilt}, 0.0f, 1.0f };
         siltVertex[1] = LandVertex{ {x, yBedrock}, ySilt - yBedrock, 1.0f };
 
         // Bedrock
-        bedrockVertex[0] = LandVertex{ {x, yBedrock + blendThickness}, ySilt - yBedrock, blendAlphaStartValue };
-        bedrockVertex[1] = LandVertex{ {x, yWorldBottom}, ySilt - yWorldBottom, blendAlphaStartValue + (yBedrock + blendThickness - yWorldBottom)};
+        //  - Interface alpha: the two values must ensure that alpha=0 at y=yBedrock+thickness, and alpha=1 at y=yBedrock (unless thickness=0, in which case alpha=1.0 everywhere)
+        bedrockVertex[0] = LandVertex{ {x, yBedrock + blendThickness}, ySilt - yBedrock, blendThickness > 0.0f ? 0.0f : 1.0f };
+        bedrockVertex[1] = LandVertex{ {x, yWorldBottom}, ySilt - yWorldBottom, blendThickness > 0.0f ? (yBedrock + blendThickness - yWorldBottom) / blendThickness : 1.0f};
     }
 
     void UploadLandEnd();
