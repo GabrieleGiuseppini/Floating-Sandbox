@@ -265,7 +265,7 @@
 						- To circumvent twice the calc'n of integral sampleIndex for ocean and silt, use the fact that silt resolution i 1/Nth of ocean - and use ocean's integral sample index
 							- At that moment, rewrite silly "IfUnderneathAt"
 			
-		= Rendering of silt layer above bedrock: 
+		+ Rendering of silt layer above bedrock: 
 			! Gist:
 				X 1: Sand layer is opaque but drawn earlier, behind ship
 					! Bedrock layer stays like current: drawn _after_ ship, on top of it
@@ -299,20 +299,19 @@
 					+ Do strips count math
 			+ RenderContext:
 				+ Split call for drawing land
-			= Shader:
+			+ Shader:
 				+ Texture
 					+ New vertex attributes
 					+ Texture:
 						+ Calculate coords with fract math
 					+ See some alpha/overlap between junctures
 						+ Bedrock is above silt by D, and shader gets that D as a new attribute in 0-1 domain, directly usable as alpha
-				= Flat
-					- TODOHERE
+				+ Flat
 			+ GameController:
 				+ Settings for land split into two
 			+ SettingsManager
 			+ Move plants on top of silt
-			- Finalize default Flat land colors
+			+ Finalize default Flat land colors
 
 		= OceanFloor:
 			+ Split two SampleValue members into two
@@ -328,8 +327,8 @@
 				+ Npc: use silt
 				+ Underwater plants: use silt
 
-		- SettingsDialog: expose (silt above, bedrock below)
-			- Rendering
+		- SettingsDialog: expose all new settings
+			- Rendering (Texture, FlatColor) (silt above, bedrock below)
 			- Replace existing silt setting(s) with new ones:
 				- TODOHERE's
 		- Fix themes
