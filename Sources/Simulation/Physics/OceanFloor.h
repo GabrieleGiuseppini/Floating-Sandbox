@@ -206,6 +206,15 @@ private:
 
     void CalculateSiltSampleValues();
 
+    enum SegmentDirection
+    {
+        Upward = 0,
+        Downward = 1,
+        Horizontal = 2
+    };
+
+    inline SegmentDirection GetSegmentDirection(size_t sampleIndex) const;
+
 private:
 
     // The bump profile (ondulating component seafloor);
