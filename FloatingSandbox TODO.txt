@@ -250,7 +250,7 @@
 							+ Initial impact must be harder: make it so damping factor is lower (more destructive) with kinetic energy
 								+ Indicative K (default ship @ ~25m/s): 400000
 
-			= Fine-tune again to go back to V1 behavior
+			+ Fine-tune again to go back to V1 behavior
 				+ Build & send
 				+ Bump up version
 
@@ -261,7 +261,7 @@
 					- Cleanup ApplyWorldForces
 					- Fix for compound damping
 					- Check HandleCollisions assembly, especially Clamp and LinearStep
-					- See if time to test vectorized
+					- See if time to test vectorized				
 
 			- TODOOLD:						
 				- Optimizations:
@@ -383,6 +383,8 @@
 		- Bubbles trapped in silt
 			- Is it really bad?
 
+		- Setting for fine-tuning Kinetic impact
+
 		- RenderParameter to see through silt
 			- TODO: or tool?
 			- Simple alpha param set at RenderDrawOceanFloor differently on each band
@@ -420,6 +422,11 @@
 		- Cleanup:
 			- HandleCollisionsWithSeaFloor (All TODOs)
 			- ApplyWorldForces
+
+	- Off-topic from the silt, but I would like to point out that there are some hiccups on some of the new ships, 
+		- Flying Dutchman has a density recommendation of 2812 (I assume a decimal was meant to be there), 
+		- the White Star version of the Skandinavya has a pump #17 that I assume is meant to say "pumps", 
+		- and Petit has a very, well, unprofessional description, for being a default ship in the base game.
 
 	- Move tool: fix radius: when ship is very close, move tool does _not_ engage
 
