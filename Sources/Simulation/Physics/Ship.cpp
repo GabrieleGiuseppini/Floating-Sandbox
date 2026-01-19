@@ -2178,7 +2178,9 @@ void Ship::HandleCollisionsWithSeaFloor(
                 // TODOHERE: read the above, but we might want to brake more when we're deeper anyway; try: hardness-free in first 1 or 2 meters, then linear hardness
                 float constexpr MinDepthHardness = 0.05f; // Very important: dictates magnitude of discontinuity when entering silt for the first ime
                 float constexpr MaxDepthHardness = 0.2f; // At max depth
-                float constexpr DepthHardnessDepthThreshold = 2.0f; // Start depth hardness at 2m
+                // TODOTEST
+                //float constexpr DepthHardnessDepthThreshold = 2.0f; // Start depth hardness at 2m
+                float constexpr DepthHardnessDepthThreshold = 0.5f; // Start depth hardness at 0.5m
                 float const depthHardness = MinDepthHardness + (MaxDepthHardness - MinDepthHardness) * LinearStep(DepthHardnessDepthThreshold, 20.0f, siltY - position.y);
 
                 // Resultant
