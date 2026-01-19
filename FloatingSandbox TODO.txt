@@ -232,15 +232,15 @@
 			= Try Option 2:
 				= World forces (at particle, not at surface/edge):
 					+ SiltY check, additive to water surface
-					= Option 1: drag forces
+					+ Option 1: drag forces
 						+ Do basic
-							- Problem: ship destroys itself while burrowing
-						- Max drag magnitude: lower it to allow for burying
+							+ Problem: ship destroys itself while burrowing
+						+ Max drag magnitude: lower it to allow for burying
 					= Option 2: velocity damping
-						= Do basic
+						+ Do basic
 						- If we go for this, update description at call site: also changes velocities
 					= Option 3: same as 2, but @ HandleCollisionsWithSeaFloor
-						- Watch out drag constant: it's compound
+						= Watch out drag constant: it's compound
 						+ Optimize retrieval of floor: both in one call
 							- First check is for silt; only if underneath silt we also check bedrock
 					+ Option 4: like 3, but drag depends on burrow depth (between silt and bedrock)
@@ -250,11 +250,16 @@
 							+ Initial impact must be harder: make it so damping factor is lower (more destructive) with kinetic energy
 								+ Indicative K (default ship @ ~25m/s): 400000
 
+			= Fine-tune again to go back to V1 behavior
+				+ Build & send
+				+ Bump up version
+
 			- Finalize:
 				- Try moving from HandleCollisions to ApplyWorldForces
 
 				- If stay with HandleCollisions:
 					- Cleanup ApplyWorldForces
+					- Fix for compound damping
 					- Check HandleCollisions assembly, especially Clamp and LinearStep
 					- See if time to test vectorized
 
@@ -323,7 +328,44 @@
 						+ Applies offset (new SimulationSetting, replaces other: SiltThickness)
 						+ Applies sin wave
 					- Milestone 2: nice silt distribution algorithm
-						- TODOHERE
+						- Accretion algo:
+							! Categorize segment as Downward, Upward, or Horizontal
+							- futureBudget=1
+							- Segment s:								
+								- D segment:
+									- Height of s[0] = 0
+									- Increase futureBudget
+								- H segment:
+									- Height of s[0] = futureBudget
+										- TODO: this is also end of previous segment
+											- Prev=D?
+											- Prev=U?
+									- Normalize futureBudget towards 1
+								- U segment: 
+									- Height of s[0] = futureBudget
+										- UGLY: bowl has higher profile on left (landing futureBudget) than right (normalized futureBudget)
+									- Decrease futureBudget
+						= Naive algo:
+							! Categorize segment as Downward, Upward, or Horizontal
+							! A->B: value at sample between A and B
+							- D->H: 1.5
+							- H->U: 1.5
+								- Note: means 1-sample peak peak will be covered :-( unless [1] is 0.0, but then ugly/asymmetric
+									- Or unless we special-case for 1-sample peak, and this is 0.0
+										+ Other side case - U->D - is 0.0 already
+							- H->H: 1.0
+							- H->D: 0.5
+							- U->H: 0.5
+							- D->D: 0.0
+							- U->U: 0.0
+							- D->U: 1.5
+							- U->D: 0.0
+
+						- Try simplification:
+							- 1.0 only between H-H
+
+
+
 					- Optimize sin w/dx and precalc'd sin
 					- Profile changes (interactions and all):
 						+ SetHeightMap: calls CalculateResultantSampleValues, done
@@ -338,6 +380,13 @@
 				+ Npc: use silt
 				+ Underwater plants: use silt
 
+		- Bubbles trapped in silt
+			- Is it really bad?
+
+		- RenderParameter to see through silt
+			- TODO: or tool?
+			- Simple alpha param set at RenderDrawOceanFloor differently on each band
+
 		- SettingsDialog: expose all new settings
 			- Rendering (Texture, FlatColor): split Bedrock and Silt (silt above, bedrock below)
 			- Add/replace new silt settings:
@@ -345,13 +394,28 @@
 				- TODOHERE's
 		- Fix themes
 
+		- NPC furniture also sinking?		
+
 		- Sand dust upon impact
-			- Ship::HandleCollisionsWithSeaFloor: each run produces zero or 1 point index which had the most kinetic energy decrease because of silt drag, above a threshold
-			- SpringRealaxations stores all into vector, new member of ship
+			! Need to be spawned above silt
+			- Ship::HandleCollisionsWithSeaFloor: each run produces zero or 1 point which had the most kinetic energy decrease because of silt drag, above a threshold
+				- Returns: K, ~pos taken @ air-silt boundary
+					- K=0 if not produced
+				- Threads stores into Ship member: array with one element per thread
+					- Struct is cache-aligned
+					- Array is re-dimensioned at parallelization changes
+			- SpringRelaxations stores all into vector, new member of ship
 				- Vector gets cleaned before loop
+				- After each iteration, takes max(K) from all threads and produces one per-iteration
+					- Only those with K>0
 			- Then, Ship::Update visits this new vector member and produces ephemerals for each
+				- Upward velocity and lifetime depend on K
+				- Lifetime carefully calibrated to expire ~ when particle is back onto silt
 		
 			- Try afterwards: also dent silt
+
+		- Tests:
+			- Boundaries
 
 		- Cleanup:
 			- HandleCollisionsWithSeaFloor (All TODOs)

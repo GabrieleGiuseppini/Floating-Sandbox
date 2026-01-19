@@ -325,17 +325,18 @@ public:
 
         // "Pretend" yBedrock to cover silt a bit, providing a band over which we blend
         assert(ySilt >= yBedrock);
-        float constexpr MaxTransitionThickness = 10.0f; // Magic
-        float const blendThickness = std::min(ySilt - yBedrock, MaxTransitionThickness);
+        float constexpr MaxTransitionThickness = 10.0f; // Magic - keep in-sync with shader!
+        float const effectiveTransitionThickness = std::min(ySilt - yBedrock, MaxTransitionThickness);
 
         // Silt
-        siltVertex[0] = LandVertex{ {x, ySilt}, 0.0f, 1.0f };
-        siltVertex[1] = LandVertex{ {x, yBedrock}, ySilt - yBedrock, 1.0f };
+        siltVertex[0] = LandVertex{ {x, ySilt}, 0.0f, MaxTransitionThickness };
+        siltVertex[1] = LandVertex{ {x, yBedrock}, ySilt - yBedrock, MaxTransitionThickness };
 
         // Bedrock
-        //  - Interface alpha: the two values must ensure that alpha=0 at y=yBedrock+thickness, and alpha=1 at y=yBedrock (unless thickness=0, in which case alpha=1.0 everywhere)
-        bedrockVertex[0] = LandVertex{ {x, yBedrock + blendThickness}, ySilt - yBedrock, blendThickness > 0.0f ? 0.0f : 1.0f };
-        bedrockVertex[1] = LandVertex{ {x, yWorldBottom}, ySilt - yWorldBottom, blendThickness > 0.0f ? (yBedrock + blendThickness - yWorldBottom) / blendThickness : 1.0f};
+        //  - Interface blend depth: 0 at theoretical yBedrock + MaxTransitionThickness, +X at bottom
+        bedrockVertex[0] = LandVertex{ {x, yBedrock + effectiveTransitionThickness}, ySilt - yBedrock, MaxTransitionThickness - effectiveTransitionThickness };
+        // Final y (bottom): (MaxTransitionThickness - effectiveTransitionThickness) + (yBedrock + effectiveTransitionThickness - yWorldBottom)
+        bedrockVertex[1] = LandVertex{ {x, yWorldBottom}, ySilt - yWorldBottom, MaxTransitionThickness - yBedrock - yWorldBottom };
     }
 
     void UploadLandEnd();
@@ -1135,7 +1136,7 @@ private:
     {
         vec2f position; // World
         float depth;
-        float interfaceAlpha;
+        float interfaceBlendDepth;
     };
 
     struct OceanBasicSegment

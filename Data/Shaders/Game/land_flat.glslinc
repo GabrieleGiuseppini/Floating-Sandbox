@@ -4,18 +4,18 @@
 #define out varying
 
 // Inputs
-in vec4 inLand; // Position (vec2), Depth (float) (0 at top, +X at bottom), InterfaceAlpha
+in vec4 inLand; // Position (vec2), Depth (float) (0 at top, +X at bottom), InterfaceBlendDepth (0 at theoretical bedrock + BlendThickness, +Y at bottom)
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
-out vec4 worldAndDepthAndInterfaceAlpha;
+out vec4 worldAndDepthAndInterfaceBlendDepth;
 
 void main()
 {
     gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
-    worldAndDepthAndInterfaceAlpha = inLand;
+    worldAndDepthAndInterfaceBlendDepth = inLand;
 }
 
 ###FRAGMENT-120
@@ -27,7 +27,7 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in vec4 worldAndDepthAndInterfaceAlpha;
+in vec4 worldAndDepthAndInterfaceBlendDepth;
 
 // Textures
 #ifdef DETAILED_LAND
@@ -46,7 +46,7 @@ void main()
 
     vec3 color = ApplyLandNoise(
         paramLandFlatColor,
-        worldAndDepthAndInterfaceAlpha.xy,
+        worldAndDepthAndInterfaceBlendDepth.xy,
         paramNoiseTexture);
 
 #else
@@ -57,7 +57,7 @@ void main()
 
     // Calculate depth darkening
     float darkeningFactor = CalculateOceanDepthDarkeningFactor(
-        worldAndDepthAndInterfaceAlpha.y,
+        worldAndDepthAndInterfaceBlendDepth.y,
         paramOceanDepthDarkeningRate);
 
     // Calculate lamp tool intensity
@@ -70,10 +70,11 @@ void main()
         darkeningFactor * (1.0 - lampToolIntensity));
 
     // Anti-aliasing
-    float alpha = min(worldAndDepthAndInterfaceAlpha.z / (0.2 + abs(fwidth(worldAndDepthAndInterfaceAlpha.z))), 1.0);
+    float alpha = min(worldAndDepthAndInterfaceBlendDepth.z / (0.2 + abs(fwidth(worldAndDepthAndInterfaceBlendDepth.z))), 1.0);
 
     // Smooth transition between two layers
-    alpha *= min(worldAndDepthAndInterfaceAlpha.w, 1.0);
+    #define MaxTransitionThickness 10.0 // Keep in-sync with code!
+    alpha *= min(worldAndDepthAndInterfaceBlendDepth.w / MaxTransitionThickness, 1.0);
 
     // Apply ambient light
     gl_FragColor = vec4(
