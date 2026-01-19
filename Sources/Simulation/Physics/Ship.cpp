@@ -2168,19 +2168,12 @@ void Ship::HandleCollisionsWithSeaFloor(
                 //  - Depth-based hardness cannot be too much early on - with 0.05 -> 0.2, kinetic energy hardness doesn't break structures,
                 //    but with 0.05-0.05, it does; there's two possible readings:
                 //      - With no depth-based hardness, kinetic energy hardness lasts longer; while with depth-based hardness, velocities get smothered early on;
-                //      - With dept-based hardness, there's less discontinuity in ke hardness (bs?)
+                //      - With depth-based hardness, there's less discontinuity in ke hardness (bs?)
+                //    This is why we add an initial tiny depth-hardness-free layer
 
-                // TODOTEST: testers' version
-                //float constexpr MinDepthHardness = 0.05f; // Very important: dictates magnitude of discontinuity when entering silt for the first ime
-                //float constexpr MaxDepthHardness = 0.2f; // At max depth
-                //float const depthHardness = MinDepthHardness + (MaxDepthHardness - MinDepthHardness) * LinearStep(0.0f, 20.0f, siltY - position.y);
-
-                // TODOHERE: read the above, but we might want to brake more when we're deeper anyway; try: hardness-free in first 1 or 2 meters, then linear hardness
-                float constexpr MinDepthHardness = 0.05f; // Very important: dictates magnitude of discontinuity when entering silt for the first ime
+                float constexpr MinDepthHardness = 0.05f; // Dictates magnitude of discontinuity when entering silt for the first ime
                 float constexpr MaxDepthHardness = 0.2f; // At max depth
-                // TODOTEST
-                //float constexpr DepthHardnessDepthThreshold = 2.0f; // Start depth hardness at 2m
-                float constexpr DepthHardnessDepthThreshold = 0.5f; // Start depth hardness at 0.5m
+                float constexpr DepthHardnessDepthThreshold = 0.5f; // Start depth hardness at 0.5m; very important: affects effect of kinetic energy hardness
                 float const depthHardness = MinDepthHardness + (MaxDepthHardness - MinDepthHardness) * LinearStep(DepthHardnessDepthThreshold, 20.0f, siltY - position.y);
 
                 // Resultant
@@ -2190,6 +2183,8 @@ void Ship::HandleCollisionsWithSeaFloor(
                     pointIndex,
                     mPoints.GetVelocity(pointIndex) * dampingFactor);
 
+                // Update max
+                // TODOHERE
                 if (kineticEnergy > maxKineticEnergy)
                 {
                     maxKineticEnergy = kineticEnergy;
@@ -2198,239 +2193,6 @@ void Ship::HandleCollisionsWithSeaFloor(
             }
         }
     }
-
-
-
-
-
-
-
-    //// Option 1 Rough Sketch
-
-    //// TODO
-    //float constexpr SiltDragCoefficient = 30.0f;
-
-    //// TODO: use constant (@ SimulationParameters, where we now hold other algorithm constants)
-    //// which replaces collision check period also in loop
-    //float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>() * 2.0f;
-
-    //OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
-
-    //for (ElementIndex pointIndex = startPointIndex; pointIndex < endPointIndex; ++pointIndex)
-    //{
-    //    // TODOTEST
-    //    if (pointIndex >= mPoints.GetRawShipPointCount())
-    //        break;
-
-    //    auto const & position = mPoints.GetPosition(pointIndex);
-
-    //    // Check if point is below the sea floor (silt and/or bedrock)
-    //    //
-    //    // At this moment the point might be outside of world boundaries,
-    //    // so better clamp its x before sampling ocean floor height
-    //    float const clampedX = Clamp(position.x, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth);
-    //    auto const [siltY, bedrockY, integralIndex, dx, dy] = oceanFloor.GetHeightIfUnderneathAt_TODO(clampedX);
-    //    if (position.y < siltY)
-    //    {
-    //        //
-    //        // It's underneath silt - and possibly also underneath bedrock
-    //        //
-
-    //        vec2f const pointVelocity = mPoints.GetVelocity(pointIndex);
-    //        float const m = mPoints.GetMass(pointIndex);
-
-    //        // Calculate previous position
-    //        // TODO: this is technically wrong, consider using a "previous" position buffer populated at beginning and after every collision check
-    //        vec2f const deltaPosition = pointVelocity * dt;
-    //        vec2f const previousPosition = position - deltaPosition;
-    //        // TODO: same here
-    //        vec2f const previousVelocity = pointVelocity;
-
-    //        // TODO: Assumption: the portion of the trajectory _before_ hitting silt is negligible: basically, we assume
-    //        // that previousPosition is on the silt boundary, and thus Pa is the previous position
-    //        vec2f const pa = previousPosition;
-
-    //        // Calculate fraction of time quantum tqs that it took the particle to reach the silt boundary from outside of it
-    //        // TODO: Assumption: based on before, we can use siltY for the height of the silt at the intersection between trajectory and silt
-    //        // TODO: horiz trajectory => 0 denominator
-    //        float const tqs = std::max((siltY - previousPosition.y) / (position.y - previousPosition.y), 0.0f);
-
-    //        // Reduce time quantum by the amount of time the particle has traveled outside of the silt
-    //        float const tqa = 1.0f - tqs;
-    //        assert(tqa >= 0.0f && tqa <= 1.0f);
-
-    //        // Calculate theoretical distance ds travelled in silt in this fraction of time quantum
-    //        float const ds_theo = m / SiltDragCoefficient * (pointVelocity.length() * (1.0f - std::expf(-SiltDragCoefficient / m * (dt * tqa))));
-
-    //        // Calculate effective distance (no more than in-step, not into bedrock)
-    //        // TODO: missing third |PBtheo - Pa| to ensure we don't go into bedrock
-    //        float const ds_eff = std::min(ds_theo, (position - pa).length());
-
-    //        // Drag previous velocity
-    //        vec2f const previousVelocityPrime = previousVelocity * std::expf(-SiltDragCoefficient / m * ds_eff);
-
-    //        // Calculate position at end of this travel
-    //        vec2f const pb = pa + (position - previousPosition).normalise() * ds_eff;
-
-    //        LogMessage("tqa=", tqa, " dsTheo=", ds_theo, " dsEff=", ds_eff, " vy: ", previousVelocity.y, " -> ", previousVelocityPrime.y, " py: ", previousPosition.y, " -> ", pb.y);
-
-    //        // Move particle to pb
-    //        mPoints.SetPosition(pointIndex, pb);
-
-    //        // Check if underneath bedrock now
-    //        if (pb.y < bedrockY)
-    //        {
-    //            //
-    //            // Bounce velocity
-    //            //
-
-    //            // Calculate sea floor anti-normal
-    //            // (positive points down)
-    //            vec2f const seaFloorAntiNormal = -oceanFloor.GetNormalAt(integralIndex);
-
-    //            // Calculate the component of the point's velocity along the anti-normal,
-    //            // i.e. towards the interior of the floor...
-    //            float const pointVelocityAlongAntiNormal = pointVelocity.dot(seaFloorAntiNormal);
-
-    //            // ...if negative, it's already pointing outside the floor, hence we leave it as-is
-    //            if (pointVelocityAlongAntiNormal > 0.0f)
-    //            {
-    //                // Decompose point velocity into normal and tangential
-    //                vec2f const normalVelocity = seaFloorAntiNormal * pointVelocityAlongAntiNormal;
-    //                vec2f const tangentialVelocity = pointVelocity - normalVelocity;
-
-    //                // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
-    //                float const elasticityFactor = mPoints.GetOceanFloorCollisionFactors(pointIndex).ElasticityFactor;
-    //                vec2f const normalResponse =
-    //                    normalVelocity
-    //                    * elasticityFactor; // Already negative
-
-    //                // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
-    //                float constexpr KineticThreshold = 2.0f;
-    //                float const frictionFactor = (std::abs(tangentialVelocity.x) > KineticThreshold || std::abs(tangentialVelocity.y) > KineticThreshold)
-    //                    ? mPoints.GetOceanFloorCollisionFactors(pointIndex).KineticFrictionFactor
-    //                    : mPoints.GetOceanFloorCollisionFactors(pointIndex).StaticFrictionFactor;
-    //                vec2f const tangentialResponse =
-    //                    tangentialVelocity
-    //                    * frictionFactor;
-
-    //                mPoints.SetVelocity(pointIndex, normalResponse + tangentialResponse);
-    //            }
-    //        }
-    //        else
-    //        {
-    //            //
-    //            // Set velocity at end of drah
-    //            //
-
-    //            mPoints.SetVelocity(pointIndex, previousVelocityPrime);
-    //        }
-    //    }
-    //}
-
-
-
-
-
-    // TODOOLD
-    ////
-    //// Note: this implementation of friction imparts directly displacement and velocity,
-    //// rather than imparting forces, and is an approximation of real friction in that it's
-    //// independent from the force against the surface
-    ////
-
-    //float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>();
-
-    //OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
-
-    //float const siltingFactor1 = simulationParameters.OceanFloorSiltHardness;
-    //float const siltingFactor2 = 1.0f - simulationParameters.OceanFloorSiltHardness;
-
-    //for (ElementIndex pointIndex = startPointIndex; pointIndex < endPointIndex; ++pointIndex)
-    //{
-    //    auto const & position = mPoints.GetPosition(pointIndex);
-
-    //    // Check if point is below the sea floor
-    //    //
-    //    // At this moment the point might be outside of world boundaries,
-    //    // so better clamp its x before sampling ocean floor height
-    //    float const clampedX = Clamp(position.x, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth);
-    //    auto const [isUnderneathFloor, oceanFloorHeight, integralIndex] = oceanFloor.GetHeightIfUnderneathAt(clampedX, position.y);
-    //    if (isUnderneathFloor)
-    //    {
-    //        // Collision!
-
-    //        //
-    //        // Calculate post-bounce velocity
-    //        //
-
-    //        vec2f const pointVelocity = mPoints.GetVelocity(pointIndex);
-
-    //        // Calculate sea floor anti-normal
-    //        // (positive points down)
-    //        vec2f const seaFloorAntiNormal = -oceanFloor.GetNormalAt(integralIndex);
-
-    //        // Calculate the component of the point's velocity along the anti-normal,
-    //        // i.e. towards the interior of the floor...
-    //        float const pointVelocityAlongAntiNormal = pointVelocity.dot(seaFloorAntiNormal);
-
-    //        // ...if negative, it's already pointing outside the floor, hence we leave it as-is
-    //        if (pointVelocityAlongAntiNormal > 0.0f)
-    //        {
-    //            // Decompose point velocity into normal and tangential
-    //            vec2f const normalVelocity = seaFloorAntiNormal * pointVelocityAlongAntiNormal;
-    //            vec2f const tangentialVelocity = pointVelocity - normalVelocity;
-
-    //            // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
-    //            float const elasticityFactor = mPoints.GetOceanFloorCollisionFactors(pointIndex).ElasticityFactor;
-    //            vec2f const normalResponse =
-    //                normalVelocity
-    //                * elasticityFactor; // Already negative
-
-    //            // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
-    //            float constexpr KineticThreshold = 2.0f;
-    //            float const frictionFactor = (std::abs(tangentialVelocity.x) > KineticThreshold || std::abs(tangentialVelocity.y) > KineticThreshold)
-    //                ? mPoints.GetOceanFloorCollisionFactors(pointIndex).KineticFrictionFactor
-    //                : mPoints.GetOceanFloorCollisionFactors(pointIndex).StaticFrictionFactor;
-    //            vec2f const tangentialResponse =
-    //                tangentialVelocity
-    //                * frictionFactor;
-
-    //            // Calculate floor hardness:
-    //            //  0.0: full silting - i.e. burrowing into floor; also zero accumulation of velocity
-    //            //  1.0: full restore of before-impact position; also full impact response velocity
-    //            // As follows:
-    //            //  Changes from current param (e.g. 0.5) to 1.0 linearly with magnitude of velocity, up to a maximum velocity at which
-    //            //  moment hardness is max/1.0 (simulating mud where you borrow when still and stay still if move)
-    //            float const velocitySquared = pointVelocity.squareLength();
-    //            float constexpr MaxVelocityForSilting = 2.0f; // Empirical - was 10.0 < 1.19
-    //            float const floorHardness = (oceanFloorHeight - position.y < 40.f) // Just make sure won't ever get buried too deep
-    //                ? siltingFactor1 + siltingFactor2 * LinearStep(0.0f, MaxVelocityForSilting, velocitySquared) // The faster, the less silting
-    //                : 1.0f;
-
-    //            assert(floorHardness <= 1.0f);
-
-    //            //
-    //            // Impart final position and velocity
-    //            //
-
-    //            // Move point back along its velocity direction (i.e. towards where it was in the previous step,
-    //            // which is guaranteed to be more towards the outside), but not too much - or else springs
-    //            // might start oscillating between the point burrowing down and then bouncing up
-    //            vec2f deltaPosition = pointVelocity * dt * floorHardness;
-    //            float const deltaPositionLength = deltaPosition.length();
-    //            deltaPosition = deltaPosition.normalise_approx(deltaPositionLength) * std::min(deltaPositionLength, 0.01f); // Magic number, empirical
-    //            mPoints.SetPosition(
-    //                pointIndex,
-    //                position - deltaPosition);
-
-    //            // Set velocity to resultant collision velocity
-    //            mPoints.SetVelocity(
-    //                pointIndex,
-    //                (normalResponse + tangentialResponse) * floorHardness);
-    //        }
-    //    }
-    //}
 }
 
 void Ship::TrimForWorldBounds(SimulationParameters const & simulationParameters)
