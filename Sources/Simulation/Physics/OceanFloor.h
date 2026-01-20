@@ -204,7 +204,7 @@ private:
             + mHeightMap[sampleIndex] * mCurrentOceanFloorDetailAmplification;
     }
 
-    void CalculateSiltSampleValues();
+    void CalculateSiltSampleValues(size_t startIndex, size_t endIndex); // end included
 
     enum SegmentDirection
     {

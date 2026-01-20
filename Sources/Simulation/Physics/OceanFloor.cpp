@@ -259,18 +259,14 @@ void OceanFloor::SetTerrainHeight(
 
     // Recalculate sample value
     float const newBedrockSampleValue = CalculateResultantBedrockSampleValue(sampleIndex);
-    // TODOTEST
-    float const newSiltSampleValue = newBedrockSampleValue + mCurrentOceanFloorSiltThickness;
 
     // Update sample value
     mSamples[sampleIndex].BedrockSampleValue = newBedrockSampleValue;
-    mSamples[sampleIndex].SiltSampleValue = newSiltSampleValue;
 
     // Update previous sample's delta
     if (sampleIndex > 0)
     {
         mSamples[sampleIndex - 1].BedrockSampleValuePlusOneMinusSampleValue = newBedrockSampleValue - mSamples[sampleIndex - 1].BedrockSampleValue;
-        mSamples[sampleIndex - 1].SiltSampleValuePlusOneMinusSampleValue = newSiltSampleValue - mSamples[sampleIndex - 1].SiltSampleValue;
     }
 
     if (sampleIndex < SamplesCount - 1)
@@ -278,12 +274,16 @@ void OceanFloor::SetTerrainHeight(
         // Update this sample's delta;
         // no point in updating delta of extra sample, as it's always zero
         mSamples[sampleIndex].BedrockSampleValuePlusOneMinusSampleValue = mSamples[sampleIndex + 1].BedrockSampleValue - newBedrockSampleValue;
-        mSamples[sampleIndex].SiltSampleValuePlusOneMinusSampleValue = mSamples[sampleIndex + 1].SiltSampleValue - newSiltSampleValue;
     }
 
     // Make sure extra sample has same value as previous one
     mSamples[SamplesCount].BedrockSampleValue = mSamples[SamplesCount - 1].BedrockSampleValue;
-    mSamples[SamplesCount].SiltSampleValue = mSamples[SamplesCount - 1].SiltSampleValue;
+
+    // Now calculate Silt profile, on top of bedrock profile;
+    // silt height at i depends on bedrock[i-1] and bedrock[i];
+    // since we've changed bedrock[sampleIndex - 1] and bedrock[sampleIndex], we've affected
+    // silt at sampleIndex - 1 (bc bedrock[sampleIndex- 1 ]), sampleIndex (bc both), and sampleIndex + 1 (bc bedrock[sampleIndex])
+    CalculateSiltSampleValues(sampleIndex > 0 ? sampleIndex - 1 : sampleIndex, sampleIndex < SamplesCount - 1 ? sampleIndex + 1 : sampleIndex);
 }
 
 void OceanFloor::CalculateBumpProfile()
@@ -335,37 +335,37 @@ void OceanFloor::CalculateResultantSampleValues()
     assert(mSamples[SamplesCount].BedrockSampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
 
     // Now calculate Silt profile, on top of bedrock profile
-    CalculateSiltSampleValues();
+    CalculateSiltSampleValues(0, SamplesCount - 1);
+
+    // Verify invariants
+    assert(mSamples[SamplesCount - 1].SiltSampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
+    assert(mSamples[SamplesCount].SiltSampleValue == mSamples[SamplesCount - 1].SiltSampleValue);
+    assert(mSamples[SamplesCount].SiltSampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
 }
 
-void OceanFloor::CalculateSiltSampleValues()
+void OceanFloor::CalculateSiltSampleValues(size_t startIndex, size_t endIndex)
 {
+    assert(startIndex >= 0 && endIndex < SamplesCount);
+
     float const perturbationSinAmplitude = mCurrentOceanFloorSiltThickness / 20.0f;
 
-    //
-    // Sample index = 0
-    //
+    SegmentDirection previousSegmentDirection = startIndex > 0
+        ? GetSegmentDirection(startIndex - 1)
+        : SegmentDirection::Horizontal;
 
-    float previousSiltSampleValue = mSamples[0].BedrockSampleValue + mCurrentOceanFloorSiltThickness; // Sin component is zero here
-    mSamples[0].SiltSampleValue = previousSiltSampleValue;
+    float previousSiltSampleValue = startIndex > 0
+        ? mSamples[startIndex - 1].SiltSampleValue
+        : 0.0f; // Unused
 
-    //
-    // Sample index = 1...SamplesCount-1
-    //
-
-    SegmentDirection previousSegmentDirection = GetSegmentDirection(0);
-
-    for (size_t i = 1; i < SamplesCount; ++i)
+    for (size_t i = startIndex; i <= endIndex; ++i)
     {
         // Calculate multiplier based on sequence: we want to avoid silt on either end of high-slope segments
 
         SegmentDirection const segmentDirection = GetSegmentDirection(i);
 
         float segmentSequenceMultiplier;
-        if (previousSegmentDirection == SegmentDirection::Downward
-            || previousSegmentDirection == SegmentDirection::Upward
-            || segmentDirection == SegmentDirection::Upward
-            || segmentDirection == SegmentDirection::Downward)
+        if (previousSegmentDirection != SegmentDirection::Horizontal
+            || segmentDirection != SegmentDirection::Horizontal)
         {
             segmentSequenceMultiplier = 0.0f;
         }
@@ -380,21 +380,79 @@ void OceanFloor::CalculateSiltSampleValues()
             * segmentSequenceMultiplier;
 
         mSamples[i].SiltSampleValue = siltSampleValue;
-        mSamples[i - 1].SiltSampleValuePlusOneMinusSampleValue = siltSampleValue - previousSiltSampleValue;
+
+        if (i > 0)
+        {
+            mSamples[i - 1].SiltSampleValuePlusOneMinusSampleValue = siltSampleValue - previousSiltSampleValue;
+        }
 
         previousSiltSampleValue = siltSampleValue;
         previousSegmentDirection = segmentDirection;
     }
 
-    assert(mSamples[SamplesCount - 1].SiltSampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
-
     //
     // Make sure extra sample has same value as previous one
     //
 
-    assert(previousSiltSampleValue == mSamples[SamplesCount - 1].SiltSampleValue);
-    mSamples[SamplesCount].SiltSampleValue = previousSiltSampleValue;
-    assert(mSamples[SamplesCount].SiltSampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
+    if (endIndex == SamplesCount - 1)
+    {
+        assert(previousSiltSampleValue == mSamples[SamplesCount - 1].SiltSampleValue);
+        mSamples[SamplesCount].SiltSampleValue = previousSiltSampleValue;
+    }
+
+    //// TODOOLD
+
+    ////
+    //// Sample index = 0
+    ////
+
+    //float previousSiltSampleValue = mSamples[0].BedrockSampleValue + mCurrentOceanFloorSiltThickness; // Sin component is zero here
+    //mSamples[0].SiltSampleValue = previousSiltSampleValue;
+
+    ////
+    //// Sample index = 1...SamplesCount-1
+    ////
+
+    //SegmentDirection previousSegmentDirection = GetSegmentDirection(0);
+
+    //for (size_t i = 1; i < SamplesCount; ++i)
+    //{
+    //    // Calculate multiplier based on sequence: we want to avoid silt on either end of high-slope segments
+
+    //    SegmentDirection const segmentDirection = GetSegmentDirection(i);
+
+    //    float segmentSequenceMultiplier;
+    //    if (previousSegmentDirection != SegmentDirection::Horizontal
+    //        || segmentDirection != SegmentDirection::Horizontal)
+    //    {
+    //        segmentSequenceMultiplier = 0.0f;
+    //    }
+    //    else
+    //    {
+    //        segmentSequenceMultiplier = 1.0f;
+    //    }
+
+    //    float const siltSampleValue =
+    //        mSamples[i].BedrockSampleValue
+    //        + (mCurrentOceanFloorSiltThickness + perturbationSinAmplitude * std::sinf(static_cast<float>(i) / 8.0f * 2.0f * Pi<float>))
+    //        * segmentSequenceMultiplier;
+
+    //    mSamples[i].SiltSampleValue = siltSampleValue;
+    //    mSamples[i - 1].SiltSampleValuePlusOneMinusSampleValue = siltSampleValue - previousSiltSampleValue;
+
+    //    previousSiltSampleValue = siltSampleValue;
+    //    previousSegmentDirection = segmentDirection;
+    //}
+
+    //assert(mSamples[SamplesCount - 1].SiltSampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
+
+    ////
+    //// Make sure extra sample has same value as previous one
+    ////
+
+    //assert(previousSiltSampleValue == mSamples[SamplesCount - 1].SiltSampleValue);
+    //mSamples[SamplesCount].SiltSampleValue = previousSiltSampleValue;
+    //assert(mSamples[SamplesCount].SiltSampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
 }
 
 OceanFloor::SegmentDirection OceanFloor::GetSegmentDirection(size_t sampleIndex) const
@@ -402,7 +460,7 @@ OceanFloor::SegmentDirection OceanFloor::GetSegmentDirection(size_t sampleIndex)
     assert(sampleIndex <= SamplesCount);
 
     float const deltaY = mSamples[sampleIndex].BedrockSampleValuePlusOneMinusSampleValue;
-    float constexpr HighSlopeThreshold = 3.0f;
+    float constexpr HighSlopeThreshold = 5.0f;
     if (deltaY > Dx * HighSlopeThreshold)
         return SegmentDirection::Upward;
     else if (deltaY < -Dx * HighSlopeThreshold)

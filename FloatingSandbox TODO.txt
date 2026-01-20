@@ -221,7 +221,6 @@
 					  which will come useful at the subsequent bedrock impact check (as it will have lowered velocity)
 					- Is it so bad? Especially if silt layer is supposed to be large-ish (more than the distance traveled in a big dt)
 						- V distance traveled by particle falling for ~100m: 0.54m
-
 		+ Impl:
 			+ BEFORE ALL: 
 				+ Run VS profiler w/ship on bedrock and save results
@@ -359,14 +358,17 @@
 						+ Try simplification:
 							+ 0.0 before or after U/D, and U/D with more slope
 
-					- Profile changes (interactions and all):
+					= Profile changes (interactions and all):
 						+ SetHeightMap: calls CalculateResultantSampleValues, done
 						+ AdjustTo: calls SetTerrainHeight
 						+ DisplaceAt: calls SetTerrainHeight 
-						- SetTerrainHeight:
-							- TODO: depends on silting distribution algorithm: can we do it locally?
-								- If not, each change needs to be followed by a full call to CalculateSiltSampleValues()
+						+ SetTerrainHeight:
+							+ Call CalculateSiltSampleValues(start, end) -- for all bedrock-impacted on
 
+						- Delete stash if unneeded
+
+					- Try with dynamic height, based on abs(slope)
+						- Func returns it
 
 					- Optimize sin w/dx and precalc'd sin
 
@@ -421,18 +423,22 @@
 
 		- Tests:
 			- Boundaries
+				- Impacts
+				- TerrainAdjust
 			- Old Dell perf
 
 		- Cleanup:
 			+ HandleCollisionsWithSeaFloor (All TODOs)
 			+ ApplyWorldForces
 
-	- Off-topic from the silt, but I would like to point out that there are some hiccups on some of the new ships, 
+	- I would like to point out that there are some hiccups on some of the new ships, 
 		- Flying Dutchman has a density recommendation of 2812 (I assume a decimal was meant to be there), 
 		- the White Star version of the Skandinavya has a pump #17 that I assume is meant to say "pumps", 
 		- and Petit has a very, well, unprofessional description, for being a default ship in the base game.
 
 	- Move tool: fix radius: when ship is very close, move tool does _not_ engage
+		- ShipSearchRadiusScreen: it's in terms of screen, so cap resultant world so radius is at least SimulationParameters::MinShipSearchRadiusWorld (2.0f)
+			- Do at all uses
 
 	- Make those deep fishess texture better aliased (no white border but darker instead)
 
