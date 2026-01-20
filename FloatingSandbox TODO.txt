@@ -255,7 +255,11 @@
 				+ Bump up version
 
 			- Finalize:
-				- Try moving from HandleCollisions to ApplyWorldForces
+				= Try moving from HandleCollisions to ApplyWorldForces
+					- Nope: even with dampingFactor=0.0, glass ball doesn't break
+					- And what's worse, structure gets crampled
+
+				- FINALIZE Ship
 
 				- If stay with HandleCollisions:
 					- Cleanup ApplyWorldForces
