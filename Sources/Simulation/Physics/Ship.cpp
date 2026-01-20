@@ -1241,7 +1241,6 @@ void Ship::ApplyWorldParticleForces(
         * simulationParameters.WaterFrictionDragAdjustment;
 
     OceanSurface const & oceanSurface = mParentWorld.GetOceanSurface();
-    OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
 
     float * const restrict newCachedPointDepthsBuffer = newCachedPointDepths.data();
     vec2f * const restrict staticForcesBuffer = mPoints.GetStaticForceBufferAsVec2();
@@ -2023,6 +2022,14 @@ void Ship::HandleCollisionsWithSeaFloor(
     ElementIndex endPointIndex,
     SimulationParameters const & simulationParameters)
 {
+    // TODOTEST
+    float constexpr MinDepthHardnessReference = 0.05f; // Dictates magnitude of discontinuity when entering silt for the first ime
+    float const minDepthHardness = 1.0f - std::powf(1.0f - MinDepthHardnessReference, 40.0f / simulationParameters.NumMechanicalDynamicsIterations<float>());
+    float constexpr MaxDepthHardnessReference = 0.2f; // At max depth
+    float const maxDepthHardness = 1.0f - std::powf(1.0f - MaxDepthHardnessReference, 40.0f / simulationParameters.NumMechanicalDynamicsIterations<float>());
+    LogMessage(simulationParameters.NumMechanicalDynamicsIterations<float>(), ": 0.05=", minDepthHardness, " 0.2=", maxDepthHardness);
+
+
     float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>();
 
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
@@ -2128,10 +2135,9 @@ void Ship::HandleCollisionsWithSeaFloor(
                 //      - With depth-based hardness, there's less discontinuity in ke hardness (bs?)
                 //    This is why we add an initial tiny depth-hardness-free layer
 
-                float constexpr MinDepthHardness = 0.05f; // Dictates magnitude of discontinuity when entering silt for the first ime
-                float constexpr MaxDepthHardness = 0.2f; // At max depth
                 float constexpr DepthHardnessDepthThreshold = 0.5f; // Start depth hardness at 0.5m; very important: affects effect of kinetic energy hardness
-                float const depthHardness = MinDepthHardness + (MaxDepthHardness - MinDepthHardness) * LinearStep(DepthHardnessDepthThreshold, 20.0f, siltY - position.y);
+                float constexpr MaxBuryDepth = 20.0f; // Magic, intrinsic to sand and independent from angle
+                float const depthHardness = minDepthHardness + (maxDepthHardness - minDepthHardness) * LinearStep(DepthHardnessDepthThreshold, MaxBuryDepth, siltY - position.y);
 
                 // Resultant
                 float const dampingFactor = 1.0f - std::max(kineticEnergyHardness, depthHardness);

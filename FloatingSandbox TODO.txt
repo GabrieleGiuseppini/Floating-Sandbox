@@ -229,20 +229,20 @@
 				+ Run VS profiler w/ship on bedrock and save results
 				+ Re-take Android measurements on all 3 phones
 				+ Copy FS Next (world size) to Prev
-			= Try Option 2:
-				= World forces (at particle, not at surface/edge):
+			+ Try Option 2: - WENT FOR OPTION 1!
+				+ World forces (at particle, not at surface/edge):
 					+ SiltY check, additive to water surface
 					+ Option 1: drag forces
 						+ Do basic
 							+ Problem: ship destroys itself while burrowing
 						+ Max drag magnitude: lower it to allow for burying
-					= Option 2: velocity damping
+					X Option 2: velocity damping
 						+ Do basic
-						- If we go for this, update description at call site: also changes velocities
-					= Option 3: same as 2, but @ HandleCollisionsWithSeaFloor
-						= Watch out drag constant: it's compound
+						X If we go for this, update description at call site: also changes velocities
+					+ Option 3: same as 2, but @ HandleCollisionsWithSeaFloor
+						+ Watch out drag constant: it's compound
 						+ Optimize retrieval of floor: both in one call
-							- First check is for silt; only if underneath silt we also check bedrock
+							+ First check is for silt; only if underneath silt we also check bedrock
 					+ Option 4: like 3, but drag depends on burrow depth (between silt and bedrock)
 						+ Linear depth => DampCoeff
 						X If we want to simulate Titanic, relation w/depth needs to be non-linear
@@ -254,25 +254,27 @@
 				+ Build & send
 				+ Bump up version
 
-			- Finalize:
-				= Try moving from HandleCollisions to ApplyWorldForces
+			= Finalize:
+				X Try moving from HandleCollisions to ApplyWorldForces
 					- Nope: even with dampingFactor=0.0, glass ball doesn't break
 					- And what's worse, structure gets crampled
 
-				- FINALIZE Ship
+				+ FINALIZE Ship
 
 				- If stay with HandleCollisions:
-					- Cleanup ApplyWorldForces
-					- Fix for compound damping
+					+ Cleanup ApplyWorldForces
+					= Fix for compound damping
+						+ Test first: @ 2, glass ball does _not_ break when starts at -250
+						+ MinDepthHardness, MaxDepthHardness
+						- Precalc 
+							- 1: move existing CalculateIntegrationVelocityFactor invocation at beginning of whole RelaxSprings
+								- Into Ship members, new area
+							- 2: add ours
+
+					- Send for testing (to test distribution)
+
 					- Check HandleCollisions assembly, especially Clamp and LinearStep
 					- See if time to test vectorized				
-
-			- TODOOLD:						
-				- Optimizations:
-					- @ WorldForces:
-						- Calculate sum of drags and multiply once with velocity
-						- To circumvent twice the calc'n of integral sampleIndex for ocean and silt, use the fact that silt resolution i 1/Nth of ocean - and use ocean's integral sample index
-							- At that moment, rewrite silly "IfUnderneathAt"
 			
 		+ Rendering of silt layer above bedrock: 
 			! Gist:
@@ -331,7 +333,7 @@
 					+ Milestone 1: fixed offset
 						+ Applies offset (new SimulationSetting, replaces other: SiltThickness)
 						+ Applies sin wave
-					- Milestone 2: nice silt distribution algorithm
+					= Milestone 2: nice silt distribution algorithm
 						- Accretion algo:
 							! Categorize segment as Downward, Upward, or Horizontal
 							- futureBudget=1
@@ -365,8 +367,8 @@
 							- D->U: 1.5
 							- U->D: 0.0
 
-						- Try simplification:
-							- 1.0 only between H-H
+						= Try simplification:
+							= 1.0 only between H-H and D-U
 
 
 
