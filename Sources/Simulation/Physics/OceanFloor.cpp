@@ -357,7 +357,7 @@ void OceanFloor::CalculateSiltSampleValues()
 
     for (size_t i = 1; i < SamplesCount; ++i)
     {
-        // Calculate multiplier based on sequence
+        // Calculate multiplier based on sequence: we want to avoid silt on either end of high-slope segments
 
         SegmentDirection const segmentDirection = GetSegmentDirection(i);
 
