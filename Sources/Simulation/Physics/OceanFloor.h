@@ -206,14 +206,7 @@ private:
 
     void CalculateSiltSampleValues(size_t startIndex, size_t endIndex); // end included
 
-    enum SegmentDirection
-    {
-        Upward = 0,
-        Downward = 1,
-        Horizontal = 2
-    };
-
-    inline SegmentDirection GetSegmentDirection(size_t sampleIndex) const;
+    inline float GetBedrockSlopeAt(size_t sampleIndex) const;
 
 private:
 
