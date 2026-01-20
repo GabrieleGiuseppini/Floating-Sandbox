@@ -266,12 +266,9 @@
 					= Fix for compound damping
 						+ Test first: @ 2, glass ball does _not_ break when starts at -250
 						+ MinDepthHardness, MaxDepthHardness
-						- Precalc 
-							- 1: move existing CalculateIntegrationVelocityFactor invocation at beginning of whole RelaxSprings
-								- Into Ship members, new area
-							- 2: add ours
-
-					- Send for testing (to test distribution)
+						+ Precalc integration velocity factor and silt harndess coefficients 
+							+ Into Ship members, new area
+							+ Call CalculateSpringRelaxationCoefficients at RunXXX()
 
 					- Check HandleCollisions assembly, especially Clamp and LinearStep
 					- See if time to test vectorized				
@@ -370,6 +367,12 @@
 						= Try simplification:
 							= 1.0 only between H-H and D-U
 
+						- Try this other:
+							- TODOHERE: 
+
+						- Send for testing (to test distribution)
+
+
 
 
 					- Optimize sin w/dx and precalc'd sin
@@ -389,18 +392,26 @@
 		- Bubbles trapped in silt
 			- Is it really bad?
 
-		- Setting for fine-tuning Kinetic impact
+		= SimulationParameters:
+			+ OceanFloorSiltThickness 
+			+ OceanFloorSiltHardness
+			- Rename others as Bedrock
 
 		- RenderParameter to see through silt
 			- TODO: or tool?
 			- Simple alpha param set at RenderDrawOceanFloor differently on each band
 
 		- SettingsDialog: expose all new settings
-			- Rendering (Texture, FlatColor): split Bedrock and Silt (silt above, bedrock below)
+			- Rendering (Texture, FlatColor): split Bedrock and Silt (silt above, bedrock below), incl. members
 			- Add/replace new silt settings:
+				- Renames for "Bedrock" (elast, friction), incl. members
+					- Could avoid "Bedrock" in name if we make section
 				= SiltThickness
+				- OceanFloorSiltHardness
 				- TODOHERE's
 		- Fix themes
+			- Rendering params (texture and color split into Silt, bedrock)
+			- Phyisics params (OceanFloor-Bedrock-Elast/Friction)
 
 		- NPC furniture also sinking?		
 

@@ -49,12 +49,12 @@ void Points::Add(
     mDecayBuffer.emplace_back(1.0f);
     mPinningCoefficientBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f));
-    mOceanFloorCollisionFactorsBuffer.emplace_back(CalculateOceanFloorCollisionFactors(
+    mOceanFloorBedrockCollisionFactorsBuffer.emplace_back(CalculateOceanFloorBedrockCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
         mCurrentKineticFrictionAdjustment,
-        mCurrentOceanFloorElasticityCoefficient,
-        mCurrentOceanFloorFrictionCoefficient,
+        mCurrentOceanFloorBedrockElasticityCoefficient,
+        mCurrentOceanFloorBedrockFrictionCoefficient,
         structuralMaterial.ElasticityCoefficient,
         structuralMaterial.StaticFrictionCoefficient,
         structuralMaterial.KineticFrictionCoefficient));
@@ -174,12 +174,12 @@ void Points::CreateEphemeralParticleAirBubble(
     //mDecayBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
-    mOceanFloorCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorCollisionFactors(
+    mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
         mCurrentKineticFrictionAdjustment,
-        mCurrentOceanFloorElasticityCoefficient,
-        mCurrentOceanFloorFrictionCoefficient,
+        mCurrentOceanFloorBedrockElasticityCoefficient,
+        mCurrentOceanFloorBedrockFrictionCoefficient,
         airStructuralMaterial.ElasticityCoefficient,
         airStructuralMaterial.StaticFrictionCoefficient,
         airStructuralMaterial.KineticFrictionCoefficient);
@@ -354,12 +354,12 @@ void Points::CreateEphemeralParticleSmoke(
     //mDecayBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
-    mOceanFloorCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorCollisionFactors(
+    mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
         mCurrentKineticFrictionAdjustment,
-        mCurrentOceanFloorElasticityCoefficient,
-        mCurrentOceanFloorFrictionCoefficient,
+        mCurrentOceanFloorBedrockElasticityCoefficient,
+        mCurrentOceanFloorBedrockFrictionCoefficient,
         airStructuralMaterial.ElasticityCoefficient,
         airStructuralMaterial.StaticFrictionCoefficient,
         airStructuralMaterial.KineticFrictionCoefficient);
@@ -519,12 +519,12 @@ void Points::CreateEphemeralParticleWakeBubble(
     //mDecayBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
-    mOceanFloorCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorCollisionFactors(
+    mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
         mCurrentKineticFrictionAdjustment,
-        mCurrentOceanFloorElasticityCoefficient,
-        mCurrentOceanFloorFrictionCoefficient,
+        mCurrentOceanFloorBedrockElasticityCoefficient,
+        mCurrentOceanFloorBedrockFrictionCoefficient,
         waterStructuralMaterial.ElasticityCoefficient,
         waterStructuralMaterial.StaticFrictionCoefficient,
         waterStructuralMaterial.KineticFrictionCoefficient);
@@ -711,25 +711,25 @@ void Points::UpdateForSimulationParameters(SimulationParameters const & simulati
     float const elasticityAdjustment = simulationParameters.ElasticityAdjustment;
     float const staticFrictionAdjustment = simulationParameters.StaticFrictionAdjustment;
     float const kineticFrictionAdjustment = simulationParameters.KineticFrictionAdjustment;
-    float const oceanFloorElasticityCoefficient = simulationParameters.OceanFloorElasticityCoefficient;
-    float const oceanFloorFrictionCoefficient = simulationParameters.OceanFloorFrictionCoefficient;
+    float const oceanFloorBedrockElasticityCoefficient = simulationParameters.OceanFloorBedrockElasticityCoefficient;
+    float const oceanFloorBedrockFrictionCoefficient = simulationParameters.OceanFloorBedrockFrictionCoefficient;
     if (elasticityAdjustment != mCurrentElasticityAdjustment
         || staticFrictionAdjustment != mCurrentStaticFrictionAdjustment
         || kineticFrictionAdjustment != mCurrentKineticFrictionAdjustment
-        || oceanFloorElasticityCoefficient != mCurrentOceanFloorElasticityCoefficient
-        || oceanFloorFrictionCoefficient != mCurrentOceanFloorFrictionCoefficient)
+        || oceanFloorBedrockElasticityCoefficient != mCurrentOceanFloorBedrockElasticityCoefficient
+        || oceanFloorBedrockFrictionCoefficient != mCurrentOceanFloorBedrockFrictionCoefficient)
     {
         // Recalc ocean floor coefficients
         for (ElementIndex i : *this)
         {
             if (mMaterialsBuffer[i].Structural != nullptr)
             {
-                mOceanFloorCollisionFactorsBuffer[i] = CalculateOceanFloorCollisionFactors(
+                mOceanFloorBedrockCollisionFactorsBuffer[i] = CalculateOceanFloorBedrockCollisionFactors(
                     elasticityAdjustment,
                     staticFrictionAdjustment,
                     kineticFrictionAdjustment,
-                    oceanFloorElasticityCoefficient,
-                    oceanFloorFrictionCoefficient,
+                    oceanFloorBedrockElasticityCoefficient,
+                    oceanFloorBedrockFrictionCoefficient,
                     mMaterialsBuffer[i].Structural->ElasticityCoefficient,
                     mMaterialsBuffer[i].Structural->StaticFrictionCoefficient,
                     mMaterialsBuffer[i].Structural->KineticFrictionCoefficient);
@@ -737,8 +737,8 @@ void Points::UpdateForSimulationParameters(SimulationParameters const & simulati
         }
 
         // Remember the new values
-        mCurrentOceanFloorElasticityCoefficient = oceanFloorElasticityCoefficient;
-        mCurrentOceanFloorFrictionCoefficient = oceanFloorFrictionCoefficient;
+        mCurrentOceanFloorBedrockElasticityCoefficient = oceanFloorBedrockElasticityCoefficient;
+        mCurrentOceanFloorBedrockFrictionCoefficient = oceanFloorBedrockFrictionCoefficient;
         mCurrentElasticityAdjustment = elasticityAdjustment;
         mCurrentStaticFrictionAdjustment = staticFrictionAdjustment;
         mCurrentKineticFrictionAdjustment = kineticFrictionAdjustment;

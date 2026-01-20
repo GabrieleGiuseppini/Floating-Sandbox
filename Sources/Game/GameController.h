@@ -779,20 +779,25 @@ public:
     float GetMinOceanFloorDetailAmplification() const override { return SimulationParameters::MinOceanFloorDetailAmplification; }
     float GetMaxOceanFloorDetailAmplification() const override { return SimulationParameters::MaxOceanFloorDetailAmplification; }
 
-    float GetOceanFloorElasticityCoefficient() const override { return mSimulationParameters.OceanFloorElasticityCoefficient; }
-    void SetOceanFloorElasticityCoefficient(float value) override { mSimulationParameters.OceanFloorElasticityCoefficient = value; }
-    float GetMinOceanFloorElasticityCoefficient() const override { return SimulationParameters::MinOceanFloorElasticityCoefficient; }
-    float GetMaxOceanFloorElasticityCoefficient() const override { return SimulationParameters::MaxOceanFloorElasticityCoefficient; }
+    float GetOceanFloorBedrockElasticityCoefficient() const override { return mSimulationParameters.OceanFloorBedrockElasticityCoefficient; }
+    void SetOceanFloorBedrockElasticityCoefficient(float value) override { mSimulationParameters.OceanFloorBedrockElasticityCoefficient = value; }
+    float GetMinOceanFloorBedrockElasticityCoefficient() const override { return SimulationParameters::MinOceanFloorBedrockElasticityCoefficient; }
+    float GetMaxOceanFloorBedrockElasticityCoefficient() const override { return SimulationParameters::MaxOceanFloorBedrockElasticityCoefficient; }
 
-    float GetOceanFloorFrictionCoefficient() const override { return mSimulationParameters.OceanFloorFrictionCoefficient; }
-    void SetOceanFloorFrictionCoefficient(float value) override { mSimulationParameters.OceanFloorFrictionCoefficient = value; }
-    float GetMinOceanFloorFrictionCoefficient() const override { return SimulationParameters::MinOceanFloorFrictionCoefficient; }
-    float GetMaxOceanFloorFrictionCoefficient() const override { return SimulationParameters::MaxOceanFloorFrictionCoefficient; }
+    float GetOceanFloorBedrockFrictionCoefficient() const override { return mSimulationParameters.OceanFloorBedrockFrictionCoefficient; }
+    void SetOceanFloorBedrockFrictionCoefficient(float value) override { mSimulationParameters.OceanFloorBedrockFrictionCoefficient = value; }
+    float GetMinOceanFloorBedrockFrictionCoefficient() const override { return SimulationParameters::MinOceanFloorBedrockFrictionCoefficient; }
+    float GetMaxOceanFloorBedrockFrictionCoefficient() const override { return SimulationParameters::MaxOceanFloorBedrockFrictionCoefficient; }
 
     float GetOceanFloorSiltThickness() const override { return mSimulationParameters.OceanFloorSiltThickness; }
     void SetOceanFloorSiltThickness(float value) override { mSimulationParameters.OceanFloorSiltThickness = value; }
     float GetMinOceanFloorSiltThickness() const override { return SimulationParameters::MinOceanFloorSiltThickness; }
     float GetMaxOceanFloorSiltThickness() const override { return SimulationParameters::MaxOceanFloorSiltThickness; }
+
+    float GetOceanFloorSiltHardness() const override { return mSimulationParameters.OceanFloorSiltHardness; }
+    void SetOceanFloorSiltHardness(float value) override { mSimulationParameters.OceanFloorSiltHardness = value; }
+    float GetMinOceanFloorSiltHardness() const override { return SimulationParameters::MinOceanFloorSiltHardness; }
+    float GetMaxOceanFloorSiltHardness() const override { return SimulationParameters::MaxOceanFloorSiltHardness; }
 
     float GetDestroyRadius() const override { return mSimulationParameters.DestroyRadius; }
     void SetDestroyRadius(float value) override { mSimulationParameters.DestroyRadius = value; }

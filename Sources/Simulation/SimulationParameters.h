@@ -595,17 +595,21 @@ struct SimulationParameters
     static float constexpr MinOceanFloorDetailAmplification = 0.0f;
     static float constexpr MaxOceanFloorDetailAmplification = 200.0f;
 
-    float OceanFloorElasticityCoefficient;
-    static float constexpr MinOceanFloorElasticityCoefficient = 0.0f;
-    static float constexpr MaxOceanFloorElasticityCoefficient = 1.0f;
+    float OceanFloorBedrockElasticityCoefficient;
+    static float constexpr MinOceanFloorBedrockElasticityCoefficient = 0.0f;
+    static float constexpr MaxOceanFloorBedrockElasticityCoefficient = 1.0f;
 
-    float OceanFloorFrictionCoefficient;
-    static float constexpr MinOceanFloorFrictionCoefficient = 0.05f; // Keeps some sanity at lower end
-    static float constexpr MaxOceanFloorFrictionCoefficient = 1.0f;
+    float OceanFloorBedrockFrictionCoefficient;
+    static float constexpr MinOceanFloorBedrockFrictionCoefficient = 0.05f; // Keeps some sanity at lower end
+    static float constexpr MaxOceanFloorBedrockFrictionCoefficient = 1.0f;
 
     float OceanFloorSiltThickness;
     static float constexpr MinOceanFloorSiltThickness = 0.0f;
     static float constexpr MaxOceanFloorSiltThickness = 50.0f;
+
+    float OceanFloorSiltHardness;
+    static float constexpr MinOceanFloorSiltHardness = 0.0f;
+    static float constexpr MaxOceanFloorSiltHardness = 1.0f;
 
     unsigned int NumberOfStars;
     static constexpr unsigned int MinNumberOfStars = 0;

@@ -260,10 +260,63 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
     }
 }
 
+void Ship::CalculateSpringRelaxationCoefficients(SimulationParameters const & simulationParameters)
+{
+    // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
+    //
+    // Considering that:
+    //
+    //  v1 = d*v0
+    //  v2 = d*v1 = (d^2)*v0
+    //  ...
+    //  vN = (d^N)*v0
+    //
+    // ...the more the number of iterations, the more damped the initial velocity would be.
+    // We want damping to be independent from the number of iterations though, so we need to find the value
+    // d such that after N iterations the damping is the same as our reference value, which is based on
+    // 12 (basis) iterations. For example, double the number of iterations requires square root (1/2) of
+    // this value.
+    //
+
+    float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>();
+
+    float const globalDamping = 1.0f -
+        pow((1.0f - SimulationParameters::GlobalDamping),
+            12.0f / simulationParameters.NumMechanicalDynamicsIterations<float>());
+
+    // Incorporate adjustment
+    float const globalDampingCoefficient = 1.0f -
+        (
+            simulationParameters.GlobalDampingAdjustment <= 1.0f
+            ? globalDamping * (1.0f - (simulationParameters.GlobalDampingAdjustment - 1.0f) * (simulationParameters.GlobalDampingAdjustment - 1.0f))
+            : globalDamping +
+            (simulationParameters.GlobalDampingAdjustment - 1.0f) * (simulationParameters.GlobalDampingAdjustment - 1.0f)
+            / ((simulationParameters.MaxGlobalDampingAdjustment - 1.0f) * (simulationParameters.MaxGlobalDampingAdjustment - 1.0f))
+            * (1.0f - globalDamping)
+            );
+
+    // Pre-divide damp coefficient by dt to provide the scalar factor which, when multiplied with a displacement,
+    // provides the final, damped velocity
+    mSpringRelaxationCoefficients.IntegrationVelocityFactor  = globalDampingCoefficient / dt;
+
+    //
+    // Silt hardness
+    //
+
+    float constexpr MinDepthHardnessReference = 0.05f; // Dictates magnitude of discontinuity when entering silt for the first time; reference at 40 iterations/frame
+    mSpringRelaxationCoefficients.MinSiltDepthHardness = 1.0f - std::powf(1.0f - MinDepthHardnessReference, 40.0f / simulationParameters.NumMechanicalDynamicsIterations<float>());
+    float constexpr MaxDepthHardnessReference = 0.2f; // At max depth; reference at 40 iterations/frame
+    mSpringRelaxationCoefficients.MaxSiltDepthHardness = 1.0f - std::powf(1.0f - MaxDepthHardnessReference, 40.0f / simulationParameters.NumMechanicalDynamicsIterations<float>());
+}
+
 void Ship::RunSpringRelaxation(
     ThreadManager & threadManager,
     SimulationParameters const & simulationParameters)
 {
+    // Recalculate all coefficients
+    CalculateSpringRelaxationCoefficients(simulationParameters);
+
+    // Run
     switch (simulationParameters.SpringRelaxationParallelComputationMode)
     {
         case SpringRelaxationParallelComputationModeType::FullSpeed:
@@ -650,7 +703,6 @@ void Ship::IntegrateAndResetDynamicForces(
     SimulationParameters const & simulationParameters)
 {
     float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>();
-    float const velocityFactor = CalculateIntegrationVelocityFactor(dt, simulationParameters);
 
     switch (parallelism)
     {
@@ -662,7 +714,7 @@ void Ship::IntegrateAndResetDynamicForces(
                 endPointIndex,
                 mPoints.GetDynamicForceBuffersAsFloat(),
                 dt,
-                velocityFactor);
+                mSpringRelaxationCoefficients.IntegrationVelocityFactor);
 
             break;
         }
@@ -675,7 +727,7 @@ void Ship::IntegrateAndResetDynamicForces(
                 endPointIndex,
                 mPoints.GetDynamicForceBuffersAsFloat(),
                 dt,
-                velocityFactor);
+                mSpringRelaxationCoefficients.IntegrationVelocityFactor);
 
             break;
         }
@@ -688,7 +740,7 @@ void Ship::IntegrateAndResetDynamicForces(
                 endPointIndex,
                 mPoints.GetDynamicForceBuffersAsFloat(),
                 dt,
-                velocityFactor);
+                mSpringRelaxationCoefficients.IntegrationVelocityFactor);
 
             break;
         }
@@ -701,7 +753,7 @@ void Ship::IntegrateAndResetDynamicForces(
                 endPointIndex,
                 mPoints.GetDynamicForceBuffersAsFloat(),
                 dt,
-                velocityFactor);
+                mSpringRelaxationCoefficients.IntegrationVelocityFactor);
 
             break;
         }
@@ -715,53 +767,148 @@ void Ship::IntegrateAndResetDynamicForces(
                 endPointIndex,
                 mPoints.GetDynamicForceBuffersAsFloat(),
                 dt,
-                velocityFactor);
+                mSpringRelaxationCoefficients.IntegrationVelocityFactor);
 
             break;
         }
     }
 }
 
-float Ship::CalculateIntegrationVelocityFactor(
-    float dt,
-    SimulationParameters const & simulationParameters) const
+void Ship::HandleCollisionsWithSeaFloor(
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    SimulationParameters const & simulationParameters)
 {
-    // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
-    //
-    // Considering that:
-    //
-    //  v1 = d*v0
-    //  v2 = d*v1 = (d^2)*v0
-    //  ...
-    //  vN = (d^N)*v0
-    //
-    // ...the more the number of iterations, the more damped the initial velocity would be.
-    // We want damping to be independent from the number of iterations though, so we need to find the value
-    // d such that after N iterations the damping is the same as our reference value, which is based on
-    // 12 (basis) iterations. For example, double the number of iterations requires square root (1/2) of
-    // this value.
-    //
+    float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>();
 
-    float const globalDamping = 1.0f -
-        pow((1.0f - SimulationParameters::GlobalDamping),
-        12.0f / simulationParameters.NumMechanicalDynamicsIterations<float>());
+    float const siltDepthHardnessCoeff1 = mSpringRelaxationCoefficients.MinSiltDepthHardness;
+    float const siltDepthHardnessCoeff2 = mSpringRelaxationCoefficients.MaxSiltDepthHardness - mSpringRelaxationCoefficients.MinSiltDepthHardness;
 
-    // Incorporate adjustment
-    float const globalDampingCoefficient = 1.0f -
-        (
-            simulationParameters.GlobalDampingAdjustment <= 1.0f
-            ? globalDamping * (1.0f - (simulationParameters.GlobalDampingAdjustment - 1.0f) * (simulationParameters.GlobalDampingAdjustment - 1.0f))
-            : globalDamping +
-                (simulationParameters.GlobalDampingAdjustment - 1.0f) * (simulationParameters.GlobalDampingAdjustment - 1.0f)
-                / ((simulationParameters.MaxGlobalDampingAdjustment - 1.0f) * (simulationParameters.MaxGlobalDampingAdjustment - 1.0f))
-                * (1.0f - globalDamping)
-        );
+    OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
 
-    // Pre-divide damp coefficient by dt to provide the scalar factor which, when multiplied with a displacement,
-    // provides the final, damped velocity
-    float const velocityFactor = globalDampingCoefficient / dt;
+    // TODOTEST
+    //float maxKineticEnergy = 0.0f;
+    //float maxKEDampingFactor = 0.0f;
 
-    return velocityFactor;
+    for (ElementIndex pointIndex = startPointIndex; pointIndex < endPointIndex; ++pointIndex)
+    {
+        auto const & position = mPoints.GetPosition(pointIndex);
+
+        // Check if point is below the sea floor
+
+        // At this moment the point might be outside of world boundaries,
+        // so better clamp its x before sampling ocean floor height
+        float const clampedX = Clamp(position.x, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth);
+        auto const [siltY, bedrockY, integralIndex] = oceanFloor.GetHeightsIfUnderneathAt(clampedX, position.y);
+        if (position.y < siltY)
+        {
+            // We are underneath silt - check if also underneath bedrock
+
+            vec2f const pointVelocity = mPoints.GetVelocity(pointIndex);
+
+            if (position.y < bedrockY)
+            {
+                //
+                // Collision with bedrock!
+                //
+                // Calculate post-bounce velocity
+                //
+                // Note: this implementation of friction imparts directly displacement and velocity,
+                // rather than imparting forces, and is an approximation of real friction in that it's
+                // independent from the force against the surface
+                //
+
+                // Calculate sea floor anti-normal
+                // (positive points down)
+                vec2f const seaFloorAntiNormal = -oceanFloor.GetBedrockNormalAt(integralIndex);
+
+                // Calculate the component of the point's velocity along the anti-normal,
+                // i.e. towards the interior of the floor...
+                float const pointVelocityAlongAntiNormal = pointVelocity.dot(seaFloorAntiNormal);
+
+                // ...if negative, it's already pointing outside the floor, hence we leave it as-is
+                if (pointVelocityAlongAntiNormal > 0.0f)
+                {
+                    // Decompose point velocity into normal and tangential
+                    vec2f const normalVelocity = seaFloorAntiNormal * pointVelocityAlongAntiNormal;
+                    vec2f const tangentialVelocity = pointVelocity - normalVelocity;
+
+                    // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
+                    float const elasticityFactor = mPoints.GetOceanFloorBedrockCollisionFactors(pointIndex).ElasticityFactor;
+                    vec2f const normalResponse =
+                        normalVelocity
+                        * elasticityFactor; // Already negative
+
+                    // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
+                    float constexpr KineticThreshold = 2.0f;
+                    float const frictionFactor = (std::abs(tangentialVelocity.x) > KineticThreshold || std::abs(tangentialVelocity.y) > KineticThreshold)
+                        ? mPoints.GetOceanFloorBedrockCollisionFactors(pointIndex).KineticFrictionFactor
+                        : mPoints.GetOceanFloorBedrockCollisionFactors(pointIndex).StaticFrictionFactor;
+                    vec2f const tangentialResponse =
+                        tangentialVelocity
+                        * frictionFactor;
+
+                    //
+                    // Impart final position and velocity
+                    //
+
+                    // Move point back along its velocity direction (i.e. towards where it was in the previous step,
+                    // which is guaranteed to be more towards the outside), but not too much - or else springs
+                    // might start oscillating between the point burrowing down and then bouncing up
+                    vec2f deltaPosition = pointVelocity * dt;
+                    float const deltaPositionLength = deltaPosition.length();
+                    deltaPosition = deltaPosition.normalise_approx(deltaPositionLength) * std::min(deltaPositionLength, 0.01f); // Magic number, empirical
+                    mPoints.SetPosition(
+                        pointIndex,
+                        position - deltaPosition);
+
+                    // Set velocity to resultant collision velocity
+                    mPoints.SetVelocity(
+                        pointIndex,
+                        normalResponse + tangentialResponse);
+                }
+            }
+            else
+            {
+                //
+                // Apply silt physics
+                //
+
+                // Velocity-based hardness
+                float const kineticEnergy = mPoints.GetMass(pointIndex) * mPoints.GetVelocity(pointIndex).squareLength() * 0.5f;
+                float const kineticEnergyHardness = LinearStep(0.0f, 30000.0f, kineticEnergy);
+
+                // Depth-based hardness
+                //
+                // Notes:
+                //  - Depth-based hardness cannot be too much early on - with 0.05 -> 0.2, kinetic energy hardness doesn't break structures,
+                //    but with 0.05-0.05, it does; there's two possible readings:
+                //      - With no depth-based hardness, kinetic energy hardness lasts longer; while with depth-based hardness, velocities get smothered early on;
+                //      - With depth-based hardness, there's less discontinuity in ke hardness (bs?)
+                //    This is why we add an initial tiny depth-hardness-free layer
+
+                float constexpr DepthHardnessDepthThreshold = 0.5f; // Start depth hardness at 0.5m; very important: affects effect of kinetic energy hardness
+                float constexpr MaxBuryDepth = 20.0f; // Magic, intrinsic to sand and independent from angle
+                // float const depthHardness = minDepthHardness + (maxDepthHardness - minDepthHardness) * LinearStep(DepthHardnessDepthThreshold, MaxBuryDepth, siltY - position.y);
+                float const depthHardness = siltDepthHardnessCoeff1 + siltDepthHardnessCoeff2 * LinearStep(DepthHardnessDepthThreshold, MaxBuryDepth, siltY - position.y);
+
+                // Resultant
+                float const dampingFactor = 1.0f - std::max(kineticEnergyHardness, depthHardness) * simulationParameters.OceanFloorSiltHardness;
+                assert(dampingFactor >= 0.0f);
+                mPoints.SetVelocity(
+                    pointIndex,
+                    mPoints.GetVelocity(pointIndex) * dampingFactor);
+
+                // Update max
+                // TODOHERE
+                //if (kineticEnergy > maxKineticEnergy)
+                //{
+                //    maxKineticEnergy = kineticEnergy;
+                //    maxKEDampingFactor = dampingFactor;
+                //}
+            }
+        }
+    }
 }
 
 }

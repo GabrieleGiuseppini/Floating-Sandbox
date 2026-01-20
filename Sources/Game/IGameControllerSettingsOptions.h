@@ -256,14 +256,17 @@ struct IGameControllerSettingsOptions
     virtual float GetMinOceanFloorDetailAmplification() const = 0;
     virtual float GetMaxOceanFloorDetailAmplification() const = 0;
 
-    virtual float GetMinOceanFloorElasticityCoefficient() const = 0;
-    virtual float GetMaxOceanFloorElasticityCoefficient() const = 0;
+    virtual float GetMinOceanFloorBedrockElasticityCoefficient() const = 0;
+    virtual float GetMaxOceanFloorBedrockElasticityCoefficient() const = 0;
 
-    virtual float GetMinOceanFloorFrictionCoefficient() const = 0;
-    virtual float GetMaxOceanFloorFrictionCoefficient() const = 0;
+    virtual float GetMinOceanFloorBedrockFrictionCoefficient() const = 0;
+    virtual float GetMaxOceanFloorBedrockFrictionCoefficient() const = 0;
 
     virtual float GetMinOceanFloorSiltThickness() const = 0;
     virtual float GetMaxOceanFloorSiltThickness() const = 0;
+
+    virtual float GetMinOceanFloorSiltHardness() const = 0;
+    virtual float GetMaxOceanFloorSiltHardness() const = 0;
 
     virtual float GetMinDestroyRadius() const = 0;
     virtual float GetMaxDestroyRadius() const = 0;

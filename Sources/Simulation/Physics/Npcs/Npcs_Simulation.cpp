@@ -4280,8 +4280,9 @@ void Npcs::MaintainOverLand(
             vec2f const tangentialVelocity = particleVelocity - normalVelocity;
 
             // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
+            // NOTE: we use bedrock for elast coefficient, though we use silt for profile
             float const elasticityFactor = Clamp(
-                (mParticles.GetMaterial(p).ElasticityCoefficient + simulationParameters.OceanFloorElasticityCoefficient) / 2.0f * simulationParameters.ElasticityAdjustment,
+                (mParticles.GetMaterial(p).ElasticityCoefficient + simulationParameters.OceanFloorBedrockElasticityCoefficient) / 2.0f * simulationParameters.ElasticityAdjustment,
                 0.0f, 1.0f);
             vec2f const normalResponse =
                 normalVelocity

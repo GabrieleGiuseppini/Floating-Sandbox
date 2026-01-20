@@ -206,13 +206,13 @@ public:
     /*
      * Packed ocean floor collision factors.
      */
-    struct OceanFloorCollisionFactors
+    struct OceanFloorBedrockCollisionFactors
     {
         float ElasticityFactor;
         float StaticFrictionFactor;
         float KineticFrictionFactor;
 
-        OceanFloorCollisionFactors(
+        OceanFloorBedrockCollisionFactors(
             float elasticityFactor,
             float staticFrictionFactor,
             float kineticFrictionFactor)
@@ -614,7 +614,7 @@ public:
         , mIsDecayBufferDirty(true)
         , mPinningCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mOceanFloorCollisionFactorsBuffer(mBufferElementCount, shipPointCount, OceanFloorCollisionFactors(0.0f, 0.0f, 0.0f))
+        , mOceanFloorBedrockCollisionFactorsBuffer(mBufferElementCount, shipPointCount, OceanFloorBedrockCollisionFactors(0.0f, 0.0f, 0.0f))
         , mAirWaterInterfaceInverseWidthBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
         , mCachedDepthBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -697,8 +697,8 @@ public:
         , mCurrentElasticityAdjustment(simulationParameters.ElasticityAdjustment)
         , mCurrentStaticFrictionAdjustment(simulationParameters.StaticFrictionAdjustment)
         , mCurrentKineticFrictionAdjustment(simulationParameters.KineticFrictionAdjustment)
-        , mCurrentOceanFloorElasticityCoefficient(simulationParameters.OceanFloorElasticityCoefficient)
-        , mCurrentOceanFloorFrictionCoefficient(simulationParameters.OceanFloorFrictionCoefficient)
+        , mCurrentOceanFloorBedrockElasticityCoefficient(simulationParameters.OceanFloorBedrockElasticityCoefficient)
+        , mCurrentOceanFloorBedrockFrictionCoefficient(simulationParameters.OceanFloorBedrockFrictionCoefficient)
         , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(SimulationParameters::AirBubblesDensityToCumulatedIntakenWater(simulationParameters.AirBubblesDensity))
         , mCurrentCombustionSpeedAdjustment(simulationParameters.CombustionSpeedAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
@@ -1315,9 +1315,9 @@ public:
         Thaw(pointElementIndex); // Recalculates integration coefficient
     }
 
-    OceanFloorCollisionFactors const & GetOceanFloorCollisionFactors(ElementIndex pointElementIndex)
+    OceanFloorBedrockCollisionFactors const & GetOceanFloorBedrockCollisionFactors(ElementIndex pointElementIndex)
     {
-        return mOceanFloorCollisionFactorsBuffer[pointElementIndex];
+        return mOceanFloorBedrockCollisionFactorsBuffer[pointElementIndex];
     }
 
     float GetAirWaterInterfaceInverseWidth(ElementIndex pointElementIndex)
@@ -2209,12 +2209,12 @@ private:
             coefficient2);
     }
 
-    static inline OceanFloorCollisionFactors CalculateOceanFloorCollisionFactors(
+    static inline OceanFloorBedrockCollisionFactors CalculateOceanFloorBedrockCollisionFactors(
         float elasticityAdjustment,
         float staticFrictionAdjustment,
         float kineticFrictionAdjustment,
-        float oceanFloorElasticityCoefficient,
-        float oceanFloorFrictionCoefficient,
+        float oceanFloorBedrockElasticityCoefficient,
+        float oceanFloorBedrockFrictionCoefficient,
         float materialElasticityCoefficient,
         float materialStaticFrictionCoefficient,
         float materialKineticFrictionCoefficient)
@@ -2223,10 +2223,10 @@ private:
         // Somewhat arbitrarily, we use the average of the ocean's and material's coefficients
         //
 
-        return OceanFloorCollisionFactors(
-            Clamp(-(materialElasticityCoefficient + oceanFloorElasticityCoefficient) / 2.0f * elasticityAdjustment, -1.0f, 0.0f),
-            Clamp(1.0f - (materialStaticFrictionCoefficient + oceanFloorFrictionCoefficient) / 2.0f * staticFrictionAdjustment, 0.0f, 1.0f),
-            Clamp(1.0f - (materialKineticFrictionCoefficient + oceanFloorFrictionCoefficient) / 2.0f * kineticFrictionAdjustment, 0.0f, 1.0f));
+        return OceanFloorBedrockCollisionFactors(
+            Clamp(-(materialElasticityCoefficient + oceanFloorBedrockElasticityCoefficient) / 2.0f * elasticityAdjustment, -1.0f, 0.0f),
+            Clamp(1.0f - (materialStaticFrictionCoefficient + oceanFloorBedrockFrictionCoefficient) / 2.0f * staticFrictionAdjustment, 0.0f, 1.0f),
+            Clamp(1.0f - (materialKineticFrictionCoefficient + oceanFloorBedrockFrictionCoefficient) / 2.0f * kineticFrictionAdjustment, 0.0f, 1.0f));
     }
 
     static inline float RandomizeCumulatedIntakenWater(float cumulatedIntakenWaterThresholdForAirBubbles)
@@ -2295,7 +2295,7 @@ private:
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mPinningCoefficientBuffer; // 1.0: not pinned; 0.0f: pinned
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
-    Buffer<OceanFloorCollisionFactors> mOceanFloorCollisionFactorsBuffer;
+    Buffer<OceanFloorBedrockCollisionFactors> mOceanFloorBedrockCollisionFactorsBuffer;
     Buffer<float> mAirWaterInterfaceInverseWidthBuffer; // The reciprocal of the air-water interface, to control the damping we perform against buoyancy oscillations
     Buffer<BuoyancyCoefficients> mBuoyancyCoefficientsBuffer;
     Buffer<float> mCachedDepthBuffer; // Positive when underwater
@@ -2471,8 +2471,8 @@ private:
     float mCurrentElasticityAdjustment;
     float mCurrentStaticFrictionAdjustment;
     float mCurrentKineticFrictionAdjustment;
-    float mCurrentOceanFloorElasticityCoefficient;
-    float mCurrentOceanFloorFrictionCoefficient;
+    float mCurrentOceanFloorBedrockElasticityCoefficient;
+    float mCurrentOceanFloorBedrockFrictionCoefficient;
     float mCurrentCumulatedIntakenWaterThresholdForAirBubbles;
     float mCurrentCombustionSpeedAdjustment;
 

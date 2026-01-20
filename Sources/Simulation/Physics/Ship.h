@@ -574,6 +574,8 @@ private:
         size_t simulationParallelism,
         SimulationParameters const & simulationParameters);
 
+    void CalculateSpringRelaxationCoefficients(SimulationParameters const & simulationParameters);
+
     void RunSpringRelaxation(
         ThreadManager & threadManager,
         SimulationParameters const & simulationParameters);
@@ -621,16 +623,21 @@ private:
         size_t parallelism,
         SimulationParameters const & simulationParameters);
 
-    inline float CalculateIntegrationVelocityFactor(float dt, SimulationParameters const & simulationParameters) const;
-
-    //
-    //
-    //
-
-    void HandleCollisionsWithSeaFloor(
+    inline void HandleCollisionsWithSeaFloor(
         ElementIndex startPointIndex,
         ElementIndex endPointIndex,
         SimulationParameters const & simulationParameters);
+
+    struct SpringRelaxationCoefficients
+    {
+        float IntegrationVelocityFactor;
+        float MinSiltDepthHardness;
+        float MaxSiltDepthHardness;
+    } mSpringRelaxationCoefficients;
+
+    //
+    //
+    //
 
     void TrimForWorldBounds(SimulationParameters const & simulationParameters);
 

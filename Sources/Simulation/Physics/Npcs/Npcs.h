@@ -1941,8 +1941,8 @@ private:
 		float constexpr MaxWorldBottom = -SimulationParameters::HalfMaxWorldHeight;
 
 		// Elasticity of the bounce against world boundaries
-		//  - We use the ocean floor's elasticity for convenience
-		float const elasticity = simulationParameters.OceanFloorElasticityCoefficient * simulationParameters.ElasticityAdjustment;
+		//  - We use the ocean floor's bedrock elasticity for convenience
+		float const elasticity = simulationParameters.OceanFloorBedrockElasticityCoefficient * simulationParameters.ElasticityAdjustment;
 
 		// We clamp velocity to damp system instabilities at extreme events
 		static constexpr float MaxBounceVelocity = 150.0f; // Magic number

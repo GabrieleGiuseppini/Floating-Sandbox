@@ -1542,12 +1542,12 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     _("Adjusts the elasticity of collisions with the ocean floor."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::OceanFloorElasticityCoefficient, value);
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorBedrockElasticityCoefficient, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinOceanFloorElasticityCoefficient(),
-                        mGameControllerSettingsOptions.GetMaxOceanFloorElasticityCoefficient()));
+                        mGameControllerSettingsOptions.GetMinOceanFloorBedrockElasticityCoefficient(),
+                        mGameControllerSettingsOptions.GetMaxOceanFloorBedrockElasticityCoefficient()));
 
                 oceanFloorSizer->Add(
                     mOceanFloorElasticityCoefficientSlider,
@@ -1568,12 +1568,12 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     _("Adjusts the friction exherted by the ocean floor."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::OceanFloorFrictionCoefficient, value);
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorBedrockFrictionCoefficient, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinOceanFloorFrictionCoefficient(),
-                        mGameControllerSettingsOptions.GetMaxOceanFloorFrictionCoefficient()));
+                        mGameControllerSettingsOptions.GetMinOceanFloorBedrockFrictionCoefficient(),
+                        mGameControllerSettingsOptions.GetMaxOceanFloorBedrockFrictionCoefficient()));
 
                 oceanFloorSizer->Add(
                     mOceanFloorFrictionCoefficientSlider,
@@ -6389,8 +6389,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mOceanDepthSlider->SetValue(settings.GetValue<float>(GameSettings::SeaDepth));
     mOceanFloorBumpinessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorBumpiness));
     mOceanFloorDetailAmplificationSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorDetailAmplification));
-    mOceanFloorElasticityCoefficientSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorElasticityCoefficient));
-    mOceanFloorFrictionCoefficientSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorFrictionCoefficient));
+    mOceanFloorElasticityCoefficientSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorBedrockElasticityCoefficient));
+    mOceanFloorFrictionCoefficientSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorBedrockFrictionCoefficient));
     mOceanFloorSiltThicknessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorSiltThickness));
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
 

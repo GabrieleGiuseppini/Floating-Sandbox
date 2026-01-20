@@ -284,14 +284,17 @@ struct IGameControllerSettings
     virtual void SetOceanFloorDetailAmplification(float value) = 0;
     virtual void SetOceanFloorDetailAmplificationImmediate(float value) = 0;
 
-    virtual float GetOceanFloorElasticityCoefficient() const = 0;
-    virtual void SetOceanFloorElasticityCoefficient(float value) = 0;
+    virtual float GetOceanFloorBedrockElasticityCoefficient() const = 0;
+    virtual void SetOceanFloorBedrockElasticityCoefficient(float value) = 0;
 
-    virtual float GetOceanFloorFrictionCoefficient() const = 0;
-    virtual void SetOceanFloorFrictionCoefficient(float value) = 0;
+    virtual float GetOceanFloorBedrockFrictionCoefficient() const = 0;
+    virtual void SetOceanFloorBedrockFrictionCoefficient(float value) = 0;
 
     virtual float GetOceanFloorSiltThickness() const = 0;
     virtual void SetOceanFloorSiltThickness(float value) = 0;
+
+    virtual float GetOceanFloorSiltHardness() const = 0;
+    virtual void SetOceanFloorSiltHardness(float value) = 0;
 
     virtual float GetDestroyRadius() const = 0;
     virtual void SetDestroyRadius(float value) = 0;
