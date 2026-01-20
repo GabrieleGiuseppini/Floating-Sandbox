@@ -342,13 +342,6 @@ void OceanFloor::CalculateSiltSampleValues()
 {
     float const perturbationSinAmplitude = mCurrentOceanFloorSiltThickness / 20.0f;
 
-    // TODOTEST: complex version
-    static float const segmentSequenceMultipliers[3][3] = {
-        0.0f, 0.0f, 0.5f,  // U: UDH
-        1.5f, 0.0f, 1.5f, // D: UDH
-        1.5f, 0.5f, 1.0f // H: UDH
-    };
-
     //
     // Sample index = 0
     //
@@ -368,25 +361,17 @@ void OceanFloor::CalculateSiltSampleValues()
 
         SegmentDirection const segmentDirection = GetSegmentDirection(i);
 
-        // Special case for 1-sample peaks, to avoid setting 1.5 at upward of 1-sample peak
-        // TODOHERE
-
-        // TODOTEST: complex version
-        //float siltSampleValue =
-        //    mSamples[i].BedrockSampleValue
-        //    + (mCurrentOceanFloorSiltThickness + perturbationSinAmplitude * std::sinf(static_cast<float>(i) / 8.0f * 2.0f * Pi<float>))
-        //        * segmentSequenceMultipliers[previousSegmentDirection][segmentDirection];
-
-        // TODOTEST: simplified version
         float segmentSequenceMultiplier;
-        if ((previousSegmentDirection == SegmentDirection::Horizontal && segmentDirection == SegmentDirection::Horizontal)
-            || (previousSegmentDirection == SegmentDirection::Downward && segmentDirection == SegmentDirection::Upward))
+        if (previousSegmentDirection == SegmentDirection::Downward
+            || previousSegmentDirection == SegmentDirection::Upward
+            || segmentDirection == SegmentDirection::Upward
+            || segmentDirection == SegmentDirection::Downward)
         {
-            segmentSequenceMultiplier = 1.0f;
+            segmentSequenceMultiplier = 0.0f;
         }
         else
         {
-            segmentSequenceMultiplier = 0.0f;
+            segmentSequenceMultiplier = 1.0f;
         }
 
         float const siltSampleValue =
@@ -417,9 +402,10 @@ OceanFloor::SegmentDirection OceanFloor::GetSegmentDirection(size_t sampleIndex)
     assert(sampleIndex <= SamplesCount);
 
     float const deltaY = mSamples[sampleIndex].BedrockSampleValuePlusOneMinusSampleValue;
-    if (deltaY > Dx)
+    float constexpr HighSlopeThreshold = 3.0f;
+    if (deltaY > Dx * HighSlopeThreshold)
         return SegmentDirection::Upward;
-    else if (deltaY < -Dx)
+    else if (deltaY < -Dx * HighSlopeThreshold)
         return SegmentDirection::Downward;
     else
         return SegmentDirection::Horizontal;

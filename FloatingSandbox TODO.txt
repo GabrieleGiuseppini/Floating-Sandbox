@@ -263,7 +263,7 @@
 
 				- If stay with HandleCollisions:
 					+ Cleanup ApplyWorldForces
-					= Fix for compound damping
+					+ Fix for compound damping
 						+ Test first: @ 2, glass ball does _not_ break when starts at -250
 						+ MinDepthHardness, MaxDepthHardness
 						+ Precalc integration velocity factor and silt harndess coefficients 
@@ -330,8 +330,8 @@
 					+ Milestone 1: fixed offset
 						+ Applies offset (new SimulationSetting, replaces other: SiltThickness)
 						+ Applies sin wave
-					= Milestone 2: nice silt distribution algorithm
-						- Accretion algo:
+					+ Milestone 2: nice silt distribution algorithm
+						X Accretion algo:
 							! Categorize segment as Downward, Upward, or Horizontal
 							- futureBudget=1
 							- Segment s:								
@@ -348,7 +348,7 @@
 									- Height of s[0] = futureBudget
 										- UGLY: bowl has higher profile on left (landing futureBudget) than right (normalized futureBudget)
 									- Decrease futureBudget
-						= Naive algo:
+						X Naive algo:
 							! Categorize segment as Downward, Upward, or Horizontal
 							! A->B: value at sample between A and B
 							- D->H: 1.5
@@ -364,18 +364,9 @@
 							- D->U: 1.5
 							- U->D: 0.0
 
-						= Try simplification:
-							= 1.0 only between H-H and D-U
+						+ Try simplification:
+							+ 0.0 before or after U/D, and U/D with more slope
 
-						- Try this other:
-							- TODOHERE: 
-
-						- Send for testing (to test distribution)
-
-
-
-
-					- Optimize sin w/dx and precalc'd sin
 					- Profile changes (interactions and all):
 						+ SetHeightMap: calls CalculateResultantSampleValues, done
 						+ AdjustTo: calls SetTerrainHeight
@@ -383,6 +374,9 @@
 						- SetTerrainHeight:
 							- TODO: depends on silting distribution algorithm: can we do it locally?
 								- If not, each change needs to be followed by a full call to CalculateSiltSampleValues()
+
+
+					- Optimize sin w/dx and precalc'd sin
 
 			+ Upload all members at Upload
 			+ Export:
