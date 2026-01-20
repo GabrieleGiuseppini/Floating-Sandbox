@@ -178,16 +178,14 @@
 		+ RU should be final
 		- Double-check myself
 
-	- Improvements from Bandit:
+	= Improvements from Bandit:
 		! Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
-		= Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
-			- See if it's due to too much elasticity
-			- See if it's due to underwater pressure
+		! Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
 		! Spec:
 			! https://hal.science/hal-03251375/document
 			! Observations:
 				- max deltaPos observed with impact, calc'd for 1 mechanical iteration is 0.13
-			- Option 1:
+			! Option 1:
 				! Gist:
 					! Ocean floor: has a soft layer (penetrable) on top of a hard layer (impenetrable) 
 					! Siltness adjustment dictates thickness of soft layer, and thus max penetration
@@ -200,7 +198,7 @@
 						! TODO: "...for the first time"?
 				- Problems with this one:
 					- It happens every 2 spring relaxation iterations, very expensive
-			- Option 2:
+			! Option 2:
 				! Gist:
 					! Ocean floor: has a soft layer (penetrable) on top of a hard layer (impenetrable) 
 					! Siltness adjustment dictates thickness of soft layer, and thus max penetration
@@ -224,7 +222,7 @@
 					- Is it so bad? Especially if silt layer is supposed to be large-ish (more than the distance traveled in a big dt)
 						- V distance traveled by particle falling for ~100m: 0.54m
 
-		= Impl:
+		+ Impl:
 			+ BEFORE ALL: 
 				+ Run VS profiler w/ship on bedrock and save results
 				+ Re-take Android measurements on all 3 phones
@@ -253,15 +251,12 @@
 			+ Fine-tune again to go back to V1 behavior
 				+ Build & send
 				+ Bump up version
-
-			= Finalize:
+			+ Finalize:
 				X Try moving from HandleCollisions to ApplyWorldForces
 					- Nope: even with dampingFactor=0.0, glass ball doesn't break
 					- And what's worse, structure gets crampled
-
 				+ FINALIZE Ship
-
-				- If stay with HandleCollisions:
+				+ If stay with HandleCollisions:
 					+ Cleanup ApplyWorldForces
 					+ Fix for compound damping
 						+ Test first: @ 2, glass ball does _not_ break when starts at -250
@@ -269,10 +264,7 @@
 						+ Precalc integration velocity factor and silt harndess coefficients 
 							+ Into Ship members, new area
 							+ Call CalculateSpringRelaxationCoefficients at RunXXX()
-
-					- Check HandleCollisions assembly, especially Clamp and LinearStep
-					- See if time to test vectorized				
-			
+					+ Check HandleCollisions assembly, especially Clamp and LinearStep						
 		+ Rendering of silt layer above bedrock: 
 			! Gist:
 				X 1: Sand layer is opaque but drawn earlier, behind ship
@@ -386,14 +378,10 @@
 		- Bubbles trapped in silt
 			- Is it really bad?
 
-		= SimulationParameters:
+		+ SimulationParameters:
 			+ OceanFloorSiltThickness 
 			+ OceanFloorSiltHardness
-			- Rename others as Bedrock
-
-		- RenderParameter to see through silt
-			- TODO: or tool?
-			- Simple alpha param set at RenderDrawOceanFloor differently on each band
+			+ Rename others as Bedrock
 
 		- SettingsDialog: expose all new settings
 			- Rendering (Texture, FlatColor): split Bedrock and Silt (silt above, bedrock below), incl. members
@@ -427,12 +415,17 @@
 		
 			- Try afterwards: also dent silt
 
+		- Tool to see through silt
+			! If we fail, just do simple RenderParameter: simple alpha param set at RenderDrawOceanFloor differently on each band
+			- Like lamp: using if on a param, safe
+
 		- Tests:
 			- Boundaries
+			- Old Dell perf
 
 		- Cleanup:
-			- HandleCollisionsWithSeaFloor (All TODOs)
-			- ApplyWorldForces
+			+ HandleCollisionsWithSeaFloor (All TODOs)
+			+ ApplyWorldForces
 
 	- Off-topic from the silt, but I would like to point out that there are some hiccups on some of the new ships, 
 		- Flying Dutchman has a density recommendation of 2812 (I assume a decimal was meant to be there), 

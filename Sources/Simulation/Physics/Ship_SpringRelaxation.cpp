@@ -786,10 +786,6 @@ void Ship::HandleCollisionsWithSeaFloor(
 
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
 
-    // TODOTEST
-    //float maxKineticEnergy = 0.0f;
-    //float maxKEDampingFactor = 0.0f;
-
     for (ElementIndex pointIndex = startPointIndex; pointIndex < endPointIndex; ++pointIndex)
     {
         auto const & position = mPoints.GetPosition(pointIndex);
@@ -898,14 +894,6 @@ void Ship::HandleCollisionsWithSeaFloor(
                 mPoints.SetVelocity(
                     pointIndex,
                     mPoints.GetVelocity(pointIndex) * dampingFactor);
-
-                // Update max
-                // TODOHERE
-                //if (kineticEnergy > maxKineticEnergy)
-                //{
-                //    maxKineticEnergy = kineticEnergy;
-                //    maxKEDampingFactor = dampingFactor;
-                //}
             }
         }
     }
