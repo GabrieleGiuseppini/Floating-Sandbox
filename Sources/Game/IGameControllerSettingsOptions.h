@@ -92,6 +92,32 @@ struct IGameControllerSettingsOptions
     virtual float GetMinWaterCrazyness() const = 0;
     virtual float GetMaxWaterCrazyness() const = 0;
 
+    // Ocean Floor
+
+    virtual float GetMinSeaDepth() const = 0;
+    virtual float GetMaxSeaDepth() const = 0;
+
+    virtual float GetMinOceanFloorBedrockBumpiness() const = 0;
+    virtual float GetMaxOceanFloorBedrockBumpiness() const = 0;
+
+    virtual float GetMinOceanFloorBedrockDetailAmplification() const = 0;
+    virtual float GetMaxOceanFloorBedrockDetailAmplification() const = 0;
+
+    virtual float GetMinOceanFloorBedrockElasticityCoefficient() const = 0;
+    virtual float GetMaxOceanFloorBedrockElasticityCoefficient() const = 0;
+
+    virtual float GetMinOceanFloorBedrockFrictionCoefficient() const = 0;
+    virtual float GetMaxOceanFloorBedrockFrictionCoefficient() const = 0;
+
+    virtual float GetMinOceanFloorSiltThickness() const = 0;
+    virtual float GetMaxOceanFloorSiltThickness() const = 0;
+
+    virtual float GetMinOceanFloorSiltBumpiness() const = 0;
+    virtual float GetMaxOceanFloorSiltBumpiness() const = 0;
+
+    virtual float GetMinOceanFloorSiltHardness() const = 0;
+    virtual float GetMaxOceanFloorSiltHardness() const = 0;
+
     // Ephemeral Particles
 
     virtual float GetMinSmokeEmissionDensityAdjustment() const = 0;
@@ -246,27 +272,6 @@ struct IGameControllerSettingsOptions
     virtual float GetMaxNpcPassiveBlastRadiusAdjustment() const = 0;
 
     // Misc
-
-    virtual float GetMinSeaDepth() const = 0;
-    virtual float GetMaxSeaDepth() const = 0;
-
-    virtual float GetMinOceanFloorBumpiness() const = 0;
-    virtual float GetMaxOceanFloorBumpiness() const = 0;
-
-    virtual float GetMinOceanFloorDetailAmplification() const = 0;
-    virtual float GetMaxOceanFloorDetailAmplification() const = 0;
-
-    virtual float GetMinOceanFloorBedrockElasticityCoefficient() const = 0;
-    virtual float GetMaxOceanFloorBedrockElasticityCoefficient() const = 0;
-
-    virtual float GetMinOceanFloorBedrockFrictionCoefficient() const = 0;
-    virtual float GetMaxOceanFloorBedrockFrictionCoefficient() const = 0;
-
-    virtual float GetMinOceanFloorSiltThickness() const = 0;
-    virtual float GetMaxOceanFloorSiltThickness() const = 0;
-
-    virtual float GetMinOceanFloorSiltHardness() const = 0;
-    virtual float GetMaxOceanFloorSiltHardness() const = 0;
 
     virtual float GetMinDestroyRadius() const = 0;
     virtual float GetMaxDestroyRadius() const = 0;

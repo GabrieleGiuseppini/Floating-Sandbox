@@ -582,6 +582,53 @@ public:
     float GetMinWaveSmoothnessAdjustment() const override { return SimulationParameters::MinWaveSmoothnessAdjustment; }
     float GetMaxWaveSmoothnessAdjustment() const override { return SimulationParameters::MaxWaveSmoothnessAdjustment; }
 
+    // Ocean floor
+
+    OceanFloorHeightMap const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorHeightMap(); }
+    void SetOceanFloorTerrain(OceanFloorHeightMap const & value) override { mWorld->SetOceanFloorHeightMap(value); }
+
+    float GetSeaDepth() const override { return mFloatParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
+    void SetSeaDepth(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }
+    void SetSeaDepthImmediate(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValueImmediate(value); }
+    float GetMinSeaDepth() const override { return SimulationParameters::MinSeaDepth; }
+    float GetMaxSeaDepth() const override { return SimulationParameters::MaxSeaDepth; }
+
+    float GetOceanFloorBedrockBumpiness() const override { return mFloatParameterSmoothers[OceanFloorBedrockBumpinessParameterSmoother].GetValue(); }
+    void SetOceanFloorBedrockBumpiness(float value) override { mFloatParameterSmoothers[OceanFloorBedrockBumpinessParameterSmoother].SetValue(value); }
+    float GetMinOceanFloorBedrockBumpiness() const override { return SimulationParameters::MinOceanFloorBedrockBumpiness; }
+    float GetMaxOceanFloorBedrockBumpiness() const override { return SimulationParameters::MaxOceanFloorBedrockBumpiness; }
+
+    float GetOceanFloorBedrockDetailAmplification() const override { return mFloatParameterSmoothers[OceanFloorBedrockDetailAmplificationParameterSmoother].GetValue(); }
+    void SetOceanFloorBedrockDetailAmplification(float value) override { mFloatParameterSmoothers[OceanFloorBedrockDetailAmplificationParameterSmoother].SetValue(value); }
+    void SetOceanFloorBedrockDetailAmplificationImmediate(float value) override { mFloatParameterSmoothers[OceanFloorBedrockDetailAmplificationParameterSmoother].SetValueImmediate(value); }
+    float GetMinOceanFloorBedrockDetailAmplification() const override { return SimulationParameters::MinOceanFloorBedrockDetailAmplification; }
+    float GetMaxOceanFloorBedrockDetailAmplification() const override { return SimulationParameters::MaxOceanFloorBedrockDetailAmplification; }
+
+    float GetOceanFloorBedrockElasticityCoefficient() const override { return mSimulationParameters.OceanFloorBedrockElasticityCoefficient; }
+    void SetOceanFloorBedrockElasticityCoefficient(float value) override { mSimulationParameters.OceanFloorBedrockElasticityCoefficient = value; }
+    float GetMinOceanFloorBedrockElasticityCoefficient() const override { return SimulationParameters::MinOceanFloorBedrockElasticityCoefficient; }
+    float GetMaxOceanFloorBedrockElasticityCoefficient() const override { return SimulationParameters::MaxOceanFloorBedrockElasticityCoefficient; }
+
+    float GetOceanFloorBedrockFrictionCoefficient() const override { return mSimulationParameters.OceanFloorBedrockFrictionCoefficient; }
+    void SetOceanFloorBedrockFrictionCoefficient(float value) override { mSimulationParameters.OceanFloorBedrockFrictionCoefficient = value; }
+    float GetMinOceanFloorBedrockFrictionCoefficient() const override { return SimulationParameters::MinOceanFloorBedrockFrictionCoefficient; }
+    float GetMaxOceanFloorBedrockFrictionCoefficient() const override { return SimulationParameters::MaxOceanFloorBedrockFrictionCoefficient; }
+
+    float GetOceanFloorSiltThickness() const override { return mFloatParameterSmoothers[OceanFloorSiltThicknessParameterSmoother].GetValue(); }
+    void SetOceanFloorSiltThickness(float value) override { mFloatParameterSmoothers[OceanFloorSiltThicknessParameterSmoother].SetValue(value); }
+    float GetMinOceanFloorSiltThickness() const override { return SimulationParameters::MinOceanFloorSiltThickness; }
+    float GetMaxOceanFloorSiltThickness() const override { return SimulationParameters::MaxOceanFloorSiltThickness; }
+
+    float GetOceanFloorSiltBumpiness() const override { return mFloatParameterSmoothers[OceanFloorSiltBumpinessParameterSmoother].GetValue(); }
+    void SetOceanFloorSiltBumpiness(float value) override { mFloatParameterSmoothers[OceanFloorSiltBumpinessParameterSmoother].SetValue(value); }
+    float GetMinOceanFloorSiltBumpiness() const override { return SimulationParameters::MinOceanFloorSiltBumpiness; }
+    float GetMaxOceanFloorSiltBumpiness() const override { return SimulationParameters::MaxOceanFloorSiltBumpiness; }
+
+    float GetOceanFloorSiltHardness() const override { return mSimulationParameters.OceanFloorSiltHardness; }
+    void SetOceanFloorSiltHardness(float value) override { mSimulationParameters.OceanFloorSiltHardness = value; }
+    float GetMinOceanFloorSiltHardness() const override { return SimulationParameters::MinOceanFloorSiltHardness; }
+    float GetMaxOceanFloorSiltHardness() const override { return SimulationParameters::MaxOceanFloorSiltHardness; }
+
     // Storm
 
     std::chrono::minutes GetStormRate() const override { return mSimulationParameters.StormRate; }
@@ -758,46 +805,6 @@ public:
     float GetMaxNpcPassiveBlastRadiusAdjustment() const override { return SimulationParameters::MaxNpcPassiveBlastRadiusAdjustment; }
 
     // Misc
-
-    OceanFloorHeightMap const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorHeightMap(); }
-    void SetOceanFloorTerrain(OceanFloorHeightMap const & value) override { mWorld->SetOceanFloorHeightMap(value); }
-
-    float GetSeaDepth() const override { return mFloatParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
-    void SetSeaDepth(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }
-    void SetSeaDepthImmediate(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValueImmediate(value); }
-    float GetMinSeaDepth() const override { return SimulationParameters::MinSeaDepth; }
-    float GetMaxSeaDepth() const override { return SimulationParameters::MaxSeaDepth; }
-
-    float GetOceanFloorBumpiness() const override { return mFloatParameterSmoothers[OceanFloorBumpinessParameterSmoother].GetValue(); }
-    void SetOceanFloorBumpiness(float value) override { mFloatParameterSmoothers[OceanFloorBumpinessParameterSmoother].SetValue(value); }
-    float GetMinOceanFloorBumpiness() const override { return SimulationParameters::MinOceanFloorBumpiness; }
-    float GetMaxOceanFloorBumpiness() const override { return SimulationParameters::MaxOceanFloorBumpiness; }
-
-    float GetOceanFloorDetailAmplification() const override { return mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].GetValue(); }
-    void SetOceanFloorDetailAmplification(float value) override { mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValue(value); }
-    void SetOceanFloorDetailAmplificationImmediate(float value) override { mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValueImmediate(value); }
-    float GetMinOceanFloorDetailAmplification() const override { return SimulationParameters::MinOceanFloorDetailAmplification; }
-    float GetMaxOceanFloorDetailAmplification() const override { return SimulationParameters::MaxOceanFloorDetailAmplification; }
-
-    float GetOceanFloorBedrockElasticityCoefficient() const override { return mSimulationParameters.OceanFloorBedrockElasticityCoefficient; }
-    void SetOceanFloorBedrockElasticityCoefficient(float value) override { mSimulationParameters.OceanFloorBedrockElasticityCoefficient = value; }
-    float GetMinOceanFloorBedrockElasticityCoefficient() const override { return SimulationParameters::MinOceanFloorBedrockElasticityCoefficient; }
-    float GetMaxOceanFloorBedrockElasticityCoefficient() const override { return SimulationParameters::MaxOceanFloorBedrockElasticityCoefficient; }
-
-    float GetOceanFloorBedrockFrictionCoefficient() const override { return mSimulationParameters.OceanFloorBedrockFrictionCoefficient; }
-    void SetOceanFloorBedrockFrictionCoefficient(float value) override { mSimulationParameters.OceanFloorBedrockFrictionCoefficient = value; }
-    float GetMinOceanFloorBedrockFrictionCoefficient() const override { return SimulationParameters::MinOceanFloorBedrockFrictionCoefficient; }
-    float GetMaxOceanFloorBedrockFrictionCoefficient() const override { return SimulationParameters::MaxOceanFloorBedrockFrictionCoefficient; }
-
-    float GetOceanFloorSiltThickness() const override { return mSimulationParameters.OceanFloorSiltThickness; }
-    void SetOceanFloorSiltThickness(float value) override { mSimulationParameters.OceanFloorSiltThickness = value; }
-    float GetMinOceanFloorSiltThickness() const override { return SimulationParameters::MinOceanFloorSiltThickness; }
-    float GetMaxOceanFloorSiltThickness() const override { return SimulationParameters::MaxOceanFloorSiltThickness; }
-
-    float GetOceanFloorSiltHardness() const override { return mSimulationParameters.OceanFloorSiltHardness; }
-    void SetOceanFloorSiltHardness(float value) override { mSimulationParameters.OceanFloorSiltHardness = value; }
-    float GetMinOceanFloorSiltHardness() const override { return SimulationParameters::MinOceanFloorSiltHardness; }
-    float GetMaxOceanFloorSiltHardness() const override { return SimulationParameters::MaxOceanFloorSiltHardness; }
 
     float GetDestroyRadius() const override { return mSimulationParameters.DestroyRadius; }
     void SetDestroyRadius(float value) override { mSimulationParameters.DestroyRadius = value; }
@@ -1226,12 +1233,14 @@ private:
     static constexpr size_t SpringStiffnessAdjustmentParameterSmoother = 0;
     static constexpr size_t SpringStrengthAdjustmentParameterSmoother = 1;
     static constexpr size_t SeaDepthParameterSmoother = 2;
-    static constexpr size_t OceanFloorBumpinessParameterSmoother = 3;
-    static constexpr size_t OceanFloorDetailAmplificationParameterSmoother = 4;
-    static constexpr size_t FlameSizeAdjustmentParameterSmoother = 5;
-    static constexpr size_t BasalWaveHeightAdjustmentParameterSmoother = 6;
-    static constexpr size_t FishSizeMultiplierParameterSmoother = 7;
-    static constexpr size_t NpcSizeMultiplierParameterSmoother = 8;
+    static constexpr size_t OceanFloorBedrockBumpinessParameterSmoother = 3;
+    static constexpr size_t OceanFloorBedrockDetailAmplificationParameterSmoother = 4;
+    static constexpr size_t OceanFloorSiltThicknessParameterSmoother = 5;
+    static constexpr size_t OceanFloorSiltBumpinessParameterSmoother = 6;
+    static constexpr size_t FlameSizeAdjustmentParameterSmoother = 7;
+    static constexpr size_t BasalWaveHeightAdjustmentParameterSmoother = 8;
+    static constexpr size_t FishSizeMultiplierParameterSmoother = 9;
+    static constexpr size_t NpcSizeMultiplierParameterSmoother = 10;
     std::vector<ParameterSmoother<float>> mFloatParameterSmoothers;
 
 

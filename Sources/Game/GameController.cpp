@@ -194,28 +194,54 @@ GameController::GameController(
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
 
-    assert(mFloatParameterSmoothers.size() == OceanFloorBumpinessParameterSmoother);
+    assert(mFloatParameterSmoothers.size() == OceanFloorBedrockBumpinessParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &
         {
-            return this->mSimulationParameters.OceanFloorBumpiness;
+            return this->mSimulationParameters.OceanFloorBedrockBumpiness;
         },
         [this](float const & value)
         {
-            this->mSimulationParameters.OceanFloorBumpiness = value;
+            this->mSimulationParameters.OceanFloorBedrockBumpiness = value;
         },
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
 
-    assert(mFloatParameterSmoothers.size() == OceanFloorDetailAmplificationParameterSmoother);
+    assert(mFloatParameterSmoothers.size() == OceanFloorBedrockDetailAmplificationParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &
         {
-            return this->mSimulationParameters.OceanFloorDetailAmplification;
+            return this->mSimulationParameters.OceanFloorBedrockDetailAmplification;
         },
         [this](float const & value)
         {
-            this->mSimulationParameters.OceanFloorDetailAmplification = value;
+            this->mSimulationParameters.OceanFloorBedrockDetailAmplification = value;
+        },
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
+
+    assert(mFloatParameterSmoothers.size() == OceanFloorSiltThicknessParameterSmoother);
+    mFloatParameterSmoothers.emplace_back(
+        [this]() -> float const &
+        {
+            return this->mSimulationParameters.OceanFloorSiltThickness;
+        },
+        [this](float const & value)
+        {
+            this->mSimulationParameters.OceanFloorSiltThickness = value;
+        },
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
+
+    assert(mFloatParameterSmoothers.size() == OceanFloorSiltBumpinessParameterSmoother);
+    mFloatParameterSmoothers.emplace_back(
+        [this]() -> float const &
+        {
+            return this->mSimulationParameters.OceanFloorSiltBumpiness;
+        },
+        [this](float const & value)
+        {
+            this->mSimulationParameters.OceanFloorSiltBumpiness = value;
         },
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);

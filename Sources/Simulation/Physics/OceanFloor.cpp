@@ -10,7 +10,7 @@
 namespace Physics {
 
 OceanFloor::OceanFloor(OceanFloorHeightMap && heightMap)
-    : mBumpProfile(SamplesCount)
+    : mBedrockBumpProfile(SamplesCount)
     , mHeightMap(std::move(heightMap))
     // Regarding the number of samples:
     //  - The sample index for x==max (HalfMaxWorldWidth) is SamplesCount - 1
@@ -19,9 +19,11 @@ OceanFloor::OceanFloor(OceanFloorHeightMap && heightMap)
     , mIsDirty(false)
     , mIsDirtyForRendering(false)
     , mCurrentSeaDepth(0.0f)
+    , mCurrentOceanFloorBedrockBumpiness(0.0f)
+    , mCurrentOceanFloorBedrockDetailAmplification(0.0f)
     , mCurrentOceanFloorSiltThickness(0.0f)
-    , mCurrentOceanFloorBumpiness(0.0f)
-    , mCurrentOceanFloorDetailAmplification(0.0f)
+    , mCurrentOceanFloorSiltBumpiness(0.0f)
+    , mCurrentOceanFloorSiltPerturbationSinAmplitude(0.0f)
 {
     // Initialize constant sample values
     mSamples[SamplesCount - 1].SiltSampleValuePlusOneMinusSampleValue = 0.0f; // Because extra sample is == mSamples[SamplesCount - 1].SampleValue
@@ -29,8 +31,8 @@ OceanFloor::OceanFloor(OceanFloorHeightMap && heightMap)
     mSamples[SamplesCount].SiltSampleValuePlusOneMinusSampleValue = 0.0f; // Just to be neat
     mSamples[SamplesCount].BedrockSampleValuePlusOneMinusSampleValue = 0.0f; // Just to be neat
 
-    // Calculate bump profile
-    CalculateBumpProfile();
+    // Calculate bedrock bump profile
+    CalculateBedrockBumpProfile();
 
     // Calculate samples
     CalculateResultantSampleValues();
@@ -58,13 +60,13 @@ void OceanFloor::Update(SimulationParameters const & simulationParameters)
     bool doRecalculateSamples = false;
 
     // Check whether we need to recalculate the bump profile
-    if (simulationParameters.OceanFloorBumpiness != mCurrentOceanFloorBumpiness)
+    if (simulationParameters.OceanFloorBedrockBumpiness != mCurrentOceanFloorBedrockBumpiness)
     {
         // Update current game parameters
-        mCurrentOceanFloorBumpiness = simulationParameters.OceanFloorBumpiness;
+        mCurrentOceanFloorBedrockBumpiness = simulationParameters.OceanFloorBedrockBumpiness;
 
-        // Recalculate bump profile
-        CalculateBumpProfile();
+        // Recalculate bedrock bump profile
+        CalculateBedrockBumpProfile();
 
         doRecalculateSamples = true;
     }
@@ -72,13 +74,18 @@ void OceanFloor::Update(SimulationParameters const & simulationParameters)
     // Check whether we need to recalculate the samples
     if (doRecalculateSamples
         || simulationParameters.SeaDepth != mCurrentSeaDepth
+        || simulationParameters.OceanFloorBedrockDetailAmplification != mCurrentOceanFloorBedrockDetailAmplification
         || simulationParameters.OceanFloorSiltThickness != mCurrentOceanFloorSiltThickness
-        || simulationParameters.OceanFloorDetailAmplification != mCurrentOceanFloorDetailAmplification)
+        || simulationParameters.OceanFloorSiltBumpiness != mCurrentOceanFloorSiltBumpiness)
     {
-        // Update current game parameters
+        // Update current simulation parameters
         mCurrentSeaDepth = simulationParameters.SeaDepth;
+        mCurrentOceanFloorBedrockDetailAmplification = simulationParameters.OceanFloorBedrockDetailAmplification;
         mCurrentOceanFloorSiltThickness = simulationParameters.OceanFloorSiltThickness;
-        mCurrentOceanFloorDetailAmplification = simulationParameters.OceanFloorDetailAmplification;
+        mCurrentOceanFloorSiltBumpiness = simulationParameters.OceanFloorSiltBumpiness;
+
+        // Update current parameters calculated from simulation parameters
+        mCurrentOceanFloorSiltPerturbationSinAmplitude = mCurrentOceanFloorSiltThickness * mCurrentOceanFloorSiltBumpiness;
 
         // Recalculate samples
         CalculateResultantSampleValues();
@@ -129,7 +136,7 @@ std::optional<bool> OceanFloor::AdjustTo(
     float x2,
     float targetY2)
 {
-    if (mCurrentOceanFloorDetailAmplification == 0.0f)
+    if (mCurrentOceanFloorBedrockDetailAmplification == 0.0f)
     {
         // Nothing to do
         return std::nullopt;
@@ -188,10 +195,10 @@ std::optional<bool> OceanFloor::AdjustTo(
 
         // Translate sample value into terrain change
         // (inverse of CalculateResultantSampleValue(.))
-        assert(mCurrentOceanFloorDetailAmplification != 0.0f);
+        assert(mCurrentOceanFloorBedrockDetailAmplification != 0.0f);
         float const newTerrainProfileSampleValue =
-            (newSampleValue - mBumpProfile[s] + mCurrentSeaDepth)
-            / mCurrentOceanFloorDetailAmplification;
+            (newSampleValue - mBedrockBumpProfile[s] + mCurrentSeaDepth)
+            / mCurrentOceanFloorBedrockDetailAmplification;
 
         // Update terrain and samples
         SetTerrainHeight(s, newTerrainProfileSampleValue);
@@ -286,7 +293,7 @@ void OceanFloor::SetTerrainHeight(
     CalculateSiltSampleValues(sampleIndex > 0 ? sampleIndex - 1 : sampleIndex, sampleIndex < SamplesCount - 1 ? sampleIndex + 1 : sampleIndex);
 }
 
-void OceanFloor::CalculateBumpProfile()
+void OceanFloor::CalculateBedrockBumpProfile()
 {
     static constexpr float BumpFrequency1 = 0.005f;
     static constexpr float BumpFrequency2 = 0.015f;
@@ -298,7 +305,7 @@ void OceanFloor::CalculateBumpProfile()
         float const c1 = sinf(x * BumpFrequency1) * 10.f;
         float const c2 = sinf(x * BumpFrequency2) * 6.f;
         float const c3 = sinf(x * BumpFrequency3) * 45.f;
-        mBumpProfile[i] = (c1 + c2 - c3) * mCurrentOceanFloorBumpiness;
+        mBedrockBumpProfile[i] = (c1 + c2 - c3) * mCurrentOceanFloorBedrockBumpiness;
     }
 }
 
@@ -347,7 +354,7 @@ void OceanFloor::CalculateSiltSampleValues(size_t startIndex, size_t endIndex)
 {
     assert(startIndex >= 0 && endIndex < SamplesCount);
 
-    float const perturbationSinAmplitude = mCurrentOceanFloorSiltThickness / 20.0f;
+    float const perturbationSinAmplitude = mCurrentOceanFloorSiltPerturbationSinAmplitude;
 
     float constexpr HighSlopeThreshold = 5.0f;
 

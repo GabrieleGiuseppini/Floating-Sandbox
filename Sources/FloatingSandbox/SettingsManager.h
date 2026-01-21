@@ -42,6 +42,17 @@ enum class GameSettings : size_t
     DoDisplaceWater,
     WaterDisplacementWaveHeightAdjustment,
 
+    // Ocean floor
+    OceanFloorTerrain,
+    SeaDepth,
+    OceanFloorBedrockBumpiness,
+    OceanFloorBedrockDetailAmplification,
+    OceanFloorBedrockElasticityCoefficient,
+    OceanFloorBedrockFrictionCoefficient,
+    OceanFloorSiltThickness,
+    OceanFloorSiltBumpiness,
+    OceanFloorSiltHardness,
+
     // Waves
     BasalWaveHeightAdjustment,
     BasalWaveLengthAdjustment,
@@ -101,14 +112,6 @@ enum class GameSettings : size_t
     NpcPassiveBlastRadiusAdjustment,
 
     // Misc
-    OceanFloorTerrain,
-    SeaDepth,
-    OceanFloorBumpiness,
-    OceanFloorDetailAmplification,
-    OceanFloorBedrockElasticityCoefficient,
-    OceanFloorBedrockFrictionCoefficient,
-    OceanFloorSiltThickness,
-    OceanFloorSiltHardness,
     DestroyRadius,
     RepairRadius,
     RepairSpeedAdjustment,

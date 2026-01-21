@@ -190,7 +190,7 @@ private:
         size_t sampleIndex,
         float terrainHeight);
 
-    void CalculateBumpProfile();
+    void CalculateBedrockBumpProfile();
 
     void CalculateResultantSampleValues();
 
@@ -200,8 +200,8 @@ private:
 
         return
             -mCurrentSeaDepth
-            + mBumpProfile[sampleIndex]
-            + mHeightMap[sampleIndex] * mCurrentOceanFloorDetailAmplification;
+            + mBedrockBumpProfile[sampleIndex]
+            + mHeightMap[sampleIndex] * mCurrentOceanFloorBedrockDetailAmplification;
     }
 
     void CalculateSiltSampleValues(size_t startIndex, size_t endIndex); // end included
@@ -212,7 +212,7 @@ private:
 
     // The bump profile (ondulating component seafloor);
     // one value for each sample
-    unique_buffer<float> mBumpProfile;
+    unique_buffer<float> mBedrockBumpProfile;
 
     // The terrain (user-provided component of seafloor);
     // one value for each sample
@@ -252,13 +252,20 @@ private:
     bool mutable mIsDirtyForRendering; // We only upload to the GPU when dirty
 
     //
-    // The game parameters for which we're current
+    // The simulation parameters for which we're current
     //
 
     float mCurrentSeaDepth;
+    float mCurrentOceanFloorBedrockBumpiness;
+    float mCurrentOceanFloorBedrockDetailAmplification;
     float mCurrentOceanFloorSiltThickness;
-    float mCurrentOceanFloorBumpiness;
-    float mCurrentOceanFloorDetailAmplification;
+    float mCurrentOceanFloorSiltBumpiness;
+
+    //
+    // The parameters calculated from simulation parameters for which we're current
+    //
+
+    float mCurrentOceanFloorSiltPerturbationSinAmplitude;
 };
 
 }

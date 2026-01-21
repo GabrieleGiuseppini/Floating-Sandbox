@@ -100,6 +100,37 @@ struct IGameControllerSettings
     virtual float GetWaterCrazyness() const = 0;
     virtual void SetWaterCrazyness(float value) = 0;
 
+    // Ocean Floor
+
+    virtual OceanFloorHeightMap const & GetOceanFloorTerrain() const = 0;
+    virtual void SetOceanFloorTerrain(OceanFloorHeightMap const & value) = 0;
+
+    virtual float GetSeaDepth() const = 0;
+    virtual void SetSeaDepth(float value) = 0;
+    virtual void SetSeaDepthImmediate(float value) = 0;
+
+    virtual float GetOceanFloorBedrockBumpiness() const = 0;
+    virtual void SetOceanFloorBedrockBumpiness(float value) = 0;
+
+    virtual float GetOceanFloorBedrockDetailAmplification() const = 0;
+    virtual void SetOceanFloorBedrockDetailAmplification(float value) = 0;
+    virtual void SetOceanFloorBedrockDetailAmplificationImmediate(float value) = 0;
+
+    virtual float GetOceanFloorBedrockElasticityCoefficient() const = 0;
+    virtual void SetOceanFloorBedrockElasticityCoefficient(float value) = 0;
+
+    virtual float GetOceanFloorBedrockFrictionCoefficient() const = 0;
+    virtual void SetOceanFloorBedrockFrictionCoefficient(float value) = 0;
+
+    virtual float GetOceanFloorSiltThickness() const = 0;
+    virtual void SetOceanFloorSiltThickness(float value) = 0;
+
+    virtual float GetOceanFloorSiltBumpiness() const = 0;
+    virtual void SetOceanFloorSiltBumpiness(float value) = 0;
+
+    virtual float GetOceanFloorSiltHardness() const = 0;
+    virtual void SetOceanFloorSiltHardness(float value) = 0;
+
     // Ephemeral Particles
 
     virtual float GetSmokeEmissionDensityAdjustment() const = 0;
@@ -269,32 +300,6 @@ struct IGameControllerSettings
     virtual void SetNpcPassiveBlastRadiusAdjustment(float value) = 0;
 
     // Misc
-
-    virtual OceanFloorHeightMap const & GetOceanFloorTerrain() const = 0;
-    virtual void SetOceanFloorTerrain(OceanFloorHeightMap const & value) = 0;
-
-    virtual float GetSeaDepth() const = 0;
-    virtual void SetSeaDepth(float value) = 0;
-    virtual void SetSeaDepthImmediate(float value) = 0;
-
-    virtual float GetOceanFloorBumpiness() const = 0;
-    virtual void SetOceanFloorBumpiness(float value) = 0;
-
-    virtual float GetOceanFloorDetailAmplification() const = 0;
-    virtual void SetOceanFloorDetailAmplification(float value) = 0;
-    virtual void SetOceanFloorDetailAmplificationImmediate(float value) = 0;
-
-    virtual float GetOceanFloorBedrockElasticityCoefficient() const = 0;
-    virtual void SetOceanFloorBedrockElasticityCoefficient(float value) = 0;
-
-    virtual float GetOceanFloorBedrockFrictionCoefficient() const = 0;
-    virtual void SetOceanFloorBedrockFrictionCoefficient(float value) = 0;
-
-    virtual float GetOceanFloorSiltThickness() const = 0;
-    virtual void SetOceanFloorSiltThickness(float value) = 0;
-
-    virtual float GetOceanFloorSiltHardness() const = 0;
-    virtual void SetOceanFloorSiltHardness(float value) = 0;
 
     virtual float GetDestroyRadius() const = 0;
     virtual void SetDestroyRadius(float value) = 0;

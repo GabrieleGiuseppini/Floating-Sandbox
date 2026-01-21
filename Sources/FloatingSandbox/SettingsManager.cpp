@@ -72,6 +72,17 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(bool, DoDisplaceWater);
     ADD_GC_SETTING(float, WaterDisplacementWaveHeightAdjustment);
 
+    // Ocean floor
+    ADD_GC_SETTING(OceanFloorHeightMap, OceanFloorTerrain);
+    ADD_GC_SETTING_WITH_IMMEDIATE(float, SeaDepth);
+    ADD_GC_SETTING(float, OceanFloorBedrockBumpiness);
+    ADD_GC_SETTING_WITH_IMMEDIATE(float, OceanFloorBedrockDetailAmplification);
+    ADD_GC_SETTING(float, OceanFloorBedrockElasticityCoefficient);
+    ADD_GC_SETTING(float, OceanFloorBedrockFrictionCoefficient);
+    ADD_GC_SETTING(float, OceanFloorSiltThickness);
+    ADD_GC_SETTING(float, OceanFloorSiltBumpiness);
+    ADD_GC_SETTING(float, OceanFloorSiltHardness);
+
     // Waves
     ADD_GC_SETTING(float, BasalWaveHeightAdjustment);
     ADD_GC_SETTING(float, BasalWaveLengthAdjustment);
@@ -131,14 +142,6 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, NpcPassiveBlastRadiusAdjustment);
 
     // Misc
-    ADD_GC_SETTING(OceanFloorHeightMap, OceanFloorTerrain);
-    ADD_GC_SETTING_WITH_IMMEDIATE(float, SeaDepth);
-    ADD_GC_SETTING(float, OceanFloorBumpiness);
-    ADD_GC_SETTING_WITH_IMMEDIATE(float, OceanFloorDetailAmplification);
-    ADD_GC_SETTING(float, OceanFloorBedrockElasticityCoefficient);
-    ADD_GC_SETTING(float, OceanFloorBedrockFrictionCoefficient);
-    ADD_GC_SETTING(float, OceanFloorSiltThickness);
-    ADD_GC_SETTING(float, OceanFloorSiltHardness);
     ADD_GC_SETTING(float, DestroyRadius);
     ADD_GC_SETTING(float, RepairRadius);
     ADD_GC_SETTING(float, RepairSpeedAdjustment);

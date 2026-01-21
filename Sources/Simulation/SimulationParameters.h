@@ -198,7 +198,60 @@ struct SimulationParameters
     static float constexpr MinWaterCrazyness = 0.0f;
     static float constexpr MaxWaterCrazyness = 2.0f;
 
+    //
+    // Ocean floor
+    //
+
+    float SeaDepth;
+    static float constexpr MinSeaDepth = -50.0f;
+    static float constexpr MaxSeaDepth = 10000.0f;
+
+    // The number of ocean surface terrain samples for the entire world width;
+    // a higher value means more spatial resolution, at the expense of cache misses
+#if FS_IS_PLATFORM_MOBILE()
+    template <typename T>
+    static T constexpr OceanSurfaceSamples = 16384;
+#else
+    template <typename T>
+    static T constexpr OceanSurfaceSamples = 32768;
+#endif
+
+    // The number of ocean floor terrain samples for the entire world width;
+    // a higher value means more spatial resolution, at the expense of cache misses
+    template <typename T>
+    static T constexpr OceanFloorTerrainSamples = 2048;
+
+    float OceanFloorBedrockBumpiness;
+    static float constexpr MinOceanFloorBedrockBumpiness = 0.0f;
+    static float constexpr MaxOceanFloorBedrockBumpiness = 6.0f;
+
+    float OceanFloorBedrockDetailAmplification;
+    static float constexpr MinOceanFloorBedrockDetailAmplification = 0.0f;
+    static float constexpr MaxOceanFloorBedrockDetailAmplification = 200.0f;
+
+    float OceanFloorBedrockElasticityCoefficient;
+    static float constexpr MinOceanFloorBedrockElasticityCoefficient = 0.0f;
+    static float constexpr MaxOceanFloorBedrockElasticityCoefficient = 1.0f;
+
+    float OceanFloorBedrockFrictionCoefficient;
+    static float constexpr MinOceanFloorBedrockFrictionCoefficient = 0.05f; // Keeps some sanity at lower end
+    static float constexpr MaxOceanFloorBedrockFrictionCoefficient = 1.0f;
+
+    float OceanFloorSiltThickness;
+    static float constexpr MinOceanFloorSiltThickness = 0.0f;
+    static float constexpr MaxOceanFloorSiltThickness = 50.0f;
+
+    float OceanFloorSiltBumpiness; // As a fraction of thickness
+    static float constexpr MinOceanFloorSiltBumpiness = 0.0f;
+    static float constexpr MaxOceanFloorSiltBumpiness = 1.0f;
+
+    float OceanFloorSiltHardness;
+    static float constexpr MinOceanFloorSiltHardness = 0.0f;
+    static float constexpr MaxOceanFloorSiltHardness = 1.0f;
+
+    //
     // Ephemeral particles
+    //
 
     static constexpr ElementCount MaxEphemeralParticles = 4096;
 
@@ -567,49 +620,6 @@ struct SimulationParameters
 
     static float constexpr ShipParticleAirWaterInterfaceWidth = 1.0f; // Close to equilibrium
     static float constexpr AirBubbleParticleAirWaterInterfaceWidth = 0.1f; // So doesn't find equilibrium
-
-    float SeaDepth;
-    static float constexpr MinSeaDepth = -50.0f;
-    static float constexpr MaxSeaDepth = 10000.0f;
-
-    // The number of ocean surface terrain samples for the entire world width;
-    // a higher value means more spatial resolution, at the expense of cache misses
-#if FS_IS_PLATFORM_MOBILE()
-    template <typename T>
-    static T constexpr OceanSurfaceSamples = 16384;
-#else
-    template <typename T>
-    static T constexpr OceanSurfaceSamples = 32768;
-#endif
-
-    // The number of ocean floor terrain samples for the entire world width;
-    // a higher value means more spatial resolution, at the expense of cache misses
-    template <typename T>
-    static T constexpr OceanFloorTerrainSamples = 2048;
-
-    float OceanFloorBumpiness;
-    static float constexpr MinOceanFloorBumpiness = 0.0f;
-    static float constexpr MaxOceanFloorBumpiness = 6.0f;
-
-    float OceanFloorDetailAmplification;
-    static float constexpr MinOceanFloorDetailAmplification = 0.0f;
-    static float constexpr MaxOceanFloorDetailAmplification = 200.0f;
-
-    float OceanFloorBedrockElasticityCoefficient;
-    static float constexpr MinOceanFloorBedrockElasticityCoefficient = 0.0f;
-    static float constexpr MaxOceanFloorBedrockElasticityCoefficient = 1.0f;
-
-    float OceanFloorBedrockFrictionCoefficient;
-    static float constexpr MinOceanFloorBedrockFrictionCoefficient = 0.05f; // Keeps some sanity at lower end
-    static float constexpr MaxOceanFloorBedrockFrictionCoefficient = 1.0f;
-
-    float OceanFloorSiltThickness;
-    static float constexpr MinOceanFloorSiltThickness = 0.0f;
-    static float constexpr MaxOceanFloorSiltThickness = 50.0f;
-
-    float OceanFloorSiltHardness;
-    static float constexpr MinOceanFloorSiltHardness = 0.0f;
-    static float constexpr MaxOceanFloorSiltHardness = 1.0f;
 
     unsigned int NumberOfStars;
     static constexpr unsigned int MinNumberOfStars = 0;

@@ -79,7 +79,7 @@ private:
     SliderControl<unsigned int> * mMaxBurningParticlesPerShipSlider;
     BitmapToggleButton * mUltraViolentToggleButton;
 
-    // Ocean and Water
+    // Water
     SliderControl<float> * mWaterDensityAdjustmentSlider;
     SliderControl<float> * mWaterFrictionDragSlider;
     SliderControl<float> * mWaterPressureDragSlider;
@@ -89,13 +89,17 @@ private:
     SliderControl<float> * mWaterCrazynessSlider;
     SliderControl<float> * mWaterDiffusionSpeedSlider;
     SliderControl<float> * mWaterTemperatureSlider;
-    SliderControl<float> * mOceanDepthSlider;
-    SliderControl<float> * mOceanFloorBumpinessSlider;
-    SliderControl<float> * mOceanFloorDetailAmplificationSlider;
-    SliderControl<float> * mOceanFloorElasticityCoefficientSlider;
-    SliderControl<float> * mOceanFloorFrictionCoefficientSlider;
-    SliderControl<float> * mOceanFloorSiltThicknessSlider;
     SliderControl<float> * mRotAcceler8rSlider;
+
+    // Ocean
+    SliderControl<float> * mOceanDepthSlider;
+    SliderControl<float> * mOceanFloorBedrockBumpinessSlider;
+    SliderControl<float> * mOceanFloorBedrockDetailAmplificationSlider;
+    SliderControl<float> * mOceanFloorBedrockElasticityCoefficientSlider;
+    SliderControl<float> * mOceanFloorBedrockFrictionCoefficientSlider;
+    SliderControl<float> * mOceanFloorSiltThicknessSlider;
+    SliderControl<float> * mOceanFloorSiltBumpinessSlider;
+    SliderControl<float> * mOceanFloorSiltHardnessSlider;
 
     // Wind and Waves
     SliderControl<float> * mWindSpeedBaseSlider;
@@ -269,7 +273,8 @@ private:
     void DoClose();
 
     void PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel, GameAssetManager const & gameAssetManager);
-    void PopulateWaterAndOceanPanel(wxPanel * panel);
+    void PopulateWaterPanel(wxPanel * panel);
+    void PopulateOceanPanel(wxPanel * panel);
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateAirAndSkyPanel(wxPanel * panel);
     void PopulateLightsElectricalMarineLifePanel(wxPanel * panel);
