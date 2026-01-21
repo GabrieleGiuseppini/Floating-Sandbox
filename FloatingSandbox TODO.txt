@@ -371,10 +371,6 @@
 				+ Npc: use silt
 				+ Underwater plants: use silt
 
-		- FIX: rendering around sharp peaks
-			+ Figure out which of the two alpha's it is: IT'S THE ANTI-ALIASING
-			+ It was there also before!
-
 		+ Param smoother for silt thickness
 			+ And for silt bumpiness
 
@@ -396,7 +392,17 @@
 		= Fix themes
 			+ Rendering params (texture and color split into Silt, bedrock)
 			+ Phyisics params (OceanFloor-Bedrock-Elast/Friction)
-			- Fix mariana trench?
+			= Fix mariana trench
+				+ Verify old version
+				+ 1. Make LoadFromStream interpolate
+				+ Verify & commit
+				- Add temp code to halve size 
+					- assert identical sample values
+				- Verify interpolated now
+				- Save temp settings and move .bin
+				- Remove temp code to halve size
+
+				- Test boundaries
 
 		- Send to testers
 

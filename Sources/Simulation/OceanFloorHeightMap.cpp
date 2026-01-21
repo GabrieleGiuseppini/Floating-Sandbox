@@ -88,11 +88,42 @@ OceanFloorHeightMap OceanFloorHeightMap::LoadFromImage(RgbImageData const & imag
 
 OceanFloorHeightMap OceanFloorHeightMap::LoadFromStream(BinaryReadStream & inputStream)
 {
-    // We assume the input stream contains exactly the number of samples we expect
+    //
+    // Load stream
+    //
+
+    size_t const streamNumberOfSamples = inputStream.GetSize() / sizeof(float);
+    unique_buffer<float> streamBuffer(streamNumberOfSamples);
+    inputStream.Read(reinterpret_cast<std::uint8_t *>(streamBuffer.get()), streamBuffer.size() * sizeof(float));
+
+    //
+    // Create buffer, interpolating stream samples
+    //
 
     unique_buffer<float> terrainBuffer(Size);
 
-    inputStream.Read(reinterpret_cast<std::uint8_t *>(terrainBuffer.get()), terrainBuffer.size() * sizeof(float));
+    float const floorSampleToStreamSample = static_cast<float>(streamNumberOfSamples) / static_cast<float>(Size);
+    for (size_t s = 0; s < Size; ++s)
+    {
+        // Calculate stream index
+        float const streamIF = static_cast<float>(s) * floorSampleToStreamSample;
+
+        // Integral and fractional parts
+        int const streamI = static_cast<int>(std::floor(streamIF));
+        float const streamDi = streamIF - static_cast<float>(streamI);
+
+        assert(streamI >= 0 && streamI < streamNumberOfSamples);
+
+        // Take samples left and right
+        float const sample1 = streamBuffer[s];
+        float const sample2 = (streamI < streamNumberOfSamples - 1)
+            ? streamBuffer[streamI + 1]
+            : sample1;
+
+        // Store final sample
+        terrainBuffer[s] = sample1
+            + (sample2 - sample1) * streamDi;
+    }
 
     return OceanFloorHeightMap(std::move(terrainBuffer));
 }
