@@ -33,6 +33,8 @@
 static int constexpr SliderWidth = 72; // Min
 static int constexpr SliderHeight = 140;
 
+static int constexpr ColorPickerWidth = 80;
+
 static int constexpr IconSpacing = 4;
 static int constexpr TopmostCellOverSliderHeight = 24;
 static int constexpr InterCheckboxRowMargin = 4;
@@ -4378,13 +4380,14 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     //
 
-                    mDepthOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Depth Gradient"));
+                    mDepthOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Depth"));
                     mDepthOceanRenderModeRadioButton->SetToolTip(_("Draws the ocean using a vertical color gradient."));
                     mDepthOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
 
                     oceanRenderModeSizer->Add(mDepthOceanRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    mDepthOceanColorStartPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"));
+                    mDepthOceanColorStartPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                        wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                     mDepthOceanColorStartPicker->SetToolTip(_("Sets the starting (top) color of the gradient."));
                     mDepthOceanColorStartPicker->Bind(
                         wxEVT_COLOURPICKER_CHANGED,
@@ -4401,7 +4404,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     oceanRenderModeSizer->Add(mDepthOceanColorStartPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    mDepthOceanColorEndPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"));
+                    mDepthOceanColorEndPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                        wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                     mDepthOceanColorEndPicker->SetToolTip(_("Sets the ending (bottom) color of the gradient."));
                     mDepthOceanColorEndPicker->Bind(
                         wxEVT_COLOURPICKER_CHANGED,
@@ -4427,7 +4431,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     oceanRenderModeSizer->Add(mFlatOceanRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
                     mFlatOceanColorPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
-                        wxDefaultPosition, wxDefaultSize);
+                        wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                     mFlatOceanColorPicker->SetToolTip(_("Sets the single color of the ocean."));
                     mFlatOceanColorPicker->Bind(
                         wxEVT_COLOURPICKER_CHANGED,
@@ -4557,145 +4561,140 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             CellBorderInner);
     }
 
-    // Sky
+    // Land
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Sky"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Land"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Render Mode
+            // Land Render Mode
             {
-                wxStaticBoxSizer * skyRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
+                wxStaticBoxSizer * landRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
 
                 {
-                    wxGridBagSizer * skyRenderModeSizer = new wxGridBagSizer(5, 5);
+                    wxGridBagSizer * landRenderModeSizer = new wxGridBagSizer(3, 3);
+                    landRenderModeSizer->SetFlexibleDirection(wxHORIZONTAL); // All rows same height
 
-                    // Flat
+                    // Row 1
 
-
-                    mFlatSkyRenderModeRadioButton = new wxRadioButton(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat"),
+                    mTextureLandRenderModeRadioButton = new wxRadioButton(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mFlatSkyRenderModeRadioButton->SetToolTip(_("Draws the sky using a static color."));
-                    mFlatSkyRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnSkyRenderModeRadioButtonClick, this);
+                    mTextureLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using textures."));
+                    mTextureLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
 
-                    skyRenderModeSizer->Add(mFlatSkyRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
+                    landRenderModeSizer->Add(mTextureLandRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
+                    mTextureLandBedrockComboBox = new wxBitmapComboBox(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString,
+                        wxDefaultPosition, wxSize(140, -1), wxArrayString(), wxCB_READONLY);
+                    for (auto const & entry : mGameControllerSettingsOptions.GetTextureLandBedrockAvailableThumbnails())
+                    {
+                        mTextureLandBedrockComboBox->Append(
+                            entry.first,
+                            WxHelpers::MakeBitmap(entry.second));
+                    }
+                    mTextureLandBedrockComboBox->SetToolTip(_("Sets the texture to use for bedrock."));
+                    mTextureLandBedrockComboBox->Bind(
+                        wxEVT_COMBOBOX,
+                        [this](wxCommandEvent & /*event*/)
+                        {
+                            mLiveSettings.SetValue(GameSettings::TextureLandBedrockTextureIndex, static_cast<size_t>(mTextureLandBedrockComboBox->GetSelection()));
+                            OnLiveSettingsChanged();
+                        });
 
-                    mFlatSkyColorPicker = new wxColourPickerCtrl(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
-                    mFlatSkyColorPicker->SetToolTip(_("Sets the single color of the sky."));
-                    mFlatSkyColorPicker->Bind(
+                    landRenderModeSizer->Add(mTextureLandBedrockComboBox, wxGBPosition(0, 1), wxGBSpan(1, 1), wxEXPAND | wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+
+                    mTextureLandSiltComboBox = new wxBitmapComboBox(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString,
+                        wxDefaultPosition, wxSize(140, -1), wxArrayString(), wxCB_READONLY);
+                    for (auto const & entry : mGameControllerSettingsOptions.GetTextureLandSiltAvailableThumbnails())
+                    {
+                        mTextureLandSiltComboBox->Append(
+                            entry.first,
+                            WxHelpers::MakeBitmap(entry.second));
+                    }
+                    mTextureLandSiltComboBox->SetToolTip(_("Sets the texture to use for silt."));
+                    mTextureLandSiltComboBox->Bind(
+                        wxEVT_COMBOBOX,
+                        [this](wxCommandEvent & /*event*/)
+                        {
+                            mLiveSettings.SetValue(GameSettings::TextureLandSiltTextureIndex, static_cast<size_t>(mTextureLandSiltComboBox->GetSelection()));
+                            OnLiveSettingsChanged();
+                        });
+
+                    landRenderModeSizer->Add(mTextureLandSiltComboBox, wxGBPosition(0, 2), wxGBSpan(1, 1), wxEXPAND | wxALIGN_CENTER_VERTICAL, 0);
+
+                    // Row 2
+
+                    mFlatLandRenderModeRadioButton = new wxRadioButton(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat"));
+                    mFlatLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static color."));
+                    mFlatLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
+
+                    landRenderModeSizer->Add(mFlatLandRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
+
+                    mFlatLandBedrockColorPicker = new wxColourPickerCtrl(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                        wxDefaultPosition, wxSize(ColorPickerWidth, -1));
+                    mFlatLandBedrockColorPicker->SetToolTip(_("Sets the color of bedrock."));
+                    mFlatLandBedrockColorPicker->Bind(
                         wxEVT_COLOURPICKER_CHANGED,
                         [this](wxColourPickerEvent & event)
                         {
                             auto color = event.GetColour();
 
                             mLiveSettings.SetValue(
-                                GameSettings::FlatSkyColor,
+                                GameSettings::FlatLandBedrockColor,
                                 rgbColor(color.Red(), color.Green(), color.Blue()));
 
                             OnLiveSettingsChanged();
                         });
 
-                    skyRenderModeSizer->Add(mFlatSkyColorPicker, wxGBPosition(0, 1), wxGBSpan(1, 1), 0, 0);
+                    landRenderModeSizer->Add(mFlatLandBedrockColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-
-                    // Crepuscular
-
-                    mCrepuscularSkyRenderModeRadioButton = new wxRadioButton(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Crepuscular"));
-                    mCrepuscularSkyRenderModeRadioButton->SetToolTip(_("Draws the sky using a crepuscolar gradient."));
-                    mCrepuscularSkyRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnSkyRenderModeRadioButtonClick, this);
-
-                    skyRenderModeSizer->Add(mCrepuscularSkyRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
-
-
-                    mCrepuscularColorPicker = new wxColourPickerCtrl(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
-                    mCrepuscularColorPicker->SetToolTip(_("Sets the crepuscolar overtone of the sky."));
-                    mCrepuscularColorPicker->Bind(
+                    mFlatLandSiltColorPicker = new wxColourPickerCtrl(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                        wxDefaultPosition, wxSize(ColorPickerWidth, -1));
+                    mFlatLandSiltColorPicker->SetToolTip(_("Sets the color of silt."));
+                    mFlatLandSiltColorPicker->Bind(
                         wxEVT_COLOURPICKER_CHANGED,
                         [this](wxColourPickerEvent & event)
                         {
                             auto color = event.GetColour();
 
                             mLiveSettings.SetValue(
-                                GameSettings::CrepuscularColor,
+                                GameSettings::FlatLandSiltColor,
                                 rgbColor(color.Red(), color.Green(), color.Blue()));
 
                             OnLiveSettingsChanged();
                         });
 
-                    skyRenderModeSizer->Add(mCrepuscularColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), 0, 0);
+                    landRenderModeSizer->Add(mFlatLandSiltColorPicker, wxGBPosition(1, 2), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    skyRenderModeBoxSizer->Add(skyRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
+
+                    landRenderModeBoxSizer->Add(landRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
                 }
 
                 sizer->Add(
-                    skyRenderModeBoxSizer,
+                    landRenderModeBoxSizer,
                     wxGBPosition(0, 0),
-                    wxGBSpan(1, 2),
+                    wxGBSpan(1, 1),
                     wxALL,
                     CellBorderInner);
             }
 
-            // Moonlight
+            // High-Quality Rendering
             {
-                mDoMoonlightCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Moonlight"));
-                mDoMoonlightCheckBox->SetToolTip(_("Enables or disables the moon's light at night."));
-                mDoMoonlightCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                mLandRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Rendering"));
+                mLandRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders the ocean floor with additional details. Requires more computational resources."));
+                mLandRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
                     {
-                        mLiveSettings.SetValue(GameSettings::DoMoonlight, event.IsChecked() ? true : false);
+                        mLiveSettings.SetValue(GameSettings::LandRenderDetail, event.IsChecked() ? LandRenderDetailType::Detailed : LandRenderDetailType::Basic);
                         OnLiveSettingsChanged();
-
-                        ReconciliateMoonlightSettings();
                     });
 
                 sizer->Add(
-                    mDoMoonlightCheckBox,
+                    mLandRenderDetailModeDetailedCheckBox,
                     wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
-                    wxALL | wxALIGN_CENTER_VERTICAL,
-                    CellBorderInner);
-
-                mMoonlightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
-                mMoonlightColorPicker->SetToolTip(_("Sets the color of the moon's light."));
-                mMoonlightColorPicker->Bind(
-                    wxEVT_COLOURPICKER_CHANGED,
-                    [this](wxColourPickerEvent & event)
-                    {
-                        auto color = event.GetColour();
-
-                        mLiveSettings.SetValue(
-                            GameSettings::MoonlightColor,
-                            rgbColor(color.Red(), color.Green(), color.Blue()));
-
-                        OnLiveSettingsChanged();
-                    });
-
-                sizer->Add(
-                    mMoonlightColorPicker,
-                    wxGBPosition(1, 1),
-                    wxGBSpan(1, 1),
-                    wxALL | wxALIGN_CENTER_VERTICAL,
-                    CellBorderInner);
-            }
-
-            // Cloud Detail Mode
-            {
-                mCloudRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Clouds"));
-                mCloudRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders clouds with additional details. Requires more computational resources."));
-                mCloudRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
-                    [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue(GameSettings::CloudRenderDetail, event.IsChecked() ? CloudRenderDetailType::Detailed: CloudRenderDetailType::Basic);
-                        OnLiveSettingsChanged();
-                    });
-
-                sizer->Add(
-                    mCloudRenderDetailModeDetailedCheckBox,
-                    wxGBPosition(2, 0),
-                    wxGBSpan(1, 1),
-                    wxALL | wxALIGN_CENTER_VERTICAL,
+                    wxALL,
                     CellBorderInner);
             }
 
@@ -4705,7 +4704,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 3),
-            wxGBSpan(2, 2),
+            wxGBSpan(2, 3),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4722,7 +4721,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 wxStaticBoxSizer * npcRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
 
                 {
-                    wxGridBagSizer * npcRenderModeSizer = new wxGridBagSizer(5, 5);
+                    wxGridBagSizer * npcRenderModeSizer = new wxGridBagSizer(3, 3);
                     npcRenderModeSizer->SetFlexibleDirection(wxHORIZONTAL); // All rows same height
 
                     // Texture
@@ -4750,7 +4749,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     npcRenderModeSizer->Add(mQuadFlatNpcRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    mQuadFlatNpcColorPicker = new wxColourPickerCtrl(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
+                    mQuadFlatNpcColorPicker = new wxColourPickerCtrl(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                        wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                     mQuadFlatNpcColorPicker->SetToolTip(_("Sets the color of anonymous NPCs."));
                     mQuadFlatNpcColorPicker->Bind(
                         wxEVT_COLOURPICKER_CHANGED,
@@ -4783,7 +4783,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 5),
+            wxGBPosition(0, 6),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
@@ -4798,7 +4798,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Lamp Light color
             {
-                mFlatLampLightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
+                mFlatLampLightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                    wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                 mFlatLampLightColorPicker->SetToolTip(_("Sets the color of lamp lights."));
                 mFlatLampLightColorPicker->Bind(
                     wxEVT_COLOURPICKER_CHANGED,
@@ -4826,7 +4827,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 5),
+            wxGBPosition(1, 6),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
@@ -5075,7 +5076,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Default Water Color
             {
-                mDefaultWaterColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
+                mDefaultWaterColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                    wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                 mDefaultWaterColorPicker->SetToolTip(_("Sets the color of water which is used when ocean render mode is set to 'Texture'."));
                 mDefaultWaterColorPicker->Bind(
                     wxEVT_COLOURPICKER_CHANGED,
@@ -5161,97 +5163,148 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             CellBorderInner);
     }
 
-    // Land
+    // Sky
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Land"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Sky"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Land Render Mode
+            // Render Mode
             {
-                wxStaticBoxSizer * landRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
+                wxStaticBoxSizer * skyRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
 
                 {
-                    wxGridBagSizer * landRenderModeSizer = new wxGridBagSizer(5, 5);
+                    wxGridBagSizer * skyRenderModeSizer = new wxGridBagSizer(5, 5);
 
-                    mTextureLandRenderModeRadioButton = new wxRadioButton(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Texture"),
+                    // Flat
+
+
+                    mFlatSkyRenderModeRadioButton = new wxRadioButton(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mTextureLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static image."));
-                    mTextureLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
+                    mFlatSkyRenderModeRadioButton->SetToolTip(_("Draws the sky using a static color."));
+                    mFlatSkyRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnSkyRenderModeRadioButtonClick, this);
 
-                    landRenderModeSizer->Add(mTextureLandRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
+                    skyRenderModeSizer->Add(mFlatSkyRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    mTextureLandComboBox = new wxBitmapComboBox(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString,
-                        wxDefaultPosition, wxSize(140, -1), wxArrayString(), wxCB_READONLY);
-                    // TODOHERE
-                    for (auto const & entry : mGameControllerSettingsOptions.GetTextureLandBedrockAvailableThumbnails())
-                    {
-                        mTextureLandComboBox->Append(
-                            entry.first,
-                            WxHelpers::MakeBitmap(entry.second));
-                    }
-                    mTextureLandComboBox->SetToolTip(_("Sets the texture to use for the ocean floor."));
-                    mTextureLandComboBox->Bind(
-                        wxEVT_COMBOBOX,
-                        [this](wxCommandEvent & /*event*/)
-                        {
-                            mLiveSettings.SetValue(GameSettings::TextureLandBedrockTextureIndex, static_cast<size_t>(mTextureLandComboBox->GetSelection()));
-                            OnLiveSettingsChanged();
-                        });
 
-                    landRenderModeSizer->Add(mTextureLandComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), 0, 0);
-
-                    mFlatLandRenderModeRadioButton = new wxRadioButton(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat"));
-                    mFlatLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static color."));
-                    mFlatLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
-
-                    landRenderModeSizer->Add(mFlatLandRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
-
-                    mFlatLandColorPicker = new wxColourPickerCtrl(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
-                    mFlatLandColorPicker->SetToolTip(_("Sets the single color of the ocean floor."));
-                    mFlatLandColorPicker->Bind(
+                    mFlatSkyColorPicker = new wxColourPickerCtrl(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                        wxDefaultPosition, wxSize(ColorPickerWidth, -1));
+                    mFlatSkyColorPicker->SetToolTip(_("Sets the single color of the sky."));
+                    mFlatSkyColorPicker->Bind(
                         wxEVT_COLOURPICKER_CHANGED,
                         [this](wxColourPickerEvent & event)
                         {
                             auto color = event.GetColour();
 
                             mLiveSettings.SetValue(
-                                GameSettings::FlatLandBedrockColor,
+                                GameSettings::FlatSkyColor,
                                 rgbColor(color.Red(), color.Green(), color.Blue()));
 
                             OnLiveSettingsChanged();
                         });
 
-                    landRenderModeSizer->Add(mFlatLandColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), 0, 0);
+                    skyRenderModeSizer->Add(mFlatSkyColorPicker, wxGBPosition(0, 1), wxGBSpan(1, 1), 0, 0);
 
-                    landRenderModeBoxSizer->Add(landRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
+
+                    // Crepuscular
+
+                    mCrepuscularSkyRenderModeRadioButton = new wxRadioButton(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Crepuscular"));
+                    mCrepuscularSkyRenderModeRadioButton->SetToolTip(_("Draws the sky using a crepuscolar gradient."));
+                    mCrepuscularSkyRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnSkyRenderModeRadioButtonClick, this);
+
+                    skyRenderModeSizer->Add(mCrepuscularSkyRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
+
+
+                    mCrepuscularColorPicker = new wxColourPickerCtrl(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                        wxDefaultPosition, wxSize(ColorPickerWidth, -1));
+                    mCrepuscularColorPicker->SetToolTip(_("Sets the crepuscolar overtone of the sky."));
+                    mCrepuscularColorPicker->Bind(
+                        wxEVT_COLOURPICKER_CHANGED,
+                        [this](wxColourPickerEvent & event)
+                        {
+                            auto color = event.GetColour();
+
+                            mLiveSettings.SetValue(
+                                GameSettings::CrepuscularColor,
+                                rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                            OnLiveSettingsChanged();
+                        });
+
+                    skyRenderModeSizer->Add(mCrepuscularColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), 0, 0);
+
+                    skyRenderModeBoxSizer->Add(skyRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
                 }
 
                 sizer->Add(
-                    landRenderModeBoxSizer,
+                    skyRenderModeBoxSizer,
                     wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
+                    wxGBSpan(1, 2),
                     wxALL,
                     CellBorderInner);
             }
 
-            // High-Quality Rendering
+            // Moonlight
             {
-                mLandRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Rendering"));
-                mLandRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders the ocean floor with additional details. Requires more computational resources."));
-                mLandRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                mDoMoonlightCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Moonlight"));
+                mDoMoonlightCheckBox->SetToolTip(_("Enables or disables the moon's light at night."));
+                mDoMoonlightCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
                     {
-                        mLiveSettings.SetValue(GameSettings::LandRenderDetail, event.IsChecked() ? LandRenderDetailType::Detailed : LandRenderDetailType::Basic);
+                        mLiveSettings.SetValue(GameSettings::DoMoonlight, event.IsChecked() ? true : false);
+                        OnLiveSettingsChanged();
+
+                        ReconciliateMoonlightSettings();
+                    });
+
+                sizer->Add(
+                    mDoMoonlightCheckBox,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
+
+                mMoonlightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                    wxDefaultPosition, wxSize(ColorPickerWidth, -1));
+                mMoonlightColorPicker->SetToolTip(_("Sets the color of the moon's light."));
+                mMoonlightColorPicker->Bind(
+                    wxEVT_COLOURPICKER_CHANGED,
+                    [this](wxColourPickerEvent & event)
+                    {
+                        auto color = event.GetColour();
+
+                        mLiveSettings.SetValue(
+                            GameSettings::MoonlightColor,
+                            rgbColor(color.Red(), color.Green(), color.Blue()));
+
                         OnLiveSettingsChanged();
                     });
 
                 sizer->Add(
-                    mLandRenderDetailModeDetailedCheckBox,
-                    wxGBPosition(1, 0),
+                    mMoonlightColorPicker,
+                    wxGBPosition(1, 1),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxALL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
+            }
+
+            // Cloud Detail Mode
+            {
+                mCloudRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Clouds"));
+                mCloudRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders clouds with additional details. Requires more computational resources."));
+                mCloudRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::CloudRenderDetail, event.IsChecked() ? CloudRenderDetailType::Detailed : CloudRenderDetailType::Basic);
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mCloudRenderDetailModeDetailedCheckBox,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    wxALL | wxALIGN_CENTER_VERTICAL,
                     CellBorderInner);
             }
 
@@ -5261,7 +5314,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(2, 6),
-            wxGBSpan(1, 1),
+            wxGBSpan(2, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -6686,12 +6739,13 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         }
     }
 
-    // TODOHERE
-    mTextureLandComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureLandBedrockTextureIndex)));
+    mTextureLandBedrockComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureLandBedrockTextureIndex)));
+    mTextureLandSiltComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureLandSiltTextureIndex)));
 
-    // TODOHERE
-    auto const flatLandColor = settings.GetValue<rgbColor>(GameSettings::FlatLandBedrockColor);
-    mFlatLandColorPicker->SetColour(wxColor(flatLandColor.r, flatLandColor.g, flatLandColor.b));
+    auto const flatLandBedrockColor = settings.GetValue<rgbColor>(GameSettings::FlatLandBedrockColor);
+    mFlatLandBedrockColorPicker->SetColour(wxColor(flatLandBedrockColor.r, flatLandBedrockColor.g, flatLandBedrockColor.b));
+    auto const flatLandSiltColor = settings.GetValue<rgbColor>(GameSettings::FlatLandSiltColor);
+    mFlatLandSiltColorPicker->SetColour(wxColor(flatLandSiltColor.r, flatLandSiltColor.g, flatLandSiltColor.b));
 
     mLandRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<LandRenderDetailType>(GameSettings::LandRenderDetail) == LandRenderDetailType::Detailed);
 
@@ -6948,8 +7002,10 @@ void SettingsDialog::ReconciliateOceanRenderModeSettings()
 
 void SettingsDialog::ReconciliateLandRenderModeSettings()
 {
-    mTextureLandComboBox->Enable(mTextureLandRenderModeRadioButton->GetValue());
-    mFlatLandColorPicker->Enable(mFlatLandRenderModeRadioButton->GetValue());
+    mTextureLandBedrockComboBox->Enable(mTextureLandRenderModeRadioButton->GetValue());
+    mTextureLandSiltComboBox->Enable(mTextureLandRenderModeRadioButton->GetValue());
+    mFlatLandBedrockColorPicker->Enable(mFlatLandRenderModeRadioButton->GetValue());
+    mFlatLandSiltColorPicker->Enable(mFlatLandRenderModeRadioButton->GetValue());
 }
 
 void SettingsDialog::ReconciliateSkyRenderModeSettings()

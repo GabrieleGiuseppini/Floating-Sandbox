@@ -196,9 +196,11 @@ private:
     wxColourPickerCtrl * mMoonlightColorPicker;
     wxCheckBox * mCloudRenderDetailModeDetailedCheckBox;
     wxRadioButton * mTextureLandRenderModeRadioButton;
-    wxBitmapComboBox * mTextureLandComboBox;
+    wxBitmapComboBox * mTextureLandBedrockComboBox;
+    wxBitmapComboBox * mTextureLandSiltComboBox;
     wxRadioButton * mFlatLandRenderModeRadioButton;
-    wxColourPickerCtrl * mFlatLandColorPicker;
+    wxColourPickerCtrl * mFlatLandBedrockColorPicker;
+    wxColourPickerCtrl * mFlatLandSiltColorPicker;
     wxCheckBox * mLandRenderDetailModeDetailedCheckBox;
     wxColourPickerCtrl * mFlatLampLightColorPicker;
     wxRadioBox * mHeatRenderModeRadioBox;

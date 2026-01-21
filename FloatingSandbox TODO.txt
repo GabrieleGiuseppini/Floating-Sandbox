@@ -383,8 +383,10 @@
 			+ OceanFloorSiltHardness
 			+ Rename others as Bedrock
 
-		= SettingsDialog: expose all new settings
-			- Rendering (Texture, FlatColor): split Bedrock and Silt (silt above, bedrock below), incl. members
+		+ SettingsDialog: expose all new settings
+			+ Rendering (Texture, FlatColor): split Bedrock and Silt (silt above, bedrock below), incl. members
+				+ Make color picker buttons narrower
+				+ Swap Sky with Land 
 			+ Add/replace new silt settings:
 				+ Renames for "Bedrock" (elast, friction), incl. members
 				+ OceanFloorSiltThickness
@@ -394,6 +396,8 @@
 		- Fix themes
 			- Rendering params (texture and color split into Silt, bedrock)
 			- Phyisics params (OceanFloor-Bedrock-Elast/Friction)
+
+		- Send to testers
 
 		- NPC furniture also sinking?		
 
