@@ -390,7 +390,6 @@
 				+ OceanFloorSiltThickness
 				+ OceanFloorSiltBumpiness
 				+ OceanFloorSiltHardness
-			- Test all settings (incl. smoothers)
 
 		- Fix themes
 			- Rendering params (texture and color split into Silt, bedrock)

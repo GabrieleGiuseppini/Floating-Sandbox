@@ -1702,8 +1702,9 @@ void SettingsDialog::PopulateOceanPanel(wxPanel * panel)
                         this->mLiveSettings.SetValue(GameSettings::OceanFloorSiltHardness, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<LinearSliderCore>(
+                    std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions.GetMinOceanFloorSiltHardness(),
+                        0.1f,
                         mGameControllerSettingsOptions.GetMaxOceanFloorSiltHardness()));
 
                 siltSizer->Add(
