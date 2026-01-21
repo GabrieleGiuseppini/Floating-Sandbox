@@ -402,7 +402,8 @@
 				+ Remove temp code to halve size
 				+ Test boundaries
 
-		- Send to testers
+		+ Send to testers
+		+ Bump up version
 
 		- NPC furniture also sinking?		
 
@@ -438,10 +439,10 @@
 			+ HandleCollisionsWithSeaFloor (All TODOs)
 			+ ApplyWorldForces
 
-	- I would like to point out that there are some hiccups on some of the new ships, 
-		- Flying Dutchman has a density recommendation of 2812 (I assume a decimal was meant to be there), 
-		- the White Star version of the Skandinavya has a pump #17 that I assume is meant to say "pumps", 
-		- and Petit has a very, well, unprofessional description, for being a default ship in the base game.
+	+ I would like to point out that there are some hiccups on some of the new ships, 
+		+ Flying Dutchman has a density recommendation of 2812 (I assume a decimal was meant to be there), 
+		+ the White Star version of the Skandinavya has a pump #17 that I assume is meant to say "pumps", 
+		+ and Petit has a very, well, unprofessional description, for being a default ship in the base game.
 
 	- Move tool: fix radius: when ship is very close, move tool does _not_ engage
 		- ShipSearchRadiusScreen: it's in terms of screen, so cap resultant world so radius is at least SimulationParameters::MinShipSearchRadiusWorld (2.0f)
