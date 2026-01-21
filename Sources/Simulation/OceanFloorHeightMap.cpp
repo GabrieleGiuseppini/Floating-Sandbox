@@ -56,7 +56,7 @@ OceanFloorHeightMap OceanFloorHeightMap::LoadFromImage(RgbImageData const & imag
         // Calulate image X
         float const imageX = worldX * worldXToImageX;
 
-        // Integral and fractional parts
+        // Image X integral and fractional parts
         int const imageXI = static_cast<int>(std::floor(imageX));
         float const imageXIF = imageX - static_cast<float>(imageXI);
 
@@ -88,6 +88,8 @@ OceanFloorHeightMap OceanFloorHeightMap::LoadFromImage(RgbImageData const & imag
 
 OceanFloorHeightMap OceanFloorHeightMap::LoadFromStream(BinaryReadStream & inputStream)
 {
+    // We assume the input stream contains exactly the number of samples we expect
+
     unique_buffer<float> terrainBuffer(Size);
 
     inputStream.Read(reinterpret_cast<std::uint8_t *>(terrainBuffer.get()), terrainBuffer.size() * sizeof(float));

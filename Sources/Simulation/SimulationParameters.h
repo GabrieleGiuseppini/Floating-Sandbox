@@ -199,12 +199,8 @@ struct SimulationParameters
     static float constexpr MaxWaterCrazyness = 2.0f;
 
     //
-    // Ocean floor
+    // Ocean
     //
-
-    float SeaDepth;
-    static float constexpr MinSeaDepth = -50.0f;
-    static float constexpr MaxSeaDepth = 10000.0f;
 
     // The number of ocean surface terrain samples for the entire world width;
     // a higher value means more spatial resolution, at the expense of cache misses
@@ -215,6 +211,14 @@ struct SimulationParameters
     template <typename T>
     static T constexpr OceanSurfaceSamples = 32768;
 #endif
+
+    //
+    // Ocean floor
+    //
+
+    float SeaDepth;
+    static float constexpr MinSeaDepth = -50.0f;
+    static float constexpr MaxSeaDepth = 10000.0f;
 
     // The number of ocean floor terrain samples for the entire world width;
     // a higher value means more spatial resolution, at the expense of cache misses

@@ -7,7 +7,8 @@
     "number_of_clouds": 48,
     "number_of_fishes": 0,
     "ocean_render_detail": 0,
-    "ocean_render_mode": 0
+    "ocean_render_mode": 0,
+    "ocean_floor_silt_thickness": 0
   },
   "version": "1.18.0.3"
 }

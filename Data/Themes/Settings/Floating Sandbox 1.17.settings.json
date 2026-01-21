@@ -5,7 +5,8 @@
     "do_moonlight": false,
     "flat_sky_color": "87cefa",
     "number_of_clouds": 48,
-    "ocean_render_mode": 0
+    "ocean_render_mode": 0,
+    "ocean_floor_silt_thickness": 0
   },
   "version": "1.18.0.3"
 }

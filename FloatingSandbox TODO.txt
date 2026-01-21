@@ -393,9 +393,10 @@
 				+ OceanFloorSiltBumpiness
 				+ OceanFloorSiltHardness
 
-		- Fix themes
-			- Rendering params (texture and color split into Silt, bedrock)
-			- Phyisics params (OceanFloor-Bedrock-Elast/Friction)
+		= Fix themes
+			+ Rendering params (texture and color split into Silt, bedrock)
+			+ Phyisics params (OceanFloor-Bedrock-Elast/Friction)
+			- Fix mariana trench?
 
 		- Send to testers
 
