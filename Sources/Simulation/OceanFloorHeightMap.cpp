@@ -115,7 +115,7 @@ OceanFloorHeightMap OceanFloorHeightMap::LoadFromStream(BinaryReadStream & input
         assert(streamI >= 0 && streamI < streamNumberOfSamples);
 
         // Take samples left and right
-        float const sample1 = streamBuffer[s];
+        float const sample1 = streamBuffer[streamI];
         float const sample2 = (streamI < streamNumberOfSamples - 1)
             ? streamBuffer[streamI + 1]
             : sample1;
