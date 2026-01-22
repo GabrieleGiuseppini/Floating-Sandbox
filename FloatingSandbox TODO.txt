@@ -405,15 +405,20 @@
 		+ Send to testers
 		+ Bump up version
 
-		- NPC furniture also sinking?		
-
 		- Sand dust upon impact
 			! Need to be spawned above silt
+			- Core/GameTypes: EnergeticSiltImpact: float + vec2f, cctor makes zero
+				- Also SimParams;
+					- Max kinetic energey (in h AND cpp)
+					- Lower bumpiness max: 0.5
+					- Cache line size @ SysSpecifics.h
 			- Ship::HandleCollisionsWithSeaFloor: each run produces zero or 1 point which had the most kinetic energy decrease because of silt drag, above a threshold
 				- Returns: K, ~pos taken @ air-silt boundary
 					- K=0 if not produced
 				- Threads stores into Ship member: array with one element per thread
 					- Struct is cache-aligned
+						- SysSpecifics declares cache align size (256)
+						- https://www.aussieai.com/blog/false-sharing
 					- Array is re-dimensioned at parallelization changes
 			- SpringRelaxations stores all into vector, new member of ship
 				- Vector gets cleaned before loop
@@ -424,6 +429,10 @@
 				- Lifetime carefully calibrated to expire ~ when particle is back onto silt
 		
 			- Try afterwards: also dent silt
+
+		- NPC furniture also sinking?		
+
+		- Make those deep fishes texture better aliased (no white border but darker instead)
 
 		- Tool to see through silt
 			! If we fail, just do simple RenderParameter: simple alpha param set at RenderDrawOceanFloor differently on each band
@@ -441,6 +450,8 @@
 
 		- Merge back into master
 
+		- Changelist
+
 	= Change simulation #iterations setting to 0.25 step
 
 	+ I would like to point out that there are some hiccups on some of the new ships, 
@@ -448,11 +459,14 @@
 		+ the White Star version of the Skandinavya has a pump #17 that I assume is meant to say "pumps", 
 		+ and Petit has a very, well, unprofessional description, for being a default ship in the base game.
 
-	- Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
+	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
 		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al
-		- Figure out how to fix it
+		+ Use FS code everywhere, and match wx enforced to ours
+		- Ask testers (pt_br) to test it
+		- Changelist
 
 	- Anti-gravity tool: remove all when tool changed
+		- TODO: really? wanna leave it?
 		- Tool::Deinit: blind call (regardless of own state) to new IGameController::~RemoveAllForceFields
 		- Port to Android, BUT WITHOUT FS CODE PORT
 			- In-place World->... chain; we'll overwrite it later
@@ -460,8 +474,6 @@
 	- Move tool: fix radius: when ship is very close, move tool does _not_ engage
 		- ShipSearchRadiusScreen: it's in terms of screen, so cap resultant world so radius is at least SimulationParameters::MinShipSearchRadiusWorld (2.0f)
 			- Do at all uses
-
-	- Make those deep fishess texture better aliased (no white border but darker instead)
 
 	- Fishes on wreck (see paper in Malta book)
 		- Alternative:

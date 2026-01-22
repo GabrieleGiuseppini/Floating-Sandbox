@@ -99,26 +99,55 @@ std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(
         }
     }
 
-    // Get enforced language
-    std::string enforcedLanguageIdentifier;
+    // Get enforced FS language code
+    std::string enforcedFsLanguageCode = MakeDefaultLanguage().FsLanguageCode;
     if (auto const translations = wxTranslations::Get();
         translations != nullptr)
     {
-        auto enforcedLanguage = translations->GetBestTranslation(TranslationsDomainName, TranslationsMsgIdLangId);
-        LogMessage("Enforced language for desired identifier \"", desiredLanguageIdentifier.value_or("<N/A>"),
-            "\": \"", enforcedLanguage, "\"");
+        std::string const wxEnforcedLanguage = translations->GetBestTranslation(TranslationsDomainName, TranslationsMsgIdLangId).ToStdString();
+        LogMessage("Wx enforced language for desired identifier \"", desiredLanguageIdentifier.value_or("<N/A>"),
+            "\": \"", wxEnforcedLanguage, "\"");
 
-        enforcedLanguageIdentifier = enforcedLanguage;
+        // Search for it among our languages, verbatim
+        auto it = std::find_if(
+            availableLanguages.cbegin(),
+            availableLanguages.cend(),
+            [&wxEnforcedLanguage](auto const & al)
+            {
+                return al.FsLanguageCode == wxEnforcedLanguage;
+            });
+        if (it == availableLanguages.cend())
+        {
+            // No luck searching verbatim
+
+            // See if we're looking for a sub-language
+            if (auto const underscorePos = desiredLanguageIdentifier->find('_');
+                underscorePos != std::string::npos)
+            {
+                // We're searching for a sub-language; see if can find the parent language
+                std::string const wxEnforcedParentLanguage = wxEnforcedLanguage.substr(0, underscorePos);
+                it = std::find_if(
+                    availableLanguages.cbegin(),
+                    availableLanguages.cend(),
+                    [&wxEnforcedParentLanguage](auto const & al)
+                    {
+                        return al.FsLanguageCode == wxEnforcedParentLanguage;
+                    });
+            }
+        }
+
+        if (it != availableLanguages.cend())
+        {
+            enforcedFsLanguageCode = it->FsLanguageCode;
+        }
     }
-    else
-    {
-        enforcedLanguageIdentifier = MakeDefaultLanguage().Identifier;
-    }
+
+    LogMessage("Enforced language for FS: \"", enforcedFsLanguageCode, "\"");
 
     return std::unique_ptr<LocalizationManager>(
         new LocalizationManager(
             std::move(desiredLanguageInfo),
-            std::move(enforcedLanguageIdentifier),
+            std::move(enforcedFsLanguageCode),
             std::move(availableLanguages),
             std::move(locale)));
 }
@@ -199,11 +228,11 @@ std::vector<LocalizationManager::LanguageInfo> LocalizationManager::MakeAvailabl
         if (std::filesystem::is_directory(entryIt.path()))
         {
             // Make sure it's recognized by wxWidgets as a language
-            std::string const languageName = entryIt.path().stem().string();
-            auto const wxLangInfo = wxLocale::FindLanguageInfo(languageName);
+            std::string const fsLanguageCode = entryIt.path().stem().string();
+            auto const wxLangInfo = wxLocale::FindLanguageInfo(fsLanguageCode);
             if (wxLangInfo == nullptr)
             {
-                LogMessage("WARNING: language directory \"", languageName, "\" is not a language recognized by wxWidgets");
+                LogMessage("WARNING: language directory \"", fsLanguageCode, "\" is not a language recognized by wxWidgets");
             }
             else
             {
@@ -211,7 +240,8 @@ std::vector<LocalizationManager::LanguageInfo> LocalizationManager::MakeAvailabl
                 languages.emplace_back(
                     wxLangInfo->Description.ToStdString(),
                     wxLangInfo->CanonicalName.ToStdString(),
-                    static_cast<wxLanguage>(wxLangInfo->Language));
+                    static_cast<wxLanguage>(wxLangInfo->Language),
+                    fsLanguageCode);
             }
         }
     }
@@ -255,7 +285,8 @@ LocalizationManager::LanguageInfo LocalizationManager::MakeDefaultLanguage()
     return LanguageInfo(
         wxEnLangInfo->Description.ToStdString(),
         wxEnLangInfo->CanonicalName.ToStdString(),
-        TranslationsMsgIdLangId);
+        TranslationsMsgIdLangId,
+        "en");
 }
 
 LocalizationManager::LanguageInfo const * LocalizationManager::FindLanguageInfo(

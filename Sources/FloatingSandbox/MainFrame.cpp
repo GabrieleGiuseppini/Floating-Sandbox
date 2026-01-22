@@ -2844,7 +2844,7 @@ void MainFrame::RebuildNpcMenus()
 {
     assert(mGameController);
 
-    auto const language = mLocalizationManager.GetEnforcedLanguageIdentifier();
+    auto const fsLanguageCode = mLocalizationManager.GetEnforcedFsLanguageCode();
 
     // Humans
     {
@@ -2888,7 +2888,7 @@ void MainFrame::RebuildNpcMenus()
         {
             mHumanNpcSubMenu->AppendSeparator();
 
-            for (auto const & subKindInfo : mGameController->GetHumanNpcSubKinds(static_cast<NpcHumanRoleType>(iRole), language))
+            for (auto const & subKindInfo : mGameController->GetHumanNpcSubKinds(static_cast<NpcHumanRoleType>(iRole), fsLanguageCode))
             {
                 addMenu(std::get<0>(subKindInfo), wxString::FromUTF8(std::get<1>(subKindInfo)));
             }
@@ -2937,7 +2937,7 @@ void MainFrame::RebuildNpcMenus()
         {
             mFurnitureNpcSubMenu->AppendSeparator();
 
-            for (auto const & subKindInfo : mGameController->GetFurnitureNpcSubKinds(static_cast<NpcFurnitureRoleType>(iRole), language))
+            for (auto const & subKindInfo : mGameController->GetFurnitureNpcSubKinds(static_cast<NpcFurnitureRoleType>(iRole), fsLanguageCode))
             {
                 addMenu(std::get<0>(subKindInfo), wxString::FromUTF8(std::get<1>(subKindInfo)));
             }

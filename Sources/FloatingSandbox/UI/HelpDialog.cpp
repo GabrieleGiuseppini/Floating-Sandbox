@@ -29,8 +29,8 @@ HelpDialog::HelpDialog(
     html->SetBorders(0);
     html->LoadPage(
         gameAssetManager.GetHelpFilePath(
-            localizationManager.GetEnforcedLanguageIdentifier(),
-            localizationManager.GetDefaultLanguageIdentifier()).string());
+            localizationManager.GetEnforcedFsLanguageCode(),
+            localizationManager.GetDefaultFsLanguageCode()).string());
     html->SetSize(
         html->GetInternalRepresentation()->GetWidth(),
         html->GetInternalRepresentation()->GetHeight());

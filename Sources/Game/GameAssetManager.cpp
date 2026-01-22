@@ -363,36 +363,36 @@ std::filesystem::path GameAssetManager::GetBootSettingsFilePath() const
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 std::filesystem::path GameAssetManager::GetStartupTipFilePath(
-    std::string const & desiredLanguageIdentifier,
-    std::string const & defaultLanguageIdentifier) const
+    std::string const & desiredFsLanguageCode,
+    std::string const & defaultFsLanguageCode) const
 {
     static std::filesystem::path const Filename = std::filesystem::path("startup_tip.html");
 
-    std::filesystem::path localPath = GetLanguagesRootPath() / desiredLanguageIdentifier / Filename;
+    std::filesystem::path localPath = GetLanguagesRootPath() / desiredFsLanguageCode / Filename;
 
     if (!std::filesystem::exists(localPath))
     {
-        LogMessage("WARNING: cannot find startup tip file for language \"", desiredLanguageIdentifier, "\"");
+        LogMessage("WARNING: cannot find startup tip file for language \"", desiredFsLanguageCode, "\"");
 
-        localPath = GetLanguagesRootPath() / defaultLanguageIdentifier / Filename;
+        localPath = GetLanguagesRootPath() / defaultFsLanguageCode / Filename;
     }
 
     return localPath;
 }
 
 std::filesystem::path GameAssetManager::GetHelpFilePath(
-    std::string const & desiredLanguageIdentifier,
-    std::string const & defaultLanguageIdentifier) const
+    std::string const & desiredFsLanguageCode,
+    std::string const & defaultFsLanguageCode) const
 {
     static std::filesystem::path const Filename = std::filesystem::path("help.html");
 
-    std::filesystem::path localPath = GetLanguagesRootPath() / desiredLanguageIdentifier / Filename;
+    std::filesystem::path localPath = GetLanguagesRootPath() / desiredFsLanguageCode / Filename;
 
     if (!std::filesystem::exists(localPath))
     {
-        LogMessage("WARNING: cannot find help file for language \"", desiredLanguageIdentifier, "\"");
+        LogMessage("WARNING: cannot find help file for language \"", desiredFsLanguageCode, "\"");
 
-        localPath = GetLanguagesRootPath() / defaultLanguageIdentifier / Filename;
+        localPath = GetLanguagesRootPath() / defaultFsLanguageCode / Filename;
     }
 
     return localPath;

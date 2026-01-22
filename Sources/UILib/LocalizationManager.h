@@ -22,17 +22,20 @@ public:
 
     struct LanguageInfo
     {
-        std::string Name;
-        std::string Identifier;
-        wxLanguage LanguageId;
+        std::string Name; // From wX
+        std::string Identifier; // From wX
+        wxLanguage LanguageId; // From wX
+        std::string FsLanguageCode; // From our names
 
         LanguageInfo(
             std::string name,
             std::string identifier,
-            wxLanguage languageId)
+            wxLanguage languageId,
+            std::string fsLanguageCode)
             : Name(name)
             , Identifier(identifier)
             , LanguageId(languageId)
+            , FsLanguageCode(fsLanguageCode)
         {}
     };
 
@@ -58,12 +61,12 @@ public:
     void StoreDesiredLanguage(std::optional<std::string> const & languageIdentifier);
 
     /*
-     * Gets the identifier of the language currently enforced.
-     * Not guaranteed to be in the "available languages" list.
+     * Gets the identifier of the FS language currently enforced.
+     * Guaranteed to be from the "available languages" list.
      */
-    std::string const & GetEnforcedLanguageIdentifier() const
+    std::string const & GetEnforcedFsLanguageCode() const
     {
-        return mEnforcedLanguageIdentifier;
+        return mEnforcedFsLanguageCode;
     }
 
     LanguageInfo const & GetDefaultLanguage() const
@@ -71,9 +74,9 @@ public:
         return mDefaultLanguage;
     }
 
-    std::string const & GetDefaultLanguageIdentifier() const
+    std::string const & GetDefaultFsLanguageCode() const
     {
-        return mDefaultLanguage.Identifier;
+        return mDefaultLanguage.FsLanguageCode;
     }
 
     std::vector<LanguageInfo> const & GetAvailableLanguages() const
@@ -87,11 +90,11 @@ private:
 
     LocalizationManager(
         std::optional<LanguageInfo> && desiredLanguage,
-        std::string && enforcedLanguageIdentifier,
+        std::string && enforcedFsLanguageCode,
         std::vector<LanguageInfo> && availableLanguages,
         std::unique_ptr<wxLocale> && locale)
         : mDesiredLanguage(std::move(desiredLanguage))
-        , mEnforcedLanguageIdentifier(std::move(enforcedLanguageIdentifier))
+        , mEnforcedFsLanguageCode(std::move(enforcedFsLanguageCode))
         , mDefaultLanguage(MakeDefaultLanguage())
         , mAvailableLanguages(std::move(availableLanguages))
         , mLocale(std::move(locale))
@@ -113,7 +116,7 @@ private:
 
     std::optional<LanguageInfo> mDesiredLanguage; // Also storage of UI preference
 
-    std::string const mEnforcedLanguageIdentifier;
+    std::string const mEnforcedFsLanguageCode;
     LanguageInfo const mDefaultLanguage;
     std::vector<LanguageInfo> const mAvailableLanguages;
 

@@ -100,12 +100,12 @@ public:
 	// Help
 
 	std::filesystem::path GetStartupTipFilePath(
-		std::string const & desiredLanguageIdentifier,
-		std::string const & defaultLanguageIdentifier) const;
+		std::string const & desiredFsLanguageCode,
+		std::string const & defaultFsLanguageCode) const;
 
 	std::filesystem::path GetHelpFilePath(
-		std::string const & desiredLanguageIdentifier,
-		std::string const & defaultLanguageIdentifier) const;
+		std::string const & desiredFsLanguageCode,
+		std::string const & defaultFsLanguageCode) const;
 
 	// Localization
 
