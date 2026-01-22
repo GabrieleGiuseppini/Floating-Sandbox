@@ -5934,7 +5934,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<FixedTickSliderCore>(
-                        0.5f,
+                        0.25f,
                         mGameControllerSettingsOptions.GetMinNumMechanicalDynamicsIterationsAdjustment(),
                         mGameControllerSettingsOptions.GetMaxNumMechanicalDynamicsIterationsAdjustment()),
                     mWarningIcon.get());
