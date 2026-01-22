@@ -626,14 +626,10 @@ private:
     inline void HandleCollisionsWithSeaFloor(
         ElementIndex startPointIndex,
         ElementIndex endPointIndex,
+        size_t threadIndex,
         SimulationParameters const & simulationParameters);
 
-    struct SpringRelaxationCoefficients
-    {
-        float IntegrationVelocityFactor;
-        float MinSiltDepthHardness;
-        float MaxSiltDepthHardness;
-    } mSpringRelaxationCoefficients;
+    inline void CoalescePerThreadSiltImpacts();
 
     //
     //
@@ -1037,6 +1033,22 @@ private:
 
     // The last spring relaxation computation parameters; used to detect changes
     std::optional<SpringRelaxationParallelComputationModeType> mCurrentSpringRelaxationParallelComputationMode;
+
+    // Physics
+
+    struct SpringRelaxationCoefficients
+    {
+        float IntegrationVelocityFactor;
+        float MinSiltDepthHardness;
+        float MaxSiltDepthHardness;
+    } mSpringRelaxationCoefficients;
+
+    // The max silt impacts encountered by one thread during one iteration;
+    // vector is sized when the number of threads is known
+    std::vector<CacheAligned<EnergeticSiltImpact>> mPerThreadSiltImpacts;
+
+    // All of the silt impacts produced during the whole spring relaxation step
+    std::vector<EnergeticSiltImpact> mSiltImpacts;
 
     //
     // Static pressure

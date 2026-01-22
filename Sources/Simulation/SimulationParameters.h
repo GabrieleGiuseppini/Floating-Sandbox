@@ -247,7 +247,7 @@ struct SimulationParameters
 
     float OceanFloorSiltBumpiness; // As a fraction of thickness
     static float constexpr MinOceanFloorSiltBumpiness = 0.0f;
-    static float constexpr MaxOceanFloorSiltBumpiness = 1.0f;
+    static float constexpr MaxOceanFloorSiltBumpiness = 0.5f;
 
     float OceanFloorSiltHardness;
     static float constexpr MinOceanFloorSiltHardness = 0.0f;
@@ -302,6 +302,8 @@ struct SimulationParameters
     }
 
     bool DoGenerateEngineWakeParticles;
+
+    float SiltDustCloudeEnergyThreshold; // J
 
     // Wind
 

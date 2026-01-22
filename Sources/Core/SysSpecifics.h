@@ -185,7 +185,7 @@ inline constexpr T ceil_square_power_of_two(T value)
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// Alignment
+// Word alignment
 ////////////////////////////////////////////////////////////////////////////////////////
 
 // The number of floats we want to be able to compute in a single vectorization step.
@@ -194,14 +194,14 @@ inline constexpr T ceil_square_power_of_two(T value)
 
 // A.k.a. the vectorization word size
 #if !FS_IS_ARM_NEON()
-template <typename T>
+template<typename T>
 static constexpr T vectorization_float_count = 4;
 #else
 template <typename T>
 static constexpr T vectorization_float_count = 4 * 4; // We want to use the 4x4 load/stores
 #endif
 
-template <typename T>
+template<typename T>
 static constexpr T vectorization_byte_count = vectorization_float_count<T> * sizeof(float);
 
 #ifdef _MSC_VER
@@ -394,3 +394,23 @@ inline unique_aligned_buffer<TElement> make_unique_buffer_aligned_to_vectorizati
         reinterpret_cast<TElement *>(alloc_aligned_to_vectorization_word(elementCount * sizeof(TElement))),
         aligned_buffer_deleter<TElement>());
 }
+
+////////////////////////////////////////////////////////////////////////////////////////
+// Cache alignment
+////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename T>
+static constexpr T cache_alignment_safe_size = 256; // Largest known, this is for cases where we need a small number of elements
+
+template <typename T>
+union CacheAligned
+{
+    T value;
+    //char _cache_line[cache_alignment_safe_size<size_t>];
+    char _cache_line[256];
+
+    CacheAligned() // Allow for vectors
+        : value()
+    { }
+};
+

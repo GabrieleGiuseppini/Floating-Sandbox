@@ -1342,6 +1342,29 @@ enum class SpringRelaxationParallelComputationModeType
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
+ * The information recorded for impacts on silt.
+ */
+
+struct EnergeticSiltImpact
+{
+    float KineticEnergy; // J
+    vec2f Position;
+
+    EnergeticSiltImpact()
+        : KineticEnergy(0.0f)
+        , Position(vec2f::zero())
+    { }
+
+    EnergeticSiltImpact(
+        float kineticEnergy,
+        vec2f const & position)
+        : KineticEnergy(kineticEnergy)
+        , Position(position)
+    {
+    }
+};
+
+/*
  * The color key of materials.
  */
 using MaterialColorKey = rgbColor;
