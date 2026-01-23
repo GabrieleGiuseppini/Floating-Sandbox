@@ -313,6 +313,99 @@ void Points::CreateEphemeralParticleDebris(
     mAreEphemeralPointElementsDirtyForRendering = true;
 }
 
+void Points::CreateEphemeralParticleSiltCloud(
+    vec2f const & position,
+    float depth,
+    vec2f const & velocity,
+    float initialScale,
+    float maxScale,
+    float currentSimulationTime,
+    float maxSimulationLifetime,
+    PlaneId planeId)
+{
+    // Get a free slot (or steal one)
+    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
+    assert(NoneElementIndex != pointIndex);
+
+    //
+    // Store attributes
+    //
+
+    StructuralMaterial const & siltCloudStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SiltCloud);
+
+    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    mMaterialsBuffer[pointIndex] = Materials(&siltCloudStructuralMaterial, nullptr);
+    mPositionBuffer[pointIndex] = position;
+    mVelocityBuffer[pointIndex] = velocity;
+    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
+    mStaticForceBuffer[pointIndex] = vec2f::zero();
+    mAugmentedMaterialMassBuffer[pointIndex] = siltCloudStructuralMaterial.GetMass();
+    mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
+    mMassBuffer[pointIndex] = siltCloudStructuralMaterial.GetMass();
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = siltCloudStructuralMaterial.BuoyancyVolumeFill;
+    assert(mDecayBuffer[pointIndex] == 1.0f);
+    //mDecayBuffer[pointIndex] = 1.0f;
+    mPinningCoefficientBuffer[pointIndex] = 1.0f;
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
+        mCurrentElasticityAdjustment,
+        mCurrentStaticFrictionAdjustment,
+        mCurrentKineticFrictionAdjustment,
+        0.0f, // No elasticity, no friction
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f);
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth;
+    mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
+        siltCloudStructuralMaterial.BuoyancyVolumeFill,
+        siltCloudStructuralMaterial.ThermalExpansionCoefficient);
+    mCachedDepthBuffer[pointIndex] = depth;
+
+    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mMaterialWaterIntakeBuffer[pointIndex] = siltCloudStructuralMaterial.WaterIntake;
+    //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - siltCloudStructuralMaterial.WaterRetention;
+    //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = siltCloudStructuralMaterial.WaterDiffusionSpeed;
+    mWaterBuffer[pointIndex] = 0.0f;
+    assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
+    //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
+
+    mTemperatureBuffer[pointIndex] = SimulationParameters::Temperature0;
+    assert(siltCloudStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / siltCloudStructuralMaterial.GetHeatCapacity();
+    mMaterialThermalExpansionCoefficientBuffer[pointIndex] = siltCloudStructuralMaterial.ThermalExpansionCoefficient;
+    //mMaterialIgnitionTemperatureBuffer[pointIndex] = siltCloudStructuralMaterial.IgnitionTemperature;
+    //mMaterialCombustionTypeBuffer[pointIndex] = siltCloudStructuralMaterial.CombustionType;
+    //mCombustionStateBuffer[pointIndex] = CombustionState();
+
+    //mWaterReactionStateBuffer.emplace_back(0.0f);
+
+    assert(mLightBuffer[pointIndex] == 0.0f);
+    //mLightBuffer[pointIndex] = 0.0f;
+
+    mMaterialWindReceptivityBuffer[pointIndex] = 0.2f; // Silt clouds care about wind
+
+    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
+    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
+
+    mEphemeralParticleAttributes1Buffer[pointIndex].Type = EphemeralType::SiltCloud;
+    mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime = currentSimulationTime;
+    mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime = maxSimulationLifetime;
+    mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::SiltCloudState(
+        initialScale,
+        maxScale,
+        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
+
+    assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
+    //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+    mPlaneIdBuffer[pointIndex] = planeId;
+    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
+    mIsPlaneIdBufferEphemeralDirty = true;
+
+    mColorBuffer[pointIndex] = siltCloudStructuralMaterial.RenderColor.toVec4f();
+    mIsEphemeralColorBufferDirty = true;
+}
+
 void Points::CreateEphemeralParticleSmoke(
     GameTextureDatabases::GenericMipMappedTextureGroups textureGroup,
     EphemeralState::SmokeState::GrowthType growth,
@@ -1592,6 +1685,37 @@ void Points::UpdateEphemeralParticles(
                     break;
                 }
 
+                case EphemeralType::SiltCloud:
+                {
+                    // Calculate progress
+                    auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
+                    assert(mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime > 0.0f);
+                    float const lifetimeProgress =
+                        elapsedSimulationLifetime
+                        / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
+
+                    // Check if expired
+                    if (lifetimeProgress >= 1.0f)
+                    {
+                        //
+                        /// Expired
+                        //
+
+                        ExpireEphemeralParticle(pointIndex);
+                    }
+                    else
+                    {
+                        //
+                        // Still alive
+                        //
+
+                        // Update progress
+                        mEphemeralParticleAttributes2Buffer[pointIndex].State.SiltCloud.LifetimeProgress = lifetimeProgress;
+                    }
+
+                    break;
+                }
+
                 case EphemeralType::Smoke:
                 {
                     // Calculate progress
@@ -1686,7 +1810,7 @@ void Points::UpdateEphemeralParticles(
                     break;
                 }
 
-                default:
+                case EphemeralType::None:
                 {
                     // Do nothing
                 }
@@ -2109,6 +2233,32 @@ void Points::UploadEphemeralParticles(
                 break;
             }
 
+            case EphemeralType::SiltCloud:
+            {
+                auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.SiltCloud;
+
+                float const lifetimeProgress = state.LifetimeProgress;
+
+                // Calculate scale: linear with progress
+                float const scale = state.MinScale + (state.MaxScale - state.MinScale) * lifetimeProgress;
+
+                // Calculate alpha: ~parabolic with progress
+                float const alphaFraction =
+                    SmoothStep(0.0f, 0.25f, lifetimeProgress)
+                    - SmoothStep(0.5f, 1.0f, lifetimeProgress);
+
+                // Upload cloud
+                shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
+                    GetPlaneId(pointIndex),
+                    state.PersonalitySeed,
+                    GameTextureDatabases::GenericMipMappedTextureGroups::SiltCloud,
+                    GetPosition(pointIndex),
+                    scale,
+                    alphaFraction * 0.7f);
+
+                break;
+            }
+
             case EphemeralType::Smoke:
             {
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke;
@@ -2161,7 +2311,6 @@ void Points::UploadEphemeralParticles(
             }
 
             case EphemeralType::None:
-            default:
             {
                 // Ignore
                 break;

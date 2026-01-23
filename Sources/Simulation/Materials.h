@@ -40,6 +40,7 @@ public:
         Air = 0,
         Glass,
         Rope,
+        SiltCloud,
         Water,
 
         _Last = Water

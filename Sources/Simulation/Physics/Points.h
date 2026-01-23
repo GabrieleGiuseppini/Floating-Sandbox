@@ -55,6 +55,7 @@ public:
         None,   // Not an ephemeral particle (or not an _active_ ephemeral particle)
         AirBubble,
         Debris,
+        SiltCloud,
         Smoke,
         Sparkle,
         WakeBubble
@@ -350,6 +351,33 @@ private:
         {
         };
 
+        struct SiltCloudState
+        {
+            float MinScale;
+            float MaxScale;
+            float PersonalitySeed;
+            float LifetimeProgress;
+
+            SiltCloudState()
+                : MinScale(0.0f)
+                , MaxScale(0.0f)
+                , PersonalitySeed(0.0f)
+                , LifetimeProgress(0.0f)
+            {
+            }
+
+            SiltCloudState(
+                float minScale,
+                float maxScale,
+                float personalitySeed)
+                : MinScale(minScale)
+                , MaxScale(maxScale)
+                , PersonalitySeed(personalitySeed)
+                , LifetimeProgress(0.0f)
+            {
+            }
+        };
+
         struct SmokeState
         {
             enum class GrowthType
@@ -404,6 +432,7 @@ private:
 
         AirBubbleState AirBubble;
         DebrisState Debris;
+        SiltCloudState SiltCloud;
         SmokeState Smoke;
         SparkleState Sparkle;
         WakeBubbleState WakeBubble;
@@ -415,6 +444,11 @@ private:
         EphemeralState(DebrisState debris)
             : Debris(debris)
         {}
+
+        EphemeralState(SiltCloudState siltCloud)
+            : SiltCloud(siltCloud)
+        {
+        }
 
         EphemeralState(SmokeState smoke)
             : Smoke(smoke)
@@ -823,6 +857,16 @@ public:
         float depth,
         float water,
         StructuralMaterial const & structuralMaterial,
+        float currentSimulationTime,
+        float maxSimulationLifetime,
+        PlaneId planeId);
+
+    void CreateEphemeralParticleSiltCloud(
+        vec2f const & position,
+        float depth,
+        vec2f const & velocity,
+        float initialScale,
+        float maxScale,
         float currentSimulationTime,
         float maxSimulationLifetime,
         PlaneId planeId);

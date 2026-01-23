@@ -166,6 +166,18 @@
 },
 
 {
+	"group_name": "SiltCloud",
+	"has_own_ambient_light": false,
+	"frames":[
+		{	
+			"world_width": 40.0,
+			"world_height": 40.0,
+			"frame_name_pattern": "silt_cloud_\\d+"
+		}
+	]
+},
+
+{
 	"group_name": "SmokeDark",
 	"has_own_ambient_light": false,
 	"frames":[

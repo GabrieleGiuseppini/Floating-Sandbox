@@ -726,6 +726,11 @@ private:
         float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
+    void InternalSpawnSiltCloud(
+        EnergeticSiltImpact const & siltImpact,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
+
     void InternalSpawnSparklesForCut(
         ElementIndex springElementIndex,
         vec2f const & cutDirectionStartPos,

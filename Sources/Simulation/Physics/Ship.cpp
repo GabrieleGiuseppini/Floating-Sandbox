@@ -312,6 +312,15 @@ void Ship::Update(
 #endif
 
     ///////////////////////////////////////////////////////////////////
+    // Produce silt clouds, if any
+    ///////////////////////////////////////////////////////////////////
+
+    for (auto const & siltImpact : mSiltImpacts)
+    {
+        InternalSpawnSiltCloud(siltImpact, currentSimulationTime, simulationParameters);
+    }
+
+    ///////////////////////////////////////////////////////////////////
     // Trim for world bounds
     ///////////////////////////////////////////////////////////////////
 
@@ -3557,6 +3566,52 @@ void Ship::InternalSpawnDebris(
                 pointPlaneId);
         }
     }
+}
+
+void Ship::InternalSpawnSiltCloud(
+    EnergeticSiltImpact const & siltImpact,
+    float currentSimulationTime,
+    SimulationParameters const & /*simulationParameters*/)
+{
+    //
+    // Calculate velocity: opposite particle's velocity, magnitude depending on kinetic energy
+    //
+
+    float constexpr MinVelocityMagnitude = 1.0f;
+    float constexpr MaxVelocityMagnitude = 10.0f;
+    float const velocityMagnitude = MinVelocityMagnitude + (MaxVelocityMagnitude - MinVelocityMagnitude) * LinearStep(0.0f, 500000.0f, siltImpact.KineticEnergy);
+    vec2f const velocity = -siltImpact.Velocity.normalise_approx() * velocityMagnitude;
+
+    //
+    // Calculate scale: depends on kinetic energy
+    //
+
+    float constexpr MinScale = 0.1f;
+    float const maxScale = MinScale + (1.0f - MinScale) * LinearStep(0.0f, 500000.0f, siltImpact.KineticEnergy);
+    float const initialScale = maxScale / 4.0f;
+
+    //
+    // Calculate max lifetime, using velocity as a stick: time it takes to go back to silt with initial velocity if it were vertical
+    //
+
+    float const maxLifetime = (2.0f * velocityMagnitude / SimulationParameters::GravityMagnitude) * 1.5f;
+
+    //
+    // Create particle
+    //
+
+    // TODOTEST
+    LogMessage("TODOTEST: V=", velocity, " T=", maxLifetime, " minScale=", initialScale, " maxScale=", maxScale);
+
+    mPoints.CreateEphemeralParticleSiltCloud(
+        siltImpact.Position,
+        mParentWorld.GetOceanSurface().GetDepth(siltImpact.Position),
+        velocity,
+        initialScale,
+        maxScale,
+        currentSimulationTime,
+        maxLifetime,
+        mMaxMaxPlaneId);
 }
 
 void Ship::InternalSpawnSparklesForCut(

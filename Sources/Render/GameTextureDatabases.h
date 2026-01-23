@@ -111,6 +111,7 @@ enum class GenericMipMappedTextureGroups : uint16_t
     PinnedPoint,
     RcBomb,
     RcBombPing,
+    SiltCloud,
     SmokeDark,
     SmokeLight,
     TimerBomb,
@@ -153,6 +154,8 @@ struct GenericMipMappedTextureDatabase
             return GenericMipMappedTextureGroups::RcBomb;
         else if (Utils::CaseInsensitiveEquals(str, "RCBombPing"))
             return GenericMipMappedTextureGroups::RcBombPing;
+        else if (Utils::CaseInsensitiveEquals(str, "SiltCloud"))
+            return GenericMipMappedTextureGroups::SiltCloud;
         else if (Utils::CaseInsensitiveEquals(str, "SmokeDark"))
             return GenericMipMappedTextureGroups::SmokeDark;
         else if (Utils::CaseInsensitiveEquals(str, "SmokeLight"))

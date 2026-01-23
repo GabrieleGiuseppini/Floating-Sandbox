@@ -178,6 +178,8 @@ StructuralMaterial::MaterialUniqueType StructuralMaterial::StrToMaterialUniqueTy
         return MaterialUniqueType::Glass;
     else if (Utils::CaseInsensitiveEquals(str, "Rope"))
         return MaterialUniqueType::Rope;
+    else if (Utils::CaseInsensitiveEquals(str, "SiltCloud"))
+        return MaterialUniqueType::SiltCloud;
     else if (Utils::CaseInsensitiveEquals(str, "Water"))
         return MaterialUniqueType::Water;
     else

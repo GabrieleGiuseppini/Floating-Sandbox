@@ -438,9 +438,27 @@
 
 			= Estimate # of clouds
 
-			- Then, Ship::Update visits this new vector member and produces ephemerals for each
-				- Upward velocity and lifetime depend on K
-				- Lifetime carefully calibrated to expire ~ when particle is back onto silt
+			= Then, Ship::Update visits this new vector member and produces ephemerals for each
+				+ New function, and called only if not empty
+				= Unique material
+					= Json
+						+ Copy from Air
+					+ Material unique
+				= Ship::Spawn
+					= Upward velocity and lifetime and max scale depend on K
+						+ Max scale is 1 only when VERY large
+					+ Lifetime carefully calibrated to expire ~ when particle is back onto silt
+				+ Points::Create
+					+ Use material
+				= Points dynamics				
+
+			= Texture
+				= World dim: quite large; scale will always be small
+
+			- Remove TODOTEST logs
+
+			- Test:
+				- Silt cloud material does not appear in palette
 
 			- See if need to calc silt interface exactly for plume particle to not be braked by silt
 		
