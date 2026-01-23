@@ -303,7 +303,7 @@ struct SimulationParameters
 
     bool DoGenerateEngineWakeParticles;
 
-    float SiltDustCloudeEnergyThreshold; // J
+    float SiltDustCloudEnergyThreshold; // J
 
     // Wind
 

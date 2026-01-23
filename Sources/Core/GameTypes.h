@@ -1349,17 +1349,21 @@ struct EnergeticSiltImpact
 {
     float KineticEnergy; // J
     vec2f Position;
+    vec2f Velocity;
 
     EnergeticSiltImpact()
         : KineticEnergy(0.0f)
         , Position(vec2f::zero())
+        , Velocity(vec2f::zero())
     { }
 
     EnergeticSiltImpact(
         float kineticEnergy,
-        vec2f const & position)
+        vec2f const & position,
+        vec2f const & velocity)
         : KineticEnergy(kineticEnergy)
         , Position(position)
+        , Velocity(velocity)
     {
     }
 };

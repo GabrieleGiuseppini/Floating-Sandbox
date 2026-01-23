@@ -629,8 +629,6 @@ private:
         size_t threadIndex,
         SimulationParameters const & simulationParameters);
 
-    inline void CoalescePerThreadSiltImpacts();
-
     //
     //
     //
@@ -998,6 +996,9 @@ private:
     // Counter of created bubble ephemeral particles
     std::uint64_t mAirBubblesCreatedCount;
 
+    // All of the silt impacts produced during the whole spring relaxation step
+    std::vector<EnergeticSiltImpact> mSiltImpacts;
+
     // The last thread pool simulation parallelism we've seen; used to
     // detect changes
     size_t mCurrentSimulationParallelism;
@@ -1043,12 +1044,9 @@ private:
         float MaxSiltDepthHardness;
     } mSpringRelaxationCoefficients;
 
-    // The max silt impacts encountered by one thread during one iteration;
+    // The max silt impacts encountered by each thread during all of the itertions;
     // vector is sized when the number of threads is known
     std::vector<CacheAligned<EnergeticSiltImpact>> mPerThreadSiltImpacts;
-
-    // All of the silt impacts produced during the whole spring relaxation step
-    std::vector<EnergeticSiltImpact> mSiltImpacts;
 
     //
     // Static pressure

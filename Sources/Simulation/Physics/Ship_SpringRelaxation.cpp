@@ -316,13 +316,21 @@ void Ship::RunSpringRelaxation(
     ThreadManager & threadManager,
     SimulationParameters const & simulationParameters)
 {
-    // Recalculate all coefficients
+    //
+    // Recalculate all coefficients, and prepare silt impacts
+    //
+
     CalculateSpringRelaxationCoefficients(simulationParameters);
 
-    // Prepare silt impacts
-    mSiltImpacts.clear();
+    for (auto & threadSiltImpact : mPerThreadSiltImpacts)
+    {
+        threadSiltImpact.value.KineticEnergy = 0.0f;
+    }
 
+    //
     // Run
+    //
+
     switch (simulationParameters.SpringRelaxationParallelComputationMode)
     {
         case SpringRelaxationParallelComputationModeType::FullSpeed:
@@ -344,10 +352,27 @@ void Ship::RunSpringRelaxation(
         }
     }
 
-    // TODOTEST
-    if (!mSiltImpacts.empty())
+    //
+    // Coalesce silt impacts
+    //
+
+    mSiltImpacts.clear();
+
+    EnergeticSiltImpact maxImpact;
+    for (auto const & threadSiltImpact : mPerThreadSiltImpacts)
     {
-        LogMessage("TODOTEST: # silt impacts: ", mSiltImpacts.size());
+        if (threadSiltImpact.value.KineticEnergy > maxImpact.KineticEnergy)
+        {
+            maxImpact = threadSiltImpact.value;
+        }
+    }
+
+    if (maxImpact.KineticEnergy > 0.0f)
+    {
+        mSiltImpacts.emplace_back(maxImpact);
+
+        // TODOTEST
+        LogMessage("TODOTEST: silt impact: ", maxImpact.KineticEnergy);
     }
 }
 
@@ -366,14 +391,6 @@ void Ship::RunSpringRelaxation_FullSpeed(ThreadManager & threadManager)
 
     auto & threadPool = threadManager.GetSimulationThreadPool();
     threadPool.Run(mSpringRelaxation_FullSpeed_Tasks);
-
-    //
-    // Coalesce silt impacts
-    //
-    // Note that in full-speed mode we only take the last iteration's impacts...
-    //
-
-    CoalescePerThreadSiltImpacts();
 
 #ifdef _DEBUG
     //
@@ -527,9 +544,6 @@ void Ship::RunSpringRelaxation_StepByStep(
             //  - Changes position and velocity
 
             threadPool.Run(mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks);
-
-            // Coalesce per-thread silt impacts
-            CoalescePerThreadSiltImpacts();
         }
 
         // - DynamicForces = 0
@@ -576,9 +590,6 @@ void Ship::RunSpringRelaxation_Hybrid(
             //  - Changes position and velocity
 
             threadPool.Run(mSpringRelaxation_Hybrid_2_Tasks);
-
-            // Coalesce per-thread silt impacts
-            CoalescePerThreadSiltImpacts();
         }
     }
 
@@ -812,11 +823,11 @@ void Ship::HandleCollisionsWithSeaFloor(
 
     float const siltDepthHardnessCoeff1 = mSpringRelaxationCoefficients.MinSiltDepthHardness;
     float const siltDepthHardnessCoeff2 = mSpringRelaxationCoefficients.MaxSiltDepthHardness - mSpringRelaxationCoefficients.MinSiltDepthHardness;
-    float const siltDustCloudeEnergyThreshold = simulationParameters.SiltDustCloudeEnergyThreshold;
+    float const siltDustCloudEnergyThreshold = simulationParameters.SiltDustCloudEnergyThreshold;
 
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
 
-    EnergeticSiltImpact maxSiltImpact;
+    auto & maxSiltImpact = mPerThreadSiltImpacts[threadIndex];
 
     for (ElementIndex pointIndex = startPointIndex; pointIndex < endPointIndex; ++pointIndex)
     {
@@ -917,7 +928,7 @@ void Ship::HandleCollisionsWithSeaFloor(
 
                 float constexpr DepthHardnessDepthThreshold = 0.5f; // Start depth hardness at 0.5m; very important: affects effect of kinetic energy hardness
                 float constexpr MaxBuryDepth = 20.0f; // Magic, intrinsic to sand and independent from angle
-                // float const depthHardness = minDepthHardness + (maxDepthHardness - minDepthHardness) * LinearStep(DepthHardnessDepthThreshold, MaxBuryDepth, siltY - position.y);
+                // Naive version: float const depthHardness = minDepthHardness + (maxDepthHardness - minDepthHardness) * LinearStep(DepthHardnessDepthThreshold, MaxBuryDepth, siltY - position.y);
                 float const depthHardness = siltDepthHardnessCoeff1 + siltDepthHardnessCoeff2 * LinearStep(DepthHardnessDepthThreshold, MaxBuryDepth, siltY - position.y);
 
                 // Resultant
@@ -925,41 +936,19 @@ void Ship::HandleCollisionsWithSeaFloor(
                 assert(dampingFactor >= 0.0f);
                 mPoints.SetVelocity(
                     pointIndex,
-                    mPoints.GetVelocity(pointIndex) * dampingFactor);
+                    pointVelocity * dampingFactor);
 
                 // See if it's a significative impact
-                if (kineticEnergy > siltDustCloudeEnergyThreshold
-                    && kineticEnergy > maxSiltImpact.KineticEnergy)
+                if (kineticEnergy > siltDustCloudEnergyThreshold
+                    && kineticEnergy > maxSiltImpact.value.KineticEnergy)
                 {
-                    maxSiltImpact = EnergeticSiltImpact(
+                    maxSiltImpact.value = EnergeticSiltImpact(
                         kineticEnergy,
-                        vec2f(clampedX, siltY));
+                        vec2f(clampedX, siltY),
+                        pointVelocity);
                 }
             }
         }
-    }
-
-    mPerThreadSiltImpacts[threadIndex].value = maxSiltImpact;
-}
-
-void Ship::CoalescePerThreadSiltImpacts()
-{
-    //
-    // Pick the max produced by each thread, and store it
-    //
-
-    EnergeticSiltImpact maxImpact;
-    for (auto const & threadSiltImpact : mPerThreadSiltImpacts)
-    {
-        if (threadSiltImpact.value.KineticEnergy > maxImpact.KineticEnergy)
-        {
-            maxImpact = threadSiltImpact.value;
-        }
-    }
-
-    if (maxImpact.KineticEnergy > 0.0f)
-    {
-        mSiltImpacts.emplace_back(maxImpact);
     }
 }
 
