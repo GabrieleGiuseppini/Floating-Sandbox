@@ -3571,15 +3571,20 @@ void Ship::InternalSpawnDebris(
 void Ship::InternalSpawnSiltCloud(
     EnergeticSiltImpact const & siltImpact,
     float currentSimulationTime,
-    SimulationParameters const & /*simulationParameters*/)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Calculate velocity: opposite particle's velocity, magnitude depending on kinetic energy
     //
 
-    float constexpr MinVelocityMagnitude = 1.0f;
+    float constexpr MinVelocityMagnitude = 4.0f;
     float constexpr MaxVelocityMagnitude = 10.0f;
-    float const velocityMagnitude = MinVelocityMagnitude + (MaxVelocityMagnitude - MinVelocityMagnitude) * LinearStep(0.0f, 500000.0f, siltImpact.KineticEnergy);
+    float const velocityMagnitude =
+        MinVelocityMagnitude
+        + (MaxVelocityMagnitude - MinVelocityMagnitude) * LinearStep(
+            simulationParameters.SiltDustCloudEnergyThreshold,
+            simulationParameters.SiltDustCloudEnergyThreshold * 4.0f,
+            siltImpact.KineticEnergy);
     vec2f const velocity = -siltImpact.Velocity.normalise_approx() * velocityMagnitude;
 
     //
@@ -3587,14 +3592,19 @@ void Ship::InternalSpawnSiltCloud(
     //
 
     float constexpr MinScale = 0.1f;
-    float const maxScale = MinScale + (1.0f - MinScale) * LinearStep(0.0f, 500000.0f, siltImpact.KineticEnergy);
+    float const maxScale =
+        MinScale
+        + (1.0f - MinScale) * LinearStep(
+            simulationParameters.SiltDustCloudEnergyThreshold,
+            simulationParameters.SiltDustCloudEnergyThreshold * 4.0f,
+            siltImpact.KineticEnergy);
     float const initialScale = maxScale / 4.0f;
 
     //
     // Calculate max lifetime, using velocity as a stick: time it takes to go back to silt with initial velocity if it were vertical
     //
 
-    float const maxLifetime = (2.0f * velocityMagnitude / SimulationParameters::GravityMagnitude) * 1.5f;
+    float const maxLifetime = (2.0f * velocityMagnitude / SimulationParameters::GravityMagnitude);
 
     //
     // Create particle

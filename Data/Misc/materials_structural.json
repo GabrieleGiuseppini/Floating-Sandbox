@@ -3238,7 +3238,7 @@
 
 
         {
-            "buoyancy_volume_fill": 1.0,
+            "buoyancy_volume_fill": 0.0,
             "color_key": "#F5CB42",
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.5,

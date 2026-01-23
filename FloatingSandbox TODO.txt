@@ -450,7 +450,12 @@
 					+ Lifetime carefully calibrated to expire ~ when particle is back onto silt
 				+ Points::Create
 					+ Use material
-				= Points dynamics				
+				= Points dynamics
+				
+				- Transparency: slower
+				- If code stays like this, do just one LinearStep
+
+			- Check Bandit wrt settings dialog layout
 
 			= Texture
 				= World dim: quite large; scale will always be small

@@ -2245,7 +2245,7 @@ void Points::UploadEphemeralParticles(
                 // Calculate alpha: ~parabolic with progress
                 float const alphaFraction =
                     SmoothStep(0.0f, 0.25f, lifetimeProgress)
-                    - SmoothStep(0.5f, 1.0f, lifetimeProgress);
+                    - SmoothStep(0.55f, 1.0f, lifetimeProgress);
 
                 // Upload cloud
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
@@ -2254,7 +2254,7 @@ void Points::UploadEphemeralParticles(
                     GameTextureDatabases::GenericMipMappedTextureGroups::SiltCloud,
                     GetPosition(pointIndex),
                     scale,
-                    alphaFraction * 0.7f);
+                    alphaFraction * 0.65f);
 
                 break;
             }
