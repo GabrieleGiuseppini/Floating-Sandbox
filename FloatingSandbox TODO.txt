@@ -459,25 +459,22 @@
 						- Slower tail (1/x in second part)
 					- If single-particle clouds bother: decrease effective K depending on number of connected springs
 
-				- If code stays like this, do just one LinearStep
+				+ If code stays like this, do just one LinearStep
 
 			+ Texture
 				+ World dim: quite large; scale will always be small
 			+ Lower default silt thickness
 			+ Remove TODOTEST logs
 
-			- Test:
-				- Silt cloud material does not appear in palette			
-
 		+ Check Bandit wrt settings dialog layout
 
 		+ Make those deep fishes texture better aliased (no white border but darker instead)
 			+ Port to Android
 
-		- Tests:
-			- Boundaries
-				- Impacts
-				- TerrainAdjust
+		= Tests:
+			+ Boundaries
+				+ Impacts
+				+ TerrainAdjust
 			- Old Dell perf
 
 		+ Cleanup:

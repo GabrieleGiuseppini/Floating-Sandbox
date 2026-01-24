@@ -3573,6 +3573,14 @@ void Ship::InternalSpawnSiltCloud(
     float currentSimulationTime,
     SimulationParameters const & simulationParameters)
 {
+    assert(siltImpact.Position.x >= -SimulationParameters::HalfMaxWorldWidth
+        && siltImpact.Position.x <= SimulationParameters::HalfMaxWorldWidth);
+
+    float const kineticEnergyFactor = LinearStep(
+        simulationParameters.SiltDustCloudEnergyThreshold,
+        simulationParameters.SiltDustCloudEnergyThreshold * 4.0f,
+        siltImpact.KineticEnergy);
+
     //
     // Calculate velocity: opposite particle's velocity, magnitude depending on kinetic energy
     //
@@ -3581,10 +3589,7 @@ void Ship::InternalSpawnSiltCloud(
     float constexpr MaxVelocityMagnitude = 10.0f;
     float const velocityMagnitude =
         MinVelocityMagnitude
-        + (MaxVelocityMagnitude - MinVelocityMagnitude) * LinearStep(
-            simulationParameters.SiltDustCloudEnergyThreshold,
-            simulationParameters.SiltDustCloudEnergyThreshold * 4.0f,
-            siltImpact.KineticEnergy);
+        + (MaxVelocityMagnitude - MinVelocityMagnitude) * kineticEnergyFactor;
     vec2f const velocity = -siltImpact.Velocity.normalise_approx() * velocityMagnitude;
 
     //
@@ -3594,17 +3599,14 @@ void Ship::InternalSpawnSiltCloud(
     float constexpr MinScale = 0.1f;
     float const maxScale =
         MinScale
-        + (1.0f - MinScale) * LinearStep(
-            simulationParameters.SiltDustCloudEnergyThreshold,
-            simulationParameters.SiltDustCloudEnergyThreshold * 4.0f,
-            siltImpact.KineticEnergy);
+        + (1.0f - MinScale) * kineticEnergyFactor;
     float const initialScale = maxScale / 4.0f;
 
     //
     // Calculate max lifetime, using velocity as a stick: time it takes to go back to silt with initial velocity if it were vertical
     //
 
-    float const maxLifetime = (2.0f * velocity.y / SimulationParameters::GravityMagnitude);
+    float const maxLifetime = (2.0f * std::abs(velocity.y) / SimulationParameters::GravityMagnitude);
 
     //
     // Create particle

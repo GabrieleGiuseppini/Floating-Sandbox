@@ -36,7 +36,7 @@ SimulationParameters::SimulationParameters()
     , OceanFloorBedrockDetailAmplification(10.0f)
     , OceanFloorBedrockElasticityCoefficient(0.5f)
     , OceanFloorBedrockFrictionCoefficient(0.25f)
-    , OceanFloorSiltThickness(10.0f)
+    , OceanFloorSiltThickness(15.0f)
     , OceanFloorSiltBumpiness(1.0f / 20.0f)
     , OceanFloorSiltHardness(1.0f)
     // Ephemeral particles
