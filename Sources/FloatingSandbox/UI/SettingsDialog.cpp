@@ -1236,7 +1236,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
         gridSizer->Add(
             waterBoxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 7),
+            wxGBSpan(1, 6),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -1395,7 +1395,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
 
         gridSizer->Add(
             rottingBoxSizer,
-            wxGBPosition(1, 5),
+            wxGBPosition(1, 4),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorderOuter);
