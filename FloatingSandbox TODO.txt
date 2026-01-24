@@ -401,11 +401,9 @@
 				+ Save temp settings and move .bin
 				+ Remove temp code to halve size
 				+ Test boundaries
-
 		+ Send to testers
 		+ Bump up version
-
-		= Sand dust upon impact
+		+ Sand dust upon impact
 			! Need to be spawned above silt
 			+ Core/GameTypes: EnergeticSiltImpact: float + vec2f, cctor makes zero
 				+ Also SimParams;
@@ -435,10 +433,8 @@
 							+ Nuke CoalescePerThreadSiltImpacts
 						+ Remove previous work in each of RunSpringRelaxation_FullSpeed/StepByStep/Hybrid
 				+ Check assembly
-
 			+ Estimate # of clouds
-
-			= Then, Ship::Update visits this new vector member and produces ephemerals for each
+			+ Then, Ship::Update visits this new vector member and produces ephemerals for each
 				+ New function, and called only if not empty
 				+ Unique material
 					+ Json
@@ -450,17 +446,13 @@
 					+ Lifetime carefully calibrated to expire ~ when particle is back onto silt
 				+ Points::Create
 					+ Use material
-				+ Points dynamics
-				
-				= Improvements:
+				+ Points dynamics			
+				+ Improvements:
 					+ Vy
-					- Transparency:
-						- Try quadratic w/texture alpha in-shader
-						- Slower tail (1/x in second part)
-					- If single-particle clouds bother: decrease effective K depending on number of connected springs
+					+ Transparency
+					X If single-particle clouds bother: decrease effective K depending on number of connected springs
 
 				+ If code stays like this, do just one LinearStep
-
 			+ Texture
 				+ World dim: quite large; scale will always be small
 			+ Lower default silt thickness
@@ -483,9 +475,9 @@
 
 		- Merge back into master
 
-		- Changelist
+		- Changelist - thank Bandit
 
-	= Change simulation #iterations setting to 0.25 step
+	+ Change simulation #iterations setting to 0.25 step
 
 	+ I would like to point out that there are some hiccups on some of the new ships, 
 		+ Flying Dutchman has a density recommendation of 2812 (I assume a decimal was meant to be there), 
@@ -499,20 +491,15 @@
 		- Changelist
 
 	- Anti-gravity tool: 
-		- Easier removal on phone
-			- With zoom from afar
-				- The screen radius must be given by caller
-					- Port constant to PC tool
-					- Use pointer size on Android
 		- Remove all when tool changed
 			- TODO: really? wanna leave it?
 			- Tool::Deinit: blind call (regardless of own state) to new IGameController::~RemoveAllForceFields
-			- Port to Android, BUT WITHOUT FS CODE PORT
-				- In-place World->... chain; we'll overwrite it later
+			- Port to Android
 
 	- Move tool: fix radius: when ship is very close, move tool does _not_ engage
 		- ShipSearchRadiusScreen: it's in terms of screen, so cap resultant world so radius is at least SimulationParameters::MinShipSearchRadiusWorld (2.0f)
-			- Do at all uses
+			- Do at all uses of ShipSearchRadiusScreen
+			! It's PC-only, no Android
 
 	- Fishes on wreck (see paper in Malta book)
 		- Alternative:

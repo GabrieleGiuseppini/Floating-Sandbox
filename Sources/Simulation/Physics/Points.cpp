@@ -2244,8 +2244,8 @@ void Points::UploadEphemeralParticles(
 
                 // Calculate alpha: ~parabolic with progress
                 float const alphaFraction =
-                    SmoothStep(0.0f, 0.25f, lifetimeProgress)
-                    - SmoothStep(0.55f, 1.0f, lifetimeProgress);
+                    SmoothStep(0.0f, 0.1f, lifetimeProgress)
+                    - SmoothStep(0.75f, 1.0f, lifetimeProgress);
 
                 // Upload cloud
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(

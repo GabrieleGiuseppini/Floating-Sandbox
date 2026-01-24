@@ -3585,7 +3585,7 @@ void Ship::InternalSpawnSiltCloud(
     // Calculate velocity: opposite particle's velocity, magnitude depending on kinetic energy
     //
 
-    float constexpr MinVelocityMagnitude = 4.0f;
+    float constexpr MinVelocityMagnitude = 5.0f;
     float constexpr MaxVelocityMagnitude = 10.0f;
     float const velocityMagnitude =
         MinVelocityMagnitude
@@ -3596,10 +3596,10 @@ void Ship::InternalSpawnSiltCloud(
     // Calculate scale: depends on kinetic energy
     //
 
-    float constexpr MinScale = 0.1f;
+    float constexpr MinMaxScale = 0.2f;
     float const maxScale =
-        MinScale
-        + (1.0f - MinScale) * kineticEnergyFactor;
+        MinMaxScale
+        + (1.0f - MinMaxScale) * kineticEnergyFactor;
     float const initialScale = maxScale / 4.0f;
 
     //
