@@ -3604,14 +3604,13 @@ void Ship::InternalSpawnSiltCloud(
     // Calculate max lifetime, using velocity as a stick: time it takes to go back to silt with initial velocity if it were vertical
     //
 
-    float const maxLifetime = (2.0f * velocityMagnitude / SimulationParameters::GravityMagnitude);
+    float const maxLifetime = (2.0f * velocity.y / SimulationParameters::GravityMagnitude);
 
     //
     // Create particle
     //
 
-    // TODOTEST
-    LogMessage("TODOTEST: V=", velocity, " T=", maxLifetime, " minScale=", initialScale, " maxScale=", maxScale);
+    //LogMessage("SiltCloudParticle: V=", velocity, " T=", maxLifetime, " minScale=", initialScale, " maxScale=", maxScale);
 
     mPoints.CreateEphemeralParticleSiltCloud(
         siltImpact.Position,

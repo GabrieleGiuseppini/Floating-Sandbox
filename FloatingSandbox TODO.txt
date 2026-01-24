@@ -407,11 +407,11 @@
 
 		= Sand dust upon impact
 			! Need to be spawned above silt
-			= Core/GameTypes: EnergeticSiltImpact: float + vec2f, cctor makes zero
-				= Also SimParams;
+			+ Core/GameTypes: EnergeticSiltImpact: float + vec2f, cctor makes zero
+				+ Also SimParams;
 					+ Max kinetic energy (in h AND cpp)
-					= Lower bumpiness max: 0.5
-						- Test slider
+					+ Lower bumpiness max: 0.5
+						+ Test slider
 					+ Cache line size @ SysSpecifics.h
 						+ Verify with sizeof in intellisense
 			+ Ship::HandleCollisionsWithSeaFloor: each run produces zero or 1 point which had the most kinetic energy decrease because of silt drag, above a threshold
@@ -436,46 +436,43 @@
 						+ Remove previous work in each of RunSpringRelaxation_FullSpeed/StepByStep/Hybrid
 				+ Check assembly
 
-			= Estimate # of clouds
+			+ Estimate # of clouds
 
 			= Then, Ship::Update visits this new vector member and produces ephemerals for each
 				+ New function, and called only if not empty
-				= Unique material
-					= Json
+				+ Unique material
+					+ Json
 						+ Copy from Air
 					+ Material unique
-				= Ship::Spawn
-					= Upward velocity and lifetime and max scale depend on K
+				+ Ship::Spawn
+					+ Upward velocity and lifetime and max scale depend on K
 						+ Max scale is 1 only when VERY large
 					+ Lifetime carefully calibrated to expire ~ when particle is back onto silt
 				+ Points::Create
 					+ Use material
-				= Points dynamics
+				+ Points dynamics
 				
-				- Transparency: slower
+				= Improvements:
+					+ Vy
+					- Transparency:
+						- Try quadratic w/texture alpha in-shader
+						- Slower tail (1/x in second part)
+					- If single-particle clouds bother: decrease effective K depending on number of connected springs
+
 				- If code stays like this, do just one LinearStep
 
-			- Check Bandit wrt settings dialog layout
-
-			= Texture
-				= World dim: quite large; scale will always be small
-
-			- Remove TODOTEST logs
+			+ Texture
+				+ World dim: quite large; scale will always be small
+			+ Lower default silt thickness
+			+ Remove TODOTEST logs
 
 			- Test:
-				- Silt cloud material does not appear in palette
+				- Silt cloud material does not appear in palette			
 
-			- See if need to calc silt interface exactly for plume particle to not be braked by silt
-		
-			- Try afterwards: also dent silt
+		+ Check Bandit wrt settings dialog layout
 
-		- NPC furniture also sinking?		
-
-		- Make those deep fishes texture better aliased (no white border but darker instead)
-
-		- Tool to see through silt
-			! If we fail, just do simple RenderParameter: simple alpha param set at RenderDrawOceanFloor differently on each band
-			- Like lamp: using if on a param, safe
+		+ Make those deep fishes texture better aliased (no white border but darker instead)
+			+ Port to Android
 
 		- Tests:
 			- Boundaries
@@ -483,7 +480,7 @@
 				- TerrainAdjust
 			- Old Dell perf
 
-		- Cleanup:
+		+ Cleanup:
 			+ HandleCollisionsWithSeaFloor (All TODOs)
 			+ ApplyWorldForces
 
@@ -1715,9 +1712,17 @@
 	- Redo material texturization with new "box filter" image resize algorithm (i.e. average of all instead of just interpolation within 2)
 			
 - Dynamics:
+	+ Sand particles when hitting ground
+		+ Ephemerals like smoke, but with "sand clouds"
+	+ "Soft" setting for ocean floors
+		+ Just less impact
+		+ See also new silting work
+	+ Sediment on ocean floor
+		+ Things basically bury a bit
+		+ Could be adjusted to where players could see through it or not, to show how much is under the mud
+		+ Sediment could also preserve anything that is buried under it
 
-	- Sand particles when hitting ground
-		- Ephemerals like smoke, but with "sand clouds"
+	- NPC furniture also sinking?		
 
 	- Material system improvements (*)
 		- Descriptions in ShipBuilder palette
@@ -1868,18 +1873,9 @@
 					- Like generator, but only generates power when daylight above threshold, *and* when on frontier
 				- Redo template!
 
-
-	- "Soft" setting for ocean floors
-		- Just less impact
-		- See also new silting work
-	- Sediment on ocean floor
-		- Things basically bury a bit
-		- Could be adjusted to where players could see through it or not, to show how much is under the mud
-		- Sediment could also preserve anything that is buried under it
-
-
 	- Transfer of momentum from waves to ship
 		- When ship surface intersects water surface
+		- TODO: rewrite below with visit by frontier
 		- Option A: by point visit; all points which were not underwater in previous step and are now (via double buffer for Points::CachedDepth), receive force
 		  proportional to OceanSurface::VelocityVector
 			- OceanSurface::VelocityVector: direction=normal, magnitude=SWE velocity. With two options:
@@ -2085,15 +2081,9 @@
 
 	- Air drag is thinner moving up, @ MaxWorldHeight it's open space
 
-	- Lightning tool that summons lightning wherever it has been clicked
-		- Lightning pointer: basically instead of lightning at random, you click and lightning strikes where you click
-
 	- When lightning hits (a metal part of) the ship, then lights should go off temporarily
 
 	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
-
-	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
-		- Just sets points as leaking
 
 	- Randomize decay
 		- Perlin noise on ship, created at ShipBuilder, stored as Points::WeakNoise
@@ -2217,6 +2207,16 @@
 
 	- New tool: slingshot
 		- "You hold down the left click, and pull back and aim - and it would fire somethin like a cannon ball or wrecking ball like projectile"
+
+	- Tool to see through silt
+		! If we fail, just do simple RenderParameter: simple alpha param set at RenderDrawOceanFloor differently on each band
+		- Like lamp: using if on a param, safe
+
+	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
+		- Just sets points as leaking
+
+	- Lightning tool that summons lightning wherever it has been clicked
+		- Lightning pointer: basically instead of lightning at random, you click and lightning strikes where you click
 
 - UI:
 	- Automatic contrast for the cursor, e.g. for when it's at depth

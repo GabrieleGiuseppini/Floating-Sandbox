@@ -370,9 +370,6 @@ void Ship::RunSpringRelaxation(
     if (maxImpact.KineticEnergy > 0.0f)
     {
         mSiltImpacts.emplace_back(maxImpact);
-
-        // TODOTEST
-        LogMessage("TODOTEST: silt impact: K=", maxImpact.KineticEnergy, " V=", maxImpact.Velocity);
     }
 }
 
