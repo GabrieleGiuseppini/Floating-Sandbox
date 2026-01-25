@@ -319,7 +319,7 @@ inline void MakeQuadInto(
 
 #elif FS_IS_ARM_NEON() // Implies ARM anyways
 
-    assert(is_aligned_to_vectorization_word(&quad));
+    //assert(is_aligned_to_vectorization_word(&quad)); // Not necessarily, we are aligned to 4*4 but struct is 4*2
 
     float32x4_t vd = vcombine_f32(
         vld1_f32(reinterpret_cast<float const *>(&centerTop)),

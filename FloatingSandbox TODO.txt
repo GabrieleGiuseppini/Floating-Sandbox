@@ -469,6 +469,13 @@
 				+ TerrainAdjust
 			- Old Dell perf
 
+		- Clouds:
+			- Slower under water 
+				- Minimal buoyancy
+				- Lifetime - taking depth into account - TODO: formula
+			- Larger under water
+				- Taking depth into account - TODO: formula
+
 		+ Cleanup:
 			+ HandleCollisionsWithSeaFloor (All TODOs)
 			+ ApplyWorldForces
