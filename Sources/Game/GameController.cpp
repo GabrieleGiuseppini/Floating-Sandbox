@@ -722,7 +722,9 @@ void GameController::PickObjectToMove(
     std::optional<GlobalConnectedComponentId> & connectedComponentId)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
-    float const worldSearchRadius = mRenderContext->ScreenOffsetToWorldOffset(mSimulationParameters.ShipSearchRadiusScreen);
+    float const worldSearchRadius = std::max(
+        mRenderContext->ScreenOffsetToWorldOffset(mSimulationParameters.ShipSearchRadiusScreen),
+        SimulationParameters::MinShipSearchRadiusWorld);
 
     // Apply action
     assert(!!mWorld);
@@ -735,7 +737,9 @@ void GameController::PickObjectToMove(
 std::optional<GlobalElementId> GameController::PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
-    float const worldSearchRadius = mRenderContext->ScreenOffsetToWorldOffset(mSimulationParameters.ShipSearchRadiusScreen);
+    float const worldSearchRadius = std::max(
+        mRenderContext->ScreenOffsetToWorldOffset(mSimulationParameters.ShipSearchRadiusScreen),
+        SimulationParameters::MinShipSearchRadiusWorld);
 
     // Apply action
     assert(!!mWorld);

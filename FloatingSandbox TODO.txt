@@ -503,9 +503,9 @@
 			- Tool::Deinit: blind call (regardless of own state) to new IGameController::~RemoveAllForceFields
 			- Port to Android
 
-	- Move tool: fix radius: when ship is very close, move tool does _not_ engage
-		- ShipSearchRadiusScreen: it's in terms of screen, so cap resultant world so radius is at least SimulationParameters::MinShipSearchRadiusWorld (2.0f)
-			- Do at all uses of ShipSearchRadiusScreen
+	+ Move tool: fix radius: when ship is very close, move tool does _not_ engage
+		+ ShipSearchRadiusScreen: it's in terms of screen, so cap resultant world so radius is at least SimulationParameters::MinShipSearchRadiusWorld (2.0f)
+			+ Do at all uses of ShipSearchRadiusScreen
 			! It's PC-only, no Android
 
 	- Fishes on wreck (see paper in Malta book)
