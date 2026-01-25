@@ -469,12 +469,13 @@
 				+ TerrainAdjust
 			- Old Dell perf
 
-		- Clouds:
-			- Slower under water 
-				- Minimal buoyancy
-				- Lifetime - taking depth into account - TODO: formula
-			- Larger under water
-				- Taking depth into account - TODO: formula
+		+ Cloud improvements:
+			+ When Vi is small (much x), lifetime is too short
+			+ Slower under water 
+				+ Minimal buoyancy
+				+ Lifetime - taking depth into account
+			+ Larger under water
+				+ Taking depth into account
 
 		+ Cleanup:
 			+ HandleCollisionsWithSeaFloor (All TODOs)

@@ -2239,13 +2239,16 @@ void Points::UploadEphemeralParticles(
 
                 float const lifetimeProgress = state.LifetimeProgress;
 
-                // Calculate scale: linear with progress
-                float const scale = state.MinScale + (state.MaxScale - state.MinScale) * lifetimeProgress;
+                // Calculate scale: parabolic with progress, but center shifted to 0.75*progress
+                float const scale =
+                    -(state.MaxScale - state.MinScale) * 16.0f / 9.0f * lifetimeProgress * lifetimeProgress
+                    + (state.MaxScale - state.MinScale) * 8.0f / 3.0f * lifetimeProgress
+                    + state.MinScale;
 
                 // Calculate alpha: ~parabolic with progress
                 float const alphaFraction =
                     SmoothStep(0.0f, 0.1f, lifetimeProgress)
-                    - SmoothStep(0.75f, 1.0f, lifetimeProgress);
+                    - SmoothStep(0.5f, 1.0f, lifetimeProgress);
 
                 // Upload cloud
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
