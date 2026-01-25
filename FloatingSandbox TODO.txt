@@ -172,11 +172,11 @@
 		+ Re-send beta
 			+ Bump up version
 
-	= Fix SettingsDialog/Russian-Ukrainian issue from Denis
+	+ Fix SettingsDialog/Russian-Ukrainian issue from Denis
 		+ Ask russian and ukrainian translators
 		+ UK should be final
 		+ RU should be final
-		- Double-check myself
+		+ Double-check myself
 
 	= Improvements from Bandit:
 		! Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
