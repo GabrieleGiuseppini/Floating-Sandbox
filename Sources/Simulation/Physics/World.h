@@ -305,6 +305,8 @@ public:
 
     void BoostAntiGravityFields(float strengthMultiplier);
 
+    bool RemoveAllAntiGravityFields();
+
     void TogglePinAt(
         vec2f const & targetPos,
         SimulationParameters const & simulationParameters);

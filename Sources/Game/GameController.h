@@ -252,6 +252,7 @@ public:
     void EndPlaceAntiGravityField(ElementIndex antiGravityFieldId, DisplayLogicalCoordinates const & endScreenCoordinates, float strengthMultiplier) override;
     void AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId) override;
     void BoostAntiGravityFields(float strengthMultiplier) override;
+    bool RemoveAllAntiGravityFields() override;
     void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void RemoveAllPins() override;
     std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) override;

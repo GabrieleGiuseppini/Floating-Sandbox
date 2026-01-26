@@ -58,6 +58,8 @@ public:
 
     void BoostAntiGravityFields(float strengthMultiplier);
 
+    bool RemoveAllAntyGravityFields();
+
 private:
 
     bool mutable mIsDirtyForRendering;

@@ -720,7 +720,7 @@ MainFrame::MainFrame(
 
             mNormalScreenMenuItem = new wxMenuItem(optionsMenu, ID_NORMAL_SCREEN_MENUITEM, _("Normal Screen") + wxS("\tESC"), wxEmptyString, wxITEM_NORMAL);
             optionsMenu->Append(mNormalScreenMenuItem);
-            Connect(ID_NORMAL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnNormalScreenMenuItemSelected);
+            Connect(ID_NORMAL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEsc);
 
             optionsMenu->AppendSeparator();
 
@@ -1560,6 +1560,28 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
     }
 }
 
+void MainFrame::OnEsc(wxCommandEvent & /*event*/)
+{
+    //
+    // First, see if tool wants to handle it
+    //
+
+    if (mToolController && mToolController->OnEsc())
+    {
+        // Handled by tool
+        return;
+    }
+
+    //
+    // Use it for full/normal screen toggle
+    //
+
+    mFullScreenMenuItem->Enable(true);
+    mNormalScreenMenuItem->Enable(false);
+
+    this->ShowFullScreen(false);
+}
+
 //
 // Main canvas event handlers
 //
@@ -2109,14 +2131,6 @@ void MainFrame::OnFullScreenMenuItemSelected(wxCommandEvent & /*event*/)
     mNormalScreenMenuItem->Enable(true);
 
     this->ShowFullScreen(true, wxFULLSCREEN_NOBORDER);
-}
-
-void MainFrame::OnNormalScreenMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    mFullScreenMenuItem->Enable(true);
-    mNormalScreenMenuItem->Enable(false);
-
-    this->ShowFullScreen(false);
 }
 
 void MainFrame::OnMuteMenuItemSelected(wxCommandEvent & /*event*/)

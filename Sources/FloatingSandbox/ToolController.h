@@ -169,6 +169,9 @@ public:
 
     void OnShiftKeyUp();
 
+    // Returns true if it was handled
+    bool OnEsc();
+
     //
     // IToolCursorHandler
     //

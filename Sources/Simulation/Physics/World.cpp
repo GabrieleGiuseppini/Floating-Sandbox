@@ -815,6 +815,11 @@ void World::BoostAntiGravityFields(float strengthMultiplier)
     mGlobalForceFields.BoostAntiGravityFields(strengthMultiplier);
 }
 
+bool World::RemoveAllAntiGravityFields()
+{
+    return mGlobalForceFields.RemoveAllAntyGravityFields();
+}
+
 void World::TogglePinAt(
     vec2f const & targetPos,
     SimulationParameters const & simulationParameters)

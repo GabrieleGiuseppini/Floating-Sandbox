@@ -498,11 +498,9 @@
 		- Ask testers (pt_br) to test it
 		- Changelist
 
-	- Anti-gravity tool: 
-		- Remove all when tool changed
-			- TODO: really? wanna leave it?
-			- Tool::Deinit: blind call (regardless of own state) to new IGameController::~RemoveAllForceFields
-			- Port to Android
+	+ Anti-gravity tool: remove all with ESC, but only when tool is engaged
+		+ ESC -> if (!ToolController::HandleEsc)
+		+ AntiGravityTool: return response from GC
 
 	+ Move tool: fix radius: when ship is very close, move tool does _not_ engage
 		+ ShipSearchRadiusScreen: it's in terms of screen, so cap resultant world so radius is at least SimulationParameters::MinShipSearchRadiusWorld (2.0f)

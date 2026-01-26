@@ -401,6 +401,18 @@ void ToolController::OnShiftKeyUp()
     }
 }
 
+bool ToolController::OnEsc()
+{
+    if (nullptr != mCurrentTool)
+    {
+        return mCurrentTool->HandleEsc();
+    }
+    else
+    {
+        return false;
+    }
+}
+
 void ToolController::SetToolCursor(wxImage const & basisImage, float strength)
 {
     mCurrentToolCursor = ToolCursor(basisImage, strength);

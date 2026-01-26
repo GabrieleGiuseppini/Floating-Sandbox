@@ -1268,6 +1268,13 @@ void GameController::BoostAntiGravityFields(float strengthMultiplier)
     mWorld->BoostAntiGravityFields(strengthMultiplier);
 }
 
+bool GameController::RemoveAllAntiGravityFields()
+{
+    // Apply action
+    assert(!!mWorld);
+    return mWorld->RemoveAllAntiGravityFields();
+}
+
 void GameController::TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);

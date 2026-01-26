@@ -116,6 +116,12 @@ public:
     virtual void OnShiftKeyDown(InputState const & inputState) = 0;
     virtual void OnShiftKeyUp(InputState const & inputState) = 0;
 
+    virtual bool HandleEsc()
+    {
+        // Default-implemented
+        return false;
+    }
+
 protected:
 
     Tool(
@@ -1919,6 +1925,11 @@ public:
     void OnShiftKeyDown(InputState const & /*inputState*/) override {}
 
     void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+    bool HandleEsc() override
+    {
+        return mGameController.RemoveAllAntiGravityFields();
+    }
 
 private:
 

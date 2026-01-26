@@ -209,6 +209,7 @@ private:
     void OnLowFrequencyTimerTrigger(wxTimerEvent & event);
     void OnCheckUpdatesTimerTrigger(wxTimerEvent & event);
     void OnIdle(wxIdleEvent & event);
+    void OnEsc(wxCommandEvent & event);
 
     // Main GL canvas
     void OnMainGLCanvasPaint(wxPaintEvent & event);
@@ -256,7 +257,6 @@ private:
     void OnShowStatusTextMenuItemSelected(wxCommandEvent & event);
     void OnShowExtendedStatusTextMenuItemSelected(wxCommandEvent & event);
     void OnFullScreenMenuItemSelected(wxCommandEvent & event);
-    void OnNormalScreenMenuItemSelected(wxCommandEvent & event);
     void OnMuteMenuItemSelected(wxCommandEvent & event);
     void OnHelpMenuItemSelected(wxCommandEvent & event);
     void OnShipBuilderNewShipMenuItemSelected(wxCommandEvent & event);

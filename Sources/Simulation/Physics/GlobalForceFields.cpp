@@ -166,6 +166,20 @@ void GlobalForceFields::BoostAntiGravityFields(float strengthMultiplier)
     }
 }
 
+bool GlobalForceFields::RemoveAllAntyGravityFields()
+{
+    if (!mAntiGravityFields.empty())
+    {
+        mAntiGravityFields.clear();
+
+        mIsDirtyForRendering = true;
+
+        return true;
+    }
+
+    return false;
+}
+
 /////////////////////////////////////////////////////////////
 
 void GlobalForceFields::InternalUpdate(

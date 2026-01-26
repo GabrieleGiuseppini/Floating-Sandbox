@@ -135,6 +135,7 @@ struct IGameController
     virtual void EndPlaceAntiGravityField(ElementIndex antiGravityFieldId, DisplayLogicalCoordinates const & startScreenCoordinates, float strengthMultiplier) = 0;
     virtual void AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId) = 0;
     virtual void BoostAntiGravityFields(float strengthMultiplier) = 0;
+    virtual bool RemoveAllAntiGravityFields() = 0;
     virtual void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
     virtual void RemoveAllPins() = 0;
     virtual std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) = 0;
