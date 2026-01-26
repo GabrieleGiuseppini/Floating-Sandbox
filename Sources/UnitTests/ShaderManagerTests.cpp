@@ -2,7 +2,7 @@
 
 #include <Render/GameShaderSets.h>
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 
 #include "gtest/gtest.h"
 

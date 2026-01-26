@@ -16,3 +16,14 @@ public:
 		: std::runtime_error(errorMessage.c_str())
 	{}
 };
+
+
+class GameInitializationAbortException : public GameException
+{
+public:
+
+	GameInitializationAbortException()
+		: GameException(("Initialization aborted!"))
+	{
+	}
+};

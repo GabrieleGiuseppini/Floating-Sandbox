@@ -15,7 +15,7 @@
  * A database is defined by a "type traits" structure, which here is called "Texture Database".
  */
 
-#include "GameException.h"
+#include "GameExceptions.h"
 #include "GameTypes.h"
 #include "IAssetManager.h"
 #include "ImageData.h"

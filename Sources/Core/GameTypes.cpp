@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "GameTypes.h"
 
-#include "GameException.h"
+#include "GameExceptions.h"
 #include "Utils.h"
 
 #include <chrono>

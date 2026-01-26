@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "ShipBuilderShaderSets.h"
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/Utils.h>
 
 #include <cassert>

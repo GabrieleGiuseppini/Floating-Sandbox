@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/Streams.h>
 
 #include <algorithm>

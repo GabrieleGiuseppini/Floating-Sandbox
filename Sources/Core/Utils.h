@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Colors.h"
-#include "GameException.h"
+#include "GameExceptions.h"
 #include "Vectors.h"
 
 #include <picojson.h>

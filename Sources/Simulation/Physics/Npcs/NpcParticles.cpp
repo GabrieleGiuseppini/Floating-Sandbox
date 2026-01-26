@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "../Physics.h"
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/GameRandomEngine.h>
 #include <Core/Log.h>
 

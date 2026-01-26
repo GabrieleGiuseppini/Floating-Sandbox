@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "FontSet.h"
 
-#include "GameException.h"
+#include "GameExceptions.h"
 #include "TextureAtlas.h"
 #include "TextureDatabase.h"
 

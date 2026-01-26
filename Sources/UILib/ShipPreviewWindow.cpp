@@ -12,7 +12,7 @@
 
 #include <Core/Conversions.h>
 #include <Core/GameRandomEngine.h>
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/ImageTools.h>
 #include <Core/Log.h>
 

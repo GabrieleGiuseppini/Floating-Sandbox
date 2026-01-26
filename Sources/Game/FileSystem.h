@@ -7,7 +7,7 @@
 
 #include "FileStreams.h"
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/Log.h>
 #include <Core/Streams.h>
 #include <Core/Utils.h>

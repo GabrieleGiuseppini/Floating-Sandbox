@@ -6,7 +6,7 @@
 #pragma once
 
 #include "EnumFlags.h"
-#include "GameException.h"
+#include "GameExceptions.h"
 #include "IAssetManager.h"
 #include "ImageData.h"
 #include "ProgressCallback.h"

@@ -35,7 +35,7 @@ set  (SOURCES
 	FontSet-inl.h
 	GameChronometer.h
 	GameDebug.h
-	GameException.h
+	GameExceptions.h
 	GameGeometry.h
 	GameMath.h
 	GameRandomEngine.h

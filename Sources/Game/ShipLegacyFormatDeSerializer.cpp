@@ -8,7 +8,7 @@
 #include "FileSystem.h"
 #include "GameAssetManager.h"
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/ImageTools.h>
 #include <Core/Utils.h>
 

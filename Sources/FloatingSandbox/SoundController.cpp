@@ -8,7 +8,7 @@
 #include <Simulation/Materials.h>
 #include <Simulation/SimulationParameters.h>
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/GameMath.h>
 #include <Core/Log.h>
 

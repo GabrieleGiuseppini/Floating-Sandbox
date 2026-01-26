@@ -6,7 +6,7 @@
 #pragma once
 
 #include <Core/Colors.h>
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/GameTypes.h>
 #include <Core/Vectors.h>
 

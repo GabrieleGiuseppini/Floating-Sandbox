@@ -6,7 +6,7 @@
 #include "ShipTexturizer.h"
 
 #include <Core/GameChronometer.h>
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/GameMath.h>
 #include <Core/Log.h>
 

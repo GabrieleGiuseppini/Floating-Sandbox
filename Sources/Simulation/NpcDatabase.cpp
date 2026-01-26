@@ -7,7 +7,7 @@
 
 #include "SimulationParameters.h"
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/Utils.h>
 
 static char HeadFKeyName[] = "head_f";

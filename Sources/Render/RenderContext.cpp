@@ -6,7 +6,7 @@
 #include "RenderContext.h"
 
 #include <Core/GameChronometer.h>
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/Log.h>
 #include <Core/SysSpecifics.h>
 #include <Core/ThreadManager.h>

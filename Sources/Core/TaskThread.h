@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameExceptions.h"
 #include "ThreadManager.h"
 
 #include <condition_variable>
@@ -12,6 +13,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -62,9 +64,25 @@ public:
             }
 
             // Check if an exception was thrown
-            if (!mExceptionMessage.empty())
+            if (mExceptionInfo.has_value())
             {
-                throw std::runtime_error(mExceptionMessage);
+                switch (mExceptionInfo->Kind)
+                {
+                    case ExceptionInfo::KindType::Game:
+                    {
+                        throw GameException(mExceptionInfo->Message);
+                    }
+
+                    case ExceptionInfo::KindType::GameInitializationAbort:
+                    {
+                        throw GameInitializationAbortException();
+                    }
+
+                    case ExceptionInfo::KindType::Other:
+                    {
+                        throw std::runtime_error(mExceptionInfo->Message);
+                    }
+                }
             }
         }
 
@@ -74,7 +92,7 @@ public:
             std::mutex & threadLock,
             std::condition_variable & threadSignal)
             : mIsTaskCompleted(false)
-            , mExceptionMessage()
+            , mExceptionInfo()
             , mThreadLock(threadLock)
             , mThreadSignal(threadSignal)
         {}
@@ -84,15 +102,29 @@ public:
             mIsTaskCompleted = true;
         }
 
-        void RegisterException(std::string const & exceptionMessage)
+        struct ExceptionInfo
         {
-            mExceptionMessage = exceptionMessage;
+            enum class KindType
+            {
+                GameInitializationAbort,
+                Game,
+                Other
+            };
+
+            KindType Kind;
+            std::string Message;
+        };
+
+        void RegisterException(ExceptionInfo && exceptionInfo)
+        {
+            mExceptionInfo = std::move(exceptionInfo);
         }
 
     private:
 
-        bool mIsTaskCompleted; // Flag set by task thread to signal completion of the task
-        std::string mExceptionMessage; // Set by task thread upon exception
+        bool mIsTaskCompleted; // Flag set by task thread to signal completion of the task; set in any case, even when an exception occurs
+
+        std::optional<ExceptionInfo> mExceptionInfo; // Set by task thread upon exception
 
         std::mutex & mThreadLock;
         std::condition_variable & mThreadSignal;
@@ -148,15 +180,25 @@ public:
             //
             // Run task
             //
+            // Exception is safe to store without locks, as it will only be read by
+            // main thread after it is signaled
+            //
 
             try
             {
                 task();
             }
+            catch (GameInitializationAbortException const &)
+            {
+                taskCompletionIndicator->RegisterException({ _TaskCompletionIndicatorImpl::ExceptionInfo::KindType::GameInitializationAbort, std::string() });
+            }
+            catch (GameException const & exc)
+            {
+                taskCompletionIndicator->RegisterException({ _TaskCompletionIndicatorImpl::ExceptionInfo::KindType::Game, std::string(exc.what()) });
+            }
             catch (std::runtime_error const & exc)
             {
-                // Store in task completion indicator
-                taskCompletionIndicator->RegisterException(exc.what());
+                taskCompletionIndicator->RegisterException({ _TaskCompletionIndicatorImpl::ExceptionInfo::KindType::Other, std::string(exc.what()) });
             }
 
             taskCompletionIndicator->MarkCompleted();

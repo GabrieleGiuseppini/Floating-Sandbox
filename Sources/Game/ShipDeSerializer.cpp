@@ -13,7 +13,7 @@
 
 #include <Simulation/ShipDefinitionFormatDeSerializer.h>
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 
 #include <memory>
 

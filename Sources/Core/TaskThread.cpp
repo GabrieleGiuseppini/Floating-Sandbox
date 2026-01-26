@@ -117,6 +117,9 @@ void TaskThread::ThreadLoop(
         //
         // Run task
         //
+        // Exception is safe to store without locks, as it will only be read by
+        // main thread after it is signaled
+        //
 
         assert(!!queuedTask.TaskToRun);
 
@@ -124,12 +127,17 @@ void TaskThread::ThreadLoop(
         {
             queuedTask.TaskToRun();
         }
+        catch (GameInitializationAbortException const &)
+        {
+            queuedTask.CompletionIndicator->RegisterException({ _TaskCompletionIndicatorImpl::ExceptionInfo::KindType::GameInitializationAbort, std::string() });
+        }
+        catch (GameException const & exc)
+        {
+            queuedTask.CompletionIndicator->RegisterException({ _TaskCompletionIndicatorImpl::ExceptionInfo::KindType::Game, std::string(exc.what()) });
+        }
         catch (std::runtime_error const & exc)
         {
-            // Store in task completion indicator
-            // (safe to do without locks, as it will only be read by
-            // main thread after it is signaled)
-            queuedTask.CompletionIndicator->RegisterException(exc.what());
+            queuedTask.CompletionIndicator->RegisterException({ _TaskCompletionIndicatorImpl::ExceptionInfo::KindType::Other, std::string(exc.what()) });
         }
 
         //

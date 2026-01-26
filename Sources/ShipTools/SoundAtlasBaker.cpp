@@ -10,7 +10,7 @@
 #include <SoundCore/SoundAtlas.h>
 #include <SoundCore/SoundTypes.h>
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/Utils.h>
 
 #include <algorithm>

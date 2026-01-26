@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "ShipPreviewImageDatabase.h"
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/Log.h>
 
 #include <limits>

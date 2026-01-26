@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameException.h"
+#include "GameExceptions.h"
 
 #ifdef _DEBUG
 

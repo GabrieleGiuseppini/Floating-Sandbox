@@ -7,7 +7,7 @@
 
 #include <Game/GameVersion.h>
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/Log.h>
 
 #include <wx/generic/statbmpg.h>

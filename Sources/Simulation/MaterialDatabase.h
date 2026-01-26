@@ -8,7 +8,7 @@
 #include "Materials.h"
 
 #include <Core/Colors.h>
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/GameTypes.h>
 #include <Core/IAssetManager.h>
 #include <Core/Utils.h>

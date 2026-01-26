@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "ShaderManager.h"
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 
 #include <regex>
 #include <unordered_map>

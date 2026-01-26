@@ -482,6 +482,7 @@
 			+ ApplyWorldForces
 
 		- Merge back into master
+			- With PR, will serve for Android
 
 		- Changelist - thank Bandit
 
@@ -495,7 +496,7 @@
 	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
 		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al
 		+ Use FS code everywhere, and match wx enforced to ours
-		- Ask testers (pt_br) to test it
+		= Ask testers (pt_br) to test it
 		- Changelist
 
 	+ Anti-gravity tool: remove all with ESC, but only when tool is engaged

@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #include "Colors.h"
 
-#include "GameException.h"
+#include "GameExceptions.h"
 
 #include <iomanip>
 #include <sstream>

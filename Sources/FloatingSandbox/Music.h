@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/GameRandomEngine.h>
 #include <Core/GameTypes.h>
 #include <Core/GameWallClock.h>

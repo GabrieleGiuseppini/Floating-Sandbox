@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #include "Utils.h"
 
-#include "GameException.h"
+#include "GameExceptions.h"
 
 #include <cassert>
 #include <memory>

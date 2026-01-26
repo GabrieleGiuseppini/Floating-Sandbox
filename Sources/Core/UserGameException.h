@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameException.h"
+#include "GameExceptions.h"
 
 #include <string>
 #include <vector>

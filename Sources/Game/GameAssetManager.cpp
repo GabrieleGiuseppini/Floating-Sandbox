@@ -8,7 +8,7 @@
 #include "FileStreams.h"
 #include "FileSystem.h"
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/Log.h>
 #include <Core/PngTools.h>
 #include <Core/Streams.h>

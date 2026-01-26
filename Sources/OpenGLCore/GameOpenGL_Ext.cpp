@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "GameOpenGL_Ext.h"
 
-#include <Core/GameException.h>
+#include <Core/GameExceptions.h>
 #include <Core/Log.h>
 
 template <typename TFunc>
