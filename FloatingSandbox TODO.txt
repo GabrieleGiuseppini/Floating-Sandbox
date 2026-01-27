@@ -463,11 +463,13 @@
 		+ Make those deep fishes texture better aliased (no white border but darker instead)
 			+ Port to Android
 
-		= Tests:
+		+ Tests:
 			+ Boundaries
 				+ Impacts
 				+ TerrainAdjust
-			- Old Dell perf
+			+ Old Dell perf
+				+ 33.3/33.7 r: 12.8/13 -> 31/32 r: 13.1/13.6
+				! Is it because of more OpenGL calls at RenderDraw()?
 
 		+ Cloud improvements:
 			+ When Vi is small (much x), lifetime is too short
