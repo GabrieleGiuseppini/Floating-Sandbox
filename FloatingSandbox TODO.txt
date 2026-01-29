@@ -483,6 +483,8 @@
 			+ HandleCollisionsWithSeaFloor (All TODOs)
 			+ ApplyWorldForces
 
+		- Check on Discord
+
 		- Merge back into master
 			- With PR, will serve for Android
 

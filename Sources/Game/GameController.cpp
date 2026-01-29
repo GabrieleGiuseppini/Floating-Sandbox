@@ -1223,7 +1223,9 @@ static int constexpr AntiGravityFieldSearchRadiusPixels = 25; // To have a scree
 ElementIndex GameController::BeginPlaceAntiGravityField(DisplayLogicalCoordinates const & startScreenCoordinates)
 {
     vec2f const worldStartCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
-    float const worldSearchRadius = mRenderContext->ScreenOffsetToWorldOffset(AntiGravityFieldSearchRadiusPixels);
+    float const worldSearchRadius = std::max(
+        mRenderContext->ScreenOffsetToWorldOffset(AntiGravityFieldSearchRadiusPixels),
+        SimulationParameters::MinShipSearchRadiusWorld);
 
     // Apply action
     assert(!!mWorld);
@@ -1247,7 +1249,9 @@ void GameController::EndPlaceAntiGravityField(
     float strengthMultiplier)
 {
     vec2f const worldEndCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
-    float const worldSearchRadius = mRenderContext->ScreenOffsetToWorldOffset(AntiGravityFieldSearchRadiusPixels);
+    float const worldSearchRadius = std::max(
+        mRenderContext->ScreenOffsetToWorldOffset(AntiGravityFieldSearchRadiusPixels),
+        SimulationParameters::MinShipSearchRadiusWorld);
 
     // Apply action
     assert(!!mWorld);
