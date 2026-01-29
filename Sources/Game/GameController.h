@@ -181,9 +181,14 @@ public:
     // Game Control and notifications
     //
 
+    // Freeze/Thaw: only to _communicate_ that no iterations will be running anymore,
+    // because e.g. app has been paused; has no impact on state
     void Freeze() override;
     void Thaw() override;
+
+    // Pause: causes no physics updates to world, and still in game; rendering continues
     void SetPaused(bool isPaused) override;
+
     void SetMoveToolEngaged(bool isEngaged) override;
     void DisplaySettingsLoadedNotification() override;
 
