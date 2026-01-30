@@ -1638,7 +1638,41 @@
             "water_retention": 0.5,
             "wind_receptivity": 0.5
         },
+
         {
+            "buoyancy_volume_fill": 0.05,
+            "color_key": [
+                "#DADADA"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 393.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0215,
+                "nominal_mass": 30
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Strong Cloth",
+            "palette_coordinates": {
+                "category": "Cloth",
+                "sub_category": "Strong Cloth",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Cloth",
+            "specific_heat": 1400.0,
+            "stiffness": 0.012,
+            "strength": 4.8,
+            "texture_name": "cloth_1",
+            "thermal_conductivity": 0.04,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.5,
+            "wind_receptivity": 0.5
+        },
+	
+	{
             "buoyancy_volume_fill": 0.0,
             "color_key": [
                 "#1A1A1A",
@@ -3741,6 +3775,40 @@
         {
             "buoyancy_volume_fill": 0.3,
             "color_key": [
+                "#021822"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 393.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 180
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Tense Strong Rope",
+            "palette_coordinates": {
+                "category": "Ropes",
+                "sub_category": "Tense Strong Ropes",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 1.0,
+            "sound_type": "Cable",
+            "specific_heat": 1400.0,
+	    "spring_tension": 0.98,
+            "stiffness": 1.84,
+            "strength": 0.5,
+            "thermal_conductivity": 0.04,
+            "water_diffusion_speed": 0.015,
+            "water_intake": 0.05,
+            "water_retention": 0.5,
+            "wind_receptivity": 0.2
+        },
+	{
+            "buoyancy_volume_fill": 0.3,
+            "color_key": [
                 "#3b3a39",
                 "#540a06",
                 "#5c5939",
@@ -4214,7 +4282,8 @@
                         "name": "Ropes",
                         "sub_categories": [
                             "Ropes",
-                            "Strong Ropes"
+                            "Strong Ropes",
+                            "Tense Strong Ropes"
                         ]
                     }
                 ]
@@ -4445,7 +4514,8 @@
                     {
                         "name": "Cloth",
                         "sub_categories": [
-                            "Cloth"
+                            "Cloth",
+                            "Strong Cloth"
                         ]
                     }
                 ]
