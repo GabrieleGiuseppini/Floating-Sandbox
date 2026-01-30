@@ -3,6 +3,7 @@ TODO
 - Doubled world width
 - Improved bulkiness of tsunami's and interactive waves
 	- And added a new setting to customize it at will
+- Added new materials: Strong Cloth and Tense Strong Rope
 - Improved resolution of ship previews
 - Fixed the last few crashes known to humanity
 - ShipBuilder:

@@ -1638,11 +1638,19 @@
             "water_retention": 0.5,
             "wind_receptivity": 0.5
         },
-
         {
             "buoyancy_volume_fill": 0.05,
             "color_key": [
-                "#DADADA"
+                "#DADADA",
+                "#FFA88A",
+                "#FFFFD7",
+                "#FFFC8A",
+                "#E0FF8A",
+                "#9AFFFF",
+                "#B5CCEB",
+                "#FF9AFF",
+                "#FFE98A",
+                "#ABAB9B"
             ],
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.5,
@@ -1664,15 +1672,14 @@
             "sound_type": "Cloth",
             "specific_heat": 1400.0,
             "stiffness": 0.012,
-            "strength": 4.8,
+            "strength": 4.2,
             "texture_name": "cloth_1",
             "thermal_conductivity": 0.04,
             "water_diffusion_speed": 0.5,
             "water_retention": 0.5,
             "wind_receptivity": 0.5
         },
-	
-	{
+        {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
                 "#1A1A1A",
@@ -3268,9 +3275,6 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
-
-
-
         {
             "buoyancy_volume_fill": 0.004,
             "color_key": "#F5CB42",
@@ -3301,8 +3305,6 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
-
-
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
@@ -3775,7 +3777,15 @@
         {
             "buoyancy_volume_fill": 0.3,
             "color_key": [
-                "#021822"
+                "#021822",
+                "#460000",
+                "#9DA71F",
+                "#085300",
+                "#004248",
+                "#090A33",
+                "#480052",
+                "#6A2700",
+		"#747678"
             ],
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.5,
@@ -3797,7 +3807,7 @@
             "rust_receptivity": 1.0,
             "sound_type": "Cable",
             "specific_heat": 1400.0,
-	    "spring_tension": 0.98,
+            "spring_tension": 0.98,
             "stiffness": 1.84,
             "strength": 0.5,
             "thermal_conductivity": 0.04,
@@ -3806,7 +3816,7 @@
             "water_retention": 0.5,
             "wind_receptivity": 0.2
         },
-	{
+        {
             "buoyancy_volume_fill": 0.3,
             "color_key": [
                 "#3b3a39",
