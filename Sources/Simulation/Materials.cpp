@@ -41,6 +41,7 @@ StructuralMaterial StructuralMaterial::Create(
         float const buoyancyVolumeFill = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "buoyancy_volume_fill", 1.0f);
         float const stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
         float const strainThresholdFraction = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "strain_threshold_fraction", 0.5f);
+        float const springTension = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "spring_tension", 1.0f);
         float const elasticityCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "elasticity_coefficient", 0.5f);
         float const kineticFrictionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "friction_kinetic_coefficient", 0.25f);
         float const staticFrictionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "friction_static_coefficient", 0.25f);
@@ -121,6 +122,7 @@ StructuralMaterial StructuralMaterial::Create(
             buoyancyVolumeFill,
             stiffness,
             strainThresholdFraction,
+            springTension,
             elasticityCoefficient,
             kineticFrictionCoefficient,
             staticFrictionCoefficient,
