@@ -397,6 +397,15 @@ void OceanFloor::CalculateSiltSampleValues(size_t startIndex, size_t endIndex)
         assert(previousSiltSampleValue == mSamples[SamplesCount - 1].SiltSampleValue);
         mSamples[SamplesCount].SiltSampleValue = previousSiltSampleValue;
     }
+
+    //
+    // Now adjust last sample's "next - previous"
+    //
+
+    if (endIndex < SamplesCount)
+    {
+        mSamples[endIndex].SiltSampleValuePlusOneMinusSampleValue = mSamples[endIndex + 1].SiltSampleValue - previousSiltSampleValue;
+    }
 }
 
 float OceanFloor::GetBedrockSlopeAt(size_t sampleIndex) const
