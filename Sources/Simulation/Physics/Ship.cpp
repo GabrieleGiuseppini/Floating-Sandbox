@@ -3576,7 +3576,7 @@ void Ship::InternalSpawnSiltCloud(
     assert(siltImpact.Position.x >= -SimulationParameters::HalfMaxWorldWidth
         && siltImpact.Position.x <= SimulationParameters::HalfMaxWorldWidth);
 
-    float const silImpactDepth = mParentWorld.GetOceanSurface().GetDepth(siltImpact.Position);
+    float const siltImpactDepth = mParentWorld.GetOceanSurface().GetDepth(siltImpact.Position);
 
     float const kineticEnergyFactor = LinearStep(
         simulationParameters.SiltDustCloudEnergyThreshold,
@@ -3598,7 +3598,7 @@ void Ship::InternalSpawnSiltCloud(
     // Calculate scale: depends on kinetic energy
     //
 
-    float const minMaxScale = (silImpactDepth > 0.0f) ? 0.4f : 0.2f;
+    float const minMaxScale = (siltImpactDepth > 0.0f) ? 0.4f : 0.2f;
     float const maxScale =
         minMaxScale
         + (1.0f - minMaxScale) * kineticEnergyFactor;
@@ -3610,7 +3610,7 @@ void Ship::InternalSpawnSiltCloud(
 
     float const maxLifetime =
         (2.0f * velocityMagnitude / SimulationParameters::GravityMagnitude)
-        * (silImpactDepth > 0.0f) ? 2.5f : 1.5f;
+        * (siltImpactDepth > 0.0f) ? 2.5f : 1.5f;
 
     //
     // Create particle
@@ -3620,7 +3620,7 @@ void Ship::InternalSpawnSiltCloud(
 
     mPoints.CreateEphemeralParticleSiltCloud(
         siltImpact.Position,
-        silImpactDepth,
+        siltImpactDepth,
         velocity,
         initialScale,
         maxScale,
