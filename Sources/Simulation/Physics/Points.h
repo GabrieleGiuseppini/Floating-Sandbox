@@ -869,7 +869,8 @@ public:
         float maxScale,
         float currentSimulationTime,
         float maxSimulationLifetime,
-        PlaneId planeId);
+        PlaneId planeId,
+        SimulationParameters const & simulationParameters);
 
     void CreateEphemeralParticleLightSmoke(
         vec2f const & position,

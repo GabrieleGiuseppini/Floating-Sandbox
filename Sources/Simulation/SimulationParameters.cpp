@@ -46,7 +46,7 @@ SimulationParameters::SimulationParameters()
     , DoGenerateSparklesForCuts(true)
     , AirBubblesDensity(120.0f)
     , DoGenerateEngineWakeParticles(true)
-    , SiltDustCloudEnergyThreshold(90000.0f)
+    , SiltDustCloudEnergyThreshold(40000.0f)
     // Wind
     , DoModulateWind(true)
     , WindSpeedBase(-20.0f)

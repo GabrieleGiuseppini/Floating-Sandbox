@@ -3043,7 +3043,6 @@ void Ship::PropagateHeat(
     // We approximate the thermocline as a linear decrease of
     // temperature: 15 degrees in MaxSeaDepth meters
     float const surfaceWaterTemperature = simulationParameters.WaterTemperature;
-    float constexpr ThermoclineSlope = -15.0f / SimulationParameters::MaxSeaDepth;
 
     // We include rain in air
     float const effectiveAirConvectiveHeatTransferCoefficient =
@@ -3067,7 +3066,7 @@ void Ship::PropagateHeat(
             || mPoints.GetWater(pointIndex) > SimulationParameters::SmotheringWaterHighWatermark)
         {
             // Dissipation in water
-            float const waterTemperature = surfaceWaterTemperature - Clamp(mPoints.GetPosition(pointIndex).y * ThermoclineSlope, 0.0f, surfaceWaterTemperature);
+            float const waterTemperature = Formulae::CalculateWaterTemperature(mPoints.GetPosition(pointIndex).y, surfaceWaterTemperature);
             deltaT = newPointTemperatureBufferData[pointIndex] - waterTemperature;
             heatLost = effectiveWaterConvectiveHeatTransferCoefficient * deltaT;
         }
@@ -3610,7 +3609,7 @@ void Ship::InternalSpawnSiltCloud(
 
     float const maxLifetime =
         (2.0f * velocityMagnitude / SimulationParameters::GravityMagnitude)
-        * (siltImpactDepth > 0.0f) ? 2.5f : 1.5f;
+        * ((siltImpactDepth > 0.0f) ? 2.5f : 1.25f); // Note: underwater lifetime multiplier is calibrated with buoyancy volume fill of silt cloud material
 
     //
     // Create particle
@@ -3626,7 +3625,8 @@ void Ship::InternalSpawnSiltCloud(
         maxScale,
         currentSimulationTime,
         maxLifetime,
-        mMaxMaxPlaneId);
+        mMaxMaxPlaneId,
+        simulationParameters);
 }
 
 void Ship::InternalSpawnSparklesForCut(

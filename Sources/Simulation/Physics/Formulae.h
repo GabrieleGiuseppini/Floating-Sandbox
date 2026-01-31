@@ -232,6 +232,21 @@ public:
             * FlameWindRotationAngleConvergenceRate;
     }
 
+    static float CalculateWaterTemperature(
+        float depth,
+        SimulationParameters const & simulationParameters)
+    {
+        return CalculateWaterTemperature(depth, simulationParameters.WaterTemperature);
+    }
+
+    static float CalculateWaterTemperature(
+        float depth,
+        float surfaceWaterTemperature)
+    {
+        float constexpr ThermoclineSlope = -15.0f / SimulationParameters::MaxSeaDepth;
+        return surfaceWaterTemperature - Clamp(depth * ThermoclineSlope, 0.0f, surfaceWaterTemperature);
+    }
+
     static float CalculateUnderwaterCurrentTimeVelocity(
         float basisWindSpeed,
         SimulationParameters const & simulationParameters)

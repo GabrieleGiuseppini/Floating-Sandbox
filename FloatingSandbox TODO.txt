@@ -483,14 +483,16 @@
 			+ HandleCollisionsWithSeaFloor (All TODOs)
 			+ ApplyWorldForces
 
-		= Check on Discord
+		+ Check on Discord, 1
 			+ That bug with terrain adjust
 				! Repro's: from right, up to left, down
 				+ Is it SiltSampleValuePlusOneMinSampleValue being broken?
 				+ Test @ boundaries
-			- More silt with lower impact
-			- Try longer lifetime
-				- Try setting
+			+ More silt with lower impact
+			+ Try longer lifetime
+				X Try setting
+
+		- Check on Discord, 2
 
 		- Merge back into master
 			- With PR, will serve for Android

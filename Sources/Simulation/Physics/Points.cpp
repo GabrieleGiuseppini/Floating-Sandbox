@@ -321,7 +321,8 @@ void Points::CreateEphemeralParticleSiltCloud(
     float maxScale,
     float currentSimulationTime,
     float maxSimulationLifetime,
-    PlaneId planeId)
+    PlaneId planeId,
+    SimulationParameters const & simulationParameters)
 {
     // Get a free slot (or steal one)
     auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
@@ -370,7 +371,7 @@ void Points::CreateEphemeralParticleSiltCloud(
     assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
-    mTemperatureBuffer[pointIndex] = SimulationParameters::Temperature0;
+    mTemperatureBuffer[pointIndex] = Formulae::CalculateWaterTemperature(depth, simulationParameters);
     assert(siltCloudStructuralMaterial.GetHeatCapacity() > 0.0f);
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / siltCloudStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = siltCloudStructuralMaterial.ThermalExpansionCoefficient;
