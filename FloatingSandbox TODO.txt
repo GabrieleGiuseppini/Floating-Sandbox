@@ -493,11 +493,24 @@
 				X Try setting
 
 		- Check on Discord, 2
+			- Longer lifetime: try setting:
+				! First: do with locals
+				- Setting only for underwater
+				- Setting determines buoyancy volume fill (just adjustment factor)
+				- Then buoyancy volume fill determines lifetime (do math - and verify matches current: 0.006 => 2.5 multiplier)
+				- Cleanup: promote to setting
+			+ Fix ocean floor reloading (see Kiko's)
+				! It's a problem with alpha interface blend
 
 		- Merge back into master
 			- With PR, will serve for Android
 
 		- Changelist - thank Bandit
+
+	- Re-check why we don't pick portuguese system default:
+		"Wx enforced language for desired identifier "<N/A>": "en""
+
+
 
 	+ Change simulation #iterations setting to 0.25 step
 

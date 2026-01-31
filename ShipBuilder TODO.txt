@@ -1,3 +1,12 @@
+- Material palette takes forever to open
+	! problem is Freeze/Thaw: wx visits the entire graph
+	- Option 1: rewrite by not using buttons but custom rendering, w/mouse events and code to translate into actions
+
+- Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
+
+
+
+
 ================================================================================================================================================================================
 
 - Gist:
@@ -725,7 +734,6 @@
 			+ MaintainAspectRatio ckbox disabled when re-importing self
 			+ Localization of caption
 		+ Add to changelist
-	- Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
 	- Once selected, selection could be moved right away, instead of having to copy'n'paste
 	- Localization:
 		- See if can do separate extraction into separate file, which then is loaded at all times by LocalizationManager together with the other one

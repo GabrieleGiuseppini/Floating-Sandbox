@@ -336,7 +336,7 @@ public:
         //  - Interface blend depth: 0 at theoretical yBedrock + MaxTransitionThickness, +X at bottom
         bedrockVertex[0] = LandVertex{ {x, yBedrock + effectiveTransitionThickness}, ySilt - yBedrock, MaxTransitionThickness - effectiveTransitionThickness };
         // Final y (bottom): (MaxTransitionThickness - effectiveTransitionThickness) + (yBedrock + effectiveTransitionThickness - yWorldBottom)
-        bedrockVertex[1] = LandVertex{ {x, yWorldBottom}, ySilt - yWorldBottom, MaxTransitionThickness - yBedrock - yWorldBottom };
+        bedrockVertex[1] = LandVertex{ {x, yWorldBottom}, ySilt - yWorldBottom, MaxTransitionThickness + yBedrock - yWorldBottom };
     }
 
     void UploadLandEnd();
