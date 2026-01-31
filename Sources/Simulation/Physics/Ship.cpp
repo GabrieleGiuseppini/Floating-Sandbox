@@ -3587,7 +3587,7 @@ void Ship::InternalSpawnSiltCloud(
     //
 
     float constexpr MinVelocityMagnitude = 5.0f;
-    float constexpr MaxVelocityMagnitude = 10.0f;
+    float constexpr MaxVelocityMagnitude = 8.0f;
     float const velocityMagnitude =
         MinVelocityMagnitude
         + (MaxVelocityMagnitude - MinVelocityMagnitude) * kineticEnergyFactor;

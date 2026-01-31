@@ -506,6 +506,8 @@
 			- With PR, will serve for Android
 
 		- Changelist - thank Bandit
+			- Make it 1.20
+				- @ Also @ GameVersion
 
 	- Re-check why we don't pick portuguese system default:
 		"Wx enforced language for desired identifier "<N/A>": "en""
