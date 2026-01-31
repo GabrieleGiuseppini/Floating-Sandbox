@@ -3586,8 +3586,8 @@ void Ship::InternalSpawnSiltCloud(
     // Calculate velocity: opposite particle's velocity, magnitude depending on kinetic energy
     //
 
-    float constexpr MinVelocityMagnitude = 5.0f;
-    float constexpr MaxVelocityMagnitude = 8.0f;
+    float constexpr MinVelocityMagnitude = 3.0f;
+    float constexpr MaxVelocityMagnitude = 6.0f;
     float const velocityMagnitude =
         MinVelocityMagnitude
         + (MaxVelocityMagnitude - MinVelocityMagnitude) * kineticEnergyFactor;
@@ -3603,19 +3603,48 @@ void Ship::InternalSpawnSiltCloud(
         + (1.0f - minMaxScale) * kineticEnergyFactor;
     float const initialScale = maxScale / 4.0f;
 
-    //
-    // Calculate max lifetime, using velocity as a stick: time it takes to go back to silt with initial velocity if it were vertical
-    //
+    // TODOTEST
+    ////
+    //// Calculate max lifetime, using velocity as a stick: time it takes to go back to silt with initial velocity if it were vertical
+    ////
 
-    float const maxLifetime =
-        (2.0f * velocityMagnitude / SimulationParameters::GravityMagnitude)
-        * ((siltImpactDepth > 0.0f) ? 2.5f : 1.25f); // Note: underwater lifetime multiplier is calibrated with buoyancy volume fill of silt cloud material
+    //float const maxLifetime =
+    //    (2.0f * velocityMagnitude / SimulationParameters::GravityMagnitude)
+    //    * ((siltImpactDepth > 0.0f) ? 2.5f : 1.25f); // Note: underwater lifetime multiplier is calibrated with buoyancy volume fill of silt cloud material
+
+    float maxLifetime;
+    float buoyancyVolumeFill;
+    if (siltImpactDepth > 0.0f)
+    {
+        // Underwater
+
+        // TODOHERE
+        float const vy = velocityMagnitude;
+        float constexpr t = 3.0f;
+        buoyancyVolumeFill =
+            (1.0f - (2.0f * vy) / (SimulationParameters::GravityMagnitude * t))
+            / 100.0f;
+        maxLifetime = t;
+    }
+    else
+    {
+        // Above-water: gravity is the only force acting on the silt cloud
+
+        maxLifetime =
+            2.0f
+            * velocityMagnitude
+            / SimulationParameters::GravityMagnitude
+            * 1.25f; // For longer lifetime, empirical
+
+        buoyancyVolumeFill = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SiltCloud).BuoyancyVolumeFill;
+    }
+
 
     //
     // Create particle
     //
 
-    //LogMessage("SiltCloudParticle: V=", velocity, " T=", maxLifetime, " minScale=", initialScale, " maxScale=", maxScale, " silImpactDepth=", silImpactDepth);
+    LogMessage("SiltCloudParticle: V=", velocity, " T=", maxLifetime, " minScale=", initialScale, " maxScale=", maxScale, " silImpactDepth=", siltImpactDepth);
 
     mPoints.CreateEphemeralParticleSiltCloud(
         siltImpact.Position,
@@ -3625,6 +3654,7 @@ void Ship::InternalSpawnSiltCloud(
         maxScale,
         currentSimulationTime,
         maxLifetime,
+        buoyancyVolumeFill,
         mMaxMaxPlaneId,
         simulationParameters);
 }

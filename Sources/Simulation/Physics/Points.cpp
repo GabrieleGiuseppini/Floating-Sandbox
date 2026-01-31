@@ -321,6 +321,7 @@ void Points::CreateEphemeralParticleSiltCloud(
     float maxScale,
     float currentSimulationTime,
     float maxSimulationLifetime,
+    float buoyancyVolumeFill,
     PlaneId planeId,
     SimulationParameters const & simulationParameters)
 {
@@ -343,7 +344,7 @@ void Points::CreateEphemeralParticleSiltCloud(
     mAugmentedMaterialMassBuffer[pointIndex] = siltCloudStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = siltCloudStructuralMaterial.GetMass();
-    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = siltCloudStructuralMaterial.BuoyancyVolumeFill;
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = buoyancyVolumeFill; // Calculated to achieve desired lifetime
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
@@ -359,7 +360,7 @@ void Points::CreateEphemeralParticleSiltCloud(
         0.0f);
     mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        siltCloudStructuralMaterial.BuoyancyVolumeFill,
+        buoyancyVolumeFill,
         siltCloudStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 

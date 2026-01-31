@@ -869,6 +869,7 @@ public:
         float maxScale,
         float currentSimulationTime,
         float maxSimulationLifetime,
+        float buoyancyVolumeFill,
         PlaneId planeId,
         SimulationParameters const & simulationParameters);
 
