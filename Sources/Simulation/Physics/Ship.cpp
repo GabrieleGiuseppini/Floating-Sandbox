@@ -3603,28 +3603,31 @@ void Ship::InternalSpawnSiltCloud(
         + (1.0f - minMaxScale) * kineticEnergyFactor;
     float const initialScale = maxScale / 4.0f;
 
-    // TODOTEST
-    ////
-    //// Calculate max lifetime, using velocity as a stick: time it takes to go back to silt with initial velocity if it were vertical
-    ////
+    //
+    // Calculate max lifetime
+    //
 
-    //float const maxLifetime =
-    //    (2.0f * velocityMagnitude / SimulationParameters::GravityMagnitude)
-    //    * ((siltImpactDepth > 0.0f) ? 2.5f : 1.25f); // Note: underwater lifetime multiplier is calibrated with buoyancy volume fill of silt cloud material
-
+    auto const & siltCloudMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SiltCloud);
     float maxLifetime;
     float buoyancyVolumeFill;
     if (siltImpactDepth > 0.0f)
     {
         // Underwater
 
-        // TODOHERE
-        float const vy = velocityMagnitude;
-        float constexpr t = 3.0f;
+        // Use desired lifetime
+        maxLifetime = simulationParameters.SiltDustCloudUnderwaterLifetime;
+
+        // We calculate the buoyancy volume fill required for the particle to
+        // go up and down in the desired time, using:
+        //    ay = g(bvf * 1000 / 10 - 1)
+        //     t = 2 * vy / ay
+        //
+        // Note that we use velocity magnitude instead of actual vertical velocity
+        // as we want to eschew very small vertical velocities
+
         buoyancyVolumeFill =
-            (1.0f - (2.0f * vy) / (SimulationParameters::GravityMagnitude * t))
-            / 100.0f;
-        maxLifetime = t;
+            (1.0f - (2.0f * velocityMagnitude) / (SimulationParameters::GravityMagnitude * maxLifetime))
+            / (SimulationParameters::WaterMass / siltCloudMaterial.GetMass());
     }
     else
     {
@@ -3632,19 +3635,18 @@ void Ship::InternalSpawnSiltCloud(
 
         maxLifetime =
             2.0f
-            * velocityMagnitude
+            * velocityMagnitude // We use velocity magnitude instead of actual vertical velocity as we want to eschew very small vertical velocities
             / SimulationParameters::GravityMagnitude
             * 1.25f; // For longer lifetime, empirical
 
-        buoyancyVolumeFill = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SiltCloud).BuoyancyVolumeFill;
+        buoyancyVolumeFill = siltCloudMaterial.BuoyancyVolumeFill; // Almost irrelevant, unless it falls into water :-)
     }
-
 
     //
     // Create particle
     //
 
-    LogMessage("SiltCloudParticle: V=", velocity, " T=", maxLifetime, " minScale=", initialScale, " maxScale=", maxScale, " silImpactDepth=", siltImpactDepth);
+    //LogMessage("SiltCloudParticle: V=", velocity, " T=", maxLifetime, " minScale=", initialScale, " maxScale=", maxScale, " silImpactDepth=", siltImpactDepth);
 
     mPoints.CreateEphemeralParticleSiltCloud(
         siltImpact.Position,

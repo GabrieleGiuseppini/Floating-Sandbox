@@ -495,12 +495,11 @@
 		= Check on Discord, 2
 			= Longer lifetime: try setting:
 				! First: do with locals
-				- Setting only for underwater
-				- Setting determines buoyancy volume fill (just adjustment factor)
-				- Then buoyancy volume fill determines lifetime (do math - and verify matches current: 0.006 => 2.5 multiplier)
+				+ Setting only for underwater
 				- Cleanup: 
-					- Promote to setting
-					- Add comment to buoyancy volume fill
+					+ Promote to setting
+					+ Add comment to buoyancy volume fill
+					- Use actual masses
 			+ Fix ocean floor reloading (see Kiko's)
 				! It's a problem with alpha interface blend
 

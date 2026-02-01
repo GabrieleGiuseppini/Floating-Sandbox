@@ -318,6 +318,9 @@ struct IGameControllerSettingsOptions
     virtual float GetMinAirBubblesDensity() const = 0;
     virtual float GetMaxAirBubblesDensity() const = 0;
 
+    virtual float GetMinSiltDustCloudUnderwaterLifetime() const = 0;
+    virtual float GetMaxSiltDustCloudUnderwaterLifetime() const = 0;
+
     virtual unsigned int GetMinNumberOfStars() const = 0;
     virtual unsigned int GetMaxNumberOfStars() const = 0;
 

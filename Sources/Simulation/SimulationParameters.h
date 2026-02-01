@@ -305,6 +305,10 @@ struct SimulationParameters
 
     float SiltDustCloudEnergyThreshold; // J
 
+    float SiltDustCloudUnderwaterLifetime; // s
+    static float constexpr MinSiltDustCloudUnderwaterLifetime = 2.0f;
+    static float constexpr MaxSiltDustCloudUnderwaterLifetime = 10.0f;
+
     // Wind
 
     static constexpr vec2f WindDirection = vec2f(1.0f, 0.0f);

@@ -1716,6 +1716,33 @@ void SettingsDialog::PopulateOceanPanel(wxPanel * panel)
                     wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                     CellBorderInner);
             }
+
+            // Silt Cloud Persistence
+            {
+                mSiltDustCloudUnderwaterLifetimeSlider = new SliderControl<float>(
+                    siltBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    -1,
+                    _("Cloud Flotation"),
+                    _("Adjusts how long silt clouds take to settle when underwater."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::SiltDustCloudUnderwaterLifetime, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinSiltDustCloudUnderwaterLifetime(),
+                        mGameControllerSettingsOptions.GetMaxSiltDustCloudUnderwaterLifetime()));
+
+                siltSizer->Add(
+                    mSiltDustCloudUnderwaterLifetimeSlider,
+                    wxGBPosition(1, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
             WxHelpers::MakeAllColumnsExpandable(siltSizer);
 
             siltBoxSizer->Add(
@@ -6556,6 +6583,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mOceanFloorSiltThicknessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorSiltThickness));
     mOceanFloorSiltBumpinessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorSiltBumpiness));
     mOceanFloorSiltHardnessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorSiltHardness));
+    mSiltDustCloudUnderwaterLifetimeSlider->SetValue(settings.GetValue<float>(GameSettings::SiltDustCloudUnderwaterLifetime));
 
     //
     // Wind and Waves

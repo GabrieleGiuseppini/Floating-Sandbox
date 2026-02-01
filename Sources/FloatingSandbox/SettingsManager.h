@@ -135,6 +135,7 @@ enum class GameSettings : size_t
     DoGenerateSparklesForCuts,
     AirBubblesDensity,
     DoGenerateEngineWakeParticles,
+    SiltDustCloudUnderwaterLifetime,
     NumberOfStars,
     NumberOfClouds,
     DoDayLightCycle,
