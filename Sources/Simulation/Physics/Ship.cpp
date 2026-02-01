@@ -1076,6 +1076,7 @@ void Ship::RenderUpload(RenderContext & renderContext)
 
     mPoints.UploadEphemeralParticles(
         mId,
+        mMaxMaxPlaneId, // To allow particles to stick to max plane
         renderContext);
 
     //

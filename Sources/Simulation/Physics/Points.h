@@ -1011,6 +1011,7 @@ public:
 
     void UploadEphemeralParticles(
         ShipId shipId,
+        PlaneId maxPlaneId,
         RenderContext & renderContext) const;
 
     void UploadHighlights(

@@ -503,7 +503,7 @@
 			+ Fix ocean floor reloading (see Kiko's)
 				! It's a problem with alpha interface blend
 
-		- Check if can prevent clouds from disappearing (maxMaxDepth issue - need sticky max)
+		+ Check if can prevent clouds from disappearing (maxMaxDepth issue - need sticky max)
 
 		- Send to server again
 		- Bump up version

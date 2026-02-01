@@ -2187,6 +2187,7 @@ void Points::UploadVectors(
 
 void Points::UploadEphemeralParticles(
     ShipId shipId,
+    PlaneId maxPlaneId,
     RenderContext & renderContext) const
 {
     //
@@ -2250,11 +2251,11 @@ void Points::UploadEphemeralParticles(
                 // Calculate alpha: ~parabolic with progress
                 float const alphaFraction =
                     SmoothStep(0.0f, 0.1f, lifetimeProgress)
-                    - SmoothStep(0.5f, 1.0f, lifetimeProgress);
+                    - SmoothStep(0.6f, 1.0f, lifetimeProgress);
 
                 // Upload cloud
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
-                    GetPlaneId(pointIndex),
+                    maxPlaneId,
                     state.PersonalitySeed,
                     GameTextureDatabases::GenericMipMappedTextureGroups::SiltCloud,
                     GetPosition(pointIndex),
