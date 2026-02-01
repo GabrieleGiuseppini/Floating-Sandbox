@@ -505,8 +505,9 @@
 
 		+ Check if can prevent clouds from disappearing (maxMaxDepth issue - need sticky max)
 
-		- Send to server again
-		- Bump up version
+		= Send to server again
+			+ Bump up version
+			- Check outcome
 
 		- Merge back into master
 			- With PR, will serve for Android
@@ -602,6 +603,29 @@
 
 	= See if fire may emit Heavy / black smoke
 		! Gist:
+			! Move generic texture draw as _last_ (or almost last) render
+				! All draw batches with internal transparency need to be last
+			! Then, smoke Z must be earlier than flame's
+				! This is the tricky part: it's not about PlaneID, it's about the actual Z
+				! Tentative 1:
+					! Even though generic texture draw is later, its ortho layer number comes before flames - and then we _just_ swap the order of draw calls
+			! Make full analysis, of both layer Z's and call order
+				! Layer ID, Render Order
+				    - 0, 2: Ropes (always behind)
+				    - 1, 0: Flames (background, i.e. flames that are on ropes, so these are drawn *behind* triangles on same plane, like ropes are)
+				    - 2, 3: Springs
+				    - 3, 1: Triangles (triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues)
+				    - 4, 4: Stressed springs, Frontier edges (temporally after)
+				    - 5, 5: Points
+				    - 6, 6: Electric sparks, Sparkles
+				    - 7, 7: Generic textures
+				    - 8, 8: Flames (foreground), Jet engine flames
+				    - 9, 9: NPCs
+				    - 10, 10: Explosions
+				    - 11, 11: Highlights, Centers
+				    - 12, 12: Vectors, Point-to-Point Arrows
+
+			- TODOOLD
 			! Smoke shuld be drawn behind flames => "Z Issue"
 				- TODO: write solution here, which includes preliminary PlaneId rearc so that triangle ("main") planes start from 1 and everything in the background
 				  is on plane PlaneId-1
@@ -615,7 +639,7 @@
 					  - TODO: is this ameliorated by the early pixel discard? Do test mentioned above
 			! New ad-hoc dark smoke texture
 			! New shader with growing effect similar to clouds shader
-				! Or leveraging darker areas: instead of becoming transparent, threshold towrads dark grows and cuts off rest
+				! Or leveraging darker areas: instead of becoming transparent, threshold towards dark grows and cuts off rest
 				! Need a new shader anyway, 'cause black smoke looks awful when it fades away
 				! Texture coords are params (set @ initialization, texture never changes)
 				! Also random rotation angle
@@ -625,7 +649,7 @@
 			- 1. Do test above: see if planes and Z are enough, if all shaders do early discard
 			- 2. If test ok, finalize work with plane-1
 				- Replace Flames' dual upload
-		- Also, new fire emitter for black smore
+		- Also, new fire emitter for black smoke
 			- See if this item was somewhere else in the plan
 		- Also TimerBomb's wet fuse should do same smoke (current one is ugly)
 
