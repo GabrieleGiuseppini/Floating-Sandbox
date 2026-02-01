@@ -492,16 +492,21 @@
 			+ Try longer lifetime
 				X Try setting
 
-		= Check on Discord, 2
-			= Longer lifetime: try setting:
+		+ Check on Discord, 2
+			+ Longer lifetime: try setting:
 				! First: do with locals
 				+ Setting only for underwater
-				- Cleanup: 
+				+ Cleanup: 
 					+ Promote to setting
 					+ Add comment to buoyancy volume fill
-					- Use actual masses
+					+ Use actual masses
 			+ Fix ocean floor reloading (see Kiko's)
 				! It's a problem with alpha interface blend
+
+		- Check if can prevent clouds from disappearing (maxMaxDepth issue - need sticky max)
+
+		- Send to server again
+		- Bump up version
 
 		- Merge back into master
 			- With PR, will serve for Android
