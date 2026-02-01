@@ -451,7 +451,6 @@
 					+ Vy
 					+ Transparency
 					X If single-particle clouds bother: decrease effective K depending on number of connected springs
-
 				+ If code stays like this, do just one LinearStep
 			+ Texture
 				+ World dim: quite large; scale will always be small
@@ -505,9 +504,20 @@
 
 		+ Check if can prevent clouds from disappearing (maxMaxDepth issue - need sticky max)
 
-		= Send to server again
+		+ Send to server again
 			+ Bump up version
-			- Check outcome
+
+		= Limit based on connectivity
+			+ @HandleCollisions
+			X Scale down K used for cilt cloud threshold, based on # of connected sptrings:
+				- # of connected springs -> multiplier:
+					- 0 -> Min
+					- 2 -> Max
+					- 1/max(3-c, 1)
+					- 1/(3 - min(2, c))
+			+ No debris if no triangle
+			- Wait for feedback
+			- Cleanup
 
 		- Merge back into master
 			- With PR, will serve for Android
@@ -516,13 +526,17 @@
 			- Make it 1.20
 				- @ Also @ GameVersion
 
+
+	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
+		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al
+		+ Use FS code everywhere, and match wx enforced to ours
+		= Ask testers (pt_br) to test it
+		- Changelist
 	- Re-check why we don't pick portuguese system default:
 		! "Wx enforced language for desired identifier "<N/A>": "en""
 		! Also in last release
 		= Russians?
 		- Italian?
-
-
 
 	+ Change simulation #iterations setting to 0.25 step
 
@@ -530,12 +544,6 @@
 		+ Flying Dutchman has a density recommendation of 2812 (I assume a decimal was meant to be there), 
 		+ the White Star version of the Skandinavya has a pump #17 that I assume is meant to say "pumps", 
 		+ and Petit has a very, well, unprofessional description, for being a default ship in the base game.
-
-	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
-		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al
-		+ Use FS code everywhere, and match wx enforced to ours
-		= Ask testers (pt_br) to test it
-		- Changelist
 
 	+ Anti-gravity tool: remove all with ESC, but only when tool is engaged
 		+ ESC -> if (!ToolController::HandleEsc)
