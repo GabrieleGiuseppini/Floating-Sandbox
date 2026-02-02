@@ -1,6 +1,7 @@
 1.20.0
-- TODO: silt
-- TODO: anti-gravity tool
+- Redesigned ocean floor physics: a customizable soft silt layer cushions impacts and allows for wrecks to slowly burrow under sand
+	- Thanks to Bandit for their help in the redesign!
+- Added new Anti-Gravity Field tool
 - Doubled world width
 - Improved bulkiness of tsunami's and interactive waves
 	- And added a new setting to customize it at will

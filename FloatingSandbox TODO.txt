@@ -178,7 +178,7 @@
 		+ RU should be final
 		+ Double-check myself
 
-	= Improvements from Bandit:
+	+ Improvements from Bandit:
 		! Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
 		! Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
 		! Spec:
@@ -519,13 +519,10 @@
 			+ Wait for feedback
 			+ Cleanup
 
-		- Merge back into master
-			- With PR, will serve for Android
+		+ Merge back into master
+			+ With PR, will serve for Android
 
-		- Changelist - thank Bandit
-			- Make it 1.20
-				- @ Also @ GameVersion
-
+		+ Changelist - thank Bandit
 
 	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
 		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al
