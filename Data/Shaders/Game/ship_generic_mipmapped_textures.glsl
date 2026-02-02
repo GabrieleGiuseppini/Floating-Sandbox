@@ -74,10 +74,6 @@ void main()
     // Get texture sample
     vec4 textureColor = texture2D(paramGenericMipMappedTexturesAtlasTexture, vertexTextureCoordinates);
 
-    // Z trick
-    if (textureColor.w < 0.2)
-        discard;
-
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
 
