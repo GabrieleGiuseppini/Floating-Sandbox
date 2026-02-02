@@ -1351,7 +1351,7 @@ void Points::UpdateCombustionHighFrequency(
         // Check if this point should emit smoke
         //
 
-        if (pointCombustionState.State != CombustionState::StateType::NotBurning)
+        if (pointCombustionState.State == CombustionState::StateType::Burning)
         {
             // See if we need to calculate the next emission timestamp
             if (pointCombustionState.NextSmokeEmissionSimulationTimestamp == 0.0f)
@@ -1360,7 +1360,8 @@ void Points::UpdateCombustionHighFrequency(
                     currentSimulationTime
                     + GameRandomEngine::GetInstance().GenerateExponentialReal(
                         simulationParameters.CombustionSmokeEmissionDensityAdjustment
-                        * pointCombustionState.FlameDevelopment);
+                        * pointCombustionState.FlameDevelopment
+                        * 0.75f); // This is our baseline; adjustment is on top of that
             }
 
             // See if it's time to emit smoke
@@ -1373,8 +1374,8 @@ void Points::UpdateCombustionHighFrequency(
                 // Calculate lifetime
                 float const maxSimulationLifetime =
                     GameRandomEngine::GetInstance().GenerateUniformReal(
-                        3.5f,
-                        6.0f)
+                        SimulationParameters::MinCombustionSmokeParticleLifetime,
+                        SimulationParameters::MaxCombustionSmokeParticleLifetime)
                     * simulationParameters.CombustionSmokeParticleLifetimeAdjustment;
 
                 // Generate particle
@@ -1391,7 +1392,6 @@ void Points::UpdateCombustionHighFrequency(
                 pointCombustionState.NextSmokeEmissionSimulationTimestamp = 0.0f;
             }
         }
-       // */
 
         //
         // Run development/extinguishing state machine now
@@ -2265,12 +2265,11 @@ void Points::UploadEphemeralParticles(
                     {
                         textureGroup = GameTextureDatabases::GenericMipMappedTextureGroups::SmokeDark;
 
-                        // TODOHERE: with long lifetime becomes small
-
-                        //scale = 1.07f * (1.0f - exp(-3.0f * state.LifetimeProgress));
-                        //scale = state.LifetimeProgress;
-                        //scale = 2.1f * SmoothStep(0.0f, 1.0f, state.LifetimeProgress);
-                        scale = state.LifetimeProgress;
+                        // Scale goes with lifetime, but there's a min scale that we want to enforce,
+                        // otherwise with long lifetimes particles are too small at the beginning
+                        scale = std::max(
+                            state.LifetimeProgress,
+                            state.ElapsedSimulationTime / ((SimulationParameters::MinCombustionSmokeParticleLifetime + SimulationParameters::MaxCombustionSmokeParticleLifetime) / 2.0f));
 
                         alpha =
                             SmoothStep(0.0f, 0.05f, state.LifetimeProgress)
@@ -2284,7 +2283,7 @@ void Points::UploadEphemeralParticles(
                     {
                         textureGroup = GameTextureDatabases::GenericMipMappedTextureGroups::SmokeDark;
 
-                        scale = state.LifetimeProgress;
+                        scale = std::min(1.0f, state.ElapsedSimulationTime / 5.0f);
 
                         alpha =
                             SmoothStep(0.0f, 0.05f, state.LifetimeProgress)

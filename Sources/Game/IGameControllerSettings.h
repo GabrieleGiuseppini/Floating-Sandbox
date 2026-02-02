@@ -139,6 +139,9 @@ struct IGameControllerSettings
     virtual float GetSmokeEmitterSmokeParticleLifetimeAdjustment() const = 0;
     virtual void SetSmokeEmitterSmokeParticleLifetimeAdjustment(float value) = 0;
 
+    virtual bool GetDoEmitSmokeWithFire() const = 0;
+    virtual void SetDoEmitSmokeWithFire(bool value) = 0;
+
     virtual float GetCombustionSmokeEmissionDensityAdjustment() const = 0;
     virtual void SetCombustionSmokeEmissionDensityAdjustment(float value) = 0;
 

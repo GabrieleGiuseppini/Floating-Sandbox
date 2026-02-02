@@ -532,6 +532,9 @@ public:
     float GetMinSmokeEmitterSmokeParticleLifetimeAdjustment() const override { return SimulationParameters::MinSmokeEmitterSmokeParticleLifetimeAdjustment; }
     float GetMaxSmokeEmitterSmokeParticleLifetimeAdjustment() const override { return SimulationParameters::MaxSmokeEmitterSmokeParticleLifetimeAdjustment; }
 
+    bool GetDoEmitSmokeWithFire() const override { return mSimulationParameters.DoEmitSmokeWithFire; }
+    void SetDoEmitSmokeWithFire(bool value) override { mSimulationParameters.DoEmitSmokeWithFire = value; }
+
     float GetCombustionSmokeEmissionDensityAdjustment() const override { return mSimulationParameters.CombustionSmokeEmissionDensityAdjustment; }
     void SetCombustionSmokeEmissionDensityAdjustment(float value) override { mSimulationParameters.CombustionSmokeEmissionDensityAdjustment = value; }
     float GetMinCombustionSmokeEmissionDensityAdjustment() const override { return SimulationParameters::MinCombustionSmokeEmissionDensityAdjustment; }

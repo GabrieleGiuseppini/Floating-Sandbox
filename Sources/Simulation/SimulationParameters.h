@@ -273,15 +273,19 @@ struct SimulationParameters
 
     float SmokeEmitterSmokeParticleLifetimeAdjustment;
     static float constexpr MinSmokeEmitterSmokeParticleLifetimeAdjustment = 0.1f;
-    static float constexpr MaxSmokeEmitterSmokeParticleLifetimeAdjustment = 10.0f;
+    static float constexpr MaxSmokeEmitterSmokeParticleLifetimeAdjustment = 2.5f;
+
+    bool DoEmitSmokeWithFire;
 
     float CombustionSmokeEmissionDensityAdjustment;
     static float constexpr MinCombustionSmokeEmissionDensityAdjustment = 0.1f;
     static float constexpr MaxCombustionSmokeEmissionDensityAdjustment = 10.0f;
 
+    static float constexpr MinCombustionSmokeParticleLifetime = 5.25f;
+    static float constexpr MaxCombustionSmokeParticleLifetime = 9.0f;
     float CombustionSmokeParticleLifetimeAdjustment;
     static float constexpr MinCombustionSmokeParticleLifetimeAdjustment = 0.1f;
-    static float constexpr MaxCombustionSmokeParticleLifetimeAdjustment = 10.0f;
+    static float constexpr MaxCombustionSmokeParticleLifetimeAdjustment = 2.5f;
 
     bool DoGenerateSparklesForCuts;
     static float constexpr MinSparkleParticlesForCutVelocity = 60.0f; // 75.0f;

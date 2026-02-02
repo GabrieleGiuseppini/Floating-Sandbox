@@ -591,115 +591,50 @@
 						    6.0f);
 			+ SettingsDialog: Air panel:
 				+ Two new sliders
-
 			+ Art:
 				+ New textures for "dark"
 					+ Make with brushes
+			+ FIX: scale with long lifetime
+				+ Combustion smoke
+				X SmokeEmitterWhite
+				+ SmokeEmitterBlack
+			+ Max persistence adjust for smoke, both types: 2.5
 
-			- Test:
+			- Flag for turning off smoke from fire
+				+ SimParameters
+				- Honor
+				- SettingsDialog: above sliders
+					- "Fire Emits Smoke"
+					- Reconciliation between checkbox and 2 sliders enabled
+				- Turn off at calibration
+
+			= Test:
 				+ ShipBuilder: both materials (palette & works)
-				- Timer bomb fuse
+				+ Timer bomb fuse
 				- All settings functional
 
-				- Look'n'feel of 3 smokes with changed persistence
-					- As it affects LifetimeProgress and thus render dynamics
-
-			- Fine-tune:
-				- TimerBomb fuse lifetime: in-code at TimerBombGadget::Update
+			+ Fine-tune:
+				+ TimerBomb fuse lifetime: in-code at TimerBombGadget::Update
 				X SmokeEmitter Black density: particle_emission_rate in Smoke Emitter Black material json
 				+ SmokeEmitter Black lifetime: in-code at ElectricalElements
-				= SmokeEmitter Black rendering (scale+alpha): in-code at Points::UploadEphParticles()
-				- CombustionSmoke density: test with adj setting but set final value(s) in-code at Points::CombustionHighFreq, where we calc next timestamp, to achieve adjustment=1
-				- CombustionSmoke lifetime: test with adj setting but set final value(s) in-code at Points::CombustionHighFreq, where we calc lifetime, to achieve adjustment=1
-				- CombustionSmoke rendering (scale+alpha): in-code at Points::UploadEphParticles()
+				+ SmokeEmitter Black rendering (scale+alpha): in-code at Points::UploadEphParticles()
+				+ CombustionSmoke density: test with adj setting but set final value(s) in-code at Points::CombustionHighFreq, where we calc next timestamp, to achieve adjustment=1
+					0.75
+				+ CombustionSmoke lifetime: test with adj setting but set final value(s) in-code at SimParams::Max/MinCombustionSmokeLifetime
+					1.5
+				+ CombustionSmoke rendering (scale+alpha): in-code at Points::UploadEphParticles()
 
-			== Old plan
+		- Send to Discord
+			- Later, ask for default Titanic's smoke
 
-			= Physics:
-				+ Rearc:
-					+ Materials:
-						! Split Air into Air, SmokeLight, SmokeHeavy
-						+ Add two new unique types (SmokeLight, SmokeHeavy)
-						+ json: Copy air to two new materials
-							+ Light Smoke - stays as air, but no palette
-							+ Heavy Smoke: like LightSmoke, but heavier and less wind-prone, and no palette
-					+ Points:
-						+ EphemeralParticles: 
-							+ Replace GrowthType with SmokeKind
-							+ Nuke texture group
-						+ CreateEphemeralParticleSmoke:
-							+ Takes SmokeKind, no texture group
-							+ Uses right material
-						+ UpdateEphParticles:
-							+ Move scale progress to UploadEphParticles
-						+ UploadEphParticles
-							+ Scale and alpha progress depend on SmokeKind
-								+ Heavy: try quadratic alpha
-					+ Ship: creation of particle
+		- Test on Dell
+			- Toggling checkbox
 
+		- See if smoke emitter/black smoke was somewhere else in the plan
+			- "Fire emits smoke"
 
-			
-			- Try new images:
-				- 1. Search
-				- 2. Make with photoshop
-					- a. With brush
-					- b. Using others as seed
-
-			- Slight rearc:
-				- Settings: SmokeEmitter(Lifetime|Density), CombustionSmoke(Lifetime|Density)
-				- Lifetime is calc'd by caller of Points::CreateEphParticle
-				! SmokeEmitter: SmokeEmitter(Lifetime|Density) -> Light or Heavy smoke
-				! Combustion: CombustionSmoke(Lifetime|Density) -> Heavy smoke
-
-
-			= Fine tune:
-				= Look'n'feel
-					+ Density 0.5
-					+ Persistance 1.6
-				- Longer lifetime
-					- Clone SmokeParticleLifetimeAdjustment into HeavySmokeParticleLifetimeAdjustment
-						- TODO: would be best to _split_ with different names - but need strategy for loading settings
-						- Heavy: use value above
-					- Add new one to SettingsDialog-Air
-				- Density (emission rate)
-					- Clone SmokeEmissionDensityAdjustment into HeavySmokeEmissionDensityAdjustment
-						- TODO: would be best to _split_ with different names - but need strategy for loading settings
-						- Heavy: use value above
-					- Add new one to SettingsDialog-Air
-				- Rotation?
-
-			- New elect material: black moke emitter
-				- Check/Ask Longhorn for color key
-				- Uses HeavySmoke anyway (but own emitter properties)
-
-
-			- TODOOLD
-			! Smoke shuld be drawn behind flames => "Z Issue"
-				- TODO: write solution here, which includes preliminary PlaneId rearc so that triangle ("main") planes start from 1 and everything in the background
-				  is on plane PlaneId-1
-					- This should remove necessity of separate flame uploads and of its layer (iff that layer is only for it)
-					- Test with code first if this solution flies with TODOOLD below
-						- We _do_ early discard at generic textures after all, but that might not be enough
-				- TODOOLD was:
-					- Smoke should be drawn behind flames, hence GenericTexture's should be in an earlier layer than flames.
-					  However, generic textures (smoke) have internal transparency, while flames have none; the Z test makes it so then
-					  that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P (which should have been shown instead)
-					  - TODO: is this ameliorated by the early pixel discard? Do test mentioned above
-			! New ad-hoc dark smoke texture
-			! New shader with growing effect similar to clouds shader
-				! Or leveraging darker areas: instead of becoming transparent, threshold towards dark grows and cuts off rest
-				! Need a new shader anyway, 'cause black smoke looks awful when it fades away
-				! Texture coords are params (set @ initialization, texture never changes)
-				! Also random rotation angle
-			! See if can replace timer bomb's fuse "heavy smoke" eph particle textures
-				! These use room in Generic textures!
-		- Impl:
-			- 1. Do test above: see if planes and Z are enough, if all shaders do early discard
-			- 2. If test ok, finalize work with plane-1
-				- Replace Flames' dual upload
-		- Also, new fire emitter for black smoke
-			- See if this item was somewhere else in the plan
-		- Also TimerBomb's wet fuse should do same smoke (current one is ugly)
+		- Merge into master
+		- changelist
 
 	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
 		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al
