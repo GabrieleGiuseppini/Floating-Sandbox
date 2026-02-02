@@ -592,9 +592,9 @@
 			+ SettingsDialog: Air panel:
 				+ Two new sliders
 
-			- Art:
-				- New textures for "dark"
-					- Make with brushes
+			= Art:
+				= New textures for "dark"
+					+ Make with brushes
 
 			- Test:
 				+ ShipBuilder: both materials (palette & works)
@@ -604,8 +604,9 @@
 			- Fine-tune:
 				- TimerBomb fuse lifetime: in-code at TimerBombGadget::Update
 				- SmokeEmitter Black density: particle_emission_rate in Smoke Emitter Black material json
-				- SmokeEmitter Black lifetime: in-code at ElectricalElements
-				- SmokeEmitter Black rendering (scale+alpha): in-code at Points::UploadEphParticles()
+					- 0.7
+				= SmokeEmitter Black lifetime: in-code at ElectricalElements
+				= SmokeEmitter Black rendering (scale+alpha): in-code at Points::UploadEphParticles()
 				- CombustionSmoke density: test with adj setting but set final value(s) in-code at Points::CombustionHighFreq, where we calc next timestamp, to achieve adjustment=1
 				- CombustionSmoke lifetime: test with adj setting but set final value(s) in-code at Points::CombustionHighFreq, where we calc lifetime, to achieve adjustment=1
 				- CombustionSmoke rendering (scale+alpha): in-code at Points::UploadEphParticles()

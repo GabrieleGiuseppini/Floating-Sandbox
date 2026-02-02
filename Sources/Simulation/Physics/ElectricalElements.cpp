@@ -2362,19 +2362,21 @@ void ElectricalElements::UpdateSinks(
 
             case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
             {
+                auto & state = mElementStateBuffer[sinkElementIndex].SmokeEmitter;
+
                 auto const emitterPointIndex = GetPointIndex(sinkElementIndex);
                 float const emitterDepth = points.GetCachedDepth(emitterPointIndex);
 
                 if (!IsDeleted(sinkElementIndex))
                 {
                     // Update state machine
-                    if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating)
+                    if (state.IsOperating)
                     {
                         if (!isConnectedToPower
                             || emitterDepth > 0.0f)
                         {
                             // Stop operating
-                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating = false;
+                            state.IsOperating = false;
                         }
                     }
                     else
@@ -2383,40 +2385,52 @@ void ElectricalElements::UpdateSinks(
                             && emitterDepth <= 0.0f)
                         {
                             // Start operating
-                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating = true;
+                            state.IsOperating = true;
 
                             // Make sure we calculate the next emission timestamp
-                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
+                            state.NextEmissionSimulationTimestamp = 0.0f;
                         }
                     }
 
-                    if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating)
+                    if (state.IsOperating)
                     {
                         // See if we need to calculate the next emission timestamp
-                        if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp == 0.0f)
+                        if (state.NextEmissionSimulationTimestamp == 0.0f)
                         {
-                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp =
+                            state.NextEmissionSimulationTimestamp =
                                 currentSimulationTime
                                 + GameRandomEngine::GetInstance().GenerateExponentialReal(
                                     simulationParameters.SmokeEmitterSmokeEmissionDensityAdjustment
-                                    / mElementStateBuffer[sinkElementIndex].SmokeEmitter.EmissionRate);
+                                    / state.EmissionRate);
                         }
 
                         // See if it's time to emit smoke
-                        if (currentSimulationTime >= mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp)
+                        if (currentSimulationTime >= state.NextEmissionSimulationTimestamp)
                         {
                             //
                             // Emit smoke
                             //
 
                             // Calculate lifetime
-                            float const maxSimulationLifetime =
-                                GameRandomEngine::GetInstance().GenerateUniformReal(
-                                    3.5f,
-                                    6.0f)
-                                * simulationParameters.SmokeEmitterSmokeParticleLifetimeAdjustment;
+                            float maxSimulationLifetime;
+                            if (mMaterialBuffer[sinkElementIndex]->SmokeEmitterSmokeType == ElectricalMaterial::SmokeEmitterSmokeElementType::White)
+                            {
+                                maxSimulationLifetime =
+                                    GameRandomEngine::GetInstance().GenerateUniformReal(
+                                        3.5f,
+                                        6.0f)
+                                    * simulationParameters.SmokeEmitterSmokeParticleLifetimeAdjustment;
+                            }
+                            else
+                            {
+                                assert(mMaterialBuffer[sinkElementIndex]->SmokeEmitterSmokeType == ElectricalMaterial::SmokeEmitterSmokeElementType::Black);
 
-                            // TODO: eventually adjust if black
+                                maxSimulationLifetime =
+                                    GameRandomEngine::GetInstance().GenerateUniformReal(
+                                        5.5f,
+                                        6.5f)
+                                    * simulationParameters.SmokeEmitterSmokeParticleLifetimeAdjustment;
+                            }
 
                             // Choose temperature: highest of emitter's and current air + something (to ensure buoyancy)
                             float const smokeTemperature = std::max(
@@ -2435,7 +2449,7 @@ void ElectricalElements::UpdateSinks(
                                 simulationParameters);
 
                             // Make sure we re-calculate the next emission timestamp
-                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
+                            state.NextEmissionSimulationTimestamp = 0.0f;
                         }
                     }
                 }
