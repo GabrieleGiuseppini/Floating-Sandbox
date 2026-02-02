@@ -1759,13 +1759,11 @@ void ShipRenderContext::RenderDraw(
     RenderDrawSparkles(renderParameters);
 
     //
-    // Render generic textures
-    //
-
-    RenderDrawGenericMipMappedTextures(renderParameters, renderStats);
-
-    //
     // Render foreground flames
+    //
+    // Note: we want flames to cover generic textures (which include smoke), so foreground flames _follow_ generic textures in depth layers;
+    // howefer, we draw them here first as generic textures have internal transparency, and thus they would "lock" ship pixels in their background
+    // making flames in farther planes invisible
     //
 
     if (renderParameters.DrawFlames)
@@ -1775,6 +1773,15 @@ void ShipRenderContext::RenderDraw(
             mFlameForegroundCount,
             renderStats);
     }
+
+    //
+    // Render generic textures
+    //
+    // Note: generic textures _precede_ flames in depth layers, but here we swap their order
+    // to prevent generic textures to "lock" ship pixels in their internal transparency background
+    //
+
+    RenderDrawGenericMipMappedTextures(renderParameters, renderStats);
 
     //
     // Render jet engine flames
