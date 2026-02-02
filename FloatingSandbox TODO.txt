@@ -519,9 +519,6 @@
 			+ Wait for feedback
 			+ Cleanup
 
-		- Final re-test
-			- Check logs
-
 		- Merge back into master
 			- With PR, will serve for Android
 
