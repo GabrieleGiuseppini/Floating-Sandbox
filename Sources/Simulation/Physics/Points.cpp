@@ -2265,17 +2265,17 @@ void Points::UploadEphemeralParticles(
                     {
                         textureGroup = GameTextureDatabases::GenericMipMappedTextureGroups::SmokeDark;
 
-                        // TODOHERE
+                        // TODOHERE: with long lifetime becomes small
 
                         //scale = 1.07f * (1.0f - exp(-3.0f * state.LifetimeProgress));
                         //scale = state.LifetimeProgress;
                         //scale = 2.1f * SmoothStep(0.0f, 1.0f, state.LifetimeProgress);
-                        scale = 2.1f * state.LifetimeProgress;
+                        scale = state.LifetimeProgress;
 
                         alpha =
                             SmoothStep(0.0f, 0.05f, state.LifetimeProgress)
                             - SmoothStep(0.65f, 1.0f, state.LifetimeProgress);
-                        alpha = alpha * alpha;
+                        alpha = alpha * alpha * 0.4f;
 
                         break;
                     }
