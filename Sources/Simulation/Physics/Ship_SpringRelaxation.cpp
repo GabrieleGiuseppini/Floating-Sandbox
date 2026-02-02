@@ -939,49 +939,14 @@ void Ship::HandleCollisionsWithSeaFloor(
                 // Silt clouds
                 //
 
-                //// TODOOLD
-                //// See if it's a significative impact
-                //if (kineticEnergy > siltDustCloudEnergyThreshold
-                //    && kineticEnergy > maxSiltImpact.value.KineticEnergy)
-                //{
-                //    maxSiltImpact.value = EnergeticSiltImpact(
-                //        kineticEnergy,
-                //        vec2f(clampedX, siltY),
-                //        pointVelocity);
-                //}
-
-                if (kineticEnergy > siltDustCloudEnergyThreshold) // Just a speedbump
+                if (kineticEnergy > siltDustCloudEnergyThreshold
+                    && mPoints.GetConnectedTriangles(pointIndex).ConnectedTriangles.size() > 0 // Prevent debris from generating clouds
+                    && kineticEnergy > maxSiltImpact.value.KineticEnergy)
                 {
-                    // Discount K based on how "massive" the object is
-
-                    // TODOTEST
-                    //float constexpr Factors[] = { 0.05f, 0.3f, 1.0f };
-                    //float const kScalingFactor = Factors[std::min(mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size(), size_t(2))];
-                    //float const kineticEnergyScaled = kScalingFactor * kineticEnergy;
-
-                    //// See if it's a significative impact
-                    //if (kineticEnergyScaled > siltDustCloudEnergyThreshold
-                    //    && kineticEnergyScaled > maxSiltImpact.value.KineticEnergy)
-                    //{
-                    //    if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() < 2)
-                    //        LogMessage("TODO: k=", kineticEnergy, " factor=", kScalingFactor, " kk=", kineticEnergyScaled);
-
-                    //    maxSiltImpact.value = EnergeticSiltImpact(
-                    //        kineticEnergyScaled,
-                    //        vec2f(clampedX, siltY),
-                    //        pointVelocity);
-                    //}
-
-                    if (mPoints.GetConnectedTriangles(pointIndex).ConnectedTriangles.size() > 0)
-                    {
-                        if (kineticEnergy > maxSiltImpact.value.KineticEnergy)
-                        {
-                            maxSiltImpact.value = EnergeticSiltImpact(
-                                kineticEnergy,
-                                vec2f(clampedX, siltY),
-                                pointVelocity);
-                        }
-                    }
+                    maxSiltImpact.value = EnergeticSiltImpact(
+                        kineticEnergy,
+                        vec2f(clampedX, siltY),
+                        pointVelocity);
                 }
             }
         }
