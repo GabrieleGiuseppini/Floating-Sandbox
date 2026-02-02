@@ -628,6 +628,8 @@
 				+ Make heavy smoke slightly less subject to wind
 
 		+ Send to Discord
+
+		- Initial tiny upward velocity instead of zero?
 		
 
 

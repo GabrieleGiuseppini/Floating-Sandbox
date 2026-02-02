@@ -62,9 +62,6 @@ mat2 GetRotationMatrix(float angle)
 // -----------------------------------------------
 void main()
 {   
-    // Fragments with alpha lower than this are discarded
-    #define MIN_ALPHA 0.2
-
     //
     // Apply wind
     //
@@ -141,10 +138,6 @@ void main()
 
     // Calculate thickness alpha - should be 1.0 when thickness > 0, but we do anti-aliasing
     float thicknessAlpha = smoothstep(0.0, 0.6, thickness);    
-
-    // Note: removed as it's not nice to branch out
-    //if (thicknessAlpha < MIN_ALPHA) // For perf
-    //    discard;
     
     // Calculate factor to taper sampling at bottom
     float bottomSampleTapering = 
@@ -193,6 +186,8 @@ void main()
     // Calculate final alpha
     float finalAlpha = sampledAlpha * thicknessAlpha;
     
+    // Fragments with alpha lower than this are discarded
+    #define MIN_ALPHA 0.6
     if (finalAlpha < MIN_ALPHA) // For Z test
         discard;
         
