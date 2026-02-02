@@ -2630,7 +2630,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                 smokeSizer->Add(
                     mSmokeEmitterSmokeEmissionDensityAdjustmentSlider,
                     wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
+                    wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -2657,9 +2657,34 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                 smokeSizer->Add(
                     mSmokeEmitterSmokeParticleLifetimeAdjustmentSlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
+                    wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
+            }
+
+            // Do emit smoke with fire
+            {
+                mDoEmitSmokeWithFireCheckBox = new wxCheckBox(smokeBoxSizer->GetStaticBox(), wxID_ANY, _("Fire Emits Smoke"));
+                mDoEmitSmokeWithFireCheckBox->SetToolTip(_("Enables or disables generation of smoke from fire."));
+                mDoEmitSmokeWithFireCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue<bool>(GameSettings::DoEmitSmokeWithFire, event.IsChecked());
+                        OnLiveSettingsChanged();
+
+                        mCombustionSmokeEmissionDensityAdjustmentSlider->Enable(event.IsChecked());
+                        mCombustionSmokeParticleLifetimeAdjustmentSlider->Enable(event.IsChecked());
+                    });
+
+                auto sizer = smokeSizer->Add(
+                    mDoEmitSmokeWithFireCheckBox,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 2),
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
+                    CellBorderInner);
+
+                sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
             }
 
             // Combustion Smoke - Smoke Density Adjust
@@ -2683,7 +2708,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
                 smokeSizer->Add(
                     mCombustionSmokeEmissionDensityAdjustmentSlider,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(1, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -2710,7 +2735,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
                 smokeSizer->Add(
                     mCombustionSmokeParticleLifetimeAdjustmentSlider,
-                    wxGBPosition(0, 3),
+                    wxGBPosition(1, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -6676,8 +6701,11 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mAirBubbleDensitySlider->SetValue(settings.GetValue<float>(GameSettings::AirBubblesDensity));
     mSmokeEmitterSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmitterSmokeEmissionDensityAdjustment));
     mSmokeEmitterSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmitterSmokeParticleLifetimeAdjustment));
+    mDoEmitSmokeWithFireCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoEmitSmokeWithFire));
     mCombustionSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionSmokeEmissionDensityAdjustment));
+    mCombustionSmokeEmissionDensityAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoEmitSmokeWithFire));
     mCombustionSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionSmokeParticleLifetimeAdjustment));
+    mCombustionSmokeParticleLifetimeAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoEmitSmokeWithFire));
     mNumberOfStarsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfStars));
     mNumberOfCloudsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfClouds));
     mDoDayLightCycleCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDayLightCycle));

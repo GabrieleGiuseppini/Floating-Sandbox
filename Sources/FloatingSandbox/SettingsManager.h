@@ -132,6 +132,7 @@ enum class GameSettings : size_t
     DoGenerateDebris,
     SmokeEmitterSmokeEmissionDensityAdjustment,
     SmokeEmitterSmokeParticleLifetimeAdjustment,
+    DoEmitSmokeWithFire,
     CombustionSmokeEmissionDensityAdjustment,
     CombustionSmokeParticleLifetimeAdjustment,
     DoGenerateSparklesForCuts,

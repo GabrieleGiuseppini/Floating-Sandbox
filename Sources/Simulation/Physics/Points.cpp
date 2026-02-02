@@ -1351,45 +1351,47 @@ void Points::UpdateCombustionHighFrequency(
         // Check if this point should emit smoke
         //
 
-        if (pointCombustionState.State == CombustionState::StateType::Burning)
+        if (simulationParameters.DoEmitSmokeWithFire)
         {
-            // See if we need to calculate the next emission timestamp
-            if (pointCombustionState.NextSmokeEmissionSimulationTimestamp == 0.0f)
+            if (pointCombustionState.State == CombustionState::StateType::Burning)
             {
-                pointCombustionState.NextSmokeEmissionSimulationTimestamp =
-                    currentSimulationTime
-                    + GameRandomEngine::GetInstance().GenerateExponentialReal(
-                        simulationParameters.CombustionSmokeEmissionDensityAdjustment
-                        * pointCombustionState.FlameDevelopment
-                        * 0.75f); // This is our baseline; adjustment is on top of that
-            }
+                // See if we need to calculate the next emission timestamp
+                if (pointCombustionState.NextSmokeEmissionSimulationTimestamp == 0.0f)
+                {
+                    pointCombustionState.NextSmokeEmissionSimulationTimestamp =
+                        currentSimulationTime
+                        + GameRandomEngine::GetInstance().GenerateExponentialReal(
+                            simulationParameters.CombustionSmokeEmissionDensityAdjustment
+                            * pointCombustionState.FlameDevelopment);
+                }
 
-            // See if it's time to emit smoke
-            if (currentSimulationTime >= pointCombustionState.NextSmokeEmissionSimulationTimestamp)
-            {
-                //
-                // Emit smoke
-                //
+                // See if it's time to emit smoke
+                if (currentSimulationTime >= pointCombustionState.NextSmokeEmissionSimulationTimestamp)
+                {
+                    //
+                    // Emit smoke
+                    //
 
-                // Calculate lifetime
-                float const maxSimulationLifetime =
-                    GameRandomEngine::GetInstance().GenerateUniformReal(
-                        SimulationParameters::MinCombustionSmokeParticleLifetime,
-                        SimulationParameters::MaxCombustionSmokeParticleLifetime)
-                    * simulationParameters.CombustionSmokeParticleLifetimeAdjustment;
+                    // Calculate lifetime
+                    float const maxSimulationLifetime =
+                        GameRandomEngine::GetInstance().GenerateUniformReal(
+                            SimulationParameters::MinCombustionSmokeParticleLifetime,
+                            SimulationParameters::MaxCombustionSmokeParticleLifetime)
+                        * simulationParameters.CombustionSmokeParticleLifetimeAdjustment;
 
-                // Generate particle
-                CreateEphemeralParticleCombustionSmoke(
-                    pointPosition,
-                    GetCachedDepth(pointIndex),
-                    GetTemperature(pointIndex),
-                    currentSimulationTime,
-                    maxSimulationLifetime,
-                    GetPlaneId(pointIndex),
-                    simulationParameters);
+                    // Generate particle
+                    CreateEphemeralParticleCombustionSmoke(
+                        pointPosition,
+                        GetCachedDepth(pointIndex),
+                        GetTemperature(pointIndex),
+                        currentSimulationTime,
+                        maxSimulationLifetime,
+                        GetPlaneId(pointIndex),
+                        simulationParameters);
 
-                // Make sure we re-calculate the next emission timestamp
-                pointCombustionState.NextSmokeEmissionSimulationTimestamp = 0.0f;
+                    // Make sure we re-calculate the next emission timestamp
+                    pointCombustionState.NextSmokeEmissionSimulationTimestamp = 0.0f;
+                }
             }
         }
 

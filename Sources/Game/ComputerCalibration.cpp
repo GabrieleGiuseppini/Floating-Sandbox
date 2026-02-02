@@ -81,6 +81,7 @@ void ComputerCalibrator::TuneGame(
         // These all require GPU
 
         simulationParameters.UnderwaterPlantsDensity = 64.0f;
+        simulationParameters.DoEmitSmokeWithFire = false;
 
         renderContext.SetCloudRenderDetail(CloudRenderDetailType::Basic);
         renderContext.SetLandRenderDetail(LandRenderDetailType::Basic);

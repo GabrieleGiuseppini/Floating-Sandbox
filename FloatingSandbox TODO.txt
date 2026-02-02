@@ -600,13 +600,13 @@
 				+ SmokeEmitterBlack
 			+ Max persistence adjust for smoke, both types: 2.5
 
-			- Flag for turning off smoke from fire
+			+ Flag for turning off smoke from fire
 				+ SimParameters
-				- Honor
-				- SettingsDialog: above sliders
-					- "Fire Emits Smoke"
-					- Reconciliation between checkbox and 2 sliders enabled
-				- Turn off at calibration
+				+ Honor
+				+ SettingsDialog: above sliders
+					+ "Fire Emits Smoke"
+					+ Reconciliation between checkbox and 2 sliders enabled
+				+ Turn off at calibration
 
 			= Test:
 				+ ShipBuilder: both materials (palette & works)
@@ -624,8 +624,14 @@
 					1.5
 				+ CombustionSmoke rendering (scale+alpha): in-code at Points::UploadEphParticles()
 
-		- Send to Discord
-			- Later, ask for default Titanic's smoke
+			+ Test with Titanic
+				+ Make heavy smoke slightly less subject to wind
+
+		+ Send to Discord
+		
+
+
+		- Later, ask for default Titanic's smoke
 
 		- Test on Dell
 			- Toggling checkbox
