@@ -2398,8 +2398,8 @@ void ElectricalElements::UpdateSinks(
                             mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp =
                                 currentSimulationTime
                                 + GameRandomEngine::GetInstance().GenerateExponentialReal(
-                                simulationParameters.SmokeEmissionDensityAdjustment
-                                / mElementStateBuffer[sinkElementIndex].SmokeEmitter.EmissionRate);
+                                    simulationParameters.SmokeEmitterSmokeEmissionDensityAdjustment
+                                    / mElementStateBuffer[sinkElementIndex].SmokeEmitter.EmissionRate);
                         }
 
                         // See if it's time to emit smoke
@@ -2409,17 +2409,28 @@ void ElectricalElements::UpdateSinks(
                             // Emit smoke
                             //
 
+                            // Calculate lifetime
+                            float const maxSimulationLifetime =
+                                GameRandomEngine::GetInstance().GenerateUniformReal(
+                                    3.5f,
+                                    6.0f)
+                                * simulationParameters.SmokeEmitterSmokeParticleLifetimeAdjustment;
+
+                            // TODO: eventually adjust if black
+
                             // Choose temperature: highest of emitter's and current air + something (to ensure buoyancy)
                             float const smokeTemperature = std::max(
                                 points.GetTemperature(emitterPointIndex),
                                 effectiveSmokeTemperature);
 
                             // Generate particle
-                            points.CreateEphemeralParticleLightSmoke(
+                            points.CreateEphemeralParticleSmokeEmitterSmoke(
+                                mMaterialBuffer[sinkElementIndex]->SmokeEmitterSmokeType,
                                 points.GetPosition(emitterPointIndex),
                                 emitterDepth,
                                 smokeTemperature,
                                 currentSimulationTime,
+                                maxSimulationLifetime,
                                 points.GetPlaneId(emitterPointIndex),
                                 simulationParameters);
 

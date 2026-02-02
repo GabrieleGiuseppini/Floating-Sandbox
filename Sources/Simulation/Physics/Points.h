@@ -10,7 +10,6 @@
 #include "../MaterialDatabase.h"
 #include "../Materials.h"
 
-#include <Render/GameTextureDatabases.h>
 #include <Render/RenderContext.h>
 
 #include <Core/AABB.h>
@@ -251,8 +250,7 @@ private:
 
         float FlameDevelopment;
         float MaxFlameDevelopment;
-        // FUTUREWORK
-        //float NextSmokeEmissionSimulationTimestamp;
+        float NextSmokeEmissionSimulationTimestamp;
 
         // The current flame vector, which provides direction and magnitude
         // of the flame quad.
@@ -276,8 +274,7 @@ private:
             State = StateType::NotBurning;
             FlameDevelopment = 0.0f;
             MaxFlameDevelopment = 0.0f;
-            // FUTUREWORK
-            //NextSmokeEmissionSimulationTimestamp = 0.0f;
+            NextSmokeEmissionSimulationTimestamp = 0.0f;
             FlameVector = vec2f(0.0f, 1.0f);
             FlameWindRotationAngle = 0.0f;
         }
@@ -380,35 +377,32 @@ private:
 
         struct SmokeState
         {
-            enum class GrowthType
+            enum class SmokeKindType
             {
-                Slow,
-                Fast
+                CombustionSmoke,
+                SmokeEmitterBlack,
+                SmokeEmitterWhite
             };
 
-            GameTextureDatabases::GenericMipMappedTextureGroups TextureGroup;
-            GrowthType Growth;
+            SmokeKindType SmokeKind;
             float PersonalitySeed;
             float LifetimeProgress;
-            float ScaleProgress;
+            float ElapsedSimulationTime;
 
             SmokeState()
-                : TextureGroup(GameTextureDatabases::GenericMipMappedTextureGroups::SmokeLight) // Arbitrary
-                , Growth(GrowthType::Slow) // Arbitrary
+                : SmokeKind(SmokeKindType::CombustionSmoke) // Arbitrary
                 , PersonalitySeed(0.0f)
                 , LifetimeProgress(0.0f)
-                , ScaleProgress(0.0f)
+                , ElapsedSimulationTime(0.0f)
             {}
 
             SmokeState(
-                GameTextureDatabases::GenericMipMappedTextureGroups textureGroup,
-                GrowthType growth,
+                SmokeKindType smokeKind,
                 float personalitySeed)
-                : TextureGroup(textureGroup)
-                , Growth(growth)
+                : SmokeKind(smokeKind)
                 , PersonalitySeed(personalitySeed)
                 , LifetimeProgress(0.0f)
-                , ScaleProgress(0.0f)
+                , ElapsedSimulationTime(0.0f)
             {}
         };
 
@@ -873,51 +867,65 @@ public:
         PlaneId planeId,
         SimulationParameters const & simulationParameters);
 
-    void CreateEphemeralParticleLightSmoke(
+    void CreateEphemeralParticleSmokeEmitterSmoke(
+        ElectricalMaterial::SmokeEmitterSmokeElementType smokeEmitterSmokeType,
         vec2f const & position,
         float depth,
         float temperature,
         float currentSimulationTime,
+        float maxSimulationLifetime,
         PlaneId planeId,
         SimulationParameters const & simulationParameters)
     {
-        CreateEphemeralParticleSmoke(
-            GameTextureDatabases::GenericMipMappedTextureGroups::SmokeLight,
-            EphemeralState::SmokeState::GrowthType::Slow,
+        EphemeralState::SmokeState::SmokeKindType smokeKind;
+        if (smokeEmitterSmokeType == ElectricalMaterial::SmokeEmitterSmokeElementType::Black)
+        {
+            smokeKind = EphemeralState::SmokeState::SmokeKindType::SmokeEmitterBlack;
+        }
+        else
+        {
+            assert(smokeEmitterSmokeType == ElectricalMaterial::SmokeEmitterSmokeElementType::White);
+            smokeKind = EphemeralState::SmokeState::SmokeKindType::SmokeEmitterWhite;
+        }
+
+        InternalCreateEphemeralParticleSmoke(
+            smokeKind,
             position,
             depth,
             temperature,
             currentSimulationTime,
+            maxSimulationLifetime,
             planeId,
             simulationParameters);
     }
 
-    void CreateEphemeralParticleHeavySmoke(
+    void CreateEphemeralParticleCombustionSmoke(
         vec2f const & position,
         float depth,
         float temperature,
         float currentSimulationTime,
+        float maxSimulationLifetime,
         PlaneId planeId,
         SimulationParameters const & simulationParameters)
     {
-        CreateEphemeralParticleSmoke(
-            GameTextureDatabases::GenericMipMappedTextureGroups::SmokeDark,
-            EphemeralState::SmokeState::GrowthType::Fast,
+        InternalCreateEphemeralParticleSmoke(
+            EphemeralState::SmokeState::SmokeKindType::CombustionSmoke,
             position,
             depth,
             temperature,
             currentSimulationTime,
+            maxSimulationLifetime,
             planeId,
             simulationParameters);
     }
 
-    void CreateEphemeralParticleSmoke(
-        GameTextureDatabases::GenericMipMappedTextureGroups textureGroup,
-        EphemeralState::SmokeState::GrowthType growth,
+    void InternalCreateEphemeralParticleSmoke(
+        EphemeralState::SmokeState::SmokeKindType smokeKind,
         vec2f const & position,
         float depth,
         float temperature,
         float currentSimulationTime,
+        float maxSimulationLifetime,
         PlaneId planeId,
         SimulationParameters const & simulationParameters);
 

@@ -2436,13 +2436,31 @@
         "is_self_powered": false,
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0,
-        "name": "Smoke Emitter",
+        "name": "Smoke Emitter (White)",
 	"particle_emission_rate": 0.05,
         "palette_coordinates": {
 		"category": "Other Elements",
 		"sub_category": "Smoke Emitters",
 		"sub_category_ordinal": 0
-	}
+	},
+	"smoke_emitter_smoke_type": "white"
+    },
+    {
+        "color_key": "#203023",
+	"conducts_electricity": true,
+        "electrical_type": "SmokeEmitter",
+        "heat_generated": 2000.0,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Smoke Emitter (Black)",
+	"particle_emission_rate": 0.05,
+        "palette_coordinates": {
+		"category": "Other Elements",
+		"sub_category": "Smoke Emitters",
+		"sub_category_ordinal": 1
+	},
+	"smoke_emitter_smoke_type": "black"
     },
 
     {

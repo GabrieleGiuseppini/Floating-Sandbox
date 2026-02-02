@@ -120,11 +120,17 @@ struct IGameControllerSettingsOptions
 
     // Ephemeral Particles
 
-    virtual float GetMinSmokeEmissionDensityAdjustment() const = 0;
-    virtual float GetMaxSmokeEmissionDensityAdjustment() const = 0;
+    virtual float GetMinSmokeEmitterSmokeEmissionDensityAdjustment() const = 0;
+    virtual float GetMaxSmokeEmitterSmokeEmissionDensityAdjustment() const = 0;
 
-    virtual float GetMinSmokeParticleLifetimeAdjustment() const = 0;
-    virtual float GetMaxSmokeParticleLifetimeAdjustment() const = 0;
+    virtual float GetMinSmokeEmitterSmokeParticleLifetimeAdjustment() const = 0;
+    virtual float GetMaxSmokeEmitterSmokeParticleLifetimeAdjustment() const = 0;
+
+    virtual float GetMinCombustionSmokeEmissionDensityAdjustment() const = 0;
+    virtual float GetMaxCombustionSmokeEmissionDensityAdjustment() const = 0;
+
+    virtual float GetMinCombustionSmokeParticleLifetimeAdjustment() const = 0;
+    virtual float GetMaxCombustionSmokeParticleLifetimeAdjustment() const = 0;
 
     // Wind
 

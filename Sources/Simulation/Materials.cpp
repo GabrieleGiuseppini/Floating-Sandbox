@@ -182,6 +182,10 @@ StructuralMaterial::MaterialUniqueType StructuralMaterial::StrToMaterialUniqueTy
         return MaterialUniqueType::Rope;
     else if (Utils::CaseInsensitiveEquals(str, "SiltCloud"))
         return MaterialUniqueType::SiltCloud;
+    else if (Utils::CaseInsensitiveEquals(str, "SmokeHeavy"))
+        return MaterialUniqueType::SmokeHeavy;
+    else if (Utils::CaseInsensitiveEquals(str, "SmokeLight"))
+        return MaterialUniqueType::SmokeLight;
     else if (Utils::CaseInsensitiveEquals(str, "Water"))
         return MaterialUniqueType::Water;
     else
@@ -331,6 +335,14 @@ ElectricalMaterial ElectricalMaterial::Create(
             shipSoundType = StrToShipSoundElementType(shipSoundTypeStr);
         }
 
+        // Smoke emitter properties
+        SmokeEmitterSmokeElementType smokeEmitterSmokeType = SmokeEmitterSmokeElementType::White; // Arbitrary
+        if (ElectricalElementType::SmokeEmitter == electricalType)
+        {
+            std::string smokeEmitterSmokeTypeStr = Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "smoke_emitter_smoke_type");
+            smokeEmitterSmokeType = StrToSmokeEmitterSmokeElementType(smokeEmitterSmokeTypeStr);
+        }
+
         // Thermal switch properties
         float thermalSwitchTransitionTemperature = 0.0f;
         if (ElectricalElementType::ThermalSwitch == electricalType)
@@ -386,6 +398,7 @@ ElectricalMaterial ElectricalMaterial::Create(
             engineControllerType,
             interactiveSwitchType,
             shipSoundType,
+            smokeEmitterSmokeType,
             thermalSwitchTransitionTemperature,
             waterPumpNominalForce,
             timerDurationSeconds,
@@ -503,6 +516,16 @@ ElectricalMaterial::ShipSoundElementType ElectricalMaterial::StrToShipSoundEleme
         return ShipSoundElementType::EvacuationAlarm2;
     else
         throw GameException("Unrecognized ShipSoundElementType \"" + str + "\"");
+}
+
+ElectricalMaterial::SmokeEmitterSmokeElementType ElectricalMaterial::StrToSmokeEmitterSmokeElementType(std::string const & str)
+{
+    if (Utils::CaseInsensitiveEquals(str, "Black"))
+        return SmokeEmitterSmokeElementType::Black;
+    else if (Utils::CaseInsensitiveEquals(str, "White"))
+        return SmokeEmitterSmokeElementType::White;
+    else
+        throw GameException("Unrecognized SmokeEmitterSmokeElementType \"" + str + "\"");
 }
 
 std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInstanceIndex instanceIndex) const

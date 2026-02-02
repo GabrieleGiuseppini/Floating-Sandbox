@@ -522,15 +522,25 @@ public:
     float GetMinWaterCrazyness() const override { return SimulationParameters::MinWaterCrazyness; }
     float GetMaxWaterCrazyness() const override { return SimulationParameters::MaxWaterCrazyness; }
 
-    float GetSmokeEmissionDensityAdjustment() const override { return mSimulationParameters.SmokeEmissionDensityAdjustment; }
-    void SetSmokeEmissionDensityAdjustment(float value) override { mSimulationParameters.SmokeEmissionDensityAdjustment = value; }
-    float GetMinSmokeEmissionDensityAdjustment() const override { return SimulationParameters::MinSmokeEmissionDensityAdjustment; }
-    float GetMaxSmokeEmissionDensityAdjustment() const override { return SimulationParameters::MaxSmokeEmissionDensityAdjustment; }
+    float GetSmokeEmitterSmokeEmissionDensityAdjustment() const override { return mSimulationParameters.SmokeEmitterSmokeEmissionDensityAdjustment; }
+    void SetSmokeEmitterSmokeEmissionDensityAdjustment(float value) override { mSimulationParameters.SmokeEmitterSmokeEmissionDensityAdjustment = value; }
+    float GetMinSmokeEmitterSmokeEmissionDensityAdjustment() const override { return SimulationParameters::MinSmokeEmitterSmokeEmissionDensityAdjustment; }
+    float GetMaxSmokeEmitterSmokeEmissionDensityAdjustment() const override { return SimulationParameters::MaxSmokeEmitterSmokeEmissionDensityAdjustment; }
 
-    float GetSmokeParticleLifetimeAdjustment() const override { return mSimulationParameters.SmokeParticleLifetimeAdjustment; }
-    void SetSmokeParticleLifetimeAdjustment(float value) override { mSimulationParameters.SmokeParticleLifetimeAdjustment = value; }
-    float GetMinSmokeParticleLifetimeAdjustment() const override { return SimulationParameters::MinSmokeParticleLifetimeAdjustment; }
-    float GetMaxSmokeParticleLifetimeAdjustment() const override { return SimulationParameters::MaxSmokeParticleLifetimeAdjustment; }
+    float GetSmokeEmitterSmokeParticleLifetimeAdjustment() const override { return mSimulationParameters.SmokeEmitterSmokeParticleLifetimeAdjustment; }
+    void SetSmokeEmitterSmokeParticleLifetimeAdjustment(float value) override { mSimulationParameters.SmokeEmitterSmokeParticleLifetimeAdjustment = value; }
+    float GetMinSmokeEmitterSmokeParticleLifetimeAdjustment() const override { return SimulationParameters::MinSmokeEmitterSmokeParticleLifetimeAdjustment; }
+    float GetMaxSmokeEmitterSmokeParticleLifetimeAdjustment() const override { return SimulationParameters::MaxSmokeEmitterSmokeParticleLifetimeAdjustment; }
+
+    float GetCombustionSmokeEmissionDensityAdjustment() const override { return mSimulationParameters.CombustionSmokeEmissionDensityAdjustment; }
+    void SetCombustionSmokeEmissionDensityAdjustment(float value) override { mSimulationParameters.CombustionSmokeEmissionDensityAdjustment = value; }
+    float GetMinCombustionSmokeEmissionDensityAdjustment() const override { return SimulationParameters::MinCombustionSmokeEmissionDensityAdjustment; }
+    float GetMaxCombustionSmokeEmissionDensityAdjustment() const override { return SimulationParameters::MaxCombustionSmokeEmissionDensityAdjustment; }
+
+    float GetCombustionSmokeParticleLifetimeAdjustment() const override { return mSimulationParameters.CombustionSmokeParticleLifetimeAdjustment; }
+    void SetCombustionSmokeParticleLifetimeAdjustment(float value) override { mSimulationParameters.CombustionSmokeParticleLifetimeAdjustment = value; }
+    float GetMinCombustionSmokeParticleLifetimeAdjustment() const override { return SimulationParameters::MinCombustionSmokeParticleLifetimeAdjustment; }
+    float GetMaxCombustionSmokeParticleLifetimeAdjustment() const override { return SimulationParameters::MaxCombustionSmokeParticleLifetimeAdjustment; }
 
     bool GetDoModulateWind() const override { return mSimulationParameters.DoModulateWind; }
     void SetDoModulateWind(bool value) override { mSimulationParameters.DoModulateWind = value; }

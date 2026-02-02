@@ -3275,6 +3275,66 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
+
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#9a9b9c",
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1000000.0,
+            "is_exempt_from_palette": true,
+            "is_hull": false,
+            "mass": {
+                "density": 1.0,
+                "nominal_mass": 1.2754
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Light Smoke",
+            "opacity": 1.0,
+            "sound_type": "AirBubble",
+            "specific_heat": 1005.0,
+            "stiffness": 1.0,
+            "strength": 1.0,
+            "thermal_conductivity": 0.0262,
+            "thermal_expansion_coefficient": 0.0034,
+            "unique_type": "SmokeLight",
+            "water_diffusion_speed": 0.5,
+            "water_intake": 1.0,
+            "water_retention": 0.0,
+            "wind_receptivity": 0.1
+        },
+	{
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#2a2b2c",
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1000000.0,
+            "is_exempt_from_palette": true,
+            "is_hull": false,
+            "mass": {
+                "density": 1.0,
+                "nominal_mass": 1.38
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Heavy Smoke",
+            "opacity": 1.0,
+            "sound_type": "AirBubble",
+            "specific_heat": 1005.0,
+            "stiffness": 1.0,
+            "strength": 1.0,
+            "thermal_conductivity": 0.0262,
+            "thermal_expansion_coefficient": 0.0034,
+            "unique_type": "SmokeHeavy",
+            "water_diffusion_speed": 0.5,
+            "water_intake": 1.0,
+            "water_retention": 0.0,
+            "wind_receptivity": 0.05
+        },
+
         {
             "buoyancy_volume_fill": 0.006,
             "color_key": "#F5CB42",
@@ -3293,7 +3353,6 @@
             "melting_temperature": 1000000.0,
             "name": "Silt Cloud",
             "opacity": 1.0,
-            "render_color": "#F5CB42",
             "sound_type": "Gas",
             "specific_heat": 1005.0,
             "stiffness": 1.0,
@@ -3306,6 +3365,14 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
+
+
+
+
+
+
+
+
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [

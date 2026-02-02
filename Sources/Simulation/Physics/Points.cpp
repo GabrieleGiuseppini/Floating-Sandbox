@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <Render/GameTextureDatabases.h>
+
 #include <Core/Log.h>
 #include <Core/PrecalculatedFunction.h>
 
@@ -408,43 +410,38 @@ void Points::CreateEphemeralParticleSiltCloud(
     mIsEphemeralColorBufferDirty = true;
 }
 
-void Points::CreateEphemeralParticleSmoke(
-    GameTextureDatabases::GenericMipMappedTextureGroups textureGroup,
-    EphemeralState::SmokeState::GrowthType growth,
+void Points::InternalCreateEphemeralParticleSmoke(
+    EphemeralState::SmokeState::SmokeKindType smokeKind,
     vec2f const & position,
     float depth,
     float temperature,
     float currentSimulationTime,
+    float maxSimulationLifetime,
     PlaneId planeId,
-    SimulationParameters const & simulationParameters)
+    SimulationParameters const & /*simulationParameters*/)
 {
     // Get a free slot (or steal one)
     auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
     assert(NoneElementIndex != pointIndex);
 
-    // Choose a lifetime
-    float const maxSimulationLifetime =
-        simulationParameters.SmokeParticleLifetimeAdjustment
-        * GameRandomEngine::GetInstance().GenerateUniformReal(
-            SimulationParameters::MinSmokeParticlesLifetime,
-            SimulationParameters::MaxSmokeParticlesLifetime);
-
     //
     // Store attributes
     //
 
-    StructuralMaterial const & airStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
+    StructuralMaterial const & smokeStructuralMaterial = (smokeKind == EphemeralState::SmokeState::SmokeKindType::CombustionSmoke)
+        ? mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SmokeHeavy)
+        : mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SmokeLight);
 
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
-    mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
+    mMaterialsBuffer[pointIndex] = Materials(&smokeStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
-    mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
+    mAugmentedMaterialMassBuffer[pointIndex] = smokeStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
-    mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
-    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airStructuralMaterial.BuoyancyVolumeFill;
+    mMassBuffer[pointIndex] = smokeStructuralMaterial.GetMass();
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = smokeStructuralMaterial.BuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
@@ -455,13 +452,13 @@ void Points::CreateEphemeralParticleSmoke(
         mCurrentKineticFrictionAdjustment,
         mCurrentOceanFloorBedrockElasticityCoefficient,
         mCurrentOceanFloorBedrockFrictionCoefficient,
-        airStructuralMaterial.ElasticityCoefficient,
-        airStructuralMaterial.StaticFrictionCoefficient,
-        airStructuralMaterial.KineticFrictionCoefficient);
+        smokeStructuralMaterial.ElasticityCoefficient,
+        smokeStructuralMaterial.StaticFrictionCoefficient,
+        smokeStructuralMaterial.KineticFrictionCoefficient);
     mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        airStructuralMaterial.BuoyancyVolumeFill,
-        airStructuralMaterial.ThermalExpansionCoefficient);
+        smokeStructuralMaterial.BuoyancyVolumeFill,
+        smokeStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
@@ -473,11 +470,11 @@ void Points::CreateEphemeralParticleSmoke(
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
     mTemperatureBuffer[pointIndex] = temperature;
-    assert(airStructuralMaterial.GetHeatCapacity() > 0.0f);
-    mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / airStructuralMaterial.GetHeatCapacity();
-    mMaterialThermalExpansionCoefficientBuffer[pointIndex] = airStructuralMaterial.ThermalExpansionCoefficient;
-    //mMaterialIgnitionTemperatureBuffer[pointIndex] = airStructuralMaterial.IgnitionTemperature;
-    //mMaterialCombustionTypeBuffer[pointIndex] = airStructuralMaterial.CombustionType;
+    assert(smokeStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / smokeStructuralMaterial.GetHeatCapacity();
+    mMaterialThermalExpansionCoefficientBuffer[pointIndex] = smokeStructuralMaterial.ThermalExpansionCoefficient;
+    //mMaterialIgnitionTemperatureBuffer[pointIndex] = smokeStructuralMaterial.IgnitionTemperature;
+    //mMaterialCombustionTypeBuffer[pointIndex] = smokeStructuralMaterial.CombustionType;
     //mCombustionStateBuffer[pointIndex] = CombustionState();
 
     //mWaterReactionStateBuffer.emplace_back(0.0f);
@@ -494,8 +491,7 @@ void Points::CreateEphemeralParticleSmoke(
     mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime = currentSimulationTime;
     mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime = maxSimulationLifetime;
     mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::SmokeState(
-        textureGroup,
-        growth,
+        smokeKind,
         GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
@@ -504,7 +500,7 @@ void Points::CreateEphemeralParticleSmoke(
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor.toVec4f();
+    mColorBuffer[pointIndex] = smokeStructuralMaterial.RenderColor.toVec4f();
     mIsEphemeralColorBufferDirty = true;
 }
 
@@ -1264,7 +1260,7 @@ void Points::UpdateCombustionLowFrequency(
 }
 
 void Points::UpdateCombustionHighFrequency(
-    float /*currentSimulationTime*/,
+    float currentSimulationTime,
     float dt,
     vec2f const & globalWindSpeed,
     std::optional<Wind::RadialWindField> const & radialWindField,
@@ -1351,15 +1347,6 @@ void Points::UpdateCombustionHighFrequency(
             }
         }
 
-        /* FUTUREWORK
-
-        The following code emits smoke for burning particles, but there are rendering problems:
-        Smoke should be drawn behind flames, hence GenericTexture's should be drawn in a layer that is earlier than flames.
-        However, generic textures (smoke) have internal transparency, while flames have none; the Z test makes it so then
-        that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P.
-        The only way out that I may think of, at this moment, is to draw flames and generic textures alternatively, for each
-        plane ID (!), or to make smoke fully opaque.
-
         //
         // Check if this point should emit smoke
         //
@@ -1372,9 +1359,8 @@ void Points::UpdateCombustionHighFrequency(
                 pointCombustionState.NextSmokeEmissionSimulationTimestamp =
                     currentSimulationTime
                     + GameRandomEngine::GetInstance().GenerateExponentialReal(
-                        simulationParameters.SmokeEmissionDensityAdjustment
-                        * pointCombustionState.FlameDevelopment
-                        / 1.5f); // CODEWORK: replace with Material's properties, precalc'd with simulationParameters.SmokeEmissionDensityAdjustment
+                        simulationParameters.CombustionSmokeEmissionDensityAdjustment
+                        * pointCombustionState.FlameDevelopment);
             }
 
             // See if it's time to emit smoke
@@ -1384,11 +1370,20 @@ void Points::UpdateCombustionHighFrequency(
                 // Emit smoke
                 //
 
+                // Calculate lifetime
+                float const maxSimulationLifetime =
+                    GameRandomEngine::GetInstance().GenerateUniformReal(
+                        3.5f,
+                        6.0f)
+                    * simulationParameters.CombustionSmokeParticleLifetimeAdjustment;
+
                 // Generate particle
-                CreateEphemeralParticleHeavySmoke(
+                CreateEphemeralParticleCombustionSmoke(
                     pointPosition,
+                    GetCachedDepth(pointIndex),
                     GetTemperature(pointIndex),
                     currentSimulationTime,
+                    maxSimulationLifetime,
                     GetPlaneId(pointIndex),
                     simulationParameters);
 
@@ -1396,7 +1391,7 @@ void Points::UpdateCombustionHighFrequency(
                 pointCombustionState.NextSmokeEmissionSimulationTimestamp = 0.0f;
             }
         }
-        */
+       // */
 
         //
         // Run development/extinguishing state machine now
@@ -1720,11 +1715,13 @@ void Points::UpdateEphemeralParticles(
 
                 case EphemeralType::Smoke:
                 {
+                    auto & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke;
+
                     // Calculate progress
-                    auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
+                    state.ElapsedSimulationTime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
                     assert(mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime > 0.0f);
                     float const lifetimeProgress =
-                        elapsedSimulationLifetime
+                        state.ElapsedSimulationTime
                         / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
 
                     // Check if expired
@@ -1744,18 +1741,7 @@ void Points::UpdateEphemeralParticles(
                         //
 
                         // Update progress
-                        mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.LifetimeProgress = lifetimeProgress;
-                        if (EphemeralState::SmokeState::GrowthType::Slow == mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.Growth)
-                        {
-                            mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.ScaleProgress =
-                                std::min(1.0f, elapsedSimulationLifetime / 5.0f);
-                        }
-                        else
-                        {
-                            assert(EphemeralState::SmokeState::GrowthType::Fast == mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.Growth);
-                            mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.ScaleProgress =
-                                1.07f * (1.0f - exp(-3.0f * lifetimeProgress));
-                        }
+                        state.LifetimeProgress = lifetimeProgress;
 
                         // Inject random walk in direction orthogonal to current velocity
                         float const randomWalkMagnitude =
@@ -2269,20 +2255,66 @@ void Points::UploadEphemeralParticles(
             {
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke;
 
-                // Calculate scale
-                float const scale = state.ScaleProgress;
+                // Calculate alpha and scale
+                GameTextureDatabases::GenericMipMappedTextureGroups textureGroup = GameTextureDatabases::GenericMipMappedTextureGroups::SmokeDark; // Just to init
+                float scale = 0.0f; // Just to init
+                float alpha = 0.0f; // Just to init
+                switch (state.SmokeKind)
+                {
+                    case EphemeralState::SmokeState::SmokeKindType::CombustionSmoke:
+                    {
+                        textureGroup = GameTextureDatabases::GenericMipMappedTextureGroups::SmokeDark;
 
-                // Calculate alpha
-                float const lifetimeProgress = state.LifetimeProgress;
-                float const alpha =
-                    SmoothStep(0.0f, 0.05f, lifetimeProgress)
-                    - SmoothStep(0.7f, 1.0f, lifetimeProgress);
+                        // TODOHERE
+
+                        //scale = 1.07f * (1.0f - exp(-3.0f * state.LifetimeProgress));
+                        //scale = state.LifetimeProgress;
+                        //scale = 2.1f * SmoothStep(0.0f, 1.0f, state.LifetimeProgress);
+                        scale = 2.1f * state.LifetimeProgress;
+
+                        alpha =
+                            SmoothStep(0.0f, 0.05f, state.LifetimeProgress)
+                            - SmoothStep(0.65f, 1.0f, state.LifetimeProgress);
+                        alpha = alpha * alpha;
+
+                        break;
+                    }
+
+                    case EphemeralState::SmokeState::SmokeKindType::SmokeEmitterBlack:
+                    {
+                        textureGroup = GameTextureDatabases::GenericMipMappedTextureGroups::SmokeDark;
+
+                        // TODOHERE
+
+                        scale = std::min(1.0f, state.ElapsedSimulationTime / 5.0f);
+
+                        alpha =
+                            SmoothStep(0.0f, 0.05f, state.LifetimeProgress)
+                            - SmoothStep(0.65f, 1.0f, state.LifetimeProgress);
+                        alpha = alpha * alpha;
+
+                        break;
+                    }
+
+                    case EphemeralState::SmokeState::SmokeKindType::SmokeEmitterWhite:
+                    {
+                        textureGroup = GameTextureDatabases::GenericMipMappedTextureGroups::SmokeLight;
+
+                        scale = std::min(1.0f, state.ElapsedSimulationTime / 5.0f);
+
+                        alpha =
+                            SmoothStep(0.0f, 0.05f, state.LifetimeProgress)
+                            - SmoothStep(0.7f, 1.0f, state.LifetimeProgress);
+
+                        break;
+                    }
+                }
 
                 // Upload smoke
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                     GetPlaneId(pointIndex),
                     state.PersonalitySeed,
-                    state.TextureGroup,
+                    textureGroup,
                     GetPosition(pointIndex),
                     scale,
                     alpha);

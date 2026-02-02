@@ -2592,7 +2592,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
         gridSizer->Add(
             airBoxSizer,
-            wxGBPosition(0, 0),
+            wxGBPosition(0, 1),
             wxGBSpan(1, 5),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -2608,55 +2608,109 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
         {
             wxGridBagSizer * smokeSizer = new wxGridBagSizer(0, 0);
 
-            // Smoke Density Adjust
+            // Smoke Emitter - Smoke Density Adjust
             {
-                mSmokeEmissionDensityAdjustmentSlider = new SliderControl<float>(
+                mSmokeEmitterSmokeEmissionDensityAdjustmentSlider = new SliderControl<float>(
                     smokeBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Density Adjust"),
-                    _("Adjusts the density of smoke particles."),
+                    _("Density Adjust (Boiler)"),
+                    _("Adjusts the density of smoke particles emitted by the Smoke Emitter."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::SmokeEmissionDensityAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::SmokeEmitterSmokeEmissionDensityAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions.GetMinSmokeEmissionDensityAdjustment(),
+                        mGameControllerSettingsOptions.GetMinSmokeEmitterSmokeEmissionDensityAdjustment(),
                         1.0f,
-                        mGameControllerSettingsOptions.GetMaxSmokeEmissionDensityAdjustment()));
+                        mGameControllerSettingsOptions.GetMaxSmokeEmitterSmokeEmissionDensityAdjustment()));
 
                 smokeSizer->Add(
-                    mSmokeEmissionDensityAdjustmentSlider,
+                    mSmokeEmitterSmokeEmissionDensityAdjustmentSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            // Smoke Persistence Adjust
+            // Smoke Emitter - Smoke Persistence Adjust
             {
-                mSmokeParticleLifetimeAdjustmentSlider = new SliderControl<float>(
+                mSmokeEmitterSmokeParticleLifetimeAdjustmentSlider = new SliderControl<float>(
                     smokeBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Persistence Adjust"),
-                    _("Adjusts how long it takes for smoke to vanish."),
+                    _("Persistence Adjust (Boiler)"),
+                    _("Adjusts how long it takes for smoke emitted by the Smoke Emitter to vanish."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::SmokeParticleLifetimeAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::SmokeEmitterSmokeParticleLifetimeAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions.GetMinSmokeParticleLifetimeAdjustment(),
+                        mGameControllerSettingsOptions.GetMinSmokeEmitterSmokeParticleLifetimeAdjustment(),
                         1.0f,
-                        mGameControllerSettingsOptions.GetMaxSmokeParticleLifetimeAdjustment()));
+                        mGameControllerSettingsOptions.GetMaxSmokeEmitterSmokeParticleLifetimeAdjustment()));
 
                 smokeSizer->Add(
-                    mSmokeParticleLifetimeAdjustmentSlider,
+                    mSmokeEmitterSmokeParticleLifetimeAdjustmentSlider,
                     wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Combustion Smoke - Smoke Density Adjust
+            {
+                mCombustionSmokeEmissionDensityAdjustmentSlider = new SliderControl<float>(
+                    smokeBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Density Adjust (Fire)"),
+                    _("Adjusts the density of smoke particles emitted by fire."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::CombustionSmokeEmissionDensityAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinCombustionSmokeEmissionDensityAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxCombustionSmokeEmissionDensityAdjustment()));
+
+                smokeSizer->Add(
+                    mCombustionSmokeEmissionDensityAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Combustion Smoke - Smoke Persistence Adjust
+            {
+                mCombustionSmokeParticleLifetimeAdjustmentSlider = new SliderControl<float>(
+                    smokeBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Persistence Adjust (Fire)"),
+                    _("Adjusts how long it takes for smoke emitted by fire to vanish."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::CombustionSmokeParticleLifetimeAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinCombustionSmokeParticleLifetimeAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxCombustionSmokeParticleLifetimeAdjustment()));
+
+                smokeSizer->Add(
+                    mCombustionSmokeParticleLifetimeAdjustmentSlider,
+                    wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -2674,7 +2728,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
         gridSizer->Add(
             smokeBoxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -2804,7 +2858,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
         gridSizer->Add(
             skyBoxSizer,
-            wxGBPosition(1, 2),
+            wxGBPosition(1, 4),
             wxGBSpan(1, 3),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -6620,8 +6674,10 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mAirPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirPressureDragAdjustment));
     mAirTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::AirTemperature));
     mAirBubbleDensitySlider->SetValue(settings.GetValue<float>(GameSettings::AirBubblesDensity));
-    mSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmissionDensityAdjustment));
-    mSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeParticleLifetimeAdjustment));
+    mSmokeEmitterSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmitterSmokeEmissionDensityAdjustment));
+    mSmokeEmitterSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmitterSmokeParticleLifetimeAdjustment));
+    mCombustionSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionSmokeEmissionDensityAdjustment));
+    mCombustionSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionSmokeParticleLifetimeAdjustment));
     mNumberOfStarsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfStars));
     mNumberOfCloudsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfClouds));
     mDoDayLightCycleCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDayLightCycle));

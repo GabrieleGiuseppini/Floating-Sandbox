@@ -128,8 +128,10 @@ private:
     SliderControl<float> * mAirPressureDragSlider;
     SliderControl<float> * mAirTemperatureSlider;
     SliderControl<float> * mAirBubbleDensitySlider;
-    SliderControl<float> * mSmokeEmissionDensityAdjustmentSlider;
-    SliderControl<float> * mSmokeParticleLifetimeAdjustmentSlider;
+    SliderControl<float> * mSmokeEmitterSmokeEmissionDensityAdjustmentSlider;
+    SliderControl<float> * mSmokeEmitterSmokeParticleLifetimeAdjustmentSlider;
+    SliderControl<float> * mCombustionSmokeEmissionDensityAdjustmentSlider;
+    SliderControl<float> * mCombustionSmokeParticleLifetimeAdjustmentSlider;
     SliderControl<unsigned int> * mNumberOfStarsSlider;
     SliderControl<unsigned int> * mNumberOfCloudsSlider;
     wxCheckBox * mDoDayLightCycleCheckBox;

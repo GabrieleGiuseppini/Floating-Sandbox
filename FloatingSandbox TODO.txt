@@ -552,6 +552,66 @@
 			+ Better png's
 			+ ShipRenderContext:
 				+ Switch order of draw's between flames and generic mipmapped textures
+
+			=== New plan
+
+			+ StructuralMaterial: Light Smoke and Heavy Smoke
+				! Independent from texture
+			+ ElectricalMaterial:
+				+ New enum: SmokeEmitterSmokeElementType (Black, White)
+					+ Mandatory for smoke emitter
+				+ Split Smoke Emitter in two, with different SmokeEmitterSmokeElementType
+					! For now leave particle_emission_rate as-is
+			+ SimulationParameters:
+				+ Split rate and density: SmokeEmitterXYZ, CombustionSmokeXYZ
+			+ Points:
+				+ SmokeState::Kind: SmokeEmitterWhite, SmokeEmitterBlack, CombustionSmoke
+				+ CreateEphParticleSmokeEmitterSmoke(ElecMaterial::SmokeEmitterSmokeKind, lifetime)
+				+ CreateEphParticleCombustionSmoke(lifetime)
+				+ => InternalCreateEphemeralParticleSmoke(smokeKind, lifetime)
+				+ EphParticleUpdate
+				+ EphParticleUpload
+					+ switch X 3, deciding texture group
+			+ ElectricalMaterials emission:
+				+ Calculate density with SmokeEmitter parameters + elec material's emission rate (already in SmokeEmitter state)
+				+ Calculate lifetime with SmokeEmitter parameters
+				! Lifetime was:
+					    float const maxSimulationLifetime =
+						simulationParameters.SmokeParticleLifetimeAdjustment
+						* GameRandomEngine::GetInstance().GenerateUniformReal(
+						    3.5f,
+						    6.0f);
+			+ Points::Combustion emission:
+				+ Calculate density and lifetime with CombustionSmoke parameters
+				! Lifetime was:
+					    float const maxSimulationLifetime =
+						simulationParameters.SmokeParticleLifetimeAdjustment
+						* GameRandomEngine::GetInstance().GenerateUniformReal(
+						    3.5f,
+						    6.0f);
+			+ SettingsDialog: Air panel:
+				+ Two new sliders
+
+			- Art:
+				- New textures for "dark"
+					- Make with brushes
+
+			- Test:
+				+ ShipBuilder: both materials (palette & works)
+				- Timer bomb fuse
+				- All settings functional
+
+			- Fine-tune:
+				- TimerBomb fuse lifetime: in-code at TimerBombGadget::Update
+				- SmokeEmitter Black density: particle_emission_rate in Smoke Emitter Black material json
+				- SmokeEmitter Black lifetime: in-code at ElectricalElements
+				- SmokeEmitter Black rendering (scale+alpha): in-code at Points::UploadEphParticles()
+				- CombustionSmoke density: test with adj setting but set final value(s) in-code at Points::CombustionHighFreq, where we calc next timestamp, to achieve adjustment=1
+				- CombustionSmoke lifetime: test with adj setting but set final value(s) in-code at Points::CombustionHighFreq, where we calc lifetime, to achieve adjustment=1
+				- CombustionSmoke rendering (scale+alpha): in-code at Points::UploadEphParticles()
+
+			== Old plan
+
 			= Physics:
 				+ Rearc:
 					+ Materials:

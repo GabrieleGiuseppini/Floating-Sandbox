@@ -41,6 +41,8 @@ public:
         Glass,
         Rope,
         SiltCloud,
+        SmokeHeavy,
+        SmokeLight,
         Water,
 
         _Last = Water
@@ -342,6 +344,12 @@ public:
         EvacuationAlarm2
     };
 
+    enum class SmokeEmitterSmokeElementType
+    {
+        Black,
+        White
+    };
+
 public:
 
     MaterialColorKey ColorKey;
@@ -388,6 +396,9 @@ public:
     // Ship sound
     ShipSoundElementType ShipSoundType;
 
+    // Smoke emitter
+    SmokeEmitterSmokeElementType SmokeEmitterSmokeType;
+
     // Thermal switch
     float ThermalSwitchTransitionTemperature; // K
 
@@ -418,6 +429,8 @@ public:
 
     static ShipSoundElementType StrToShipSoundElementType(std::string const & str);
 
+    static SmokeEmitterSmokeElementType StrToSmokeEmitterSmokeElementType(std::string const & str);
+
     ElectricalMaterial(
         MaterialColorKey const & colorKey,
         std::string name,
@@ -443,6 +456,7 @@ public:
         EngineControllerElementType engineControllerType,
         InteractiveSwitchElementType interactiveSwitchType,
         ShipSoundElementType shipSoundType,
+        SmokeEmitterSmokeElementType smokeEmitterSmokeType,
         float thermalSwitchTransitionTemperature,
         float waterPumpNominalForce,
         float timerDurationSeconds,
@@ -472,6 +486,7 @@ public:
         , EngineControllerType(engineControllerType)
         , InteractiveSwitchType(interactiveSwitchType)
         , ShipSoundType(shipSoundType)
+        , SmokeEmitterSmokeType(smokeEmitterSmokeType)
         , ThermalSwitchTransitionTemperature(thermalSwitchTransitionTemperature)
         , WaterPumpNominalForce(waterPumpNominalForce)
         , TimerDurationSeconds(timerDurationSeconds)
@@ -510,6 +525,7 @@ public:
         , EngineControllerType(EngineControllerElementType::Telegraph)
         , InteractiveSwitchType(InteractiveSwitchElementType::Push)
         , ShipSoundType(ShipSoundElementType::Bell1)
+        , SmokeEmitterSmokeType(SmokeEmitterSmokeElementType::White)
         , ThermalSwitchTransitionTemperature(1000.0f)
         , WaterPumpNominalForce(0.0f)
         , TimerDurationSeconds(0.0f)
