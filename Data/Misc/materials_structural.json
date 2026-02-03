@@ -3317,7 +3317,7 @@
             "is_hull": false,
             "mass": {
                 "density": 1.0,
-                "nominal_mass": 1.3
+                "nominal_mass": 1.35
             },
             "melting_temperature": 1000000.0,
             "name": "Heavy Smoke",
@@ -3332,7 +3332,7 @@
             "water_diffusion_speed": 0.5,
             "water_intake": 1.0,
             "water_retention": 0.0,
-            "wind_receptivity": 0.01
+            "wind_receptivity": 0.005
         },
 
         {
