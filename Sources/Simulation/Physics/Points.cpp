@@ -2276,7 +2276,7 @@ void Points::UploadEphemeralParticles(
                         alpha =
                             SmoothStep(0.0f, 0.05f, state.LifetimeProgress)
                             - SmoothStep(0.65f, 1.0f, state.LifetimeProgress);
-                        alpha = alpha * alpha * 0.4f;
+                        alpha = alpha * alpha * 0.6f;
 
                         break;
                     }
