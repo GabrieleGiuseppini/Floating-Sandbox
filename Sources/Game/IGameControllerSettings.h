@@ -133,6 +133,9 @@ struct IGameControllerSettings
 
     // Ephemeral Particles
 
+    virtual float GetSmokeMassAdjustment() const = 0;
+    virtual void SetSmokeMassAdjustment(float value) = 0;
+
     virtual float GetSmokeEmitterSmokeEmissionDensityAdjustment() const = 0;
     virtual void SetSmokeEmitterSmokeEmissionDensityAdjustment(float value) = 0;
 

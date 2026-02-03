@@ -41,6 +41,7 @@ SimulationParameters::SimulationParameters()
     , OceanFloorSiltHardness(1.0f)
     // Ephemeral particles
     , DoGenerateDebris(true)
+    , SmokeMassAdjustment(1.0f)
     , SmokeEmitterSmokeEmissionDensityAdjustment(1.0f)
     , SmokeEmitterSmokeParticleLifetimeAdjustment(1.0f)
     , DoEmitSmokeWithFire(true)

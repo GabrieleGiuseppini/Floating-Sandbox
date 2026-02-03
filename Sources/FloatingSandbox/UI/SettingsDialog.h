@@ -128,6 +128,7 @@ private:
     SliderControl<float> * mAirPressureDragSlider;
     SliderControl<float> * mAirTemperatureSlider;
     SliderControl<float> * mAirBubbleDensitySlider;
+    SliderControl<float> * mSmokeMassAdjustmentSlider;
     SliderControl<float> * mSmokeEmitterSmokeEmissionDensityAdjustmentSlider;
     SliderControl<float> * mSmokeEmitterSmokeParticleLifetimeAdjustmentSlider;
     wxCheckBox * mDoEmitSmokeWithFireCheckBox;

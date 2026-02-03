@@ -2593,7 +2593,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
         gridSizer->Add(
             airBoxSizer,
             wxGBPosition(0, 1),
-            wxGBSpan(1, 5),
+            wxGBSpan(1, 6),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -2607,6 +2607,32 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
         {
             wxGridBagSizer * smokeSizer = new wxGridBagSizer(0, 0);
+
+            // Smoke Mass Adjust
+            {
+                mSmokeMassAdjustmentSlider = new SliderControl<float>(
+                    smokeBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Mass Adjust"),
+                    _("Adjusts the mass of smoke, affecting the velocity with which it rises in the air."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::SmokeMassAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinSmokeMassAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxSmokeMassAdjustment()));
+
+                smokeSizer->Add(
+                    mSmokeMassAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
 
             // Smoke Emitter - Smoke Density Adjust
             {
@@ -2629,7 +2655,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
                 smokeSizer->Add(
                     mSmokeEmitterSmokeEmissionDensityAdjustmentSlider,
-                    wxGBPosition(0, 0),
+                    wxGBPosition(0, 1),
                     wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -2656,7 +2682,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
                 smokeSizer->Add(
                     mSmokeEmitterSmokeParticleLifetimeAdjustmentSlider,
-                    wxGBPosition(0, 1),
+                    wxGBPosition(0, 2),
                     wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -2679,7 +2705,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
                 auto sizer = smokeSizer->Add(
                     mDoEmitSmokeWithFireCheckBox,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 3),
                     wxGBSpan(1, 2),
                     wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
                     CellBorderInner);
@@ -2708,7 +2734,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
                 smokeSizer->Add(
                     mCombustionSmokeEmissionDensityAdjustmentSlider,
-                    wxGBPosition(1, 2),
+                    wxGBPosition(1, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -2735,7 +2761,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
                 smokeSizer->Add(
                     mCombustionSmokeParticleLifetimeAdjustmentSlider,
-                    wxGBPosition(1, 3),
+                    wxGBPosition(1, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -2753,10 +2779,11 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
         gridSizer->Add(
             smokeBoxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 4),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
+
 
     //
     // Sky
@@ -2883,7 +2910,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
         gridSizer->Add(
             skyBoxSizer,
-            wxGBPosition(1, 4),
+            wxGBPosition(1, 5),
             wxGBSpan(1, 3),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -6699,6 +6726,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mAirPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirPressureDragAdjustment));
     mAirTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::AirTemperature));
     mAirBubbleDensitySlider->SetValue(settings.GetValue<float>(GameSettings::AirBubblesDensity));
+    mSmokeMassAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeMassAdjustment));
     mSmokeEmitterSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmitterSmokeEmissionDensityAdjustment));
     mSmokeEmitterSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmitterSmokeParticleLifetimeAdjustment));
     mDoEmitSmokeWithFireCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoEmitSmokeWithFire));

@@ -522,6 +522,11 @@ public:
     float GetMinWaterCrazyness() const override { return SimulationParameters::MinWaterCrazyness; }
     float GetMaxWaterCrazyness() const override { return SimulationParameters::MaxWaterCrazyness; }
 
+    float GetSmokeMassAdjustment() const override { return mSimulationParameters.SmokeMassAdjustment; }
+    void SetSmokeMassAdjustment(float value) override { mSimulationParameters.SmokeMassAdjustment = value; }
+    float GetMinSmokeMassAdjustment() const override { return SimulationParameters::MinSmokeMassAdjustment; }
+    float GetMaxSmokeMassAdjustment() const override { return SimulationParameters::MaxSmokeMassAdjustment; }
+
     float GetSmokeEmitterSmokeEmissionDensityAdjustment() const override { return mSimulationParameters.SmokeEmitterSmokeEmissionDensityAdjustment; }
     void SetSmokeEmitterSmokeEmissionDensityAdjustment(float value) override { mSimulationParameters.SmokeEmitterSmokeEmissionDensityAdjustment = value; }
     float GetMinSmokeEmitterSmokeEmissionDensityAdjustment() const override { return SimulationParameters::MinSmokeEmitterSmokeEmissionDensityAdjustment; }

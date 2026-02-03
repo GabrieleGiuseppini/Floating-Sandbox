@@ -160,6 +160,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, WindMakerToolWindSpeed);
     ADD_GC_SETTING(bool, UltraViolentMode);
     ADD_GC_SETTING(bool, DoGenerateDebris);
+    ADD_GC_SETTING(float, SmokeMassAdjustment);
     ADD_GC_SETTING(float, SmokeEmitterSmokeEmissionDensityAdjustment);
     ADD_GC_SETTING(float, SmokeEmitterSmokeParticleLifetimeAdjustment);
     ADD_GC_SETTING(bool, DoEmitSmokeWithFire);

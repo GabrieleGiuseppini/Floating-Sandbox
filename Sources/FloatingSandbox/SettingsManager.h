@@ -130,6 +130,7 @@ enum class GameSettings : size_t
     WindMakerToolWindSpeed,
     UltraViolentMode,
     DoGenerateDebris,
+    SmokeMassAdjustment,
     SmokeEmitterSmokeEmissionDensityAdjustment,
     SmokeEmitterSmokeParticleLifetimeAdjustment,
     DoEmitSmokeWithFire,

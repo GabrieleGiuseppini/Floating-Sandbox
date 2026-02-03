@@ -267,6 +267,10 @@ struct SimulationParameters
     static constexpr float MinDebrisParticlesLifetime = 0.4f;
     static constexpr float MaxDebrisParticlesLifetime = 0.9f;
 
+    float SmokeMassAdjustment;
+    static float constexpr MinSmokeMassAdjustment = 0.0f;
+    static float constexpr MaxSmokeMassAdjustment = 2.0f;
+
     float SmokeEmitterSmokeEmissionDensityAdjustment;
     static float constexpr MinSmokeEmitterSmokeEmissionDensityAdjustment = 0.1f;
     static float constexpr MaxSmokeEmitterSmokeEmissionDensityAdjustment = 10.0f;

@@ -418,11 +418,22 @@ void Points::InternalCreateEphemeralParticleSmoke(
     float currentSimulationTime,
     float maxSimulationLifetime,
     PlaneId planeId,
-    SimulationParameters const & /*simulationParameters*/)
+    SimulationParameters const & simulationParameters)
 {
     // Get a free slot (or steal one)
     auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
     assert(NoneElementIndex != pointIndex);
+
+    // Calculate mass multiplier
+    float constexpr MaxMassMultiplier = 1.1f; // Heavier than this it sinks
+    float constexpr MinMassMultiplier = 0.75f; // Lighter than this it's tiny little clouds
+    // Map 0.0..2.0 to Min/Max multipliers
+    float const massMultiplier =
+        MinMassMultiplier
+        + (MaxMassMultiplier - MinMassMultiplier) * LinearStep(
+            SimulationParameters::MinSmokeMassAdjustment,
+            SimulationParameters::MaxSmokeMassAdjustment,
+            simulationParameters.SmokeMassAdjustment);
 
     //
     // Store attributes
@@ -438,9 +449,9 @@ void Points::InternalCreateEphemeralParticleSmoke(
     mVelocityBuffer[pointIndex] = vec2f(0.0f, 0.2f); // Some magic upward velocity to start with, so plume doesn't stick out from underneath
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
-    mAugmentedMaterialMassBuffer[pointIndex] = smokeStructuralMaterial.GetMass();
+    mAugmentedMaterialMassBuffer[pointIndex] = smokeStructuralMaterial.GetMass() * massMultiplier;
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
-    mMassBuffer[pointIndex] = smokeStructuralMaterial.GetMass();
+    mMassBuffer[pointIndex] = smokeStructuralMaterial.GetMass() * massMultiplier;
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = smokeStructuralMaterial.BuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
@@ -462,9 +473,9 @@ void Points::InternalCreateEphemeralParticleSmoke(
     mCachedDepthBuffer[pointIndex] = depth;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
-    //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
-    //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
-    //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
+    //mMaterialWaterIntakeBuffer[pointIndex] = smokeStructuralMaterial.WaterIntake;
+    //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - smokeStructuralMaterial.WaterRetention;
+    //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = smokeStructuralMaterial.WaterDiffusionSpeed;
     mWaterBuffer[pointIndex] = 0.0f;
     assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
@@ -1361,8 +1372,9 @@ void Points::UpdateCombustionHighFrequency(
                     pointCombustionState.NextSmokeEmissionSimulationTimestamp =
                         currentSimulationTime
                         + GameRandomEngine::GetInstance().GenerateExponentialReal(
-                            simulationParameters.CombustionSmokeEmissionDensityAdjustment
-                            * pointCombustionState.FlameDevelopment);
+                            1.0f // Our baseline
+                            * pointCombustionState.FlameDevelopment
+                            * simulationParameters.CombustionSmokeEmissionDensityAdjustment);
                 }
 
                 // See if it's time to emit smoke
