@@ -547,8 +547,7 @@
 				    - 10, 10: Explosions
 				    - 11, 11: Highlights, Centers
 				    - 12, 12: Vectors, Point-to-Point Arrows
-
-		= Impl:
+		+ Impl:
 			+ Better png's
 			+ ShipRenderContext:
 				+ Switch order of draw's between flames and generic mipmapped textures
@@ -608,10 +607,10 @@
 					+ Reconciliation between checkbox and 2 sliders enabled
 				+ Turn off at calibration
 
-			= Test:
+			+ Test:
 				+ ShipBuilder: both materials (palette & works)
 				+ Timer bomb fuse
-				- All settings functional
+				+ All settings functional
 
 			+ Fine-tune:
 				+ TimerBomb fuse lifetime: in-code at TimerBombGadget::Update

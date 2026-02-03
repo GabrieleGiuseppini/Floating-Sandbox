@@ -284,7 +284,7 @@ struct SimulationParameters
     static float constexpr MinCombustionSmokeParticleLifetime = 5.25f;
     static float constexpr MaxCombustionSmokeParticleLifetime = 9.0f;
     float CombustionSmokeParticleLifetimeAdjustment;
-    static float constexpr MinCombustionSmokeParticleLifetimeAdjustment = 0.1f;
+    static float constexpr MinCombustionSmokeParticleLifetimeAdjustment = 0.25f;
     static float constexpr MaxCombustionSmokeParticleLifetimeAdjustment = 2.5f;
 
     bool DoGenerateSparklesForCuts;
