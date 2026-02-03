@@ -1333,7 +1333,7 @@ void Points::UpdateCombustionHighFrequency(
 
                 // Calculate direction coefficient so to prefer upwards direction:
                 // 0.9 + 1.0*(1 - cos(theta)): 2.9 N, 0.9 S, 1.9 W and E
-                vec2f const springDir = (GetPosition(otherEndpointIndex) - pointPosition).normalise();
+                vec2f const springDir = (GetPosition(otherEndpointIndex) - pointPosition).normalise_approx();
                 float const dirAlpha =
                     (0.9f + 1.0f * (1.0f - springDir.dot(SimulationParameters::GravityDir)));
                 // No normalization: when using normalization flame does not propagate along rope
@@ -1749,7 +1749,7 @@ void Points::UpdateEphemeralParticles(
                         float const randomWalkMagnitude =
                             0.3f * (static_cast<float>(GameRandomEngine::GetInstance().Choose<int>(2)) - 0.5f);
                         vec2f const deviationDirection =
-                            GetVelocity(pointIndex).normalise().to_perpendicular();
+                            GetVelocity(pointIndex).normalise_approx().to_perpendicular();
                         AddStaticForce(
                             pointIndex,
                             deviationDirection * randomWalkMagnitude * randomWalkVelocityImpulseToForceCoefficient);
