@@ -435,7 +435,7 @@ void Points::InternalCreateEphemeralParticleSmoke(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&smokeStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
-    mVelocityBuffer[pointIndex] = vec2f::zero();
+    mVelocityBuffer[pointIndex] = vec2f(0.0f, 0.2f); // Some magic upward velocity to start with, so plume doesn't stick out from underneath
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = smokeStructuralMaterial.GetMass();

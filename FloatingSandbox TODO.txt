@@ -629,7 +629,16 @@
 
 		+ Send to Discord
 
-		- Initial tiny upward velocity instead of zero?
+		+ Initial tiny upward velocity instead of zero
+		+ normalise_approx
+		- the black smoke should be slightly more opaque and maybe more grey less full black?
+		- Smoke in front
+			- TODO
+		- Rise speed setting?
+		- Fanout setting?
+
+		
+		- Send new beta
 		
 
 
