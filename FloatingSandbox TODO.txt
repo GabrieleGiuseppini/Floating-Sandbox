@@ -631,14 +631,16 @@
 
 		+ Initial tiny upward velocity instead of zero
 		+ normalise_approx
-		- the black smoke should be slightly more opaque and maybe more grey less full black?
-		- Smoke in front
-			- TODO
+		+ the black smoke should be slightly more opaque , and maybe more grey less full black?
+		X Smoke in front
+			+ Just change layer order
 		- Rise speed setting?
-		- Fanout setting?
-
-		
 		- Send new beta
+			- Slightly more opaque smoke, slightly less pitch black
+			- No smoke in front: that generates lots of troubles, with flames jumping back and forth because of burnings part detaching all of a sudden
+
+		- Fanout setting?
+		
 		
 
 
