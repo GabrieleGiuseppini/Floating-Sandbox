@@ -66,17 +66,12 @@ bool TimerBombGadget::Update(
                 //
 
                 // Emit smoke
-                float const maxSimulationLifetime =
-                    GameRandomEngine::GetInstance().GenerateUniformReal(
-                        2.5f,
-                        4.0f)
-                    * simulationParameters.CombustionSmokeParticleLifetimeAdjustment;
                 mShipPoints.CreateEphemeralParticleCombustionSmoke(
-                    GetPosition() + vec2f(0.0f, FuseVerticalOffset),
+                    GetPosition() + vec2f(0.0f, FuseVerticalOffset / 2.0f),
                     bombDepth - FuseVerticalOffset,
                     simulationParameters.AirTemperature + stormParameters.AirTemperatureDelta + 300.0f,
                     currentSimulationTime,
-                    maxSimulationLifetime,
+                    1.0f, // maxSimulationLifetime, magic
                     GetPlaneId(),
                     simulationParameters);
 

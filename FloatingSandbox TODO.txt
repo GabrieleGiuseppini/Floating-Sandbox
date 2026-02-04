@@ -652,7 +652,10 @@
 			- Slightly heavier
 			- Tried to improve on explosions clashing with smoke (the blue sky patches problem), slightly better now but it still happens visibly. We'll have to live with it as this is one of the main limitations of Floating Sandbox
 			- Added setting to adjust smoke mass (and thus speed with which it rises in the air)
-		- Fix timer bomb fuse
+		+ Fix timer bomb fuse
+			+ 3s lifetime
+		+ Test other gen textures
+		+ Test NPCs
 		
 
 
@@ -2224,7 +2227,7 @@
 
 	- Newton's 3rd law:
 		- Emitter materials, like smoke (and a new "jet engine" one), should impart an opposite force on the emitter
-		- Jet engine: need a way to render flames/particles coming out
+		+ Jet engine: need a way to render flames/particles coming out
 
 	- Aerodynamic heating https://en.wikipedia.org/wiki/Atmospheric_entry, something like friction from the air
 
