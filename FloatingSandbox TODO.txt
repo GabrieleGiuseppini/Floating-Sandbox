@@ -634,14 +634,16 @@
 		X Smoke in front
 			+ Just change layer order
 		+ Rise speed setting
-		+ Send new beta
+		- Fix gen textures locking depth for explosions 
+			+ Alpha/Z trick
+			- While you're here, check if shader may be optimized
+		+ Bump up version
+		- Send new beta
 			- Improved issue with sky background trapped around flames
 			- Slightly more opaque smoke, slightly less pitch black
 			- Slightly heavier
 			- No smoke in front: that generates lots of troubles, with flames jumping back and forth because of burnings part detaching all of a sudden
 			- Added setting to adjust smoke mass (and thus speed with which it rises in the air)
-
-		- Fanout setting?
 		
 		
 
