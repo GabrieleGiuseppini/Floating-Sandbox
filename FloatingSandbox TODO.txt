@@ -634,15 +634,20 @@
 		X Smoke in front
 			+ Just change layer order
 		+ Rise speed setting
-		- Fix gen textures locking depth for explosions 
+		+ Fix gen textures locking depth for explosions 
 			+ Alpha/Z trick
-			- While you're here, check if shader may be optimized
+			X While you're here, check if shader may be optimized
 		+ Bump up version
+		- Smoke in front
+			- Just change layer order
+				- With proper comments
+			- Fade-in slower so that smoke does not cover fire immediately
 		- Send new beta
 			- Improved issue with sky background trapped around flames
 			- Slightly more opaque smoke, slightly less pitch black
 			- Slightly heavier
 			- No smoke in front: that generates lots of troubles, with flames jumping back and forth because of burnings part detaching all of a sudden
+			- Tried to improve on explosions clashing with smoke (the blue sky patches problem), slightly better now but it still happens visibly. We'll have to live with it as this is one of the main limitations of Floating Sandbox
 			- Added setting to adjust smoke mass (and thus speed with which it rises in the air)
 		
 		
