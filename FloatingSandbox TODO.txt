@@ -638,22 +638,25 @@
 			+ Alpha/Z trick
 			X While you're here, check if shader may be optimized
 		+ Bump up version
-		- Smoke in front
-			- Just change layer order
-				- With proper comments
-			- Fade-in slower so that smoke does not cover fire immediately
-		- Send new beta
+		+ Smoke in front
+			+ Z-layer: invert fire (first) and generic textures (next)
+				+ With proper comments on why
+				+ Then, fix comments @ draw removing the out-of-order
+			+ Fade-in slower so that smoke does not cover fire immediately
+			+ Test with small and large lifetime
+			+ Test with lighter and heavier mass
+		+ Send new beta
+			- Smoke is in front now, and fades-in more slowly
 			- Improved issue with sky background trapped around flames
 			- Slightly more opaque smoke, slightly less pitch black
 			- Slightly heavier
-			- No smoke in front: that generates lots of troubles, with flames jumping back and forth because of burnings part detaching all of a sudden
 			- Tried to improve on explosions clashing with smoke (the blue sky patches problem), slightly better now but it still happens visibly. We'll have to live with it as this is one of the main limitations of Floating Sandbox
 			- Added setting to adjust smoke mass (and thus speed with which it rises in the air)
-		
+		- Fix timer bomb fuse
 		
 
 
-		- Later, ask for default Titanic's smoke
+		- Later, ask for default Titanic's smoke, and for defaults
 
 		- Test on Dell
 			- Toggling checkbox
@@ -662,6 +665,7 @@
 			- "Fire emits smoke"
 
 		- Merge into master
+			- With PR for Android
 		- changelist
 
 	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours

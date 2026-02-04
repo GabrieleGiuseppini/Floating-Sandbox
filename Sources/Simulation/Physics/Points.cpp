@@ -2285,10 +2285,19 @@ void Points::UploadEphemeralParticles(
                             state.LifetimeProgress,
                             state.ElapsedSimulationTime / ((SimulationParameters::MinCombustionSmokeParticleLifetime + SimulationParameters::MaxCombustionSmokeParticleLifetime) / 2.0f));
 
+                        // Alpha rises and then decreases; we want the periods to be absolute,
+                        // but have to scale them if lifetime is not enough to cover both
+                        float constexpr RisePeriodTheo = 2.5f;
+                        float const DecreasePeriodTheo = 2.5f;
+                        float const maxSimulationLifetime = mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
+                        float const timeScalingFactor = std::min(
+                            maxSimulationLifetime / (RisePeriodTheo + DecreasePeriodTheo),
+                            1.0f);
                         alpha =
-                            SmoothStep(0.0f, 0.05f, state.LifetimeProgress)
-                            - SmoothStep(0.65f, 1.0f, state.LifetimeProgress);
-                        alpha = alpha * alpha * 0.6f;
+                            SmoothStep(0.0f, RisePeriodTheo * timeScalingFactor, state.ElapsedSimulationTime)
+                            - SmoothStep(maxSimulationLifetime - DecreasePeriodTheo * timeScalingFactor, maxSimulationLifetime, state.ElapsedSimulationTime);
+
+                        alpha = alpha * alpha * 0.7f;
 
                         break;
                     }

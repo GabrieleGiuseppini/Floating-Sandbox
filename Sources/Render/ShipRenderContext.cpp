@@ -1761,10 +1761,6 @@ void ShipRenderContext::RenderDraw(
     //
     // Render foreground flames
     //
-    // Note: we want flames to cover generic textures (which include smoke), so foreground flames _follow_ generic textures in depth layers;
-    // howefer, we draw them here first as generic textures have internal transparency, and thus they would "lock" ship pixels in their background
-    // making flames in farther planes invisible
-    //
 
     if (renderParameters.DrawFlames)
     {
@@ -1778,9 +1774,6 @@ void ShipRenderContext::RenderDraw(
     // Render generic textures
     //
     // Note: locks background
-    //
-    // Note: generic textures _precede_ flames in depth layers, but here we swap their order
-    // to prevent generic textures to lock ship pixels in their internal transparency background
     //
 
     RenderDrawGenericMipMappedTextures(renderParameters, renderStats);
@@ -2648,8 +2641,8 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     //      - 4: Stressed springs, Frontier edges (temporally after)
     //      - 5: Points
     //      - 6: Electric sparks, Sparkles
-    //      - 7: Generic textures
-    //      - 8: Flames (foreground), Jet engine flames
+    //      - 7: Flames (foreground), Jet engine flames
+    //      - 8: Generic textures (includes combustion smoke, which needs to cover flames)
     //      - 9: NPCs
     //      - 10: Explosions
     //      - 11: Highlights, Centers
@@ -2828,7 +2821,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     //
-    // Layer 7: Generic Textures
+    // Layer 7: Flames - foreground, Jet engine flames
     //
 
     view.UpdateShipOrthoMatrixForLayer(
@@ -2841,12 +2834,16 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFlamesForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFlamesForeground, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipJetEngineFlames>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipJetEngineFlames, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
-    // Layer 8: Flames - foreground, Jet engine flames
+    // Layer 8: Generic Textures
     //
 
     view.UpdateShipOrthoMatrixForLayer(
@@ -2859,12 +2856,8 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFlamesForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFlamesForeground, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
-        shipOrthoMatrix);
-
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipJetEngineFlames>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipJetEngineFlames, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
