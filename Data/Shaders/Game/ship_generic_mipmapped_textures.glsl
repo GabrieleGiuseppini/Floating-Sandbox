@@ -78,32 +78,28 @@ void main()
     if (textureColor.w < 0.2)
         discard;
 
+    vec3 textureColorRgb = textureColor.rgb;
+
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
 
-    if (vertexEffectiveDepthDarkeningSensitivity > 0.0) // Fine to branch - all pixels will follow the same branching
-    {
-        // Calculate depth darkening
-        float darkeningFactor = CalculateOceanDepthDarkeningFactor(
-            vertexWorldY,
-            paramOceanDepthDarkeningRate);
+    // Calculate depth darkening
+    float darkeningFactor = CalculateOceanDepthDarkeningFactor(
+        vertexWorldY,
+        paramOceanDepthDarkeningRate);
 
-        // Apply depth darkening
-        textureColor.xyz = mix(
-            textureColor.xyz,
-            vec3(0.),
-            darkeningFactor * (1.0 - lampToolIntensity) * vertexEffectiveDepthDarkeningSensitivity);
-    }
+    // Apply depth darkening
+    textureColorRgb *= 1.0 - (darkeningFactor * (1.0 - lampToolIntensity) * vertexEffectiveDepthDarkeningSensitivity);
 
     // Apply ambient light
-    textureColor.xyz = ApplyAmbientLight(
-        textureColor.xyz,
+    textureColorRgb = ApplyAmbientLight(
+        textureColorRgb,
         paramEffectiveMoonlightColor * 0.7 * clamp(1.0 + vertexWorldY / SHIP_MOONLIGHT_MAX_DEPTH, 0.0, 1.0),
         vertexEffectiveAmbientLightIntensity,
         lampToolIntensity);
     
     // Combine
     gl_FragColor = vec4(
-        textureColor.xyz,
+        textureColorRgb,
         textureColor.w * vertexAlpha);
 } 
