@@ -1777,8 +1777,10 @@ void ShipRenderContext::RenderDraw(
     //
     // Render generic textures
     //
+    // Note: locks background
+    //
     // Note: generic textures _precede_ flames in depth layers, but here we swap their order
-    // to prevent generic textures to "lock" ship pixels in their internal transparency background
+    // to prevent generic textures to lock ship pixels in their internal transparency background
     //
 
     RenderDrawGenericMipMappedTextures(renderParameters, renderStats);
@@ -1797,6 +1799,8 @@ void ShipRenderContext::RenderDraw(
 
     //
     // Render explosions
+    //
+    // Note: locks background
     //
 
     if (renderParameters.DrawExplosions)
