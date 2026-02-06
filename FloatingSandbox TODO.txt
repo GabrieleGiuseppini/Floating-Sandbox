@@ -659,8 +659,8 @@
 		
 		- Later, ask for default Titanic's smoke, and for defaults
 
-		- Try different textures
-			- Add more details around perimeter, random rotation of one smaller brush around the center
+		+ Try different textures
+			+ Add more details around perimeter, random rotation of one smaller brush around the center
 
 
 		- Test on Dell
