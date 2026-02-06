@@ -657,11 +657,17 @@
 		+ Test other gen textures
 		+ Test NPCs
 		
-		- Later, ask for default Titanic's smoke, and for defaults
-
 		+ Try different textures
 			+ Add more details around perimeter, random rotation of one smaller brush around the center
 
+		- Default Titanic:
+			- Try mixed w/b smoke on each funnel
+
+		- Grey smoke type?
+			N
+
+		- Option to remove silt clouds
+			- Or slider for sensitivity, 0.0 => no clouds
 
 		- Test on Dell
 			- Toggling checkbox
@@ -733,6 +739,16 @@
 						- Update isChasingWreck accordingly
 						- Make sure this keeps happening at next shoal target check
 				- At fish<->AABB collision check: only do check if !shoal::isChasingWreck
+
+	- Rot rework:
+		- Damaged points get more "water rot"
+		- The strength of water rotting at a point depends on avg of neighbors
+			- So rotting spreads from damaged points
+		- Randomize more at each point
+		- Flag for above-water rotting?
+		- Think rot/burn separation
+			- Separate buffers @ Points, separate vertex attributes @ shaders
+			- If so, consider Perlin experiment below (*)
 
 
 	- Try Android font
