@@ -657,9 +657,11 @@
 		+ Test other gen textures
 		+ Test NPCs
 		
-
-
 		- Later, ask for default Titanic's smoke, and for defaults
+
+		- Try different textures
+			- Add more details around perimeter, random rotation of one smaller brush around the center
+
 
 		- Test on Dell
 			- Toggling checkbox
@@ -701,13 +703,36 @@
 	- Fishes on wreck (see paper in Malta book)
 		- Alternative:
 			- @Fishes
-			- Every X (sim time, ~20s):
+			- Every X (sim time, ~10s):
 				- Take largest N AABBs (N~=3)
-				- Compare with state maintained for the largest N AABBs (== position of center) ("CandidateWrecks" set)
-				- Those that stay within threshold for more than T (T~=20s) are added to ActiveWrecks set
-				- Those that are outside of threshold (even if just once) are removed from ActiveWrecks set
-			- When a shoal needs to decide a new destination, it checks the ActiveWrecks set first; if anything is found within a range R (large), that's the new destination
+				- Compare with state maintained for the largest N AABBs (== position of center)
+					- Note that state size might be lower than N here
+				- Those that stay within threshold for more than T (T~=20s) are available to fishes
+			- When a shoal needs to decide a new destination, it checks the available set first; if anything is found within a range R (large), that's the new destination
 			- Shoal can keep re-checking for destination from time to time, like it probably does now
+			- Impl:
+				- Fish database: shoals get new "canChaseWrecks" boolean
+					- Set it only for small fishes which are cool if snoop around wrecks
+				- Every X:
+					- Take largest N AABBs which have both x-axes underneath 0 (so enough to check highest)
+					- Compare center of ith with ith from mCandidateWrecks (as long as i is in mCandidateWrecks)
+						- vector of:
+							- vec2f centerPosition
+							- uint64_t staticSampleCount
+						- size always moves between 0 and N
+					- If semi-static:
+						- staticSampleCount++
+					- Else:
+						- staticSampleCount = 0
+					- centerPosition = center of AABB
+					- Ensure mCandidateWrecks' size kept consistent with # of largest AABBs found
+				- Shoal has new state variable: isChasingWreck, boolean
+				- At shoal target check:
+					- If shoal has canChaseWrecks:
+						- For each wreck in mCandidateWrecks with staticSampleCount >= Threshold: choose it if distance is in range R
+						- Update isChasingWreck accordingly
+						- Make sure this keeps happening at next shoal target check
+				- At fish<->AABB collision check: only do check if !shoal::isChasingWreck
 
 
 	- Try Android font
