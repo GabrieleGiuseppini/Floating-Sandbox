@@ -658,17 +658,18 @@
 		+ Test NPCs		
 		+ Try different textures
 			+ Add more details around perimeter, random rotation of one smaller brush around the center
-
-		- FIX: infinite clouds
-			= Try massless K
-				- Optimize
-				- Add comments
-
-		- Option to remove silt clouds
-			- Or slider for sensitivity, 0.0 => no clouds
+		+ FIX: infinite clouds
+			+ Try massless K
+				+ Optimize
+				+ Add comments
 
 		- Default Titanic:
 			- Try mixed w/b smoke on each funnel
+
+		- Send beta
+
+		- Option to remove silt clouds
+			- Or slider for sensitivity, 0.0 => no clouds
 
 		- Test on Dell
 			- Toggling checkbox
@@ -747,18 +748,15 @@
 			+ Enforce min size of AABB
 			+ Turn off shoaling if going to wreck
 			+ Draw arrows
-
-			= Try to reinstate shoaling
+			+ Try to reinstate shoaling
 				+ But prevent turning for someone else if we are chasin wrecks and they are not
-				- TODOHERE: see where target gets randomized
 
-			= Vertical and horizontal randomization (all fishes now are on same exact Y)
-				= V
-					- Take into account silt height				
-				- H
-
+			+ Vertical and horizontal randomization (all fishes now are on same exact Y)
+				+ V
+					+ Take into account silt height				
+				+ H
 			= Faster heading towards wreck
-				= Periodic check for heading to wreck, interrupting "target cruising"
+				+ Periodic check for heading to wreck, interrupting "target cruising"
 					+ If panic == 0.0:
 						+ HasNewTarget=false;
 						+ If time to check for wreck:
@@ -771,10 +769,10 @@
 					+ Else if reached end of panic:
 						+ Reset panic
 					+ Update next wreck check timestamp
+				+ Less shoaling component
+				= Boost when distant
+			- Don't stick to same wreck forever
 
-				- Force leader to wreck?			
-
-			- Do something for bottom bounce while circling wrecks
 
 		- Remove logs
 		- Remove point-to-point arrows

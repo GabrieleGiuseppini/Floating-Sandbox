@@ -153,9 +153,9 @@ private:
         // Next check for chasing a wreck
         float NextWreckCheckSimulationTime;
 
-        // Whether the fish is circling a wreck
-        // (so we won't avoid AABBs)
-        bool IsCirclingWreck;
+        // Whether the fish is circling a wreck, and which;
+        // serves also as flag for "circling a wreck" behavior adjustments
+        std::optional<ElementIndex> WreckBeingCircled;
 
         // The texture frame for this fish
         TextureFrameId<GameTextureDatabases::FishTextureGroups> RenderTextureFrameId;
@@ -188,7 +188,7 @@ private:
             , LastSteeringSimulationTime(0.0f)
             , IsInFreefall(false)
             , NextWreckCheckSimulationTime(nextWreckCheckSimulationTime)
-            , IsCirclingWreck(false)
+            , WreckBeingCircled()
             , RenderTextureFrameId(renderTextureFrameId)
         {}
     };

@@ -106,14 +106,14 @@
     {
         "name": "Yellow-tail Snapper",
 
-	"world_size_x": 0.35,
-	"world_size_y": 0.175,
+	"world_size_x": 0.3,
+	"world_size_y": 0.15,
 
 	"does_chase_wrecks": true,
 	"shoal_size": 25,
-	"shoal_radius": 3.5,
+	"shoal_radius": 4.5,
 	"ocean_depth": 50.0,
-	"basal_speed": 0.08,
+	"basal_speed": 0.14,
 	"tail_x": 0.75,
 	"tail_speed": 0.02,
 	"tail_swing_width": 0.5,

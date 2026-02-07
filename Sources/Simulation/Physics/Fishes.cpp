@@ -671,9 +671,13 @@ void Fishes::UpdateDynamics(
 
             if (!fish.IsInFreefall) // If we're free-falling, current velocity has already converged towards target velocity
             {
-                // Smooth velocity towards target + shoaling
+                // Smooth velocity towards target + shoaling,
+                // with shoaling having less weight if we're circling a wreck (so we're more direct)
+                float const shoalingWeight = fish.WreckBeingCircled.has_value()
+                    ? 0.5f
+                    : 1.0f;
                 fish.CurrentVelocity +=
-                    ((fish.TargetVelocity + fish.ShoalingVelocity) - fish.CurrentVelocity) * fish.CurrentDirectionSmoothingConvergenceRate;
+                    ((fish.TargetVelocity + fish.ShoalingVelocity * shoalingWeight) - fish.CurrentVelocity) * fish.CurrentDirectionSmoothingConvergenceRate;
             }
 
             // Make RenderVector match current velocity
@@ -886,7 +890,7 @@ void Fishes::UpdateDynamics(
             bool hasNewTarget = false;
 
             // Check whether it's time to do a wreck check
-            if (isTimeToCheckForWreck && !fish.IsCirclingWreck)
+            if (isTimeToCheckForWreck && !fish.WreckBeingCircled.has_value())
             {
                 hasNewTarget = TryDirectFishToWreck(fish, oceanFloor, simulationParameters);
             }
@@ -918,7 +922,15 @@ void Fishes::UpdateDynamics(
             if (hasNewTarget)
             {
                 // Calculate new target velocity
-                fish.TargetVelocity = MakeCruisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise_approx(), fishSpecies, fish.PersonalitySeed, simulationParameters);
+                vec2f const positionVector = fish.TargetPosition - fish.CurrentPosition;
+                float const distance = positionVector.length();
+                fish.TargetVelocity = MakeCruisingVelocity(positionVector.normalise_approx(distance), fishSpecies, fish.PersonalitySeed, simulationParameters);
+
+                // Accelerate a bit if directing towards wreck
+                if (fish.WreckBeingCircled.has_value())
+                {
+                    fish.TargetVelocity *= 1.0f + 0.5f * LinearStep(50.0f, 200.0f, distance);
+                }
 
                 // Setup steering, depending on whether we're turning or not
                 if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f
@@ -1055,7 +1067,7 @@ void Fishes::UpdateDynamics(
         ///////////////////////////////////////////////////////////////////
 
         if (fish.PanicCharge <= 0.1f // If we're not in panic
-            && !fish.IsCirclingWreck) // It's not circling a wreck (otherwise we'd want it across an AABB)
+            && !fish.WreckBeingCircled.has_value()) // It's not circling a wreck (otherwise we'd want it across an AABB)
         {
             for (auto const & aabb : aabbSet.GetItems())
             {
@@ -1186,7 +1198,7 @@ void Fishes::UpdateShoaling(
                                 if (neighbor.TargetVelocity.x * fish.TargetVelocity.x < 0.0f // Intents are opposite
                                     && (currentSimulationTime - fish.LastSteeringSimulationTime) > UTurnSpeed + 3.0f // This fish hasn't u-turned recently
                                     && fish.LastSteeringSimulationTime < neighbor.LastSteeringSimulationTime // The neighbor has u-turned more recently
-                                    && !fish.IsCirclingWreck) // Don't turn if we're circling a wreck, otherwise we go astray
+                                    && !fish.WreckBeingCircled.has_value()) // Don't turn if we're circling a wreck, otherwise we go astray
                                 {
                                     vec2f const neighborDirection = neighbor.TargetVelocity.normalise_approx();
 
@@ -1226,7 +1238,7 @@ void Fishes::UpdateShoaling(
                     if (furthestFishIndex == NoneElementIndex
                         && closestFishIndex == NoneElementIndex
                         && f != fishShoal.StartFishIndex // This fish is not the lead
-                        && !fish.IsCirclingWreck) // This fish is not targeting a wreck - if it is, going towards the lead would lead it astray
+                        && !fish.WreckBeingCircled.has_value()) // This fish is not targeting a wreck - if it is, going towards the lead would lead it astray
                     {
                         //
                         // We're too far from anyone else...
@@ -1310,46 +1322,65 @@ void Fishes::UpdateShoaling(
 bool Fishes::TryDirectFishToWreck(
     Fish & fish,
     OceanFloor const & oceanFloor,
-    SimulationParameters const & simulationParameters)
+    SimulationParameters const & /*simulationParameters*/)
 {
     if (!mFishShoals[fish.ShoalId].Species.DoesChaseWrecks)
     {
         // No way
+        assert(!fish.WreckBeingCircled.has_value());
         return false;
     }
 
-    // Clean before all - we'll set it if we go towards a wreck
-    fish.IsCirclingWreck = false;
+    //
+    // Decide wreck
+    //
 
-    // Find nearest wreck
-    ElementIndex nearestWreckIndex = NoneElementIndex;
-    float nearestWreckDistance = std::numeric_limits<float>::max();
-    for (size_t w = 0; w < mCandidateWrecks.size(); ++w)
+    ElementIndex chosenWreck = NoneElementIndex;
+
+    // See if current wreck is viable
+    if (fish.WreckBeingCircled.has_value()
+        && *fish.WreckBeingCircled < mCandidateWrecks.size()
+        && mCandidateWrecks[*fish.WreckBeingCircled].StaticLifetime >= WreckDetectionStaticitySimulationTimeThreshold)
     {
-        if (mCandidateWrecks[w].StaticLifetime >= WreckDetectionStaticitySimulationTimeThreshold)
+        chosenWreck = *fish.WreckBeingCircled;
+    }
+
+    if (chosenWreck == NoneElementIndex)
+    {
+        // Find nearest wreck
+        float nearestWreckDistance = std::numeric_limits<float>::max();
+        for (size_t w = 0; w < mCandidateWrecks.size(); ++w)
         {
-            float const distance = (fish.CurrentPosition - mCandidateWrecks[w].Aabb.CalculateCenter()).squareLength();
-            if (distance < nearestWreckDistance)
+            if (mCandidateWrecks[w].StaticLifetime >= WreckDetectionStaticitySimulationTimeThreshold)
             {
-                nearestWreckDistance = distance;
-                nearestWreckIndex = static_cast<ElementIndex>(w);
+                float const distance = (fish.CurrentPosition - mCandidateWrecks[w].Aabb.CalculateCenter()).squareLength();
+                if (distance < nearestWreckDistance)
+                {
+                    chosenWreck = static_cast<ElementIndex>(w);
+                    nearestWreckDistance = distance;
+                }
             }
         }
     }
 
-    if (nearestWreckIndex == NoneElementIndex)
+    if (chosenWreck == NoneElementIndex)
     {
         // No luck
+        fish.WreckBeingCircled.reset();
         return false;
     }
 
+    //
+    // Find target position
+    //
+
     // Choose a side - the furthest
-    float const XVariability = 2.0f;
+    float const XVariability = 6.0f;
     float const leftSideX =
-        mCandidateWrecks[nearestWreckIndex].Aabb.BottomLeft.x - (TargetPositionSlack + XVariability)
+        mCandidateWrecks[chosenWreck].Aabb.BottomLeft.x - (TargetPositionSlack + XVariability)
         + GameRandomEngine::GetInstance().GenerateUniformReal(-XVariability, XVariability);
     float const rightSideX =
-        mCandidateWrecks[nearestWreckIndex].Aabb.TopRight.x + (TargetPositionSlack + XVariability)
+        mCandidateWrecks[chosenWreck].Aabb.TopRight.x + (TargetPositionSlack + XVariability)
         + GameRandomEngine::GetInstance().GenerateUniformReal(-XVariability, XVariability);
     float targetX;
     if (std::fabs(fish.CurrentPosition.x - leftSideX) >= std::fabs(fish.CurrentPosition.x - rightSideX))
@@ -1363,25 +1394,19 @@ bool Fishes::TryDirectFishToWreck(
 
     // Choose a Y - avoiding entering silt
     float const siltHeight = oceanFloor.GetSiltHeightAt(Clamp(targetX, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth));
-    float const maxY = std::max(mCandidateWrecks[nearestWreckIndex].Aabb.TopRight.y + 10.0f, siltHeight);
-    float const minY = std::max(mCandidateWrecks[nearestWreckIndex].Aabb.BottomLeft.y, siltHeight);
+    float const maxY = std::max(mCandidateWrecks[chosenWreck].Aabb.TopRight.y + 4.0f, siltHeight);
+    float const minY = std::max(mCandidateWrecks[chosenWreck].Aabb.BottomLeft.y, siltHeight);
     float const targetY = GameRandomEngine::GetInstance().GenerateUniformReal(minY, maxY);
 
     // Set target position
     fish.TargetPosition = vec2f(targetX, targetY);
 
-    // Update fish's shoaling velocity, as we'll take that into account
-    fish.ShoalingVelocity =
-        (fish.TargetPosition - fish.CurrentPosition).normalise_approx()
-        * 1.8f // Magic number
-        * simulationParameters.FishSpeedAdjustment;
-
     // TODOTEST
-    LogMessage("Fish ", mFishShoals[fish.ShoalId].Species.Name, " has chosen wreck ", nearestWreckIndex, ", target_pos=", fish.TargetPosition, " (cnt=",
-        mCandidateWrecks[nearestWreckIndex].Aabb.CalculateCenter(), ")");
+    LogMessage("Fish ", mFishShoals[fish.ShoalId].Species.Name, " has chosen wreck ", chosenWreck, ", target_pos=", fish.TargetPosition, " (cnt=",
+        mCandidateWrecks[chosenWreck].Aabb.CalculateCenter(), ")");
 
-    // Remember the fish is circling a wreck now
-    fish.IsCirclingWreck = true;
+    // Remember the fish is circling this wreck now
+    fish.WreckBeingCircled = chosenWreck;
 
     return true;
 }
