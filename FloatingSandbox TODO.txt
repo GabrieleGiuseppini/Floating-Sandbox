@@ -655,19 +655,20 @@
 		+ Fix timer bomb fuse
 			+ 3s lifetime
 		+ Test other gen textures
-		+ Test NPCs
-		
+		+ Test NPCs		
 		+ Try different textures
 			+ Add more details around perimeter, random rotation of one smaller brush around the center
 
-		- Default Titanic:
-			- Try mixed w/b smoke on each funnel
-
-		- Grey smoke type?
-			N
+		- FIX: infinite clouds
+			= Try massless K
+				- Optimize
+				- Add comments
 
 		- Option to remove silt clouds
 			- Or slider for sensitivity, 0.0 => no clouds
+
+		- Default Titanic:
+			- Try mixed w/b smoke on each funnel
 
 		- Test on Dell
 			- Toggling checkbox
@@ -745,15 +746,38 @@
 		= Fine-tuning:
 			+ Enforce min size of AABB
 			+ Turn off shoaling if going to wreck
+			+ Draw arrows
 
-			= Vertical randomization (all fishes now are on same exact Y)
-				- Take into account silt height
-				- Do something for bottom bounce while circling wrecks
-			- Faster heading towards wreck
-				- Periodic check for heading to wreck, interrupting "target cruising"
-				- Force leader to wreck?
+			= Try to reinstate shoaling
+				+ But prevent turning for someone else if we are chasin wrecks and they are not
+				- TODOHERE: see where target gets randomized
+
+			= Vertical and horizontal randomization (all fishes now are on same exact Y)
+				= V
+					- Take into account silt height				
+				- H
+
+			= Faster heading towards wreck
+				= Periodic check for heading to wreck, interrupting "target cruising"
+					+ If panic == 0.0:
+						+ HasNewTarget=false;
+						+ If time to check for wreck:
+							+ HasNewTarget=check for wreck
+						+ If !HasNewTarget and close to target:
+							+ fish.TargetPosition = FindNewCruisingTargetPosition()
+							+ HasNewTarget=true
+						+ If HasNewTarget:
+							+ Do rest
+					+ Else if reached end of panic:
+						+ Reset panic
+					+ Update next wreck check timestamp
+
+				- Force leader to wreck?			
+
+			- Do something for bottom bounce while circling wrecks
 
 		- Remove logs
+		- Remove point-to-point arrows
 
 	- Rot rework:
 		- Damaged points get more "water rot"

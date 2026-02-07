@@ -268,6 +268,7 @@ private:
 
     bool TryDirectFishToWreck(
         Fish & fish,
+        OceanFloor const & oceanFloor,
         SimulationParameters const & simulationParameters);
 
     void EnactDisturbance(
