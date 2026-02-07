@@ -911,7 +911,8 @@ void Ship::HandleCollisionsWithSeaFloor(
                 //
 
                 // Velocity-based hardness
-                float const kineticEnergy = mPoints.GetMass(pointIndex) * mPoints.GetVelocity(pointIndex).squareLength() * 0.5f;
+                float const kineticEnergyVelocityComponent = pointVelocity.squareLength() * 0.5f;
+                float const kineticEnergy = mPoints.GetMass(pointIndex) * kineticEnergyVelocityComponent;
                 float const kineticEnergyHardness = LinearStep(0.0f, 30000.0f, kineticEnergy);
 
                 // Depth-based hardness
@@ -939,12 +940,15 @@ void Ship::HandleCollisionsWithSeaFloor(
                 // Silt clouds
                 //
 
-                if (kineticEnergy > siltDustCloudEnergyThreshold
+                // We won't allow huge masses to generate a ton of clouds, so we use just velocity
+                // and a pretend mass to keep values reasonably real
+                float const impactKineticEnergy = 700.0f * kineticEnergyVelocityComponent;
+                if (impactKineticEnergy > siltDustCloudEnergyThreshold
                     && mPoints.GetConnectedTriangles(pointIndex).ConnectedTriangles.size() > 0 // Prevent debris from generating clouds
-                    && kineticEnergy > maxSiltImpact.value.KineticEnergy)
+                    && impactKineticEnergy > maxSiltImpact.value.KineticEnergy)
                 {
                     maxSiltImpact.value = EnergeticSiltImpact(
-                        kineticEnergy,
+                        impactKineticEnergy,
                         vec2f(clampedX, siltY),
                         pointVelocity);
                 }
