@@ -150,6 +150,9 @@ private:
         // Freefall state machine
         bool IsInFreefall;
 
+        // Next check for chasing a wreck
+        float NextWreckCheckSimulationTime;
+
         // Whether the fish is circling a wreck
         // (so we won't avoid AABBs)
         bool IsCirclingWreck;
@@ -165,6 +168,7 @@ private:
             vec2f const & targetVelocity,
             float headOffset,
             float initialTailProgressPhase,
+            float nextWreckCheckSimulationTime,
             TextureFrameId<GameTextureDatabases::FishTextureGroups> renderTextureFrameId)
             : ShoalId(shoalId)
             , PersonalitySeed(personalitySeed)
@@ -183,6 +187,7 @@ private:
             , CruiseSteeringState()
             , LastSteeringSimulationTime(0.0f)
             , IsInFreefall(false)
+            , NextWreckCheckSimulationTime(nextWreckCheckSimulationTime)
             , IsCirclingWreck(false)
             , RenderTextureFrameId(renderTextureFrameId)
         {}
@@ -261,7 +266,9 @@ private:
         SimulationParameters const & simulationParameters,
         VisibleWorld const & visibleWorld);
 
-    bool TryDirectFishToWreck(Fish & fish);
+    bool TryDirectFishToWreck(
+        Fish & fish,
+        SimulationParameters const & simulationParameters);
 
     void EnactDisturbance(
         vec2f const & worldCoordinates,
@@ -298,6 +305,8 @@ private:
         FishSpecies const & species,
         float personalitySeed,
         SimulationParameters const & simulationParameters);
+
+    inline static float ChooseNextWreckTargetTime(float currentSimulationTime);
 
 private:
 

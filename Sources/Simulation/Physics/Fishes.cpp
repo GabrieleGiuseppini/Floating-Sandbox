@@ -166,6 +166,9 @@ void Fishes::Upload(RenderContext & renderContext) const
 {
     renderContext.UploadFishesStart(mFishes.size());
 
+    // TODOTEST
+    renderContext.GetShipRenderContext(0).UploadPointToPointArrowsStart(mFishes.size());
+
     for (auto const & fish : mFishes)
     {
         float angleCw = fish.CurrentRenderVector.angleCw();
@@ -193,7 +196,13 @@ void Fishes::Upload(RenderContext & renderContext) const
             species.TailX,
             species.TailSwingWidth,
             std::sinf(fish.CurrentTailProgressPhase));
+
+        // TODOTEST
+        renderContext.GetShipRenderContext(0).UploadPointToPointArrow(0, fish.CurrentPosition, fish.TargetPosition, rgbColor(0x90, 0x05, 0x05));
     }
+
+    // TODOTEST
+    renderContext.GetShipRenderContext(0).UploadPointToPointArrowsEnd();
 
     renderContext.UploadFishesEnd();
 }
@@ -235,7 +244,7 @@ void Fishes::TriggerWidespreadPanic(std::chrono::milliseconds delay)
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Fishes::UpdateNumberOfFishes(
-    float /*currentSimulationTime*/,
+    float currentSimulationTime,
     OceanSurface & /*oceanSurface*/,
     OceanFloor const & oceanFloor,
     Geometry::ShipAABBSet const & aabbSet,
@@ -402,6 +411,7 @@ void Fishes::UpdateNumberOfFishes(
                 MakeCruisingVelocity((targetPosition - initialPosition).normalise_approx(), species, personalitySeed, simulationParameters),
                 headOffset,
                 GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>), // initial progress phase
+                ChooseNextWreckTargetTime(currentSimulationTime),
                 TextureFrameId<GameTextureDatabases::FishTextureGroups>(
                     GameTextureDatabases::FishTextureGroups::Fish,
                     species.RenderTextureFrameIndices[renderTextureFrameIndex]));
@@ -867,53 +877,72 @@ void Fishes::UpdateDynamics(
         // 4) Check state machine transitions
         ///////////////////////////////////////////////////////////////////
 
-        // Check whether this fish has reached its target
-        if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < TargetPositionSlack
-            && fish.PanicCharge == 0.0f) // Not in panic
+        bool const isTimeToCheckForWreck = currentSimulationTime > fish.NextWreckCheckSimulationTime;
+
+        // Do choices only if we're not in panic
+        if (fish.PanicCharge == 0.0f) // Not in panic
         {
-            //
-            // Target Reached
-            //
+            bool hasNewTarget = false;
 
-            // Choose a targer position
-
-            // Try first with wrecks
-            if (!TryDirectFishToWreck(fish))
+            // Check whether it's time to do a wreck check
+            if (isTimeToCheckForWreck && !fish.IsCirclingWreck)
             {
-                // No luck, choose cruising target position
-                fish.TargetPosition = FindNewCruisingTargetPosition(
-                    fish.CurrentPosition,
-                    -fish.CurrentVelocity.normalise_approx(),
-                    fishSpecies,
-                    visibleWorld);
+                hasNewTarget = TryDirectFishToWreck(fish, simulationParameters);
             }
 
-            // Calculate new target velocity
-            fish.TargetVelocity = MakeCruisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise_approx(), fishSpecies, fish.PersonalitySeed, simulationParameters);
-
-            // Setup steering, depending on whether we're turning or not
-            if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f
-                && !fish.CruiseSteeringState.has_value()) // Not steering already
+            // Check whether fish has reached target
+            if (!hasNewTarget
+                && std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < TargetPositionSlack)
             {
-                // Perform a cruise steering
-                fish.CruiseSteeringState.emplace(
-                    fish.CurrentVelocity,
-                    fish.CurrentRenderVector,
-                    currentSimulationTime,
-                    1.5f); // Slow turn
+                //
+                // Target Reached
+                //
 
-                // Remember the time at which we did the last steering
-                fish.LastSteeringSimulationTime = currentSimulationTime;
+                // Check wreck first, otherwise choose arbitrary
+                if (isTimeToCheckForWreck // Avoid second check
+                    || !TryDirectFishToWreck(fish, simulationParameters))
+                {
+                    // Arbitrary
+                    fish.TargetPosition = FindNewCruisingTargetPosition(
+                        fish.CurrentPosition,
+                        -fish.CurrentVelocity.normalise_approx(),
+                        fishSpecies,
+                        visibleWorld);
+                }
+
+                hasNewTarget = true;
             }
-            else
-            {    // Converge direction change at this rate
-                fish.CurrentDirectionSmoothingConvergenceRate = std::max(
-                    0.15f,
-                    fish.CurrentDirectionSmoothingConvergenceRate);
+
+            // If fish has chosen new target, we need to adjust velocity et al
+            if (hasNewTarget)
+            {
+                // Calculate new target velocity
+                fish.TargetVelocity = MakeCruisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise_approx(), fishSpecies, fish.PersonalitySeed, simulationParameters);
+
+                // Setup steering, depending on whether we're turning or not
+                if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f
+                    && !fish.CruiseSteeringState.has_value()) // Not steering already
+                {
+                    // Perform a cruise steering
+                    fish.CruiseSteeringState.emplace(
+                        fish.CurrentVelocity,
+                        fish.CurrentRenderVector,
+                        currentSimulationTime,
+                        1.5f); // Slow turn
+
+                    // Remember the time at which we did the last steering
+                    fish.LastSteeringSimulationTime = currentSimulationTime;
+                }
+                else
+                {    // Converge direction change at this rate
+                    fish.CurrentDirectionSmoothingConvergenceRate = std::max(
+                        0.15f,
+                        fish.CurrentDirectionSmoothingConvergenceRate);
+                }
             }
         }
         // Check whether this fish has reached the end of panic mode
-        else if (fish.PanicCharge != 0.0f && fish.PanicCharge < 0.02f) // Reached end of panic
+        else if (fish.PanicCharge < 0.02f) // Reached end of panic
         {
             //
             // End of Panic
@@ -946,6 +975,12 @@ void Fishes::UpdateDynamics(
                     0.08f,
                     fish.CurrentDirectionSmoothingConvergenceRate);
             }
+        }
+
+        // Update next wreck check time
+        if (isTimeToCheckForWreck)
+        {
+            fish.NextWreckCheckSimulationTime = ChooseNextWreckTargetTime(currentSimulationTime);
         }
 
         ///////////////////////////////////////////////////////////////////
@@ -1272,7 +1307,9 @@ void Fishes::UpdateShoaling(
     }
 }
 
-bool Fishes::TryDirectFishToWreck(Fish & fish)
+bool Fishes::TryDirectFishToWreck(
+    Fish & fish,
+    SimulationParameters const & simulationParameters)
 {
     if (!mFishShoals[fish.ShoalId].Species.DoesChaseWrecks)
     {
@@ -1305,6 +1342,10 @@ bool Fishes::TryDirectFishToWreck(Fish & fish)
         return false;
     }
 
+    // TODOHERE: side first, then Y (as needs X for silt height)
+    // Calculate target Y, taking care not to target under-silt
+    // TODOHERE:
+
     // Choose side of AABB furthest from target, with position offseted to cover target range check
     float const targetY =
         mCandidateWrecks[nearestWreckIndex].Aabb.CalculateCenter().y
@@ -1321,8 +1362,14 @@ bool Fishes::TryDirectFishToWreck(Fish & fish)
         fish.TargetPosition = rightSideTarget;
     }
 
+    // Update fish's shoaling velocity, as we'll take that into account
+    fish.ShoalingVelocity =
+        (fish.TargetPosition - fish.CurrentPosition).normalise_approx()
+        * 1.8f // Magic number
+        * simulationParameters.FishSpeedAdjustment;
+
     // TODOTEST
-    LogMessage("Fish ", mFishShoals[fish.ShoalId].Species.Name, " has chosen wreck ", nearestWreckIndex, ", target_pos=", fish.TargetPosition, " (cnt=", 
+    LogMessage("Fish ", mFishShoals[fish.ShoalId].Species.Name, " has chosen wreck ", nearestWreckIndex, ", target_pos=", fish.TargetPosition, " (cnt=",
         mCandidateWrecks[nearestWreckIndex].Aabb.CalculateCenter(), ")");
 
     // Remember the fish is circling a wreck now
@@ -1586,6 +1633,11 @@ vec2f Fishes::MakeCruisingVelocity(
     return direction
         * (species.BasalSpeed * simulationParameters.FishSpeedAdjustment * simulationParameters.FishSizeMultiplier)
         * (0.7f + personalitySeed * 0.3f);
+}
+
+float Fishes::ChooseNextWreckTargetTime(float currentSimulationTime)
+{
+    return currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(2.0f, 4.5f);
 }
 
 }
