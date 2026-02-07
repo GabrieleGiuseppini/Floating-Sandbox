@@ -22,6 +22,8 @@ struct FishSpecies
 
     vec2f WorldSize; // World coordinate units
 
+    bool DoesChaseWrecks;
+
     size_t ShoalSize;
     float ShoalRadius; // In "bodies"
     float OceanDepth;
@@ -38,6 +40,7 @@ struct FishSpecies
     FishSpecies(
         std::string const & name,
         vec2f const & worldSize,
+        bool doesChaseWrecks,
         size_t shoalSize,
         float shoalRadius,
         float oceanDepth,
@@ -49,6 +52,7 @@ struct FishSpecies
         std::vector<TextureFrameIndex> const & renderTextureFrameIndices)
         : Name(name)
         , WorldSize(worldSize)
+        , DoesChaseWrecks(doesChaseWrecks)
         , ShoalSize(shoalSize)
         , ShoalRadius(shoalRadius)
         , OceanDepth(oceanDepth)

@@ -150,6 +150,10 @@ private:
         // Freefall state machine
         bool IsInFreefall;
 
+        // Whether the fish is circling a wreck
+        // (so we won't avoid AABBs)
+        bool IsCirclingWreck;
+
         // The texture frame for this fish
         TextureFrameId<GameTextureDatabases::FishTextureGroups> RenderTextureFrameId;
 
@@ -179,8 +183,20 @@ private:
             , CruiseSteeringState()
             , LastSteeringSimulationTime(0.0f)
             , IsInFreefall(false)
+            , IsCirclingWreck(false)
             , RenderTextureFrameId(renderTextureFrameId)
         {}
+    };
+
+    struct Wreck
+    {
+        Geometry::ShipAABB Aabb;
+        float StaticLifetime;
+
+        Wreck(Geometry::ShipAABB const & aabb)
+            : Aabb(aabb)
+            , StaticLifetime(0.0f)
+        { }
     };
 
     struct Interaction
@@ -230,6 +246,8 @@ private:
 
     void UpdateInteractions(SimulationParameters const & simulationParameters);
 
+    void UpdateWreckDetection(Geometry::ShipAABBSet const & aabbSet);
+
     void UpdateDynamics(
         float currentSimulationTime,
         OceanSurface & oceanSurface,
@@ -242,6 +260,8 @@ private:
         float currentSimulationTime,
         SimulationParameters const & simulationParameters,
         VisibleWorld const & visibleWorld);
+
+    bool TryDirectFishToWreck(Fish & fish);
 
     void EnactDisturbance(
         vec2f const & worldCoordinates,
@@ -260,7 +280,7 @@ private:
         float xVariance,
         float yVariance);
 
-    inline static vec2f FindPosition(
+    inline static vec2f FindInitialPosition(
         vec2f const & averagePosition,
         float xVariance,
         float yVariance,
@@ -289,6 +309,10 @@ private:
 
     // The...fishes
     std::vector<Fish> mFishes;
+
+    // Wreck detection
+    float mNextWreckDetectionSimulationTime;
+    std::vector<Wreck> mCandidateWrecks;
 
     // Delayed interactions
     std::vector<Interaction> mInteractions;

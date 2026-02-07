@@ -46,6 +46,7 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(IAssetManager const & assetManager
                 Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "world_size_x"),
                 Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "world_size_y"));
 
+            bool const doesChaseWrecks = Utils::GetOptionalJsonMember<bool>(fishSpeciesObject, "does_chase_wrecks", false);
             size_t const shoalSize = Utils::GetMandatoryJsonMember<size_t>(fishSpeciesObject, "shoal_size");
             float const shoalRadius = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "shoal_radius");
             float const oceanDepth = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "ocean_depth");
@@ -74,6 +75,7 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(IAssetManager const & assetManager
             fishSpecies.emplace_back(
                 name,
                 worldSize,
+                doesChaseWrecks,
                 shoalSize,
                 shoalRadius,
                 oceanDepth,

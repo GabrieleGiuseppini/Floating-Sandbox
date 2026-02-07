@@ -27,6 +27,10 @@
 		{	
 			"frame_name_pattern": "deepsea_angler_\\d+"
 		}
+		,
+		{	
+			"frame_name_pattern": "yellowtail_snapper_\\d+"
+		}
 	]
 }
 

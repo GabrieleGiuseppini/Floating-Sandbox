@@ -706,39 +706,54 @@
 			+ Do at all uses of ShipSearchRadiusScreen
 			! It's PC-only, no Android
 
-	- Fishes on wreck (see paper in Malta book)
-		- Alternative:
-			- @Fishes
-			- Every X (sim time, ~10s):
-				- Take largest N AABBs (N~=3)
-				- Compare with state maintained for the largest N AABBs (== position of center)
-					- Note that state size might be lower than N here
-				- Those that stay within threshold for more than T (T~=20s) are available to fishes
-			- When a shoal needs to decide a new destination, it checks the available set first; if anything is found within a range R (large), that's the new destination
-			- Shoal can keep re-checking for destination from time to time, like it probably does now
-			- Impl:
-				- Fish database: shoals get new "canChaseWrecks" boolean
-					- Set it only for small fishes which are cool if snoop around wrecks
-				- Every X:
-					- Take largest N AABBs which have both x-axes underneath 0 (so enough to check highest)
-					- Compare center of ith with ith from mCandidateWrecks (as long as i is in mCandidateWrecks)
+	= Fishes on wreck (see paper in Malta book)
+		+ Alternative:
+			+ @Fishes
+			+ Every X (sim time, ~10s):
+				+ Take largest N AABBs (N~=3)
+				+ Compare with state maintained for the largest N AABBs (== position of center)
+					+ Note that state size might be lower than N here
+				+ Those that stay within threshold for more than T (T~=20s) are available to fishes
+			+ When a shoal needs to decide a new destination, it checks the available set first; if anything is found within a range R (large), that's the new destination
+			+ Shoal can keep re-checking for destination from time to time, like it probably does now
+			+ Impl:
+				+ Fish database: species get new "doesChaseWrecks" boolean
+					+ Set it only for small fishes which are cool if snoop around wrecks
+						+ Queen Snapper
+						+ Red Bream
+				+ Every X:
+					+ Take largest N AABBs (in terms of # of edges) which have both x-axes underneath 0 (so enough to check highest)
+					+ Compare center of ith with ith from mCandidateWrecks (as long as i is in mCandidateWrecks)
 						- vector of:
-							- vec2f centerPosition
+							- AABB aabb
 							- uint64_t staticSampleCount
-						- size always moves between 0 and N
-					- If semi-static:
-						- staticSampleCount++
-					- Else:
-						- staticSampleCount = 0
-					- centerPosition = center of AABB
-					- Ensure mCandidateWrecks' size kept consistent with # of largest AABBs found
-				- Shoal has new state variable: isChasingWreck, boolean
-				- At shoal target check:
-					- If shoal has canChaseWrecks:
-						- For each wreck in mCandidateWrecks with staticSampleCount >= Threshold: choose it if distance is in range R
-						- Update isChasingWreck accordingly
-						- Make sure this keeps happening at next shoal target check
-				- At fish<->AABB collision check: only do check if !shoal::isChasingWreck
+						+ size always moves between 0 and N
+					+ If semi-static:
+						+ staticSampleCount++
+					+ Else:
+						+ staticSampleCount = 0
+					+ aabb = AABB
+					+ Ensure mCandidateWrecks' size kept consistent with # of largest AABBs found
+				+ Fish has new state variable: IsCirclingWreck, boolean
+				+ At fish target reach:
+					+ If species has canChaseWrecks:
+						+ Find closest wreck in mCandidateWrecks with staticSampleCount >= Threshold, and follow its side
+							+ Choose side of AABB furthest from target, and position offseted to cover target range check (which becomes a constant)
+						+ Update IsCirclingWreck accordingly
+						+ Make sure this keeps happening at next target check
+				+ At fish<->AABB collision check: only do check if !IsCirclingWreck
+		= Fine-tuning:
+			+ Enforce min size of AABB
+			+ Turn off shoaling if going to wreck
+
+			= Vertical randomization (all fishes now are on same exact Y)
+				- Take into account silt height
+				- Do something for bottom bounce while circling wrecks
+			- Faster heading towards wreck
+				- Periodic check for heading to wreck, interrupting "target cruising"
+				- Force leader to wreck?
+
+		- Remove logs
 
 	- Rot rework:
 		- Damaged points get more "water rot"

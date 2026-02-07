@@ -21,7 +21,12 @@ namespace /*anonymous*/ {
 float constexpr PositionXVarianceFactor = 1.0f / 4.0f;
 float constexpr PositionYVariance = 10.0f;
 
+float constexpr TargetPositionSlack = 7.0f;
 float constexpr AABBMargin = 4.0f;
+
+float constexpr WreckDetectionPeriodSimulationTime = 5.0f;
+float constexpr WreckDetectionStaticityDistanceThreshold = 5.0f; // 1m/s is max velocity
+float constexpr WreckDetectionStaticitySimulationTimeThreshold = 15.0f; // If we detect an AABB as static for more than this, it's a wreck
 
 }
 
@@ -32,6 +37,10 @@ Fishes::Fishes(
     , mSimulationEventHandler(simulationEventDispatcher)
     , mFishShoals()
     , mFishes()
+    ///
+    , mNextWreckDetectionSimulationTime(WreckDetectionPeriodSimulationTime)
+    , mCandidateWrecks()
+    ///
     , mInteractions()
     , mCurrentFishSizeMultiplier(0.0f)
     , mCurrentFishSpeedAdjustment(0.0f)
@@ -116,6 +125,17 @@ void Fishes::Update(
     //
 
     UpdateInteractions(simulationParameters);
+
+    //
+    // Update wrech detection, if time to do it
+    //
+
+    if (currentSimulationTime > mNextWreckDetectionSimulationTime)
+    {
+        UpdateWreckDetection(aabbSet);
+
+        mNextWreckDetectionSimulationTime += WreckDetectionPeriodSimulationTime;
+    }
 
     //
     // Update dynamics
@@ -331,7 +351,7 @@ void Fishes::UpdateNumberOfFishes(
                     visibleWorld.Width * PositionXVarianceFactor
                     * 3.0f * (1.0f + static_cast<float>(mFishShoals.size()) / static_cast<float>(mFishSpeciesDatabase.GetFishSpeciesCount()));
 
-                newShoal.InitialPosition = FindPosition(
+                newShoal.InitialPosition = FindInitialPosition(
                     vec2f(visibleWorld.Center.x, species.OceanDepth),
                     xVariance,
                     PositionYVariance * 0.5f,
@@ -354,7 +374,7 @@ void Fishes::UpdateNumberOfFishes(
 
             float const shoalSizeVarianceFactor = species.ShoalRadius * simulationParameters.FishShoalRadiusAdjustment * mCurrentFishSizeMultiplier / 2.0f;
 
-            vec2f const initialPosition = FindPosition(
+            vec2f const initialPosition = FindInitialPosition(
                 shoal.InitialPosition,
                 species.WorldSize.x * shoalSizeVarianceFactor,
                 species.WorldSize.y * shoalSizeVarianceFactor,
@@ -379,7 +399,7 @@ void Fishes::UpdateNumberOfFishes(
                 personalitySeed,
                 initialPosition,
                 targetPosition,
-                MakeCruisingVelocity((targetPosition - initialPosition).normalise(), species, personalitySeed, simulationParameters),
+                MakeCruisingVelocity((targetPosition - initialPosition).normalise_approx(), species, personalitySeed, simulationParameters),
                 headOffset,
                 GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>), // initial progress phase
                 TextureFrameId<GameTextureDatabases::FishTextureGroups>(
@@ -453,6 +473,82 @@ void Fishes::UpdateInteractions(SimulationParameters const & simulationParameter
     }
 }
 
+void Fishes::UpdateWreckDetection(Geometry::ShipAABBSet const & aabbSet)
+{
+    size_t constexpr MaxTrackedWrecks = 3;
+
+    //
+    // 1) Build top N container of filtered AABBs
+    //
+
+    std::vector<Geometry::ShipAABB> filteredAabbs;
+    for (auto const & aabb : aabbSet.GetItems())
+    {
+        // Condition: have both x-axes underneath 0 (so enough to check highest),
+        // and large enough
+        if (aabb.TopRight.y < -20.0f /// Magic min depth
+            && aabb.FrontierEdgeCount >= 7) // Magic min size
+        {
+            filteredAabbs.push_back(aabb);
+        }
+    }
+
+    std::nth_element(
+        filteredAabbs.begin(),
+        filteredAabbs.begin() + std::min(MaxTrackedWrecks, filteredAabbs.size()),
+        filteredAabbs.end(),
+        [](auto const & w1, auto const & w2)
+        {
+            return w1.FrontierEdgeCount > w2.FrontierEdgeCount;
+        });
+
+    //
+    // 2) Update our own candidate wrecks with this information
+    //
+
+    for (size_t i = 0; i < filteredAabbs.size() && i < MaxTrackedWrecks; ++i)
+    {
+        if (i < mCandidateWrecks.size())
+        {
+            // Compare centers
+            float const distance = (filteredAabbs[i].CalculateCenter() - mCandidateWrecks[i].Aabb.CalculateCenter()).length();
+            if (distance < WreckDetectionStaticityDistanceThreshold)
+            {
+                // We consider it static
+                mCandidateWrecks[i].StaticLifetime += WreckDetectionPeriodSimulationTime;
+            }
+            else
+            {
+                // Has moved
+                mCandidateWrecks[i].StaticLifetime = 0.0f;
+            }
+
+            // Update AABB anyway
+            mCandidateWrecks[i].Aabb = filteredAabbs[i];
+        }
+        else
+        {
+            // New candidate
+            assert(mCandidateWrecks.size() < MaxTrackedWrecks);
+            mCandidateWrecks.emplace_back(filteredAabbs[i]);
+        }
+    }
+
+    // Forget stale wrecks
+    assert(mCandidateWrecks.size() <= MaxTrackedWrecks);
+    if (mCandidateWrecks.size() > filteredAabbs.size())
+    {
+        mCandidateWrecks.erase(mCandidateWrecks.begin() + filteredAabbs.size(), mCandidateWrecks.end());
+    }
+
+    // TODOTEST
+    LogMessage("Wrecks:");
+    for (auto const & w : mCandidateWrecks)
+    {
+        LogMessage("   ", w.StaticLifetime);
+    }
+}
+
 void Fishes::UpdateDynamics(
     float currentSimulationTime,
     OceanSurface & oceanSurface,
@@ -494,7 +590,7 @@ void Fishes::UpdateDynamics(
 
                 // Reach all targets
                 fish.CurrentVelocity = fish.TargetVelocity;
-                fish.CurrentRenderVector = fish.TargetVelocity.normalise();
+                fish.CurrentRenderVector = fish.TargetVelocity.normalise_approx();
             }
             else
             {
@@ -518,7 +614,7 @@ void Fishes::UpdateDynamics(
                         fish.TargetVelocity * SmoothStep(0.5f, 1.0f, elapsedSteeringDurationFraction);
                 }
 
-                vec2f const targetRenderVector = fish.TargetVelocity.normalise();
+                vec2f const targetRenderVector = fish.TargetVelocity.normalise_approx();
 
                 // RenderVector Y:
                 // - smooth towards zero during an initial interval
@@ -570,7 +666,7 @@ void Fishes::UpdateDynamics(
             }
 
             // Make RenderVector match current velocity
-            fish.CurrentRenderVector = fish.CurrentVelocity.normalise();
+            fish.CurrentRenderVector = fish.CurrentVelocity.normalise_approx();
 
             // Converge smoothing convergence rate to its ideal value
             fish.CurrentDirectionSmoothingConvergenceRate =
@@ -622,7 +718,7 @@ void Fishes::UpdateDynamics(
             float const currentVelocityMagnitude = fish.CurrentVelocity.length();
             float constexpr MaxVelocityMagnitude = 1.3f; // Magic number
             fish.TargetVelocity =
-                fish.CurrentVelocity.normalise(currentVelocityMagnitude)
+                fish.CurrentVelocity.normalise_approx(currentVelocityMagnitude)
                 * Clamp(currentVelocityMagnitude, 0.0f, MaxVelocityMagnitude);
 
             // Converge to dragged velocity at this rate, overriding current rate
@@ -746,7 +842,7 @@ void Fishes::UpdateDynamics(
             // Find a new target position away
             fish.TargetPosition = FindNewCruisingTargetPosition(
                 fish.CurrentPosition,
-                fish.TargetVelocity.normalise(),
+                fish.TargetVelocity.normalise_approx(),
                 fishSpecies,
                 visibleWorld);
 
@@ -772,22 +868,28 @@ void Fishes::UpdateDynamics(
         ///////////////////////////////////////////////////////////////////
 
         // Check whether this fish has reached its target
-        if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f
+        if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < TargetPositionSlack
             && fish.PanicCharge == 0.0f) // Not in panic
         {
             //
             // Target Reached
             //
 
-            // Choose new target position
-            fish.TargetPosition = FindNewCruisingTargetPosition(
-                fish.CurrentPosition,
-                -fish.CurrentVelocity.normalise(),
-                fishSpecies,
-                visibleWorld);
+            // Choose a targer position
+
+            // Try first with wrecks
+            if (!TryDirectFishToWreck(fish))
+            {
+                // No luck, choose cruising target position
+                fish.TargetPosition = FindNewCruisingTargetPosition(
+                    fish.CurrentPosition,
+                    -fish.CurrentVelocity.normalise_approx(),
+                    fishSpecies,
+                    visibleWorld);
+            }
 
             // Calculate new target velocity
-            fish.TargetVelocity = MakeCruisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), fishSpecies, fish.PersonalitySeed, simulationParameters);
+            fish.TargetVelocity = MakeCruisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise_approx(), fishSpecies, fish.PersonalitySeed, simulationParameters);
 
             // Setup steering, depending on whether we're turning or not
             if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f
@@ -822,7 +924,7 @@ void Fishes::UpdateDynamics(
             // Continue to current target
 
             // Calculate new target velocity
-            fish.TargetVelocity = MakeCruisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), fishSpecies, fish.PersonalitySeed, simulationParameters);
+            fish.TargetVelocity = MakeCruisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise_approx(), fishSpecies, fish.PersonalitySeed, simulationParameters);
 
             // Setup steering, depending on whether we're turning or not
             if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f
@@ -868,7 +970,7 @@ void Fishes::UpdateDynamics(
             //
 
             // Bounce direction, opposite of target
-            vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
+            vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise_approx();
 
             // Calculate new target velocity - along bounce direction
             fish.TargetVelocity = MakeCruisingVelocity(bounceDirection, fishSpecies, fish.PersonalitySeed, simulationParameters);
@@ -916,8 +1018,8 @@ void Fishes::UpdateDynamics(
         // 6) Check AABB boundaries
         ///////////////////////////////////////////////////////////////////
 
-        //if (fish.PanicCharge <= 0.3f) // Only if we're not in panic
-        if (fish.PanicCharge <= 0.1f) // Only if we're not in panic
+        if (fish.PanicCharge <= 0.1f // If we're not in panic
+            && !fish.IsCirclingWreck) // It's not circling a wreck (otherwise we'd want it across an AABB)
         {
             for (auto const & aabb : aabbSet.GetItems())
             {
@@ -950,7 +1052,7 @@ void Fishes::UpdateDynamics(
                     // Rotate target velocity towards normal
                     float const targetVelocityMagnitude = fish.TargetVelocity.length();
                     fish.TargetVelocity =
-                        (fish.TargetVelocity.normalise(targetVelocityMagnitude) + outwardNormal * 2.0f).normalise()
+                        (fish.TargetVelocity.normalise_approx(targetVelocityMagnitude) + outwardNormal * 2.0f).normalise_approx()
                         * targetVelocityMagnitude;
 
                     // Converge direction change at a fast rate
@@ -993,7 +1095,8 @@ void Fishes::UpdateShoaling(
 
             if (fishShoal.CurrentMemberCount > 1 // A shoal contains at least one fish
                 && fish.ShoalingTimer <= 0.0f // Wait for this fish's shoaling cycle
-                && fish.PanicCharge < 0.02f) // Skip fishes even in little panic
+                && fish.PanicCharge < 0.02f // Skip fishes even in little panic
+                && !fish.IsCirclingWreck) // Don't distract fish that are heading towards wrecks
             {
                 if (!fish.CruiseSteeringState.has_value() // Fish is not u-turning
                     && !fish.IsInFreefall) // Fish is swimming
@@ -1049,7 +1152,7 @@ void Fishes::UpdateShoaling(
                                     && (currentSimulationTime - fish.LastSteeringSimulationTime) > UTurnSpeed + 3.0f // This fish hasn't u-turned recently
                                     && fish.LastSteeringSimulationTime < neighbor.LastSteeringSimulationTime) // The neighbor has u-turned more recently
                                 {
-                                    vec2f const neighborDirection = neighbor.TargetVelocity.normalise();
+                                    vec2f const neighborDirection = neighbor.TargetVelocity.normalise_approx();
 
                                     // Find a new target position along the neighbor's direction
                                     fish.TargetPosition = FindNewCruisingTargetPosition(
@@ -1097,7 +1200,7 @@ void Fishes::UpdateShoaling(
 
                         vec2f const fishToLeadVector = lead.CurrentPosition - fish.CurrentPosition;
                         float const distance = fishToLeadVector.length();
-                        vec2f const fishToLeadDirection = fishToLeadVector.normalise(distance);
+                        vec2f const fishToLeadDirection = fishToLeadVector.normalise_approx(distance);
 
                         // Check whether we need to turn - we do if lead is currently behind us
                         if (fish.TargetVelocity.x * fishToLeadDirection.x < 0.0f)
@@ -1141,11 +1244,11 @@ void Fishes::UpdateShoaling(
                         //
 
                         vec2f collisionCorrectionVelocity = (closestFishIndex != NoneElementIndex)
-                            ? -(mFishes[closestFishIndex].CurrentPosition - fish.CurrentPosition).normalise() * 1.2f // Go away from neighbor
+                            ? -(mFishes[closestFishIndex].CurrentPosition - fish.CurrentPosition).normalise_approx() * 1.2f // Go away from neighbor
                             : vec2f::zero();
 
                         vec2f cohesionCorrectionVelocity = (furthestFishIndex != NoneElementIndex)
-                            ? (mFishes[furthestFishIndex].CurrentPosition - fish.CurrentPosition).normalise() * 1.8f // Go towards neighbor
+                            ? (mFishes[furthestFishIndex].CurrentPosition - fish.CurrentPosition).normalise_approx() * 1.8f // Go towards neighbor
                             : vec2f::zero();
 
                         fish.ShoalingVelocity =
@@ -1169,6 +1272,65 @@ void Fishes::UpdateShoaling(
     }
 }
 
+bool Fishes::TryDirectFishToWreck(Fish & fish)
+{
+    if (!mFishShoals[fish.ShoalId].Species.DoesChaseWrecks)
+    {
+        // No way
+        return false;
+    }
+
+    // Clean before all - we'll set it if we go towards a wreck
+    fish.IsCirclingWreck = false;
+
+    // Find nearest wreck
+    ElementIndex nearestWreckIndex = NoneElementIndex;
+    float nearestWreckDistance = std::numeric_limits<float>::max();
+    for (size_t w = 0; w < mCandidateWrecks.size(); ++w)
+    {
+        if (mCandidateWrecks[w].StaticLifetime >= WreckDetectionStaticitySimulationTimeThreshold)
+        {
+            float const distance = (fish.CurrentPosition - mCandidateWrecks[w].Aabb.CalculateCenter()).squareLength();
+            if (distance < nearestWreckDistance)
+            {
+                nearestWreckDistance = distance;
+                nearestWreckIndex = static_cast<ElementIndex>(w);
+            }
+        }
+    }
+
+    if (nearestWreckIndex == NoneElementIndex)
+    {
+        // No luck
+        return false;
+    }
+
+    // Choose side of AABB furthest from target, with position offseted to cover target range check
+    float const targetY =
+        mCandidateWrecks[nearestWreckIndex].Aabb.CalculateCenter().y
+        + (fish.PersonalitySeed - 0.5f) * mCandidateWrecks[nearestWreckIndex].Aabb.GetHeight();
+    vec2f const leftSideTarget = vec2f(mCandidateWrecks[nearestWreckIndex].Aabb.BottomLeft.x - TargetPositionSlack, targetY);
+    vec2f const rightSideTarget = vec2f(mCandidateWrecks[nearestWreckIndex].Aabb.TopRight.x + TargetPositionSlack, targetY);
+    if ((fish.CurrentPosition - leftSideTarget).squareLength()
+        >= (fish.CurrentPosition - rightSideTarget).squareLength())
+    {
+        fish.TargetPosition = leftSideTarget;
+    }
+    else
+    {
+        fish.TargetPosition = rightSideTarget;
+    }
+
+    // TODOTEST
+    LogMessage("Fish ", mFishShoals[fish.ShoalId].Species.Name, " has chosen wreck ", nearestWreckIndex, ", target_pos=", fish.TargetPosition, " (cnt=", 
+        mCandidateWrecks[nearestWreckIndex].Aabb.CalculateCenter(), ")");
+
+    // Remember the fish is circling a wreck now
+    fish.IsCirclingWreck = true;
+
+    return true;
+}
+
 void Fishes::EnactDisturbance(
     vec2f const & worldCoordinates,
     float worldRadius,
@@ -1187,7 +1349,7 @@ void Fishes::EnactDisturbance(
             // Calculate position of head
             vec2f const fishHeadPosition =
                 fish.CurrentPosition
-                + fish.CurrentRenderVector.normalise() * fish.HeadOffset;
+                + fish.CurrentRenderVector.normalise_approx() * fish.HeadOffset;
 
             // Calculate distance from disturbance
             float const distance = (fishHeadPosition - worldCoordinates).length();
@@ -1207,19 +1369,19 @@ void Fishes::EnactDisturbance(
                 // Don't change target position, we'll return to it when panic is over
 
                 // Calculate new direction, away from disturbance
-                vec2f panicDirection = (fishHeadPosition - worldCoordinates).normalise(distance);
+                vec2f panicDirection = (fishHeadPosition - worldCoordinates).normalise_approx(distance);
 
                 // Make sure direction is not too steep
                 float constexpr MinXComponent = 0.4f;
                 if (panicDirection.x >= 0.0f && panicDirection.x < MinXComponent)
                 {
                     panicDirection.x = MinXComponent;
-                    panicDirection = panicDirection.normalise();
+                    panicDirection = panicDirection.normalise_approx();
                 }
                 else if (panicDirection.x < 0.0f && panicDirection.x > -MinXComponent)
                 {
                     panicDirection.x = -MinXComponent;
-                    panicDirection = panicDirection.normalise();
+                    panicDirection = panicDirection.normalise_approx();
                 }
 
                 // Calculate new target velocity - away from disturbance point, and will be panic velocity
@@ -1256,7 +1418,7 @@ void Fishes::EnactAttraction(
             // Calculate position of head
             vec2f const fishHeadPosition =
                 fish.CurrentPosition
-                + fish.CurrentRenderVector.normalise() * fish.HeadOffset;
+                + fish.CurrentRenderVector.normalise_approx() * fish.HeadOffset;
 
             // Calculate distance from attraction
             float const distance = (worldCoordinates - fishHeadPosition).length();
@@ -1275,19 +1437,19 @@ void Fishes::EnactAttraction(
                 vec2f const randomDelta(
                     GameRandomEngine::GetInstance().GenerateUniformReal(-RandomnessWidth, RandomnessWidth),
                     GameRandomEngine::GetInstance().GenerateUniformReal(-RandomnessWidth, RandomnessWidth));
-                vec2f panicDirection = ((worldCoordinates + randomDelta) - fishHeadPosition).normalise();
+                vec2f panicDirection = ((worldCoordinates + randomDelta) - fishHeadPosition).normalise_approx();
 
                 // Make sure direction is not too steep
                 float constexpr MinXComponent = 0.3f;
                 if (panicDirection.x >= 0.0f && panicDirection.x < MinXComponent)
                 {
                     panicDirection.x = MinXComponent;
-                    panicDirection = panicDirection.normalise();
+                    panicDirection = panicDirection.normalise_approx();
                 }
                 else if (panicDirection.x < 0.0f && panicDirection.x > -MinXComponent)
                 {
                     panicDirection.x = -MinXComponent;
-                    panicDirection = panicDirection.normalise();
+                    panicDirection = panicDirection.normalise_approx();
                 }
 
                 // Don't change target position, we'll return to it when panic is over
@@ -1328,7 +1490,7 @@ void Fishes::EnactWidespreadPanic(SimulationParameters const & simulationParamet
             vec2f const randomDelta(
                 GameRandomEngine::GetInstance().GenerateUniformReal(-RandomnessWidth, RandomnessWidth),
                 GameRandomEngine::GetInstance().GenerateUniformReal(-RandomnessWidth, RandomnessWidth));
-            vec2f panicDirection = (-fish.CurrentVelocity + randomDelta).normalise();
+            vec2f panicDirection = (-fish.CurrentVelocity + randomDelta).normalise_approx();
 
             // Don't change target position, we'll return to it when panic is over
 
@@ -1363,7 +1525,7 @@ vec2f Fishes::ChoosePosition(
     return vec2f(positionX, positionY);
 }
 
-vec2f Fishes::FindPosition(
+vec2f Fishes::FindInitialPosition(
     vec2f const & averagePosition,
     float xVariance,
     float yVariance,

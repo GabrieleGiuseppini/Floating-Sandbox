@@ -5,6 +5,7 @@
 	"world_size_x": 0.3,
 	"world_size_y": 0.15,
 
+	"does_chase_wrecks": true,
 	"shoal_size": 16,
 	"shoal_radius": 3.0,
 	"ocean_depth": 30.0,
@@ -56,6 +57,7 @@
 	"world_size_x": 0.2,
 	"world_size_y": 0.1,
 
+	"does_chase_wrecks": true,
 	"shoal_size": 32,
 	"shoal_radius": 3.5,
 	"ocean_depth": 15.0,
@@ -99,6 +101,23 @@
 	"tail_swing_width": 0.5,
 	"head_offset_x": 0.863,
 	"texture_indices": [10]
-    }
+    },
 
+    {
+        "name": "Yellow-tail Snapper",
+
+	"world_size_x": 0.35,
+	"world_size_y": 0.175,
+
+	"does_chase_wrecks": true,
+	"shoal_size": 25,
+	"shoal_radius": 3.5,
+	"ocean_depth": 50.0,
+	"basal_speed": 0.08,
+	"tail_x": 0.75,
+	"tail_speed": 0.02,
+	"tail_swing_width": 0.5,
+	"head_offset_x": 0.86328125,
+	"texture_indices": [11, 12]
+    }
 ]
