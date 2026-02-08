@@ -498,7 +498,7 @@ void Fishes::UpdateWreckDetection(Geometry::ShipAABBSet const & aabbSet)
         // Condition: have both x-axes underneath 0 (so enough to check highest),
         // and large enough
         if (aabb.TopRight.y < -20.0f /// Magic min depth
-            && aabb.FrontierEdgeCount >= 7) // Magic min size
+            && aabb.GetWidth() >= 5.0f) // Magic min size
         {
             filteredAabbs.push_back(aabb);
         }
@@ -549,17 +549,6 @@ void Fishes::UpdateWreckDetection(Geometry::ShipAABBSet const & aabbSet)
     assert(mCandidateWrecks.size() <= MaxTrackedWrecks);
     if (mCandidateWrecks.size() > filteredAabbs.size())
     {
-        for (size_t oldWreck = filteredAabbs.size(); oldWreck < mCandidateWrecks.size(); ++oldWreck)
-        {
-            for (auto & shoal : mFishShoals)
-            {
-                if (shoal.WreckBeingCircled == oldWreck)
-                {
-                    shoal.WreckBeingCircled.reset();
-                }
-            }
-        }
-
         mCandidateWrecks.erase(mCandidateWrecks.begin() + filteredAabbs.size(), mCandidateWrecks.end());
     }
 
@@ -1348,136 +1337,65 @@ bool Fishes::TryDirectFishToWreck(
     }
 
     //
-    // Decide wreck
+    // If this is the lead, it's responsible for the wreck for the shoal
     //
-    //  - If it's lead:
-    //      - If it is currently not circling a wreck, or it has been circling a wreck for long:
-    //          - Pick a wreck
-    //          - If none found:
-    //              - Reset shoal wreck and return false
-    //          - Else:
-    //              - Attach shoal to wreck
-    //              - Change fish state to circling, and find target pos
-    //      - Else:
-    //          - Check if shoal's wreck is still viable;
-    //          - If so:
-    //              - Stick with it, and find target pos
-    //          - Else:
-    //              - Reset shoal wreck and return false
-    //  - Else:
-    //      - If shoal is assigned to wreck and wreck still viable:
-    //          - Change fish state to circling, and find target pos
-    //      - Else:
-    //          - Return false
-    //
-
-    float constexpr TimeToLookForNewWreck = 4 * 60.0f; // 4 (sim) minutes
 
     if (fishIndex == shoal.StartFishIndex)
     {
-        // Lead
-        if (!fish.IsCirclingWreck
+        //
+        // Ensure shoal has a viable, fresh wreck
+        //
+
+        float constexpr TimeToLookForNewWreck = 4 * 60.0f; // 4 (sim) minutes
+
+        if (!shoal.WreckBeingCircled.has_value()
+            || !IsViableWreck(*shoal.WreckBeingCircled)
             || currentSimulationTime > shoal.LastWreckSelectionSimulationTime + TimeToLookForNewWreck)
         {
             // Pick a wreck
             auto const pickedWreck = PickViableWreck(fish);
-            if (pickedWreck == NoneElementIndex)
+            if (pickedWreck != NoneElementIndex)
             {
-                // No wrecks available
-
-                // TODOTEST
-                LogMessage("Lead of ", fish.ShoalId, " could not pick a wreck");
-
-                // Detach shoal from wreck
-                shoal.WreckBeingCircled.reset();
-
-                // Detach ourselves from wreck
-                fish.IsCirclingWreck = false;
-
-                return false;
-            }
-            else
-            {
-                // Found a wreck!
-
-                // TODOTEST
                 LogMessage("Lead of ", fish.ShoalId, " picked wreck ", pickedWreck);
 
-                // Attach shoal to wreck
                 shoal.WreckBeingCircled = pickedWreck;
                 shoal.LastWreckSelectionSimulationTime = currentSimulationTime;
-
-                // We'll find a position
-            }
-        }
-        else
-        {
-            // Check whether shoal's wreck is still viable
-            if (shoal.WreckBeingCircled.has_value()
-                && *shoal.WreckBeingCircled < mCandidateWrecks.size()
-                && mCandidateWrecks[*shoal.WreckBeingCircled].StaticLifetime >= WreckDetectionStaticitySimulationTimeThreshold)
-            {
-                // Stick with shoal's wreck
-
-                // TODOTEST
-                LogMessage("Lead of ", fish.ShoalId, " continues to use wreck ", *shoal.WreckBeingCircled);
-
-                // We'll find a position
             }
             else
             {
-                // Shoal's wreck is not available anymore
+                // No wrecks exist
 
                 // TODOTEST
-                LogMessage("Lead of ", fish.ShoalId, " found that shoal's wreck ", shoal.WreckBeingCircled.value_or(666), " is not viable anymore");
+                LogMessage("Lead of ", fish.ShoalId, " could NOT pick a wreck");
 
-                // Detach shoal from wreck
                 shoal.WreckBeingCircled.reset();
-
-                // Detach ourselves from wreck
-                fish.IsCirclingWreck = false;
-
-                return false;
             }
         }
     }
-    else
+
+    //
+    //  If shoal has no wreck or it's not viable: reset state and return
+    //
+
+    if (!shoal.WreckBeingCircled.has_value()
+        || !IsViableWreck(*shoal.WreckBeingCircled))
     {
-        // Non-lead
+        // No luck
 
-        // Check whether shoal's wreck is still viable
-        if (shoal.WreckBeingCircled.has_value()
-            && *shoal.WreckBeingCircled < mCandidateWrecks.size()
-            && mCandidateWrecks[*shoal.WreckBeingCircled].StaticLifetime >= WreckDetectionStaticitySimulationTimeThreshold)
-        {
-            // Stick with shoal's wreck
+        // TODOTEST
+        LogMessage("Lead/member of ", fish.ShoalId, " found NO viable wreck for shoal");
 
-            // TODOTEST
-            LogMessage("Member of ", fish.ShoalId, " used shoal's wreck ", *shoal.WreckBeingCircled);
+        // Detach fish from wreck (in case it is)
+        fish.IsCirclingWreck = false;
 
-            // We'll find a position
-        }
-        else
-        {
-            // Shoal's wreck is not available anymore
-
-            // TODOTEST
-            if (shoal.WreckBeingCircled.has_value())
-                LogMessage("Member of ", fish.ShoalId, " found that shoal's wreck ", shoal.WreckBeingCircled.value_or(666), " is not viable anymore");
-
-            // Detach ourselves from wreck
-            fish.IsCirclingWreck = false;
-
-            return false;
-        }
+        return false;
     }
 
-    // We are circling a wreck
-    assert(shoal.WreckBeingCircled.has_value());
+    //
+    // Find target position on this wreck
+    //
 
-    //
-    // Find target position
-    //
+    assert(shoal.WreckBeingCircled.has_value() && IsViableWreck(*shoal.WreckBeingCircled));
 
     // Choose a side - the furthest
     float const XVariability = 6.0f;
@@ -1499,123 +1417,17 @@ bool Fishes::TryDirectFishToWreck(
 
     // Choose a Y - avoiding entering silt
     float const siltHeight = oceanFloor.GetSiltHeightAt(Clamp(targetX, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth));
-    float const maxY = std::max(mCandidateWrecks[*shoal.WreckBeingCircled].Aabb.TopRight.y + 4.0f, siltHeight);
+    float const maxY = std::max(mCandidateWrecks[*shoal.WreckBeingCircled].Aabb.TopRight.y + 3.0f, siltHeight);
     float const minY = std::max(mCandidateWrecks[*shoal.WreckBeingCircled].Aabb.BottomLeft.y, siltHeight);
     float const targetY = GameRandomEngine::GetInstance().GenerateUniformReal(minY, maxY);
 
     // Set target position
     fish.TargetPosition = vec2f(targetX, targetY);
 
-    // Remember the fish is circling this wreck now
+    // Remember the fish is circling a wreck now
     fish.IsCirclingWreck = true;
 
     return true;
-
-
-    //// TODOOLD
-    ////  - If it is currently not circling a wreck, or it has been circling a wreck for long, then:
-    ////      - If it's a lead: choose a wreck
-    ////      - Else: if lead has a wreck and it's viable, pick it; else, choose a wreck
-    ////  - Else stick to the wreck being circled, if viable
-    ////
-
-    //float constexpr TimeToLookForNewWreck = 4 * 60.0f; // 4 (sim) minutes
-
-    //ElementIndex chosenWreck = NoneElementIndex;
-
-    //if (!fish.WreckBeingCircled.has_value()
-    //    || currentSimulationTime > fish.LastWreckSelectionSimulationTime + TimeToLookForNewWreck)
-    //{
-    //    size_t const leadFishIndex = mFishShoals[fish.ShoalId].StartFishIndex;
-    //    if (fishIndex == leadFishIndex)
-    //    {
-    //        chosenWreck = PickViableWreck(fish);
-
-    //        // TODOTEST
-    //        if (chosenWreck != NoneElementIndex)
-    //            LogMessage("Lead of ", fish.ShoalId, " has chosen wreck ", chosenWreck);
-    //    }
-    //    else if (
-    //        mFishes[leadFishIndex].WreckBeingCircled.has_value()
-    //        && *mFishes[leadFishIndex].WreckBeingCircled < mCandidateWrecks.size()
-    //        && mCandidateWrecks[*mFishes[leadFishIndex].WreckBeingCircled].StaticLifetime >= WreckDetectionStaticitySimulationTimeThreshold)
-    //    {
-    //        chosenWreck = *mFishes[leadFishIndex].WreckBeingCircled;
-
-    //        // TODOTEST
-    //        if (chosenWreck != NoneElementIndex)
-    //            LogMessage("Member of ", fish.ShoalId, " has chosen lead wreck ", chosenWreck);
-    //    }
-    //    else
-    //    {
-    //        chosenWreck = PickViableWreck(fish);
-
-    //        // TODOTEST
-    //        if (chosenWreck != NoneElementIndex)
-    //            LogMessage("Member of ", fish.ShoalId, " has chosen wreck ", chosenWreck);
-    //    }
-    //}
-
-    //if (chosenWreck == NoneElementIndex)
-    //{
-    //    // See if fish's current wreck is viable
-    //    if (fish.WreckBeingCircled.has_value()
-    //        && *fish.WreckBeingCircled < mCandidateWrecks.size()
-    //        && mCandidateWrecks[*fish.WreckBeingCircled].StaticLifetime >= WreckDetectionStaticitySimulationTimeThreshold)
-    //    {
-    //        chosenWreck = *fish.WreckBeingCircled;
-
-    //        // TODOTEST
-    //        LogMessage("Member of ", fish.ShoalId, " has chosen own previous wreck ", chosenWreck);
-    //    }
-    //}
-
-    //if (chosenWreck == NoneElementIndex)
-    //{
-    //    // No luck
-    //    fish.WreckBeingCircled.reset();
-    //    return false;
-    //}
-
-    ////
-    //// Find target position
-    ////
-
-    //// Choose a side - the furthest
-    //float const XVariability = 6.0f;
-    //float const leftSideX =
-    //    mCandidateWrecks[chosenWreck].Aabb.BottomLeft.x - (TargetPositionSlack + XVariability)
-    //    + GameRandomEngine::GetInstance().GenerateUniformReal(-XVariability, XVariability);
-    //float const rightSideX =
-    //    mCandidateWrecks[chosenWreck].Aabb.TopRight.x + (TargetPositionSlack + XVariability)
-    //    + GameRandomEngine::GetInstance().GenerateUniformReal(-XVariability, XVariability);
-    //float targetX;
-    //if (std::fabs(fish.CurrentPosition.x - leftSideX) >= std::fabs(fish.CurrentPosition.x - rightSideX))
-    //{
-    //    targetX = leftSideX;
-    //}
-    //else
-    //{
-    //    targetX = rightSideX;
-    //}
-
-    //// Choose a Y - avoiding entering silt
-    //float const siltHeight = oceanFloor.GetSiltHeightAt(Clamp(targetX, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth));
-    //float const maxY = std::max(mCandidateWrecks[chosenWreck].Aabb.TopRight.y + 4.0f, siltHeight);
-    //float const minY = std::max(mCandidateWrecks[chosenWreck].Aabb.BottomLeft.y, siltHeight);
-    //float const targetY = GameRandomEngine::GetInstance().GenerateUniformReal(minY, maxY);
-
-    //// Set target position
-    //fish.TargetPosition = vec2f(targetX, targetY);
-
-    //// Remember the fish is circling this wreck now
-    //if (fish.WreckBeingCircled != chosenWreck)
-    //{
-    //    fish.WreckBeingCircled = chosenWreck;
-    //    fish.LastWreckSelectionSimulationTime = currentSimulationTime;
-    //}
-
-    //return true;
 }
 
 void Fishes::EnactDisturbance(
@@ -1801,12 +1613,12 @@ ElementIndex Fishes::PickViableWreck(Fish & fish) const
 
     // Build candidates for random choice
     std::vector<ElementIndex> viableRandomWrecks;
-    for (size_t w = 0; w < mCandidateWrecks.size(); ++w)
+    for (ElementIndex w = 0; w < mCandidateWrecks.size(); ++w)
     {
-        if (mCandidateWrecks[w].StaticLifetime >= WreckDetectionStaticitySimulationTimeThreshold
+        if (IsViableWreck(w)
             && (fish.CurrentPosition - mCandidateWrecks[w].Aabb.CalculateCenter()).squareLength() < MaxDistance * MaxDistance)
         {
-            viableRandomWrecks.emplace_back(static_cast<ElementIndex>(w));
+            viableRandomWrecks.emplace_back(w);
         }
     }
 
@@ -1816,6 +1628,12 @@ ElementIndex Fishes::PickViableWreck(Fish & fish) const
     }
 
     return NoneElementIndex;
+}
+
+bool Fishes::IsViableWreck(ElementIndex wreck) const
+{
+    return wreck < mCandidateWrecks.size()
+        && mCandidateWrecks[wreck].StaticLifetime >= WreckDetectionStaticitySimulationTimeThreshold;
 }
 
 vec2f Fishes::ChoosePosition(

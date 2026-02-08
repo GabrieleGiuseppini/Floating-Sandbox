@@ -296,6 +296,8 @@ private:
 
     ElementIndex inline PickViableWreck(Fish & fish) const;
 
+    inline bool IsViableWreck(ElementIndex wreck) const;
+
     inline static vec2f ChoosePosition(
         vec2f const & averagePosition,
         float xVariance,
