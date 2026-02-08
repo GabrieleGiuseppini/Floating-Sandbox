@@ -72,6 +72,13 @@ private:
 
         float MaxWorldDimension; // Inclusive of SizeMultiplier
 
+        // Whether the shoal is circling a wreck, and which;
+        // chosen exclusively by shoal's lead
+        std::optional<ElementIndex> WreckBeingCircled;
+        // Simulation timestamp of last wreck selection; when a lot has passed,
+        // we'll look for a new wreck
+        float LastWreckSelectionSimulationTime;
+
         FishShoal(
             FishSpecies const & species,
             ElementIndex startFishIndex,
@@ -82,6 +89,8 @@ private:
             , InitialPosition(vec2f::zero())
             , InitialDirection(vec2f::zero())
             , MaxWorldDimension(maxWorldDimension)
+            , WreckBeingCircled()
+            , LastWreckSelectionSimulationTime(0)
         {}
     };
 
@@ -153,11 +162,9 @@ private:
         // Next check for chasing a wreck
         float NextWreckCheckSimulationTime;
 
-        // Whether the fish is circling a wreck, and which;
-        // serves also as flag for "circling a wreck" behavior adjustments
-        std::optional<ElementIndex> WreckBeingCircled;
-        // Simulation timestamp of last wreck selection
-        float LastWreckSelectionSimulationTime;
+        // Whether the fish is circling a wreck;
+        // serves for "circling a wreck" behavior adjustments
+        bool IsCirclingWreck;
 
         // The texture frame for this fish
         TextureFrameId<GameTextureDatabases::FishTextureGroups> RenderTextureFrameId;
@@ -190,8 +197,7 @@ private:
             , LastSteeringSimulationTime(0.0f)
             , IsInFreefall(false)
             , NextWreckCheckSimulationTime(nextWreckCheckSimulationTime)
-            , WreckBeingCircled()
-            , LastWreckSelectionSimulationTime(0.0f)
+            , IsCirclingWreck(false)
             , RenderTextureFrameId(renderTextureFrameId)
         {}
     };

@@ -755,6 +755,12 @@
 				+ V
 					+ Take into account silt height				
 				+ H
+			- Move wreck selection to Shoal, done by lead
+				+ Shoal: has wreck ID and counter 
+				+ Fish: has IsCircling
+				= Lead chooses (with counter @ shoal)
+				= Non-leads simply use shoal's
+				+ When a wreck stops existing, clear all shoals that circle it
 			= Faster heading towards wreck
 				+ Periodic check for heading to wreck, interrupting "target cruising"
 					+ If panic == 0.0:
@@ -772,6 +778,7 @@
 				+ Less shoaling component
 				= Boost when distant
 					- But needs to happen all the time: move acceleration boost from where it is now (@ new target) to dynamics
+					- Try to use panic for it, instead of this arbitrary multiplier
 			+ Don't stick to same wreck forever
 
 
