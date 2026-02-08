@@ -156,6 +156,8 @@ private:
         // Whether the fish is circling a wreck, and which;
         // serves also as flag for "circling a wreck" behavior adjustments
         std::optional<ElementIndex> WreckBeingCircled;
+        // Simulation timestamp of last wreck selection
+        float LastWreckSelectionSimulationTime;
 
         // The texture frame for this fish
         TextureFrameId<GameTextureDatabases::FishTextureGroups> RenderTextureFrameId;
@@ -189,6 +191,7 @@ private:
             , IsInFreefall(false)
             , NextWreckCheckSimulationTime(nextWreckCheckSimulationTime)
             , WreckBeingCircled()
+            , LastWreckSelectionSimulationTime(0.0f)
             , RenderTextureFrameId(renderTextureFrameId)
         {}
     };
@@ -268,7 +271,9 @@ private:
 
     bool TryDirectFishToWreck(
         Fish & fish,
+        size_t fishIndex,
         OceanFloor const & oceanFloor,
+        float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
     void EnactDisturbance(
@@ -282,6 +287,8 @@ private:
         SimulationParameters const & simulationParameters);
 
     void EnactWidespreadPanic(SimulationParameters const & simulationParameters);
+
+    ElementIndex inline PickViableWreck(Fish & fish) const;
 
     inline static vec2f ChoosePosition(
         vec2f const & averagePosition,

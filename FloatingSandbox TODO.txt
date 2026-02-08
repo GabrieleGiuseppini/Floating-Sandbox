@@ -771,7 +771,8 @@
 					+ Update next wreck check timestamp
 				+ Less shoaling component
 				= Boost when distant
-			- Don't stick to same wreck forever
+					- But needs to happen all the time: move acceleration boost from where it is now (@ new target) to dynamics
+			+ Don't stick to same wreck forever
 
 
 		- Remove logs
