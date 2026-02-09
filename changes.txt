@@ -1,11 +1,14 @@
 1.20.0
-- Redesigned ocean floor physics: a customizable soft silt layer cushions impacts and allows for wrecks to slowly burrow under sand
-	- Thanks to Bandit for their help in the redesign!
-- Added new Anti-Gravity Field tool
+- The Cinematic Wreck Update!
+	- Redesigned ocean floor physics: a customizable soft silt layer cushions impacts and allows for wrecks to slowly burrow under sand
+		- Thanks to Bandit for their help in the redesign!
+	- ...and more surprise features added to make scenic wrecks!
+- Fire now emits thick smoke!
+- Added Anti-Gravity Field tool - use it to float ships in the air or to raise wrecks from the bottom of the sea!
 - Doubled world width
 - Improved bulkiness of tsunami's and interactive waves
 	- And added a new setting to customize it at will
-- Added new materials: Strong Cloth and Tense Strong Rope
+- Added new materials: Strong Cloth, Tense Strong Rope, and Black Smoke Emitter
 - Improved resolution of ship previews
 - Fixed the last few crashes known to humanity
 - ShipBuilder:

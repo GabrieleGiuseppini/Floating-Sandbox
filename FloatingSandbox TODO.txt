@@ -687,7 +687,7 @@
 	- Re-check why we don't pick portuguese system default:
 		! "Wx enforced language for desired identifier "<N/A>": "en""
 		! Also in last release
-		= Russians?
+		= Russian?
 		- Italian?
 
 	+ Change simulation #iterations setting to 0.25 step
@@ -787,6 +787,19 @@
 
 		+ Remove logs
 		+ Remove point-to-point arrows
+
+
+	- Release prep:
+		- Localization:
+			- Extract new strings
+			- Update .po's and send to all translators except Chinese
+			- Do Italian
+			- When Chinese _old_ is ready:
+				- Update .po and re-send to them
+		= Changelist
+			+ "The Cinematic Wreck Update"
+
+
 
 	- Rot rework:
 		- Damaged points get more "water rot"
