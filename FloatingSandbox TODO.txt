@@ -787,8 +787,8 @@
 		- Tests:
 			- Free-falling while circling wreck
 
-		- Remove logs
-		- Remove point-to-point arrows
+		+ Remove logs
+		+ Remove point-to-point arrows
 
 	- Rot rework:
 		- Damaged points get more "water rot"

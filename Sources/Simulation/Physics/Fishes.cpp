@@ -166,7 +166,7 @@ void Fishes::Upload(RenderContext & renderContext) const
 {
     renderContext.UploadFishesStart(mFishes.size());
 
-    // TODOTEST
+    // TEST
     //renderContext.GetShipRenderContext(0).UploadPointToPointArrowsStart(mFishes.size() * 3);
 
     for (auto const & fish : mFishes)
@@ -197,13 +197,13 @@ void Fishes::Upload(RenderContext & renderContext) const
             species.TailSwingWidth,
             std::sinf(fish.CurrentTailProgressPhase));
 
-        // TODOTEST
+        // TEST
         //renderContext.GetShipRenderContext(0).UploadPointToPointArrow(0, fish.CurrentPosition, fish.TargetPosition, rgbColor(0x90, 0x05, 0x05));
         //renderContext.GetShipRenderContext(0).UploadPointToPointArrow(0, fish.CurrentPosition, fish.CurrentPosition + fish.ShoalingVelocity * 2.5f, rgbColor(0x05, 0x90, 0x00));
         //renderContext.GetShipRenderContext(0).UploadPointToPointArrow(0, fish.CurrentPosition, fish.CurrentPosition + fish.TargetVelocity * 4.0f, rgbColor(0x05, 0x05, 0x90));
     }
 
-    // TODOTEST
+    // TEST
     //renderContext.GetShipRenderContext(0).UploadPointToPointArrowsEnd();
 
     renderContext.UploadFishesEnd();
@@ -551,13 +551,6 @@ void Fishes::UpdateWreckDetection(Geometry::ShipAABBSet const & aabbSet)
     if (mCandidateWrecks.size() > filteredAabbs.size())
     {
         mCandidateWrecks.erase(mCandidateWrecks.begin() + filteredAabbs.size(), mCandidateWrecks.end());
-    }
-
-    // TODOTEST
-    LogMessage("Wrecks:");
-    for (auto const & w : mCandidateWrecks)
-    {
-        LogMessage("   ", w.StaticLifetime);
     }
 }
 
@@ -1353,17 +1346,12 @@ bool Fishes::TryDirectFishToWreck(
             auto const pickedWreck = PickViableWreck(fish);
             if (pickedWreck != NoneElementIndex)
             {
-                LogMessage("Lead of ", fish.ShoalId, " picked wreck ", pickedWreck);
-
                 shoal.WreckBeingCircled = pickedWreck;
                 shoal.LastWreckSelectionSimulationTime = currentSimulationTime;
             }
             else
             {
                 // No wrecks exist
-
-                // TODOTEST
-                LogMessage("Lead of ", fish.ShoalId, " could NOT pick a wreck");
 
                 shoal.WreckBeingCircled.reset();
             }
@@ -1378,9 +1366,6 @@ bool Fishes::TryDirectFishToWreck(
         || !IsViableWreck(*shoal.WreckBeingCircled))
     {
         // No luck
-
-        // TODOTEST
-        LogMessage("Lead/member of ", fish.ShoalId, " found NO viable wreck for shoal");
 
         // Detach fish from wreck (in case it is)
         fish.IsCirclingWreck = false;
