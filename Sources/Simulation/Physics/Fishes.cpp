@@ -672,13 +672,8 @@ void Fishes::UpdateDynamics(
 
             if (!fish.IsInFreefall) // If we're free-falling, current velocity has already converged towards target velocity
             {
-                // Smooth velocity towards target + shoaling,
-                // with shoaling having less weight if we're circling a wreck (so we're more direct)
-                float const shoalingWeight = fish.IsCirclingWreck
-                    ? 0.5f
-                    : 1.0f;
                 fish.CurrentVelocity +=
-                    ((fish.TargetVelocity + fish.ShoalingVelocity * shoalingWeight) - fish.CurrentVelocity) * fish.CurrentDirectionSmoothingConvergenceRate;
+                    ((fish.TargetVelocity + fish.ShoalingVelocity) - fish.CurrentVelocity) * fish.CurrentDirectionSmoothingConvergenceRate;
             }
 
             // Make RenderVector match current velocity
