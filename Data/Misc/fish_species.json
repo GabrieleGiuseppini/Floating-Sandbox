@@ -132,9 +132,9 @@
 	"shoal_radius": 1.5,
 	"ocean_depth": 20.0,
 	"basal_speed": 0.14,
-	"tail_x": 0.93,
+	"tail_x": 0.94,
 	"tail_speed": 0.025,
-	"tail_swing_width": 0.55,
+	"tail_swing_width": 0.5,
 	"head_offset_x": 0.86328125,
 	"texture_indices": [13]
     }
