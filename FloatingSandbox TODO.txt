@@ -663,13 +663,13 @@
 				+ Optimize
 				+ Add comments
 
+		+ Option to remove silt clouds
+			+ Or slider for sensitivity, 0.0 => no clouds
+
 		- Default Titanic:
 			- Try mixed w/b smoke on each funnel
 
 		- Send beta
-
-		- Option to remove silt clouds
-			- Or slider for sensitivity, 0.0 => no clouds
 
 		- Test on Dell
 			- Toggling checkbox
@@ -744,7 +744,7 @@
 						+ Update IsCirclingWreck accordingly
 						+ Make sure this keeps happening at next target check
 				+ At fish<->AABB collision check: only do check if !IsCirclingWreck
-		= Fine-tuning:
+		+ Fine-tuning:
 			+ Enforce min size of AABB
 			+ Turn off shoaling if going to wreck
 			+ Draw arrows
@@ -764,7 +764,7 @@
 				! Remember: if we recalc it, need to check for steering
 				+ Just re-use wreck clock, and only if fish.IsCirclingWreck
 			+ Do proper tail for new fish
-			- See if shoaling weight really needed
+			+ See if shoaling weight really needed
 			+ Faster heading towards wreck
 				+ Periodic check for heading to wreck, interrupting "target cruising"
 					+ If panic == 0.0:

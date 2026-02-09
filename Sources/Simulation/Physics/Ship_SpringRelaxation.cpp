@@ -820,7 +820,9 @@ void Ship::HandleCollisionsWithSeaFloor(
 
     float const siltDepthHardnessCoeff1 = mSpringRelaxationCoefficients.MinSiltDepthHardness;
     float const siltDepthHardnessCoeff2 = mSpringRelaxationCoefficients.MaxSiltDepthHardness - mSpringRelaxationCoefficients.MinSiltDepthHardness;
-    float const siltDustCloudEnergyThreshold = simulationParameters.SiltDustCloudEnergyThreshold;
+    float const siltDustCloudEnergyThreshold =
+        simulationParameters.SiltDustCloudEnergyThreshold
+        * 1.0f / std::max(simulationParameters.SiltDustCloudSensitivity, 0.000001f);
 
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
 

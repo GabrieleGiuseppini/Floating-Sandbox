@@ -100,6 +100,7 @@ private:
     SliderControl<float> * mOceanFloorSiltThicknessSlider;
     SliderControl<float> * mOceanFloorSiltBumpinessSlider;
     SliderControl<float> * mOceanFloorSiltHardnessSlider;
+    SliderControl<float> * mSiltDustCloudSensitivitySlider;
     SliderControl<float> * mSiltDustCloudUnderwaterLifetimeSlider;
 
     // Wind and Waves

@@ -51,6 +51,7 @@ SimulationParameters::SimulationParameters()
     , AirBubblesDensity(120.0f)
     , DoGenerateEngineWakeParticles(true)
     , SiltDustCloudEnergyThreshold(40000.0f)
+    , SiltDustCloudSensitivity(1.0f)
     , SiltDustCloudUnderwaterLifetime(3.0f)
     // Wind
     , DoModulateWind(true)

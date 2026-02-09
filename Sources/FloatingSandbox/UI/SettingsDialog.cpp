@@ -1623,7 +1623,7 @@ void SettingsDialog::PopulateOceanPanel(wxPanel * panel)
         gridSizer->Add(
             bedrockBoxSizer,
             wxGBPosition(0, 1),
-            wxGBSpan(1, 4),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -1717,6 +1717,32 @@ void SettingsDialog::PopulateOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Silt Cloud Sensitivity
+            {
+                mSiltDustCloudSensitivitySlider = new SliderControl<float>(
+                    siltBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    -1,
+                    _("Cloud Sensitivity"),
+                    _("Adjusts the sensitivity of dust in forming clouds upon impact. Set to zero to disable dust clouds altogether."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::SiltDustCloudSensitivity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinSiltDustCloudSensitivity(),
+                        mGameControllerSettingsOptions.GetMaxSiltDustCloudSensitivity()));
+
+                siltSizer->Add(
+                    mSiltDustCloudSensitivitySlider,
+                    wxGBPosition(1, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
             // Silt Cloud Persistence
             {
                 mSiltDustCloudUnderwaterLifetimeSlider = new SliderControl<float>(
@@ -1737,7 +1763,7 @@ void SettingsDialog::PopulateOceanPanel(wxPanel * panel)
 
                 siltSizer->Add(
                     mSiltDustCloudUnderwaterLifetimeSlider,
-                    wxGBPosition(1, 3),
+                    wxGBPosition(1, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                     CellBorderInner);
@@ -1755,7 +1781,7 @@ void SettingsDialog::PopulateOceanPanel(wxPanel * panel)
         gridSizer->Add(
             siltBoxSizer,
             wxGBPosition(1, 1),
-            wxGBSpan(1, 4),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -6689,6 +6715,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mOceanFloorSiltThicknessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorSiltThickness));
     mOceanFloorSiltBumpinessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorSiltBumpiness));
     mOceanFloorSiltHardnessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorSiltHardness));
+    mSiltDustCloudSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::SiltDustCloudSensitivity));
     mSiltDustCloudUnderwaterLifetimeSlider->SetValue(settings.GetValue<float>(GameSettings::SiltDustCloudUnderwaterLifetime));
 
     //

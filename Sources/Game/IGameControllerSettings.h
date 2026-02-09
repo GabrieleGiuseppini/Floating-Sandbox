@@ -376,6 +376,9 @@ struct IGameControllerSettings
     virtual bool GetDoGenerateEngineWakeParticles() const = 0;
     virtual void SetDoGenerateEngineWakeParticles(bool value) = 0;
 
+    virtual float GetSiltDustCloudSensitivity() const = 0;
+    virtual void SetSiltDustCloudSensitivity(float value) = 0;
+
     virtual float GetSiltDustCloudUnderwaterLifetime() const = 0;
     virtual void SetSiltDustCloudUnderwaterLifetime(float value) = 0;
 

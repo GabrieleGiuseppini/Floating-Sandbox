@@ -318,7 +318,11 @@ struct SimulationParameters
 
     bool DoGenerateEngineWakeParticles;
 
-    float SiltDustCloudEnergyThreshold; // J
+    float const SiltDustCloudEnergyThreshold; // J
+
+    float SiltDustCloudSensitivity;
+    static float constexpr MinSiltDustCloudSensitivity = 0.0f;
+    static float constexpr MaxSiltDustCloudSensitivity = 2.0f;
 
     float SiltDustCloudUnderwaterLifetime; // s
     static float constexpr MinSiltDustCloudUnderwaterLifetime = 2.0f;

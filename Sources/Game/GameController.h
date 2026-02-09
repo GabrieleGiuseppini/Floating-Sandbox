@@ -930,6 +930,11 @@ public:
     float GetMaxAirBubblesDensity() const override { return SimulationParameters::MaxAirBubblesDensity; }
     float GetMinAirBubblesDensity() const override { return SimulationParameters::MinAirBubblesDensity; }
 
+    float GetSiltDustCloudSensitivity() const override { return mSimulationParameters.SiltDustCloudSensitivity; }
+    void SetSiltDustCloudSensitivity(float value) override { mSimulationParameters.SiltDustCloudSensitivity = value; }
+    float GetMaxSiltDustCloudSensitivity() const override { return SimulationParameters::MaxSiltDustCloudSensitivity; }
+    float GetMinSiltDustCloudSensitivity() const override { return SimulationParameters::MinSiltDustCloudSensitivity; }
+
     float GetSiltDustCloudUnderwaterLifetime() const override { return mSimulationParameters.SiltDustCloudUnderwaterLifetime; }
     void SetSiltDustCloudUnderwaterLifetime(float value) override { mSimulationParameters.SiltDustCloudUnderwaterLifetime = value; }
     float GetMaxSiltDustCloudUnderwaterLifetime() const override { return SimulationParameters::MaxSiltDustCloudUnderwaterLifetime; }
