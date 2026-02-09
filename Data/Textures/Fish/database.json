@@ -30,6 +30,9 @@
 		,
 		{	
 			"frame_name_pattern": "yellowtail_snapper_\\d+"
+		},
+		{	
+			"frame_name_pattern": "butterflyfish_\\d+"
 		}
 	]
 }

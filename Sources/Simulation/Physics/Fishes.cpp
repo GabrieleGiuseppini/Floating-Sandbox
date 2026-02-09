@@ -21,7 +21,7 @@ namespace /*anonymous*/ {
 float constexpr PositionXVarianceFactor = 1.0f / 4.0f;
 float constexpr PositionYVariance = 10.0f;
 
-float constexpr TargetPositionSlack = 7.0f;
+float constexpr TargetPositionSlack = 3.0f;
 float constexpr AABBMargin = 4.0f;
 
 float constexpr WreckDetectionPeriodSimulationTime = 5.0f;
@@ -167,7 +167,7 @@ void Fishes::Upload(RenderContext & renderContext) const
     renderContext.UploadFishesStart(mFishes.size());
 
     // TODOTEST
-    //renderContext.GetShipRenderContext(0).UploadPointToPointArrowsStart(mFishes.size() * 2);
+    //renderContext.GetShipRenderContext(0).UploadPointToPointArrowsStart(mFishes.size() * 3);
 
     for (auto const & fish : mFishes)
     {
@@ -199,7 +199,8 @@ void Fishes::Upload(RenderContext & renderContext) const
 
         // TODOTEST
         //renderContext.GetShipRenderContext(0).UploadPointToPointArrow(0, fish.CurrentPosition, fish.TargetPosition, rgbColor(0x90, 0x05, 0x05));
-        //renderContext.GetShipRenderContext(0).UploadPointToPointArrow(0, fish.CurrentPosition, fish.CurrentPosition + fish.ShoalingVelocity.normalise_approx() * 5.0f, rgbColor(0x05, 0x90, 0x90));
+        //renderContext.GetShipRenderContext(0).UploadPointToPointArrow(0, fish.CurrentPosition, fish.CurrentPosition + fish.ShoalingVelocity * 2.5f, rgbColor(0x05, 0x90, 0x00));
+        //renderContext.GetShipRenderContext(0).UploadPointToPointArrow(0, fish.CurrentPosition, fish.CurrentPosition + fish.TargetVelocity * 4.0f, rgbColor(0x05, 0x05, 0x90));
     }
 
     // TODOTEST
@@ -890,15 +891,16 @@ void Fishes::UpdateDynamics(
         // 4) Check state machine transitions
         ///////////////////////////////////////////////////////////////////
 
-        bool const isTimeToCheckForWreck = currentSimulationTime > fish.NextWreckCheckSimulationTime;
+        // Get clock pulse
+        bool const isWreckCheckTime = currentSimulationTime > fish.NextWreckCheckSimulationTime;
 
         // Do choices only if we're not in panic
         if (fish.PanicCharge == 0.0f) // Not in panic
         {
             bool hasNewTarget = false;
 
-            // Check whether it's time to do a wreck check
-            if (isTimeToCheckForWreck && !fish.IsCirclingWreck)
+            // Check whether it's time to do a forced wreck check
+            if (isWreckCheckTime && !fish.IsCirclingWreck)
             {
                 hasNewTarget = TryDirectFishToWreck(fish, f, oceanFloor, currentSimulationTime, simulationParameters);
             }
@@ -912,8 +914,7 @@ void Fishes::UpdateDynamics(
                 //
 
                 // Check wreck first, otherwise choose arbitrary
-                if (isTimeToCheckForWreck // Avoid second check
-                    || !TryDirectFishToWreck(fish, f, oceanFloor, currentSimulationTime, simulationParameters))
+                if (!TryDirectFishToWreck(fish, f, oceanFloor, currentSimulationTime, simulationParameters))
                 {
                     // Arbitrary
                     fish.TargetPosition = FindNewCruisingTargetPosition(
@@ -927,7 +928,8 @@ void Fishes::UpdateDynamics(
             }
 
             // If fish has chosen new target, we need to adjust velocity et al
-            if (hasNewTarget)
+            if (hasNewTarget
+                || (fish.IsCirclingWreck && isWreckCheckTime)) // If fish is circling wreck, remind it that it must re-align its velocity from time to time
             {
                 // Calculate new target velocity
                 fish.TargetVelocity = MakeCruisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise_approx(), fishSpecies, fish.PersonalitySeed, simulationParameters);
@@ -991,7 +993,7 @@ void Fishes::UpdateDynamics(
         }
 
         // Update next wreck check time
-        if (isTimeToCheckForWreck)
+        if (isWreckCheckTime)
         {
             fish.NextWreckCheckSimulationTime = ChooseNextWreckTargetTime(currentSimulationTime);
         }
@@ -1398,7 +1400,7 @@ bool Fishes::TryDirectFishToWreck(
     assert(shoal.WreckBeingCircled.has_value() && IsViableWreck(*shoal.WreckBeingCircled));
 
     // Choose a side - the furthest
-    float const XVariability = 6.0f;
+    float const XVariability = 8.0f;
     float const leftSideX =
         mCandidateWrecks[*shoal.WreckBeingCircled].Aabb.BottomLeft.x - (TargetPositionSlack + XVariability)
         + GameRandomEngine::GetInstance().GenerateUniformReal(-XVariability, XVariability);
@@ -1609,7 +1611,7 @@ void Fishes::EnactWidespreadPanic(SimulationParameters const & simulationParamet
 
 ElementIndex Fishes::PickViableWreck(Fish & fish) const
 {
-    float constexpr MaxDistance = 1000.0f;
+    float constexpr MaxDistance = 1500.0f * 1.4142f;
 
     // Build candidates for random choice
     std::vector<ElementIndex> viableRandomWrecks;

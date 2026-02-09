@@ -111,13 +111,31 @@
 
 	"does_chase_wrecks": true,
 	"shoal_size": 25,
-	"shoal_radius": 4.5,
+	"shoal_radius": 2.5,
 	"ocean_depth": 50.0,
 	"basal_speed": 0.14,
-	"tail_x": 0.75,
-	"tail_speed": 0.02,
-	"tail_swing_width": 0.5,
+	"tail_x": 0.7,
+	"tail_speed": 0.03,
+	"tail_swing_width": 0.52,
 	"head_offset_x": 0.86328125,
 	"texture_indices": [11, 12]
+    },
+
+    {
+        "name": "Butterflyfish",
+
+	"world_size_x": 0.2,
+	"world_size_y": 0.2,
+
+	"does_chase_wrecks": true,
+	"shoal_size": 20,
+	"shoal_radius": 1.5,
+	"ocean_depth": 20.0,
+	"basal_speed": 0.14,
+	"tail_x": 0.93,
+	"tail_speed": 0.025,
+	"tail_swing_width": 0.55,
+	"head_offset_x": 0.86328125,
+	"texture_indices": [13]
     }
 ]

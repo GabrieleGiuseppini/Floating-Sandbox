@@ -750,18 +750,22 @@
 			+ Draw arrows
 			+ Try to reinstate shoaling
 				+ But prevent turning for someone else if we are chasin wrecks and they are not
-
 			+ Vertical and horizontal randomization (all fishes now are on same exact Y)
 				+ V
 					+ Take into account silt height				
 				+ H
-			- Move wreck selection to Shoal, done by lead
+			+ Move wreck selection to Shoal, done by lead
 				+ Shoal: has wreck ID and counter 
 				+ Fish: has IsCircling
-				= Lead chooses (with counter @ shoal)
-				= Non-leads simply use shoal's
+				+ Lead chooses (with counter @ shoal)
+				+ Non-leads simply use shoal's
 				+ When a wreck stops existing, clear all shoals that circle it
-			= Faster heading towards wreck
+			+ Fix: target velocity never changes even if ship's motion makes it unaligned with target (or after bounce?)
+				! Remember: if we recalc it, need to check for steering
+				+ Just re-use wreck clock, and only if fish.IsCirclingWreck
+			+ Do proper tail for new fish
+			- See if shoaling weight really needed
+			+ Faster heading towards wreck
 				+ Periodic check for heading to wreck, interrupting "target cruising"
 					+ If panic == 0.0:
 						+ HasNewTarget=false;
@@ -776,11 +780,12 @@
 						+ Reset panic
 					+ Update next wreck check timestamp
 				+ Less shoaling component
-				= Boost when distant
-					- But needs to happen all the time: move acceleration boost from where it is now (@ new target) to dynamics
-					- Try to use panic for it, instead of this arbitrary multiplier
+				+ Boost when distant
+					+ But needs to happen all the time: move acceleration boost from where it is now (@ new target) to dynamics
 			+ Don't stick to same wreck forever
 
+		- Tests:
+			- Free-falling while circling wreck
 
 		- Remove logs
 		- Remove point-to-point arrows
