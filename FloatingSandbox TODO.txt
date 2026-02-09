@@ -662,20 +662,18 @@
 			+ Try massless K
 				+ Optimize
 				+ Add comments
-
 		+ Option to remove silt clouds
 			+ Or slider for sensitivity, 0.0 => no clouds
+		+ Send beta
 
-		- Default Titanic:
-			- Try mixed w/b smoke on each funnel
-
-		- Send beta
+		+ Default Titanic:
+			+ Try mixed w/b smoke on each funnel
 
 		- Test on Dell
 			- Toggling checkbox
 
-		- See if smoke emitter/black smoke was somewhere else in the plan
-			- "Fire emits smoke"
+		X See if smoke emitter/black smoke was somewhere else in the plan
+			X "Fire emits smoke"
 
 		- Merge into master
 			- With PR for Android
