@@ -10,10 +10,10 @@
 	- And added a new setting to customize it at will
 - Added new materials: Strong Cloth, Tense Strong Rope, and Black Smoke Emitter
 - Improved resolution of ship previews
-- Fixed the last few crashes known to humanity
 - ShipBuilder:
 	- Re-designed texture import workflow, with clearer options for fitting the texture to the ship
 	- Undo actions survive going back and forth to and from game
+- Fixed the last few crashes known to humanity
 - Added 12 new ships
 
 1.19.2

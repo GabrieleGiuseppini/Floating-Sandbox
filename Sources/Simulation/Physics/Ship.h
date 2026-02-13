@@ -1049,8 +1049,11 @@ private:
         float MaxSiltDepthHardness;
     } mSpringRelaxationCoefficients;
 
-    // The max silt impacts encountered by each thread during all of the itertions;
-    // vector is sized when the number of threads is known
+    // The max silt impacts encountered by each thread during all of the iterations.
+    // The kinetic energy in this storage is a placeholder; it will be transformed
+    // into dimensionally correct kinetic energy before being consumed by the rest
+    // of the simulation.
+    // The vector is sized when the number of threads is known.
     std::vector<CacheAligned<EnergeticSiltImpact>> mPerThreadSiltImpacts;
 
     //

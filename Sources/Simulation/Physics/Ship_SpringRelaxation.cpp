@@ -10,6 +10,15 @@
 
 namespace Physics {
 
+namespace /* anonymous */ {
+
+    // For energetic silt cloud impacts, we do not use mass
+    // as large masses would always cause clouds, even at low velocities.
+    // We pretend a fixed mass just for sanity of the simulation.
+    float constexpr SiltImpactKineticEnergyPretendMass = 700.0f;
+
+}
+
 void Ship::RecalculateSpringRelaxationParallelism(
     size_t simulationParallelism,
     SimulationParameters const & simulationParameters)
@@ -369,6 +378,9 @@ void Ship::RunSpringRelaxation(
 
     if (maxImpact.KineticEnergy > 0.0f)
     {
+        // Now transform the placeholder via a pretend mass
+        maxImpact.KineticEnergy *= SiltImpactKineticEnergyPretendMass;
+
         mSiltImpacts.emplace_back(maxImpact);
     }
 }
@@ -822,7 +834,8 @@ void Ship::HandleCollisionsWithSeaFloor(
     float const siltDepthHardnessCoeff2 = mSpringRelaxationCoefficients.MaxSiltDepthHardness - mSpringRelaxationCoefficients.MinSiltDepthHardness;
     float const siltDustCloudEnergyThreshold =
         simulationParameters.SiltDustCloudEnergyThreshold
-        * 1.0f / std::max(simulationParameters.SiltDustCloudSensitivity, 0.000001f);
+        * 1.0f / std::max(simulationParameters.SiltDustCloudSensitivity, 0.000001f)
+        / SiltImpactKineticEnergyPretendMass; // For perf, to avoid multiplication
 
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
 
@@ -943,14 +956,13 @@ void Ship::HandleCollisionsWithSeaFloor(
                 //
 
                 // We won't allow huge masses to generate a ton of clouds, so we use just velocity
-                // and a pretend mass to keep values reasonably real
-                float const impactKineticEnergy = 700.0f * kineticEnergyVelocityComponent;
-                if (impactKineticEnergy > siltDustCloudEnergyThreshold
+                // and a pretend mass (later) to keep values reasonably real
+                if (kineticEnergyVelocityComponent > siltDustCloudEnergyThreshold
                     && mPoints.GetConnectedTriangles(pointIndex).ConnectedTriangles.size() > 0 // Prevent debris from generating clouds
-                    && impactKineticEnergy > maxSiltImpact.value.KineticEnergy)
+                    && kineticEnergyVelocityComponent > maxSiltImpact.value.KineticEnergy)
                 {
                     maxSiltImpact.value = EnergeticSiltImpact(
-                        impactKineticEnergy,
+                        kineticEnergyVelocityComponent,
                         vec2f(clampedX, siltY),
                         pointVelocity);
                 }

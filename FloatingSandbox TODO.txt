@@ -675,20 +675,11 @@
 		X See if smoke emitter/black smoke was somewhere else in the plan
 			X "Fire emits smoke"
 
+		- Check Discord
+
 		- Merge into master
 			- With PR for Android
 		- changelist
-
-	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
-		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al
-		+ Use FS code everywhere, and match wx enforced to ours
-		= Ask testers (pt_br) to test it
-		- Changelist
-	- Re-check why we don't pick portuguese system default:
-		! "Wx enforced language for desired identifier "<N/A>": "en""
-		! Also in last release
-		= Russian?
-		- Italian?
 
 	+ Change simulation #iterations setting to 0.25 step
 
@@ -706,7 +697,7 @@
 			+ Do at all uses of ShipSearchRadiusScreen
 			! It's PC-only, no Android
 
-	= Fishes on wreck (see paper in Malta book)
+	+ Fishes on wreck (see paper in Malta book)
 		+ Alternative:
 			+ @Fishes
 			+ Every X (sim time, ~10s):
@@ -782,12 +773,18 @@
 					+ But needs to happen all the time: move acceleration boost from where it is now (@ new target) to dynamics
 			+ Don't stick to same wreck forever
 
-		- Tests:
-			- Free-falling while circling wreck
+		+ Tests:
+			+ Free-falling while circling wreck
 
 		+ Remove logs
 		+ Remove point-to-point arrows
 
+	+ HandleCollisionsWithSeaFloor optimization:
+		+ Move mass constant to .cpp top
+		+ HandleCollisionsWithSeaFloor:
+			+ Adjust calc'd threshold via constant
+			+ Do not multiply
+		+ RunSpringRelaxation: at coalesce, multiply with constant
 
 	- Release prep:
 		- Localization:
@@ -801,6 +798,22 @@
 
 
 	- Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
+
+	- Try optimization:
+		- Points collects Water, Temperature, Decay in same buffer (w/padding)
+		- Upload is via templated UploadMutableAttributes1, which has static_assert for size to match vertex buffer
+		- ShipRenderContext:
+			- New vertex buffer
+			- Shaders
+
+	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
+		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al
+		+ Use FS code everywhere, and match wx enforced to ours
+		= Ask testers (pt_br) to test it
+		- Changelist
+	- Re-check why we don't pick portuguese system default:
+		! "Wx enforced language for desired identifier "<N/A>": "en""
+		! Also in last release
 
 	- Rot rework:
 		- Damaged points get more "water rot"
