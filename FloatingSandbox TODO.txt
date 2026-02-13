@@ -800,11 +800,45 @@
 	- Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
 
 	- Try optimization:
+		! Point Positions get uploaded to VBO in one go, with no interleaving, and with no local buffering
+		! Point Water, Temperature, and Decay get uploaded to VBO in one go, with no interleaving, and with no local buffering
+		! Multiple pointers in same async call
 		- Points collects Water, Temperature, Decay in same buffer (w/padding)
-		- Upload is via templated UploadMutableAttributes1, which has static_assert for size to match vertex buffer
-		- ShipRenderContext:
-			- New vertex buffer
-			- Shaders
+		- Phase 1: separate VBOs, we'll tail them in phase 2
+			- ShipRenderContext:
+				- Restructure vertex buffers:
+					- Old: (3 VBO uploads all the time)
+						- AttributeGroup1 is Position, TextureCoordinates
+						- AttributeGroup2 is Light, Water, PlaneId, Decay
+						- Temperature
+					- New: (3 VBO uploads all the time)					
+						- Position
+						- Light
+						- AttributeGroup2 becomes AttributeGroup1 and is Water, Decay, Temperature
+						- PlaneId (uploaded sparingly)
+						- TextureCoordinates (uploaded sparingly)
+
+				- Upload:
+					- Async
+					- Takes Position, Light, and AttributeGroup1 from Points (template arg)
+						- static_assert for size to match vertex buffer
+					- Uploads the three of them, async
+
+				- Shaders
+
+				- Note: temperature gets _always_ uploaded now, even when not needed - so check shaders
+
+			- Test perf (both dells):
+				- Before
+				- After
+
+		- Phase 2:
+			- The 3 VBOs are one single VBO, one after the other
+
+			- Test perf (both dells):
+				- After
+
+		- Even if doesn't work, test on Android - it could be faster there
 
 	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
 		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al
