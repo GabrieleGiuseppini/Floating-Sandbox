@@ -1,6 +1,6 @@
 1.20.0
-- The Cinematic Wreck Update!
-	- Redesigned ocean floor physics: a customizable soft silt layer cushions impacts and allows for wrecks to slowly burrow under sand
+- The Smoke'n'Silt Update!
+	- Redesigned ocean floor physics: a customizable layer of soft silt cushions impacts and allows for wrecks to slowly burrow under sand
 		- Thanks to Bandit for their help in the redesign!	
 	- Fire now emits thick smoke!
 		- Turned off by default on lower-end devices, as it incurs a substantial performance hit

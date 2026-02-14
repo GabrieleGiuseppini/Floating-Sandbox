@@ -675,7 +675,7 @@
 		X See if smoke emitter/black smoke was somewhere else in the plan
 			X "Fire emits smoke"
 
-		- Check Discord
+		+ Check Discord
 
 		- Merge into master
 			- With PR for Android
@@ -787,9 +787,15 @@
 		+ RunSpringRelaxation: at coalesce, multiply with constant
 
 	- Release prep:
-		- Localization:
+		= Localization:
 			+ Extract new strings
-			- Update .po's and send to all translators except Chinese
+			= Update .po's and send to all translators except Chinese
+				= RU
+				= UK
+				= ES
+				+ IT
+				= PT_BR
+					- Add Kiko to credits for localization
 			+ Do Italian
 			- When Chinese _old_ is ready:
 				- Update .po and re-send to them
