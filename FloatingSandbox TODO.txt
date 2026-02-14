@@ -669,8 +669,8 @@
 		+ Default Titanic:
 			+ Try mixed w/b smoke on each funnel
 
-		- Test on Dell
-			- Toggling checkbox
+		+ Test on Dell
+			+ Toggling checkbox
 
 		X See if smoke emitter/black smoke was somewhere else in the plan
 			X "Fire emits smoke"
@@ -679,7 +679,7 @@
 
 		- Merge into master
 			- With PR for Android
-		- changelist
+		+ changelist
 
 	+ Change simulation #iterations setting to 0.25 step
 
@@ -788,14 +788,73 @@
 
 	- Release prep:
 		- Localization:
-			- Extract new strings
+			+ Extract new strings
 			- Update .po's and send to all translators except Chinese
-			- Do Italian
+			+ Do Italian
 			- When Chinese _old_ is ready:
 				- Update .po and re-send to them
 		= Changelist
-			+ "The Cinematic Wreck Update"
+			- The Smoke'n'Silt Update
+		- Video:
+			- Titanic, w/mixed smoke
+			- Anti-gravity field
+			- Wreck falling, w/cushioning and clouds
+		- Make sure release does NOT contain Chinese
 
+	- Release template:
+		- Branch is merged into master (if applicable)
+		- Windows
+			- MSI variable
+			- Commit & push
+			- 64-bit MSI
+				- Cleanup Install
+				- Build Release Install (after clean)
+				- Sign two exes
+				- Make MSI
+				- Rename MSI (e.g. Floating-Sandbox-1.19.2-x64)
+				- Sign MSI
+				- Test upgrade from previous version
+			- 32-bit MSI
+				- Cleanup Install
+				- Build Release Install (after clean)
+				- Sign two exes
+				- Make MSI
+				- Rename MSI (e.g. Floating-Sandbox-1.19.2-x86)
+				- Sign MSI
+				- Test clean install
+					- Verify it's a 32-bit process
+		- Ubuntu
+			- rm -rf ~/floating-sandbox
+			- pull 
+			- rm -rf build; mkdir build; cd build
+			- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			- make install
+			- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd ..")
+			- Zip tar ("gzip Floating-Sandbox*.tar")
+			- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+		- Send 3 installers to dev server for final smoke test
+		- Wait for test results
+		*******
+		- Cut tag on github
+		- Copy binaries to Prev
+		- Copy MSIs to scratch and GoogleDrive
+		- Upload packages to GameJolt
+			- Verify Windows Defender
+				- Report file as safe (https://gamejolt.com/privacy)
+			- Post
+		- www.floatingsandbox.com:
+			- Update current version in FAQ
+			- Wait a day or two, to exclude disastrous bugs
+			- Upload changes2.txt
+				- Test w/old FS
+		- Bump up version
+
+
+
+
+
+
+	- See hydrostatic pressure adjust
 
 	- Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
 
@@ -849,15 +908,28 @@
 		! "Wx enforced language for desired identifier "<N/A>": "en""
 		! Also in last release
 
+	- Chinese localization:
+		- Receive .po file back
+		- Update with .pot (from silt/black smoke release)
+		- Send again for new strings
+		- Release
+
 	- Rot rework:
-		- Damaged points get more "water rot"
-		- The strength of water rotting at a point depends on avg of neighbors
-			- So rotting spreads from damaged points
-		- Randomize more at each point
-		- Flag for above-water rotting?
-		- Think rot/burn separation
-			- Separate buffers @ Points, separate vertex attributes @ shaders
-			- If so, consider Perlin experiment below (*)
+		- 1. Current decay serves for rot (rust) + burn, like now; only two changes:
+			- Color: rust->black (i.e. no green)
+			- Different propagation:
+				- Damaged points get more rust
+				- The strength of rust at a point depends on avg of neighbors
+					- So rotting spreads from damaged points
+				- Randomize more at each point
+		- 2. New quantity for "water-rotting", with flag/acceler8r
+			- Perlin-based quantity, "factory" and immutable, at Points
+				- Created @ factory time
+			- At RotPoints, also converge underwater points' "water-rotting" quantity to Perlin
+				- The strength of water rotting at a point depends on avg of neighbors
+					- So rotting spreads from "more perlin" points
+			- Shader: green
+		- 3. Scrub also clears "water-rotting" quantity
 
 
 	- Try Android font
