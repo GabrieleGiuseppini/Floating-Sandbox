@@ -524,7 +524,7 @@
 
 		+ Changelist - thank Bandit
 
-	= See if fire may emit Heavy / black smoke
+	+ See if fire may emit Heavy / black smoke
 		! Gist:
 			! Move generic texture draw as _last_ (or almost last) render
 				! All draw batches with internal transparency need to be last
@@ -677,8 +677,8 @@
 
 		+ Check Discord
 
-		- Merge into master
-			- With PR for Android
+		+ Merge into master
+			+ With PR for Android
 		+ changelist
 
 	+ Change simulation #iterations setting to 0.25 step
@@ -786,7 +786,7 @@
 			+ Do not multiply
 		+ RunSpringRelaxation: at coalesce, multiply with constant
 
-	- Release prep:
+	= Release prep:
 		= Localization:
 			+ Extract new strings
 			= Update .po's and send to all translators except Chinese
@@ -799,15 +799,15 @@
 			+ Do Italian
 			- When Chinese _old_ is ready:
 				- Update .po and re-send to them
-		= Changelist
-			- The Smoke'n'Silt Update
+		+ Changelist
+			+ The Smoke'n'Silt Update
 		- Video:
 			- Titanic, w/mixed smoke
 			- Anti-gravity field
 			- Wreck falling, w/cushioning and clouds
 		- Make sure release does NOT contain Chinese
 
-	- Release template:
+	- Release:
 		- Branch is merged into master (if applicable)
 		- Windows
 			- MSI variable
