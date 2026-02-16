@@ -2883,7 +2883,7 @@ void Ship::DiffuseLight(
         || !simulationParameters.IsLightingEnabled
         || simulationParameters.LuminiscenceAdjustment == 0.0f)
     {
-        // Zer out buffer if it's dirty
+        // Zero out buffer if it's dirty
         if (mIsLightBufferPopulated)
         {
             mPoints.ZeroLightBuffer();

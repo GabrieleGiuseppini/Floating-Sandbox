@@ -802,9 +802,11 @@
 		+ Changelist
 			+ The Smoke'n'Silt Update
 		- Video:
-			- Titanic, w/mixed smoke
-			- Anti-gravity field
-			- Wreck falling, w/cushioning and clouds
+			- No status text
+			- 1. Titanic, w/mixed smoke
+				- Anti-gravity field
+			- 2. TODO: ship?
+				- Wreck falling, w/cushioning and clouds
 		- Make sure release does NOT contain Chinese
 
 	- Release:
