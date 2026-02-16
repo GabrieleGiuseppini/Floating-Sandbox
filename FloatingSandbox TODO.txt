@@ -859,12 +859,17 @@
 
 
 
+	- Run Discord poll for next:
+		- Longhorn materials (includes redesign of material palette, as it would become too slow)
+		- Rot redesign (includes better rusting, and organic alge growth)
+		- NPC phase II: ShipBuilder (Floorplan layer and Interior Texture layer), areas (e.g. assembly area), and behaviors (swimming, etc.)
+
 
 
 
 	- See hydrostatic pressure adjust
 
-	- Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
+	+ Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
 
 	- Try optimization:
 		! Point Positions get uploaded to VBO in one go, with no interleaving, and with no local buffering

@@ -129,7 +129,29 @@ SoundAtlasAssetsMetadata SoundAtlasBuilder::BuildAtlas(
                 assetPropertiesSearchEntries[p].HasBeenVisited = true;
                 break;
             }
+        }
 
+        //
+        // Check properties
+        //
+
+        if (assetPropropertiesIndex.has_value())
+        {
+            auto const & ap = assetPropertiesSearchEntries[*assetPropropertiesIndex].AssetProperties;
+
+            // Loop points
+            if (ap.LoopPoints.has_value())
+            {
+                if (ap.LoopPoints->End <= ap.LoopPoints->Start)
+                {
+                    throw GameException("Invalid loop points for " + assetName + ": End <= Start");
+                }
+
+                if (ap.LoopPoints->End > buf.GetSize())
+                {
+                    throw GameException("Invalid loop points for " + assetName + ": End > buffer size");
+                }
+            }
         }
 
         //
