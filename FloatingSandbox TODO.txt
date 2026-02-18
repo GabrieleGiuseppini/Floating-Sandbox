@@ -809,7 +809,7 @@
 				- Wreck falling, w/cushioning and clouds
 		- Make sure release does NOT contain Chinese
 
-	- Auto-adjust smoke density with # of burning particles
+	+ Auto-adjust smoke density with # of burning particles
 		! Experiments:
 			! Base RND (Ark): 4.30/4.50
 			! With flames:
@@ -819,9 +819,12 @@
 				- D=0.5:
 				- 220 flames: 700 gmmt RND=7
 				- 224 flames: 700 gmmt RND=7.5
-		- Formula:
-			- 80 burning points => adjust multiplier = 1.0
-			- 220 burning points => adjust multiplier = 0.5
+		+ Formula for baseline:
+			+ 80 burning points => baseline = 1.0
+			+ 220 burning points => baseline = 0.5
+
+	- DiffuseLight optimizations (from Android plan)
+		- Changelist
 
 	- Release:
 		- Branch is merged into master (if applicable)

@@ -1369,11 +1369,17 @@ void Points::UpdateCombustionHighFrequency(
                 // See if we need to calculate the next emission timestamp
                 if (pointCombustionState.NextSmokeEmissionSimulationTimestamp == 0.0f)
                 {
+                    // Calculate baseline so that we don't overcrowd smoke plumes when there are
+                    // many burning points
+                    //  #burning points <= 80: 1.0
+                    //  #burning points >= 220: 0.5
+                    float const baseline = 1.0f - LinearStep(80.0f, 220.0f, static_cast<float>(mBurningPoints.size())) * 0.5f;
+
                     pointCombustionState.NextSmokeEmissionSimulationTimestamp =
                         currentSimulationTime
                         + GameRandomEngine::GetInstance().GenerateExponentialReal(
-                            1.0f // Our baseline
-                            * pointCombustionState.FlameDevelopment
+                            baseline
+                            * pointCombustionState.FlameDevelopment // Wait longer is flame is starting
                             * simulationParameters.CombustionSmokeEmissionDensityAdjustment);
                 }
 
