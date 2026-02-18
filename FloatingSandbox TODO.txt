@@ -791,8 +791,8 @@
 			+ Extract new strings
 			= Update .po's and send to all translators except Chinese
 				= RU
-				= UK
-				= ES
+				+ UK
+				+ ES
 				+ IT
 				= PT_BR
 					- Add Kiko to credits for localization

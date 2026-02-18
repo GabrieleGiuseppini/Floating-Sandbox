@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-14 15:25+0100\n"
+"PO-Revision-Date: 2026-02-18 19:30+0100\n"
 "Last-Translator: matheusvhs\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -129,35 +129,26 @@ msgstr ""
 "Регулирует, насколько детализированной выглядит вода внутри физического тела."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2777
-#, fuzzy
-#| msgid "Adjusts how long it takes for smoke to vanish."
 msgid "Adjusts how long it takes for smoke emitted by fire to vanish."
-msgstr "Регулирует, сколько времени потребуется для исчезновения дыма."
+msgstr "Регулирует, сколько времени потребуется для исчезновения дыма огня."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2698
-#, fuzzy
-#| msgid "Adjusts how long it takes for smoke to vanish."
 msgid ""
 "Adjusts how long it takes for smoke emitted by the Smoke Emitter to vanish."
-msgstr "Регулирует, сколько времени потребуется для исчезновения дыма."
+msgstr ""
+"Регулирует, сколько времени потребуется для исчезновения дыма из излучателей."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1754
-#, fuzzy
-#| msgid "Adjusts how long it takes for smoke to vanish."
 msgid "Adjusts how long silt clouds take to settle when underwater."
-msgstr "Регулирует, сколько времени потребуется для исчезновения дыма."
+msgstr "Регулирует, сколько времени потребуется для очитски океанической пыли."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1488
-#, fuzzy
-#| msgid "Adjusts how much the ocean floor rolls up and down."
 msgid "Adjusts how much the bedrock surface rolls up and down."
-msgstr "Регулирует, неровность океанского дна."
+msgstr "Регулирует, неровность океанского коренного дна."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1675
-#, fuzzy
-#| msgid "Adjusts how much the ocean floor rolls up and down."
 msgid "Adjusts how much the silt layer rolls up and down."
-msgstr "Регулирует, неровность океанского дна."
+msgstr "Регулирует, неровность океанского песка."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:3151
 msgid "Adjusts how wide light emitted by luminescent materials spreads out."
@@ -242,26 +233,20 @@ msgstr ""
 "она оказывает на физические тела."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2750
-#, fuzzy
-#| msgid "Adjusts the density of smoke particles."
 msgid "Adjusts the density of smoke particles emitted by fire."
-msgstr "Регулирует плотность частиц дыма."
+msgstr "Регулирует плотность частиц дыма огня."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2671
-#, fuzzy
-#| msgid "Adjusts the density of smoke particles."
 msgid "Adjusts the density of smoke particles emitted by the Smoke Emitter."
-msgstr "Регулирует плотность частиц дыма."
+msgstr "Регулирует плотность частиц дыма из излучателей."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:640
 msgid "Adjusts the elasticity of collisions between materials."
 msgstr "Регулирует эластичность столкновений между материалами."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1568
-#, fuzzy
-#| msgid "Adjusts the elasticity of collisions with the ocean floor."
 msgid "Adjusts the elasticity of collisions with bedrock."
-msgstr "Регулирует упругость столкновений с океанским дном."
+msgstr "Регулирует эластичности столкновений с океанским коренным дном."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:3491
 msgid "Adjusts the extent of blast force fields onto NPCs."
@@ -284,10 +269,8 @@ msgid "Adjusts the friction exherted by and onto NPC particles."
 msgstr "Регулирует трение, которое оказывается на частицы НИПов."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1594
-#, fuzzy
-#| msgid "Adjusts the friction exherted by the ocean floor."
 msgid "Adjusts the friction exherted by bedrock."
-msgstr "Регулирует трение, создаваемое океанским дном."
+msgstr "Регулирует трение, создаваемое океанским коренным дном."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2512
 msgid ""
@@ -310,10 +293,8 @@ msgid "Adjusts the global damping of velocities."
 msgstr "Регулирует глобальное подавление скоростей."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1701
-#, fuzzy
-#| msgid "Adjusts the chaoticness of flames."
 msgid "Adjusts the hardness of the silt layer."
-msgstr "Регулирует хаотичность пламени."
+msgstr "Регулирует твердость слоя песка."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:901
 msgid ""
@@ -411,16 +392,12 @@ msgid "Adjusts the rate with which materials consume when burning."
 msgstr "Регулирует скорость, с которой материалы уничтожаются при горении."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1728
-#, fuzzy
-#| msgid ""
-#| "Adjusts the speed with which materials rot when exposed to sea water. Set "
-#| "to zero to disable rotting altogether."
 msgid ""
 "Adjusts the sensitivity of dust in forming clouds upon impact. Set to zero "
 "to disable dust clouds altogether."
 msgstr ""
-"Регулирует скорость, с которой материалы гниют под воздействием морской "
-"воды. Установите на ноль, чтобы полностью отключить гниение."
+"Регулирует чуствительнось пыли при столкновении. Установите на ноль, чтобы "
+"полностью отключить океаническую пыль."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:5174
 msgid "Adjusts the size of flames."
@@ -517,10 +494,8 @@ msgid "Adjusts the temperature at which materials melt."
 msgstr "Регулирует температуру, при которой материалы плавятся."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1649
-#, fuzzy
-#| msgid "Adjusts the chaoticness of flames."
 msgid "Adjusts the thickness of the silt layer."
-msgstr "Регулирует хаотичность пламени."
+msgstr "Регулирует толщину слоя песка."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2974
 msgid "Adjusts the thrust exerted by engines."
@@ -771,10 +746,8 @@ msgid "Bright Ambient Light"
 msgstr "Осветлить Окружающий Свет"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2235
-#, fuzzy
-#| msgid "Bumpiness"
 msgid "Bulkiness"
-msgstr "Бугристость"
+msgstr "Громоздкость"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1487
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1674
@@ -1109,16 +1082,12 @@ msgid "Density Adjust"
 msgstr "Настройка плотности"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2670
-#, fuzzy
-#| msgid "Density Adjust"
 msgid "Density Adjust (Boiler)"
-msgstr "Настройка плотности"
+msgstr "Настройка плотности (котла)"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2749
-#, fuzzy
-#| msgid "Density Adjust"
 msgid "Density Adjust (Fire)"
-msgstr "Настройка плотности"
+msgstr "Настройка плотности (огня)"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1432
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4542
@@ -1341,10 +1310,8 @@ msgid "Draws the ocean floor using a static color."
 msgstr "Изображает дно океана однотонным цветом."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4742
-#, fuzzy
-#| msgid "Draws the ocean floor using a static color."
 msgid "Draws the ocean floor using textures."
-msgstr "Изображает дно океана однотонным цветом."
+msgstr "Изображает дно океана используя текстуры."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4587
 msgid "Draws the ocean using a single color."
@@ -1524,10 +1491,8 @@ msgid "Enables or disables generation of rain during a storm."
 msgstr "Включает или отключает генерацию дождя во время шторма."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2720
-#, fuzzy
-#| msgid "Enables or disables rendering of vector fields."
 msgid "Enables or disables generation of smoke from fire."
-msgstr "Включает или отключает отрисовку векторных полей."
+msgstr "Включает или отключает генерацию огневого дыма."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:6051
 msgid ""
@@ -2068,10 +2033,8 @@ msgid "Gust Amplitude"
 msgstr "Амплитуда порыва ветра"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1700
-#, fuzzy
-#| msgid "Silt Hardness"
 msgid "Hardness"
-msgstr "Иловая твердость"
+msgstr "Твердость"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4098
 msgid "Heat"
@@ -2267,10 +2230,8 @@ msgid "Interactive Switch"
 msgstr "Интерактивный переключатель"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2223
-#, fuzzy
-#| msgid "Generate Waves"
 msgid "Interactive Waves"
-msgstr "Создать волну"
+msgstr "Интерактивные волны"
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:1134
 msgid "Interior Layer"
@@ -2523,10 +2484,8 @@ msgid "Mass (Kg)"
 msgstr "Масса (кг)"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2644
-#, fuzzy
-#| msgid "Spread Adjust"
 msgid "Mass Adjust"
-msgstr "Настройка разброса"
+msgstr "Настройка массы"
 
 #: ..\Sources\FloatingSandbox\UI\PreferencesDialog.cpp:860
 msgid "Material Textures"
@@ -2829,10 +2788,8 @@ msgstr ""
 "корабля"
 
 #: ..\Sources\ShipBuilderLib\UI\ResizeTextureDialog.cpp:42
-#, fuzzy
-#| msgid "Repair Structure"
 msgid "Optimize for structure"
-msgstr "Гаечный ключ (Ремонт)"
+msgstr "Оптимизировать для структуры"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4448
 msgid "Options"
@@ -2941,16 +2898,12 @@ msgid "Performance"
 msgstr "Производительность"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2697
-#, fuzzy
-#| msgid "Persistence Adjust"
 msgid "Persistence Adjust (Boiler)"
-msgstr "Настройка стойкости дыма"
+msgstr "Настройка стойкости дыма (Котла)"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2776
-#, fuzzy
-#| msgid "Persistence Adjust"
 msgid "Persistence Adjust (Fire)"
-msgstr "Настройка стойкости дыма"
+msgstr "Настройка стойкости дыма (Огня)"
 
 #: ..\Sources\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:85
 msgid "Physics"
@@ -3573,20 +3526,16 @@ msgid "Sets the color of anonymous NPCs."
 msgstr "Устанавливает цвет анонимных НИПов."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4795
-#, fuzzy
-#| msgid "Sets the single color of the ocean."
 msgid "Sets the color of bedrock."
-msgstr "Задает единый цвет океана."
+msgstr "Задает единый цвет коренного дна."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4962
 msgid "Sets the color of lamp lights."
 msgstr "Устанавливает цвет свечения лампы."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4813
-#, fuzzy
-#| msgid "Sets the color of lamp lights."
 msgid "Sets the color of silt."
-msgstr "Устанавливает цвет свечения лампы."
+msgstr "Задает единый цвет песка."
 
 #: ..\Sources\ShipBuilderLib\UI\PreferencesDialog.cpp:151
 msgid "Sets the color of the canvas background."
@@ -3631,16 +3580,12 @@ msgid "Sets the starting (top) color of the gradient."
 msgstr "Задает начальный (верхний) цвет градиента."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4755
-#, fuzzy
-#| msgid "Sets the texture to use for the ocean."
 msgid "Sets the texture to use for bedrock."
-msgstr "Задает текстуру для использования в океане."
+msgstr "Задает текстуру для использования корреным дном."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4774
-#, fuzzy
-#| msgid "Sets the texture to use for the ocean."
 msgid "Sets the texture to use for silt."
-msgstr "Задает текстуру для использования в океане."
+msgstr "Задает текстуру для использования песком."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4529
 msgid "Sets the texture to use for the ocean."
@@ -3791,14 +3736,8 @@ msgid "Slice"
 msgstr "Пила"
 
 #: ..\Sources\ShipBuilderLib\UI\ResizeTextureDialog.cpp:43
-#, fuzzy
-#| msgid ""
-#| "When enabled, textures imported into the exterior layer are slightly "
-#| "modified to optimize coverage by the structure layer."
 msgid "Slightly stretch texture to optimize coverage by the structure layer."
-msgstr ""
-"Если включено, импорт текстур в наружный слой немного оптимизирован для "
-"покрытия структурного слоя."
+msgstr "Немного растянуть текстуру для оптимизатии покрытия структурного слоя."
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:416
 msgid "Smash"
