@@ -801,12 +801,15 @@
 				- Update .po and re-send to them
 		+ Changelist
 			+ The Smoke'n'Silt Update
-		- Video:
-			- No status text
-			- 1. Titanic, w/mixed smoke
-				- Anti-gravity field
-			- 2. TODO: ship?
-				- Wreck falling, w/cushioning and clouds
+		+ Video:
+			+ No status text
+			+ 1. Titanic, w/mixed smoke
+				+ Anti-gravity field
+			+ 2. TODO: ship?
+				+ Wreck falling, w/cushioning and clouds
+			+ End titles:
+				+ Say PC again
+				+ Say ShipBucket
 		- Make sure release does NOT contain Chinese
 
 	+ Auto-adjust smoke density with # of burning particles
@@ -873,7 +876,9 @@
 		- Upload packages to GameJolt
 			- Verify Windows Defender
 				- Report file as safe (https://gamejolt.com/privacy)
-			- Post
+			- Youtube video
+				- Say "Android will come soon" in text
+			- GameJolt Post
 		- www.floatingsandbox.com:
 			- Update current version in FAQ
 			- Wait a day or two, to exclude disastrous bugs
