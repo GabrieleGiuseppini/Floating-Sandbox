@@ -13,6 +13,7 @@
 #include <Core/FixedSizeVector.h>
 #include <Core/GameWallClock.h>
 
+#include <array>
 #include <cassert>
 #include <chrono>
 #include <functional>
@@ -537,7 +538,7 @@ public:
         , mBufferLampCount(make_aligned_float_element_count(lampElementCount))
         , mLampRawDistanceCoefficientBuffer(mBufferLampCount, lampElementCount, 0.0f)
         , mLampLightSpreadMaxDistanceBuffer(mBufferLampCount, lampElementCount, 0.0f)
-        , mLampPositionWorkBuffer(mBufferLampCount, lampElementCount, vec2f::zero())
+        , mLampPositionWorkBuffers{ Buffer<float>(mBufferLampCount, lampElementCount, 0.0f), Buffer<float>(mBufferLampCount, lampElementCount, 0.0f) }
         , mLampPlaneIdWorkBuffer(mBufferLampCount, lampElementCount, 0)
         , mLampDistanceCoefficientWorkBuffer(mBufferLampCount, lampElementCount, 0.0f)
         //////////////////////////////////
@@ -811,13 +812,13 @@ public:
     }
 
     /*
-     * Gets a work buffer for populating lamp positions.
+     * Gets the work buffers for populating lamp positions.
      *
      * Size is BufferLampCount, padded to vectorization float count.
      */
-    Buffer<vec2f> & GetLampPositionWorkBuffer()
+    std::array<Buffer<float>, 2u> & GetLampPositionWorkBuffers()
     {
-        return mLampPositionWorkBuffer;
+        return mLampPositionWorkBuffers;
     }
 
     /*
@@ -1005,7 +1006,7 @@ private:
 
     Buffer<float> mLampRawDistanceCoefficientBuffer; // EffectiveLampLight / LampLightSpreadMaxDistance
     Buffer<float> mLampLightSpreadMaxDistanceBuffer;
-    Buffer<vec2f> mLampPositionWorkBuffer;
+    std::array<Buffer<float>, 2u> mLampPositionWorkBuffers; // Separate X and Y, helps with SSE vectorization (and doesn't hurt for NEON)
     Buffer<PlaneId> mLampPlaneIdWorkBuffer;
     Buffer<float> mLampDistanceCoefficientWorkBuffer;
 

@@ -53,6 +53,14 @@ static void DiffuseLight_Vectorized(benchmark::State & state)
     auto lampDistanceCoeffs = MakeFloats(lampsSize);
     auto lampSpreadMaxDistances = MakeFloats(lampsSize);
 
+    auto lampPositionsX = make_unique_buffer_aligned_to_vectorization_word<float>(lampsSize);
+    auto lampPositionsY = make_unique_buffer_aligned_to_vectorization_word<float>(lampsSize);
+    for (size_t i = 0; i < lampsSize; ++i)
+    {
+        lampPositionsX[i] = lampPositions[i].x;
+        lampPositionsY[i] = lampPositions[i].y;
+    }
+
     auto outLightBuffer = make_unique_buffer_aligned_to_vectorization_word<float>(pointsSize);
 
     for (auto _ : state)
@@ -62,7 +70,8 @@ static void DiffuseLight_Vectorized(benchmark::State & state)
             ElementIndex(pointsSize),
             pointPositions.get(),
             pointPlaneIds.get(),
-            lampPositions.get(),
+            lampPositionsX.get(),
+            lampPositionsY.get(),
             lampPlaneIds.get(),
             lampDistanceCoeffs.get(),
             lampSpreadMaxDistances.get(),

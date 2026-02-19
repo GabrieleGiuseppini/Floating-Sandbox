@@ -14,6 +14,7 @@
 	- Re-designed texture import workflow, with clearer options for fitting the texture to the ship
 	- Undo actions survive going back and forth to and from game
 - Fixed the last few crashes known to humanity
+- 10% performance optimization in light diffusion implementation
 - Added 12 new ships
 
 1.19.2

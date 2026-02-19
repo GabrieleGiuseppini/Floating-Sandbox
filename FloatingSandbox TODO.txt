@@ -823,8 +823,15 @@
 			+ 80 burning points => baseline = 1.0
 			+ 220 burning points => baseline = 0.5
 
-	- DiffuseLight optimizations (from Android plan)
-		- Changelist
+	+ DiffuseLight optimizations (from Android plan)
+		+ Recap of positive results:
+			+ PC:
+				+ Interleave (doesn't change much for Android, so ok)
+				+ SSE: Unroll (rotating points) (already happens at NEON, so don't touch it)
+		+ Unit tests
+		+ Benchmarks
+		+ Verify perf matches experiments (*)
+		+ Changelist
 
 	- Release:
 		- Branch is merged into master (if applicable)
@@ -880,6 +887,8 @@
 		- Longhorn materials (includes redesign of material palette, as it would become too slow)
 		- Rot redesign (includes better rusting, and organic alge growth)
 		- NPC phase II: ShipBuilder (Floorplan layer and Interior Texture layer), areas (e.g. assembly area), and behaviors (swimming, etc.)
+		- Hydrostatic pressure fix for rotation
+		- Fireworks
 
 
 
@@ -1171,10 +1180,11 @@
 		- Negative pressure in Mylar bubble - bug?
 		- See why with high water density, water entering a ship goes above the waterline - bug?
 
-	- Lights improvement options (*)
-
 	- Sources of Light
-		- See if there's a * below
+		- In Feb 2026 we have two options for this:
+			1. New option, briefly discussed @ Fireworks below: small set of "global lights", would only cover fireworks (not lamps), and would be implemented NOT via current lighting algo, but by new
+			   glsl code @ almost every shader
+			2. Old option: this, which puts together lamps _and_ fireworks
 		- Add to fireworks as precondition
 		- Spec:
 			- Ship owns LightSource instance, just container of point index, material params, calcd params
@@ -1985,9 +1995,9 @@
 	  to upload it together with the other frequently-changing fields (i.e. water, light)
 		- Pre: UPL=0.05ms
 
-	- OceanFloor doesn't need to be uploaded at each step
-		- However, vertex buffers rely on inputs such as view model, so when these change, we'd need to trigger a re-upload from OceanFloor itself
-		- So, best solution would be to make VertexBuffer independent from these extra parameters
+	+ OceanFloor doesn't need to be uploaded at each step
+		+ However, vertex buffers rely on inputs such as view model, so when these change, we'd need to trigger a re-upload from OceanFloor itself
+		+ So, best solution would be to make VertexBuffer independent from these extra parameters
 
 	- Reduce number of VAO changes by incorporating multiple VBOs into one, with element size as large as largest (union of structs)
 		- Each element type though retains its own BoundedVector, which is uploaded as-needed into larger VBO
@@ -2317,7 +2327,7 @@
 		- Like at https://youtu.be/KPsnUPIHZuM
 		- Kinda as if the originating ship particle's velocity at the moment of generation has a (decaying) impact on the air bubble particle, making it move like an orbit
 
-	- Generalized light emission
+	- Generalized light emission 
 		- TODO: obsolete due to "Light Sources" work above
 		- Option 1:
 			- Points gets struct with:
@@ -2354,9 +2364,14 @@
 			- 2 triggers: toggable thing like bombs, and electrical element that launches when powered
 			- State machine of detonated firework owned by ephemeral particles in conjunction with IShipPhysicsHandler
 			- 3 initial types:
-				- Flair
+				- Flare
 				- Rose: sparkles radiating immediately from explosion point
 				- MultiRose: sparkles radiating with delay from (invisible) sparkles radiating from explostion point
+			- Lighting of ship/world
+				- New machinery @ Ship/RenderContext with N (with N small) sources
+					- Params in array
+					- All shaders use it (with an if)
+					- This is basically "Source of Light (*)"
 		- Impl:
 			- New GadgetType
 			- New GameTypes enum: Firework(Kind)Type: Flair, Rose, MultiRose

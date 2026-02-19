@@ -2857,7 +2857,8 @@ void Ship::RecalculateLightDiffusionParallelism(size_t simulationParallelism)
                     pointEnd,
                     mPoints.GetPositionBufferAsVec2(),
                     mPoints.GetPlaneIdBufferAsPlaneId(),
-                    mElectricalElements.GetLampPositionWorkBuffer().data(),
+                    mElectricalElements.GetLampPositionWorkBuffers()[0].data(),
+                    mElectricalElements.GetLampPositionWorkBuffers()[1].data(),
                     mElectricalElements.GetLampPlaneIdWorkBuffer().data(),
                     mElectricalElements.GetLampDistanceCoefficientWorkBuffer().data(),
                     mElectricalElements.GetLampLightSpreadMaxDistanceBufferAsFloat(),
@@ -2897,7 +2898,8 @@ void Ship::DiffuseLight(
     // 1. Prepare lamp data
     //
 
-    auto & lampPositions = mElectricalElements.GetLampPositionWorkBuffer(); // Padded to vectorization float count
+    auto & lampPositionsX = mElectricalElements.GetLampPositionWorkBuffers()[0]; // Padded to vectorization float count
+    auto & lampPositionsY = mElectricalElements.GetLampPositionWorkBuffers()[1]; // Padded to vectorization float count
     auto & lampPlaneIds = mElectricalElements.GetLampPlaneIdWorkBuffer(); // Padded to vectorization float count
     auto & lampDistanceCoeffs = mElectricalElements.GetLampDistanceCoefficientWorkBuffer(); // Padded to vectorization float count
 
@@ -2907,7 +2909,9 @@ void Ship::DiffuseLight(
         auto const lampElectricalElementIndex = mElectricalElements.Lamps()[l];
         auto const lampPointIndex = mElectricalElements.GetPointIndex(lampElectricalElementIndex);
 
-        lampPositions[l] = mPoints.GetPosition(lampPointIndex);
+        auto const & lampPosition = mPoints.GetPosition(lampPointIndex);
+        lampPositionsX[l] = lampPosition.x;
+        lampPositionsY[l] = lampPosition.y;
         lampPlaneIds[l] = mPoints.GetPlaneId(lampPointIndex);
         lampDistanceCoeffs[l] =
             mElectricalElements.GetLampRawDistanceCoefficient(l)
