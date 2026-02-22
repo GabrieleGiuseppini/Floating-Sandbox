@@ -786,6 +786,9 @@
 			+ Do not multiply
 		+ RunSpringRelaxation: at coalesce, multiply with constant
 
+	= Improve porthole radius
+		- Also @ Android
+
 	= Release prep:
 		= Localization:
 			+ Extract new strings

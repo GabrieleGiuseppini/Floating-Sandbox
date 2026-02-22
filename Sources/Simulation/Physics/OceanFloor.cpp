@@ -264,6 +264,8 @@ void OceanFloor::SetTerrainHeight(
     // Update terrain
     mHeightMap[sampleIndex] = terrainHeight;
 
+    // Adjust bedrock profile
+
     // Recalculate sample value
     float const newBedrockSampleValue = CalculateResultantBedrockSampleValue(sampleIndex);
 
@@ -286,8 +288,9 @@ void OceanFloor::SetTerrainHeight(
     // Make sure extra sample has same value as previous one
     mSamples[SamplesCount].BedrockSampleValue = mSamples[SamplesCount - 1].BedrockSampleValue;
 
-    // Now calculate Silt profile, on top of bedrock profile;
-    // silt height at i depends on bedrock[i-1] and bedrock[i];
+    // Now calculate Silt profile, on top of bedrock profile
+
+    // Silt height at i depends on bedrock[i-1] and bedrock[i];
     // since we've changed bedrock[sampleIndex - 1] and bedrock[sampleIndex], we've affected
     // silt at sampleIndex - 1 (bc bedrock[sampleIndex- 1 ]), sampleIndex (bc both), and sampleIndex + 1 (bc bedrock[sampleIndex])
     CalculateSiltSampleValues(sampleIndex > 0 ? sampleIndex - 1 : sampleIndex, sampleIndex < SamplesCount - 1 ? sampleIndex + 1 : sampleIndex);
