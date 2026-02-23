@@ -797,8 +797,8 @@
 				+ UK
 				+ ES
 				+ IT
-				= PT_BR
-					- Add Kiko to credits for localization
+				+ PT_BR
+					+ Add Kiko to credits for localization
 			+ Do Italian
 			- When Chinese _old_ is ready:
 				- Update .po and re-send to them
@@ -889,6 +889,48 @@
 				- Test w/old FS
 		- Bump up version
 
+
+
+	- Tornadoes:
+		! Gist
+			! Once tool is selected, user clicks down and tornado spawns there, or an existing tornado there is picked
+			! MouseMove:
+				! X: update target X
+				! Up: update force
+				! Down: update heat ~ TODOHERE
+			! MouseUp: tornado smooths towards target
+			! Update(Ship &) changes into Update(Ships, Npcs)
+				- First applies
+				- Then updates
+		- Impl:
+			- Cursor icon
+			- "GlobalForceFields" -> "InstancedPhysicalEntities"
+				- Tornado:
+					- CurrentX, TargetX
+					- CurrentVisibilityAlpha, TargetVisibilityAlpha
+					- CurrentForceMultiplier, TargetForceMultiplier
+					- CurrentHeatMultiplier, TargetHeatMultiplier
+					- float LastActivitySimulationTimestamp
+						- Updated each time "Current" status changes
+						- After some time after this, starts TargetVisibilityAlpha=0
+				- ElementIndex BeginPlaceTornado(x, searchRadius)
+				- UpdateTornado(...)
+				- EndUpdateTornado(...)
+				- Update(Ships, Npcs):
+					- Move CurrentX towards TargetX by fixed speed; if crosses: stop
+					- Move ... towards ... by convergence, with stop
+					- Update LastActivitySimulationTimestamp if anything changed
+					- For each ship:
+						- ApplyTODO
+					- Npcs::ApplyTODO
+				- RenderUpload
+			- WorldRenderContext:
+				- VertexAttributes:
+					- Geometry + v-space
+					- VisibilityAlpha (0..1)
+					- RotationSpeed (multiplier)
+					- HeatDepth (0..1)
+				- Shader
 
 
 	- Run Discord poll for next:

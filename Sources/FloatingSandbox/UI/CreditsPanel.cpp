@@ -70,7 +70,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {0, std::string(APPLICATION_NAME_WITH_LONG_VERSION), 0},
         {1, BuildInfo::GetBuildInfo().ToString(), panelSize.GetHeight() / 2},
 
-        {1, _("(c) Gabriele Giuseppini (G2-Labs) 2018-2025"), 0},
+        {1, _("(c) Gabriele Giuseppini (G2-Labs) 2018-2026"), 0},
         {2, _("Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013"), VMargin},
 
         {1, _("This software is licensed to Mattia, Elia, and all the others kids in the world!"), panelSize.GetHeight() / 2},
@@ -87,6 +87,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("Gabriele Giuseppini (Italian)"), 0},
         {1, wxS("Ilya Voloshin (https://vk.com/1lvol) (Russian)"), 0},
         {1, wxS("Joaquin Olivera (Joadix100) (Spanish)"), 0},
+        {1, wxS("Kiko (Brazilian Portuguese)"), 0},
         {1, wxS("Matheus Silva (Brazilian Portuguese)"), 0},
         {1, wxS("Roman Shavernew (DioxCode) (Russian, Ukrainian)"), VMargin3},
 
