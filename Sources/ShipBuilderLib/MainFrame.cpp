@@ -5778,6 +5778,12 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     // Dispose of current controller - including its OpenGL machinery
     mController.reset();
 
+    if (shipFilePath != mCurrentShipFilePath)
+    {
+        // Different ship, clear undo
+        mUndoStack.Reset();
+    }
+
     // Reset current ship filename
     mCurrentShipFilePath.reset();
 

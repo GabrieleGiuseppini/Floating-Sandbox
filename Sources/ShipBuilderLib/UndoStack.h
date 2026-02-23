@@ -77,6 +77,12 @@ public:
         size_t startIndex, // Last index remaining after rewind
         Controller & controller);
 
+    void Reset()
+    {
+        mStack.clear();
+        mTotalCost = 0;
+    }
+
 private:
 
     struct UndoAction
