@@ -836,11 +836,12 @@
 		+ Verify perf matches experiments (*)
 		+ Changelist
 
-	- Test langs yourself for latest strings
-	- Send last beta, ask Localizer
+	+ Test langs yourself for latest strings
+	+ Send last beta, ask Localizer
+		+ Bump up build number
 
 	- Release:
-		- Branch is merged into master (if applicable)
+		- Build on Ubuntu
 		- Windows
 			- MSI variable
 			- Commit & push
