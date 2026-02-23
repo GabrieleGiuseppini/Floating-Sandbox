@@ -786,14 +786,11 @@
 			+ Do not multiply
 		+ RunSpringRelaxation: at coalesce, multiply with constant
 
-	= Improve porthole radius
-		- Also @ Android
-
-	= Release prep:
-		= Localization:
+	+ Release prep:
+		+ Localization:
 			+ Extract new strings
-			= Update .po's and send to all translators except Chinese
-				= RU
+			+ Update .po's and send to all translators except Chinese
+				+ RU
 				+ UK
 				+ ES
 				+ IT
@@ -813,7 +810,7 @@
 			+ End titles:
 				+ Say PC again
 				+ Say ShipBucket
-		- Make sure release does NOT contain Chinese
+		+ Make sure release does NOT contain Chinese
 
 	+ Auto-adjust smoke density with # of burning particles
 		! Experiments:
@@ -838,6 +835,9 @@
 		+ Benchmarks
 		+ Verify perf matches experiments (*)
 		+ Changelist
+
+	- Test langs yourself for latest strings
+	- Send last beta, ask Localizer
 
 	- Release:
 		- Branch is merged into master (if applicable)
