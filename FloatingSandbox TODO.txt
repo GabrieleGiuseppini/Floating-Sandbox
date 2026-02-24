@@ -840,6 +840,7 @@
 	+ Send last beta, ask Localizer
 		+ Bump up build number
 
+	- Check Discord
 	- Release:
 		+ Build on Ubuntu
 		- Windows
@@ -956,6 +957,10 @@
 					- VisibilityAlpha (0..1)
 					- RotationSpeed (multiplier)
 					- HeatDepth (0..1)
+				- Upload:
+					- Calculate simple quad, width and height fixed
+						- For height, take into account Perlin - try to avoid repetitions
+						- Will have to adjust smoke and fire resolution in shader
 				- Shader
 					- TODO: try quad: mask out x <>+/-1
 
