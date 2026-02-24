@@ -93,6 +93,7 @@ OceanFloorHeightMap OceanFloorHeightMap::LoadFromStream(BinaryReadStream & input
     //
 
     size_t const streamNumberOfSamples = inputStream.GetSize() / sizeof(float);
+    assert(streamNumberOfSamples > 0);
     unique_buffer<float> streamBuffer(streamNumberOfSamples);
     inputStream.Read(reinterpret_cast<std::uint8_t *>(streamBuffer.get()), streamBuffer.size() * sizeof(float));
 
@@ -116,7 +117,7 @@ OceanFloorHeightMap OceanFloorHeightMap::LoadFromStream(BinaryReadStream & input
 
         // Take samples left and right
         float const sample1 = streamBuffer[streamI];
-        float const sample2 = (streamI < streamNumberOfSamples - 1)
+        float const sample2 = (static_cast<size_t>(streamI) < streamNumberOfSamples - 1)
             ? streamBuffer[streamI + 1]
             : sample1;
 

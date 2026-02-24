@@ -841,7 +841,7 @@
 		+ Bump up build number
 
 	- Release:
-		- Build on Ubuntu
+		+ Build on Ubuntu
 		- Windows
 			- MSI variable
 			- Commit & push
@@ -871,6 +871,7 @@
 			- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd ..")
 			- Zip tar ("gzip Floating-Sandbox*.tar")
 			- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+				- export GDK_BACKEND=x11
 		- Send 3 installers to dev server for final smoke test
 		- Wait for test results
 		*******
@@ -908,6 +909,7 @@
 			- "GlobalForceFields" -> "InstancedPhysicalEntities"
 				- Tornado:
 					- CurrentX, TargetX
+					- CurrentBaseY
 					- CurrentVisibilityAlpha, TargetVisibilityAlpha
 					- CurrentForceMultiplier, TargetForceMultiplier
 					- CurrentHeatMultiplier, TargetHeatMultiplier
@@ -917,14 +919,26 @@
 				- ElementIndex BeginPlaceTornado(x, searchRadius)
 				- UpdateTornado(...)
 				- EndUpdateTornado(...)
-				- Update(Ships, Npcs):
+				- Update(Ships &, Npcs &, OceanSurface const &, ...):
 					- Move CurrentX towards TargetX by fixed speed; if crosses: stop
+						- If moved: calc new CurrentBaseY based off water surface height @ x
 					- Move ... towards ... by convergence, with stop
 					- Update LastActivitySimulationTimestamp if anything changed
 					- For each ship:
-						- ApplyTODO
-					- Npcs::ApplyTODO
+						- ApplyTornado(...)
+					- Npcs::ApplyTornado(...)
 				- RenderUpload
+			- Physics (ApplyTornado @Ship, @NPCs)
+				- 1. Calculate strength (closed region around x)
+				- 2. Weaken strength of springs (goal: weak parts detach sooner or later)
+				- 3. Apply forces 
+					! The particle must rotate around the axis of the vortex, in a horizontal plane perpendicular to the screen
+					! The magnitude V of its velocity is of our choice (synced to rendering/shader), depending on r (max at r=VortexWidth/2, 0 at r=0)
+					! Velocity projection along X axis is max at x=0 and 0 at x=+/-VortexWidth/2 - i.e. V*sin(x)
+					! Also need centripetal force: a=V^2/r, also projected along x axis
+						- Projection: 0 at x=0, V^2/r at x=+/-VortexWidth => V^2/r*cos(x)
+					- X: m * V^2/r*cos(x)
+					- Y: upwards, a bit
 			- WorldRenderContext:
 				- VertexAttributes:
 					- Geometry + v-space
@@ -932,6 +946,7 @@
 					- RotationSpeed (multiplier)
 					- HeatDepth (0..1)
 				- Shader
+					- TODO: try quad: mask out x <>+/-1
 
 
 	- Run Discord poll for next:
@@ -1310,6 +1325,7 @@
 				- Verify it's a 32-bit process
 	- Ubuntu
 		- rm -rf ~/floating-sandbox
+		- export GDK_BACKEND=x11
 		- pull 
 		- rm -rf build; mkdir build; cd build
 		- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
