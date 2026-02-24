@@ -393,7 +393,8 @@ inline void DiffuseLight_NeonVectorized(
     ElementIndex const pointEnd,
     vec2f const * restrict pointPositions,
     PlaneId const * restrict pointPlaneIds,
-    vec2f const * restrict lampPositions,
+    float const * restrict lampPositionsX,
+    float const * restrict lampPositionsY,
     PlaneId const * restrict lampPlaneIds,
     float const * restrict lampDistanceCoeffs,
     float const * restrict lampSpreadMaxDistances,
@@ -407,7 +408,8 @@ inline void DiffuseLight_NeonVectorized(
     assert((lampCount % 4) == 0);
     assert(is_aligned_to_vectorization_word(pointPositions));
     assert(is_aligned_to_vectorization_word(pointPlaneIds));
-    assert(is_aligned_to_vectorization_word(lampPositions));
+    assert(is_aligned_to_vectorization_word(lampPositionsX));
+    assert(is_aligned_to_vectorization_word(lampPositionsY));
     assert(is_aligned_to_vectorization_word(lampPlaneIds));
     assert(is_aligned_to_vectorization_word(lampDistanceCoeffs));
     assert(is_aligned_to_vectorization_word(lampSpreadMaxDistances));
@@ -446,7 +448,8 @@ inline void DiffuseLight_NeonVectorized(
         for (ElementIndex l = 0; l < lampCount; l += 4)
         {
             // Load lamp positions
-            float32x4x2_t const lampPos01020304_xxxx_yyyy = vld2q_f32(reinterpret_cast<float const *>(lampPositions + l));
+            float32x4_t const lampPos01020304_xxxx = vld1q_f32(lampPositionsX + l);
+            float32x4_t const lampPos01020304_yyyy = vld1q_f32(lampPositionsY + l);
 
             // Load lamp planes
             uint32x4_t const lampPln01020304 = vld1q_u32(reinterpret_cast<std::uint32_t const *>(lampPlaneIds + l));
@@ -469,15 +472,13 @@ inline void DiffuseLight_NeonVectorized(
 
                 float32x4_t displacementX = vsubq_f32(
                     pointPos01020304_xxxx_yyyy.val[0],
-                    lampPos01020304_xxxx_yyyy.val[0]);
+                    lampPos01020304_xxxx);
                 float32x4_t displacementY = vsubq_f32(
                     pointPos01020304_xxxx_yyyy.val[1],
-                    lampPos01020304_xxxx_yyyy.val[1]);
+                    lampPos01020304_yyyy);
                 float32x4_t distanceSquare_4 = vaddq_f32(
                     vmulq_f32(displacementX, displacementX),
                     vmulq_f32(displacementY, displacementY));
-
-                uint32x4_t const validMask = vcgtq_f32(distanceSquare_4, zero_4); // Valid where > 0 (distance is always >= 0)
 
                 // Zero newton-rhapson steps, it's for lighting after all
                 float32x4_t distance_4_inv = vrsqrteq_f32(distanceSquare_4);
@@ -485,10 +486,8 @@ inline void DiffuseLight_NeonVectorized(
                 // Zero newton-rhapson steps, it's for lighting after all
                 float32x4_t distance_4 = vrecpeq_f32(distance_4_inv);
 
-                distance_4 =
-                    vandq_u32(
-                        distance_4,
-                        validMask);
+                // Note: no need to mask for distance=0, as verified that on Neon,
+                // we first get +INF and then 0.0
 
                 // Calculate new light
                 float32x4_t newLight_4 = vmulq_f32(

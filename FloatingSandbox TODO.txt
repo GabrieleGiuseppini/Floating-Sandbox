@@ -917,6 +917,12 @@
 						- Updated each time "Current" status changes
 						- After some time after this, starts TargetVisibilityAlpha=0
 				- ElementIndex BeginPlaceTornado(x, searchRadius)
+					- Search for nearest existing tornado
+					- If found:
+						- Refresh its state (Tornado::ResetToBegin)
+							- LastActivitySimulationTimestamp = now
+					- Else:
+						- Create new one
 				- UpdateTornado(...)
 				- EndUpdateTornado(...)
 				- Update(Ships &, Npcs &, OceanSurface const &, ...):
@@ -927,7 +933,12 @@
 					- For each ship:
 						- ApplyTornado(...)
 					- Npcs::ApplyTornado(...)
+					- If currentSimulationTime > LastActivitySimulationTimestamp + IdleTimeout:
+						- TargetVisibilityAlpha=0.0
+					- If CurrentVisibilityAlpha==TargetVisibilityAlpha && TargetVisibilityAlpha==0.0:
+						- Remove
 				- RenderUpload
+					- Does NOT need dirtyForRender, it's ~always dirty
 			- Physics (ApplyTornado @Ship, @NPCs)
 				- 1. Calculate strength (closed region around x)
 				- 2. Weaken strength of springs (goal: weak parts detach sooner or later)
