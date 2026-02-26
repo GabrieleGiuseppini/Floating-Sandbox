@@ -1080,7 +1080,7 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
     float const effectiveBottom = args.BottomCenterPos.y;
 
     // The magnitude V of its velocity is of our choice (synced to rendering / shader), depending on r (max at r = VortexWidth / 2, 0 at r = 0)
-    float const v = 30.0f * args.StrengthMultiplier;
+    float const v = 8.0f * args.StrengthMultiplier;
 
     bool hasActed = false;
 
@@ -1092,6 +1092,7 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
         {
             float const r = std::fabsf(p.x - centerX);
             float const tornadoDepth = 1.0f - SmoothStep(effectiveWidth / 4.0f, effectiveWidth / 2.0f, r);
+            // TODO: add y contribution (to wards zero)
 
             //
             // 1. Cheat: weaken structures
@@ -1110,11 +1111,11 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
             // 2. Apply forces
             //
 
-            float const effectiveV = v * tornadoDepth;
+            float const effectiveV = v;
 
             vec2f const tornadoForce = vec2f(
-                mPoints.GetMass(pointIndex) * effectiveV * effectiveV / r * std::cosf(r),
-                1000.0f); // Upward force, magic
+                mPoints.GetMass(pointIndex) * effectiveV * effectiveV * std::sinf(Pi<float> / 2.0f * (centerX - p.x) / (effectiveWidth / 2.0f)),
+                1100.0f * tornadoDepth); // Upward force, magic
 
             mPoints.AddStaticForce(
                 pointIndex,
