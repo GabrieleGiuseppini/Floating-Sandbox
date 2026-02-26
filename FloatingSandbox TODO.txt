@@ -917,8 +917,11 @@
 					- float LastActivitySimulationTimestamp
 						- Updated each time "Current" status changes (except for viz)
 						- After some time after this, starts TargetVisibilityAlpha=0
-				+ ElementIndex BeginPlaceTornado(x, searchRadius)
+				= ElementIndex BeginPlaceTornado(x, searchRadius)
 					+ Search for nearest existing tornado
+						+ Use max(width of tornado, search radius)
+							+ via FloatSize Formulae::CalculateEffectiveTornadoSize(....)
+								+ Use also @ RenderUpload, takes FloatSize
 					+ If found:
 						+ Refresh its state (Tornado::ResetToBegin)
 							+ LastActivitySimulationTimestamp = now
@@ -956,7 +959,10 @@
 				- RenderUpload
 			- Physics (ApplyTornado @Ship, @NPCs)
 				- 1. Calculate strength (closed region around x)
+					- TODO: either uses Formulae::CalculateEffectiveTornadoSize, or takes output of Formulae::CalculateEffectiveTornadoSize
+						- ...which we won't need anymore then
 				- 2. Weaken strength of springs (goal: weak parts detach sooner or later)
+					- Make sure Repair can fix it
 				- 3. Apply forces 
 					! The particle must rotate around the axis of the vortex, in a horizontal plane perpendicular to the screen
 					! The magnitude V of its velocity is of our choice (synced to rendering/shader), depending on r (max at r=VortexWidth/2, 0 at r=0)

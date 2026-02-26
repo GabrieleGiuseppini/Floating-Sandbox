@@ -808,8 +808,7 @@ public:
 
     void UploadTornado(
         vec2f const & bottomCenterPos,
-        float width,
-        float height,
+        FloatSize const & size,
         float rotationSpeedMultiplier,
         float heatDepth, // 0..1
         float visibilityAlpha) // 0..1
@@ -818,7 +817,7 @@ public:
 
         // TopLeft
         mTornadoVertexBuffer.emplace_back(
-            bottomCenterPos + vec2f(-width / 2.0f, height),
+            bottomCenterPos + vec2f(-size.width / 2.0f, size.height),
             vec2f(0.0, 1.0f),
             rotationSpeedMultiplier,
             heatDepth,
@@ -826,7 +825,7 @@ public:
 
         // BottomLeft
         mTornadoVertexBuffer.emplace_back(
-            bottomCenterPos + vec2f(-width / 2.0f, 0.0f),
+            bottomCenterPos + vec2f(-size.width / 2.0f, 0.0f),
             vec2f(0.0, 0.0f),
             rotationSpeedMultiplier,
             heatDepth,
@@ -834,7 +833,7 @@ public:
 
         // TopRight
         mTornadoVertexBuffer.emplace_back(
-            bottomCenterPos + vec2f(width / 2.0f, height),
+            bottomCenterPos + vec2f(size.width / 2.0f, size.height),
             vec2f(1.0, 1.0f),
             rotationSpeedMultiplier,
             heatDepth,
@@ -842,7 +841,7 @@ public:
 
         // BottomRight
         mTornadoVertexBuffer.emplace_back(
-            bottomCenterPos + vec2f(width / 2.0f, 0.0f),
+            bottomCenterPos + vec2f(size.width / 2.0f, 0.0f),
             vec2f(1.0, 0.0f),
             rotationSpeedMultiplier,
             heatDepth,

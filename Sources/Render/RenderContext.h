@@ -1165,16 +1165,14 @@ public:
 
     inline void UploadTornado(
         vec2f const & bottomCenterPos,
-        float width,
-        float height,
+        FloatSize const & size,
         float rotationSpeedMultiplier,
         float heatDepth, // 0..1
         float visibilityAlpha) // 0..1
     {
         mWorldRenderContext->UploadTornado(
             bottomCenterPos,
-            width,
-            height,
+            size,
             rotationSpeedMultiplier,
             heatDepth,
             visibilityAlpha);

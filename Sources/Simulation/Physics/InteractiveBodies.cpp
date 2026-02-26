@@ -190,8 +190,7 @@ void InteractiveBodies::Upload(RenderContext & renderContext) const
 
             renderContext.UploadTornado(
                 vec2f(tornado.CurrentX, tornado.CurrentBaseY),
-                SimulationParameters::TornadoWidth,
-                SimulationParameters::TornadoHeight,
+                Formulae::CalculateEffectiveTornadoSize(tornado.CurrentVisibilityAlpha),
                 rotationSpeedMultiplier,
                 tornado.CurrentHeatDepth,
                 tornado.CurrentVisibilityAlpha);
@@ -376,7 +375,8 @@ ElementIndex InteractiveBodies::BeginPlaceTornado(
     for (size_t i = 0; i < mTornadoes.size(); ++i)
     {
         float const distance = std::fabs(mTornadoes[i].CurrentX - posX);
-        if (distance <= searchRadius && distance < nearestDistance)
+        float const effectiveTornadoWidth = Formulae::CalculateEffectiveTornadoSize(mTornadoes[i].CurrentVisibilityAlpha).width;
+        if (distance <= std::max(searchRadius, effectiveTornadoWidth) && distance < nearestDistance)
         {
             newTornadoId = static_cast<ElementIndex>(i);
             nearestDistance = distance;
