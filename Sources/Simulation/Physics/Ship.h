@@ -230,6 +230,12 @@ public:
         vec2f const & endPos,
         float strengthMultiplier);
 
+    void ApplyTornado(
+        vec2f const & bottomCenterPos,
+        FloatSize const & size,
+        float strengthMultiplier,
+        float heatDepth);
+
     bool TogglePinAt(
         vec2f const & targetPos,
         SimulationParameters const & simulationParameters);
@@ -355,7 +361,8 @@ private:
             Blast,
             Draw,
             Pull,
-            Swirl
+            Swirl,
+            Tornado
         };
 
         InteractionType Type;
@@ -447,6 +454,28 @@ private:
 
             SwirlArguments Swirl;
 
+            struct TornadoArguments
+            {
+                vec2f BottomCenterPos;
+                FloatSize Size;
+                float StrengthMultiplier;
+                float HeatDepth;
+
+                TornadoArguments(
+                    vec2f const & bottomCenterPos,
+                    FloatSize const & size,
+                    float strengthMultiplier,
+                    float heatDepth)
+                    : BottomCenterPos(bottomCenterPos)
+                    , Size(size)
+                    , StrengthMultiplier(strengthMultiplier)
+                    , HeatDepth(heatDepth)
+                {
+                }
+            };
+
+            TornadoArguments Tornado;
+
             ArgumentsUnion(AntiGravityFieldArguments antiGravityField)
                 : AntiGravityField(antiGravityField)
             {
@@ -467,6 +496,12 @@ private:
             ArgumentsUnion(SwirlArguments swirl)
                 : Swirl(swirl)
             {}
+
+            ArgumentsUnion(TornadoArguments tornado)
+                : Tornado(tornado)
+            {
+            }
+
 
         } Arguments;
 
@@ -499,7 +534,13 @@ private:
             , Arguments(swirl)
         {
         }
-};
+
+        Interaction(ArgumentsUnion::TornadoArguments tornado)
+            : Type(InteractionType::Tornado)
+            , Arguments(tornado)
+        {
+        }
+    };
 
     std::list<Interaction> mQueuedInteractions;
 
@@ -512,6 +553,8 @@ private:
     void SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args);
 
     void ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldArguments const & args, SimulationParameters const & simulationParameters);
+
+    void ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & args);
 
 private:
 

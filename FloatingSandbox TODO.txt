@@ -971,6 +971,7 @@
 						- Projection: 0 at x=0, V^2/r at x=+/-VortexWidth => V^2/r*cos(x)
 					- X: m * V^2/r*cos(x)
 					- Y: upwards, a bit
+					- Write all the above as comments
 				- NPCs: only Free NPCs!
 			= WorldRenderContext:
 				+ VertexAttributes:

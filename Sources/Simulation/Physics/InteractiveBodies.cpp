@@ -153,6 +153,16 @@ void InteractiveBodies::Update(
             // Apply tornado
             //
 
+            for (auto & ship : ships)
+            {
+                assert(ship);
+                ship->ApplyTornado(
+                    vec2f(tornado.CurrentX, tornado.CurrentBaseY),
+                    CalculateTornadoEffectiveSize(tornado.CurrentVisibilityAlpha),
+                    tornado.CurrentForceMultiplier,
+                    tornado.CurrentHeatDepth);
+            }
+
             // TODOHERE
             (void)npcs;
 

@@ -1043,17 +1043,91 @@ void Ship::ApplyAntiGravityField(
         // the current velocity component orthogonal to that
         //
 
-        //float const targetVelocityMagnitudeInDirection = targetVelocityMagnitudeBase * distanceDamper * massDamper;
         float const targetVelocityMagnitudeInDirection = targetVelocityMagnitudeBase * massDamper;
         vec2f const & currentVelocity = mPoints.GetVelocity(pointIndex);
         float const currentVelocityMagnitudeInDirection = currentVelocity.dot(projectionDirectionNormalized);
         float constexpr DesiredVelocityConvergenceRate = 0.3f; // The higher, the more breakage
         float const desiredVelocityMagnitudeInDirection = currentVelocityMagnitudeInDirection + (targetVelocityMagnitudeInDirection - currentVelocityMagnitudeInDirection) * DesiredVelocityConvergenceRate;
         vec2f const requiredAcceleration = projectionDirectionNormalized * (desiredVelocityMagnitudeInDirection - currentVelocityMagnitudeInDirection) / SimulationParameters::SimulationStepTimeDuration<float>;
-        //force += requiredAcceleration * m;
         force += requiredAcceleration * m * distanceDamper;
 
         mPoints.AddStaticForce(pointIndex, force);
+    }
+}
+
+void Ship::ApplyTornado(
+    vec2f const & bottomCenterPos,
+    FloatSize const & size,
+    float strengthMultiplier,
+    float heatDepth)
+{
+    // Queue interaction
+    mQueuedInteractions.emplace_back(
+        Interaction::ArgumentsUnion::TornadoArguments(
+            bottomCenterPos,
+            size,
+            strengthMultiplier,
+            heatDepth));
+}
+
+void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & args)
+{
+    float const centerX = args.BottomCenterPos.x;
+    float const effectiveWidth = args.Size.width * 1.1f;
+    float const effectiveLeft = centerX - effectiveWidth / 2.0f;
+    float const effectiveRight = centerX + effectiveWidth / 2.0f;
+    float const effectiveTop = args.BottomCenterPos.y + args.Size.height * 1.1f;
+    float const effectiveBottom = args.BottomCenterPos.y;
+
+    // The magnitude V of its velocity is of our choice (synced to rendering / shader), depending on r (max at r = VortexWidth / 2, 0 at r = 0)
+    float const v = 30.0f * args.StrengthMultiplier;
+
+    bool hasActed = false;
+
+    for (auto pointIndex : mPoints)
+    {
+        vec2f const & p = mPoints.GetPosition(pointIndex);
+        if (p.x >= effectiveLeft && p.x <= effectiveRight
+            && p.y >= effectiveBottom && p.y <= effectiveTop)
+        {
+            float const r = std::fabsf(p.x - centerX);
+            float const tornadoDepth = 1.0f - SmoothStep(effectiveWidth / 4.0f, effectiveWidth / 2.0f, r);
+
+            //
+            // 1. Cheat: weaken structures
+            //
+
+            if (!mPoints.IsEphemeral(pointIndex))
+            {
+                float const newDecay =
+                    mPoints.GetDecay(pointIndex)
+                    * (1.0f - tornadoDepth * 0.005f);
+
+                mPoints.SetDecay(pointIndex, newDecay);
+            }
+
+            //
+            // 2. Apply forces
+            //
+
+            float const effectiveV = v * tornadoDepth;
+
+            vec2f const tornadoForce = vec2f(
+                mPoints.GetMass(pointIndex) * effectiveV * effectiveV / r * std::cosf(r),
+                1000.0f); // Upward force, magic
+
+            mPoints.AddStaticForce(
+                pointIndex,
+                tornadoForce);
+
+            hasActed = true;
+        }
+    }
+
+    if (hasActed)
+    {
+        // Make sure the decay buffer gets uploaded again
+        mPoints.MarkDecayBufferAsDirty();
     }
 }
 
