@@ -232,13 +232,6 @@ public:
             * FlameWindRotationAngleConvergenceRate;
     }
 
-    static FloatSize CalculateEffectiveTornadoSize(float visibilityAlpha)
-    {
-        return FloatSize(
-            SimulationParameters::TornadoWidth * (0.2f + 0.8F * visibilityAlpha),
-            SimulationParameters::TornadoHeight);
-    }
-
     static float CalculateWaterTemperature(
         float depth,
         SimulationParameters const & simulationParameters)

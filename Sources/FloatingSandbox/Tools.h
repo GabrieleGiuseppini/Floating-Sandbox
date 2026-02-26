@@ -2515,7 +2515,7 @@ public:
                 mEngagementData->CurrentTornadoId,
                 inputState.MousePosition.x,
                 multiplier * (inputState.IsShiftKeyDown ? 2.0f : 1.0f), // Strength
-                screenDeltaY < 0.0f ? multiplier : 0.0f); // Heat
+                screenDeltaY > 0.0f ? multiplier : 0.0f); // Heat
         }
     }
 

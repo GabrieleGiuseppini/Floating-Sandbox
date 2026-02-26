@@ -73,9 +73,11 @@ public:
 
     ///
 
-    static inline float CalculateBaseY(
+    static inline float CalculateTornadoBaseY(
         float posX,
         OceanSurface const & oceanSurface);
+
+    static inline FloatSize CalculateTornadoEffectiveSize(float visibilityAlpha);
 
 private:
 

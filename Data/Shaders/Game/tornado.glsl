@@ -46,5 +46,10 @@ uniform float paramSimulationTime;
 void main()
 {
     // TODOHERE
-    gl_FragColor = vec4(vec3(paramSimulationTime * 0.000000001), 0.5 * vertexVisibilityAlpha);
+    gl_FragColor = vec4(
+        vec3(
+            vertexHeatDepth,
+            clamp(vertexRotationSpeedMultiplier - 1., 0., 1.),
+            paramSimulationTime * 0.000000001), 
+        0.5 * vertexVisibilityAlpha);
 }

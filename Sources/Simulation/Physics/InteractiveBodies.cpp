@@ -66,12 +66,12 @@ void InteractiveBodies::Update(
 
         // Reclaculate target velocity depending on distance from target
         float const distanceToTarget = tornado.TargetX - tornado.CurrentX;
-        tornado.TargetVelocityX = std::min(20.0f * std::fabsf(distanceToTarget), Conversions::KmhToMs(20.0f));
+        tornado.TargetVelocityX = std::min(20.0f * std::fabsf(distanceToTarget), Conversions::KmhToMs(30.0f));
         if (distanceToTarget < 0.0f)
             tornado.TargetVelocityX *= -1.0f;
 
         // Converge current velocity to target velocity
-        tornado.CurrentVelocityX += (tornado.TargetVelocityX - tornado.CurrentVelocityX) * 0.02f;
+        tornado.CurrentVelocityX += (tornado.TargetVelocityX - tornado.CurrentVelocityX) * 0.05f;
         if (std::fabsf(tornado.TargetVelocityX - tornado.CurrentVelocityX) < ConvergenceThreshold)
         {
             tornado.CurrentVelocityX = tornado.TargetVelocityX;
@@ -83,7 +83,7 @@ void InteractiveBodies::Update(
         {
             // Move to projected position X
             tornado.CurrentX = newCurrentX;
-            tornado.CurrentBaseY = CalculateBaseY(newCurrentX, oceanSurface);
+            tornado.CurrentBaseY = CalculateTornadoBaseY(newCurrentX, oceanSurface);
 
             tornado.LastActivitySimulationTimestamp = currentSimulationTime;
             mAreTornadoesDirtyForRendering = true;
@@ -190,7 +190,7 @@ void InteractiveBodies::Upload(RenderContext & renderContext) const
 
             renderContext.UploadTornado(
                 vec2f(tornado.CurrentX, tornado.CurrentBaseY),
-                Formulae::CalculateEffectiveTornadoSize(tornado.CurrentVisibilityAlpha),
+                CalculateTornadoEffectiveSize(tornado.CurrentVisibilityAlpha),
                 rotationSpeedMultiplier,
                 tornado.CurrentHeatDepth,
                 tornado.CurrentVisibilityAlpha);
@@ -375,8 +375,8 @@ ElementIndex InteractiveBodies::BeginPlaceTornado(
     for (size_t i = 0; i < mTornadoes.size(); ++i)
     {
         float const distance = std::fabs(mTornadoes[i].CurrentX - posX);
-        float const effectiveTornadoWidth = Formulae::CalculateEffectiveTornadoSize(mTornadoes[i].CurrentVisibilityAlpha).width;
-        if (distance <= std::max(searchRadius, effectiveTornadoWidth) && distance < nearestDistance)
+        float const effectiveTornadoRadius = CalculateTornadoEffectiveSize(mTornadoes[i].CurrentVisibilityAlpha).width / 2.0f;
+        if (distance <= std::max(searchRadius, effectiveTornadoRadius) && distance < nearestDistance)
         {
             newTornadoId = static_cast<ElementIndex>(i);
             nearestDistance = distance;
@@ -388,7 +388,7 @@ ElementIndex InteractiveBodies::BeginPlaceTornado(
         // Refresh this one
         mTornadoes[newTornadoId].ResetToBegin(
             posX,
-            CalculateBaseY(posX, oceanSurface),
+            CalculateTornadoBaseY(posX, oceanSurface),
             currentSimulationTimestamp);
     }
     else
@@ -431,7 +431,7 @@ ElementIndex InteractiveBodies::BeginPlaceTornado(
         mTornadoes.emplace_back(
             newTornadoId,
             posX,
-            CalculateBaseY(posX, oceanSurface),
+            CalculateTornadoBaseY(posX, oceanSurface),
             currentSimulationTimestamp);
     }
 
@@ -471,11 +471,18 @@ void InteractiveBodies::EndPlaceTornado(
 
 //////////////////////////////////////////////////
 
-float InteractiveBodies::CalculateBaseY(
+float InteractiveBodies::CalculateTornadoBaseY(
     float posX,
     OceanSurface const & oceanSurface)
 {
     return oceanSurface.GetHeightAt(Clamp(posX, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth));
+}
+
+FloatSize InteractiveBodies::CalculateTornadoEffectiveSize(float visibilityAlpha)
+{
+    return FloatSize(
+        SimulationParameters::TornadoWidth * (0.2f + 0.8F * visibilityAlpha),
+        SimulationParameters::TornadoHeight);
 }
 
 }

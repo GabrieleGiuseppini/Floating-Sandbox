@@ -917,7 +917,7 @@
 					- float LastActivitySimulationTimestamp
 						- Updated each time "Current" status changes (except for viz)
 						- After some time after this, starts TargetVisibilityAlpha=0
-				= ElementIndex BeginPlaceTornado(x, searchRadius)
+				+ ElementIndex BeginPlaceTornado(x, searchRadius)
 					+ Search for nearest existing tornado
 						+ Use max(width of tornado, search radius)
 							+ via FloatSize Formulae::CalculateEffectiveTornadoSize(....)
@@ -956,13 +956,13 @@
 						- For each ship:
 							- ApplyTornado(...)
 						- Npcs::ApplyTornado(...)
-				- RenderUpload
+				= RenderUpload
 			- Physics (ApplyTornado @Ship, @NPCs)
 				- 1. Calculate strength (closed region around x)
-					- TODO: either uses Formulae::CalculateEffectiveTornadoSize, or takes output of Formulae::CalculateEffectiveTornadoSize
-						- ...which we won't need anymore then
+					- Takes tornado size from Tornado
 				- 2. Weaken strength of springs (goal: weak parts detach sooner or later)
 					- Make sure Repair can fix it
+						- One way is decay
 				- 3. Apply forces 
 					! The particle must rotate around the axis of the vortex, in a horizontal plane perpendicular to the screen
 					! The magnitude V of its velocity is of our choice (synced to rendering/shader), depending on r (max at r=VortexWidth/2, 0 at r=0)
@@ -972,24 +972,27 @@
 					- X: m * V^2/r*cos(x)
 					- Y: upwards, a bit
 				- NPCs: only Free NPCs!
-			- WorldRenderContext:
-				- VertexAttributes:
-					- Geometry + v-space
-					- VisibilityAlpha (0..1)
-					- RotationSpeed (multiplier)
-					- HeatDepth (0..1)
-				- Upload:
-					- Calculate simple quad, width and height fixed
-						- Width and height are in SimulationParameters, so can be used by physics
+			= WorldRenderContext:
+				+ VertexAttributes:
+					+ Geometry + v-space
+					+ VisibilityAlpha (0..1)
+					+ RotationSpeed (multiplier)
+					+ HeatDepth (0..1)
+				= Upload:
+					= Calculate simple quad, width and height fixed
+						+ Width and height are in SimulationParameters, so can be used by physics
 						- For height, take into account Perlin - try to avoid repetitions
 						- Will have to adjust smoke and fire resolution in shader
 				- Shader
-			= Tool
+			+ Tool
 				+ Cursor (up, down)
 					+ Anchors
 
 			- Sound
 				- TODOHERE: to spec
+
+			- Do we want notification @ tool to know where's ylevel=0?
+			- If we decide to stay with 1 tornado, change BeingPlace algo to always pick it if alive
 
 			- Test:
 				- BeingPlaceAntiGravityField: we've changed to closest
