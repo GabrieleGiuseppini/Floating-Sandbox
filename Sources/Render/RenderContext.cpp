@@ -533,6 +533,8 @@ void RenderContext::Draw(float currentSimulationTime)
 
                 mWorldRenderContext->RenderPrepareAntiGravityFields(currentSimulationTime, renderParameters);
 
+                mWorldRenderContext->RenderPrepareTornadoes(currentSimulationTime, renderParameters);
+
                 mWorldRenderContext->RenderPrepareAMBombPreImplosions(renderParameters);
 
                 mWorldRenderContext->RenderPrepareCrossesOfLight(renderParameters);
@@ -587,6 +589,8 @@ void RenderContext::Draw(float currentSimulationTime)
                 }
 
                 mWorldRenderContext->RenderDrawAntiGravityFields(renderParameters);
+
+                mWorldRenderContext->RenderDrawTornadoes(renderParameters);
 
                 mWorldRenderContext->RenderDrawAMBombPreImplosions(renderParameters);
 

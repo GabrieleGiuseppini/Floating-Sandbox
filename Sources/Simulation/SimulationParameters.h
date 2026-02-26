@@ -748,6 +748,9 @@ struct SimulationParameters
     static float constexpr MinAntiGravityFieldAccelerationAdjustment = 0.1f;
     static float constexpr MaxAntiGravityFieldAccelerationAdjustment = 10.0f;
 
+    static float constexpr TornadoHeight = 200.0f; // m
+    static float constexpr TornadoWidth = 50.0f; // m
+
     bool IsUltraViolentMode;
 
     float MoveToolInertia;
@@ -791,6 +794,7 @@ struct SimulationParameters
     static size_t constexpr MaxPinnedPoints = 64u;
     static size_t constexpr MaxThanosSnaps = 8u;
     static size_t constexpr MaxAntiGravityForceFields = 4u;
+    static size_t constexpr MaxTornadoes = 1u;
 
     static unsigned int constexpr EngineControllerTelegraphDegreesOfFreedom = 11;
     static_assert((EngineControllerTelegraphDegreesOfFreedom % 2) != 0); // Make sure there's room for central position, and it's symmetric

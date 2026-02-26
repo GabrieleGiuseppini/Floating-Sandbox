@@ -522,6 +522,25 @@ WaveMakerTool::WaveMakerTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// Tornado
+////////////////////////////////////////////////////////////////////////
+
+TornadoTool::TornadoTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    GameAssetManager const & gameAssetManager)
+    : Tool(
+        ToolType::Tornado,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mUpCursorImage(WxHelpers::LoadCursorImage("tornado_cursor_up", 15, 31, gameAssetManager))
+    , mDownCursorImage(WxHelpers::LoadCursorImage("tornado_cursor_down", 15, 31, gameAssetManager))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // TerrainAdjust
 ////////////////////////////////////////////////////////////////////////
 

@@ -59,6 +59,9 @@ WorldRenderContext::WorldRenderContext(
     , mAntiGravityFieldVertexBuffer()
     , mAntiGravityFieldVBO()
     , mIsAntiGravityFieldVertexBufferDirty(false) // Will be eventually uploaded
+    , mTornadoVertexBuffer()
+    , mTornadoVBO()
+    , mIsTornadoVertexBufferDirty(false) // Will be eventually uploaded
     , mAMBombPreImplosionVertexBuffer()
     , mAMBombPreImplosionVBO()
     , mAMBombPreImplosionVBOAllocatedVertexSize(0u)
@@ -85,6 +88,7 @@ WorldRenderContext::WorldRenderContext(
     , mFishVAO()
     , mUnderwaterPlantVAO()
     , mAntiGravityFieldVAO()
+    , mTornadoVAO()
     , mAMBombPreImplosionVAO()
     , mCrossOfLightVAO()
     , mAABBVAO()
@@ -133,8 +137,8 @@ WorldRenderContext::WorldRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[16];
-    glGenBuffers(16, vbos);
+    GLuint vbos[17];
+    glGenBuffers(17, vbos);
     mSkyVBO = vbos[0];
     mStarVBO = vbos[1];
     mLightningVBO = vbos[2];
@@ -146,11 +150,12 @@ WorldRenderContext::WorldRenderContext(
     mUnderwaterPlantStaticVBO = vbos[8];
     mUnderwaterPlantDynamicVBO = vbos[9];
     mAntiGravityFieldVBO = vbos[10];
-    mAMBombPreImplosionVBO = vbos[11];
-    mCrossOfLightVBO = vbos[12];
-    mAABBVBO = vbos[13];
-    mRainVBO = vbos[14];
-    mWorldBorderVBO = vbos[15];
+    mTornadoVBO = vbos[11];
+    mAMBombPreImplosionVBO = vbos[12];
+    mCrossOfLightVBO = vbos[13];
+    mAABBVBO = vbos[14];
+    mRainVBO = vbos[15];
+    mWorldBorderVBO = vbos[16];
 
     //
     // Initialize Sky VAO
@@ -509,6 +514,38 @@ WorldRenderContext::WorldRenderContext(
     }
 
     //
+    // Initialize Tornado VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mTornadoVAO = tmpGLuint;
+
+        glBindVertexArray(*mTornadoVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mTornadoVBO);
+        static_assert(sizeof(TornadoVertex) == (2 + 2 + 3) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado1), 4, GL_FLOAT, GL_FALSE, sizeof(TornadoVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado2), 3, GL_FLOAT, GL_FALSE, sizeof(TornadoVertex), (void *)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
+        ////mGlobalRenderContext.GetElementIndices().Bind()
+
+        glBindVertexArray(0);
+
+        // Set texture parameters
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Tornado>();
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::Tornado>();
+    }
+
+    //
     // Initialize AM Bomb Implosion VAO
     //
 
@@ -653,14 +690,14 @@ WorldRenderContext::WorldRenderContext(
         glBindTexture(GL_TEXTURE_1D, 0);
     }
 
-    //
-    // Set generic linear texture in our shaders
-    //
+    ////
+    //// Set generic linear texture in our shaders
+    ////
 
-    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::GenericLinearTexturesAtlasTexture>();
+    //mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::GenericLinearTexturesAtlasTexture>();
+    //glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetGenericLinearTextureAtlasOpenGLHandle());
 
-    glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetGenericLinearTextureAtlasOpenGLHandle());
-    CheckOpenGLError();
+    //CheckOpenGLError();
 }
 
 void WorldRenderContext::InitializeCloudTextures()
@@ -1030,8 +1067,25 @@ void WorldRenderContext::UploadAntiGravityFieldsStart()
 
 void WorldRenderContext::UploadAntiGravityFieldsEnd()
 {
-    assert((mAntiGravityFieldVertexBuffer.size() % 6) == 0);
-    mGlobalRenderContext.GetElementIndices().EnsureSize(mAntiGravityFieldVertexBuffer.size() / 6);
+    assert((mAntiGravityFieldVertexBuffer.size() % 4) == 0);
+    mGlobalRenderContext.GetElementIndices().EnsureSize(mAntiGravityFieldVertexBuffer.size() / 4);
+}
+
+void WorldRenderContext::UploadTornadoesStart()
+{
+    //
+    // Tornadoes are sticky, and we clear them when we upload
+    //
+
+    mTornadoVertexBuffer.clear();
+    mIsTornadoVertexBufferDirty = true;
+
+}
+
+void WorldRenderContext::UploadTornadoesEnd()
+{
+    assert((mTornadoVertexBuffer.size() % 4) == 0);
+    mGlobalRenderContext.GetElementIndices().EnsureSize(mTornadoVertexBuffer.size() / 4);
 }
 
 void WorldRenderContext::UploadAABBsStart(size_t aabbCount)
@@ -1138,6 +1192,7 @@ void WorldRenderContext::RenderDrawSky(RenderParameters const & renderParameters
 
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Sky>();
 
+        // Set fine noise as the noise for the shader
         mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
@@ -1251,6 +1306,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
         {
             mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsDetailed>();
 
+            // Set Perlin noise as the noise for the shader
             mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
             glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_4_32_043));
         }
@@ -1283,6 +1339,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
 
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Lightning>();
 
+        // Set gross noise as the noise for the shader
         mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Gross));
 
@@ -1308,6 +1365,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
         {
             mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsDetailed>();
 
+            // Set Perlin noise as the noise for the shader
             mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
             glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_4_32_043));
         }
@@ -1416,6 +1474,7 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
                     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthBasic, GameShaderSets::ProgramParameterKind::OceanTransparency>(
                         transparency);
 
+                    // Set fine noise as the noise for the shader
                     mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
                     glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
@@ -1475,6 +1534,7 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
                         oceanShader,
                         transparency);
 
+                    // Set fine noise as the noise for the shader
                     mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
                     glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
@@ -1492,6 +1552,7 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
                         oceanShader,
                         transparency);
 
+                    // Set fine noise as the noise for the shader
                     mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
                     glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
@@ -1675,7 +1736,7 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
 
     if (isHighQuality)
     {
-        // Activate noise texture
+        // Set Perlin noise as the noise for the shader
         mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_8_1024_073));
     }
@@ -1785,6 +1846,7 @@ void WorldRenderContext::RenderDrawFishes(RenderParameters const & renderParamet
             }
         }
 
+        // Set fine noise as the noise for the shader
         mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
@@ -1953,7 +2015,7 @@ void WorldRenderContext::RenderDrawAntiGravityFields(RenderParameters const & /*
 
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AntiGravityField>();
 
-        // Activate noise texture
+        // Set Perlin noise as the noise for the shader
         mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_8_1024_073));
 
@@ -1968,6 +2030,59 @@ void WorldRenderContext::RenderDrawAntiGravityFields(RenderParameters const & /*
         glBindVertexArray(0);
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+}
+
+void WorldRenderContext::RenderPrepareTornadoes(
+    float currentSimulationTime,
+    RenderParameters const & /*renderParameters*/)
+{
+    if (!mTornadoVertexBuffer.empty())
+    {
+        if (mIsTornadoVertexBufferDirty)
+        {
+            if (!mTornadoVertexBuffer.empty())
+            {
+                // Re-allocate VBO buffer and upload
+
+                glBindBuffer(GL_ARRAY_BUFFER, *mTornadoVBO);
+
+                glBufferData(GL_ARRAY_BUFFER, mTornadoVertexBuffer.size() * sizeof(TornadoVertex), mTornadoVertexBuffer.data(), GL_DYNAMIC_DRAW);
+                CheckOpenGLError();
+
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            }
+        }
+
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Tornado>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Tornado, GameShaderSets::ProgramParameterKind::SimulationTime>(currentSimulationTime);
+    }
+}
+
+void WorldRenderContext::RenderDrawTornadoes(RenderParameters const & /*renderParameters*/)
+{
+    if (!mTornadoVertexBuffer.empty())
+    {
+        glBindVertexArray(*mTornadoVAO);
+
+        // Intel bug: cannot associate with VAO
+        mGlobalRenderContext.GetElementIndices().Bind();
+
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Tornado>();
+
+        // Set Perlin noise as the noise for the shader
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
+        glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_8_1024_073));
+
+        assert((mTornadoVertexBuffer.size() % 4) == 0);
+        glDrawElements(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(mTornadoVertexBuffer.size() / 4 * 6),
+            GL_UNSIGNED_INT,
+            (GLvoid *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
     }
 }
 
@@ -2059,6 +2174,7 @@ void WorldRenderContext::RenderDrawForegroundLightnings(RenderParameters const &
 
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Lightning>();
 
+        // Set gross noise as the noise for the shader
         mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Gross));
 
@@ -2317,6 +2433,10 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AntiGravityField>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::AntiGravityField, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Tornado>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Tornado, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AMBombPreImplosion>();

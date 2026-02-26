@@ -258,6 +258,9 @@ public:
     void AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId) override;
     void BoostAntiGravityFields(float strengthMultiplier) override;
     bool RemoveAllAntiGravityFields() override;
+    ElementIndex BeginPlaceTornado(int screenCoordinatesX) override;
+    void UpdateTornado(ElementIndex tornadoId, int screenCoordinatesX, float strengthMultiplier, float heatDepth) override;
+    void EndPlaceTornado(ElementIndex tornadoId) override;
     void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void RemoveAllPins() override;
     std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) override;
@@ -334,6 +337,8 @@ public:
     void AdjustZoom(float amount) override;
     void ResetView() override;
     void FocusOnShips() override;
+
+    DisplayLogicalSize const & GetCanvasLogicalSize() const override;
     vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const override;
     vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const override;
 

@@ -1218,13 +1218,13 @@ void GameController::SwirlAt(
         mSimulationParameters);
 }
 
-static int constexpr AntiGravityFieldSearchRadiusPixels = 25; // To have a screen- constant-size geometry
+static int constexpr InteractiveBodySearchRadiusPixels = 25; // To have a screen- constant-size geometry
 
 ElementIndex GameController::BeginPlaceAntiGravityField(DisplayLogicalCoordinates const & startScreenCoordinates)
 {
     vec2f const worldStartCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
     float const worldSearchRadius = std::max(
-        mRenderContext->ScreenOffsetToWorldOffset(AntiGravityFieldSearchRadiusPixels),
+        mRenderContext->ScreenOffsetToWorldOffset(InteractiveBodySearchRadiusPixels),
         SimulationParameters::MinShipSearchRadiusWorld);
 
     // Apply action
@@ -1250,7 +1250,7 @@ void GameController::EndPlaceAntiGravityField(
 {
     vec2f const worldEndCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
     float const worldSearchRadius = std::max(
-        mRenderContext->ScreenOffsetToWorldOffset(AntiGravityFieldSearchRadiusPixels),
+        mRenderContext->ScreenOffsetToWorldOffset(InteractiveBodySearchRadiusPixels),
         SimulationParameters::MinShipSearchRadiusWorld);
 
     // Apply action
@@ -1277,6 +1277,38 @@ bool GameController::RemoveAllAntiGravityFields()
     // Apply action
     assert(!!mWorld);
     return mWorld->RemoveAllAntiGravityFields();
+}
+
+ElementIndex GameController::BeginPlaceTornado(int screenCoordinatesX)
+{
+    float const worldX = mRenderContext->ScreenToWorld(DisplayLogicalCoordinates(screenCoordinatesX, 0)).x;
+    float const worldSearchRadius = std::max(
+        mRenderContext->ScreenOffsetToWorldOffset(InteractiveBodySearchRadiusPixels),
+        SimulationParameters::MinShipSearchRadiusWorld);
+
+    // Apply action
+    assert(!!mWorld);
+    return mWorld->BeginPlaceTornado(worldX, worldSearchRadius);
+}
+
+void GameController::UpdateTornado(
+    ElementIndex tornadoId,
+    int screenCoordinatesX,
+    float strengthMultiplier,
+    float heatDepth)
+{
+    float const worldX = mRenderContext->ScreenToWorld(DisplayLogicalCoordinates(screenCoordinatesX, 0)).x;
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->UpdateTornado(tornadoId, worldX, strengthMultiplier, heatDepth);
+}
+
+void GameController::EndPlaceTornado(ElementIndex tornadoId)
+{
+    // Apply action
+    assert(!!mWorld);
+    mWorld->EndPlaceTornado(tornadoId);
 }
 
 void GameController::TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates)
@@ -1962,6 +1994,11 @@ void GameController::FocusOnShips()
         assert(aabb.has_value());
         mViewManager.FocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
     }
+}
+
+DisplayLogicalSize const & GameController::GetCanvasLogicalSize() const
+{
+    return mRenderContext->GetCanvasLogicalSize();
 }
 
 vec2f GameController::ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const

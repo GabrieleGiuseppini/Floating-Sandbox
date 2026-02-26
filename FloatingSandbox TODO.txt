@@ -894,7 +894,7 @@
 
 
 
-	- Tornadoes:
+	= Tornadoes:
 		! Gist
 			! Once tool is selected, user clicks down and tornado spawns there, or an existing tornado there is picked
 			! MouseMove:
@@ -905,41 +905,55 @@
 			! Update(Ship &) changes into Update(Ships, Npcs)
 				- First applies
 				- Then updates
-		- Impl:
-			- Cursor icon
-			- "GlobalForceFields" -> "InstancedPhysicalEntities"
-				- Tornado:
+		= Impl:
+			= "GlobalForceFields" -> "InteractiveBodies"
+				+ Tornado:
 					- CurrentX, TargetX
+					- CurrentVelocityX, TargetVelocityX
 					- CurrentBaseY
 					- CurrentVisibilityAlpha, TargetVisibilityAlpha
 					- CurrentForceMultiplier, TargetForceMultiplier
 					- CurrentHeatMultiplier, TargetHeatMultiplier
 					- float LastActivitySimulationTimestamp
-						- Updated each time "Current" status changes
+						- Updated each time "Current" status changes (except for viz)
 						- After some time after this, starts TargetVisibilityAlpha=0
-				- ElementIndex BeginPlaceTornado(x, searchRadius)
-					- Search for nearest existing tornado
-					- If found:
-						- Refresh its state (Tornado::ResetToBegin)
-							- LastActivitySimulationTimestamp = now
+				+ ElementIndex BeginPlaceTornado(x, searchRadius)
+					+ Search for nearest existing tornado
+					+ If found:
+						+ Refresh its state (Tornado::ResetToBegin)
+							+ LastActivitySimulationTimestamp = now
+					+ Else:
+						+ Create new one
+				+ UpdateTornado(...)
+				+ EndUpdateTornado(...)
+				= Update(Ships &, Npcs &, OceanSurface const &, ...):
+					+ Update TargetVelocityX w/Hooke force: vX=min(k*(targetX-curX), some_constant)
+					+ Converge CurrentVelocityX to target - with destination check
+					+ Calculate newCurrentX based on CurrentVelocityX
+					+ If different than CurrentX:
+						+ CurrentX = newCurrentX
+						+ CurrentBaseY = <calc>
+						+ Update LastActivitySimulationTimestamp
+						+ Update DirtyForRendering
+					+ Converge others by convergence, with destination check
+						+ Update DirtyForRendering if anything had not reached target yet
+						+ Update LastActivitySimulationTimestamp if anything had not reached target yet
+							+ Not with viz
+					
+					+ If currentSimulationTime > LastActivitySimulationTimestamp + IdleTimeout:
+						+ TargetVisibilityAlpha=0.0
+							+ Only place
+
+					+ If CurrentVisibilityAlpha==TargetVisibilityAlpha && TargetVisibilityAlpha==0.0:
+						+ assert currentSimulationTime > LastActivitySimulationTimestamp + IdleTimeout // Dangerous, might be in-use
+						+ Remove
 					- Else:
-						- Create new one
-				- UpdateTornado(...)
-				- EndUpdateTornado(...)
-				- Update(Ships &, Npcs &, OceanSurface const &, ...):
-					- Move CurrentX towards TargetX by fixed speed; if crosses: stop
-						- If moved: calc new CurrentBaseY based off water surface height @ x
-					- Move ... towards ... by convergence, with stop
-					- Update LastActivitySimulationTimestamp if anything changed
-					- For each ship:
-						- ApplyTornado(...)
-					- Npcs::ApplyTornado(...)
-					- If currentSimulationTime > LastActivitySimulationTimestamp + IdleTimeout:
-						- TargetVisibilityAlpha=0.0
-					- If CurrentVisibilityAlpha==TargetVisibilityAlpha && TargetVisibilityAlpha==0.0:
-						- Remove
+						+ // Apply
+						- ForceMultiplier is multiplied by viz
+						- For each ship:
+							- ApplyTornado(...)
+						- Npcs::ApplyTornado(...)
 				- RenderUpload
-					- Does NOT need dirtyForRender, it's ~always dirty
 			- Physics (ApplyTornado @Ship, @NPCs)
 				- 1. Calculate strength (closed region around x)
 				- 2. Weaken strength of springs (goal: weak parts detach sooner or later)
@@ -951,6 +965,7 @@
 						- Projection: 0 at x=0, V^2/r at x=+/-VortexWidth => V^2/r*cos(x)
 					- X: m * V^2/r*cos(x)
 					- Y: upwards, a bit
+				- NPCs: only Free NPCs!
 			- WorldRenderContext:
 				- VertexAttributes:
 					- Geometry + v-space
@@ -959,10 +974,19 @@
 					- HeatDepth (0..1)
 				- Upload:
 					- Calculate simple quad, width and height fixed
+						- Width and height are in SimulationParameters, so can be used by physics
 						- For height, take into account Perlin - try to avoid repetitions
 						- Will have to adjust smoke and fire resolution in shader
 				- Shader
-					- TODO: try quad: mask out x <>+/-1
+			= Tool
+				+ Cursor (up, down)
+					+ Anchors
+
+			- Sound
+				- TODOHERE: to spec
+
+			- Test:
+				- BeingPlaceAntiGravityField: we've changed to closest
 
 
 	- Run Discord poll for next:

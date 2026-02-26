@@ -53,6 +53,7 @@ enum class ToolType : std::uint32_t
     RCBomb,
     TimerBomb,
     WaveMaker,
+    Tornado,
     TerrainAdjust,
     Scrub,
     RepairStructure,
@@ -1949,7 +1950,7 @@ private:
     // Our state
     std::optional<EngagementData> mEngagementData;
 
-    // The cursors
+    // The cursor
     wxImage const mCursorImage;
 };
 
@@ -2466,6 +2467,120 @@ private:
 
     // State
     bool mIsEngaged;
+
+    // The cursors
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
+};
+
+class TornadoTool final : public Tool
+{
+public:
+
+    TornadoTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        GameAssetManager const & gameAssetManager);
+
+public:
+
+    void Initialize(InputState const & /*inputState*/) override
+    {
+        mEngagementData.reset();
+
+        SetCurrentCursor();
+    }
+
+    void Deinitialize() override
+    {
+        if (mEngagementData.has_value())
+        {
+            // Stop
+            mGameController.EndPlaceTornado(mEngagementData->CurrentTornadoId);
+        }
+    }
+
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    {
+        if (mEngagementData.has_value())
+        {
+            // Calculate screen deltaY
+            float const screenDeltaY = static_cast<float>(inputState.MousePosition.y - mEngagementData->StartScreenY);
+
+            // Calculate multiplier (1.0 @ center of screen, 2.0 @ top/bottom of screen)
+            float multiplier = 1.0f + std::abs(screenDeltaY) / static_cast<float>(mGameController.GetCanvasLogicalSize().height / 2);
+
+            mGameController.UpdateTornado(
+                mEngagementData->CurrentTornadoId,
+                inputState.MousePosition.x,
+                multiplier * (inputState.IsShiftKeyDown ? 2.0f : 1.0f), // Strength
+                screenDeltaY < 0.0f ? multiplier : 0.0f); // Heat
+        }
+    }
+
+    void OnMouseMove(InputState const & /*inputState*/) override
+    {
+        // Nop
+    }
+
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        assert(!mEngagementData.has_value());
+
+        mEngagementData.emplace(
+            mGameController.BeginPlaceTornado(inputState.MousePosition.x),
+            inputState.MousePosition.y);
+
+        SetCurrentCursor();
+    }
+
+    void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        if (mEngagementData.has_value())
+        {
+            // Stop
+            mGameController.EndPlaceTornado(mEngagementData->CurrentTornadoId);
+
+            mEngagementData.reset();
+
+            SetCurrentCursor();
+        }
+    }
+
+    void OnShiftKeyDown(InputState const & /*inputState*/) override
+    {
+        // Nop
+    }
+
+    void OnShiftKeyUp(InputState const & /*inputState*/) override
+    {
+        // Nop
+    }
+
+private:
+
+    void SetCurrentCursor()
+    {
+        mToolCursorManager.SetToolCursor(mEngagementData.has_value() ? mDownCursorImage : mUpCursorImage);
+    }
+
+    struct EngagementData
+    {
+        ElementIndex const CurrentTornadoId;
+        int const StartScreenY;
+
+        EngagementData(
+            ElementIndex currentTornadoId,
+            int startScreenY)
+            : CurrentTornadoId(currentTornadoId)
+            , StartScreenY(startScreenY)
+        {
+        }
+    };
+
+    // Our state
+    std::optional<EngagementData> mEngagementData;
 
     // The cursors
     wxImage const mUpCursorImage;

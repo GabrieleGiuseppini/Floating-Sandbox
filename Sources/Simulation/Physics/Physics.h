@@ -12,7 +12,7 @@ namespace Physics
     class Fishes;
     class Frontiers;
     class Gadgets;
-    class GlobalForceFields;
+    class InteractiveBodies;
     class Npcs;
     class NpcParticles;
     class OceanFloor;
@@ -47,7 +47,7 @@ namespace Physics
 //
 #include "Clouds.h"
 #include "Fishes.h"
-#include "GlobalForceFields.h"
+#include "InteractiveBodies.h"
 #include "Stars.h"
 #include "OceanFloor.h"
 #include "OceanSurface.h"

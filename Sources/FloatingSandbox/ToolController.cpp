@@ -175,6 +175,13 @@ ToolController::ToolController(
             gameAssetManager));
 
     mAllTools.emplace_back(
+        std::make_unique<TornadoTool>(
+            *this,
+            gameController,
+            soundController,
+            gameAssetManager));
+
+    mAllTools.emplace_back(
         std::make_unique<TerrainAdjustTool>(
             *this,
             gameController,

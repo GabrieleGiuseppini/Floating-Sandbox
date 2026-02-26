@@ -804,6 +804,53 @@ public:
 
     void UploadAntiGravityFieldsEnd();
 
+    void UploadTornadoesStart();
+
+    void UploadTornado(
+        vec2f const & bottomCenterPos,
+        float width,
+        float height,
+        float rotationSpeedMultiplier,
+        float heatDepth, // 0..1
+        float visibilityAlpha) // 0..1
+    {
+        // Calculate quad
+
+        // TopLeft
+        mTornadoVertexBuffer.emplace_back(
+            bottomCenterPos + vec2f(-width / 2.0f, height),
+            vec2f(0.0, 1.0f),
+            rotationSpeedMultiplier,
+            heatDepth,
+            visibilityAlpha);
+
+        // BottomLeft
+        mTornadoVertexBuffer.emplace_back(
+            bottomCenterPos + vec2f(-width / 2.0f, 0.0f),
+            vec2f(0.0, 0.0f),
+            rotationSpeedMultiplier,
+            heatDepth,
+            visibilityAlpha);
+
+        // TopRight
+        mTornadoVertexBuffer.emplace_back(
+            bottomCenterPos + vec2f(width / 2.0f, height),
+            vec2f(1.0, 1.0f),
+            rotationSpeedMultiplier,
+            heatDepth,
+            visibilityAlpha);
+
+        // BottomRight
+        mTornadoVertexBuffer.emplace_back(
+            bottomCenterPos + vec2f(width / 2.0f, 0.0f),
+            vec2f(1.0, 0.0f),
+            rotationSpeedMultiplier,
+            heatDepth,
+            visibilityAlpha);
+    }
+
+    void UploadTornadoesEnd();
+
     inline void UploadCrossOfLight(
         vec2f const & centerPosition,
         float progress,
@@ -914,6 +961,9 @@ public:
 
     void RenderPrepareAntiGravityFields(float currentSimulationTime, RenderParameters const & renderParameters);
     void RenderDrawAntiGravityFields(RenderParameters const & renderParameters);
+
+    void RenderPrepareTornadoes(float currentSimulationTime, RenderParameters const & renderParameters);
+    void RenderDrawTornadoes(RenderParameters const & renderParameters);
 
     void RenderPrepareAMBombPreImplosions(RenderParameters const & renderParameters);
     void RenderDrawAMBombPreImplosions(RenderParameters const & renderParameters);
@@ -1261,6 +1311,29 @@ private:
         {}
     };
 
+    struct TornadoVertex
+    {
+        vec2f position;
+        vec2f tornadoSpaceCoords;
+        float rotationSpeedMultiplier;
+        float heatDepth;
+        float visibilityAlpha;
+
+        TornadoVertex(
+            vec2f _position,
+            vec2f _tornadoSpaceCoords,
+            float _rotationSpeedMultiplier,
+            float _heatDepth,
+            float _visibilityAlpha)
+            : position(_position)
+            , tornadoSpaceCoords(_tornadoSpaceCoords)
+            , rotationSpeedMultiplier(_rotationSpeedMultiplier)
+            , heatDepth(_heatDepth)
+            , visibilityAlpha(_visibilityAlpha)
+        {
+        }
+    };
+
     struct AMBombPreImplosionVertex
     {
         vec2f vertex;
@@ -1397,6 +1470,10 @@ private:
     GameOpenGLVBO mAntiGravityFieldVBO;
     bool mIsAntiGravityFieldVertexBufferDirty;
 
+    std::vector<TornadoVertex> mTornadoVertexBuffer;
+    GameOpenGLVBO mTornadoVBO;
+    bool mIsTornadoVertexBufferDirty;
+
     std::vector<AMBombPreImplosionVertex> mAMBombPreImplosionVertexBuffer;
     GameOpenGLVBO mAMBombPreImplosionVBO;
     size_t mAMBombPreImplosionVBOAllocatedVertexSize;
@@ -1432,6 +1509,7 @@ private:
     GameOpenGLVAO mFishVAO;
     GameOpenGLVAO mUnderwaterPlantVAO;
     GameOpenGLVAO mAntiGravityFieldVAO;
+    GameOpenGLVAO mTornadoVAO;
     GameOpenGLVAO mAMBombPreImplosionVAO;
     GameOpenGLVAO mCrossOfLightVAO;
     GameOpenGLVAO mAABBVAO;

@@ -136,6 +136,9 @@ struct IGameController
     virtual void AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId) = 0;
     virtual void BoostAntiGravityFields(float strengthMultiplier) = 0;
     virtual bool RemoveAllAntiGravityFields() = 0;
+    virtual ElementIndex BeginPlaceTornado(int screenCoordinatesX) = 0;
+    virtual void UpdateTornado(ElementIndex tornadoId, int screenCoordinatesX, float strengthMultiplier, float heatDepth) = 0;
+    virtual void EndPlaceTornado(ElementIndex tornadoId) = 0;
     virtual void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
     virtual void RemoveAllPins() = 0;
     virtual std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) = 0;
@@ -212,6 +215,8 @@ struct IGameController
     virtual void AdjustZoom(float amount) = 0;
     virtual void ResetView() = 0;
     virtual void FocusOnShips() = 0;
+
+    virtual DisplayLogicalSize const & GetCanvasLogicalSize() const = 0;
     virtual vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const = 0;
 

@@ -11,7 +11,7 @@ set  (SIMULATION_SOURCES
 	ISimulationEventHandlers.h
 	LayerElements.h
 	Layers.cpp
-        Layers.h
+	Layers.h
 	Materials.cpp
 	Materials.h
 	MaterialDatabase.cpp
@@ -66,10 +66,10 @@ set  (PHYSICS_SOURCES
 	Physics/Gadget.h
 	Physics/Gadgets.cpp
 	Physics/Gadgets.h
-	Physics/GlobalForceFields.cpp
-	Physics/GlobalForceFields.h
 	Physics/ImpactBombGadget.cpp
 	Physics/ImpactBombGadget.h
+	Physics/InteractiveBodies.cpp
+	Physics/InteractiveBodies.h
 	Physics/IShipPhysicsHandler.h
 	Physics/Npcs/NpcParticles.cpp
 	Physics/Npcs/NpcParticles.h

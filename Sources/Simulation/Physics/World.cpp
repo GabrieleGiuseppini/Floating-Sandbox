@@ -30,7 +30,7 @@ World::World(
     , mStorm(*this, mSimulationEventHandler)
     , mWind(mSimulationEventHandler)
     , mClouds()
-    , mGlobalForceFields()
+    , mInteractiveBodies()
     , mOceanSurface(*this, mSimulationEventHandler)
     , mOceanFloor(std::move(oceanFloorHeightMap))
     , mFishes(fishSpeciesDatabase, mSimulationEventHandler)
@@ -786,14 +786,14 @@ ElementIndex World::BeginPlaceAntiGravityField(
     vec2f const & startPos,
     float searchRadius)
 {
-    return mGlobalForceFields.BeginPlaceAntiGravityField(startPos, searchRadius);
+    return mInteractiveBodies.BeginPlaceAntiGravityField(startPos, searchRadius);
 }
 
 void World::UpdatePlaceAntiGravityField(
     ElementIndex antiGravityFieldId,
     vec2f const & endPos)
 {
-    mGlobalForceFields.UpdatePlaceAntiGravityField(antiGravityFieldId, endPos);
+    mInteractiveBodies.UpdatePlaceAntiGravityField(antiGravityFieldId, endPos);
 }
 
 void World::EndPlaceAntiGravityField(
@@ -802,22 +802,43 @@ void World::EndPlaceAntiGravityField(
     float searchRadius,
     float strengthMultiplier)
 {
-    mGlobalForceFields.EndPlaceAntiGravityField(antiGravityFieldId, endPos, searchRadius, strengthMultiplier, mCurrentSimulationTime);
+    mInteractiveBodies.EndPlaceAntiGravityField(antiGravityFieldId, endPos, searchRadius, strengthMultiplier, mCurrentSimulationTime);
 }
 
 void World::AbortPlaceAntiGravityField(ElementIndex antiGravityFieldId)
 {
-    mGlobalForceFields.AbortPlaceAntiGravityField(antiGravityFieldId);
+    mInteractiveBodies.AbortPlaceAntiGravityField(antiGravityFieldId);
 }
 
 void World::BoostAntiGravityFields(float strengthMultiplier)
 {
-    mGlobalForceFields.BoostAntiGravityFields(strengthMultiplier);
+    mInteractiveBodies.BoostAntiGravityFields(strengthMultiplier);
 }
 
 bool World::RemoveAllAntiGravityFields()
 {
-    return mGlobalForceFields.RemoveAllAntyGravityFields();
+    return mInteractiveBodies.RemoveAllAntyGravityFields();
+}
+
+ElementIndex World::BeginPlaceTornado(
+    float posX,
+    float searchRadius)
+{
+    return mInteractiveBodies.BeginPlaceTornado(posX, searchRadius, mOceanSurface, mCurrentSimulationTime);
+}
+
+void World::UpdateTornado(
+    ElementIndex tornadoId,
+    float posX,
+    float strengthMultiplier,
+    float heatDepth)
+{
+    mInteractiveBodies.UpdateTornado(tornadoId, posX, strengthMultiplier, heatDepth, mCurrentSimulationTime);
+}
+
+void World::EndPlaceTornado(ElementIndex tornadoId)
+{
+    mInteractiveBodies.EndPlaceTornado(tornadoId, mCurrentSimulationTime);
 }
 
 void World::TogglePinAt(
@@ -1586,12 +1607,11 @@ void World::Update(
 
     mUnderwaterPlants.Update(mCurrentSimulationTime, mWind, mOceanSurface, mOceanFloor, simulationParameters);
 
-    // Global force fields
+    // Interactive bodies
     {
-        for (auto & ship : mAllShips)
-        {
-            mGlobalForceFields.Update(*ship);
-        }
+        assert(mNpcs);
+
+        mInteractiveBodies.Update(mAllShips, *mNpcs, mOceanSurface, mCurrentSimulationTime);
     }
 
     //
@@ -1631,7 +1651,7 @@ void World::RenderUpload(
 
     mClouds.Upload(renderContext);
 
-    mGlobalForceFields.Upload(renderContext);
+    mInteractiveBodies.Upload(renderContext);
 
     mOceanFloor.Upload(simulationParameters, renderContext);
 

@@ -1158,6 +1158,33 @@ public:
         mWorldRenderContext->UploadAntiGravityFieldsEnd();
     }
 
+    inline void UploadTornadoesStart()
+    {
+        mWorldRenderContext->UploadTornadoesStart();
+    }
+
+    inline void UploadTornado(
+        vec2f const & bottomCenterPos,
+        float width,
+        float height,
+        float rotationSpeedMultiplier,
+        float heatDepth, // 0..1
+        float visibilityAlpha) // 0..1
+    {
+        mWorldRenderContext->UploadTornado(
+            bottomCenterPos,
+            width,
+            height,
+            rotationSpeedMultiplier,
+            heatDepth,
+            visibilityAlpha);
+    }
+
+    inline void UploadTornadoesEnd()
+    {
+        mWorldRenderContext->UploadTornadoesEnd();
+    }
+
     inline void UploadAMBombPreImplosion(
         vec2f const & centerPosition,
         float progress,

@@ -307,6 +307,18 @@ public:
 
     bool RemoveAllAntiGravityFields();
 
+    ElementIndex BeginPlaceTornado(
+        float posX,
+        float searchRadius);
+
+    void UpdateTornado(
+        ElementIndex tornadoId,
+        float posX,
+        float strengthMultiplier,
+        float heatDepth);
+
+    void EndPlaceTornado(ElementIndex tornadoId);
+
     void TogglePinAt(
         vec2f const & targetPos,
         SimulationParameters const & simulationParameters);
@@ -543,7 +555,7 @@ private:
     Storm mStorm;
     Wind mWind;
     Clouds mClouds;
-    GlobalForceFields mGlobalForceFields;
+    InteractiveBodies mInteractiveBodies;
     OceanSurface mOceanSurface;
     OceanFloor mOceanFloor;
     Fishes mFishes;

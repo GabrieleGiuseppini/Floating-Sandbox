@@ -508,6 +508,11 @@ MainFrame::MainFrame(
             }
 
             {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Tornado"), wxS("\tSHIFT+2"), "tornado_cursor_up", ToolType::Tornado, false);
+                ADD_PLAIN_ACCELERATOR_KEY('@', menuItem);
+            }
+
+            {
                 auto menuItem = ADD_TOOL_MENUITEM(_("WindMaker"), wxS("\t9"), "wind_cursor_up", ToolType::WindMaker, false);
                 ADD_PLAIN_ACCELERATOR_KEY('9', menuItem);
             }

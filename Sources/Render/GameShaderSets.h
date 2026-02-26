@@ -110,6 +110,7 @@ enum class ProgramKind
     Stars,
     Text,
     TextureNotifications,
+    Tornado,
     UnderwaterPlant,
     WorldBorder,
 
@@ -229,6 +230,9 @@ enum class VertexAttributeKind : std::uint32_t
     Fish2 = 1,
     Fish3 = 2,
     Fish4 = 3,
+
+    Tornado1 = 0,
+    Tornado2 = 1,
 
     UnderwaterPlantStatic1 = 0,
     UnderwaterPlantStatic2 = 1,
