@@ -1080,11 +1080,11 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
     float const centerX = args.BottomCenterPos.x;
     float const effectiveLeft = centerX - effectiveRadius;
     float const effectiveRight = centerX + effectiveRadius;
-    float const effectiveTop = args.BottomCenterPos.y + args.Size.height * ExtraSizeFraction;
+    float const effectiveTop = args.BottomCenterPos.y + args.Size.height;
     float const effectiveBottom = args.BottomCenterPos.y;
 
     // The magnitude V of the particle velocity in the vortex is of our choice (synced to rendering / shader)
-    float const v = 40.0f * args.StrengthMultiplier;
+    float const v = 30.0f * args.StrengthMultiplier;
 
     bool hasActed = false;
 
@@ -1094,13 +1094,14 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
         if (p.x >= effectiveLeft && p.x <= effectiveRight
             && p.y >= effectiveBottom && p.y <= effectiveTop)
         {
+            float const m = mPoints.GetMass(pointIndex);
+
             // Normalized distance from center
             float const rn = (p.x - centerX) / effectiveRadius;
             assert(std::fabsf(rn) <= 1.0f);
 
             // Tornado strength is lower at the edges
             float const tornadoDepth = 1.0f - LinearStep(0.95f, 1.0f, rn);
-            // TODO: add y contribution (towards zero)
 
             //
             // 1. Cheat: weaken structures
@@ -1108,14 +1109,12 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
 
             if (!mPoints.IsEphemeral(pointIndex))
             {
-                //float const newDecay =
-                //    mPoints.GetDecay(pointIndex)
-                //    * (1.0f - tornadoDepth * 0.005f);
+                // TODO: try using strength of point as a stick
 
                 float constexpr TargetDecay = 0.1f;
                 float const newDecay =
                     mPoints.GetDecay(pointIndex)
-                    + (TargetDecay - mPoints.GetDecay(pointIndex)) * 0.01f;
+                    + (TargetDecay - mPoints.GetDecay(pointIndex)) * 0.02f;
 
                 mPoints.SetDecay(
                     pointIndex,
@@ -1129,21 +1128,35 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
             // Centripetal force, projected along the X axis
             // TODO: comments
             float const cForceX =
-                -mPoints.GetMass(pointIndex)
+                -m
                 * v * v / effectiveRadius
                 * std::sinf(Pi<float> / 2.0f * rn)
-                // TODOTEST
                 * tornadoDepth;
-                ;
 
             // Updraft force
-                // TODOTEST: try: opposite of gravity + delta required to accelerate to target wished constant vertical speed
             float constexpr UpwardForceMagnitude = 15.0f; // Magic, more than gravity
             float const upForceY =
-                mPoints.GetMass(pointIndex)
+                m
                 * UpwardForceMagnitude
                 * tornadoDepth
                 * args.StrengthMultiplier;
+
+            //// TODOTEST: opposite of gravity + delta required to accelerate to target wished constant vertical speed,
+            //// but destructs structure too early and it's too predictable
+            //// Force required to achieve UpwardVelocity
+            //float constexpr UpwardVelocity = 5.0f; // Magic
+            //float const upForceForVelocity =
+            //    m
+            //    / SimulationParameters::SimulationStepTimeDuration<float>
+            //    * (UpwardVelocity - mPoints.GetVelocity(pointIndex).y);
+
+            //// Force required to nullify gravity
+            //float const upForceForGravity = m * SimulationParameters::GravityMagnitude;
+
+            //float const upForceY =
+            //    (upForceForVelocity + upForceForGravity)
+            //    * tornadoDepth
+            //    * args.StrengthMultiplier;
 
             vec2f const tornadoForce = vec2f(
                 cForceX,
