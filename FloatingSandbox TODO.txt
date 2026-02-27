@@ -963,6 +963,7 @@
 					+ Takes tornado size from Tornado
 				- 2. Weaken strength of springs (goal: weak parts detach sooner or later)
 					- Make separate facility for AdditionalWeakness
+						- And Points::m/Strength/Buffer becomes FactoryStrength
 						- Make sure Repair can fix it
 						- Make sure anything else that "adjusts" (changes decay up, but not scrub) fixes it
 				= 3. Apply forces 
@@ -973,9 +974,15 @@
 						- Projection: 0 at x=0, V^2/r at x=+/-VortexWidth => V^2/r*cos(x)
 					+ X: m * V^2/r*cos(x)
 					+ Y: upwards, a bit
-					- Cleanup (precalc, etc.)
-						- Check assembly
-					- Write all the above as comments
+					+ Cleanup (precalc, etc.)
+						+ Check assembly
+					- Make cone!
+						- Bottom width conjured up by Tornado (as a func of viz), 0..1 ("BottomWidthFraction")
+						- Must be passed in args to interaction
+						- Also uploaded, goes into vertex attribs
+						- Interaction:
+							- Still use AABB as a check, but recalc width for each particle (y)
+					+ Write all the above as comments
 				- 4. Apply heat
 				- NPCs: only Free NPCs!
 			= WorldRenderContext:
@@ -990,6 +997,14 @@
 						- For height, take into account Perlin - try to avoid repetitions
 						- Will have to adjust smoke and fire resolution in shader
 				- Shader
+
+				- Draw 2 passes
+					- Second time around shader gets IsSecondaryRendering parameter set to 1.0
+						- And lighter areas are more transparent
+						- IsSecondaryRendering=1.0:
+							finalAlpha = whateverAlpha * smokeDarkness * 0.85 // Experiment
+						- IsSecondaryRendering=0.0:
+							finalAlpha = whateverAlpha
 
 			- Soften jumping up and down with OceanSurface?
 

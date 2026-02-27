@@ -1097,6 +1097,7 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
     for (auto pointIndex : mPoints)
     {
         vec2f const & p = mPoints.GetPosition(pointIndex);
+
         if (p.x >= effectiveLeft && p.x <= effectiveRight
             && p.y >= effectiveBottom && p.y <= effectiveTop)
         {
@@ -1135,23 +1136,36 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
             // 2. Apply forces
             //
 
-            // Centripetal force, projected along the X axis; modulated with mass so to make more chaos
-            // TODO: comments
+            // Centripetal force, projected along the X axis
+            //
+            // For a circular orbit motion, the velocity, the radius, and the centripetal acceleration must satisfy:
+            //  V^2/R = |Ac|
+            //
+            // Fixing V and R, we have |Fc| = m*V^2/R
+            //
+            // We project this centripetal force to the x axis, as Fcx = Fc * cos(alpha),
+            // with alpha derivable from x as: alpha = PI/2 - PI/2 * x/R
+            // Thus, Fcx = |Fc| * sin(PI/2 - alpha) = |Fc| * sin(PI/2 * x/R)
+            //
+            //
+
             float const cForceX =
                 -m
-                * effectiveOrbitV * effectiveOrbitV / effectiveRadius
+                * effectiveOrbitV * effectiveOrbitV / effectiveRadius // Precalculated by compiler
                 * std::sinf(Pi<float> / 2.0f * rn)
-                * (1.0f - LinearStep(200.0f, 1500.0, m))
+                * (1.0f - LinearStep(200.0f, 1500.0, m)) // Modulate with mass so to make more chaos
                 * tornadoDepth;
 
-            // Updraft force; less emphasis on heavier materials
+            // Updraft force
             float const upForceY =
                 m
                 * effectiveUpwardForceMagnitude
-                * (1.0f - LinearStep(550.0f, 2000.0, m))
+                * (1.0f - LinearStep(550.0f, 2000.0, m)) // Less emphasis on heavier materials
                 * tornadoDepth;
 
+            //
             // Final force
+            //
 
             vec2f const tornadoForce = vec2f(
                 cForceX,
