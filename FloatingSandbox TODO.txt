@@ -974,6 +974,7 @@
 					+ X: m * V^2/r*cos(x)
 					+ Y: upwards, a bit
 					- Cleanup (precalc, etc.)
+						- Check assembly
 					- Write all the above as comments
 				- 4. Apply heat
 				- NPCs: only Free NPCs!

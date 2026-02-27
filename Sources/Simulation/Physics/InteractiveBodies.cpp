@@ -135,7 +135,7 @@ void InteractiveBodies::Update(
         // Check whether it's been idle enough to start disappearing
         //
 
-        float constexpr IdleTimeoutSimSeconds = 10.0f;
+        float constexpr IdleTimeoutSimSeconds = 15.0f;
         if (currentSimulationTime > tornado.LastActivitySimulationTimestamp + IdleTimeoutSimSeconds)
         {
             // Start disappearing

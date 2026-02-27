@@ -1087,10 +1087,10 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
 
     // The magnitude V of the particle velocity in the vortex is of our choice (rendering / shader syncs to it);
     // high enough to cause breakages
-    float const v = 40.0f * args.StrengthMultiplier;
+    float const effectiveOrbitV = 40.0f * args.StrengthMultiplier;
 
     // The magnitude of the upward force; magic, and more than gravity
-    float constexpr UpwardForceMagnitude = 12.0f;
+    float const effectiveUpwardForceMagnitude = 12.0f * args.StrengthMultiplier;
 
     bool hasActed = false;
 
@@ -1139,7 +1139,7 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
             // TODO: comments
             float const cForceX =
                 -m
-                * v * v / effectiveRadius
+                * effectiveOrbitV * effectiveOrbitV / effectiveRadius
                 * std::sinf(Pi<float> / 2.0f * rn)
                 * (1.0f - LinearStep(200.0f, 1500.0, m))
                 * tornadoDepth;
@@ -1147,10 +1147,9 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
             // Updraft force; less emphasis on heavier materials
             float const upForceY =
                 m
-                * UpwardForceMagnitude
+                * effectiveUpwardForceMagnitude
                 * (1.0f - LinearStep(550.0f, 2000.0, m))
-                * tornadoDepth
-                * args.StrengthMultiplier;
+                * tornadoDepth;
 
             // Final force
 
