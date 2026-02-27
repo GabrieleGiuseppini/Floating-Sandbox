@@ -1072,15 +1072,19 @@ void Ship::ApplyTornado(
 
 void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & args)
 {
+    // To make damage outside of the visible vortex
+    float constexpr ExtraSizeFraction = 1.3f;
+    float const effectiveRadius = args.Size.width / 2.0f * ExtraSizeFraction;
+
+    // Quick checks on vortex AABB
     float const centerX = args.BottomCenterPos.x;
-    float const effectiveWidth = args.Size.width * 1.1f;
-    float const effectiveLeft = centerX - effectiveWidth / 2.0f;
-    float const effectiveRight = centerX + effectiveWidth / 2.0f;
-    float const effectiveTop = args.BottomCenterPos.y + args.Size.height * 1.1f;
+    float const effectiveLeft = centerX - effectiveRadius;
+    float const effectiveRight = centerX + effectiveRadius;
+    float const effectiveTop = args.BottomCenterPos.y + args.Size.height * ExtraSizeFraction;
     float const effectiveBottom = args.BottomCenterPos.y;
 
-    // The magnitude V of its velocity is of our choice (synced to rendering / shader), depending on r (max at r = VortexWidth / 2, 0 at r = 0)
-    float const v = 8.0f * args.StrengthMultiplier;
+    // The magnitude V of the particle velocity in the vortex is of our choice (synced to rendering / shader)
+    float const v = 40.0f * args.StrengthMultiplier;
 
     bool hasActed = false;
 
@@ -1090,9 +1094,13 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
         if (p.x >= effectiveLeft && p.x <= effectiveRight
             && p.y >= effectiveBottom && p.y <= effectiveTop)
         {
-            float const r = std::fabsf(p.x - centerX);
-            float const tornadoDepth = 1.0f - SmoothStep(effectiveWidth / 4.0f, effectiveWidth / 2.0f, r);
-            // TODO: add y contribution (to wards zero)
+            // Normalized distance from center
+            float const rn = (p.x - centerX) / effectiveRadius;
+            assert(std::fabsf(rn) <= 1.0f);
+
+            // Tornado strength is lower at the edges
+            float const tornadoDepth = 1.0f - LinearStep(0.95f, 1.0f, rn);
+            // TODO: add y contribution (towards zero)
 
             //
             // 1. Cheat: weaken structures
@@ -1100,22 +1108,46 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
 
             if (!mPoints.IsEphemeral(pointIndex))
             {
+                //float const newDecay =
+                //    mPoints.GetDecay(pointIndex)
+                //    * (1.0f - tornadoDepth * 0.005f);
+
+                float constexpr TargetDecay = 0.1f;
                 float const newDecay =
                     mPoints.GetDecay(pointIndex)
-                    * (1.0f - tornadoDepth * 0.005f);
+                    + (TargetDecay - mPoints.GetDecay(pointIndex)) * 0.01f;
 
-                mPoints.SetDecay(pointIndex, newDecay);
+                mPoints.SetDecay(
+                    pointIndex,
+                    newDecay);
             }
 
             //
             // 2. Apply forces
             //
 
-            float const effectiveV = v;
+            // Centripetal force, projected along the X axis
+            // TODO: comments
+            float const cForceX =
+                -mPoints.GetMass(pointIndex)
+                * v * v / effectiveRadius
+                * std::sinf(Pi<float> / 2.0f * rn)
+                // TODOTEST
+                * tornadoDepth;
+                ;
+
+            // Updraft force
+                // TODOTEST: try: opposite of gravity + delta required to accelerate to target wished constant vertical speed
+            float constexpr UpwardForceMagnitude = 15.0f; // Magic, more than gravity
+            float const upForceY =
+                mPoints.GetMass(pointIndex)
+                * UpwardForceMagnitude
+                * tornadoDepth
+                * args.StrengthMultiplier;
 
             vec2f const tornadoForce = vec2f(
-                mPoints.GetMass(pointIndex) * effectiveV * effectiveV * std::sinf(Pi<float> / 2.0f * (centerX - p.x) / (effectiveWidth / 2.0f)),
-                1100.0f * tornadoDepth); // Upward force, magic
+                cForceX,
+                upForceY);
 
             mPoints.AddStaticForce(
                 pointIndex,

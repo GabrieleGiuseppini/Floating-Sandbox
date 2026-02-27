@@ -62,6 +62,8 @@ void InteractiveBodies::Update(
         // Update tornado
         //
 
+        // TODOHERE: just set mAreTornadoesDirtyForRendering=true unconditionally, after all the tornado is alive
+
         float constexpr ConvergenceThreshold = 0.001f;
 
         // Reclaculate target velocity depending on distance from target
@@ -88,6 +90,21 @@ void InteractiveBodies::Update(
             tornado.LastActivitySimulationTimestamp = currentSimulationTime;
             mAreTornadoesDirtyForRendering = true;
         }
+
+        // Calculate new base Y
+        float const newBaseY = CalculateTornadoBaseY(tornado.CurrentX, oceanSurface);
+        if (newBaseY != tornado.CurrentBaseY)
+        {
+            tornado.CurrentBaseY = newBaseY;
+
+            // Does not count as activity
+
+            mAreTornadoesDirtyForRendering = true;
+        }
+
+        tornado.LastActivitySimulationTimestamp = currentSimulationTime;
+        mAreTornadoesDirtyForRendering = true;
+
 
         // Converge other quantities to their targets
 
@@ -130,7 +147,9 @@ void InteractiveBodies::Update(
         // Check whether it's been enough idle to start disappearing
         //
 
-        float constexpr IdleTimeoutSimSeconds = 3.0f;
+        // TODOTEST
+        //float constexpr IdleTimeoutSimSeconds = 3.0f;
+        float constexpr IdleTimeoutSimSeconds = 30.0f;
         if (currentSimulationTime > tornado.LastActivitySimulationTimestamp + IdleTimeoutSimSeconds)
         {
             // Start disappearing
@@ -159,7 +178,7 @@ void InteractiveBodies::Update(
                 ship->ApplyTornado(
                     vec2f(tornado.CurrentX, tornado.CurrentBaseY),
                     CalculateTornadoEffectiveSize(tornado.CurrentVisibilityAlpha),
-                    tornado.CurrentForceMultiplier,
+                    tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha,
                     tornado.CurrentHeatDepth);
             }
 

@@ -951,11 +951,12 @@
 						+ assert currentSimulationTime > LastActivitySimulationTimestamp + IdleTimeout // Dangerous, might be in-use
 						+ Remove
 					- Else:
-						+ // Apply
-						- ForceMultiplier is multiplied by viz
+						+ // Apply						
 						- For each ship:
 							- ApplyTornado(...)
+								+ ForceMultiplier is multiplied by viz
 						- Npcs::ApplyTornado(...)
+							+ ForceMultiplier is multiplied by viz
 				= RenderUpload
 			- Physics (ApplyTornado @Ship, @NPCs)
 				- 1. Calculate strength (closed region around x)
@@ -988,6 +989,9 @@
 			+ Tool
 				+ Cursor (up, down)
 					+ Anchors
+
+			- Impact on OceanSurface
+				- Beware of feedback loops
 
 			- Sound
 				- TODOHERE: to spec
