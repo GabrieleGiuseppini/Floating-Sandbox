@@ -5,10 +5,11 @@
 
 // Inputs
 in vec4 inTornado1;  // Position, TornadoSpaceCoords
-in vec3 inTornado2; // RotationSpeedMultiplier, HeatDepth, VisibilityAlpha
+in vec4 inTornado2; //  BottomWidthFraction, RotationSpeedMultiplier, HeatDepth, VisibilityAlpha
 
 // Outputs
 out vec2 vertexTornadoSpaceCoords;
+out float vertexBottomWidthFraction;
 out float vertexRotationSpeedMultiplier;
 out float vertexHeatDepth;
 out float vertexVisibilityAlpha;
@@ -19,9 +20,10 @@ uniform mat4 paramOrthoMatrix;
 void main()
 {
     vertexTornadoSpaceCoords = inTornado1.zw;
-    vertexRotationSpeedMultiplier = inTornado2.x;
-    vertexHeatDepth = inTornado2.y;
-    vertexVisibilityAlpha = inTornado2.z;
+    vertexBottomWidthFraction = inTornado2.x;
+    vertexRotationSpeedMultiplier = inTornado2.y;
+    vertexHeatDepth = inTornado2.z;
+    vertexVisibilityAlpha = inTornado2.w;
 
     gl_Position = paramOrthoMatrix * vec4(inTornado1.xy, -1.0, 1.0);
 }
@@ -32,6 +34,7 @@ void main()
 
 // Inputs from previous shader
 in vec2 vertexTornadoSpaceCoords;
+in float vertexBottomWidthFraction;
 in float vertexRotationSpeedMultiplier;
 in float vertexHeatDepth;
 in float vertexVisibilityAlpha;

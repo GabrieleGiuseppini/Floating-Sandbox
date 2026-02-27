@@ -79,6 +79,8 @@ public:
 
     static inline FloatSize CalculateTornadoEffectiveSize(float visibilityAlpha);
 
+    static inline float CalculateTornadoBottomWidthFraction(float visibilityAlpha);
+
 private:
 
     template<typename T>

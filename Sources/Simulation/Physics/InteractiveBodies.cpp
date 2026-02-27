@@ -162,6 +162,7 @@ void InteractiveBodies::Update(
                 ship->ApplyTornado(
                     vec2f(tornado.CurrentX, tornado.CurrentBaseY),
                     CalculateTornadoEffectiveSize(tornado.CurrentVisibilityAlpha),
+                    CalculateTornadoBottomWidthFraction(tornado.CurrentVisibilityAlpha),
                     tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha,
                     tornado.CurrentHeatDepth);
             }
@@ -207,6 +208,7 @@ void InteractiveBodies::Upload(RenderContext & renderContext) const
             renderContext.UploadTornado(
                 vec2f(tornado.CurrentX, tornado.CurrentBaseY),
                 CalculateTornadoEffectiveSize(tornado.CurrentVisibilityAlpha),
+                CalculateTornadoBottomWidthFraction(tornado.CurrentVisibilityAlpha),
                 rotationSpeedMultiplier,
                 tornado.CurrentHeatDepth,
                 tornado.CurrentVisibilityAlpha);
@@ -499,6 +501,11 @@ FloatSize InteractiveBodies::CalculateTornadoEffectiveSize(float visibilityAlpha
     return FloatSize(
         SimulationParameters::TornadoWidth * (0.2f + 0.8F * visibilityAlpha),
         SimulationParameters::TornadoHeight);
+}
+
+float InteractiveBodies::CalculateTornadoBottomWidthFraction(float visibilityAlpha)
+{
+    return 0.2f * visibilityAlpha;
 }
 
 }

@@ -1198,7 +1198,7 @@ void Ship::ApplyQueuedInteractionForces(SimulationParameters const & simulationP
 
             case Interaction::InteractionType::Tornado:
             {
-                ApplyTornado(interaction.Arguments.Tornado);
+                ApplyTornado(interaction.Arguments.Tornado, simulationParameters);
 
                 break;
             }

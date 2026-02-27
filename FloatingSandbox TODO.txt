@@ -976,14 +976,14 @@
 					+ Y: upwards, a bit
 					+ Cleanup (precalc, etc.)
 						+ Check assembly
-					- Make cone!
-						- Bottom width conjured up by Tornado (as a func of viz), 0..1 ("BottomWidthFraction")
-						- Must be passed in args to interaction
-						- Also uploaded, goes into vertex attribs
-						- Interaction:
-							- Still use AABB as a check, but recalc width for each particle (y)
+					+ Make cone!
+						+ Bottom width conjured up by Tornado (as a func of viz), 0..1 ("BottomWidthFraction")
+						+ Must be passed in args to interaction
+						+ Also uploaded, goes into vertex attribs
+						+ Interaction:
+							+ Still use AABB as a check, but recalc width for each particle (y)
 					+ Write all the above as comments
-				- 4. Apply heat
+				= 4. Apply heat
 				- NPCs: only Free NPCs!
 			= WorldRenderContext:
 				+ VertexAttributes:

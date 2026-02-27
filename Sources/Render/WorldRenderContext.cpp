@@ -527,11 +527,11 @@ WorldRenderContext::WorldRenderContext(
         // Describe vertex attributes
 
         glBindBuffer(GL_ARRAY_BUFFER, *mTornadoVBO);
-        static_assert(sizeof(TornadoVertex) == (2 + 2 + 3) * sizeof(float));
+        static_assert(sizeof(TornadoVertex) == (2 + 2 + 4) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado1));
         glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado1), 4, GL_FLOAT, GL_FALSE, sizeof(TornadoVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado2), 3, GL_FLOAT, GL_FALSE, sizeof(TornadoVertex), (void *)(4 * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado2), 4, GL_FLOAT, GL_FALSE, sizeof(TornadoVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding

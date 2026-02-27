@@ -1166,6 +1166,7 @@ public:
     inline void UploadTornado(
         vec2f const & bottomCenterPos,
         FloatSize const & size,
+        float bottomWidthFraction,
         float rotationSpeedMultiplier,
         float heatDepth, // 0..1
         float visibilityAlpha) // 0..1
@@ -1173,6 +1174,7 @@ public:
         mWorldRenderContext->UploadTornado(
             bottomCenterPos,
             size,
+            bottomWidthFraction,
             rotationSpeedMultiplier,
             heatDepth,
             visibilityAlpha);

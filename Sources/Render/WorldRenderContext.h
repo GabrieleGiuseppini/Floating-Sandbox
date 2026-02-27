@@ -809,6 +809,7 @@ public:
     void UploadTornado(
         vec2f const & bottomCenterPos,
         FloatSize const & size,
+        float bottomWidthFraction,
         float rotationSpeedMultiplier,
         float heatDepth, // 0..1
         float visibilityAlpha) // 0..1
@@ -819,6 +820,7 @@ public:
         mTornadoVertexBuffer.emplace_back(
             bottomCenterPos + vec2f(-size.width / 2.0f, size.height),
             vec2f(0.0, 1.0f),
+            bottomWidthFraction,
             rotationSpeedMultiplier,
             heatDepth,
             visibilityAlpha);
@@ -827,6 +829,7 @@ public:
         mTornadoVertexBuffer.emplace_back(
             bottomCenterPos + vec2f(-size.width / 2.0f, 0.0f),
             vec2f(0.0, 0.0f),
+            bottomWidthFraction,
             rotationSpeedMultiplier,
             heatDepth,
             visibilityAlpha);
@@ -835,6 +838,7 @@ public:
         mTornadoVertexBuffer.emplace_back(
             bottomCenterPos + vec2f(size.width / 2.0f, size.height),
             vec2f(1.0, 1.0f),
+            bottomWidthFraction,
             rotationSpeedMultiplier,
             heatDepth,
             visibilityAlpha);
@@ -843,6 +847,7 @@ public:
         mTornadoVertexBuffer.emplace_back(
             bottomCenterPos + vec2f(size.width / 2.0f, 0.0f),
             vec2f(1.0, 0.0f),
+            bottomWidthFraction,
             rotationSpeedMultiplier,
             heatDepth,
             visibilityAlpha);
@@ -1314,6 +1319,7 @@ private:
     {
         vec2f position;
         vec2f tornadoSpaceCoords;
+        float bottomWidthFraction;
         float rotationSpeedMultiplier;
         float heatDepth;
         float visibilityAlpha;
@@ -1321,11 +1327,13 @@ private:
         TornadoVertex(
             vec2f _position,
             vec2f _tornadoSpaceCoords,
+            float _bottomWidthFraction,
             float _rotationSpeedMultiplier,
             float _heatDepth,
             float _visibilityAlpha)
             : position(_position)
             , tornadoSpaceCoords(_tornadoSpaceCoords)
+            , bottomWidthFraction(_bottomWidthFraction)
             , rotationSpeedMultiplier(_rotationSpeedMultiplier)
             , heatDepth(_heatDepth)
             , visibilityAlpha(_visibilityAlpha)

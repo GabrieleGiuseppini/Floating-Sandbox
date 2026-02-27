@@ -1058,6 +1058,7 @@ void Ship::ApplyAntiGravityField(
 void Ship::ApplyTornado(
     vec2f const & bottomCenterPos,
     FloatSize const & size,
+    float bottomWidthFraction,
     float strengthMultiplier,
     float heatDepth)
 {
@@ -1066,22 +1067,24 @@ void Ship::ApplyTornado(
         Interaction::ArgumentsUnion::TornadoArguments(
             bottomCenterPos,
             size,
+            bottomWidthFraction,
             strengthMultiplier,
             heatDepth));
 }
 
-void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & args)
+void Ship::ApplyTornado(
+    Interaction::ArgumentsUnion::TornadoArguments const & args,
+    SimulationParameters const & simulationParameters)
 {
     // To make damage outside of the visible vortex
     float constexpr ExtraWidthFraction = 1.8f; // MUCH wider
-    float const effectiveRadius = args.Size.width / 2.0f * ExtraWidthFraction;
+    float const effectiveTopRadius = args.Size.width / 2.0f * ExtraWidthFraction;
+    float const effectiveBottomRadius = effectiveTopRadius * args.BottomWidthFraction;
     float constexpr ExtraHeightFraction = 1.1f;
     float const effectiveHeight = args.Size.height * ExtraHeightFraction;
 
     // Quick checks on vortex AABB
     float const centerX = args.BottomCenterPos.x;
-    float const effectiveLeft = centerX - effectiveRadius;
-    float const effectiveRight = centerX + effectiveRadius;
     float const effectiveTop = args.BottomCenterPos.y + effectiveHeight;
     float const effectiveBottom = args.BottomCenterPos.y;
 
@@ -1092,90 +1095,116 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
     // The magnitude of the upward force; magic, and more than gravity
     float const effectiveUpwardForceMagnitude = 12.0f * args.StrengthMultiplier;
 
+    // The quantity of heat; Q = q*dt
+    float const effectiveHeatQuantity =
+        1000.0f * 1000.0f // Joule
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * SimulationParameters::SimulationStepTimeDuration<float>
+        * args.HeatDepth
+        * args.StrengthMultiplier;
+
     bool hasActed = false;
 
     for (auto pointIndex : mPoints)
     {
         vec2f const & p = mPoints.GetPosition(pointIndex);
 
-        if (p.x >= effectiveLeft && p.x <= effectiveRight
-            && p.y >= effectiveBottom && p.y <= effectiveTop)
+        if (p.y >= effectiveBottom && p.y <= effectiveTop)
         {
-            float const m = mPoints.GetMass(pointIndex);
+            // Calculate radius, depending on y
+            float const effectiveRadius = effectiveBottomRadius + (effectiveTopRadius - effectiveBottomRadius) * (p.y - effectiveBottom) / effectiveHeight;
 
             // Normalized distance from center
             float const rn = (p.x - centerX) / effectiveRadius;
-            assert(std::fabsf(rn) <= 1.0f);
-
-            // Tornado strength is lower at the edges
-            float const tornadoDepth =
-                (1.0f - LinearStep(0.97f, 1.0f, rn))
-                * (1.0f - LinearStep(args.Size.height, effectiveHeight, (p.y - effectiveBottom)));
-
-            //
-            // 1. Cheat: weaken structures; simulates 3D forces pulling structures towards the camera or away
-            //
-
-            if (!mPoints.IsEphemeral(pointIndex))
+            if (std::fabsf(rn) <= 1.0f)
             {
-                // Delta-weakness to reach our target
-                float constexpr TargetWeakness = 0.12f;
-                float const deltaWeakness = TargetWeakness - mPoints.GetDecay(pointIndex);
+                float const m = mPoints.GetMass(pointIndex);
 
-                // How much we weaken depends on the strength of the point: the weaker, the more we weaken
-                float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.22f, mPoints.GetStrength(pointIndex));
+                // Tornado strength is lower at the edges
+                float const tornadoDepth =
+                    (1.0f - LinearStep(0.97f, 1.0f, rn))
+                    * (1.0f - LinearStep(args.Size.height, effectiveHeight, (p.y - effectiveBottom)));
 
-                float const newDecay = mPoints.GetDecay(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth * args.StrengthMultiplier;
+                //
+                // 1. Cheat: weaken structures; simulates 3D forces pulling structures towards the camera or away
+                //
 
-                mPoints.SetDecay(
+                if (!mPoints.IsEphemeral(pointIndex))
+                {
+                    // Delta-weakness to reach our target
+                    float constexpr TargetWeakness = 0.12f;
+                    float const deltaWeakness = TargetWeakness - mPoints.GetDecay(pointIndex);
+
+                    // How much we weaken depends on the strength of the point: the weaker, the more we weaken
+                    float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.22f, mPoints.GetStrength(pointIndex));
+
+                    float const newDecay = mPoints.GetDecay(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth * args.StrengthMultiplier;
+
+                    mPoints.SetDecay(
+                        pointIndex,
+                        newDecay);
+                }
+
+                //
+                // 2. Apply forces
+                //
+
+                // Centripetal force, projected along the X axis
+                //
+                // For a circular orbit motion, the velocity, the radius, and the centripetal acceleration must satisfy:
+                //  V^2/R = |Ac|
+                //
+                // Fixing V and R, we have |Fc| = m*V^2/R
+                //
+                // We project this centripetal force to the x axis, as Fcx = Fc * cos(alpha),
+                // with alpha derivable from x as: alpha = PI/2 - PI/2 * x/R
+                // Thus, Fcx = |Fc| * sin(PI/2 - alpha) = |Fc| * sin(PI/2 * x/R)
+                //
+                //
+
+                float const cForceX =
+                    -m
+                    * effectiveOrbitV * effectiveOrbitV / effectiveRadius
+                    * std::sinf(Pi<float> / 2.0f * rn)
+                    * (1.0f - LinearStep(200.0f, 1500.0, m)) // Modulate with mass so to make more chaos
+                    * tornadoDepth;
+
+                // Updraft force
+                float const upForceY =
+                    m
+                    * effectiveUpwardForceMagnitude
+                    * (1.0f - LinearStep(550.0f, 2000.0, m)) // Less emphasis on heavier materials
+                    * tornadoDepth;
+
+                //
+                // Final force
+                //
+
+                vec2f const tornadoForce = vec2f(
+                    cForceX,
+                    upForceY);
+
+                mPoints.AddStaticForce(
                     pointIndex,
-                    newDecay);
+                    tornadoForce);
+
+                //
+                // Heat
+                //
+
+                // Calc temperature delta
+                // T = Q/HeatCapacity
+                float deltaT =
+                    effectiveHeatQuantity
+                    * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
+
+                // Increase/lower temperature
+                mPoints.SetTemperature(
+                    pointIndex,
+                    mPoints.GetTemperature(pointIndex) + deltaT);
+
+                hasActed = true;
             }
-
-            //
-            // 2. Apply forces
-            //
-
-            // Centripetal force, projected along the X axis
-            //
-            // For a circular orbit motion, the velocity, the radius, and the centripetal acceleration must satisfy:
-            //  V^2/R = |Ac|
-            //
-            // Fixing V and R, we have |Fc| = m*V^2/R
-            //
-            // We project this centripetal force to the x axis, as Fcx = Fc * cos(alpha),
-            // with alpha derivable from x as: alpha = PI/2 - PI/2 * x/R
-            // Thus, Fcx = |Fc| * sin(PI/2 - alpha) = |Fc| * sin(PI/2 * x/R)
-            //
-            //
-
-            float const cForceX =
-                -m
-                * effectiveOrbitV * effectiveOrbitV / effectiveRadius // Precalculated by compiler
-                * std::sinf(Pi<float> / 2.0f * rn)
-                * (1.0f - LinearStep(200.0f, 1500.0, m)) // Modulate with mass so to make more chaos
-                * tornadoDepth;
-
-            // Updraft force
-            float const upForceY =
-                m
-                * effectiveUpwardForceMagnitude
-                * (1.0f - LinearStep(550.0f, 2000.0, m)) // Less emphasis on heavier materials
-                * tornadoDepth;
-
-            //
-            // Final force
-            //
-
-            vec2f const tornadoForce = vec2f(
-                cForceX,
-                upForceY);
-
-            mPoints.AddStaticForce(
-                pointIndex,
-                tornadoForce);
-
-            hasActed = true;
         }
     }
 

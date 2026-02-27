@@ -233,6 +233,7 @@ public:
     void ApplyTornado(
         vec2f const & bottomCenterPos,
         FloatSize const & size,
+        float bottomWidthFraction,
         float strengthMultiplier,
         float heatDepth);
 
@@ -458,16 +459,19 @@ private:
             {
                 vec2f BottomCenterPos;
                 FloatSize Size;
+                float BottomWidthFraction;
                 float StrengthMultiplier;
                 float HeatDepth;
 
                 TornadoArguments(
                     vec2f const & bottomCenterPos,
                     FloatSize const & size,
+                    float bottomWidthFraction,
                     float strengthMultiplier,
                     float heatDepth)
                     : BottomCenterPos(bottomCenterPos)
                     , Size(size)
+                    , BottomWidthFraction(bottomWidthFraction)
                     , StrengthMultiplier(strengthMultiplier)
                     , HeatDepth(heatDepth)
                 {
@@ -554,7 +558,7 @@ private:
 
     void ApplyAntiGravityField(Interaction::ArgumentsUnion::AntiGravityFieldArguments const & args, SimulationParameters const & simulationParameters);
 
-    void ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & args);
+    void ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & args, SimulationParameters const & simulationParameters);
 
 private:
 
