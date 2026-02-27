@@ -1073,14 +1073,16 @@ void Ship::ApplyTornado(
 void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & args)
 {
     // To make damage outside of the visible vortex
-    float constexpr ExtraSizeFraction = 1.8f; // MUCH wider
-    float const effectiveRadius = args.Size.width / 2.0f * ExtraSizeFraction;
+    float constexpr ExtraWidthFraction = 1.8f; // MUCH wider
+    float const effectiveRadius = args.Size.width / 2.0f * ExtraWidthFraction;
+    float constexpr ExtraHeightFraction = 1.1f;
+    float const effectiveHeight = args.Size.height * ExtraHeightFraction;
 
     // Quick checks on vortex AABB
     float const centerX = args.BottomCenterPos.x;
     float const effectiveLeft = centerX - effectiveRadius;
     float const effectiveRight = centerX + effectiveRadius;
-    float const effectiveTop = args.BottomCenterPos.y + args.Size.height;
+    float const effectiveTop = args.BottomCenterPos.y + effectiveHeight;
     float const effectiveBottom = args.BottomCenterPos.y;
 
     // The magnitude V of the particle velocity in the vortex is of our choice (rendering / shader syncs to it);
@@ -1105,8 +1107,9 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
             assert(std::fabsf(rn) <= 1.0f);
 
             // Tornado strength is lower at the edges
-            float const tornadoDepth = 1.0f - LinearStep(0.97f, 1.0f, rn);
-            // TODO: incorporate flange on top
+            float const tornadoDepth =
+                (1.0f - LinearStep(0.97f, 1.0f, rn))
+                * (1.0f - LinearStep(args.Size.height, effectiveHeight, (p.y - effectiveBottom)));
 
             //
             // 1. Cheat: weaken structures; simulates 3D forces pulling structures towards the camera or away

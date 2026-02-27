@@ -62,9 +62,7 @@ void InteractiveBodies::Update(
         // Update tornado
         //
 
-        // TODOHERE: just set mAreTornadoesDirtyForRendering=true unconditionally, after all the tornado is alive
-
-        float constexpr ConvergenceThreshold = 0.001f;
+        float constexpr ConvergenceThreshold = 0.005f;
 
         // Reclaculate target velocity depending on distance from target
         float const distanceToTarget = tornado.TargetX - tornado.CurrentX;
@@ -88,7 +86,6 @@ void InteractiveBodies::Update(
             tornado.CurrentBaseY = CalculateTornadoBaseY(newCurrentX, oceanSurface);
 
             tornado.LastActivitySimulationTimestamp = currentSimulationTime;
-            mAreTornadoesDirtyForRendering = true;
         }
 
         // Calculate new base Y
@@ -99,8 +96,6 @@ void InteractiveBodies::Update(
             tornado.CurrentBaseY = newBaseY;
 
             // Does not count as activity
-
-            mAreTornadoesDirtyForRendering = true;
         }
 
         // Converge other quantities to their targets
@@ -112,8 +107,6 @@ void InteractiveBodies::Update(
             {
                 tornado.CurrentVisibilityAlpha = tornado.TargetVisibilityAlpha;
             }
-
-            mAreTornadoesDirtyForRendering = true;
         }
 
         if (tornado.CurrentForceMultiplier != tornado.TargetForceMultiplier)
@@ -125,7 +118,6 @@ void InteractiveBodies::Update(
             }
 
             tornado.LastActivitySimulationTimestamp = currentSimulationTime;
-            mAreTornadoesDirtyForRendering = true;
         }
 
         if (tornado.CurrentHeatDepth != tornado.TargetHeatDepth)
@@ -137,16 +129,13 @@ void InteractiveBodies::Update(
             }
 
             tornado.LastActivitySimulationTimestamp = currentSimulationTime;
-            mAreTornadoesDirtyForRendering = true;
         }
 
         //
-        // Check whether it's been enough idle to start disappearing
+        // Check whether it's been idle enough to start disappearing
         //
 
-        // TODOTEST
-        //float constexpr IdleTimeoutSimSeconds = 3.0f;
-        float constexpr IdleTimeoutSimSeconds = 30.0f;
+        float constexpr IdleTimeoutSimSeconds = 10.0f;
         if (currentSimulationTime > tornado.LastActivitySimulationTimestamp + IdleTimeoutSimSeconds)
         {
             // Start disappearing
@@ -160,8 +149,6 @@ void InteractiveBodies::Update(
 
             // Remove it
             it = mTornadoes.erase(it);
-
-            mAreTornadoesDirtyForRendering = true;
         }
         else
         {
@@ -184,6 +171,9 @@ void InteractiveBodies::Update(
 
             ++it;
         }
+
+        // Unconditionally, a tornado has updated
+        mAreTornadoesDirtyForRendering = true;
     }
 }
 
