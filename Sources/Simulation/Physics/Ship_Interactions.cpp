@@ -1084,7 +1084,9 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
     float const effectiveBottom = args.BottomCenterPos.y;
 
     // The magnitude V of the particle velocity in the vortex is of our choice (synced to rendering / shader)
-    float const v = 30.0f * args.StrengthMultiplier;
+    //float const v = 30.0f * args.StrengthMultiplier;
+    // TODO: for mass-based multiplier
+    float const v = 45.0f * args.StrengthMultiplier;
 
     bool hasActed = false;
 
@@ -1124,7 +1126,7 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
                 // How much we weaken depends on the strength of the point: the weaker, the more we decay
                 //float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.06f, mPoints.GetStrength(pointIndex));
                 //float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.22f, mPoints.GetStrength(pointIndex));
-                float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.28f, mPoints.GetStrength(pointIndex));
+                float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.22f, mPoints.GetStrength(pointIndex));
 
                 float const newDecay = mPoints.GetDecay(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth;
 
@@ -1146,7 +1148,7 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
                 * tornadoDepth;
 
             // Updraft force
-            float constexpr UpwardForceMagnitude = 15.0f; // Magic, more than gravity
+            float constexpr UpwardForceMagnitude = 12.0f; // Magic, more than gravity
             float const upForceY =
                 m
                 * UpwardForceMagnitude
@@ -1155,9 +1157,16 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
 
             // Final force
 
+            // TODOTEST
+            // Randomize centripetal force with mass, so to make more chaos
+            float const multiplier1 = 1.0f - LinearStep(200.0f, 1500.0, m);
+            float const multiplier2 = 1.0f - LinearStep(400.0f, 2000.0, m);
+
             vec2f const tornadoForce = vec2f(
-                cForceX,
-                upForceY);
+                // TODOTEST
+                //cForceX,
+                cForceX * multiplier1,
+                upForceY * multiplier2);
 
             mPoints.AddStaticForce(
                 pointIndex,
