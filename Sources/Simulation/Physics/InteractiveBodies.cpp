@@ -110,7 +110,7 @@ void InteractiveBodies::Update(
 
         if (tornado.CurrentVisibilityAlpha != tornado.TargetVisibilityAlpha)
         {
-            tornado.CurrentVisibilityAlpha += (tornado.TargetVisibilityAlpha - tornado.CurrentVisibilityAlpha) * 0.02f;
+            tornado.CurrentVisibilityAlpha += (tornado.TargetVisibilityAlpha - tornado.CurrentVisibilityAlpha) * 0.015f;
             if (std::fabsf(tornado.TargetVisibilityAlpha - tornado.CurrentVisibilityAlpha) < ConvergenceThreshold)
             {
                 tornado.CurrentVisibilityAlpha = tornado.TargetVisibilityAlpha;
@@ -121,7 +121,7 @@ void InteractiveBodies::Update(
 
         if (tornado.CurrentForceMultiplier != tornado.TargetForceMultiplier)
         {
-            tornado.CurrentForceMultiplier += (tornado.TargetForceMultiplier - tornado.CurrentForceMultiplier) * 0.02f;
+            tornado.CurrentForceMultiplier += (tornado.TargetForceMultiplier - tornado.CurrentForceMultiplier) * 0.01f;
             if (std::fabsf(tornado.TargetForceMultiplier - tornado.CurrentForceMultiplier) < ConvergenceThreshold)
             {
                 tornado.CurrentForceMultiplier = tornado.TargetForceMultiplier;
@@ -133,7 +133,7 @@ void InteractiveBodies::Update(
 
         if (tornado.CurrentHeatDepth != tornado.TargetHeatDepth)
         {
-            tornado.CurrentHeatDepth += (tornado.TargetHeatDepth - tornado.CurrentHeatDepth) * 0.02f;
+            tornado.CurrentHeatDepth += (tornado.TargetHeatDepth - tornado.CurrentHeatDepth) * 0.01f;
             if (std::fabsf(tornado.TargetHeatDepth - tornado.CurrentHeatDepth) < ConvergenceThreshold)
             {
                 tornado.CurrentHeatDepth = tornado.TargetHeatDepth;
