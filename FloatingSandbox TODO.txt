@@ -962,8 +962,9 @@
 				- 1. Calculate strength (closed region around x)
 					- Takes tornado size from Tornado
 				- 2. Weaken strength of springs (goal: weak parts detach sooner or later)
-					- Make sure Repair can fix it
-						- One way is decay
+					- Make separate facility for AdditionalWeakness
+						- Make sure Repair can fix it
+						- Make sure anything else that "adjusts" (changes decay up, but not scrub) fixes it
 				- 3. Apply forces 
 					! The particle must rotate around the axis of the vortex, in a horizontal plane perpendicular to the screen
 					! The magnitude V of its velocity is of our choice (synced to rendering/shader), depending on r (max at r=VortexWidth/2, 0 at r=0)
@@ -973,6 +974,7 @@
 					- X: m * V^2/r*cos(x)
 					- Y: upwards, a bit
 					- Write all the above as comments
+				- 4. Apply hear
 				- NPCs: only Free NPCs!
 			= WorldRenderContext:
 				+ VertexAttributes:
@@ -986,9 +988,10 @@
 						- For height, take into account Perlin - try to avoid repetitions
 						- Will have to adjust smoke and fire resolution in shader
 				- Shader
-			+ Tool
+			- Tool
 				+ Cursor (up, down)
 					+ Anchors
+				- Notification @ yLevel=0 (StartY)
 
 			- Impact on OceanSurface
 				- Beware of feedback loops
@@ -996,8 +999,7 @@
 			- Sound
 				- TODOHERE: to spec
 
-			- Do we want notification @ tool to know where's ylevel=0?
-			- If we decide to stay with 1 tornado, change BeingPlace algo to always pick it if alive
+			- If we decide to stay with 1 tornado, change BeginPlace algo to always pick it if alive
 
 			- Test:
 				- BeingPlaceAntiGravityField: we've changed to closest

@@ -1073,7 +1073,7 @@ void Ship::ApplyTornado(
 void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & args)
 {
     // To make damage outside of the visible vortex
-    float constexpr ExtraSizeFraction = 1.3f;
+    float constexpr ExtraSizeFraction = 1.75f; // MUCH wider
     float const effectiveRadius = args.Size.width / 2.0f * ExtraSizeFraction;
 
     // Quick checks on vortex AABB
@@ -1104,17 +1104,29 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
             float const tornadoDepth = 1.0f - LinearStep(0.95f, 1.0f, rn);
 
             //
-            // 1. Cheat: weaken structures
+            // 1. Cheat: weaken structures; simulates 3D forces pulling structures towards the camera or away
             //
 
             if (!mPoints.IsEphemeral(pointIndex))
             {
-                // TODO: try using strength of point as a stick
+                // TODOTEST: try using strength of point as a stick
 
-                float constexpr TargetDecay = 0.1f;
-                float const newDecay =
-                    mPoints.GetDecay(pointIndex)
-                    + (TargetDecay - mPoints.GetDecay(pointIndex)) * 0.02f;
+                ////float constexpr TargetDecay = 0.1f;
+                ////float const newDecay =
+                ////    mPoints.GetDecay(pointIndex)
+                ////    + (TargetDecay - mPoints.GetDecay(pointIndex)) * 0.02f;
+
+                float constexpr TargetWeakness = 0.12f;
+
+                // Delta-weakness to reach our target
+                float const deltaWeakness = TargetWeakness - mPoints.GetDecay(pointIndex);
+
+                // How much we weaken depends on the strength of the point: the weaker, the more we decay
+                //float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.06f, mPoints.GetStrength(pointIndex));
+                //float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.22f, mPoints.GetStrength(pointIndex));
+                float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.28f, mPoints.GetStrength(pointIndex));
+
+                float const newDecay = mPoints.GetDecay(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth;
 
                 mPoints.SetDecay(
                     pointIndex,
@@ -1141,22 +1153,7 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
                 * tornadoDepth
                 * args.StrengthMultiplier;
 
-            //// TODOTEST: opposite of gravity + delta required to accelerate to target wished constant vertical speed,
-            //// but destructs structure too early and it's too predictable
-            //// Force required to achieve UpwardVelocity
-            //float constexpr UpwardVelocity = 5.0f; // Magic
-            //float const upForceForVelocity =
-            //    m
-            //    / SimulationParameters::SimulationStepTimeDuration<float>
-            //    * (UpwardVelocity - mPoints.GetVelocity(pointIndex).y);
-
-            //// Force required to nullify gravity
-            //float const upForceForGravity = m * SimulationParameters::GravityMagnitude;
-
-            //float const upForceY =
-            //    (upForceForVelocity + upForceForGravity)
-            //    * tornadoDepth
-            //    * args.StrengthMultiplier;
+            // Final force
 
             vec2f const tornadoForce = vec2f(
                 cForceX,

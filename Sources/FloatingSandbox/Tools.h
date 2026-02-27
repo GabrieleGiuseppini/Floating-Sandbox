@@ -2508,7 +2508,7 @@ public:
             // Calculate screen deltaY
             float const screenDeltaY = static_cast<float>(inputState.MousePosition.y - mEngagementData->StartScreenY);
 
-            // Calculate multiplier (1.0 @ center of screen, 2.0 @ top/bottom of screen)
+            // Calculate multiplier (1.0 @ origin Y, 2.0 @ half screen height away, 3.0f max)
             float multiplier = 1.0f + std::abs(screenDeltaY) / static_cast<float>(mGameController.GetCanvasLogicalSize().height / 2);
 
             mGameController.UpdateTornado(
