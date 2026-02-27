@@ -1128,7 +1128,7 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
                 //float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.22f, mPoints.GetStrength(pointIndex));
                 float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.22f, mPoints.GetStrength(pointIndex));
 
-                float const newDecay = mPoints.GetDecay(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth;
+                float const newDecay = mPoints.GetDecay(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth * args.StrengthMultiplier;
 
                 mPoints.SetDecay(
                     pointIndex,
@@ -1160,7 +1160,7 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
             // TODOTEST
             // Randomize centripetal force with mass, so to make more chaos
             float const multiplier1 = 1.0f - LinearStep(200.0f, 1500.0, m);
-            float const multiplier2 = 1.0f - LinearStep(400.0f, 2000.0, m);
+            float const multiplier2 = 1.0f - LinearStep(600.0f, 2000.0, m);
 
             vec2f const tornadoForce = vec2f(
                 // TODOTEST
