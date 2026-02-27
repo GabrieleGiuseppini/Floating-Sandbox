@@ -1097,7 +1097,7 @@ void Ship::ApplyTornado(
 
     // The quantity of heat; Q = q*dt
     float const effectiveHeatQuantity =
-        1000.0f * 1000.0f // Joule
+        500.0f * 1000.0f // Joule
         * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f)
         * SimulationParameters::SimulationStepTimeDuration<float>
         * args.HeatDepth
@@ -1125,12 +1125,12 @@ void Ship::ApplyTornado(
                     (1.0f - LinearStep(0.97f, 1.0f, rn))
                     * (1.0f - LinearStep(args.Size.height, effectiveHeight, (p.y - effectiveBottom)));
 
-                //
-                // 1. Cheat: weaken structures; simulates 3D forces pulling structures towards the camera or away
-                //
-
                 if (!mPoints.IsEphemeral(pointIndex))
                 {
+                    //
+                    // 1. Weaken structures; simulates 3D forces pulling structures towards the camera or away from it
+                    //
+
                     // Delta-weakness to reach our target
                     float constexpr TargetWeakness = 0.12f;
                     float const deltaWeakness = TargetWeakness - mPoints.GetDecay(pointIndex);
@@ -1138,11 +1138,24 @@ void Ship::ApplyTornado(
                     // How much we weaken depends on the strength of the point: the weaker, the more we weaken
                     float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.22f, mPoints.GetStrength(pointIndex));
 
-                    float const newDecay = mPoints.GetDecay(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth * args.StrengthMultiplier;
-
                     mPoints.SetDecay(
                         pointIndex,
-                        newDecay);
+                        mPoints.GetDecay(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth * args.StrengthMultiplier);
+
+                    //
+                    // Heat
+                    //
+
+                    // Calc temperature delta
+                    // T = Q/HeatCapacity
+                    float deltaT =
+                        effectiveHeatQuantity
+                        * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
+
+                    // Increase/lower temperature
+                    mPoints.SetTemperature(
+                        pointIndex,
+                        mPoints.GetTemperature(pointIndex) + deltaT);
                 }
 
                 //
@@ -1187,21 +1200,6 @@ void Ship::ApplyTornado(
                 mPoints.AddStaticForce(
                     pointIndex,
                     tornadoForce);
-
-                //
-                // Heat
-                //
-
-                // Calc temperature delta
-                // T = Q/HeatCapacity
-                float deltaT =
-                    effectiveHeatQuantity
-                    * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
-
-                // Increase/lower temperature
-                mPoints.SetTemperature(
-                    pointIndex,
-                    mPoints.GetTemperature(pointIndex) + deltaT);
 
                 hasActed = true;
             }

@@ -749,7 +749,7 @@ struct SimulationParameters
     static float constexpr MaxAntiGravityFieldAccelerationAdjustment = 10.0f;
 
     static float constexpr TornadoHeight = 200.0f; // m
-    static float constexpr TornadoWidth = 50.0f; // m
+    static float constexpr TornadoWidth = 100.0f; // m
 
     bool IsUltraViolentMode;
 

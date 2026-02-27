@@ -102,7 +102,7 @@ void InteractiveBodies::Update(
 
         if (tornado.CurrentVisibilityAlpha != tornado.TargetVisibilityAlpha)
         {
-            tornado.CurrentVisibilityAlpha += (tornado.TargetVisibilityAlpha - tornado.CurrentVisibilityAlpha) * 0.015f;
+            tornado.CurrentVisibilityAlpha += (tornado.TargetVisibilityAlpha - tornado.CurrentVisibilityAlpha) * 0.01f;
             if (std::fabsf(tornado.TargetVisibilityAlpha - tornado.CurrentVisibilityAlpha) < ConvergenceThreshold)
             {
                 tornado.CurrentVisibilityAlpha = tornado.TargetVisibilityAlpha;
@@ -200,16 +200,11 @@ void InteractiveBodies::Upload(RenderContext & renderContext) const
 
         for (auto const & tornado : mTornadoes)
         {
-            float const rotationSpeedMultiplier =
-                1.0f
-                * tornado.CurrentForceMultiplier
-                * tornado.CurrentVisibilityAlpha;
-
             renderContext.UploadTornado(
                 vec2f(tornado.CurrentX, tornado.CurrentBaseY),
                 CalculateTornadoEffectiveSize(tornado.CurrentVisibilityAlpha),
                 CalculateTornadoBottomWidthFraction(tornado.CurrentVisibilityAlpha),
-                rotationSpeedMultiplier,
+                tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha,
                 tornado.CurrentHeatDepth,
                 tornado.CurrentVisibilityAlpha);
         }
@@ -499,13 +494,18 @@ float InteractiveBodies::CalculateTornadoBaseY(
 FloatSize InteractiveBodies::CalculateTornadoEffectiveSize(float visibilityAlpha)
 {
     return FloatSize(
-        SimulationParameters::TornadoWidth * (0.2f + 0.8F * visibilityAlpha),
+        // TODOTEST
+        //SimulationParameters::TornadoWidth * (0.1f + 0.9f * visibilityAlpha),
+        SimulationParameters::TornadoWidth * (0.5f + 0.5f * visibilityAlpha),
         SimulationParameters::TornadoHeight);
 }
 
 float InteractiveBodies::CalculateTornadoBottomWidthFraction(float visibilityAlpha)
 {
-    return 0.2f * visibilityAlpha;
+    // TODOTEST
+    //return 0.2f * visibilityAlpha;
+    (void)visibilityAlpha;
+    return 0.0f;
 }
 
 }

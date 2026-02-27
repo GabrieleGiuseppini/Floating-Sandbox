@@ -35,7 +35,6 @@ in vec2 noiseOffset;
 
 // The textures
 uniform sampler2D paramNoiseTexture;
-uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 
 //
 // Loosely based on "Flame in the Wind" by kuvkar (https://www.shadertoy.com/view/4tXXRn)

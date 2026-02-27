@@ -147,6 +147,15 @@ void GlobalRenderContext::InitializeGenericTextures()
         fireAtlasFrameMetadata.TextureSpaceWidth - atlasPixelDx.x * 2.0f,
         fireAtlasFrameMetadata.TextureSpaceHeight - atlasPixelDx.y * 2.0f);
 
+    // Set flame tile coords
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Tornado>();
+    // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR in atlas)
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Tornado, GameShaderSets::ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates>(
+        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasPixelDx);
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Tornado, GameShaderSets::ProgramParameterKind::AtlasTile1Size>(
+        fireAtlasFrameMetadata.TextureSpaceWidth - atlasPixelDx.x * 2.0f,
+        fireAtlasFrameMetadata.TextureSpaceHeight - atlasPixelDx.y * 2.0f);
+
     //
     // Create generic mipmapped texture atlas
     //

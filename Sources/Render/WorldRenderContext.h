@@ -810,7 +810,7 @@ public:
         vec2f const & bottomCenterPos,
         FloatSize const & size,
         float bottomWidthFraction,
-        float rotationSpeedMultiplier,
+        float strengthMultiplier,
         float heatDepth, // 0..1
         float visibilityAlpha) // 0..1
     {
@@ -819,18 +819,18 @@ public:
         // TopLeft
         mTornadoVertexBuffer.emplace_back(
             bottomCenterPos + vec2f(-size.width / 2.0f, size.height),
-            vec2f(0.0, 1.0f),
+            vec2f(-1.0, 1.0f),
             bottomWidthFraction,
-            rotationSpeedMultiplier,
+            strengthMultiplier,
             heatDepth,
             visibilityAlpha);
 
         // BottomLeft
         mTornadoVertexBuffer.emplace_back(
             bottomCenterPos + vec2f(-size.width / 2.0f, 0.0f),
-            vec2f(0.0, 0.0f),
+            vec2f(-1.0, 0.0f),
             bottomWidthFraction,
-            rotationSpeedMultiplier,
+            strengthMultiplier,
             heatDepth,
             visibilityAlpha);
 
@@ -839,7 +839,7 @@ public:
             bottomCenterPos + vec2f(size.width / 2.0f, size.height),
             vec2f(1.0, 1.0f),
             bottomWidthFraction,
-            rotationSpeedMultiplier,
+            strengthMultiplier,
             heatDepth,
             visibilityAlpha);
 
@@ -848,7 +848,7 @@ public:
             bottomCenterPos + vec2f(size.width / 2.0f, 0.0f),
             vec2f(1.0, 0.0f),
             bottomWidthFraction,
-            rotationSpeedMultiplier,
+            strengthMultiplier,
             heatDepth,
             visibilityAlpha);
     }
@@ -1320,7 +1320,7 @@ private:
         vec2f position;
         vec2f tornadoSpaceCoords;
         float bottomWidthFraction;
-        float rotationSpeedMultiplier;
+        float strengthMultiplier;
         float heatDepth;
         float visibilityAlpha;
 
@@ -1328,13 +1328,13 @@ private:
             vec2f _position,
             vec2f _tornadoSpaceCoords,
             float _bottomWidthFraction,
-            float _rotationSpeedMultiplier,
+            float _strengthMultiplier,
             float _heatDepth,
             float _visibilityAlpha)
             : position(_position)
             , tornadoSpaceCoords(_tornadoSpaceCoords)
             , bottomWidthFraction(_bottomWidthFraction)
-            , rotationSpeedMultiplier(_rotationSpeedMultiplier)
+            , strengthMultiplier(_strengthMultiplier)
             , heatDepth(_heatDepth)
             , visibilityAlpha(_visibilityAlpha)
         {

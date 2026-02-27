@@ -1167,7 +1167,7 @@ public:
         vec2f const & bottomCenterPos,
         FloatSize const & size,
         float bottomWidthFraction,
-        float rotationSpeedMultiplier,
+        float strengthMultiplier,
         float heatDepth, // 0..1
         float visibilityAlpha) // 0..1
     {
@@ -1175,7 +1175,7 @@ public:
             bottomCenterPos,
             size,
             bottomWidthFraction,
-            rotationSpeedMultiplier,
+            strengthMultiplier,
             heatDepth,
             visibilityAlpha);
     }

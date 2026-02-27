@@ -996,7 +996,15 @@
 						+ Width and height are in SimulationParameters, so can be used by physics
 						- For height, take into account Perlin - try to avoid repetitions
 						- Will have to adjust smoke and fire resolution in shader
-				- Shader
+				= Shader
+					+ Pass coords of fire atlas frame in params
+					+ EffectiveAmbientLightIntensity
+					- Test:
+						- Ambient light
+						- Lamp
+						- Moonlight
+
+					- Unrelated: see if Ship::ApplySkyChanges is even needed, given that we set param in all shaders
 
 				- Draw 2 passes
 					- Second time around shader gets IsSecondaryRendering parameter set to 1.0
@@ -1006,7 +1014,9 @@
 						- IsSecondaryRendering=0.0:
 							finalAlpha = whateverAlpha
 
-			- Soften jumping up and down with OceanSurface?
+			- Fix visibility growth at Tornado::Update: too fast
+			- Soften jumping up and down with OceanSurface
+				- TODOHERE
 
 			- Tool
 				+ Cursor (up, down)
