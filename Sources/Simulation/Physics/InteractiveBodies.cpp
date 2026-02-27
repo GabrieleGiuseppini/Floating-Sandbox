@@ -95,16 +95,13 @@ void InteractiveBodies::Update(
         float const newBaseY = CalculateTornadoBaseY(tornado.CurrentX, oceanSurface);
         if (newBaseY != tornado.CurrentBaseY)
         {
+            // Set new base Y
             tornado.CurrentBaseY = newBaseY;
 
             // Does not count as activity
 
             mAreTornadoesDirtyForRendering = true;
         }
-
-        tornado.LastActivitySimulationTimestamp = currentSimulationTime;
-        mAreTornadoesDirtyForRendering = true;
-
 
         // Converge other quantities to their targets
 

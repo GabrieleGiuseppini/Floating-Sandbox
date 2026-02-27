@@ -1085,7 +1085,6 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
 
     // The magnitude V of the particle velocity in the vortex is of our choice (rendering / shader syncs to it);
     // high enough to cause breakages
-    //float const v = 45.0f * args.StrengthMultiplier;
     float const v = 40.0f * args.StrengthMultiplier;
 
     // The magnitude of the upward force; magic, and more than gravity
@@ -1107,6 +1106,7 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
 
             // Tornado strength is lower at the edges
             float const tornadoDepth = 1.0f - LinearStep(0.97f, 1.0f, rn);
+            // TODO: incorporate flange on top
 
             //
             // 1. Cheat: weaken structures; simulates 3D forces pulling structures towards the camera or away
@@ -1118,7 +1118,7 @@ void Ship::ApplyTornado(Interaction::ArgumentsUnion::TornadoArguments const & ar
                 float constexpr TargetWeakness = 0.12f;
                 float const deltaWeakness = TargetWeakness - mPoints.GetDecay(pointIndex);
 
-                // How much we weaken depends on the strength of the point: the weaker, the more we decay
+                // How much we weaken depends on the strength of the point: the weaker, the more we weaken
                 float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.22f, mPoints.GetStrength(pointIndex));
 
                 float const newDecay = mPoints.GetDecay(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth * args.StrengthMultiplier;
