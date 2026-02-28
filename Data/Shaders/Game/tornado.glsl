@@ -74,9 +74,13 @@ void main()
     
     // Noise
     
-    #define VORTEX_SPEED 1.4
-    #define SMOKE_NOISE_RESOLUTION_X 0.15 * 1.0
-    #define SMOKE_NOISE_RESOLUTION_Y 0.2 * 4.0
+    //#define VORTEX_SPEED 3.9
+    #define VORTEX_SPEED 0.9
+    //#define SMOKE_NOISE_RESOLUTION_X 1.0
+    //#define SMOKE_NOISE_RESOLUTION_Y 2.0
+    #define SMOKE_NOISE_RESOLUTION_X 0.15 * 2.
+    #define SMOKE_NOISE_RESOLUTION_Y 0.2 * 8.
+
     float nx = asin(contortedVertexSpaceCoords.x / width) * width;
     float nxt = paramSimulationTime * VORTEX_SPEED;
     

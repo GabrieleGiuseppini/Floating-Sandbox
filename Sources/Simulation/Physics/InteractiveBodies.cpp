@@ -13,8 +13,12 @@
 
 namespace Physics {
 
-InteractiveBodies::InteractiveBodies()
-    : mAntiGravityFields()
+InteractiveBodies::InteractiveBodies(
+    World & parentWorld,
+    SimulationEventDispatcher & simulationEventDispatcher)
+    : mParentWorld(parentWorld)
+    , mSimulationEventHandler(simulationEventDispatcher)
+    , mAntiGravityFields()
     , mAreAntiGravityFieldsDirtyForRendering(true) // Force first upload
     , mTornadoes()
     , mAreTornadoesDirtyForRendering(true) // Force first upload
@@ -62,7 +66,7 @@ void InteractiveBodies::Update(
         // Update tornado
         //
 
-        float constexpr ConvergenceThreshold = 0.005f;
+        float constexpr ConvergenceThreshold = 0.008f;
 
         // Reclaculate target velocity depending on distance from target
         float const distanceToTarget = tornado.TargetX - tornado.CurrentX;
@@ -102,10 +106,31 @@ void InteractiveBodies::Update(
 
         if (tornado.CurrentVisibilityAlpha != tornado.TargetVisibilityAlpha)
         {
-            tornado.CurrentVisibilityAlpha += (tornado.TargetVisibilityAlpha - tornado.CurrentVisibilityAlpha) * 0.01f;
-            if (std::fabsf(tornado.TargetVisibilityAlpha - tornado.CurrentVisibilityAlpha) < ConvergenceThreshold)
+            if (tornado.TargetVisibilityAlpha > tornado.CurrentVisibilityAlpha)
             {
-                tornado.CurrentVisibilityAlpha = tornado.TargetVisibilityAlpha;
+                // Becoming visible
+
+                // We like lingering at low alpha for long, jumping up to destination only late
+
+                tornado.CurrentVisibilityAlpha += 0.015f * std::max(tornado.CurrentVisibilityAlpha, 0.015f);
+                if (tornado.CurrentVisibilityAlpha > tornado.CurrentVisibilityAlpha)
+                {
+                    tornado.CurrentVisibilityAlpha = tornado.TargetVisibilityAlpha;
+                }
+
+                tornado.LastActivitySimulationTimestamp = currentSimulationTime; // Start counting idle from now
+            }
+            else
+            {
+                // Becoming invisible
+
+                // We like the long tail
+
+                tornado.CurrentVisibilityAlpha += (tornado.TargetVisibilityAlpha - tornado.CurrentVisibilityAlpha) * 0.01f;
+                if (std::fabsf(tornado.TargetVisibilityAlpha - tornado.CurrentVisibilityAlpha) < ConvergenceThreshold)
+                {
+                    tornado.CurrentVisibilityAlpha = tornado.TargetVisibilityAlpha;
+                }
             }
         }
 
@@ -135,7 +160,7 @@ void InteractiveBodies::Update(
         // Check whether it's been idle enough to start disappearing
         //
 
-        float constexpr IdleTimeoutSimSeconds = 15.0f;
+        float constexpr IdleTimeoutSimSeconds = 20.0f;
         if (currentSimulationTime > tornado.LastActivitySimulationTimestamp + IdleTimeoutSimSeconds)
         {
             // Start disappearing

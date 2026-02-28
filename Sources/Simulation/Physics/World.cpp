@@ -30,7 +30,7 @@ World::World(
     , mStorm(*this, mSimulationEventHandler)
     , mWind(mSimulationEventHandler)
     , mClouds()
-    , mInteractiveBodies()
+    , mInteractiveBodies(*this, mSimulationEventHandler)
     , mOceanSurface(*this, mSimulationEventHandler)
     , mOceanFloor(std::move(oceanFloorHeightMap))
     , mFishes(fishSpeciesDatabase, mSimulationEventHandler)

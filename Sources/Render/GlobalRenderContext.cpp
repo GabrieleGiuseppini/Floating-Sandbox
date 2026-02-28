@@ -361,7 +361,7 @@ void GlobalRenderContext::RegeneratePerlin_4_32_043_Noise()
 void GlobalRenderContext::RegeneratePerlin_8_1024_073_Noise()
 {
     mPerlinNoise_8_1024_073_ToUpload = MakePerlinNoise(
-        IntegralRectSize(256, 256),
+        IntegralRectSize(1024, 1024), // Higher res, as this is also used for e.g. tornadoes
         8,
         1024,
         0.73f);

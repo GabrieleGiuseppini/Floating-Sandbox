@@ -21,7 +21,9 @@ class InteractiveBodies final
 {
 public:
 
-    InteractiveBodies();
+    InteractiveBodies(
+        World & parentWorld,
+        SimulationEventDispatcher & simulationEventDispatcher);
 
     void Update(
         std::vector<std::unique_ptr<Ship>> const & ships,
@@ -82,6 +84,9 @@ public:
     static inline float CalculateTornadoBottomWidthFraction(float visibilityAlpha);
 
 private:
+
+    World & mParentWorld;
+    SimulationEventDispatcher & mSimulationEventHandler;
 
     template<typename T>
     auto FindBodyById(ElementIndex id, std::vector<T> & bodies)

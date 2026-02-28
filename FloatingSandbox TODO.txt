@@ -994,8 +994,8 @@
 				= Upload:
 					= Calculate simple quad, width and height fixed
 						+ Width and height are in SimulationParameters, so can be used by physics
-						- For height, take into account Perlin - try to avoid repetitions
-						- Will have to adjust smoke and fire resolution in shader
+						+ For height, take into account Perlin - try to avoid repetitions
+						= Will have to adjust smoke and fire resolution in shader
 				= Shader
 					+ Pass coords of fire atlas frame in params
 					+ EffectiveAmbientLightIntensity
@@ -1014,7 +1014,6 @@
 						- IsSecondaryRendering=0.0:
 							finalAlpha = whateverAlpha
 
-			- Fix visibility growth at Tornado::Update: too fast
 			- Soften jumping up and down with OceanSurface
 				- TODOHERE
 
