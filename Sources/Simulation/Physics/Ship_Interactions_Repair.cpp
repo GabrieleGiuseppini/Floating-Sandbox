@@ -851,6 +851,17 @@ bool Ship::RepairFromAttractor(
                         attracteePointIndex,
                         attracteeDecay + (1.0f - attracteeDecay) / 2.0f);
 
+                    // Halve the weakness of both endpoints, to prevent newly-repaired
+                    // weakened particles from crumbling again
+                    float const attractorWeakness = mPoints.GetAdditionalWeakness(attractorPointIndex);
+                    mPoints.SetAdditionalWeakness(
+                        attractorPointIndex,
+                        attractorWeakness + (1.0f - attractorWeakness) / 2.0f);
+                    float const attracteeWeakness = mPoints.GetAdditionalWeakness(attracteePointIndex);
+                    mPoints.SetAdditionalWeakness(
+                        attracteePointIndex,
+                        attracteeWeakness + (1.0f - attracteeWeakness) / 2.0f);
+
                     // Restore the spring's rest length to its factory value
                     mSprings.SetRestLength(
                         fcs.SpringIndex,

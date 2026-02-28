@@ -957,16 +957,21 @@
 								+ ForceMultiplier is multiplied by viz
 						- Npcs::ApplyTornado(...)
 							+ ForceMultiplier is multiplied by viz
+						- OceanSurface
+							- Beware of feedback loops
+						- Fishes?
 				+ RenderUpload
-			+ Physics (ApplyTornado @Ship, @NPCs)
+			= Physics (ApplyTornado @Ship, @NPCs)
 				+ 1. Calculate strength (closed region around x)
 					+ Takes tornado size from Tornado
-				- 2. Weaken strength of springs (goal: weak parts detach sooner or later)
-					- Make separate facility for AdditionalWeakness
-						- And Points::m/Strength/Buffer becomes FactoryStrength
-						- Make sure Repair can fix it
-						- Make sure anything else that "adjusts" (changes decay up, but not scrub) fixes it
-				= 3. Apply forces 
+				= 2. Weaken strength of springs (goal: weak parts detach sooner or later)
+					+ Make separate facility for AdditionalWeakness
+						+ And Points::m/Strength/Buffer becomes FactoryStrength
+						+ Make sure Repair can fix it
+						+ Make sure anything else that "adjusts" (changes decay up, but not scrub) fixes it
+					- Test:
+						- Repair fixes it
+				+ 3. Apply forces 
 					! The particle must rotate around the axis of the vortex, in a horizontal plane perpendicular to the screen
 					! The magnitude V of its velocity is of our choice (synced to rendering/shader), depending on r (max at r=VortexWidth/2, 0 at r=0)
 					! Velocity projection along X axis is max at x=0 and 0 at x=+/-VortexWidth/2 - i.e. V*sin(x)
@@ -999,12 +1004,6 @@
 				= Shader
 					+ Pass coords of fire atlas frame in params
 					+ EffectiveAmbientLightIntensity
-					- Invert global alpha: it seems now darker "comes first" (during 0->1), while it should probably be opposite
-					- Test:
-						- Ambient light
-						- Lamp
-						- Moonlight
-
 					- Unrelated: see if Ship::ApplySkyChanges is even needed, given that we set param in all shaders
 
 				- Draw 2 passes
@@ -1015,6 +1014,12 @@
 						- IsSecondaryRendering=0.0:
 							finalAlpha = whateverAlpha
 
+				- Test:
+					- Ambient light
+					- Lamp
+					- Moonlight
+					- Land
+
 			- Soften jumping up and down with OceanSurface
 				- TODOHERE
 
@@ -1022,9 +1027,6 @@
 				+ Cursor (up, down)
 					+ Anchors
 				- Notification @ yLevel=0 (StartY)
-
-			- Impact on OceanSurface
-				- Beware of feedback loops
 
 			- Sound
 				- TODOHERE: to spec

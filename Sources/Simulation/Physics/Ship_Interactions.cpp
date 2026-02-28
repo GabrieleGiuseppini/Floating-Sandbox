@@ -1103,8 +1103,6 @@ void Ship::ApplyTornado(
         * args.HeatDepth
         * args.StrengthMultiplier;
 
-    bool hasActed = false;
-
     for (auto pointIndex : mPoints)
     {
         vec2f const & p = mPoints.GetPosition(pointIndex);
@@ -1133,14 +1131,14 @@ void Ship::ApplyTornado(
 
                     // Delta-weakness to reach our target
                     float constexpr TargetWeakness = 0.12f;
-                    float const deltaWeakness = TargetWeakness - mPoints.GetDecay(pointIndex);
+                    float const deltaWeakness = (TargetWeakness - mPoints.GetAdditionalWeakness(pointIndex)) * 0.1f; // Reach slowly
 
                     // How much we weaken depends on the strength of the point: the weaker, the more we weaken
-                    float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.22f, mPoints.GetStrength(pointIndex));
+                    float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.22f, mPoints.GetFactoryStrength(pointIndex));
 
-                    mPoints.SetDecay(
+                    mPoints.SetAdditionalWeakness(
                         pointIndex,
-                        mPoints.GetDecay(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth * args.StrengthMultiplier);
+                        mPoints.GetAdditionalWeakness(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth * args.StrengthMultiplier);
 
                     //
                     // Heat
@@ -1200,16 +1198,8 @@ void Ship::ApplyTornado(
                 mPoints.AddStaticForce(
                     pointIndex,
                     tornadoForce);
-
-                hasActed = true;
             }
         }
-    }
-
-    if (hasActed)
-    {
-        // Make sure the decay buffer gets uploaded again
-        mPoints.MarkDecayBufferAsDirty();
     }
 }
 

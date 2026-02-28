@@ -62,7 +62,7 @@ void Springs::Add(
 
     // Strength is average
     float const averageStrength =
-        (points.GetStrength(pointAIndex) + points.GetStrength(pointBIndex))
+        (points.GetFactoryStrength(pointAIndex) + points.GetFactoryStrength(pointBIndex))
         / 2.0f;
 
     // Melting temperature is average
@@ -524,10 +524,11 @@ void Springs::inline_UpdateCoefficients(
     // compared against the spring's absolute delta L without having to divide the delta L by the rest length
     //
 
-    // Decay of spring == avg of two endpoints' decay
-    float const springDecay =
-        (points.GetDecay(endpointAIndex) + points.GetDecay(endpointBIndex))
-        / 2.0f;
+    // Weakness of spring == avg of two endpoints' decay and additional weakness
+    float const springWeakness =
+        (points.GetDecay(endpointAIndex) + points.GetDecay(endpointBIndex)) / 2.0f
+        *
+        (points.GetAdditionalWeakness(endpointAIndex) + points.GetAdditionalWeakness(endpointBIndex)) / 2.0f;
 
     // If we're melting, the current spring length, when longer than the
     // previous rest length, is also its new rest length - but no more than a few times
@@ -547,7 +548,7 @@ void Springs::inline_UpdateCoefficients(
         GetMaterialStrength(springIndex)
         * mCurrentSpringStrengthAdjustment
         * mCurrentStrengthIterationsAdjustment
-        * springDecay
+        * springWeakness
         * GetRestLength(springIndex) // To make strain comparison independent from rest length
         * (1.0f + GetExtraMeltingInducedTolerance(springIndex) * meltDepthFraction); // When melting, springs are more tolerant to elongation
 }

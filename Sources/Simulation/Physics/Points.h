@@ -636,9 +636,10 @@ public:
         , mTransientAdditionalMassBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mFactoryStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mStressBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mAdditionalWeaknessBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIsDecayBufferDirty(true)
         , mPinningCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -1307,9 +1308,9 @@ public:
 
     void UpdateMasses(SimulationParameters const & simulationParameters);
 
-    float GetStrength(ElementIndex pointElementIndex) const
+    float GetFactoryStrength(ElementIndex pointElementIndex) const
     {
-        return mStrengthBuffer[pointElementIndex];
+        return mFactoryStrengthBuffer[pointElementIndex];
     }
 
     float GetStress(ElementIndex pointElementIndex) const
@@ -1344,6 +1345,18 @@ public:
     void MarkDecayBufferAsDirty()
     {
         mIsDecayBufferDirty = true;
+    }
+
+    float GetAdditionalWeakness(ElementIndex pointElementIndex) const
+    {
+        return mAdditionalWeaknessBuffer[pointElementIndex];
+    }
+
+    void SetAdditionalWeakness(
+        ElementIndex pointElementIndex,
+        float value)
+    {
+        mAdditionalWeaknessBuffer[pointElementIndex] = value;
     }
 
     bool IsPinned(ElementIndex pointElementIndex) const
@@ -2344,10 +2357,11 @@ private:
     Buffer<float> mTransientAdditionalMassBuffer; // Anything; total mass is slowly updated to include this. Reset at end of Update()
     Buffer<float> mMassBuffer; // Augmented + Transient + Water
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;
-    Buffer<float> mStrengthBuffer; // Immutable
+    Buffer<float> mFactoryStrengthBuffer; // Immutable
     Buffer<float> mStressBuffer; // -1.0 -> 1.0, only calculated (at springs) if rendering it
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
+    Buffer<float> mAdditionalWeaknessBuffer;
     Buffer<float> mPinningCoefficientBuffer; // 1.0: not pinned; 0.0f: pinned
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
     Buffer<OceanFloorBedrockCollisionFactors> mOceanFloorBedrockCollisionFactorsBuffer;

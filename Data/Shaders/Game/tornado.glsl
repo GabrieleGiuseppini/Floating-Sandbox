@@ -127,6 +127,9 @@ void main()
         1.0,
         vertexVisibilityAlpha);
 
+    // Darken with lower visibility - preventing white halo when alpha~=0
+    smokeColor2 *= vertexVisibilityAlpha;
+
     //
     // Fire
     //
