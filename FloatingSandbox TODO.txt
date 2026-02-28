@@ -957,9 +957,9 @@
 								+ ForceMultiplier is multiplied by viz
 						- Npcs::ApplyTornado(...)
 							+ ForceMultiplier is multiplied by viz
-						= OceanSurface
+						+ OceanSurface
 							X Ugly if continuous, should pulse?
-							- Beware of feedback loops
+							+ Beware of feedback loops
 						- Fishes?
 				+ RenderUpload
 			= Physics (ApplyTornado @Ship, @NPCs)
@@ -1034,6 +1034,8 @@
 					- Option 1:
 						- Up/down only affects strength multiplier
 						- Shift bumps up heat (only)
+
+						- Enlarge bottom of cone with strength multiplier (@Tornado)
 				- Notification @ yLevel=0 (StartY)
 
 			- Sound

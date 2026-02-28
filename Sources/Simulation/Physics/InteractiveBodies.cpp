@@ -197,10 +197,10 @@ void InteractiveBodies::Update(
             (void)npcs;
 
             // Ocean surface
-            // TODOTEST
+            float constexpr OceanSurfaceDisplacement = 5.0f;
             oceanSurface.DisplaceAt(
                 tornado.CurrentX,
-                3.0f * tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha);
+                OceanSurfaceDisplacement * tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha);
 
             ++it;
         }
