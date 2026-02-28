@@ -28,7 +28,7 @@ InteractiveBodies::InteractiveBodies(
 void InteractiveBodies::Update(
     std::vector<std::unique_ptr<Ship>> const & ships,
     Npcs & npcs,
-    OceanSurface const & oceanSurface,
+    OceanSurface & oceanSurface,
     float currentSimulationTime)
 {
     //
@@ -86,18 +86,17 @@ void InteractiveBodies::Update(
         if (newCurrentX != tornado.CurrentX)
         {
             // Move to projected position X
-            tornado.CurrentX = newCurrentX;
-            tornado.CurrentBaseY = CalculateTornadoBaseY(newCurrentX, oceanSurface);
+            tornado.CurrentX = Clamp(newCurrentX, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth);
 
             tornado.LastActivitySimulationTimestamp = currentSimulationTime;
         }
 
         // Calculate new base Y
-        float const newBaseY = CalculateTornadoBaseY(tornado.CurrentX, oceanSurface);
+        float const newBaseY = oceanSurface.GetHeightAt(tornado.CurrentX);
         if (newBaseY != tornado.CurrentBaseY)
         {
-            // Set new base Y
-            tornado.CurrentBaseY = newBaseY;
+            // Converge towards new base Y
+            tornado.CurrentBaseY += (newBaseY - tornado.CurrentBaseY) * 0.2f;
 
             // Does not count as activity
         }
@@ -160,9 +159,7 @@ void InteractiveBodies::Update(
         // Check whether it's been idle enough to start disappearing
         //
 
-        // TODOTEST
-        //float constexpr IdleTimeoutSimSeconds = 20.0f;
-        float constexpr IdleTimeoutSimSeconds = 40.0f;
+        float constexpr IdleTimeoutSimSeconds = 25.0f;
         if (currentSimulationTime > tornado.LastActivitySimulationTimestamp + IdleTimeoutSimSeconds)
         {
             // Start disappearing
@@ -183,6 +180,7 @@ void InteractiveBodies::Update(
             // Apply tornado
             //
 
+            // Ships
             for (auto & ship : ships)
             {
                 assert(ship);
@@ -194,8 +192,15 @@ void InteractiveBodies::Update(
                     tornado.CurrentHeatDepth);
             }
 
+            // Npcs
             // TODOHERE
             (void)npcs;
+
+            // Ocean surface
+            // TODOHERE
+            //oceanSurface.DisplaceAt(
+            //    tornado.CurrentX,
+            //    100.0f * tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha);
 
             ++it;
         }
@@ -408,6 +413,8 @@ ElementIndex InteractiveBodies::BeginPlaceTornado(
     OceanSurface const & oceanSurface,
     float currentSimulationTimestamp)
 {
+    posX = Clamp(posX, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth); // Safety
+
     ElementIndex newTornadoId = NoneElementIndex;
 
     // Search if there is one in radius, and pick the nearest
@@ -428,7 +435,7 @@ ElementIndex InteractiveBodies::BeginPlaceTornado(
         // Refresh this one
         mTornadoes[newTornadoId].ResetToBegin(
             posX,
-            CalculateTornadoBaseY(posX, oceanSurface),
+            oceanSurface.GetHeightAt(posX),
             currentSimulationTimestamp);
     }
     else
@@ -471,7 +478,7 @@ ElementIndex InteractiveBodies::BeginPlaceTornado(
         mTornadoes.emplace_back(
             newTornadoId,
             posX,
-            CalculateTornadoBaseY(posX, oceanSurface),
+            oceanSurface.GetHeightAt(posX),
             currentSimulationTimestamp);
     }
 
@@ -510,13 +517,6 @@ void InteractiveBodies::EndPlaceTornado(
 }
 
 //////////////////////////////////////////////////
-
-float InteractiveBodies::CalculateTornadoBaseY(
-    float posX,
-    OceanSurface const & oceanSurface)
-{
-    return oceanSurface.GetHeightAt(Clamp(posX, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth));
-}
 
 FloatSize InteractiveBodies::CalculateTornadoEffectiveSize(float visibilityAlpha)
 {

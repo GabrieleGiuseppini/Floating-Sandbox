@@ -950,14 +950,15 @@
 					+ If CurrentVisibilityAlpha==TargetVisibilityAlpha && TargetVisibilityAlpha==0.0:
 						+ assert currentSimulationTime > LastActivitySimulationTimestamp + IdleTimeout // Dangerous, might be in-use
 						+ Remove
-					- Else:
+					= Else:
 						+ // Apply						
-						- For each ship:
-							- ApplyTornado(...)
+						+ For each ship:
+							+ ApplyTornado(...)
 								+ ForceMultiplier is multiplied by viz
 						- Npcs::ApplyTornado(...)
 							+ ForceMultiplier is multiplied by viz
-						- OceanSurface
+						= OceanSurface
+							X Ugly if continuous, should pulse?
 							- Beware of feedback loops
 						- Fishes?
 				+ RenderUpload
@@ -991,6 +992,7 @@
 					+ Apply ultra-violent mode for both x and y forces, and heat
 						+ Incorporate in effective's
 				= 4. Apply heat
+					- Should application area be larger?
 				- NPCs: only Free NPCs!
 			= WorldRenderContext:
 				+ VertexAttributes:
@@ -1022,8 +1024,7 @@
 					- Moonlight
 					- Land
 
-			- Soften jumping up and down with OceanSurface
-				- TODOHERE
+			+ Soften jumping up and down with OceanSurface
 
 			- Tool
 				+ Cursor (up, down)

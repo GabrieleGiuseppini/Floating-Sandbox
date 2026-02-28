@@ -28,7 +28,7 @@ public:
     void Update(
         std::vector<std::unique_ptr<Ship>> const & ships,
         Npcs & npcs,
-        OceanSurface const & oceanSurface,
+        OceanSurface & oceanSurface,
         float currentSimulationTime);
 
     void Upload(RenderContext & renderContext) const;
@@ -74,10 +74,6 @@ public:
         float currentSimulationTime);
 
     ///
-
-    static inline float CalculateTornadoBaseY(
-        float posX,
-        OceanSurface const & oceanSurface);
 
     static inline FloatSize CalculateTornadoEffectiveSize(float visibilityAlpha);
 
