@@ -115,7 +115,7 @@ void main()
     
     // Apply ambient lighting
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);    
-    smokeColor = ApplyAmbientLight(
+    vec3 smokeColor2 = ApplyAmbientLight(
         smokeColor,
         paramEffectiveMoonlightColor,
         paramEffectiveAmbientLightIntensity,
@@ -123,7 +123,7 @@ void main()
     
     // Actual whole alpha; lighter areas go away first
     alpha = alpha * mix(
-        1.0 - linearstep(0., vertexVisibilityAlpha, 1.0 - smokeNoise * smokeNoise),
+        1.0 - linearstep(0., vertexVisibilityAlpha, smokeColor2.r * smokeColor2.r),
         1.0,
         vertexVisibilityAlpha);
 
@@ -183,6 +183,6 @@ void main()
     mask *= smokeColor.r;
 
     gl_FragColor = vec4(
-        mix(smokeColor, fireColor.rgb, mask * fireColor.a),
+        mix(smokeColor2, fireColor.rgb, mask * fireColor.a),
         alpha);
 }

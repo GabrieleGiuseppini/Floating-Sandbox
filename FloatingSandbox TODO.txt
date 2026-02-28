@@ -999,6 +999,7 @@
 				= Shader
 					+ Pass coords of fire atlas frame in params
 					+ EffectiveAmbientLightIntensity
+					- Invert global alpha: it seems now darker "comes first" (during 0->1), while it should probably be opposite
 					- Test:
 						- Ambient light
 						- Lamp
