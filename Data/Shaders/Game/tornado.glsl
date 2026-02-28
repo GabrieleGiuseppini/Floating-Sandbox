@@ -108,7 +108,10 @@ void main()
     alpha *= smoothstep(0.0, 1.0-0.99, contortedVertexSpaceCoords.y - 0.05 * smokeNoise);
     
     // Color
-    vec3 smokeColor = vec3(smokeNoise);
+    vec3 smokeColor = vec3(smokeNoise * 0.8); // On the darker side
+
+    // Modulate with strength
+    smokeColor *= 1. / vertexStrengthMultiplier;
     
     // Apply ambient lighting
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);    
