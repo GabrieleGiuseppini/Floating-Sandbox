@@ -43,7 +43,7 @@ void Ship::RepairAt(
     }
 
     //
-    // Pass 2: visit all points that had been attractors in the previous 2 step2
+    // Pass 2: visit all points that had been attractors in the previous 2 steps
     //
     // This is to prevent attractors and attractees from flipping roles during a session;
     // an attractor will continue to be an attractor until it needs reparation
@@ -99,6 +99,8 @@ void Ship::RepairAt(
     // b) (Partially) restore (in-radius) springs' rest lengths
     //
     // c) Restore (in-radius) electrical elements of repaired points
+    //
+    // d) (Partially) restore (in-radius) points' weakness
     //
 
     // Visit all (in-radius) non-ephemeral points
@@ -162,6 +164,15 @@ void Ship::RepairAt(
                 mElectricalElements.Restore(electricalElementIndex);
             }
         }
+
+        // d) (Partially) restore (in-radius) points' weakness
+        float const currentWeakness = mPoints.GetAdditionalWeakness(pointIndex);
+        float newWeakness = currentWeakness + (1.0f - currentWeakness) / 2.0f;
+        if (std::fabsf(1.0f - newWeakness) < 0.001f)
+            newWeakness = 1.0f;
+        mPoints.SetAdditionalWeakness(
+            pointIndex,
+            newWeakness);
     }
 
     //
@@ -851,17 +862,6 @@ bool Ship::RepairFromAttractor(
                         attracteePointIndex,
                         attracteeDecay + (1.0f - attracteeDecay) / 2.0f);
 
-                    // Halve the weakness of both endpoints, to prevent newly-repaired
-                    // weakened particles from crumbling again
-                    float const attractorWeakness = mPoints.GetAdditionalWeakness(attractorPointIndex);
-                    mPoints.SetAdditionalWeakness(
-                        attractorPointIndex,
-                        attractorWeakness + (1.0f - attractorWeakness) / 2.0f);
-                    float const attracteeWeakness = mPoints.GetAdditionalWeakness(attracteePointIndex);
-                    mPoints.SetAdditionalWeakness(
-                        attracteePointIndex,
-                        attracteeWeakness + (1.0f - attracteeWeakness) / 2.0f);
-
                     // Restore the spring's rest length to its factory value
                     mSprings.SetRestLength(
                         fcs.SpringIndex,
@@ -885,11 +885,12 @@ bool Ship::RepairFromAttractor(
                 }
 
                 //
-                // Dry the attractee, if we've messed with it
+                // Rehabilitate the attractee, if we've messed with it
                 //
 
                 if (hasAttracteeBeenMoved)
                 {
+                    // Dry
                     mPoints.SetWater(
                         attracteePointIndex,
                         mPoints.GetWater(attracteePointIndex) / 2.0f);

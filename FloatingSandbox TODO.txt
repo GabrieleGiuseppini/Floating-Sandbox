@@ -964,13 +964,13 @@
 			= Physics (ApplyTornado @Ship, @NPCs)
 				+ 1. Calculate strength (closed region around x)
 					+ Takes tornado size from Tornado
-				= 2. Weaken strength of springs (goal: weak parts detach sooner or later)
+				+ 2. Weaken strength of springs (goal: weak parts detach sooner or later)
 					+ Make separate facility for AdditionalWeakness
 						+ And Points::m/Strength/Buffer becomes FactoryStrength
 						+ Make sure Repair can fix it
 						+ Make sure anything else that "adjusts" (changes decay up, but not scrub) fixes it
-					- Test:
-						- Repair fixes it
+					+ Test:
+						+ Repair fixes it
 				+ 3. Apply forces 
 					! The particle must rotate around the axis of the vortex, in a horizontal plane perpendicular to the screen
 					! The magnitude V of its velocity is of our choice (synced to rendering/shader), depending on r (max at r=VortexWidth/2, 0 at r=0)
@@ -988,6 +988,8 @@
 						+ Interaction:
 							+ Still use AABB as a check, but recalc width for each particle (y)
 					+ Write all the above as comments
+					+ Apply ultra-violent mode for both x and y forces, and heat
+						+ Incorporate in effective's
 				= 4. Apply heat
 				- NPCs: only Free NPCs!
 			= WorldRenderContext:

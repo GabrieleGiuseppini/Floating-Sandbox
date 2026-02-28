@@ -1090,15 +1090,21 @@ void Ship::ApplyTornado(
 
     // The magnitude V of the particle velocity in the vortex is of our choice (rendering / shader syncs to it);
     // high enough to cause breakages
-    float const effectiveOrbitV = 40.0f * args.StrengthMultiplier;
+    float const effectiveOrbitV =
+        40.0f
+        * (simulationParameters.IsUltraViolentMode ? 2.0f : 1.0f)
+        * args.StrengthMultiplier;
 
     // The magnitude of the upward force; magic, and more than gravity
-    float const effectiveUpwardForceMagnitude = 12.0f * args.StrengthMultiplier;
+    float const effectiveUpwardForceMagnitude =
+        12.0f
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f)
+        * args.StrengthMultiplier;
 
     // The quantity of heat; Q = q*dt
     float const effectiveHeatQuantity =
         500.0f * 1000.0f // Joule
-        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f)
         * SimulationParameters::SimulationStepTimeDuration<float>
         * args.HeatDepth
         * args.StrengthMultiplier;

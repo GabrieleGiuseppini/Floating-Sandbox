@@ -121,12 +121,8 @@ void main()
         paramEffectiveAmbientLightIntensity,
         lampToolIntensity);
     
-    // Actual whole alpha; lighter areas go away first
-    alpha = alpha * mix(
-        1.0 - linearstep(0., vertexVisibilityAlpha, smokeColor2.r * smokeColor2.r),
-        1.0,
-        vertexVisibilityAlpha);
-
+    // Actual whole alpha
+    alpha = alpha * vertexVisibilityAlpha;
     // Darken with lower visibility - preventing white halo when alpha~=0
     smokeColor2 *= vertexVisibilityAlpha;
 
