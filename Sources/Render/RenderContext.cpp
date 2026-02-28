@@ -567,6 +567,9 @@ void RenderContext::Draw(float currentSimulationTime)
                 // Render ocean opaquely, over sky
                 mWorldRenderContext->RenderDrawOcean(true, renderParameters);
 
+                // Render tornadoes, in the background
+                mWorldRenderContext->RenderDrawTornadoes(DepthKindType::Background, renderParameters);
+
                 glEnable(GL_DEPTH_TEST); // Required by ships
 
                 for (auto const & ship : mShips)
@@ -590,7 +593,8 @@ void RenderContext::Draw(float currentSimulationTime)
 
                 mWorldRenderContext->RenderDrawAntiGravityFields(renderParameters);
 
-                mWorldRenderContext->RenderDrawTornadoes(renderParameters);
+                // Render tornadoes, in the foreground
+                mWorldRenderContext->RenderDrawTornadoes(DepthKindType::Foreground, renderParameters);
 
                 mWorldRenderContext->RenderDrawAMBombPreImplosions(renderParameters);
 

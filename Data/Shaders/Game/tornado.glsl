@@ -51,6 +51,7 @@ uniform vec2 paramAtlasTile1LeftBottomTextureCoordinates; // Inclusive of dead-c
 uniform vec2 paramAtlasTile1Size; // Inclusive of dead-center
 uniform float paramEffectiveAmbientLightIntensity;
 uniform vec3 paramEffectiveMoonlightColor;
+uniform float paramIsSecondaryRendering;
 uniform float paramSimulationTime;
 
 void main()
@@ -90,6 +91,8 @@ void main()
     
     // Perlin 1024
     float smokeNoise = texture2D(paramNoiseTexture, smokeNoiseCoords).r;
+
+    float smokeDarkness = 1.0 - smokeNoise;
        
     // Mask sides - darker noise restricting width
     float noiseWidthReduction = 0.3 * (1.0 - smokeNoise);
@@ -159,29 +162,40 @@ void main()
     
     // Rotate!
     fireCoords.x = fireCoords.x * cos(angle) - fireCoords.y * sin(angle);
-    
-    
+        
     //
     // Sample fire
     //
     
     vec2 fireTextureCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * fract(fireCoords);
     vec4 fireColor = texture2D(paramGenericLinearTexturesAtlasTexture, fireTextureCoords);
+
+    //
+    // Primary/Secondary
+    //
     
+    if (paramIsSecondaryRendering != 0.0)
+    {
+        // Secondary: more transparent, and lighter are more transparent
+        alpha *= sqrt(smokeDarkness) * 0.85;
+    }
     
     //
     // Combine
     //
     
     // More fire where it's darker, with threshold moving with vertexHeatDepth
-    float smokeDarkness = 1.0 - smokeNoise;
     float mask = smoothstep(1.0 - vertexHeatDepth, 1.0, smokeDarkness);
     // ...but go full vertexHeatDepth at bottom
     mask = mix(vertexHeatDepth, mask, contortedVertexSpaceCoords.y);
     // ...and modulate with smoke
     mask *= smokeColor.r;
 
+    vec3 c = mix(smokeColor2, fireColor.rgb, mask * fireColor.a);
+
+    /////////
+
     gl_FragColor = vec4(
-        mix(smokeColor2, fireColor.rgb, mask * fireColor.a),
+        c,
         alpha);
 }

@@ -373,6 +373,15 @@ enum class RotationDirectionType
 };
 
 /*
+ * Generic depth specification.
+ */
+enum class DepthKindType
+{
+    Background,
+    Foreground
+};
+
+/*
  * Integral system
  */
 

@@ -197,10 +197,10 @@ void InteractiveBodies::Update(
             (void)npcs;
 
             // Ocean surface
-            // TODOHERE
-            //oceanSurface.DisplaceAt(
-            //    tornado.CurrentX,
-            //    100.0f * tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha);
+            // TODOTEST
+            oceanSurface.DisplaceAt(
+                tornado.CurrentX,
+                3.0f * tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha);
 
             ++it;
         }

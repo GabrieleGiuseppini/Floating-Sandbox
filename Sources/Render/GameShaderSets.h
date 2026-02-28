@@ -138,6 +138,7 @@ enum class ProgramParameterKind : std::uint8_t
     FlameProgress,
     FlatSkyColor,
     HeatShift,
+    IsSecondaryRendering,
     KaosAdjustment,
     LampLightColor,
     LampToolAttributes,

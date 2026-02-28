@@ -457,6 +457,8 @@ ProgramParameterKind StrToProgramParameterKind(std::string const & str)
         return ProgramParameterKind::FlatSkyColor;
     else if (str == "HeatShift")
         return ProgramParameterKind::HeatShift;
+    else if (str == "IsSecondaryRendering")
+        return ProgramParameterKind::IsSecondaryRendering;
     else if (str == "KaosAdjustment")
         return ProgramParameterKind::KaosAdjustment;
     else if (str == "LampLightColor")
@@ -578,6 +580,8 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
             return "FlatSkyColor";
         case ProgramParameterKind::HeatShift:
             return "HeatShift";
+        case ProgramParameterKind::IsSecondaryRendering:
+            return "IsSecondaryRendering";
         case ProgramParameterKind::KaosAdjustment:
             return "KaosAdjustment";
         case ProgramParameterKind::LampLightColor:

@@ -993,6 +993,7 @@
 						+ Incorporate in effective's
 				= 4. Apply heat
 					- Should application area be larger?
+					- Don't give infinite heat: have a target temperature instead of giving heat
 				- NPCs: only Free NPCs!
 			= WorldRenderContext:
 				+ VertexAttributes:
@@ -1010,12 +1011,12 @@
 					+ EffectiveAmbientLightIntensity
 					- Unrelated: see if Ship::ApplySkyChanges is even needed, given that we set param in all shaders
 
-				- Draw 2 passes
-					- Second time around shader gets IsSecondaryRendering parameter set to 1.0
-						- And lighter areas are more transparent
-						- IsSecondaryRendering=1.0:
+				+ Draw 2 passes
+					+ Second time around shader gets IsSecondaryRendering parameter set to 1.0
+						+ And lighter areas are more transparent
+						+ IsSecondaryRendering=1.0:
 							finalAlpha = whateverAlpha * smokeDarkness * 0.85 // Experiment
-						- IsSecondaryRendering=0.0:
+						+ IsSecondaryRendering=0.0:
 							finalAlpha = whateverAlpha
 
 				- Test:
@@ -1029,6 +1030,10 @@
 			- Tool
 				+ Cursor (up, down)
 					+ Anchors
+				- Rethink dynamics of tool:
+					- Option 1:
+						- Up/down only affects strength multiplier
+						- Shift bumps up heat (only)
 				- Notification @ yLevel=0 (StartY)
 
 			- Sound

@@ -2059,7 +2059,9 @@ void WorldRenderContext::RenderPrepareTornadoes(
     }
 }
 
-void WorldRenderContext::RenderDrawTornadoes(RenderParameters const & /*renderParameters*/)
+void WorldRenderContext::RenderDrawTornadoes(
+    DepthKindType depth,
+    RenderParameters const & /*renderParameters*/)
 {
     if (!mTornadoVertexBuffer.empty())
     {
@@ -2069,6 +2071,21 @@ void WorldRenderContext::RenderDrawTornadoes(RenderParameters const & /*renderPa
         mGlobalRenderContext.GetElementIndices().Bind();
 
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Tornado>();
+
+        switch (depth)
+        {
+            case DepthKindType::Background:
+            {
+                mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Tornado, GameShaderSets::ProgramParameterKind::IsSecondaryRendering>(0.0f);
+                break;
+            }
+
+            case DepthKindType::Foreground:
+            {
+                mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Tornado, GameShaderSets::ProgramParameterKind::IsSecondaryRendering>(1.0f);
+                break;
+            }
+        }
 
         // Set Perlin noise as the noise for the shader
         mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();

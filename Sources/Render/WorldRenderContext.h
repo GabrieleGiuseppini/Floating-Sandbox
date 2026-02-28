@@ -967,7 +967,7 @@ public:
     void RenderDrawAntiGravityFields(RenderParameters const & renderParameters);
 
     void RenderPrepareTornadoes(float currentSimulationTime, RenderParameters const & renderParameters);
-    void RenderDrawTornadoes(RenderParameters const & renderParameters);
+    void RenderDrawTornadoes(DepthKindType depth, RenderParameters const & renderParameters);
 
     void RenderPrepareAMBombPreImplosions(RenderParameters const & renderParameters);
     void RenderDrawAMBombPreImplosions(RenderParameters const & renderParameters);
