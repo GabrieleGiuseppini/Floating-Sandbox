@@ -131,7 +131,7 @@ void main()
     // Fire
     //
     
-    #define FIRE_RESOLUTION_X 0.2
+    #define FIRE_RESOLUTION_X 0.05
     #define FIRE_RESOLUTION_Y 1.0
     
     // 0..1
@@ -179,6 +179,8 @@ void main()
     float mask = smoothstep(1.0 - vertexHeatDepth, 1.0, smokeDarkness);
     // ...but go full vertexHeatDepth at bottom
     mask = mix(vertexHeatDepth, mask, contortedVertexSpaceCoords.y);
+    // ...and modulate with smoke
+    mask *= smokeColor.r;
 
     gl_FragColor = vec4(
         mix(smokeColor, fireColor.rgb, mask * fireColor.a),
