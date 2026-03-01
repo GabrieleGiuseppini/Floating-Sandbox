@@ -147,7 +147,7 @@ SoundAtlasAssetsMetadata SoundAtlasBuilder::BuildAtlas(
                     throw GameException("Invalid loop points for " + assetName + ": End <= Start");
                 }
 
-                if (ap.LoopPoints->End > buf.GetSize())
+                if (static_cast<size_t>(ap.LoopPoints->End) > buf.GetSize())
                 {
                     throw GameException("Invalid loop points for " + assetName + ": End > buffer size");
                 }

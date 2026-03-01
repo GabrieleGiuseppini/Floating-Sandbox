@@ -841,22 +841,22 @@
 		+ Bump up build number
 
 	+ Check Discord
-	- Release:
+	= Release:
 		+ Build on Ubuntu
-		- Windows
+		= Windows
 			+ MSI variable
-			- Commit & push
-			- 64-bit MSI
+			+ Commit & push
+			+ 64-bit MSI
 				+ Cleanup Install
 				+ Build Release Install (after clean)
 				+ Sign two exes
-				- Make MSI
-				- Rename MSI (e.g. Floating-Sandbox-1.20.0-x64)
-				- Sign MSI
-				- Test upgrade from previous version
-			- 32-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
+				+ Make MSI
+				+ Rename MSI (e.g. Floating-Sandbox-1.20.0-x64)
+				+ Sign MSI
+				+ Test upgrade from previous version
+			= 32-bit MSI
+				+ Cleanup Install
+				= Build Release Install (after clean)
 				- Sign two exes
 				- Make MSI
 				- Rename MSI (e.g. Floating-Sandbox-1.20.0-x86)
