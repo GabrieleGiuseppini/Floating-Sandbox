@@ -994,6 +994,7 @@
 				= 4. Apply heat
 					- Should application area be larger?
 					- Don't give infinite heat: have a target temperature instead of giving heat
+						- TODOHERE
 				- NPCs: only Free NPCs!
 			= WorldRenderContext:
 				+ VertexAttributes:
@@ -1040,6 +1041,7 @@
 
 			- Sound
 				- TODOHERE: to spec
+				- Add one or two new stress_medium_cable
 
 			- If we decide to stay with 1 tornado, change BeginPlace algo to always pick it if alive
 

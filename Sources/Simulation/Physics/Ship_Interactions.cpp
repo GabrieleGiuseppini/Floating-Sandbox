@@ -1077,7 +1077,7 @@ void Ship::ApplyTornado(
     SimulationParameters const & simulationParameters)
 {
     // To make damage outside of the visible vortex
-    float constexpr ExtraWidthFraction = 1.8f; // MUCH wider
+    float constexpr ExtraWidthFraction = 2.2f; // MUCH wider
     float const effectiveTopRadius = args.Size.width / 2.0f * ExtraWidthFraction;
     float const effectiveBottomRadius = effectiveTopRadius * args.BottomWidthFraction;
     float constexpr ExtraHeightFraction = 1.1f;
@@ -1188,7 +1188,7 @@ void Ship::ApplyTornado(
 
                 // Updraft force
                 float const upForceY =
-                    m
+                    std::max(m, 30.0f) // Very light materials get more force
                     * effectiveUpwardForceMagnitude
                     * (1.0f - LinearStep(550.0f, 2000.0, m)) // Less emphasis on heavier materials
                     * tornadoDepth;
