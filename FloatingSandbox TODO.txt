@@ -972,6 +972,7 @@
 						+ Make sure anything else that "adjusts" (changes decay up, but not scrub) fixes it
 					+ Test:
 						+ Repair fixes it
+					X Try: not on ropes (# factory triangles=0)
 				+ 3. Apply forces 
 					! The particle must rotate around the axis of the vortex, in a horizontal plane perpendicular to the screen
 					! The magnitude V of its velocity is of our choice (synced to rendering/shader), depending on r (max at r=VortexWidth/2, 0 at r=0)
@@ -992,9 +993,14 @@
 					+ Apply ultra-violent mode for both x and y forces, and heat
 						+ Incorporate in effective's
 				= 4. Apply heat
-					- Should application area be larger?
+					+ Application area should be larger
 					- Don't give infinite heat: have a target temperature instead of giving heat
 						- TODOHERE
+
+				= Add one or two new stress_medium_cable sounds
+					+ Have them at C:\Users\Neurodancer\Desktop\FS Scratch\Ship Scratch\Sounds\Cable\Stress
+					- Port to Android
+
 				- NPCs: only Free NPCs!
 			= WorldRenderContext:
 				+ VertexAttributes:
@@ -1033,15 +1039,14 @@
 					+ Anchors
 				- Rethink dynamics of tool:
 					- Option 1:
-						- Up/down only affects strength multiplier
-						- Shift bumps up heat (only)
+						- Up/down only affects strength multiplier (><1)
+						- Shift bumps up heat (only) - which then recoils when shift left
 
 						- Enlarge bottom of cone with strength multiplier (@Tornado)
 				- Notification @ yLevel=0 (StartY)
 
 			- Sound
 				- TODOHERE: to spec
-				- Add one or two new stress_medium_cable
 
 			- If we decide to stay with 1 tornado, change BeginPlace algo to always pick it if alive
 
