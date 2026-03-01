@@ -177,7 +177,7 @@ void main()
     if (paramIsSecondaryRendering != 0.0)
     {
         // Secondary: more transparent, and lighter are more transparent
-        alpha *= sqrt(smokeDarkness) * 0.85;
+        alpha *= sqrt(smokeDarkness) * 0.90;
     }
     
     //
