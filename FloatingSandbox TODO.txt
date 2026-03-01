@@ -840,18 +840,18 @@
 	+ Send last beta, ask Localizer
 		+ Bump up build number
 
-	- Check Discord
+	+ Check Discord
 	- Release:
 		+ Build on Ubuntu
 		- Windows
-			- MSI variable
+			+ MSI variable
 			- Commit & push
 			- 64-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
-				- Sign two exes
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
 				- Make MSI
-				- Rename MSI (e.g. Floating-Sandbox-1.19.2-x64)
+				- Rename MSI (e.g. Floating-Sandbox-1.20.0-x64)
 				- Sign MSI
 				- Test upgrade from previous version
 			- 32-bit MSI
@@ -859,7 +859,7 @@
 				- Build Release Install (after clean)
 				- Sign two exes
 				- Make MSI
-				- Rename MSI (e.g. Floating-Sandbox-1.19.2-x86)
+				- Rename MSI (e.g. Floating-Sandbox-1.20.0-x86)
 				- Sign MSI
 				- Test clean install
 					- Verify it's a 32-bit process
@@ -869,7 +869,7 @@
 			- rm -rf build; mkdir build; cd build
 			- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
 			- make install
-			- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd ..")
+			- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.20.0-x64.tar . && cd ..")
 			- Zip tar ("gzip Floating-Sandbox*.tar")
 			- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
 				- export GDK_BACKEND=x11
