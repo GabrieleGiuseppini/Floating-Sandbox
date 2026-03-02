@@ -718,6 +718,8 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
         return VertexAttributeKind::Tornado1;
     else if (Utils::CaseInsensitiveEquals(str, "Tornado2"))
         return VertexAttributeKind::Tornado2;
+    else if (Utils::CaseInsensitiveEquals(str, "Tornado3"))
+        return VertexAttributeKind::Tornado3;
     else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlantStatic1"))
         return VertexAttributeKind::UnderwaterPlantStatic1;
     else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlantStatic2"))

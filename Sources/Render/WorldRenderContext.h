@@ -812,7 +812,8 @@ public:
         float bottomWidthFraction,
         float strengthMultiplier,
         float heatDepth, // 0..1
-        float visibilityAlpha) // 0..1
+        float visibilityAlpha, // 0..1
+        float rotationPhase)
     {
         // Calculate quad
 
@@ -823,7 +824,8 @@ public:
             bottomWidthFraction,
             strengthMultiplier,
             heatDepth,
-            visibilityAlpha);
+            visibilityAlpha,
+            rotationPhase);
 
         // BottomLeft
         mTornadoVertexBuffer.emplace_back(
@@ -832,7 +834,8 @@ public:
             bottomWidthFraction,
             strengthMultiplier,
             heatDepth,
-            visibilityAlpha);
+            visibilityAlpha,
+            rotationPhase);
 
         // TopRight
         mTornadoVertexBuffer.emplace_back(
@@ -841,7 +844,8 @@ public:
             bottomWidthFraction,
             strengthMultiplier,
             heatDepth,
-            visibilityAlpha);
+            visibilityAlpha,
+            rotationPhase);
 
         // BottomRight
         mTornadoVertexBuffer.emplace_back(
@@ -850,7 +854,8 @@ public:
             bottomWidthFraction,
             strengthMultiplier,
             heatDepth,
-            visibilityAlpha);
+            visibilityAlpha,
+            rotationPhase);
     }
 
     void UploadTornadoesEnd();
@@ -1323,6 +1328,7 @@ private:
         float strengthMultiplier;
         float heatDepth;
         float visibilityAlpha;
+        float rotationPhase;
 
         TornadoVertex(
             vec2f _position,
@@ -1330,13 +1336,15 @@ private:
             float _bottomWidthFraction,
             float _strengthMultiplier,
             float _heatDepth,
-            float _visibilityAlpha)
+            float _visibilityAlpha,
+            float _rotationPhase)
             : position(_position)
             , tornadoSpaceCoords(_tornadoSpaceCoords)
             , bottomWidthFraction(_bottomWidthFraction)
             , strengthMultiplier(_strengthMultiplier)
             , heatDepth(_heatDepth)
             , visibilityAlpha(_visibilityAlpha)
+            , rotationPhase(_rotationPhase)
         {
         }
     };

@@ -156,6 +156,14 @@ void InteractiveBodies::Update(
         }
 
         //
+        // Progress rotation
+        //
+
+        // Only proportional to Force/StrengthMultiplier
+        // NOT proportional to viz, so it keeps rotating while it disappears
+        tornado.CurrentRotationPhase += SimulationParameters::SimulationStepTimeDuration<float> *tornado.CurrentForceMultiplier;
+
+        //
         // Check whether it's been idle enough to start disappearing
         //
 
@@ -205,7 +213,7 @@ void InteractiveBodies::Update(
             ++it;
         }
 
-        // Unconditionally, a tornado has updated
+        // Unconditionally, a tornado has updated - or has been removed
         mAreTornadoesDirtyForRendering = true;
     }
 }
@@ -238,7 +246,8 @@ void InteractiveBodies::Upload(RenderContext & renderContext) const
                 CalculateTornadoBottomWidthFraction(tornado.CurrentVisibilityAlpha),
                 tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha,
                 tornado.CurrentHeatDepth,
-                tornado.CurrentVisibilityAlpha);
+                tornado.CurrentVisibilityAlpha,
+                tornado.CurrentRotationPhase);
         }
 
         renderContext.UploadTornadoesEnd();

@@ -143,6 +143,8 @@ private:
         float CurrentHeatDepth;
         float TargetHeatDepth;
 
+        float CurrentRotationPhase;
+
         float StartSimulationTimestamp;
         float LastActivitySimulationTimestamp; // To detect idle
 
@@ -163,6 +165,7 @@ private:
             , TargetForceMultiplier(1.0f)
             , CurrentHeatDepth(0.0f)
             , TargetHeatDepth(0.0f)
+            , CurrentRotationPhase(0.0f)
             , StartSimulationTimestamp(currentSimulationTime)
             , LastActivitySimulationTimestamp(currentSimulationTime)
         { }

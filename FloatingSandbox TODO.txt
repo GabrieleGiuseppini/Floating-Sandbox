@@ -995,7 +995,16 @@
 				= 4. Apply heat
 					+ Application area should be larger
 					- Don't give infinite heat: have a target temperature instead of giving heat
-						- TODOHERE
+						! Option 1:
+							! Bring slowly to fixed temperature, which depends on HeatDepth
+								! HeatDepth=1: 2000K
+								! Multiply with UltraViolentMode
+							- HeatDepth=0 => no temp delta
+								- So: temp delta = (2000K - temp[p]) * HeatDepth * ConvergenceRate
+									- 2000K does _not_ depend on HeatDepth
+						! Option 2:
+							! Gist: bring to combustion temperature, slowly
+							! If not combustible: bring to fixed temperature 
 
 				= Add one or two new stress_medium_cable sounds
 					+ Have them at C:\Users\Neurodancer\Desktop\FS Scratch\Ship Scratch\Sounds\Cable\Stress
@@ -1033,6 +1042,11 @@
 					- Land
 
 			+ Soften jumping up and down with OceanSurface
+
+			+ Do rotation
+				+ New "phase" member of tornado
+					+ Only proportional to Force/StrengthMultiplier
+					+ NOT proportional to viz
 
 			- Tool
 				+ Cursor (up, down)

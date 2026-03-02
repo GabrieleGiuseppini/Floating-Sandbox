@@ -6,6 +6,7 @@
 // Inputs
 in vec4 inTornado1;  // Position, TornadoSpaceCoords
 in vec4 inTornado2; //  BottomWidthFraction, StrengthMultiplier, HeatDepth, VisibilityAlpha
+in float inTornado3; // RotationPhase
 
 // Outputs
 out vec2 vertexSpaceCoords;
@@ -13,6 +14,7 @@ out float vertexBottomWidthFraction;
 out float vertexStrengthMultiplier;
 out float vertexHeatDepth;
 out float vertexVisibilityAlpha;
+out float vertexRotationPhase;
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -24,6 +26,7 @@ void main()
     vertexStrengthMultiplier = inTornado2.y;
     vertexHeatDepth = inTornado2.z;
     vertexVisibilityAlpha = inTornado2.w;
+    vertexRotationPhase = inTornado3;
 
     gl_Position = paramOrthoMatrix * vec4(inTornado1.xy, -1.0, 1.0);
 }
@@ -41,6 +44,7 @@ in float vertexBottomWidthFraction;
 in float vertexStrengthMultiplier;
 in float vertexHeatDepth;
 in float vertexVisibilityAlpha;
+in float vertexRotationPhase;
 
 // Textures
 uniform sampler2D paramNoiseTexture;
@@ -75,7 +79,6 @@ void main()
     
     // Noise
     
-    //#define VORTEX_SPEED 3.9
     #define VORTEX_SPEED 0.9
     //#define SMOKE_NOISE_RESOLUTION_X 1.0
     //#define SMOKE_NOISE_RESOLUTION_Y 2.0
@@ -83,7 +86,7 @@ void main()
     #define SMOKE_NOISE_RESOLUTION_Y 0.2 * 8.
 
     float nx = asin(contortedVertexSpaceCoords.x / width) * width;
-    float nxt = paramSimulationTime * VORTEX_SPEED;
+    float nxt = vertexRotationPhase * VORTEX_SPEED;
     
     vec2 smokeNoiseCoords = vec2(
         nx * SMOKE_NOISE_RESOLUTION_X + fract(nxt * SMOKE_NOISE_RESOLUTION_X),

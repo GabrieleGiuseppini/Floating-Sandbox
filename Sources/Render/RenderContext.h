@@ -1169,7 +1169,8 @@ public:
         float bottomWidthFraction,
         float strengthMultiplier,
         float heatDepth, // 0..1
-        float visibilityAlpha) // 0..1
+        float visibilityAlpha, // 0..1
+        float rotationPhase)
     {
         mWorldRenderContext->UploadTornado(
             bottomCenterPos,
@@ -1177,7 +1178,8 @@ public:
             bottomWidthFraction,
             strengthMultiplier,
             heatDepth,
-            visibilityAlpha);
+            visibilityAlpha,
+            rotationPhase);
     }
 
     inline void UploadTornadoesEnd()

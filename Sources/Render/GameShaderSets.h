@@ -234,6 +234,7 @@ enum class VertexAttributeKind : std::uint32_t
 
     Tornado1 = 0,
     Tornado2 = 1,
+    Tornado3 = 3,
 
     UnderwaterPlantStatic1 = 0,
     UnderwaterPlantStatic2 = 1,
