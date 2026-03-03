@@ -192,7 +192,7 @@ void main()
     // ...but go full vertexHeatDepth at bottom
     mask = mix(vertexHeatDepth, mask, contortedVertexSpaceCoords.y);
     // ...and modulate with smoke
-    mask *= smokeColor.r;
+    mask *= sqrt(smokeColor.r);
 
     vec3 c = mix(smokeColor2, fireColor.rgb, mask * fireColor.a);
 

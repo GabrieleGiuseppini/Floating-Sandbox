@@ -420,6 +420,16 @@ bool ToolController::OnEsc()
     }
 }
 
+DisplayLogicalCoordinates ToolController::GetCanvasOrigin() const
+{
+    return DisplayLogicalCoordinates(mParentWindow->GetPosition().x, mParentWindow->GetPosition().y);
+}
+
+DisplayLogicalSize ToolController::GetCanvasSize() const
+{
+    return DisplayLogicalSize(mParentWindow->GetSize().GetWidth(), mParentWindow->GetSize().GetHeight());
+}
+
 void ToolController::SetToolCursor(wxImage const & basisImage, float strength)
 {
     mCurrentToolCursor = ToolCursor(basisImage, strength);

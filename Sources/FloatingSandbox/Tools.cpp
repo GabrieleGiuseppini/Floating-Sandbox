@@ -49,13 +49,13 @@ void ContinuousTool::UpdateSimulation(InputState const & inputState, float /*cur
 ////////////////////////////////////////////////////////////////////////
 
 MoveTool::MoveTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : BaseMoveTool(
         ToolType::Move,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController,
         WxHelpers::LoadCursorImage("move_cursor_up", 13, 5, gameAssetManager),
@@ -66,13 +66,13 @@ MoveTool::MoveTool(
 }
 
 MoveAllTool::MoveAllTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : BaseMoveTool(
         ToolType::MoveAll,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController,
         WxHelpers::LoadCursorImage("move_all_cursor_up", 13, 5, gameAssetManager),
@@ -87,13 +87,13 @@ MoveAllTool::MoveAllTool(
 ////////////////////////////////////////////////////////////////////////
 
 MoveGrippedTool::MoveGrippedTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::MoveGripped,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mMoveUpCursorImage(WxHelpers::LoadCursorImage("move_gripped_cursor_up", 11, 20, gameAssetManager))
@@ -108,13 +108,13 @@ MoveGrippedTool::MoveGrippedTool(
 ////////////////////////////////////////////////////////////////////////
 
 PickAndPullTool::PickAndPullTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::PickAndPull,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mUpCursorImage(WxHelpers::LoadCursorImage("pliers_cursor_up", 2, 2, gameAssetManager))
@@ -127,13 +127,13 @@ PickAndPullTool::PickAndPullTool(
 ////////////////////////////////////////////////////////////////////////
 
 SmashTool::SmashTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : ContinuousTool(
         ToolType::Smash,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mUpCursorImage(WxHelpers::LoadCursorImage("smash_cursor_up", 6, 9, gameAssetManager))
@@ -172,13 +172,13 @@ void SmashTool::ApplyTool(
 ////////////////////////////////////////////////////////////////////////
 
 SawTool::SawTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::Saw,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mUpCursorImage(WxHelpers::LoadCursorImage("chainsaw_cursor_up", 8, 20, gameAssetManager))
@@ -197,13 +197,13 @@ SawTool::SawTool(
 ////////////////////////////////////////////////////////////////////////
 
 HeatBlasterTool::HeatBlasterTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::HeatBlaster,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mIsEngaged(false)
@@ -220,13 +220,13 @@ HeatBlasterTool::HeatBlasterTool(
 ////////////////////////////////////////////////////////////////////////
 
 FireExtinguisherTool::FireExtinguisherTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::FireExtinguisher,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mIsEngaged(false)
@@ -240,13 +240,13 @@ FireExtinguisherTool::FireExtinguisherTool(
 ////////////////////////////////////////////////////////////////////////
 
 GrabTool::GrabTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : ContinuousTool(
         ToolType::Grab,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mUpPlusCursorImage(WxHelpers::LoadCursorImage("drag_cursor_up_plus", 15, 15, gameAssetManager))
@@ -289,13 +289,13 @@ void GrabTool::ApplyTool(
 ////////////////////////////////////////////////////////////////////////
 
 SwirlTool::SwirlTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : ContinuousTool(
         ToolType::Grab,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mUpPlusCursorImage(WxHelpers::LoadCursorImage("swirl_cursor_up_cw", 15, 15, gameAssetManager))
@@ -338,13 +338,13 @@ void SwirlTool::ApplyTool(
 ////////////////////////////////////////////////////////////////////////
 
 AntiGravityFieldTool::AntiGravityFieldTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::AntiGravityField,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("anti_gravity_field_cursor", 30, 4, gameAssetManager))
@@ -356,13 +356,13 @@ AntiGravityFieldTool::AntiGravityFieldTool(
 ////////////////////////////////////////////////////////////////////////
 
 PinTool::PinTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : OneShotTool(
         ToolType::Pin,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("pin_cursor", 4, 27, gameAssetManager))
@@ -374,13 +374,13 @@ PinTool::PinTool(
 ////////////////////////////////////////////////////////////////////////
 
 InjectPressureTool::InjectPressureTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::InjectPressure,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mCurrentAction(std::nullopt)
@@ -394,13 +394,13 @@ InjectPressureTool::InjectPressureTool(
 ////////////////////////////////////////////////////////////////////////
 
 FloodHoseTool::FloodHoseTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::FloodHose,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mIsEngaged(false)
@@ -416,13 +416,13 @@ FloodHoseTool::FloodHoseTool(
 ////////////////////////////////////////////////////////////////////////
 
 AntiMatterBombTool::AntiMatterBombTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : OneShotTool(
         ToolType::AntiMatterBomb,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("am_bomb_cursor", 16, 16, gameAssetManager))
@@ -434,13 +434,13 @@ AntiMatterBombTool::AntiMatterBombTool(
 ////////////////////////////////////////////////////////////////////////
 
 FireExtinguishingBombTool::FireExtinguishingBombTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : OneShotTool(
         ToolType::FireExtinguishingBomb,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("fire_extinguishing_bomb_cursor", 18, 17, gameAssetManager))
@@ -452,13 +452,13 @@ FireExtinguishingBombTool::FireExtinguishingBombTool(
 ////////////////////////////////////////////////////////////////////////
 
 ImpactBombTool::ImpactBombTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : OneShotTool(
         ToolType::ImpactBomb,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("impact_bomb_cursor", 18, 10, gameAssetManager))
@@ -470,13 +470,13 @@ ImpactBombTool::ImpactBombTool(
 ////////////////////////////////////////////////////////////////////////
 
 RCBombTool::RCBombTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : OneShotTool(
         ToolType::RCBomb,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("rc_bomb_cursor", 16, 21, gameAssetManager))
@@ -488,13 +488,13 @@ RCBombTool::RCBombTool(
 ////////////////////////////////////////////////////////////////////////
 
 TimerBombTool::TimerBombTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : OneShotTool(
         ToolType::TimerBomb,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("timer_bomb_cursor", 16, 19, gameAssetManager))
@@ -506,13 +506,13 @@ TimerBombTool::TimerBombTool(
 ////////////////////////////////////////////////////////////////////////
 
 WaveMakerTool::WaveMakerTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : OneShotTool(
         ToolType::WaveMaker,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mIsEngaged(false)
@@ -526,13 +526,13 @@ WaveMakerTool::WaveMakerTool(
 ////////////////////////////////////////////////////////////////////////
 
 TornadoTool::TornadoTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::Tornado,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mUpCursorImage(WxHelpers::LoadCursorImage("tornado_cursor_up", 15, 31, gameAssetManager))
@@ -545,13 +545,13 @@ TornadoTool::TornadoTool(
 ////////////////////////////////////////////////////////////////////////
 
 TerrainAdjustTool::TerrainAdjustTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::TerrainAdjust,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mEngagementData()
@@ -567,13 +567,13 @@ TerrainAdjustTool::TerrainAdjustTool(
 ////////////////////////////////////////////////////////////////////////
 
 ScrubTool::ScrubTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::Scrub,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mScrubUpCursorImage(WxHelpers::LoadCursorImage("scrub_cursor_up", 15, 15, gameAssetManager))
@@ -591,13 +591,13 @@ ScrubTool::ScrubTool(
 ////////////////////////////////////////////////////////////////////////
 
 RepairStructureTool::RepairStructureTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::RepairStructure,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mEngagementStartTimestamp()
@@ -617,13 +617,13 @@ RepairStructureTool::RepairStructureTool(
 ////////////////////////////////////////////////////////////////////////
 
 ThanosSnapTool::ThanosSnapTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : OneShotTool(
         ToolType::ThanosSnap,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mUpNormalCursorImage(WxHelpers::LoadCursorImage("thanos_snap_cursor_up", 15, 15, gameAssetManager))
@@ -638,13 +638,13 @@ ThanosSnapTool::ThanosSnapTool(
 ////////////////////////////////////////////////////////////////////////
 
 ScareFishTool::ScareFishTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::ScareFish,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mIsEngaged(false)
@@ -664,13 +664,13 @@ ScareFishTool::ScareFishTool(
 ////////////////////////////////////////////////////////////////////////
 
 PhysicsProbeTool::PhysicsProbeTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : OneShotTool(
         ToolType::PhysicsProbe,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("physics_probe_cursor", 0, 19, gameAssetManager))
@@ -682,13 +682,13 @@ PhysicsProbeTool::PhysicsProbeTool(
 ////////////////////////////////////////////////////////////////////////
 
 BlastTool::BlastTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::Blast,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mEngagementData()
@@ -703,13 +703,13 @@ BlastTool::BlastTool(
 ////////////////////////////////////////////////////////////////////////
 
 ElectricSparkTool::ElectricSparkTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::ElectricSpark,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mEngagementData()
@@ -723,13 +723,13 @@ ElectricSparkTool::ElectricSparkTool(
 ////////////////////////////////////////////////////////////////////////
 
 WindMakerTool::WindMakerTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::WindMaker,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mEngagementData()
@@ -748,13 +748,13 @@ WindMakerTool::WindMakerTool(
 ////////////////////////////////////////////////////////////////////////
 
 LaserCannonTool::LaserCannonTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::LaserCannon,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mEngagementData()
@@ -768,13 +768,13 @@ LaserCannonTool::LaserCannonTool(
 ////////////////////////////////////////////////////////////////////////
 
 LampTool::LampTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::Lamp,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mUpCursorImage(WxHelpers::LoadCursorImage("lamp_cursor_up", 4, 27, gameAssetManager))
@@ -787,13 +787,13 @@ LampTool::LampTool(
 ////////////////////////////////////////////////////////////////////////
 
 LightningStrikeTool::LightningStrikeTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : OneShotTool(
         ToolType::LightningStrike,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("lightning_cursor_and_icon", 11, 29, gameAssetManager))
@@ -806,13 +806,13 @@ LightningStrikeTool::LightningStrikeTool(
 
 PlaceNpcToolBase::PlaceNpcToolBase(
     ToolType toolType,
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         toolType,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mCurrentEngagementState(std::nullopt)
@@ -822,13 +822,13 @@ PlaceNpcToolBase::PlaceNpcToolBase(
 {}
 
 PlaceFurnitureNpcTool::PlaceFurnitureNpcTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : PlaceNpcToolBase(
         ToolType::PlaceFurnitureNpc,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController,
         gameAssetManager)
@@ -837,13 +837,13 @@ PlaceFurnitureNpcTool::PlaceFurnitureNpcTool(
 }
 
 PlaceHumanNpcTool::PlaceHumanNpcTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : PlaceNpcToolBase(
         ToolType::PlaceHumanNpc,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController,
         gameAssetManager)
@@ -853,7 +853,7 @@ PlaceHumanNpcTool::PlaceHumanNpcTool(
 
 BaseSingleSelectNpcTool::BaseSingleSelectNpcTool(
     ToolType toolType,
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     std::optional<NpcKindType> applicableKind,
@@ -861,7 +861,7 @@ BaseSingleSelectNpcTool::BaseSingleSelectNpcTool(
     wxImage && upCursorImage)
     : Tool(
         toolType,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mApplicableKind(applicableKind)
@@ -871,13 +871,13 @@ BaseSingleSelectNpcTool::BaseSingleSelectNpcTool(
 }
 
 FollowNpcTool::FollowNpcTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : BaseSingleSelectNpcTool(
         ToolType::FollowNpc,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController,
         std::nullopt, // All kinds
@@ -888,7 +888,7 @@ FollowNpcTool::FollowNpcTool(
 
 BaseMultiSelectNpcTool::BaseMultiSelectNpcTool(
     ToolType toolType,
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     std::optional<NpcKindType> applicableKind,
@@ -896,7 +896,7 @@ BaseMultiSelectNpcTool::BaseMultiSelectNpcTool(
     wxImage && upCursorImage)
     : Tool(
         toolType,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mApplicableKind(applicableKind)
@@ -906,13 +906,13 @@ BaseMultiSelectNpcTool::BaseMultiSelectNpcTool(
 }
 
 RemoveNpcTool::RemoveNpcTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : BaseMultiSelectNpcTool(
         ToolType::RemoveNpc,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController,
         std::nullopt, // All kinds
@@ -922,13 +922,13 @@ RemoveNpcTool::RemoveNpcTool(
 }
 
 TurnaroundNpcTool::TurnaroundNpcTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : BaseMultiSelectNpcTool(
         ToolType::TurnaroundNpc,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController,
         std::nullopt, // All kinds
@@ -938,13 +938,13 @@ TurnaroundNpcTool::TurnaroundNpcTool(
 }
 
 MoveNpcTool::MoveNpcTool(
-    IToolCursorManager & toolCursorManager,
+    IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::MoveNpc,
-        toolCursorManager,
+        toolManager,
         gameController,
         soundController)
     , mCurrentState()

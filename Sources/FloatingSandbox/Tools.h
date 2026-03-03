@@ -26,8 +26,12 @@
 #include <sstream>
 #include <vector>
 
-struct IToolCursorManager
+struct IToolManager
 {
+    virtual DisplayLogicalCoordinates GetCanvasOrigin() const = 0;
+
+    virtual DisplayLogicalSize GetCanvasSize() const = 0;
+
     virtual void SetToolCursor(wxImage const & basisImage, float strength = 0.0f) = 0;
 };
 
@@ -127,16 +131,16 @@ protected:
 
     Tool(
         ToolType toolType,
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController)
-        : mToolCursorManager(toolCursorManager)
+        : mToolManager(toolManager)
         , mGameController(gameController)
         , mSoundController(soundController)
         , mToolType(toolType)
     {}
 
-    IToolCursorManager & mToolCursorManager;
+    IToolManager & mToolManager;
     IGameController & mGameController;
     SoundController & mSoundController;
 
@@ -166,12 +170,12 @@ protected:
 
     OneShotTool(
         ToolType toolType,
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController)
         : Tool(
             toolType,
-            toolCursorManager,
+            toolManager,
             gameController,
             soundController)
     {}
@@ -217,12 +221,12 @@ protected:
 
     ContinuousTool(
         ToolType toolType,
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController)
         : Tool(
             toolType,
-            toolCursorManager,
+            toolManager,
             gameController,
             soundController)
         , mPreviousMousePosition(0, 0)
@@ -246,7 +250,7 @@ protected:
             || !mLastQuantizedCursorStrength.has_value()
             || *mLastQuantizedCursorStrength != quantizedCursorStrength)
         {
-            mToolCursorManager.SetToolCursor(basisImage, strength);
+            mToolManager.SetToolCursor(basisImage, strength);
 
             // Remember current cursor
             mLastCursor = basisImage;
@@ -457,7 +461,7 @@ protected:
 
     BaseMoveTool(
         ToolType toolType,
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         wxImage upCursorImage,
@@ -466,7 +470,7 @@ protected:
         wxImage rotateDownCursorImage)
         : OneShotTool(
             toolType,
-            toolCursorManager,
+            toolManager,
             gameController,
             soundController)
         , mEngagedMovableObjectId()
@@ -605,22 +609,22 @@ private:
         {
             if (!mRotationCenter)
             {
-                mToolCursorManager.SetToolCursor(mUpCursorImage);
+                mToolManager.SetToolCursor(mUpCursorImage);
             }
             else
             {
-                mToolCursorManager.SetToolCursor(mRotateUpCursorImage);
+                mToolManager.SetToolCursor(mRotateUpCursorImage);
             }
         }
         else
         {
             if (!mRotationCenter)
             {
-                mToolCursorManager.SetToolCursor(mDownCursorImage);
+                mToolManager.SetToolCursor(mDownCursorImage);
             }
             else
             {
-                mToolCursorManager.SetToolCursor(mRotateDownCursorImage);
+                mToolManager.SetToolCursor(mRotateDownCursorImage);
             }
         }
     }
@@ -669,7 +673,7 @@ class MoveTool final : public BaseMoveTool<GlobalConnectedComponentId>
 public:
 
     MoveTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -680,7 +684,7 @@ class MoveAllTool final : public BaseMoveTool<ShipId>
 public:
 
     MoveAllTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -691,7 +695,7 @@ class MoveGrippedTool final : public Tool
 public:
 
     MoveGrippedTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -939,11 +943,11 @@ private:
             // Up
             if (isShift)
             {
-                mToolCursorManager.SetToolCursor(mRotateUpCursorImage);
+                mToolManager.SetToolCursor(mRotateUpCursorImage);
             }
             else
             {
-                mToolCursorManager.SetToolCursor(mMoveUpCursorImage);
+                mToolManager.SetToolCursor(mMoveUpCursorImage);
             }
         }
         else
@@ -951,11 +955,11 @@ private:
             // Down
             if (isShift)
             {
-                mToolCursorManager.SetToolCursor(mRotateDownCursorImage);
+                mToolManager.SetToolCursor(mRotateDownCursorImage);
             }
             else
             {
-                mToolCursorManager.SetToolCursor(mMoveDownCursorImage);
+                mToolManager.SetToolCursor(mMoveDownCursorImage);
             }
         }
     }
@@ -1022,7 +1026,7 @@ class PickAndPullTool final : public Tool
 public:
 
     PickAndPullTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -1138,7 +1142,7 @@ private:
 
     void SetCurrentCursor()
     {
-        mToolCursorManager.SetToolCursor(!!mCurrentEngagementState ? mDownCursorImage : mUpCursorImage);
+        mToolManager.SetToolCursor(!!mCurrentEngagementState ? mDownCursorImage : mUpCursorImage);
     }
 
     // Our state
@@ -1174,7 +1178,7 @@ class SmashTool final : public ContinuousTool
 public:
 
     SmashTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -1219,12 +1223,12 @@ private:
         if (inputState.IsLeftMouseDown)
         {
             // Down
-            mToolCursorManager.SetToolCursor(mDownCursorImage, 0.0f);
+            mToolManager.SetToolCursor(mDownCursorImage, 0.0f);
         }
         else
         {
             // Up
-            mToolCursorManager.SetToolCursor(mUpCursorImage, 0.0f);
+            mToolManager.SetToolCursor(mUpCursorImage, 0.0f);
         }
     }
 
@@ -1239,7 +1243,7 @@ class SawTool final : public Tool
 public:
 
     SawTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -1385,12 +1389,12 @@ private:
         if (inputState.IsLeftMouseDown)
         {
             // Set current cursor to the current down cursor
-            mToolCursorManager.SetToolCursor(mDownCursorCounter % 2 ? mDownCursorImage2 : mDownCursorImage1);
+            mToolManager.SetToolCursor(mDownCursorCounter % 2 ? mDownCursorImage2 : mDownCursorImage1);
         }
         else
         {
             // Set current cursor to the up cursor
-            mToolCursorManager.SetToolCursor(mUpCursorImage);
+            mToolManager.SetToolCursor(mUpCursorImage);
         }
     }
 
@@ -1424,7 +1428,7 @@ class HeatBlasterTool final : public Tool
 public:
 
     HeatBlasterTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -1519,11 +1523,11 @@ private:
     {
         if (mIsEngaged)
         {
-            mToolCursorManager.SetToolCursor(mCurrentAction == HeatBlasterActionType::Cool ? mCoolDownCursorImage : mHeatDownCursorImage);
+            mToolManager.SetToolCursor(mCurrentAction == HeatBlasterActionType::Cool ? mCoolDownCursorImage : mHeatDownCursorImage);
         }
         else
         {
-            mToolCursorManager.SetToolCursor(mCurrentAction == HeatBlasterActionType::Cool ? mCoolUpCursorImage : mHeatUpCursorImage);
+            mToolManager.SetToolCursor(mCurrentAction == HeatBlasterActionType::Cool ? mCoolUpCursorImage : mHeatUpCursorImage);
         }
     }
 
@@ -1543,7 +1547,7 @@ class FireExtinguisherTool final : public Tool
 public:
 
     FireExtinguisherTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -1632,11 +1636,11 @@ private:
     {
         if (mIsEngaged)
         {
-            mToolCursorManager.SetToolCursor(mDownCursorImage);
+            mToolManager.SetToolCursor(mDownCursorImage);
         }
         else
         {
-            mToolCursorManager.SetToolCursor(mUpCursorImage);
+            mToolManager.SetToolCursor(mUpCursorImage);
         }
     }
 
@@ -1653,7 +1657,7 @@ class GrabTool final : public ContinuousTool
 public:
 
     GrabTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -1724,12 +1728,12 @@ private:
             if (inputState.IsShiftKeyDown)
             {
                 // Down minus
-                mToolCursorManager.SetToolCursor(mDownMinusCursorImage);
+                mToolManager.SetToolCursor(mDownMinusCursorImage);
             }
             else
             {
                 // Down plus
-                mToolCursorManager.SetToolCursor(mDownPlusCursorImage);
+                mToolManager.SetToolCursor(mDownPlusCursorImage);
             }
         }
         else
@@ -1737,12 +1741,12 @@ private:
             if (inputState.IsShiftKeyDown)
             {
                 // Up minus
-                mToolCursorManager.SetToolCursor(mUpMinusCursorImage);
+                mToolManager.SetToolCursor(mUpMinusCursorImage);
             }
             else
             {
                 // Up plus
-                mToolCursorManager.SetToolCursor(mUpPlusCursorImage);
+                mToolManager.SetToolCursor(mUpPlusCursorImage);
             }
         }
     }
@@ -1758,7 +1762,7 @@ class SwirlTool final : public ContinuousTool
 public:
 
     SwirlTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -1829,12 +1833,12 @@ private:
             if (inputState.IsShiftKeyDown)
             {
                 // Down minus
-                mToolCursorManager.SetToolCursor(mDownMinusCursorImage);
+                mToolManager.SetToolCursor(mDownMinusCursorImage);
             }
             else
             {
                 // Down plus
-                mToolCursorManager.SetToolCursor(mDownPlusCursorImage);
+                mToolManager.SetToolCursor(mDownPlusCursorImage);
             }
         }
         else
@@ -1842,12 +1846,12 @@ private:
             if (inputState.IsShiftKeyDown)
             {
                 // Up minus
-                mToolCursorManager.SetToolCursor(mUpMinusCursorImage);
+                mToolManager.SetToolCursor(mUpMinusCursorImage);
             }
             else
             {
                 // Up plus
-                mToolCursorManager.SetToolCursor(mUpPlusCursorImage);
+                mToolManager.SetToolCursor(mUpPlusCursorImage);
             }
         }
     }
@@ -1863,7 +1867,7 @@ class AntiGravityFieldTool final : public Tool
 public:
 
     AntiGravityFieldTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -1874,7 +1878,7 @@ public:
     {
         mEngagementData.reset();
 
-        mToolCursorManager.SetToolCursor(mCursorImage);
+        mToolManager.SetToolCursor(mCursorImage);
     }
 
     void Deinitialize() override
@@ -1959,7 +1963,7 @@ class PinTool final : public OneShotTool
 public:
 
     PinTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -1969,7 +1973,7 @@ public:
     void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        mToolCursorManager.SetToolCursor(mCursorImage);
+        mToolManager.SetToolCursor(mCursorImage);
     }
 
     void OnLeftMouseDown(InputState const & inputState) override
@@ -1998,7 +2002,7 @@ class InjectPressureTool final : public Tool
 public:
 
     InjectPressureTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -2097,7 +2101,7 @@ private:
 
     void SetCurrentCursor()
     {
-        mToolCursorManager.SetToolCursor(mCurrentAction.has_value() ? mDownCursorImage : mUpCursorImage);
+        mToolManager.SetToolCursor(mCurrentAction.has_value() ? mDownCursorImage : mUpCursorImage);
     }
 
     enum class ActionType
@@ -2129,7 +2133,7 @@ class FloodHoseTool final : public Tool
 public:
 
     FloodHoseTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -2212,7 +2216,7 @@ private:
 
     void SetCurrentCursor()
     {
-        mToolCursorManager.SetToolCursor(
+        mToolManager.SetToolCursor(
             mIsEngaged
             ? ((mDownCursorCounter % 2) ? mDownCursorImage2 : mDownCursorImage1)
             : mUpCursorImage);
@@ -2235,7 +2239,7 @@ class AntiMatterBombTool final : public OneShotTool
 public:
 
     AntiMatterBombTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -2245,7 +2249,7 @@ public:
     void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        mToolCursorManager.SetToolCursor(mCursorImage);
+        mToolManager.SetToolCursor(mCursorImage);
     }
 
     void OnLeftMouseDown(InputState const & inputState) override
@@ -2266,7 +2270,7 @@ class FireExtinguishingBombTool final : public OneShotTool
 public:
 
     FireExtinguishingBombTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -2276,7 +2280,7 @@ public:
     void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        mToolCursorManager.SetToolCursor(mCursorImage);
+        mToolManager.SetToolCursor(mCursorImage);
     }
 
     void OnLeftMouseDown(InputState const & inputState) override
@@ -2297,7 +2301,7 @@ class ImpactBombTool final : public OneShotTool
 public:
 
     ImpactBombTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -2307,7 +2311,7 @@ public:
     void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        mToolCursorManager.SetToolCursor(mCursorImage);
+        mToolManager.SetToolCursor(mCursorImage);
     }
 
     void OnLeftMouseDown(InputState const & inputState) override
@@ -2328,7 +2332,7 @@ class RCBombTool final : public OneShotTool
 public:
 
     RCBombTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -2338,7 +2342,7 @@ public:
     void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        mToolCursorManager.SetToolCursor(mCursorImage);
+        mToolManager.SetToolCursor(mCursorImage);
     }
 
     void OnLeftMouseDown(InputState const & inputState) override
@@ -2359,7 +2363,7 @@ class TimerBombTool final : public OneShotTool
 public:
 
     TimerBombTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -2369,7 +2373,7 @@ public:
     void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        mToolCursorManager.SetToolCursor(mCursorImage);
+        mToolManager.SetToolCursor(mCursorImage);
     }
 
     void OnLeftMouseDown(InputState const & inputState) override
@@ -2390,7 +2394,7 @@ class WaveMakerTool final : public OneShotTool
 public:
 
     WaveMakerTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -2457,11 +2461,11 @@ private:
     {
         if (inputState.IsLeftMouseDown)
         {
-            mToolCursorManager.SetToolCursor(mDownCursorImage);
+            mToolManager.SetToolCursor(mDownCursorImage);
         }
         else
         {
-            mToolCursorManager.SetToolCursor(mUpCursorImage);
+            mToolManager.SetToolCursor(mUpCursorImage);
         }
     }
 
@@ -2478,7 +2482,7 @@ class TornadoTool final : public Tool
 public:
 
     TornadoTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -2505,17 +2509,65 @@ public:
     {
         if (mEngagementData.has_value())
         {
-            // Calculate screen deltaY
-            float const screenDeltaY = static_cast<float>(inputState.MousePosition.y - mEngagementData->StartScreenY);
+            //
+            // Calculate strength and heat multipliers: depends on y displacement wrt engagement start;
+            //  - @ TopY : S=2.0 H=0.0
+            //  - @ StartY : S=1.0 H=0.0
+            //  - @ BottomY : S=1.0 H=1.0
+            //
 
-            // Calculate multiplier (1.0 @ origin Y, 2.0 @ half screen height away, 3.0f max)
-            float multiplier = 1.0f + std::abs(screenDeltaY) / static_cast<float>(mGameController.GetCanvasLogicalSize().height / 2);
+            float constexpr MinDeltaY = 10.0f; // Zero-center
+
+            float strengthMultiplier = 1.0f;
+            float heatDepth = 0.0f;
+
+            int const yTop = mToolManager.GetCanvasOrigin().y + 40;
+            int const yBottom = std::max(mToolManager.GetCanvasOrigin().y + mToolManager.GetCanvasSize().height - 40, yTop);
+            if (yTop < yBottom) // Safety
+            {
+                if (inputState.MousePosition.y <= mEngagementData->StartScreenY)
+                {
+                    // Above
+
+                    int yEnd = std::max(inputState.MousePosition.y, yTop); // Top
+                    int yStart = std::max(mEngagementData->StartScreenY, yEnd); // Bottom
+                    if (yStart > yTop) // Safety
+                    {
+                        int deltaY = yStart - yEnd;
+                        assert(deltaY >= 0);
+
+                        if (deltaY >= MinDeltaY)
+                        {
+                            strengthMultiplier = 1.0f + static_cast<float>(deltaY) / static_cast<float>(yStart - yTop);
+                            assert(strengthMultiplier >= 1.0f && strengthMultiplier <= 2.0f);
+                        }
+                    }
+                }
+                else
+                {
+                    // Below
+
+                    int yEnd = std::min(inputState.MousePosition.y, yBottom); // Bottom
+                    int yStart = std::min(mEngagementData->StartScreenY, yEnd); // Top
+                    if (yBottom > yStart) // Safety
+                    {
+                        int deltaY = yEnd - yStart;
+                        assert(deltaY >= 0);
+
+                        if (deltaY >= MinDeltaY)
+                        {
+                            heatDepth = static_cast<float>(deltaY) / static_cast<float>(yBottom - yStart);
+                            assert(heatDepth >= 0.0f && heatDepth <= 1.0f);
+                        }
+                    }
+                }
+            }
 
             mGameController.UpdateTornado(
                 mEngagementData->CurrentTornadoId,
                 inputState.MousePosition.x,
-                multiplier * (inputState.IsShiftKeyDown ? 2.0f : 1.0f), // Strength
-                screenDeltaY > 0.0f ? multiplier : 0.0f); // Heat
+                strengthMultiplier,
+                heatDepth);
         }
     }
 
@@ -2562,7 +2614,7 @@ private:
 
     void SetCurrentCursor()
     {
-        mToolCursorManager.SetToolCursor(mEngagementData.has_value() ? mDownCursorImage : mUpCursorImage);
+        mToolManager.SetToolCursor(mEngagementData.has_value() ? mDownCursorImage : mUpCursorImage);
     }
 
     struct EngagementData
@@ -2592,7 +2644,7 @@ class TerrainAdjustTool final : public Tool
 public:
 
     TerrainAdjustTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -2771,7 +2823,7 @@ private:
     {
         if (cursor != mCurrentCursor)
         {
-            mToolCursorManager.SetToolCursor(*cursor);
+            mToolManager.SetToolCursor(*cursor);
             mCurrentCursor = cursor;
         }
     }
@@ -2859,7 +2911,7 @@ class ScrubTool final : public Tool
 public:
 
     ScrubTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -2983,11 +3035,11 @@ private:
             // Set current cursor to the down cursor
             if (inputState.IsShiftKeyDown)
             {
-                mToolCursorManager.SetToolCursor(mRotDownCursorImage);
+                mToolManager.SetToolCursor(mRotDownCursorImage);
             }
             else
             {
-                mToolCursorManager.SetToolCursor(mScrubDownCursorImage);
+                mToolManager.SetToolCursor(mScrubDownCursorImage);
             }
         }
         else
@@ -2995,11 +3047,11 @@ private:
             // Set current cursor to the up cursor
             if (inputState.IsShiftKeyDown)
             {
-                mToolCursorManager.SetToolCursor(mRotUpCursorImage);
+                mToolManager.SetToolCursor(mRotUpCursorImage);
             }
             else
             {
-                mToolCursorManager.SetToolCursor(mScrubUpCursorImage);
+                mToolManager.SetToolCursor(mScrubUpCursorImage);
             }
         }
     }
@@ -3030,7 +3082,7 @@ class RepairStructureTool final : public Tool
 public:
 
     RepairStructureTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -3144,7 +3196,7 @@ private:
             cursorImage = mUpCursorImage;
         }
 
-        mToolCursorManager.SetToolCursor(cursorImage);
+        mToolManager.SetToolCursor(cursorImage);
     }
 
 private:
@@ -3165,7 +3217,7 @@ class ThanosSnapTool final : public OneShotTool
 public:
 
     ThanosSnapTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -3212,11 +3264,11 @@ private:
     {
         if (inputState.IsShiftKeyDown)
         {
-            mToolCursorManager.SetToolCursor(inputState.IsLeftMouseDown ? mDownStructuralCursorImage : mUpStructuralCursorImage);
+            mToolManager.SetToolCursor(inputState.IsLeftMouseDown ? mDownStructuralCursorImage : mUpStructuralCursorImage);
         }
         else
         {
-            mToolCursorManager.SetToolCursor(inputState.IsLeftMouseDown ? mDownNormalCursorImage : mUpNormalCursorImage);
+            mToolManager.SetToolCursor(inputState.IsLeftMouseDown ? mDownNormalCursorImage : mUpNormalCursorImage);
         }
     }
 
@@ -3231,7 +3283,7 @@ class ScareFishTool final : public Tool
 public:
 
     ScareFishTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -3363,7 +3415,7 @@ private:
         {
             case ActionType::Attract:
             {
-                mToolCursorManager.SetToolCursor(
+                mToolManager.SetToolCursor(
                     mIsEngaged
                     ? ((mDownCursorCounter % 2) ? mAttractDownCursorImage2 : mAttractDownCursorImage1)
                     : mAttractUpCursorImage);
@@ -3373,7 +3425,7 @@ private:
 
             case ActionType::Scare:
             {
-                mToolCursorManager.SetToolCursor(
+                mToolManager.SetToolCursor(
                     mIsEngaged
                     ? ((mDownCursorCounter % 2) ? mScareDownCursorImage2 : mScareDownCursorImage1)
                     : mScareUpCursorImage);
@@ -3440,7 +3492,7 @@ class PhysicsProbeTool final : public OneShotTool
 public:
 
     PhysicsProbeTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -3450,7 +3502,7 @@ public:
     void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        mToolCursorManager.SetToolCursor(mCursorImage);
+        mToolManager.SetToolCursor(mCursorImage);
     }
 
     void OnLeftMouseDown(InputState const & inputState) override
@@ -3471,7 +3523,7 @@ class BlastTool final : public Tool
 public:
 
     BlastTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -3658,14 +3710,14 @@ private:
     {
         if (mEngagementData.has_value())
         {
-            mToolCursorManager.SetToolCursor(mDownCursorImage);
+            mToolManager.SetToolCursor(mDownCursorImage);
         }
         else
         {
             if (!isShiftKey)
-                mToolCursorManager.SetToolCursor(mUpCursorImage1);
+                mToolManager.SetToolCursor(mUpCursorImage1);
             else
-                mToolCursorManager.SetToolCursor(mUpCursorImage2);
+                mToolManager.SetToolCursor(mUpCursorImage2);
         }
     }
 
@@ -3710,7 +3762,7 @@ class ElectricSparkTool final : public Tool
 public:
 
     ElectricSparkTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -3830,7 +3882,7 @@ private:
 
     void SetCurrentCursor()
     {
-        mToolCursorManager.SetToolCursor(
+        mToolManager.SetToolCursor(
             mEngagementData.has_value()
             ? mDownCursorImage
             : mUpCursorImage);
@@ -3865,7 +3917,7 @@ class WindMakerTool final : public Tool
 public:
 
     WindMakerTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -4056,11 +4108,11 @@ private:
         if (!mEngagementData.has_value()
             || mEngagementData->CurrentState == EngagementData::StateType::TearDown)
         {
-            mToolCursorManager.SetToolCursor(mUpCursorImage);
+            mToolManager.SetToolCursor(mUpCursorImage);
         }
         else
         {
-            mToolCursorManager.SetToolCursor(mDownCursorImages[mEngagementData->CurrentCursorIndex]);
+            mToolManager.SetToolCursor(mDownCursorImages[mEngagementData->CurrentCursorIndex]);
         }
     }
 
@@ -4134,7 +4186,7 @@ class LaserCannonTool final : public Tool
 public:
 
     LaserCannonTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -4243,11 +4295,11 @@ private:
     {
         if (!mEngagementData.has_value())
         {
-            mToolCursorManager.SetToolCursor(mUpCursorImage);
+            mToolManager.SetToolCursor(mUpCursorImage);
         }
         else
         {
-            mToolCursorManager.SetToolCursor(mDownCursorImage);
+            mToolManager.SetToolCursor(mDownCursorImage);
         }
     }
 
@@ -4276,7 +4328,7 @@ class LampTool final : public Tool
 public:
 
     LampTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -4285,7 +4337,7 @@ public:
 
     void Initialize(InputState const & /*inputState*/) override
     {
-        mToolCursorManager.SetToolCursor(mUpCursorImage);
+        mToolManager.SetToolCursor(mUpCursorImage);
     }
 
     void Deinitialize() override
@@ -4308,14 +4360,14 @@ public:
     {
         SetLamp(inputState);
 
-        mToolCursorManager.SetToolCursor(mDownCursorImage);
+        mToolManager.SetToolCursor(mDownCursorImage);
     }
 
     void OnLeftMouseUp(InputState const & /*inputState*/) override
     {
         mGameController.ResetLamp();
 
-        mToolCursorManager.SetToolCursor(mUpCursorImage);
+        mToolManager.SetToolCursor(mUpCursorImage);
     }
 
     void OnShiftKeyDown(InputState const & inputState) override
@@ -4355,7 +4407,7 @@ class LightningStrikeTool final : public OneShotTool
 public:
 
     LightningStrikeTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -4365,7 +4417,7 @@ public:
     void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        mToolCursorManager.SetToolCursor(mCursorImage);
+        mToolManager.SetToolCursor(mCursorImage);
     }
 
     void OnLeftMouseDown(InputState const & inputState) override
@@ -4400,7 +4452,7 @@ protected:
 
     PlaceNpcToolBase(
         ToolType toolType,
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -4501,16 +4553,16 @@ private:
         {
             if (mCurrentEngagementState->Npc.has_value())
             {
-                mToolCursorManager.SetToolCursor(mClosedCursorImage);
+                mToolManager.SetToolCursor(mClosedCursorImage);
             }
             else
             {
-                mToolCursorManager.SetToolCursor(mErrorCursorImage);
+                mToolManager.SetToolCursor(mErrorCursorImage);
             }
         }
         else
         {
-            mToolCursorManager.SetToolCursor(mOpenCursorImage);
+            mToolManager.SetToolCursor(mOpenCursorImage);
         }
     }
 
@@ -4538,7 +4590,7 @@ class PlaceFurnitureNpcTool final : public PlaceNpcToolBase
 public:
 
     PlaceFurnitureNpcTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -4575,7 +4627,7 @@ class PlaceHumanNpcTool final : public PlaceNpcToolBase
 public:
 
     PlaceHumanNpcTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -4613,7 +4665,7 @@ public:
 
     BaseSingleSelectNpcTool(
         ToolType toolType,
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         std::optional<NpcKindType> applicableKind,
@@ -4669,11 +4721,11 @@ private:
     {
         if (isMouseDown)
         {
-            mToolCursorManager.SetToolCursor(mDownCursorImage);
+            mToolManager.SetToolCursor(mDownCursorImage);
         }
         else
         {
-            mToolCursorManager.SetToolCursor(mUpCursorImage);
+            mToolManager.SetToolCursor(mUpCursorImage);
         }
     }
 
@@ -4690,7 +4742,7 @@ class FollowNpcTool final : public BaseSingleSelectNpcTool
 public:
 
     FollowNpcTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -4718,7 +4770,7 @@ protected:
 
     BaseMultiSelectNpcTool(
         ToolType toolType,
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         std::optional<NpcKindType> applicableKind,
@@ -4829,11 +4881,11 @@ private:
     {
         if (isMouseDown)
         {
-            mToolCursorManager.SetToolCursor(mDownCursorImage);
+            mToolManager.SetToolCursor(mDownCursorImage);
         }
         else
         {
-            mToolCursorManager.SetToolCursor(mUpCursorImage);
+            mToolManager.SetToolCursor(mUpCursorImage);
         }
     }
 
@@ -4855,7 +4907,7 @@ class RemoveNpcTool final : public BaseMultiSelectNpcTool
 public:
 
     RemoveNpcTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -4878,7 +4930,7 @@ class TurnaroundNpcTool final : public BaseMultiSelectNpcTool
 public:
 
     TurnaroundNpcTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -4901,7 +4953,7 @@ class MoveNpcTool final : public Tool
 public:
 
     MoveNpcTool(
-        IToolCursorManager & toolCursorManager,
+        IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
         GameAssetManager const & gameAssetManager);
@@ -5205,11 +5257,11 @@ private:
     {
         if (isMouseDown)
         {
-            mToolCursorManager.SetToolCursor(mDownCursorImage);
+            mToolManager.SetToolCursor(mDownCursorImage);
         }
         else
         {
-            mToolCursorManager.SetToolCursor(mUpCursorImage);
+            mToolManager.SetToolCursor(mUpCursorImage);
         }
     }
 

@@ -1006,6 +1006,8 @@
 							! Gist: bring to combustion temperature, slowly
 							! If not combustible: bring to fixed temperature 
 
+				- 5. Enlarge bottom of cone with strength multiplier (@Tornado)
+
 				= Add one or two new stress_medium_cable sounds
 					+ Have them at C:\Users\Neurodancer\Desktop\FS Scratch\Ship Scratch\Sounds\Cable\Stress
 					- Port to Android
@@ -1048,16 +1050,18 @@
 					+ Only proportional to Force/StrengthMultiplier
 					+ NOT proportional to viz
 
-			- Tool
+			= Tool
 				+ Cursor (up, down)
 					+ Anchors
-				- Rethink dynamics of tool:
-					- Option 1:
-						- Up/down only affects strength multiplier (><1)
-						- Shift bumps up heat (only) - which then recoils when shift left
-
-						- Enlarge bottom of cone with strength multiplier (@Tornado)
+				+ Rethink dynamics of tool:
+					+ Up: StrengthMultiplier
+					+ Down: HeatDepth
+					+ Zero-click?
+					
 				- Notification @ yLevel=0 (StartY)
+					- Colored vertical bar, x=mouseX, ytop/bottom = mouseY, ybottom/top=startY
+						- New multi-notification type
+						- Driven by tool
 
 			- Sound
 				- TODOHERE: to spec
@@ -1065,7 +1069,7 @@
 			- If we decide to stay with 1 tornado, change BeginPlace algo to always pick it if alive
 
 			- Test:
-				- BeingPlaceAntiGravityField: we've changed to closest
+				- BeginPlaceAntiGravityField: we've changed to closest
 
 
 	- Run Discord poll for next:

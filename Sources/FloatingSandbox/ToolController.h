@@ -20,8 +20,7 @@
 #include <memory>
 #include <vector>
 
-class ToolController final
-    : public IToolCursorManager
+class ToolController final : public IToolManager
 {
 public:
 
@@ -176,7 +175,11 @@ public:
     // IToolCursorHandler
     //
 
-    virtual void SetToolCursor(wxImage const & basisImage, float strength = 0.0f) override;
+    DisplayLogicalCoordinates GetCanvasOrigin() const override;
+
+    DisplayLogicalSize GetCanvasSize() const override;
+
+    void SetToolCursor(wxImage const & basisImage, float strength = 0.0f) override;
 
 private:
 
