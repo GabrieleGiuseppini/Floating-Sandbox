@@ -1101,13 +1101,10 @@ void Ship::ApplyTornado(
         * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f)
         * args.StrengthMultiplier;
 
-    // The quantity of heat; Q = q*dt
-    float const effectiveHeatQuantity =
-        500.0f * 1000.0f // Joule
-        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f)
-        * SimulationParameters::SimulationStepTimeDuration<float>
-        * args.HeatDepth
-        * args.StrengthMultiplier;
+    // The temperature we bring particles to, when heatDepth=1
+    float const targetTemperature =
+        700.0f // Magic
+        * (simulationParameters.IsUltraViolentMode ? 2.0f : 1.0f);
 
     for (auto pointIndex : mPoints)
     {
@@ -1150,16 +1147,11 @@ void Ship::ApplyTornado(
                     // Heat
                     //
 
-                    // Calc temperature delta
-                    // T = Q/HeatCapacity
-                    float deltaT =
-                        effectiveHeatQuantity
-                        * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
-
-                    // Increase/lower temperature
+                    // Increase temperature to target - slowly
+                    float const currentTemperature = mPoints.GetTemperature(pointIndex);
                     mPoints.SetTemperature(
                         pointIndex,
-                        mPoints.GetTemperature(pointIndex) + deltaT);
+                        currentTemperature + (targetTemperature - currentTemperature) * 0.007f * args.HeatDepth);
                 }
 
                 //

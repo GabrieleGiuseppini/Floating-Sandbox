@@ -195,7 +195,7 @@ void InteractiveBodies::Update(
                 ship->ApplyTornado(
                     vec2f(tornado.CurrentX, tornado.CurrentBaseY),
                     CalculateTornadoEffectiveSize(tornado.CurrentVisibilityAlpha),
-                    CalculateTornadoBottomWidthFraction(tornado.CurrentVisibilityAlpha),
+                    CalculateTornadoBottomWidthFraction(tornado.CurrentForceMultiplier),
                     tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha,
                     tornado.CurrentHeatDepth);
             }
@@ -243,7 +243,7 @@ void InteractiveBodies::Upload(RenderContext & renderContext) const
             renderContext.UploadTornado(
                 vec2f(tornado.CurrentX, tornado.CurrentBaseY),
                 CalculateTornadoEffectiveSize(tornado.CurrentVisibilityAlpha),
-                CalculateTornadoBottomWidthFraction(tornado.CurrentVisibilityAlpha),
+                CalculateTornadoBottomWidthFraction(tornado.CurrentForceMultiplier),
                 tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha,
                 tornado.CurrentHeatDepth,
                 tornado.CurrentVisibilityAlpha,
@@ -530,17 +530,15 @@ void InteractiveBodies::EndPlaceTornado(
 FloatSize InteractiveBodies::CalculateTornadoEffectiveSize(float visibilityAlpha)
 {
     return FloatSize(
-        // TODOTEST
-        //SimulationParameters::TornadoWidth * (0.1f + 0.9f * visibilityAlpha),
         SimulationParameters::TornadoWidth * (0.5f + 0.5f * visibilityAlpha),
         SimulationParameters::TornadoHeight);
 }
 
-float InteractiveBodies::CalculateTornadoBottomWidthFraction(float visibilityAlpha)
+float InteractiveBodies::CalculateTornadoBottomWidthFraction(float strengthMultiplier)
 {
-    // TODOTEST
-    //return 0.2f * visibilityAlpha;
-    (void)visibilityAlpha;
+    // Futurework?
+    //return LinearStep(1.25f, 2.0f, strengthMultiplier) * 0.1f;
+    (void)strengthMultiplier;
     return 0.0f;
 }
 

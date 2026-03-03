@@ -992,21 +992,24 @@
 					+ Write all the above as comments
 					+ Apply ultra-violent mode for both x and y forces, and heat
 						+ Incorporate in effective's
-				= 4. Apply heat
+				+ 4. Apply heat
 					+ Application area should be larger
-					- Don't give infinite heat: have a target temperature instead of giving heat
-						! Option 1:
+					+ Don't give infinite heat: have a target temperature instead of giving heat
+						+ Option 1:
 							! Bring slowly to fixed temperature, which depends on HeatDepth
 								! HeatDepth=1: 2000K
 								! Multiply with UltraViolentMode
-							- HeatDepth=0 => no temp delta
-								- So: temp delta = (2000K - temp[p]) * HeatDepth * ConvergenceRate
-									- 2000K does _not_ depend on HeatDepth
-						! Option 2:
-							! Gist: bring to combustion temperature, slowly
-							! If not combustible: bring to fixed temperature 
+							+ HeatDepth=0 => no temp delta
+								+ So: temp delta = (2000K - temp[p]) * HeatDepth * ConvergenceRate
+									+ 2000K does _not_ depend on HeatDepth
+						X Option 2:
+							X With heat quantity again
 
-				- 5. Enlarge bottom of cone with strength multiplier (@Tornado)
+						+ Test modulation
+						+ Test UV mode
+
+				X 5. Enlarge bottom of cone with strength multiplier (@Tornado)
+					X Both @ application and @ RenderUpload
 
 				= Add one or two new stress_medium_cable sounds
 					+ Have them at C:\Users\Neurodancer\Desktop\FS Scratch\Ship Scratch\Sounds\Cable\Stress
@@ -1062,6 +1065,7 @@
 					- Colored vertical bar, x=mouseX, ytop/bottom = mouseY, ybottom/top=startY
 						- New multi-notification type
 						- Driven by tool
+						- TODO: normal and fire gradients?
 
 			- Sound
 				- TODOHERE: to spec
@@ -1071,6 +1075,11 @@
 			- Test:
 				- BeginPlaceAntiGravityField: we've changed to closest
 
+	- Look into stutter:
+		- See if mouse moves
+		- Thread prio
+		- See if it's relax thread waiting for count=0
+		- See if it's timer
 
 	- Run Discord poll for next:
 		- Longhorn materials (includes redesign of material palette, as it would become too slow)
