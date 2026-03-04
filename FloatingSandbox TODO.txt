@@ -841,7 +841,7 @@
 		+ Bump up build number
 
 	+ Check Discord
-	= Release:
+	+ Release:
 		+ Build on Ubuntu
 		+ Windows
 			+ MSI variable
@@ -874,17 +874,15 @@
 			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
 				+ export GDK_BACKEND=x11
 		+ Send x64 installer to dev server for final smoke test
-		- Wait for test results
+		+ Wait for test results
 		*******
-		- Cut tag on github
+		+ Cut tag on github
 		- Copy binaries to Prev
 		- Copy MSIs to scratch and GoogleDrive
-		- Upload packages to GameJolt
-			- Verify Windows Defender
-				- Report file as safe (https://gamejolt.com/privacy)
-			- Youtube video
-				- Say "Android will come soon" in text
-			- GameJolt Post
+		+ Upload packages to GameJolt
+			+ Youtube video
+				+ Say "Android will come soon" in text
+			+ GameJolt Post
 		- www.floatingsandbox.com:
 			- Update current version in FAQ
 			- Wait a day or two, to exclude disastrous bugs
