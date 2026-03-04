@@ -1075,6 +1075,9 @@
 			- Test:
 				- BeginPlaceAntiGravityField: we've changed to closest
 
+	- Look into DKUZ's bug
+		- Settings screenshot is on Desktop now
+
 	- Look into stutter:
 		- See if mouse moves
 		- Thread prio
