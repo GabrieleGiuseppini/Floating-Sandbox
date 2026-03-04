@@ -877,8 +877,8 @@
 		+ Wait for test results
 		*******
 		+ Cut tag on github
-		- Copy binaries to Prev
-		- Copy MSIs to scratch and GoogleDrive
+		+ Copy binaries to Prev
+		+ Copy MSIs to scratch and GoogleDrive
 		+ Upload packages to GameJolt
 			+ Youtube video
 				+ Say "Android will come soon" in text
@@ -1060,6 +1060,7 @@
 					+ Zero-click?
 					
 				- Notification @ yLevel=0 (StartY)
+					- Split Multi-notif: _world and _ndc
 					- Colored vertical bar, x=mouseX, ytop/bottom = mouseY, ybottom/top=startY
 						- New multi-notification type
 						- Driven by tool
