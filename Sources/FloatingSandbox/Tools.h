@@ -2538,8 +2538,19 @@ public:
 
                         if (deltaY >= MinDeltaY)
                         {
-                            strengthMultiplier = 1.0f + static_cast<float>(deltaY) / static_cast<float>(yStart - yTop);
+                            float const powerupNormalized = static_cast<float>(deltaY) / static_cast<float>(yStart - yTop);
+                            strengthMultiplier = 1.0f + powerupNormalized;
                             assert(strengthMultiplier >= 1.0f && strengthMultiplier <= 2.0f);
+
+                            // Show power meter
+                            rgbaColor constexpr StartColor(0, 0, 0, rgbaColor::data_type_max); // Black
+                            rgbaColor constexpr EndColor(0, 0, rgbaColor::data_type_max, rgbaColor::data_type_max); // Blue
+                            mGameController.ShowPowerMeter(
+                                inputState.MousePosition.x,
+                                yStart,
+                                yEnd,
+                                StartColor,
+                                rgbaColor(Mix(StartColor.toVec4f(), EndColor.toVec4f(), powerupNormalized)));
                         }
                     }
                 }
@@ -2558,6 +2569,16 @@ public:
                         {
                             heatDepth = static_cast<float>(deltaY) / static_cast<float>(yBottom - yStart);
                             assert(heatDepth >= 0.0f && heatDepth <= 1.0f);
+
+                            // Show power meter
+                            rgbaColor constexpr StartColor(0, 0, 0, rgbaColor::data_type_max); // Black
+                            rgbaColor constexpr EndColor(rgbaColor::data_type_max, 0, 0, rgbaColor::data_type_max); // Red
+                            mGameController.ShowPowerMeter(
+                                inputState.MousePosition.x,
+                                yStart,
+                                yEnd,
+                                StartColor,
+                                rgbaColor(Mix(StartColor.toVec4f(), EndColor.toVec4f(), heatDepth)));
                         }
                     }
                 }

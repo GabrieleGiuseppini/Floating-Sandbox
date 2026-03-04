@@ -50,8 +50,10 @@ NotificationRenderContext::NotificationRenderContext(
     , mLaserCannonVBO()
     , mLaserRayVAO()
     , mLaserRayVBO()
-    , mMultiNotificationVAO()
-    , mMultiNotificationVBO()
+    , mMultiNotificationNdcCoordsVAO()
+    , mMultiNotificationNdcCoordsVBO()
+    , mMultiNotificationWorldCoordsVAO()
+    , mMultiNotificationWorldCoordsVBO()
     , mRectSelectionVAO()
     , mRectSelectionVBO()
     , mInteractiveToolDashedLineVAO()
@@ -270,38 +272,75 @@ NotificationRenderContext::NotificationRenderContext(
     }
 
     //
-    // Initialize Multi-Notification
+    // Initialize Multi-Notification - NDC Coords
     //
 
     {
         glGenVertexArrays(1, &tmpGLuint);
-        mMultiNotificationVAO = tmpGLuint;
+        mMultiNotificationNdcCoordsVAO = tmpGLuint;
 
-        glBindVertexArray(*mMultiNotificationVAO);
+        glBindVertexArray(*mMultiNotificationNdcCoordsVAO);
         CheckOpenGLError();
 
         glGenBuffers(1, &tmpGLuint);
-        mMultiNotificationVBO = tmpGLuint;
+        mMultiNotificationNdcCoordsVBO = tmpGLuint;
 
         // Describe vertex attributes
-        static_assert(sizeof(MultiNotificationVertex) == (1 + 8) * sizeof(float));
-        glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification1), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification2), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(4 * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification3));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification3), 1, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(8 * sizeof(float)));
+        static_assert(sizeof(MultiNotificationNdcCoordsVertex) == (1 + 2 + 1 + 1 + 2 + 4 + 4) * sizeof(float));
+        glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationNdcCoordsVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords1), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationNdcCoordsVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords2), 3, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationNdcCoordsVertex), (void *)((4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords3));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords3), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationNdcCoordsVertex), (void *)((4 + 3) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords4));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords4), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationNdcCoordsVertex), (void *)((4 + 3 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
 
         // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification>();
-        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::MultiNotification>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification_NdcCoords>();
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::MultiNotification_NdcCoords>();
 
         // Prepare buffer
-        mMultiNotificationVertexBuffer.reserve(6 * 4); // Arbitrary
+        mMultiNotificationNdcCoordsVertexBuffer.reserve(6 * 4); // Arbitrary
+    }
+
+    //
+    // Initialize Multi-Notification - World Coords
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mMultiNotificationWorldCoordsVAO = tmpGLuint;
+
+        glBindVertexArray(*mMultiNotificationWorldCoordsVAO);
+        CheckOpenGLError();
+
+        glGenBuffers(1, &tmpGLuint);
+        mMultiNotificationWorldCoordsVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        static_assert(sizeof(MultiNotificationWorldCoordsVertex) == (1 + 8) * sizeof(float));
+        glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationWorldCoordsVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_WorldCoords1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_WorldCoords1), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationWorldCoordsVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_WorldCoords2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_WorldCoords2), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationWorldCoordsVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_WorldCoords3));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_WorldCoords3), 1, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationWorldCoordsVertex), (void *)(8 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+
+        // Set texture parameters
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification_WorldCoords>();
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::MultiNotification_WorldCoords>();
+
+        // Prepare buffer
+        mMultiNotificationWorldCoordsVertexBuffer.reserve(6 * 4); // Arbitrary
     }
 
     //
@@ -368,7 +407,8 @@ void NotificationRenderContext::UploadStart()
     mLaserRayVertexBuffer.clear();
 
     // Reset multi-notifications, they are uploaded as needed
-    mMultiNotificationVertexBuffer.clear();
+    mMultiNotificationNdcCoordsVertexBuffer.clear();
+    mMultiNotificationWorldCoordsVertexBuffer.clear();
 
     // Reset rect selection, it's uploaded as needed
     mRectSelectionVertexBuffer.clear();
@@ -654,8 +694,8 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
     ProjectionMatrix globalOrthoMatrix;
     renderParameters.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::MultiNotification, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification_WorldCoords>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::MultiNotification_WorldCoords, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::RectSelection>();
@@ -1109,35 +1149,61 @@ void NotificationRenderContext::RenderDrawLaserRay()
 
 void NotificationRenderContext::RenderPrepareMultiNotification()
 {
-    if (!mMultiNotificationVertexBuffer.empty())
+    if (!mMultiNotificationNdcCoordsVertexBuffer.empty())
     {
-        glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationNdcCoordsVBO);
 
         glBufferData(GL_ARRAY_BUFFER,
-            sizeof(MultiNotificationVertex) * mMultiNotificationVertexBuffer.size(),
-            mMultiNotificationVertexBuffer.data(),
+            sizeof(MultiNotificationNdcCoordsVertex) * mMultiNotificationNdcCoordsVertexBuffer.size(),
+            mMultiNotificationNdcCoordsVertexBuffer.data(),
+            GL_STREAM_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    if (!mMultiNotificationWorldCoordsVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationWorldCoordsVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(MultiNotificationWorldCoordsVertex) * mMultiNotificationWorldCoordsVertexBuffer.size(),
+            mMultiNotificationWorldCoordsVertexBuffer.data(),
             GL_STREAM_DRAW);
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // Set time parameter
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification>();
-        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::MultiNotification, GameShaderSets::ProgramParameterKind::Time>(GameWallClock::GetInstance().ContinuousNowAsFloat());
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification_WorldCoords>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::MultiNotification_WorldCoords, GameShaderSets::ProgramParameterKind::Time>(GameWallClock::GetInstance().ContinuousNowAsFloat());
     }
 }
 
 void NotificationRenderContext::RenderDrawMultiNotification()
 {
-    if (!mMultiNotificationVertexBuffer.empty())
+    if (!mMultiNotificationNdcCoordsVertexBuffer.empty())
     {
-        glBindVertexArray(*mMultiNotificationVAO);
+        glBindVertexArray(*mMultiNotificationNdcCoordsVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification_NdcCoords>();
+
+        // Draw
+        assert((mMultiNotificationNdcCoordsVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mMultiNotificationNdcCoordsVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
+
+    if (!mMultiNotificationWorldCoordsVertexBuffer.empty())
+    {
+        glBindVertexArray(*mMultiNotificationWorldCoordsVAO);
+
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification_WorldCoords>();
 
         bool doResetBlending = false;
-        if (mMultiNotificationVertexBuffer[0].vertexKind == static_cast<float>(MultiNotificationVertex::VertexKindType::BlastToolHalo)
-            || mMultiNotificationVertexBuffer[0].vertexKind == static_cast<float>(MultiNotificationVertex::VertexKindType::PressureInjectionHalo))
+        if (mMultiNotificationWorldCoordsVertexBuffer[0].vertexKind == static_cast<float>(MultiNotificationWorldCoordsVertex::VertexKindType::BlastToolHalo)
+            || mMultiNotificationWorldCoordsVertexBuffer[0].vertexKind == static_cast<float>(MultiNotificationWorldCoordsVertex::VertexKindType::PressureInjectionHalo))
         {
             // Setup custom blending
             glBlendFunc(GL_SRC_COLOR, GL_ONE);
@@ -1146,8 +1212,8 @@ void NotificationRenderContext::RenderDrawMultiNotification()
         }
 
         // Draw
-        assert((mMultiNotificationVertexBuffer.size() % 6) == 0);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mMultiNotificationVertexBuffer.size()));
+        assert((mMultiNotificationWorldCoordsVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mMultiNotificationWorldCoordsVertexBuffer.size()));
 
         if (doResetBlending)
         {

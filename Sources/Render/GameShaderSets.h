@@ -28,7 +28,8 @@ enum class ProgramKind
     LandTextureDetailed,
     LaserRay,
     Lightning,
-    MultiNotification,
+    MultiNotification_NdcCoords,
+    MultiNotification_WorldCoords,
     OceanDepthBasic,
     OceanDepthDetailedBackgroundLower,
     OceanDepthDetailedBackgroundUpper,
@@ -317,9 +318,14 @@ enum class VertexAttributeKind : std::uint32_t
     PhysicsProbePanel1 = 0,
     PhysicsProbePanel2 = 1,
 
-    MultiNotification1 = 0,
-    MultiNotification2 = 1,
-    MultiNotification3 = 2,
+    MultiNotification_NdcCoords1 = 0,
+    MultiNotification_NdcCoords2 = 1,
+    MultiNotification_NdcCoords3 = 2,
+    MultiNotification_NdcCoords4 = 3,
+
+    MultiNotification_WorldCoords1 = 0,
+    MultiNotification_WorldCoords2 = 1,
+    MultiNotification_WorldCoords3 = 2,
 
     LaserRay1 = 0,
     LaserRay2 = 1,

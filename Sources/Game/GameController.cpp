@@ -709,6 +709,16 @@ void GameController::ShowInteractiveToolDashedRect(
     mNotificationLayer.ShowInteractiveToolDashedLine({ corner1.x, corner2.y }, corner1);
 }
 
+void GameController::ShowPowerMeter(
+    int xScreen,
+    int yStartScreen, // Bottom
+    int yEndScreen, // Top
+    rgbaColor const & startColor,
+    rgbaColor const & endColor)
+{
+    mNotificationLayer.ShowPowerMeter(xScreen, yStartScreen, yEndScreen, startColor, endColor);
+}
+
 void GameController::ToggleToFullDayOrNight()
 {
     if (mTimeOfDay >= 0.5f)

@@ -47,8 +47,10 @@ ProgramKind ShaderNameToProgramKind(std::string const & str)
         return ProgramKind::LaserRay;
     else if (lstr == "lightning")
         return ProgramKind::Lightning;
-    else if (lstr == "multi_notification")
-        return ProgramKind::MultiNotification;
+    else if (lstr == "multi_notification_ndccoords")
+        return ProgramKind::MultiNotification_NdcCoords;
+    else if (lstr == "multi_notification_worldcoords")
+        return ProgramKind::MultiNotification_WorldCoords;
     else if (lstr == "ocean_depth_basic")
         return ProgramKind::OceanDepthBasic;
     else if (lstr == "ocean_depth_detailed_background_lower")
@@ -257,8 +259,10 @@ std::string ProgramKindToStr(ProgramKind program)
             return "LaserRay";
         case ProgramKind::Lightning:
             return "Lightning";
-        case ProgramKind::MultiNotification:
-            return "MultiNotification";
+        case ProgramKind::MultiNotification_NdcCoords:
+            return "MultiNotification_NdcCoords";
+        case ProgramKind::MultiNotification_WorldCoords:
+            return "MultiNotification_WorldCoords";
         case ProgramKind::OceanDepthBasic:
             return "OceanDepthBasic";
         case ProgramKind::OceanDepthDetailedBackgroundLower:
@@ -824,12 +828,20 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
         return VertexAttributeKind::PhysicsProbePanel1;
     else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbePanel2"))
         return VertexAttributeKind::PhysicsProbePanel2;
-    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification1"))
-        return VertexAttributeKind::MultiNotification1;
-    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification2"))
-        return VertexAttributeKind::MultiNotification2;
-    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification3"))
-        return VertexAttributeKind::MultiNotification3;
+    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification_NdcCoords1"))
+        return VertexAttributeKind::MultiNotification_NdcCoords1;
+    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification_NdcCoords2"))
+        return VertexAttributeKind::MultiNotification_NdcCoords2;
+    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification_NdcCoords3"))
+        return VertexAttributeKind::MultiNotification_NdcCoords3;
+    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification_NdcCoords4"))
+        return VertexAttributeKind::MultiNotification_NdcCoords4;
+    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification_WorldCoords1"))
+        return VertexAttributeKind::MultiNotification_WorldCoords1;
+    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification_WorldCoords2"))
+        return VertexAttributeKind::MultiNotification_WorldCoords2;
+    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification_WorldCoords3"))
+        return VertexAttributeKind::MultiNotification_WorldCoords3;
     else if (Utils::CaseInsensitiveEquals(str, "LaserRay1"))
         return VertexAttributeKind::LaserRay1;
     else if (Utils::CaseInsensitiveEquals(str, "LaserRay2"))

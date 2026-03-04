@@ -283,6 +283,8 @@ void NotificationLayer::Reset()
 	mGripCircleToRender2.reset();
 	mInteractiveToolDashedLineToRender1.clear();
 	mInteractiveToolDashedLineToRender2.clear();
+	mPowerMeterToRender1.clear();
+	mPowerMeterToRender2.clear();
 }
 
 void NotificationLayer::Update(
@@ -383,6 +385,9 @@ void NotificationLayer::Update(
 
 	mInteractiveToolDashedLineToRender2 = std::move(mInteractiveToolDashedLineToRender1);
 	mInteractiveToolDashedLineToRender1.clear();
+
+	mPowerMeterToRender2 = std::move(mPowerMeterToRender1);
+	mPowerMeterToRender1.clear();
 }
 
 void NotificationLayer::RenderUpload(RenderContext & renderContext)
@@ -573,6 +578,17 @@ void NotificationLayer::RenderUpload(RenderContext & renderContext)
 		notificationRenderContext.UploadInteractiveToolDashedLine(
 			dashedLine.Start,
 			dashedLine.End,
+			renderContext.GetViewModel());
+	}
+
+	for (auto const & powerMeter : mPowerMeterToRender2)
+	{
+		notificationRenderContext.UploadPowerMeter(
+			powerMeter.XScreen,
+			powerMeter.YStartScreen,
+			powerMeter.YEndScreen,
+			powerMeter.StartColor,
+			powerMeter.EndColor,
 			renderContext.GetViewModel());
 	}
 }

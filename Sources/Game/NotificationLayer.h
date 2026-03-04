@@ -162,6 +162,22 @@ public:
 			end);
 	}
 
+	// One frame only; after Update() it's gone
+	inline void ShowPowerMeter(
+		int xScreen,
+		int yStartScreen, // Bottom
+		int yEndScreen, // Top
+		rgbaColor const & startColor,
+		rgbaColor const & endColor)
+	{
+		mPowerMeterToRender1.emplace_back(
+			xScreen,
+			yStartScreen,
+			yEndScreen,
+			startColor,
+			endColor);
+	}
+
 	void Reset();
 
     void Update(
@@ -435,4 +451,30 @@ private:
 
 	std::vector<LineGuide> mInteractiveToolDashedLineToRender1;
 	std::vector<LineGuide> mInteractiveToolDashedLineToRender2;
+
+	struct PowerMeter
+	{
+		int XScreen;
+		int YStartScreen; // Bottom
+		int YEndScreen; // Top
+		rgbaColor StartColor;
+		rgbaColor EndColor;
+
+		PowerMeter(
+			int xScreen,
+			int yStartScreen, // Bottom
+			int yEndScreen, // Top
+			rgbaColor const & startColor,
+			rgbaColor const & endColor)
+			: XScreen(xScreen)
+			, YStartScreen(yStartScreen)
+			, YEndScreen(yEndScreen)
+			, StartColor(startColor)
+			, EndColor(endColor)
+		{
+		}
+	};
+
+	std::vector<PowerMeter> mPowerMeterToRender1;
+	std::vector<PowerMeter> mPowerMeterToRender2;
 };

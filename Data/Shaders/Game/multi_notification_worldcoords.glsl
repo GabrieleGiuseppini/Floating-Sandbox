@@ -14,9 +14,9 @@
 #define out varying
 
 // Inputs
-in vec4 inMultiNotification1;  // Type, WorldPosition (vec2), [FlowMultiplier|Progress|PreFrontRadius] float1 (float)
-in vec4 inMultiNotification2; // [VirtualSpacePosition -1..1|VirtualSpacePosition -W..W] auxPosition (vec2), [PersonalitySeed|PreFrontIntensity] float2 (float), [MainFrontRadius] float3 (float)
-in float inMultiNotification3; // [MainFrontIntensity] float4 (float)
+in vec4 inMultiNotification_WorldCoords1;  // Type (float), WorldPosition (vec2), [FlowMultiplier|Progress|PreFrontRadius] float1 (float)
+in vec4 inMultiNotification_WorldCoords2; // [VirtualSpacePosition -1..1|VirtualSpacePosition -W..W] auxPosition (vec2), [PersonalitySeed|PreFrontIntensity] float2 (float), [MainFrontRadius] float3 (float)
+in float inMultiNotification_WorldCoords3; // [MainFrontIntensity] float (float)
 
 // Outputs
 out float notification_type;
@@ -31,14 +31,14 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    notification_type = inMultiNotification1.x;
-    float1 = inMultiNotification1.w;
-    float2 = inMultiNotification2.z;
-    float3 = inMultiNotification2.w;
-    float4 = inMultiNotification3;
-    auxPosition = inMultiNotification2.xy;
+    notification_type = inMultiNotification_WorldCoords1.x;
+    float1 = inMultiNotification_WorldCoords1.w;
+    float2 = inMultiNotification_WorldCoords2.z;
+    float3 = inMultiNotification_WorldCoords2.w;
+    float4 = inMultiNotification_WorldCoords3;
+    auxPosition = inMultiNotification_WorldCoords2.xy;
 
-    gl_Position = paramOrthoMatrix * vec4(inMultiNotification1.yz, -1.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inMultiNotification_WorldCoords1.yz, -1.0, 1.0);
 }
 
 ###FRAGMENT-120

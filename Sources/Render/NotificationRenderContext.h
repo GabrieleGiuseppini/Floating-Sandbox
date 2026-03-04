@@ -235,35 +235,35 @@ public:
 			{
 				// Triangle 1
 
-				mMultiNotificationVertexBuffer.emplace_back(
-					MultiNotificationVertex::MakeHeatBlasterFlameCool(
+				mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+					MultiNotificationWorldCoordsVertex::MakeHeatBlasterFlameCool(
 						vec2f(left, bottom),
 						vec2f(-1.0f, -1.0f)));
 
-				mMultiNotificationVertexBuffer.emplace_back(
-					MultiNotificationVertex::MakeHeatBlasterFlameCool(
+				mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+					MultiNotificationWorldCoordsVertex::MakeHeatBlasterFlameCool(
 						vec2f(left, top),
 						vec2f(-1.0f, 1.0f)));
 
-				mMultiNotificationVertexBuffer.emplace_back(
-					MultiNotificationVertex::MakeHeatBlasterFlameCool(
+				mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+					MultiNotificationWorldCoordsVertex::MakeHeatBlasterFlameCool(
 						vec2f(right, bottom),
 						vec2f(1.0f, -1.0f)));
 
 				// Triangle 2
 
-				mMultiNotificationVertexBuffer.emplace_back(
-					MultiNotificationVertex::MakeHeatBlasterFlameCool(
+				mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+					MultiNotificationWorldCoordsVertex::MakeHeatBlasterFlameCool(
 						vec2f(left, top),
 						vec2f(-1.0f, 1.0f)));
 
-				mMultiNotificationVertexBuffer.emplace_back(
-					MultiNotificationVertex::MakeHeatBlasterFlameCool(
+				mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+					MultiNotificationWorldCoordsVertex::MakeHeatBlasterFlameCool(
 						vec2f(right, bottom),
 						vec2f(1.0f, -1.0f)));
 
-				mMultiNotificationVertexBuffer.emplace_back(
-					MultiNotificationVertex::MakeHeatBlasterFlameCool(
+				mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+					MultiNotificationWorldCoordsVertex::MakeHeatBlasterFlameCool(
 						vec2f(right, top),
 						vec2f(1.0f, 1.0f)));
 
@@ -274,35 +274,35 @@ public:
 			{
 				// Triangle 1
 
-				mMultiNotificationVertexBuffer.emplace_back(
-					MultiNotificationVertex::MakeHeatBlasterFlameHeat(
+				mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+					MultiNotificationWorldCoordsVertex::MakeHeatBlasterFlameHeat(
 						vec2f(left, bottom),
 						vec2f(-1.0f, -1.0f)));
 
-				mMultiNotificationVertexBuffer.emplace_back(
-					MultiNotificationVertex::MakeHeatBlasterFlameHeat(
+				mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+					MultiNotificationWorldCoordsVertex::MakeHeatBlasterFlameHeat(
 						vec2f(left, top),
 						vec2f(-1.0f, 1.0f)));
 
-				mMultiNotificationVertexBuffer.emplace_back(
-					MultiNotificationVertex::MakeHeatBlasterFlameHeat(
+				mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+					MultiNotificationWorldCoordsVertex::MakeHeatBlasterFlameHeat(
 						vec2f(right, bottom),
 						vec2f(1.0f, -1.0f)));
 
 				// Triangle 2
 
-				mMultiNotificationVertexBuffer.emplace_back(
-					MultiNotificationVertex::MakeHeatBlasterFlameHeat(
+				mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+					MultiNotificationWorldCoordsVertex::MakeHeatBlasterFlameHeat(
 						vec2f(left, top),
 						vec2f(-1.0f, 1.0f)));
 
-				mMultiNotificationVertexBuffer.emplace_back(
-					MultiNotificationVertex::MakeHeatBlasterFlameHeat(
+				mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+					MultiNotificationWorldCoordsVertex::MakeHeatBlasterFlameHeat(
 						vec2f(right, bottom),
 						vec2f(1.0f, -1.0f)));
 
-				mMultiNotificationVertexBuffer.emplace_back(
-					MultiNotificationVertex::MakeHeatBlasterFlameHeat(
+				mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+					MultiNotificationWorldCoordsVertex::MakeHeatBlasterFlameHeat(
 						vec2f(right, top),
 						vec2f(1.0f, 1.0f)));
 
@@ -327,35 +327,35 @@ public:
 
 		// Triangle 1
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeFireExtinguisherSpray(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeFireExtinguisherSpray(
 				vec2f(left, bottom),
 				vec2f(-1.0f, -1.0f)));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeFireExtinguisherSpray(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeFireExtinguisherSpray(
 				vec2f(left, top),
 				vec2f(-1.0f, 1.0f)));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeFireExtinguisherSpray(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeFireExtinguisherSpray(
 				vec2f(right, bottom),
 				vec2f(1.0f, -1.0f)));
 
 		// Triangle 2
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeFireExtinguisherSpray(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeFireExtinguisherSpray(
 				vec2f(left, top),
 				vec2f(-1.0f, 1.0f)));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeFireExtinguisherSpray(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeFireExtinguisherSpray(
 				vec2f(right, bottom),
 				vec2f(1.0f, -1.0f)));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeFireExtinguisherSpray(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeFireExtinguisherSpray(
 				vec2f(right, top),
 				vec2f(1.0f, 1.0f)));
 	}
@@ -377,22 +377,22 @@ public:
 
 		// Triangle 1
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeBlastToolHalo(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeBlastToolHalo(
 				vec2f(left, bottom),
 				renderProgress,
 				vec2f(-1.0f, -1.0f),
 				personalitySeed));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeBlastToolHalo(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeBlastToolHalo(
 				vec2f(left, top),
 				renderProgress,
 				vec2f(-1.0f, 1.0f),
 				personalitySeed));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeBlastToolHalo(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeBlastToolHalo(
 				vec2f(right, bottom),
 				renderProgress,
 				vec2f(1.0f, -1.0f),
@@ -400,22 +400,22 @@ public:
 
 		// Triangle 2
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeBlastToolHalo(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeBlastToolHalo(
 				vec2f(left, top),
 				renderProgress,
 				vec2f(-1.0f, 1.0f),
 				personalitySeed));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeBlastToolHalo(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeBlastToolHalo(
 				vec2f(right, bottom),
 				renderProgress,
 				vec2f(1.0f, -1.0f),
 				personalitySeed));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeBlastToolHalo(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeBlastToolHalo(
 				vec2f(right, top),
 				renderProgress,
 				vec2f(1.0f, 1.0f),
@@ -438,40 +438,40 @@ public:
 
 		// Triangle 1
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakePressureInjectionHalo(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakePressureInjectionHalo(
 				vec2f(left, bottom),
 				vec2f(-1.0f, -1.0f),
 				flowMultiplier));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakePressureInjectionHalo(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakePressureInjectionHalo(
 				vec2f(left, top),
 				vec2f(-1.0f, 1.0f),
 				flowMultiplier));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakePressureInjectionHalo(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakePressureInjectionHalo(
 				vec2f(right, bottom),
 				vec2f(1.0f, -1.0f),
 				flowMultiplier));
 
 		// Triangle 2
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakePressureInjectionHalo(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakePressureInjectionHalo(
 				vec2f(left, top),
 				vec2f(-1.0f, 1.0f),
 				flowMultiplier));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakePressureInjectionHalo(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakePressureInjectionHalo(
 				vec2f(right, bottom),
 				vec2f(1.0f, -1.0f),
 				flowMultiplier));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakePressureInjectionHalo(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakePressureInjectionHalo(
 				vec2f(right, top),
 				vec2f(1.0f, 1.0f),
 				flowMultiplier));
@@ -495,8 +495,8 @@ public:
 
 		// Triangle 1
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeWindSphere(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeWindSphere(
 				vec2f(left, bottom),
 				vec2f(-preFrontRadius, -preFrontRadius),
 				preFrontRadius,
@@ -504,8 +504,8 @@ public:
 				mainFrontRadius,
 				mainFrontIntensityMultiplier));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeWindSphere(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeWindSphere(
 				vec2f(left, top),
 				vec2f(-preFrontRadius, preFrontRadius),
 				preFrontRadius,
@@ -513,8 +513,8 @@ public:
 				mainFrontRadius,
 				mainFrontIntensityMultiplier));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeWindSphere(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeWindSphere(
 				vec2f(right, bottom),
 				vec2f(preFrontRadius, -preFrontRadius),
 				preFrontRadius,
@@ -524,8 +524,8 @@ public:
 
 		// Triangle 2
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeWindSphere(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeWindSphere(
 				vec2f(left, top),
 				vec2f(-preFrontRadius, preFrontRadius),
 				preFrontRadius,
@@ -533,8 +533,8 @@ public:
 				mainFrontRadius,
 				mainFrontIntensityMultiplier));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeWindSphere(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeWindSphere(
 				vec2f(right, bottom),
 				vec2f(preFrontRadius, -preFrontRadius),
 				preFrontRadius,
@@ -542,8 +542,8 @@ public:
 				mainFrontRadius,
 				mainFrontIntensityMultiplier));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeWindSphere(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeWindSphere(
 				vec2f(right, top),
 				vec2f(preFrontRadius, preFrontRadius),
 				preFrontRadius,
@@ -572,37 +572,118 @@ public:
 
 		// Triangle 1
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeGripCircle(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeGripCircle(
 				vec2f(left, bottom),
 				vec2f(-1.0f, -1.0f)));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeGripCircle(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeGripCircle(
 				vec2f(left, top),
 				vec2f(-1.0f, 1.0f)));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeGripCircle(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeGripCircle(
 				vec2f(right, bottom),
 				vec2f(1.0f, -1.0f)));
 
 		// Triangle 2
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeGripCircle(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeGripCircle(
 				vec2f(left, top),
 				vec2f(-1.0f, 1.0f)));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeGripCircle(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeGripCircle(
 				vec2f(right, bottom),
 				vec2f(1.0f, -1.0f)));
 
-		mMultiNotificationVertexBuffer.emplace_back(
-			MultiNotificationVertex::MakeGripCircle(
+		mMultiNotificationWorldCoordsVertexBuffer.emplace_back(
+			MultiNotificationWorldCoordsVertex::MakeGripCircle(
 				vec2f(right, top),
 				vec2f(1.0f, 1.0f)));
+	}
+
+	void UploadPowerMeter(
+		int xScreen,
+		int yStartScreen, // Bottom
+		int yEndScreen, // Top
+		rgbaColor const & startColor,
+		rgbaColor const & endColor,
+		ViewModel const & viewModel)
+	{
+		auto const startColorF = startColor.toVec4f();
+		auto const endColorF = endColor.toVec4f();
+
+		// Calculate geometry - all in NDC coords
+
+		int constexpr BarWidthPixel = 30;
+		vec2f const leftStart = viewModel.ScreenToNdc({ xScreen - BarWidthPixel / 2, yStartScreen });
+		vec2f const rightEnd = viewModel.ScreenToNdc({ xScreen + BarWidthPixel / 2, yEndScreen });
+
+		// Border size in virtual space (-1..1)
+		float constexpr BorderSizePixel = 4.0f;
+		float const borderWidth = (BorderSizePixel / BarWidthPixel) * 2.0f;
+		float const borderHeight = (BorderSizePixel / std::max(static_cast<float>(std::abs(yStartScreen - yEndScreen)), 0.001f)) * 2.0f;
+
+		// Triangle 1
+
+		mMultiNotificationNdcCoordsVertexBuffer.emplace_back(
+			MultiNotificationNdcCoordsVertex::MakePowerMeter(
+				vec2f(leftStart.x, leftStart.y),
+				vec2f(-1.0f, -1.0f),
+				borderWidth,
+				borderHeight,
+				startColorF,
+				endColorF));
+
+		mMultiNotificationNdcCoordsVertexBuffer.emplace_back(
+			MultiNotificationNdcCoordsVertex::MakePowerMeter(
+				vec2f(leftStart.x, rightEnd.y),
+				vec2f(-1.0f, 1.0f),
+				borderWidth,
+				borderHeight,
+				startColorF,
+				endColorF));
+
+		mMultiNotificationNdcCoordsVertexBuffer.emplace_back(
+			MultiNotificationNdcCoordsVertex::MakePowerMeter(
+				vec2f(rightEnd.x, leftStart.y),
+				vec2f(1.0f, -1.0f),
+				borderWidth,
+				borderHeight,
+				startColorF,
+				endColorF));
+
+		// Triangle 2
+
+		mMultiNotificationNdcCoordsVertexBuffer.emplace_back(
+			MultiNotificationNdcCoordsVertex::MakePowerMeter(
+				vec2f(leftStart.x, rightEnd.y),
+				vec2f(-1.0f, 1.0f),
+				borderWidth,
+				borderHeight,
+				startColorF,
+				endColorF));
+
+		mMultiNotificationNdcCoordsVertexBuffer.emplace_back(
+			MultiNotificationNdcCoordsVertex::MakePowerMeter(
+				vec2f(rightEnd.x, leftStart.y),
+				vec2f(1.0f, -1.0f),
+				borderWidth,
+				borderHeight,
+				startColorF,
+				endColorF));
+
+		mMultiNotificationNdcCoordsVertexBuffer.emplace_back(
+			MultiNotificationNdcCoordsVertex::MakePowerMeter(
+				vec2f(rightEnd.x, rightEnd.y),
+				vec2f(1.0f, 1.0f),
+				borderWidth,
+				borderHeight,
+				startColorF,
+				endColorF));
 	}
 
 	void UploadRectSelection(
@@ -908,7 +989,62 @@ private:
 		{}
 	};
 
-	struct MultiNotificationVertex
+	struct MultiNotificationNdcCoordsVertex
+	{
+		enum VertexKindType : int
+		{
+			// Note: enum values are to be kept in sync with shader
+			PowerMeter = 1
+		};
+		float vertexKind;
+
+		vec2f vertexPosition;
+		float float1; // BorderVirtualSpaceWidth
+		float float2; // BorderVirtualSpaceHeight
+		vec2f auxPosition; // VirtualSpacePosition
+		vec4f color1; // StartColor
+		vec4f color2; // EndColor
+
+		static MultiNotificationNdcCoordsVertex MakePowerMeter(
+			vec2f vertexPosition,
+			vec2f virtualSpacePosition,
+			float borderVirtualSpaceWidth,
+			float borderVirtualSpaceHeight,
+			vec4f const & startColor,
+			vec4f const & endColor)
+		{
+			return MultiNotificationNdcCoordsVertex(
+				static_cast<float>(VertexKindType::PowerMeter),
+				vertexPosition,
+				borderVirtualSpaceWidth,
+				borderVirtualSpaceHeight,
+				virtualSpacePosition,
+				startColor,
+				endColor);
+		}
+
+	private:
+
+		MultiNotificationNdcCoordsVertex(
+			float _vertexKind,
+			vec2f const & _vertexPosition,
+			float _float1,
+			float _float2,
+			vec2f const & _auxPosition,
+			vec4f const & _color1,
+			vec4f const & _color2)
+			: vertexKind(_vertexKind)
+			, vertexPosition(_vertexPosition)
+			, float1(_float1)
+			, float2(_float2)
+			, auxPosition(_auxPosition)
+			, color1(_color1)
+			, color2(_color2)
+		{
+		}
+	};
+
+	struct MultiNotificationWorldCoordsVertex
 	{
 		enum VertexKindType : int
 		{
@@ -930,13 +1066,13 @@ private:
 		float float3; // MainFrontRadius
 		float float4; // MainFrontIntensity
 
-		static MultiNotificationVertex MakeBlastToolHalo(
+		static MultiNotificationWorldCoordsVertex MakeBlastToolHalo(
 			vec2f vertexPosition,
 			float progress,
 			vec2f virtualSpacePosition,
 			float personalitySeed)
 		{
-			return MultiNotificationVertex(
+			return MultiNotificationWorldCoordsVertex(
 				static_cast<float>(VertexKindType::BlastToolHalo),
 				vertexPosition,
 				progress,
@@ -946,11 +1082,11 @@ private:
 				0.0f);
 		}
 
-		static MultiNotificationVertex MakeFireExtinguisherSpray(
+		static MultiNotificationWorldCoordsVertex MakeFireExtinguisherSpray(
 			vec2f vertexPosition,
 			vec2f virtualSpacePosition)
 		{
-			return MultiNotificationVertex(
+			return MultiNotificationWorldCoordsVertex(
 				static_cast<float>(VertexKindType::FireExtinguisherSpray),
 				vertexPosition,
 				0.0f,
@@ -960,11 +1096,11 @@ private:
 				0.0f);
 		}
 
-		static MultiNotificationVertex MakeGripCircle(
+		static MultiNotificationWorldCoordsVertex MakeGripCircle(
 			vec2f vertexPosition,
 			vec2f virtualSpacePosition)
 		{
-			return MultiNotificationVertex(
+			return MultiNotificationWorldCoordsVertex(
 				static_cast<float>(VertexKindType::GripCircle),
 				vertexPosition,
 				0.0f,
@@ -974,11 +1110,11 @@ private:
 				0.0f);
 		}
 
-		static MultiNotificationVertex MakeHeatBlasterFlameCool(
+		static MultiNotificationWorldCoordsVertex MakeHeatBlasterFlameCool(
 			vec2f vertexPosition,
 			vec2f virtualSpacePosition)
 		{
-			return MultiNotificationVertex(
+			return MultiNotificationWorldCoordsVertex(
 				static_cast<float>(VertexKindType::HeatBlasterFlameCool),
 				vertexPosition,
 				0.0f,
@@ -988,11 +1124,11 @@ private:
 				0.0f);
 		}
 
-		static MultiNotificationVertex MakeHeatBlasterFlameHeat(
+		static MultiNotificationWorldCoordsVertex MakeHeatBlasterFlameHeat(
 			vec2f vertexPosition,
 			vec2f virtualSpacePosition)
 		{
-			return MultiNotificationVertex(
+			return MultiNotificationWorldCoordsVertex(
 				static_cast<float>(VertexKindType::HeatBlasterFlameHeat),
 				vertexPosition,
 				0.0f,
@@ -1002,12 +1138,12 @@ private:
 				0.0f);
 		}
 
-		static MultiNotificationVertex MakePressureInjectionHalo(
+		static MultiNotificationWorldCoordsVertex MakePressureInjectionHalo(
 			vec2f vertexPosition,
 			vec2f virtualSpacePosition,
 			float flowMultiplier)
 		{
-			return MultiNotificationVertex(
+			return MultiNotificationWorldCoordsVertex(
 				static_cast<float>(VertexKindType::PressureInjectionHalo),
 				vertexPosition,
 				flowMultiplier,
@@ -1017,7 +1153,7 @@ private:
 				0.0f);
 		}
 
-		static MultiNotificationVertex MakeWindSphere(
+		static MultiNotificationWorldCoordsVertex MakeWindSphere(
 			vec2f vertexPosition,
 			vec2f virtualSpacePosition, // In world dimensions
 			float preFrontRadius,
@@ -1025,7 +1161,7 @@ private:
 			float mainFrontRadius,
 			float mainFrontIntensity)
 		{
-			return MultiNotificationVertex(
+			return MultiNotificationWorldCoordsVertex(
 				static_cast<float>(VertexKindType::WindSphere),
 				vertexPosition,
 				preFrontRadius,
@@ -1037,7 +1173,7 @@ private:
 
 	private:
 
-		MultiNotificationVertex(
+		MultiNotificationWorldCoordsVertex(
 			float _vertexKind,
 			vec2f const & _vertexPosition,
 			float _float1,
@@ -1260,9 +1396,13 @@ private:
 	std::vector<LaserRayVertex> mLaserRayVertexBuffer;
 	GameOpenGLVBO mLaserRayVBO;
 
-	GameOpenGLVAO mMultiNotificationVAO;
-	std::vector<MultiNotificationVertex> mMultiNotificationVertexBuffer;
-	GameOpenGLVBO mMultiNotificationVBO;
+	GameOpenGLVAO mMultiNotificationNdcCoordsVAO;
+	std::vector<MultiNotificationNdcCoordsVertex> mMultiNotificationNdcCoordsVertexBuffer;
+	GameOpenGLVBO mMultiNotificationNdcCoordsVBO;
+
+	GameOpenGLVAO mMultiNotificationWorldCoordsVAO;
+	std::vector<MultiNotificationWorldCoordsVertex> mMultiNotificationWorldCoordsVertexBuffer;
+	GameOpenGLVBO mMultiNotificationWorldCoordsVBO;
 
 	GameOpenGLVAO mRectSelectionVAO;
 	std::vector<RectSelectionVertex> mRectSelectionVertexBuffer;

@@ -214,6 +214,13 @@ public:
         DisplayLogicalCoordinates const & corner1,
         DisplayLogicalCoordinates const & corner2) override;
 
+    void ShowPowerMeter(
+        int xScreen,
+        int yStartScreen, // Bottom
+        int yEndScreen, // Top
+        rgbaColor const & startColor,
+        rgbaColor const & endColor) override;
+
     //
     // World probing
     //

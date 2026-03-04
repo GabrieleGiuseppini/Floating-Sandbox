@@ -1060,7 +1060,7 @@
 					+ Zero-click?
 					
 				- Notification @ yLevel=0 (StartY)
-					- Split Multi-notif: _world and _ndc
+					+ Split Multi-notif: _world and _ndc
 					- Colored vertical bar, x=mouseX, ytop/bottom = mouseY, ybottom/top=startY
 						- New multi-notification type
 						- Driven by tool

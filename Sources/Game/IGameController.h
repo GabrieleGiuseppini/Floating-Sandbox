@@ -92,6 +92,13 @@ struct IGameController
         DisplayLogicalCoordinates const & corner1,
         DisplayLogicalCoordinates const & corner2) = 0;
 
+    virtual void ShowPowerMeter(
+        int xScreen,
+        int yStartScreen, // Bottom
+        int yEndScreen, // Top
+        rgbaColor const & startColor,
+        rgbaColor const & endColor) = 0;
+
     //
     // World
     //
