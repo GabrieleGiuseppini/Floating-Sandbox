@@ -54,16 +54,11 @@ float is_type(float notification_type, float value)
 
 vec4 make_power_meter()
 {
-    float absx = abs(auxPosition.x);
-    float absy = abs(auxPosition.y);
-
     #define ANTI_ALIAS_BORDER_FRACTION 0.2
-    float borderDepthX = 
-        smoothstep(1.0 - float1, 1.0, absx) 
-        * (1.0 - smoothstep(1.0 - float1 * ANTI_ALIAS_BORDER_FRACTION, 1.0, absx));
-    float borderDepthY = 
-        smoothstep(1.0 - float2, 1.0, absy) 
-        * (1.0 - smoothstep(1.0 - float2 * ANTI_ALIAS_BORDER_FRACTION, 1.0, absy));
+    float absx = abs(auxPosition.x);
+    float borderDepthX = smoothstep(1.0 - float1, 1.0, absx);
+    float absy = abs(auxPosition.y);
+    float borderDepthY = smoothstep(1.0 - float2, 1.0, absy);
 
     vec4 color = mix(color1, color2, (1. + auxPosition.y) / 2.);
 

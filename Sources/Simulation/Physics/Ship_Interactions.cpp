@@ -1110,7 +1110,7 @@ void Ship::ApplyTornado(
     {
         vec2f const & p = mPoints.GetPosition(pointIndex);
 
-        if (p.y >= effectiveBottom && p.y <= effectiveTop)
+        if (p.y > effectiveBottom && p.y <= effectiveTop) // Note: skipping y=effectiveBottom to ensure non-zero radius
         {
             // Calculate radius, depending on y
             float const effectiveRadius = effectiveBottomRadius + (effectiveTopRadius - effectiveBottomRadius) * (p.y - effectiveBottom) / effectiveHeight;
