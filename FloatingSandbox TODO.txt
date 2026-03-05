@@ -1074,6 +1074,19 @@
 			- Test:
 				- BeginPlaceAntiGravityField: we've changed to closest
 
+			- Smoke: add distance traveled next to expiry time
+				- State:
+					- PreviousPosition
+						- Initd with start pos
+					- TotalSquareDistanceTraveled
+						- 0.0
+					- MaxTotalSquareDistanceTraveled
+						- Phase II: set
+				- Update:
+					- Phase I. Maintain TotalSquareDistanceTraveled
+						- Then print total distance @ expiry, so we may calc (current) max distance from time
+					- Phase II. Expire with max(elapsedTime, elapsedDistanceTraveled)
+
 	- Look into DKUZ's bug
 		- Settings screenshot is on Desktop now
 
