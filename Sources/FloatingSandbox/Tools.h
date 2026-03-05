@@ -2516,15 +2516,18 @@ public:
             //  - @ BottomY : S=1.0 H=1.0
             //
 
-            float constexpr MinDeltaY = 10.0f; // Zero-center
+            float constexpr MinDeltaY = 20.0f; // Zero-center
+            int constexpr ScreenMargin = 30;
 
             float strengthMultiplier = 1.0f;
             float heatDepth = 0.0f;
 
-            int const yTop = mToolManager.GetCanvasOrigin().y + 40;
-            int const yBottom = std::max(mToolManager.GetCanvasOrigin().y + mToolManager.GetCanvasSize().height - 40, yTop);
+            int const yTop = mToolManager.GetCanvasOrigin().y + ScreenMargin;
+            int const yBottom = std::max(mToolManager.GetCanvasOrigin().y + mToolManager.GetCanvasSize().height - ScreenMargin, yTop);
             if (yTop < yBottom) // Safety
             {
+                rgbaColor constexpr PowerMeterBackgroundColor(0, 0, 0, rgbaColor::data_type_max); // Black
+
                 if (inputState.MousePosition.y <= mEngagementData->StartScreenY)
                 {
                     // Above
@@ -2543,14 +2546,14 @@ public:
                             assert(strengthMultiplier >= 1.0f && strengthMultiplier <= 2.0f);
 
                             // Show power meter
-                            rgbaColor constexpr StartColor(0, 0, 0, rgbaColor::data_type_max); // Black
-                            rgbaColor constexpr EndColor(0, 0, rgbaColor::data_type_max, rgbaColor::data_type_max); // Blue
+                            rgbaColor constexpr PowerMeterColor(0, 0, rgbaColor::data_type_max, rgbaColor::data_type_max); // Blue
                             mGameController.ShowPowerMeter(
                                 inputState.MousePosition.x,
                                 yStart,
-                                yEnd,
-                                StartColor,
-                                rgbaColor(Mix(StartColor.toVec4f(), EndColor.toVec4f(), powerupNormalized)));
+                                yTop,
+                                PowerMeterColor,
+                                powerupNormalized,
+                                PowerMeterBackgroundColor);
                         }
                     }
                 }
@@ -2571,14 +2574,14 @@ public:
                             assert(heatDepth >= 0.0f && heatDepth <= 1.0f);
 
                             // Show power meter
-                            rgbaColor constexpr StartColor(0, 0, 0, rgbaColor::data_type_max); // Black
-                            rgbaColor constexpr EndColor(rgbaColor::data_type_max, 0, 0, rgbaColor::data_type_max); // Red
+                            rgbaColor constexpr PowerMeterColor(rgbaColor::data_type_max, 0, 0, rgbaColor::data_type_max); // Red
                             mGameController.ShowPowerMeter(
                                 inputState.MousePosition.x,
                                 yStart,
-                                yEnd,
-                                StartColor,
-                                rgbaColor(Mix(StartColor.toVec4f(), EndColor.toVec4f(), heatDepth)));
+                                yBottom,
+                                PowerMeterColor,
+                                heatDepth,
+                                PowerMeterBackgroundColor);
                         }
                     }
                 }

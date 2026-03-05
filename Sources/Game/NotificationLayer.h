@@ -165,17 +165,19 @@ public:
 	// One frame only; after Update() it's gone
 	inline void ShowPowerMeter(
 		int xScreen,
-		int yStartScreen, // Bottom
-		int yEndScreen, // Top
-		rgbaColor const & startColor,
-		rgbaColor const & endColor)
+		int yMeterStartScreen, // Bottom, usually
+		int yMeterEndScreen, // Top, usually
+		rgbaColor const & powerMeterColor,
+		float powerFraction, // Of entire bar
+		rgbaColor const & powerMeterBackgroundColor)
 	{
 		mPowerMeterToRender1.emplace_back(
 			xScreen,
-			yStartScreen,
-			yEndScreen,
-			startColor,
-			endColor);
+			yMeterStartScreen,
+			yMeterEndScreen,
+			powerMeterColor,
+			powerFraction,
+			powerMeterBackgroundColor);
 	}
 
 	void Reset();
@@ -455,22 +457,25 @@ private:
 	struct PowerMeter
 	{
 		int XScreen;
-		int YStartScreen; // Bottom
-		int YEndScreen; // Top
-		rgbaColor StartColor;
-		rgbaColor EndColor;
+		int YMeterStartScreen;
+		int YMeterEndScreen;
+		rgbaColor PowerMeterColor;
+		float PowerFraction;
+		rgbaColor PowerMeterBackgroundColor;
 
 		PowerMeter(
 			int xScreen,
-			int yStartScreen, // Bottom
-			int yEndScreen, // Top
-			rgbaColor const & startColor,
-			rgbaColor const & endColor)
+			int yMeterStartScreen, // Bottom, usually
+			int yMeterEndScreen, // Top, usually
+			rgbaColor const & powerMeterColor,
+			float powerFraction, // Of entire bar
+			rgbaColor const & powerMeterBackgroundColor)
 			: XScreen(xScreen)
-			, YStartScreen(yStartScreen)
-			, YEndScreen(yEndScreen)
-			, StartColor(startColor)
-			, EndColor(endColor)
+			, YMeterStartScreen(yMeterStartScreen)
+			, YMeterEndScreen(yMeterEndScreen)
+			, PowerMeterColor(powerMeterColor)
+			, PowerFraction(powerFraction)
+			, PowerMeterBackgroundColor(powerMeterBackgroundColor)
 		{
 		}
 	};

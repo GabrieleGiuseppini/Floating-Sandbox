@@ -607,25 +607,26 @@ public:
 
 	void UploadPowerMeter(
 		int xScreen,
-		int yStartScreen, // Bottom
-		int yEndScreen, // Top
-		rgbaColor const & startColor,
-		rgbaColor const & endColor,
+		int yMeterStartScreen, // Bottom, usually
+		int yMeterEndScreen, // Top, usually
+		rgbaColor const & powerMeterColor,
+		float powerFraction, // Of entire bar
+		rgbaColor const & powerMeterBackgroundColor,
 		ViewModel const & viewModel)
 	{
-		auto const startColorF = startColor.toVec4f();
-		auto const endColorF = endColor.toVec4f();
+		auto const powerMeterColorF = powerMeterColor.toVec4f();
+		auto const powerMeterBackgroundColorF = powerMeterBackgroundColor.toVec4f();
 
 		// Calculate geometry - all in NDC coords
 
-		int constexpr BarWidthPixel = 30;
-		vec2f const leftStart = viewModel.ScreenToNdc({ xScreen - BarWidthPixel / 2, yStartScreen });
-		vec2f const rightEnd = viewModel.ScreenToNdc({ xScreen + BarWidthPixel / 2, yEndScreen });
+		int constexpr BarWidthPixel = 28;
+		vec2f const leftStart = viewModel.ScreenToNdc({ xScreen - BarWidthPixel / 2, yMeterStartScreen });
+		vec2f const rightEnd = viewModel.ScreenToNdc({ xScreen + BarWidthPixel / 2, yMeterEndScreen });
 
 		// Border size in virtual space (-1..1)
 		float constexpr BorderSizePixel = 4.0f;
-		float const borderWidth = (BorderSizePixel / BarWidthPixel) * 2.0f;
-		float const borderHeight = (BorderSizePixel / std::max(static_cast<float>(std::abs(yStartScreen - yEndScreen)), 0.001f)) * 2.0f;
+		float const borderWidth = (BorderSizePixel / static_cast<float>(BarWidthPixel)) * 2.0f;
+		float const borderHeight = (BorderSizePixel / std::max(static_cast<float>(std::abs(yMeterStartScreen - yMeterEndScreen)), 0.001f)) * 2.0f;
 
 		// Triangle 1
 
@@ -635,8 +636,9 @@ public:
 				vec2f(-1.0f, -1.0f),
 				borderWidth,
 				borderHeight,
-				startColorF,
-				endColorF));
+				powerMeterColorF,
+				powerFraction,
+				powerMeterBackgroundColorF));
 
 		mMultiNotificationNdcCoordsVertexBuffer.emplace_back(
 			MultiNotificationNdcCoordsVertex::MakePowerMeter(
@@ -644,8 +646,9 @@ public:
 				vec2f(-1.0f, 1.0f),
 				borderWidth,
 				borderHeight,
-				startColorF,
-				endColorF));
+				powerMeterColorF,
+				powerFraction,
+				powerMeterBackgroundColorF));
 
 		mMultiNotificationNdcCoordsVertexBuffer.emplace_back(
 			MultiNotificationNdcCoordsVertex::MakePowerMeter(
@@ -653,8 +656,9 @@ public:
 				vec2f(1.0f, -1.0f),
 				borderWidth,
 				borderHeight,
-				startColorF,
-				endColorF));
+				powerMeterColorF,
+				powerFraction,
+				powerMeterBackgroundColorF));
 
 		// Triangle 2
 
@@ -664,8 +668,9 @@ public:
 				vec2f(-1.0f, 1.0f),
 				borderWidth,
 				borderHeight,
-				startColorF,
-				endColorF));
+				powerMeterColorF,
+				powerFraction,
+				powerMeterBackgroundColorF));
 
 		mMultiNotificationNdcCoordsVertexBuffer.emplace_back(
 			MultiNotificationNdcCoordsVertex::MakePowerMeter(
@@ -673,8 +678,9 @@ public:
 				vec2f(1.0f, -1.0f),
 				borderWidth,
 				borderHeight,
-				startColorF,
-				endColorF));
+				powerMeterColorF,
+				powerFraction,
+				powerMeterBackgroundColorF));
 
 		mMultiNotificationNdcCoordsVertexBuffer.emplace_back(
 			MultiNotificationNdcCoordsVertex::MakePowerMeter(
@@ -682,8 +688,9 @@ public:
 				vec2f(1.0f, 1.0f),
 				borderWidth,
 				borderHeight,
-				startColorF,
-				endColorF));
+				powerMeterColorF,
+				powerFraction,
+				powerMeterBackgroundColorF));
 	}
 
 	void UploadRectSelection(
@@ -1001,26 +1008,29 @@ private:
 		vec2f vertexPosition;
 		float float1; // BorderVirtualSpaceWidth
 		float float2; // BorderVirtualSpaceHeight
+		float float3; // PowerFraction
 		vec2f auxPosition; // VirtualSpacePosition
-		vec4f color1; // StartColor
-		vec4f color2; // EndColor
+		vec4f color1; // PowerMeterColor
+		vec4f color2; // PowerMeterBackgroundColor
 
 		static MultiNotificationNdcCoordsVertex MakePowerMeter(
 			vec2f vertexPosition,
 			vec2f virtualSpacePosition,
 			float borderVirtualSpaceWidth,
 			float borderVirtualSpaceHeight,
-			vec4f const & startColor,
-			vec4f const & endColor)
+			vec4f const & powerMeterColor,
+			float powerFraction,
+			vec4f const & powerMeterBackgroundColor)
 		{
 			return MultiNotificationNdcCoordsVertex(
 				static_cast<float>(VertexKindType::PowerMeter),
 				vertexPosition,
 				borderVirtualSpaceWidth,
 				borderVirtualSpaceHeight,
+				powerFraction,
 				virtualSpacePosition,
-				startColor,
-				endColor);
+				powerMeterColor,
+				powerMeterBackgroundColor);
 		}
 
 	private:
@@ -1030,6 +1040,7 @@ private:
 			vec2f const & _vertexPosition,
 			float _float1,
 			float _float2,
+			float _float3,
 			vec2f const & _auxPosition,
 			vec4f const & _color1,
 			vec4f const & _color2)
@@ -1037,6 +1048,7 @@ private:
 			, vertexPosition(_vertexPosition)
 			, float1(_float1)
 			, float2(_float2)
+			, float3(_float3)
 			, auxPosition(_auxPosition)
 			, color1(_color1)
 			, color2(_color2)

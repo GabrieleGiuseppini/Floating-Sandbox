@@ -94,10 +94,11 @@ struct IGameController
 
     virtual void ShowPowerMeter(
         int xScreen,
-        int yStartScreen, // Bottom
-        int yEndScreen, // Top
-        rgbaColor const & startColor,
-        rgbaColor const & endColor) = 0;
+        int yMeterStartScreen, // Bottom, usually
+        int yMeterEndScreen, // Top, usually
+        rgbaColor const & powerMeterColor,
+        float powerFraction, // Of entire bar
+        rgbaColor const & powerMeterBackgroundColor) = 0;
 
     //
     // World

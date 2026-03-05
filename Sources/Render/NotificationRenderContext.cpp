@@ -286,16 +286,16 @@ NotificationRenderContext::NotificationRenderContext(
         mMultiNotificationNdcCoordsVBO = tmpGLuint;
 
         // Describe vertex attributes
-        static_assert(sizeof(MultiNotificationNdcCoordsVertex) == (1 + 2 + 1 + 1 + 2 + 4 + 4) * sizeof(float));
+        static_assert(sizeof(MultiNotificationNdcCoordsVertex) == (4 + 4 + 4 + 4) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationNdcCoordsVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords1));
         glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords1), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationNdcCoordsVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords2), 3, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationNdcCoordsVertex), (void *)((4) * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords2), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationNdcCoordsVertex), (void *)((4) * sizeof(float)));
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords3));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords3), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationNdcCoordsVertex), (void *)((4 + 3) * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords3), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationNdcCoordsVertex), (void *)((4 + 4) * sizeof(float)));
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords4));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords4), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationNdcCoordsVertex), (void *)((4 + 3 + 4) * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification_NdcCoords4), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationNdcCoordsVertex), (void *)((4 + 4 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);

@@ -585,10 +585,11 @@ void NotificationLayer::RenderUpload(RenderContext & renderContext)
 	{
 		notificationRenderContext.UploadPowerMeter(
 			powerMeter.XScreen,
-			powerMeter.YStartScreen,
-			powerMeter.YEndScreen,
-			powerMeter.StartColor,
-			powerMeter.EndColor,
+			powerMeter.YMeterStartScreen,
+			powerMeter.YMeterEndScreen,
+			powerMeter.PowerMeterColor,
+			powerMeter.PowerFraction,
+			powerMeter.PowerMeterBackgroundColor,
 			renderContext.GetViewModel());
 	}
 }

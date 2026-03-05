@@ -711,12 +711,13 @@ void GameController::ShowInteractiveToolDashedRect(
 
 void GameController::ShowPowerMeter(
     int xScreen,
-    int yStartScreen, // Bottom
-    int yEndScreen, // Top
-    rgbaColor const & startColor,
-    rgbaColor const & endColor)
+    int yMeterStartScreen, // Bottom, usually
+    int yMeterEndScreen, // Top, usually
+    rgbaColor const & powerMeterColor,
+    float powerFraction, // Of entire bar
+    rgbaColor const & powerMeterBackgroundColor)
 {
-    mNotificationLayer.ShowPowerMeter(xScreen, yStartScreen, yEndScreen, startColor, endColor);
+    mNotificationLayer.ShowPowerMeter(xScreen, yMeterStartScreen, yMeterEndScreen, powerMeterColor, powerFraction, powerMeterBackgroundColor);
 }
 
 void GameController::ToggleToFullDayOrNight()

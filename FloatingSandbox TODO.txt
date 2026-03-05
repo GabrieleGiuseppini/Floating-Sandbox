@@ -1020,11 +1020,11 @@
 					+ VisibilityAlpha (0..1)
 					+ RotationSpeed (multiplier)
 					+ HeatDepth (0..1)
-				= Upload:
-					= Calculate simple quad, width and height fixed
+				+ Upload:
+					+ Calculate simple quad, width and height fixed
 						+ Width and height are in SimulationParameters, so can be used by physics
 						+ For height, take into account Perlin - try to avoid repetitions
-						= Will have to adjust smoke and fire resolution in shader
+						+ Will have to adjust smoke and fire resolution in shader
 				= Shader
 					+ Pass coords of fire atlas frame in params
 					+ EffectiveAmbientLightIntensity
@@ -1059,12 +1059,12 @@
 					+ Down: HeatDepth
 					+ Zero-click?
 					
-				- Notification @ yLevel=0 (StartY)
+				= Notification @ yLevel=0 (StartY)
 					+ Split Multi-notif: _world and _ndc
-					- Colored vertical bar, x=mouseX, ytop/bottom = mouseY, ybottom/top=startY
-						- New multi-notification type
-						- Driven by tool
-						- TODO: normal and fire gradients?
+					= Colored vertical bar, x=mouseX, ytop/bottom = mouseY, ybottom/top=startY
+						+ New multi-notification type
+						+ Driven by tool
+						- TODO: fix uneven thickness of borders
 
 			- Sound
 				- TODOHERE: to spec
@@ -1086,6 +1086,8 @@
 					- Phase I. Maintain TotalSquareDistanceTraveled
 						- Then print total distance @ expiry, so we may calc (current) max distance from time
 					- Phase II. Expire with max(elapsedTime, elapsedDistanceTraveled)
+
+	- Look into "I tried to make a small gravity field and it crashed"
 
 	- Look into DKUZ's bug
 		- Settings screenshot is on Desktop now
