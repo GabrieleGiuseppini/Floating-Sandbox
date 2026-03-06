@@ -217,6 +217,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::LampExplosion;
     else if (Utils::CaseInsensitiveEquals(str, "LampImplosion"))
         return SoundType::LampImplosion;
+    else if (Utils::CaseInsensitiveEquals(str, "Tornado"))
+        return SoundType::Tornado;
     else if (Utils::CaseInsensitiveEquals(str, "Error"))
         return SoundType::Error;
     else

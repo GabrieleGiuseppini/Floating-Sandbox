@@ -264,6 +264,11 @@ public:
 
 	void OnLightningHit(StructuralMaterial const & structuralMaterial) override;
 
+    void OnTornadoUpdated(
+        float normalizedEvolution, // normalizedEvolution !=/=0 is signal to start/end
+        float strengthMultiplier,
+        float heatDepth) override;
+
     void OnSpringRepaired(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
@@ -660,6 +665,7 @@ private:
     ContinuousSingleChoiceSound mWindSound;
 	ContinuousSingleChoiceSound mRainSound;
     ContinuousSingleChoiceSound mFireBurningSound;
+    ContinuousSingleChoiceSound mTornadoSound;
 
     ContinuousSingleChoiceAggregateSound<GlobalGadgetId> mTimerBombSlowFuseSound;
     ContinuousSingleChoiceAggregateSound<GlobalGadgetId> mTimerBombFastFuseSound;

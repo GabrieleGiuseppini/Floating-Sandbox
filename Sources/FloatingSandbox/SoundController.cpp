@@ -92,6 +92,7 @@ SoundController::SoundController(
     , mWindSound()
     , mRainSound()
     , mFireBurningSound()
+    , mTornadoSound()
     , mTimerBombSlowFuseSound()
     , mTimerBombFastFuseSound()
     , mAntiMatterBombContainedSounds()
@@ -405,6 +406,14 @@ SoundController::SoundController(
                 2000ms,
                 1500ms,
                 0.2f);
+        }
+        else if (soundType == SoundType::Tornado)
+        {
+            mTornadoSound.Initialize(
+                std::move(soundFile),
+                100.0f,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
         }
         else if (soundType == SoundType::TimerBombSlowFuse)
         {
@@ -1013,6 +1022,7 @@ void SoundController::SetPaused(bool isPaused)
     mWindSound.SetPaused(isPaused);
     mRainSound.SetPaused(isPaused);
     mFireBurningSound.SetPaused(isPaused);
+    mTornadoSound.SetPaused(isPaused);
     mTimerBombSlowFuseSound.SetPaused(isPaused);
     mTimerBombFastFuseSound.SetPaused(isPaused);
     mAntiMatterBombContainedSounds.SetPaused(isPaused);
@@ -1046,6 +1056,7 @@ void SoundController::SetMasterEffectsVolume(float volume)
     mWindSound.SetMasterVolume(mMasterEffectsVolume);
     mRainSound.SetMasterVolume(mMasterEffectsVolume);
     mFireBurningSound.SetMasterVolume(mMasterEffectsVolume);
+    mTornadoSound.SetMasterVolume(mMasterEffectsVolume);
     mTimerBombSlowFuseSound.SetMasterVolume(mMasterEffectsVolume);
     mTimerBombFastFuseSound.SetMasterVolume(mMasterEffectsVolume);
     mAntiMatterBombContainedSounds.SetMasterVolume(mMasterEffectsVolume);
@@ -1077,6 +1088,7 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
     mWindSound.SetMuted(mMasterEffectsMuted);
     mRainSound.SetMuted(mMasterEffectsMuted);
     mFireBurningSound.SetMuted(mMasterEffectsMuted);
+    mTornadoSound.SetMuted(mMasterEffectsMuted);
     mTimerBombSlowFuseSound.SetMuted(mMasterEffectsMuted);
     mTimerBombFastFuseSound.SetMuted(mMasterEffectsMuted);
     mAntiMatterBombContainedSounds.SetMuted(mMasterEffectsMuted);
@@ -1684,6 +1696,7 @@ void SoundController::Reset()
     mWindSound.Reset();
     mRainSound.Reset();
     mFireBurningSound.Reset();
+    mTornadoSound.Reset();
     mTimerBombSlowFuseSound.Reset();
     mTimerBombFastFuseSound.Reset();
     mAntiMatterBombContainedSounds.Reset();
@@ -1732,6 +1745,26 @@ void SoundController::OnLightningHit(StructuralMaterial const & structuralMateri
             70.0f,
             true);
     }
+}
+
+void SoundController::OnTornadoUpdated(
+    float normalizedEvolution, // normalizedEvolution !=/=0 is signal to start/end
+    float strengthMultiplier,
+    float /*heatDepth*/)
+{
+    // Calculate volume
+    float volume = normalizedEvolution * 100.0f;
+    if (strengthMultiplier < 1.0f)
+    {
+        volume *= 0.4f + 0.6f * strengthMultiplier;
+    }
+
+    // Set the volume - starts automatically if greater than zero,
+    // stops automatically if zero
+    mTornadoSound.SetVolume(volume);
+
+    // Set the pitch
+    mTornadoSound.SetPitch(std::min(strengthMultiplier / 2.0f, 1.0f));
 }
 
 void SoundController::OnSpringRepaired(
@@ -2141,7 +2174,8 @@ void SoundController::OnWindSpeedUpdated(
 
 void SoundController::OnRainUpdated(float density)
 {
-    // Set the volume - starts automatically if greater than zero
+    // Set the volume - starts automatically if greater than zero,
+    // stops automatically if zero
     mRainSound.SetVolume(density / 0.4f * 100.0f);
 }
 

@@ -386,23 +386,36 @@ private:
 
             SmokeKindType SmokeKind;
             float PersonalitySeed;
+
             float LifetimeProgress;
             float ElapsedSimulationTime;
+
+            vec2f PreviousPosition;
+            float TotalSquareDistanceTraveled;
+            float MaxTotalSquareDistanceTraveled;
 
             SmokeState()
                 : SmokeKind(SmokeKindType::CombustionSmoke) // Arbitrary
                 , PersonalitySeed(0.0f)
                 , LifetimeProgress(0.0f)
                 , ElapsedSimulationTime(0.0f)
+                , PreviousPosition(vec2f::zero())
+                , TotalSquareDistanceTraveled(0.0f)
+                , MaxTotalSquareDistanceTraveled(0.0f)
             {}
 
             SmokeState(
                 SmokeKindType smokeKind,
-                float personalitySeed)
+                vec2f const & startPosition,
+                float personalitySeed,
+                float maxTotalSquareDistanceTraveled)
                 : SmokeKind(smokeKind)
                 , PersonalitySeed(personalitySeed)
                 , LifetimeProgress(0.0f)
                 , ElapsedSimulationTime(0.0f)
+                , PreviousPosition(startPosition)
+                , TotalSquareDistanceTraveled(0.0f)
+                , MaxTotalSquareDistanceTraveled(maxTotalSquareDistanceTraveled)
             {}
         };
 

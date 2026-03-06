@@ -442,6 +442,10 @@ void Points::InternalCreateEphemeralParticleSmoke(
             SimulationParameters::MaxSmokeMassAdjustment,
             simulationParameters.SmokeMassAdjustment);
 
+    // Calculate max distance traveled
+    // TODOHERE
+    float maxTotalSquareDistanceTraveled = 0.0f;
+
     //
     // Store attributes
     //
@@ -512,7 +516,9 @@ void Points::InternalCreateEphemeralParticleSmoke(
     mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime = maxSimulationLifetime;
     mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::SmokeState(
         smokeKind,
-        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
+        position,
+        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(),
+        maxTotalSquareDistanceTraveled);
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
@@ -1757,6 +1763,11 @@ void Points::UpdateEphemeralParticles(
                         state.ElapsedSimulationTime
                         / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
 
+                    // Maintain total distance traveled
+                    auto const & p = GetPosition(pointIndex);
+                    state.TotalSquareDistanceTraveled += (p - state.PreviousPosition).squareLength();
+                    state.PreviousPosition = p;
+
                     // Check if expired
                     if (lifetimeProgress >= 1.0f
                         || IsCachedUnderwater(pointIndex))
@@ -1766,6 +1777,9 @@ void Points::UpdateEphemeralParticles(
                         //
 
                         ExpireEphemeralParticle(pointIndex);
+
+                        // TODOTEST
+                        LogMessage("!!! Expired at: ", state.TotalSquareDistanceTraveled, " (", int(state.SmokeKind), ")");
                     }
                     else
                     {

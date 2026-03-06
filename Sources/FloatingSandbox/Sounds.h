@@ -133,6 +133,7 @@ enum class SoundType : uint32_t
     LaserRayAmplified,
     LampExplosion,
     LampImplosion,
+    Tornado,
 
     // UI
     Error

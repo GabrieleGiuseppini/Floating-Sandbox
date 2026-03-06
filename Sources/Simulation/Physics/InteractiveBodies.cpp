@@ -179,6 +179,9 @@ void InteractiveBodies::Update(
         {
             assert(currentSimulationTime > tornado.LastActivitySimulationTimestamp + IdleTimeoutSimSeconds); // Dangerous, might be in-use
 
+            // Publish event to signal end of tornado
+            mSimulationEventHandler.OnTornadoUpdated(0.0f, 0.0f, 0.0f);
+
             // Remove it
             it = mTornadoes.erase(it);
         }
@@ -209,6 +212,12 @@ void InteractiveBodies::Update(
             oceanSurface.DisplaceAt(
                 tornado.CurrentX,
                 OceanSurfaceDisplacement * tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha);
+
+            // Publish event
+            mSimulationEventHandler.OnTornadoUpdated(
+                tornado.CurrentVisibilityAlpha,
+                tornado.CurrentForceMultiplier,
+                tornado.CurrentHeatDepth);
 
             ++it;
         }
@@ -424,28 +433,43 @@ ElementIndex InteractiveBodies::BeginPlaceTornado(
 {
     posX = Clamp(posX, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth); // Safety
 
-    ElementIndex newTornadoId = NoneElementIndex;
+    std::optional<size_t> existingTornado;
 
-    // Search if there is one in radius, and pick the nearest
-    float nearestDistance = std::numeric_limits<float>::max();
-    for (size_t i = 0; i < mTornadoes.size(); ++i)
+    if constexpr (SimulationParameters::MaxTornadoes == 1)
     {
-        float const distance = std::fabs(mTornadoes[i].CurrentX - posX);
-        float const effectiveTornadoRadius = CalculateTornadoEffectiveSize(mTornadoes[i].CurrentVisibilityAlpha).width / 2.0f;
-        if (distance <= std::max(searchRadius, effectiveTornadoRadius) && distance < nearestDistance)
+        // Pick the existing one, if one exists
+        if (!mTornadoes.empty())
         {
-            newTornadoId = static_cast<ElementIndex>(i);
-            nearestDistance = distance;
+            existingTornado = 0;
+        }
+    }
+    else
+    {
+        // Search if there is one in radius, and pick the nearest
+        float nearestDistance = std::numeric_limits<float>::max();
+        for (size_t i = 0; i < mTornadoes.size(); ++i)
+        {
+            float const distance = std::fabs(mTornadoes[i].CurrentX - posX);
+            float const effectiveTornadoRadius = CalculateTornadoEffectiveSize(mTornadoes[i].CurrentVisibilityAlpha).width / 2.0f;
+            if (distance <= std::max(searchRadius, effectiveTornadoRadius) && distance < nearestDistance)
+            {
+                existingTornado = i;
+                nearestDistance = distance;
+            }
         }
     }
 
-    if (newTornadoId != NoneElementIndex)
+    ElementIndex newTornadoId;
+
+    if (existingTornado.has_value())
     {
         // Refresh this one
-        mTornadoes[newTornadoId].ResetToBegin(
+        mTornadoes[*existingTornado].ResetToBegin(
             posX,
             oceanSurface.GetHeightAt(posX),
             currentSimulationTimestamp);
+
+        newTornadoId = mTornadoes[*existingTornado].Id;
     }
     else
     {
@@ -480,8 +504,6 @@ ElementIndex InteractiveBodies::BeginPlaceTornado(
             newTornadoId = oldestSrchIt->Id;
             mTornadoes.erase(oldestSrchIt);
         }
-
-        assert(newTornadoId != NoneElementIndex);
 
         // Create it
         mTornadoes.emplace_back(

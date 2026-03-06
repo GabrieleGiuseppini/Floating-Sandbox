@@ -512,6 +512,20 @@ public:
         mLightningHitEvents[std::make_tuple(&structuralMaterial)] += 1;
     }
 
+    void OnTornadoUpdated(
+        float normalizedEvolution, // normalizedEvolution !=/=0 is signal to start/end
+        float strengthMultiplier,
+        float heatDepth) override
+    {
+        for (auto sink : mAtmosphereSinks)
+        {
+            sink->OnTornadoUpdated(
+                normalizedEvolution,
+                strengthMultiplier,
+                heatDepth);
+        }
+    }
+
     //
     // Electrical Element
     //

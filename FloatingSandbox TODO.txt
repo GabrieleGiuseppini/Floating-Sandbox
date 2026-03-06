@@ -1064,27 +1064,37 @@
 						+ New multi-notification type
 						+ Driven by tool
 
-			- Sound
-				- TODOHERE: to spec
+			= Sound
+				+ Handlers: onTornadoUpdated(float normalizedEvolution, float normalizedStrength) // normalizedEvolution !=/=0 is signal to start/end
+				+ Invoke from Tornado::Update
+					+ Send 0 when gone
+				+ Handle at SoundController
+					+ New sound type
+					+ Play/Stop depending on normalizedEvolution
+					+ Reset
+					+ Play with pitch?
 
-			- If we decide to stay with 1 tornado, change BeginPlace algo to always pick it if alive
+			+ If we decide to stay with 1 tornado, change BeginPlace algo to always pick it if alive
 
 			- Test:
 				- BeginPlaceAntiGravityField: we've changed to closest
 				- Boundaries
 
-			- Smoke: add distance traveled next to expiry time
-				- State:
-					- PreviousPosition
-						- Initd with start pos
-					- TotalSquareDistanceTraveled
-						- 0.0
+			= Smoke: add distance traveled next to expiry time
+				= State:
+					+ PreviousPosition
+						+ Initd with start pos
+					+ TotalSquareDistanceTraveled
+						+ 0.0
 					- MaxTotalSquareDistanceTraveled
 						- Phase II: set
-				- Update:
-					- Phase I. Maintain TotalSquareDistanceTraveled
-						- Then print total distance @ expiry, so we may calc (current) max distance from time
+				= Update:
+					+ Phase I. Maintain TotalSquareDistanceTraveled
+						+ Then print total distance @ expiry, so we may calc (current) max distance from time
+						! Black: 9-26 (heavier)
+						! White: 27-38 (lighter)   2.5: 450-945    0.1:   0.01-0.085
 					- Phase II. Expire with max(elapsedTime, elapsedDistanceTraveled)
+						- Make sure to incorporate randomization
 
 	- Look into "I tried to make a small gravity field and it crashed"
 

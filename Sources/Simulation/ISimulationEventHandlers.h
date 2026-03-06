@@ -340,6 +340,14 @@ struct IAtmosphereEventHandler
     {
         // Default-implemented
     }
+
+    virtual void OnTornadoUpdated(
+        float /*normalizedEvolution*/, // normalizedEvolution !=/=0 is signal to start/end
+        float /*strengthMultiplier*/,
+        float /*heatDepth*/)
+    {
+        // Default-implemented
+    }
 };
 
 struct IElectricalElementEventHandler
