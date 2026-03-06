@@ -58,11 +58,9 @@ float is_type(float notification_type, float value)
 vec4 make_power_meter()
 {
     float absx = abs(auxPosition.x);
-    //float borderDepthX = smoothstep(1.0 - float1, 1.0, absx);
-    float borderDepthX = step(1.0 - float1, absx);
+    float borderDepthX = smoothstep(1.0 - float1, 1.0, absx);
     float absy = abs(auxPosition.y);
-    //float borderDepthY = smoothstep(1.0 - float2, 1.0, absy);
-    float borderDepthY = step(1.0 - float2, absy);
+    float borderDepthY = smoothstep(1.0 - float2, 1.0, absy);
 
     vec4 powerColor = mix(color2, color1, step((1. + auxPosition.y) / 2., float3));
 
