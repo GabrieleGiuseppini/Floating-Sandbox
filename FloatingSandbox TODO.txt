@@ -953,8 +953,13 @@
 						+ For each ship:
 							+ ApplyTornado(...)
 								+ ForceMultiplier is multiplied by viz
-						- Npcs::ApplyTornado(...)
+						= Npcs::ApplyTornado(...)
 							+ ForceMultiplier is multiplied by viz
+							= Forces
+								- Redesign orbital forces
+								- Randomize npcs
+							= Heat
+						- See if ship also needs orbital force redesign
 						+ OceanSurface
 							X Ugly if continuous, should pulse?
 							+ Beware of feedback loops

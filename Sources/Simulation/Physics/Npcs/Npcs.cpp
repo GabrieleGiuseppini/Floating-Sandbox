@@ -2693,6 +2693,181 @@ void Npcs::ApplyAntiMatterBombExplosion(
         });
 }
 
+void Npcs::ApplyTornado(
+    vec2f const & bottomCenterPos,
+    FloatSize const & size,
+    float bottomWidthFraction,
+    float rotationPhase,
+    float strengthMultiplier,
+    float heatDepth,
+    SimulationParameters const & simulationParameters)
+{
+    // In order to pick NPCs floating in the water, we lower the tornado
+    float constexpr ExtraBottomOffset = 3.5f; // Magic
+
+    // To act outside of the visible vortex
+    float constexpr ExtraWidthFraction = 1.2f;
+    float const effectiveTopRadius = size.width / 2.0f * ExtraWidthFraction;
+    float const effectiveBottomRadius = effectiveTopRadius * std::max(bottomWidthFraction, 0.05f); // Bottom needs to be wide enough to catch NPCs
+    float constexpr ExtraHeightFraction = 1.1f;
+    float const effectiveHeight = size.height * ExtraHeightFraction + ExtraBottomOffset;
+
+    // Quick checks on vortex AABB
+    float const centerX = bottomCenterPos.x;
+    float const effectiveBottom = bottomCenterPos.y - ExtraBottomOffset;
+    float const effectiveTop = effectiveBottom + effectiveHeight;
+
+    // The magnitude V of the particle velocity in the vortex is of our choice (rendering / shader syncs to it);
+    // high enough to cause breakages
+    float const effectiveOrbitV =
+        SimulationParameters::TornadoBaseOrbitVelocity
+        * (simulationParameters.IsUltraViolentMode ? 2.0f : 1.0f)
+        * strengthMultiplier;
+
+    // The magnitude of the upward force; magic, and more than gravity
+    float const effectiveUpwardForceMagnitude =
+        12.0f
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f)
+        * strengthMultiplier;
+
+    // The temperature we bring particles to, when heatDepth=1
+    float const targetTemperature =
+        700.0f // Magic
+        * (simulationParameters.IsUltraViolentMode ? 2.0f : 1.0f);
+
+    for (auto const & npc : mStateBuffer)
+    {
+        if (npc.has_value()
+            && npc->IsActive()
+            && npc->CurrentRegime == StateType::RegimeType::Free) // Only free NPCs
+        {
+            for (auto const & npcParticle : npc->ParticleMesh.Particles)
+            {
+                vec2f const & p = mParticles.GetPosition(npcParticle.ParticleIndex);
+
+                if (p.y > effectiveBottom && p.y <= effectiveTop) // Note: skipping y=effectiveBottom to ensure non-zero radius
+                {
+                    // Calculate radius, depending on y
+                    float const effectiveRadius = effectiveBottomRadius + (effectiveTopRadius - effectiveBottomRadius) * (p.y - effectiveBottom) / effectiveHeight;
+
+                    // Normalized distance from center
+                    float const rn = (p.x - centerX) / effectiveRadius;
+                    if (std::fabsf(rn) <= 1.0f)
+                    {
+                        float const m = mParticles.GetMass(npcParticle.ParticleIndex);
+
+                        // Tornado strength is lower at the edges
+                        float const tornadoDepth =
+                            (1.0f - LinearStep(0.97f, 1.0f, rn))
+                            * (1.0f - LinearStep(size.height, effectiveHeight, (p.y - effectiveBottom)));
+
+                        //
+                        // 1. Apply forces
+                        //
+
+                        // TODOTEST
+                        //float const cForceX =
+                        //    -m
+                        //    * effectiveOrbitV * effectiveOrbitV / effectiveRadius
+                        //    * std::sinf(Pi<float> / 2.0f * rn)
+                        //    * tornadoDepth;
+
+
+                        // Offseting rn
+
+                        //float constexpr Offset = 0.3f;
+                        //float const fakeRn = (rn >= 0.0f)
+                        //    ? rn + Offset
+                        //    : rn - Offset;
+
+                        //float const cForceX =
+                        //    -m
+                        //    * effectiveOrbitV  * 0.9f
+                        //    //* std::sinf(Pi<float> / 2.0f * fakeRn)
+                        //    * fakeRn
+                        //    * effectiveRadius
+                        //    * tornadoDepth;
+
+
+
+                        // Velocity as memory
+
+                        //vec2f const & v = mParticles.GetVelocity(npcParticle.ParticleIndex);
+
+                        //// Calculate alpha
+                        //float alpha = Pi<float> / 2.0f * (1.0f - rn);
+                        //if (v.x < 0.0f)
+                        //    alpha *= -1.0f;
+
+                        //// Calculate desired Vx
+                        //float const desiredVx =
+                        //    effectiveOrbitV
+                        //    * std::sinf(alpha)
+                        //    * rn // We want constant angular velocity
+                        //    ;
+
+                        //// Calculate force to get there
+                        //float const cForceX =
+                        //    m
+                        //    * (desiredVx - v.x)
+                        //    / SimulationParameters::SimulationStepTimeDuration<float>;
+
+
+
+
+                        // Moving attractor
+
+                        float const attractorX = centerX + effectiveRadius * std::sinf(rotationPhase * 2.0f + npc->RandomNormalizedUniformSeed * Pi<float>);
+                        float const displacement = attractorX - p.x;
+                        float const cForceX =
+                            m
+                            * 1.0f // K
+                            * displacement;
+
+                        (void)effectiveOrbitV;
+
+
+
+
+
+
+                        //
+                        // Updraft force
+                        //
+
+                        float const upForceY =
+                            m
+                            * effectiveUpwardForceMagnitude
+                            * tornadoDepth;
+
+                        //
+                        // Final force
+                        //
+
+                        vec2f const tornadoForce = vec2f(
+                            cForceX,
+                            upForceY);
+
+                        mParticles.AddExternalForce(
+                            npcParticle.ParticleIndex,
+                            tornadoForce);
+
+                        //
+                        // 2. Heat
+                        //
+
+                        // Increase temperature to target - slowly
+                        float const currentTemperature = mParticles.GetTemperature(npcParticle.ParticleIndex);
+                        mParticles.SetTemperature(
+                            npcParticle.ParticleIndex,
+                            currentTemperature + (targetTemperature - currentTemperature) * 0.007f * heatDepth);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void Npcs::OnShipTriangleDestroyed(
     ShipId shipId,
     ElementIndex triangleElementIndex)

@@ -29,7 +29,8 @@ public:
         std::vector<std::unique_ptr<Ship>> const & ships,
         Npcs & npcs,
         OceanSurface & oceanSurface,
-        float currentSimulationTime);
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
 
     void Upload(RenderContext & renderContext) const;
 

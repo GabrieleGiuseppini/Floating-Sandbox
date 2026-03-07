@@ -1317,6 +1317,15 @@ public:
 		vec2f const & centerPosition,
 		SimulationParameters const & simulationParameters);
 
+	void ApplyTornado(
+		vec2f const & bottomCenterPos,
+		FloatSize const & size,
+		float bottomWidthFraction,
+		float rotationPhase,
+		float strengthMultiplier,
+		float heatDepth,
+		SimulationParameters const & simulationParameters);
+
 	void OnShipTriangleDestroyed(
 		ShipId shipId,
 		ElementIndex triangleElementIndex);

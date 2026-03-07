@@ -1576,6 +1576,14 @@ void World::Update(
 
     mOceanFloor.Update(simulationParameters);
 
+    {
+        // Interactive bodies - affects ships and npcs
+
+        assert(mNpcs);
+
+        mInteractiveBodies.Update(mAllShips, *mNpcs, mOceanSurface, mCurrentSimulationTime, simulationParameters);
+    }
+
     for (auto & ship : mAllShips)
     {
         ship->Update(
@@ -1606,13 +1614,6 @@ void World::Update(
     }
 
     mUnderwaterPlants.Update(mCurrentSimulationTime, mWind, mOceanSurface, mOceanFloor, simulationParameters);
-
-    // Interactive bodies
-    {
-        assert(mNpcs);
-
-        mInteractiveBodies.Update(mAllShips, *mNpcs, mOceanSurface, mCurrentSimulationTime);
-    }
 
     //
     // Signal update end (for quantities/state that needed to persist during whole Update cycle)

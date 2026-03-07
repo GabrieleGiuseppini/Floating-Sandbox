@@ -29,7 +29,8 @@ void InteractiveBodies::Update(
     std::vector<std::unique_ptr<Ship>> const & ships,
     Npcs & npcs,
     OceanSurface & oceanSurface,
-    float currentSimulationTime)
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
 {
     //
     // Anti-gravity fields
@@ -161,7 +162,7 @@ void InteractiveBodies::Update(
 
         // Only proportional to Force/StrengthMultiplier
         // NOT proportional to viz, so it keeps rotating while it disappears
-        tornado.CurrentRotationPhase += SimulationParameters::SimulationStepTimeDuration<float> *tornado.CurrentForceMultiplier;
+        tornado.CurrentRotationPhase += SimulationParameters::SimulationStepTimeDuration<float> * tornado.CurrentForceMultiplier;
 
         //
         // Check whether it's been idle enough to start disappearing
@@ -191,21 +192,32 @@ void InteractiveBodies::Update(
             // Apply tornado
             //
 
+            vec2f const position = vec2f(tornado.CurrentX, tornado.CurrentBaseY);
+            FloatSize const size = CalculateTornadoEffectiveSize(tornado.CurrentVisibilityAlpha);
+            float const bottomWidthFraction = CalculateTornadoBottomWidthFraction(tornado.CurrentForceMultiplier);
+            float const strengthMultiplier = tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha;
+
             // Ships
             for (auto & ship : ships)
             {
                 assert(ship);
                 ship->ApplyTornado(
-                    vec2f(tornado.CurrentX, tornado.CurrentBaseY),
-                    CalculateTornadoEffectiveSize(tornado.CurrentVisibilityAlpha),
-                    CalculateTornadoBottomWidthFraction(tornado.CurrentForceMultiplier),
-                    tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha,
+                    position,
+                    size,
+                    bottomWidthFraction,
+                    strengthMultiplier,
                     tornado.CurrentHeatDepth);
             }
 
             // Npcs
-            // TODOHERE
-            (void)npcs;
+            npcs.ApplyTornado(
+                position,
+                size,
+                bottomWidthFraction,
+                tornado.CurrentRotationPhase,
+                strengthMultiplier,
+                tornado.CurrentHeatDepth,
+                simulationParameters);
 
             // Ocean surface
             float constexpr OceanSurfaceDisplacement = 5.0f;
