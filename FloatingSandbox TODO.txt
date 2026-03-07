@@ -1087,14 +1087,23 @@
 					+ TotalSquareDistanceTraveled
 						+ 0.0
 					- MaxTotalSquareDistanceTraveled
-						- Phase II: set
+						- Phase II: calculate
 				= Update:
 					+ Phase I. Maintain TotalSquareDistanceTraveled
 						+ Then print total distance @ expiry, so we may calc (current) max distance from time
 						! Black: 9-26 (heavier)
-						! White: 27-38 (lighter)   2.5: 450-945    0.1:   0.01-0.085
+						! White: 1.0: 27-38 (lighter)   2.5: 450-945    0.1: 0.01-0.085
+							- 0.1	0.047
+							- 1.0	32
+							- 2.5	700
+							- BUT: use a multiplier, so normally time always wins
 					- Phase II. Expire with max(elapsedTime, elapsedDistanceTraveled)
 						- Make sure to incorporate randomization
+
+			- Android extra port agenda
+				- Perlin noise size (but check if needed first)
+				- Shader & WorldRenderContext
+				- Sound
 
 	- Look into "I tried to make a small gravity field and it crashed"
 

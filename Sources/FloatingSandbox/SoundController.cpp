@@ -1754,7 +1754,11 @@ void SoundController::OnTornadoUpdated(
 {
     // Calculate volume
     float volume = normalizedEvolution * 100.0f;
-    if (strengthMultiplier < 1.0f)
+    if (strengthMultiplier >= 1.0f)
+    {
+        volume *= 0.75f + 0.25f * LinearStep(1.0f, 2.0f, strengthMultiplier);
+    }
+    else
     {
         volume *= 0.4f + 0.6f * strengthMultiplier;
     }
@@ -1764,7 +1768,7 @@ void SoundController::OnTornadoUpdated(
     mTornadoSound.SetVolume(volume);
 
     // Set the pitch
-    mTornadoSound.SetPitch(std::min(strengthMultiplier / 2.0f, 1.0f));
+    mTornadoSound.SetPitch(0.5f + 0.5f * std::min(strengthMultiplier / 2.0f, 1.0f));
 }
 
 void SoundController::OnSpringRepaired(

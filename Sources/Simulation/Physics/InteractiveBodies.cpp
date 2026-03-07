@@ -135,7 +135,7 @@ void InteractiveBodies::Update(
 
         if (tornado.CurrentForceMultiplier != tornado.TargetForceMultiplier)
         {
-            tornado.CurrentForceMultiplier += (tornado.TargetForceMultiplier - tornado.CurrentForceMultiplier) * 0.01f;
+            tornado.CurrentForceMultiplier += (tornado.TargetForceMultiplier - tornado.CurrentForceMultiplier) * 0.015f;
             if (std::fabsf(tornado.TargetForceMultiplier - tornado.CurrentForceMultiplier) < ConvergenceThreshold)
             {
                 tornado.CurrentForceMultiplier = tornado.TargetForceMultiplier;
