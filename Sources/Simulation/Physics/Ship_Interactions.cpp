@@ -1190,7 +1190,7 @@ void Ship::ApplyTornado(
                 float const upForceY =
                     std::max(m, 30.0f) // Very light materials get more force
                     * effectiveUpwardForceMagnitude
-                    * (1.0f - LinearStep(550.0f, 2000.0, m)) // Less emphasis on heavier materials
+                    * (1.0f - LinearStep(550.0f, 2500.0, m)) // Less emphasis on heavier materials
                     * tornadoDepth;
 
                 //
