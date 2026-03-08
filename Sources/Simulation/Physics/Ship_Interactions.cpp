@@ -1091,7 +1091,7 @@ void Ship::ApplyTornado(
     // The magnitude V of the particle velocity in the vortex is of our choice (rendering / shader syncs to it);
     // high enough to cause breakages
     float const effectiveOrbitV =
-        SimulationParameters::TornadoBaseOrbitVelocity
+        40.0f // Magic
         * (simulationParameters.IsUltraViolentMode ? 2.0f : 1.0f)
         * args.StrengthMultiplier;
 

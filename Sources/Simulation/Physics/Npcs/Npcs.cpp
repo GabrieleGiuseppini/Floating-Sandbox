@@ -2720,7 +2720,6 @@ void Npcs::ApplyTornado(
     // The rotational force strength
     float const rotationalK =
         1.0f // Magic
-        //* ((strengthMultiplier - 1.0f) * 3.0f + 1.0f);
         * (strengthMultiplier >= 1.0f
             ? (strengthMultiplier - 1.0f) * 3.0f + 1.0f
             : strengthMultiplier);

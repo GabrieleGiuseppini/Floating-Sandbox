@@ -950,18 +950,18 @@
 						+ Remove
 					= Else:
 						+ // Apply						
-						+ For each ship:
-							+ ApplyTornado(...)
+						= For each ship:
+							= ApplyTornado(...)
 								+ ForceMultiplier is multiplied by viz
-						= Npcs::ApplyTornado(...)
+								- Try orbital redesign
+						+ Npcs::ApplyTornado(...)
 							+ ForceMultiplier is multiplied by viz
 							+ Forces
 								+ Redesign orbital forces
 								+ Randomize npcs
 								+ Test furniture
 							+ Heat
-							- Nuke SimulationParameter for OrbitalBaseForce
-						- See if ship also needs orbital force redesign
+							+ Nuke SimulationParameter for OrbitalBaseForce
 						+ OceanSurface
 							X Ugly if continuous, should pulse?
 							+ Beware of feedback loops

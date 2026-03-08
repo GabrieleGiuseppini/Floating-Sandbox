@@ -748,7 +748,6 @@ struct SimulationParameters
     static float constexpr MinAntiGravityFieldAccelerationAdjustment = 0.1f;
     static float constexpr MaxAntiGravityFieldAccelerationAdjustment = 10.0f;
 
-    static float constexpr TornadoBaseOrbitVelocity = 40.0f; // m/s
     static float constexpr TornadoHeight = 200.0f; // m
     static float constexpr TornadoWidth = 100.0f; // m
 
