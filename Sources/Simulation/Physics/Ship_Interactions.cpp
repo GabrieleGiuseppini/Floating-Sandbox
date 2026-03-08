@@ -1079,7 +1079,7 @@ void Ship::ApplyTornado(
     SimulationParameters const & simulationParameters)
 {
     // To make damage outside of the visible vortex
-    float constexpr ExtraWidthFraction = 1.5f;
+    float constexpr ExtraWidthFraction = 2.2f; // MUCH wider
     float const effectiveTopRadius = args.Size.width / 2.0f * ExtraWidthFraction;
     float const effectiveBottomRadius = effectiveTopRadius * args.BottomWidthFraction;
     float constexpr ExtraHeightFraction = 1.1f;
@@ -1093,7 +1093,7 @@ void Ship::ApplyTornado(
     // The magnitude V of the particle velocity in the vortex is of our choice (rendering / shader syncs to it);
     // high enough to cause breakages
     float const effectiveOrbitV =
-        40.0f // Magic
+        40.0f // Magic - not too high to prevent humongous momenta
         * (simulationParameters.IsUltraViolentMode ? 2.0f : 1.0f)
         * args.StrengthMultiplier;
 
@@ -1183,7 +1183,7 @@ void Ship::ApplyTornado(
                 float const cForceX =
                     -m
                     * effectiveOrbitV * effectiveOrbitV / effectiveRadius
-                    * std::sinf(Pi<float> / 2.0f * (rn + 0.2f * attractorX)) // Disturb with attractor
+                    * std::sinf(Pi<float> / 2.0f * (rn + 0.2f * attractorX * (1.0f - rn))) // Disturb with attractor, but mostly where needed (at equilibrium)
                     * (1.0f - LinearStep(200.0f, 1500.0, m)) // Modulate with mass so to avoid humongous momenta
                     * tornadoDepth;
 

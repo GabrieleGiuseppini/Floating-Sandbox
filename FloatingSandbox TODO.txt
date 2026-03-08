@@ -951,13 +951,13 @@
 					= Else:
 						+ // Apply						
 						= For each ship:
-							= ApplyTornado(...)
+							+ ApplyTornado(...)
 								+ ForceMultiplier is multiplied by viz
-								= Try orbital redesign also here
+								+ Try orbital redesign also here
 									+ Driving a ilttle with attractor
-									- Test: apply attractor when "far from equilibrium"
 							- Test UV mode
 						+ Npcs::ApplyTornado(...)
+							! Only free NPCs!
 							+ ForceMultiplier is multiplied by viz
 							+ Forces
 								+ Redesign orbital forces
@@ -971,7 +971,7 @@
 							+ Beware of feedback loops
 						- Fishes?
 				+ RenderUpload
-			= Physics (ApplyTornado @Ship, @NPCs)
+			+ Physics (ApplyTornado @Ship, @NPCs)
 				+ 1. Calculate strength (closed region around x)
 					+ Takes tornado size from Tornado
 				+ 2. Weaken strength of springs (goal: weak parts detach sooner or later)
@@ -1019,13 +1019,7 @@
 
 				X 5. Enlarge bottom of cone with strength multiplier (@Tornado)
 					X Both @ application and @ RenderUpload
-
-				= Add one or two new stress_medium_cable sounds
-					+ Have them at C:\Users\Neurodancer\Desktop\FS Scratch\Ship Scratch\Sounds\Cable\Stress
-					- Port to Android
-
-				- NPCs: only Free NPCs!
-			= WorldRenderContext:
+			+ WorldRenderContext:
 				+ VertexAttributes:
 					+ Geometry + v-space
 					+ VisibilityAlpha (0..1)
@@ -1049,11 +1043,11 @@
 						+ IsSecondaryRendering=0.0:
 							finalAlpha = whateverAlpha
 
-				- Test:
-					- Ambient light
-					- Lamp
-					- Moonlight
-					- Land
+				+ Test:
+					+ Ambient light
+					+ Lamp
+					+ Moonlight
+					+ Land
 
 			+ Soften jumping up and down with OceanSurface
 
@@ -1084,6 +1078,10 @@
 					+ Play/Stop depending on normalizedEvolution
 					+ Reset
 					+ Play with pitch?
+
+			= Add one or two new stress_medium_cable sounds
+				+ Have them at C:\Users\Neurodancer\Desktop\FS Scratch\Ship Scratch\Sounds\Cable\Stress
+				- Port to Android
 
 			+ If we decide to stay with 1 tornado, change BeginPlace algo to always pick it if alive
 
