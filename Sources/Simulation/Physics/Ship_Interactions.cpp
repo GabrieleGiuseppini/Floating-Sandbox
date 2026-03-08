@@ -1100,7 +1100,7 @@ void Ship::ApplyTornado(
     // The magnitude of the upward force; magic, and more than gravity
     float const effectiveUpwardForceMagnitude =
         12.0f
-        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f)
+        * (simulationParameters.IsUltraViolentMode ? 3.0f : 1.0f)
         * args.StrengthMultiplier;
 
     // The temperature we bring particles to, when heatDepth=1

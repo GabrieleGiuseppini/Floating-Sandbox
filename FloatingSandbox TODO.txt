@@ -950,12 +950,12 @@
 						+ Remove
 					= Else:
 						+ // Apply						
-						= For each ship:
+						+ For each ship:
 							+ ApplyTornado(...)
 								+ ForceMultiplier is multiplied by viz
 								+ Try orbital redesign also here
 									+ Driving a ilttle with attractor
-							- Test UV mode
+							+ Test UV mode
 						+ Npcs::ApplyTornado(...)
 							! Only free NPCs!
 							+ ForceMultiplier is multiplied by viz
@@ -969,7 +969,11 @@
 						+ OceanSurface
 							X Ugly if continuous, should pulse?
 							+ Beware of feedback loops
-						- Fishes?
+						- Fishes? Would be:
+							- Freefall becomes "Free", and since we're doing this, becomes "Regime"
+							- Need force buffer for external forces
+								- Used next to gravity, then cleared
+							- External forces: from ApplyTornado(...)
 				+ RenderUpload
 			+ Physics (ApplyTornado @Ship, @NPCs)
 				+ 1. Calculate strength (closed region around x)

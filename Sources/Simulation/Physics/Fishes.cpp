@@ -127,7 +127,7 @@ void Fishes::Update(
     UpdateInteractions(simulationParameters);
 
     //
-    // Update wrech detection, if time to do it
+    // Update wreck detection, if time to do it
     //
 
     if (currentSimulationTime > mNextWreckDetectionSimulationTime)
@@ -789,7 +789,7 @@ void Fishes::UpdateDynamics(
 
             // Update velocity with gravity
             float const newVelocityY = fish.CurrentVelocity.y
-                - 2.0f // Magnification factor
+                - 2.0f // Magic magnification factor
                 * SimulationParameters::GravityMagnitude
                 * SimulationParameters::SimulationStepTimeDuration<float>;
 
