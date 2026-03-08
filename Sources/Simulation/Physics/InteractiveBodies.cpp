@@ -205,6 +205,7 @@ void InteractiveBodies::Update(
                     position,
                     size,
                     bottomWidthFraction,
+                    tornado.CurrentRotationPhase,
                     strengthMultiplier,
                     tornado.CurrentHeatDepth);
             }

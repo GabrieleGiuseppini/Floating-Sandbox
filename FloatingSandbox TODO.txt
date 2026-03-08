@@ -953,7 +953,8 @@
 						= For each ship:
 							= ApplyTornado(...)
 								+ ForceMultiplier is multiplied by viz
-								- Try orbital redesign also here
+								= Try orbital redesign also here
+							- Test UV mode
 						+ Npcs::ApplyTornado(...)
 							+ ForceMultiplier is multiplied by viz
 							+ Forces
@@ -1111,6 +1112,8 @@
 			- Android extra port agenda
 				- Perlin noise size (but check if needed first)
 				- Shader & WorldRenderContext
+					- Also: ShipRenderContext: useless ApplySkyChanged
+						- As WorldRenderContext::ApplySkyChanged already sets param in all shaders; verify it's the case also in Android
 				- Sound
 
 	- Look into "I tried to make a small gravity field and it crashed"

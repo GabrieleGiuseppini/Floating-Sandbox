@@ -1059,6 +1059,7 @@ void Ship::ApplyTornado(
     vec2f const & bottomCenterPos,
     FloatSize const & size,
     float bottomWidthFraction,
+    float rotationPhase,
     float strengthMultiplier,
     float heatDepth)
 {
@@ -1068,6 +1069,7 @@ void Ship::ApplyTornado(
             bottomCenterPos,
             size,
             bottomWidthFraction,
+            rotationPhase,
             strengthMultiplier,
             heatDepth));
 }
@@ -1158,7 +1160,8 @@ void Ship::ApplyTornado(
                 // 2. Apply forces
                 //
 
-                // Centripetal force, projected along the X axis
+                // In order to simulate a vortex, we apply a centripetal force projected along the X axis,
+                // emulating the projection of an orbital motion.
                 //
                 // For a circular orbit motion, the velocity, the radius, and the centripetal acceleration must satisfy:
                 //  V^2/R = |Ac|
@@ -1169,13 +1172,18 @@ void Ship::ApplyTornado(
                 // with alpha derivable from x as: alpha = PI/2 - PI/2 * x/R
                 // Thus, Fcx = |Fc| * sin(PI/2 - alpha) = |Fc| * sin(PI/2 * x/R)
                 //
-                //
+                // However, this model has an equilibrium at x=0 (it's basically a damped oscillator),
+                // and thus we drive it with an attractor that rotates around the vortex.
+                // The attractor is randomized - by the particle's plane ID, so that whole pieces
+                // experience the same forces.
+
+                float constexpr RotationSpeed = 1.0f; // Magic: too fast risks creating Lissajous'
+                float const attractorX = std::sinf(args.RotationPhase * RotationSpeed + static_cast<float>(mPoints.GetPlaneId(pointIndex)));
 
                 float const cForceX =
                     -m
                     * effectiveOrbitV * effectiveOrbitV / effectiveRadius
-                    * std::sinf(Pi<float> / 2.0f * rn)
-                    * (1.0f - LinearStep(200.0f, 1500.0, m)) // Modulate with mass so to make more chaos
+                    * std::sinf(Pi<float> / 2.0f * (rn + 0.2f * attractorX))
                     * tornadoDepth;
 
                 // Updraft force

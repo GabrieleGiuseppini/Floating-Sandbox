@@ -234,6 +234,7 @@ public:
         vec2f const & bottomCenterPos,
         FloatSize const & size,
         float bottomWidthFraction,
+        float rotationPhase,
         float strengthMultiplier,
         float heatDepth);
 
@@ -460,6 +461,7 @@ private:
                 vec2f BottomCenterPos;
                 FloatSize Size;
                 float BottomWidthFraction;
+                float RotationPhase;
                 float StrengthMultiplier;
                 float HeatDepth;
 
@@ -467,11 +469,13 @@ private:
                     vec2f const & bottomCenterPos,
                     FloatSize const & size,
                     float bottomWidthFraction,
+                    float rotationPhase,
                     float strengthMultiplier,
                     float heatDepth)
                     : BottomCenterPos(bottomCenterPos)
                     , Size(size)
                     , BottomWidthFraction(bottomWidthFraction)
+                    , RotationPhase(rotationPhase)
                     , StrengthMultiplier(strengthMultiplier)
                     , HeatDepth(heatDepth)
                 {
