@@ -955,10 +955,12 @@
 								+ ForceMultiplier is multiplied by viz
 						= Npcs::ApplyTornado(...)
 							+ ForceMultiplier is multiplied by viz
-							= Forces
-								- Redesign orbital forces
-								- Randomize npcs
-							= Heat
+							+ Forces
+								+ Redesign orbital forces
+								+ Randomize npcs
+								+ Test furniture
+							+ Heat
+							- Nuke SimulationParameter for OrbitalBaseForce
 						- See if ship also needs orbital force redesign
 						+ OceanSurface
 							X Ugly if continuous, should pulse?
