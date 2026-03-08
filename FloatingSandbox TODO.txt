@@ -954,6 +954,8 @@
 							= ApplyTornado(...)
 								+ ForceMultiplier is multiplied by viz
 								= Try orbital redesign also here
+									+ Driving a ilttle with attractor
+									- Test: apply attractor when "far from equilibrium"
 							- Test UV mode
 						+ Npcs::ApplyTornado(...)
 							+ ForceMultiplier is multiplied by viz

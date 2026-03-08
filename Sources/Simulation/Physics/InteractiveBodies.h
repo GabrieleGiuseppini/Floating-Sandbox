@@ -173,10 +173,8 @@ private:
 
         void ResetToBegin(
             float newX,
-            float newBaseY,
             float currentSimulationTime)
         {
-            CurrentBaseY = newBaseY;
             TargetX = newX;
             TargetVisibilityAlpha = 1.0f;
             TargetForceMultiplier = 1.0f;

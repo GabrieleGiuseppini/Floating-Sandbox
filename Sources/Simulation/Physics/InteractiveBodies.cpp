@@ -479,7 +479,6 @@ ElementIndex InteractiveBodies::BeginPlaceTornado(
         // Refresh this one
         mTornadoes[*existingTornado].ResetToBegin(
             posX,
-            oceanSurface.GetHeightAt(posX),
             currentSimulationTimestamp);
 
         newTornadoId = mTornadoes[*existingTornado].Id;

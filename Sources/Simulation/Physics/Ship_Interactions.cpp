@@ -1079,7 +1079,7 @@ void Ship::ApplyTornado(
     SimulationParameters const & simulationParameters)
 {
     // To make damage outside of the visible vortex
-    float constexpr ExtraWidthFraction = 2.2f; // MUCH wider
+    float constexpr ExtraWidthFraction = 1.5f;
     float const effectiveTopRadius = args.Size.width / 2.0f * ExtraWidthFraction;
     float const effectiveBottomRadius = effectiveTopRadius * args.BottomWidthFraction;
     float constexpr ExtraHeightFraction = 1.1f;
@@ -1125,7 +1125,7 @@ void Ship::ApplyTornado(
 
                 // Tornado strength is lower at the edges
                 float const tornadoDepth =
-                    (1.0f - LinearStep(0.97f, 1.0f, rn))
+                    (1.0f - LinearStep(0.9f, 1.0f, rn))
                     * (1.0f - LinearStep(args.Size.height, effectiveHeight, (p.y - effectiveBottom)));
 
                 if (!mPoints.IsEphemeral(pointIndex))
@@ -1173,7 +1173,7 @@ void Ship::ApplyTornado(
                 // Thus, Fcx = |Fc| * sin(PI/2 - alpha) = |Fc| * sin(PI/2 * x/R)
                 //
                 // However, this model has an equilibrium at x=0 (it's basically a damped oscillator),
-                // and thus we drive it with an attractor that rotates around the vortex.
+                // and thus we drive it a bit with an attractor that rotates around the vortex.
                 // The attractor is randomized - by the particle's plane ID, so that whole pieces
                 // experience the same forces.
 
@@ -1183,7 +1183,8 @@ void Ship::ApplyTornado(
                 float const cForceX =
                     -m
                     * effectiveOrbitV * effectiveOrbitV / effectiveRadius
-                    * std::sinf(Pi<float> / 2.0f * (rn + 0.2f * attractorX))
+                    * std::sinf(Pi<float> / 2.0f * (rn + 0.2f * attractorX)) // Disturb with attractor
+                    * (1.0f - LinearStep(200.0f, 1500.0, m)) // Modulate with mass so to avoid humongous momenta
                     * tornadoDepth;
 
                 // Updraft force
