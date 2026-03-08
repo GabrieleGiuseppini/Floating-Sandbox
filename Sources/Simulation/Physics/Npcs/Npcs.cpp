@@ -2727,13 +2727,13 @@ void Npcs::ApplyTornado(
     // The magnitude of the upward force; magic, and more than gravity
     float const effectiveUpwardForceMagnitude =
         12.0f
-        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f)
+        * (simulationParameters.IsUltraViolentMode ? 2.0f : 1.0f)
         * strengthMultiplier;
 
     // The temperature we bring particles to, when heatDepth=1
     float const targetTemperature =
         500.0f // Magic
-        * (simulationParameters.IsUltraViolentMode ? 2.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 1.5f : 1.0f);
 
     for (auto const & npc : mStateBuffer)
     {
