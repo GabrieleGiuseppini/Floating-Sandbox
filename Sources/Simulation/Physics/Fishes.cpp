@@ -682,14 +682,14 @@ void Fishes::UpdateDynamics(
         // 2) Update dynamics
         ///////////////////////////////////////////////////////////////////
 
-        float constexpr OceanSurfaceDisturbanceMagnitude = 8.0f; // Magic number
-
         // Get water surface level at this fish
         float const oceanY = oceanSurface.GetHeightAt(fish.CurrentPosition.x);
 
         //
         // Run freefall state machine
         //
+
+        float constexpr OceanSurfaceDisturbanceMagnitude = 8.0f; // Magic number
 
         if (!fish.IsInFreefall
             && fish.CurrentPosition.y > oceanY)
