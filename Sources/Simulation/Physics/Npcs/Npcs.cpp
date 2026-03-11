@@ -2754,13 +2754,14 @@ void Npcs::ApplyTornado(
 
                     // Normalized distance from center
                     float const rn = (particlePosition.x - centerX) / effectiveRadius;
-                    if (std::fabsf(rn) <= 1.0f)
+                    float const absRn = std::fabsf(rn);
+                    if (absRn <= 1.0f)
                     {
                         float const m = mParticles.GetMass(npcParticle.ParticleIndex);
 
                         // Tornado strength is lower at the edges
                         float const tornadoDepth =
-                            (1.0f - LinearStep(0.95f, 1.0f, rn))
+                            (1.0f - LinearStep(0.95f, 1.0f, absRn))
                             * (1.0f - LinearStep(size.height * 0.9f, effectiveHeight, (particlePosition.y - effectiveBottom)));
 
                         //

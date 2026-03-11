@@ -1119,13 +1119,14 @@ void Ship::ApplyTornado(
 
             // Normalized distance from center
             float const rn = (p.x - centerX) / effectiveRadius;
-            if (std::fabsf(rn) <= 1.0f)
+            float const absRn = std::fabsf(rn);
+            if (absRn <= 1.0f)
             {
                 float const m = mPoints.GetMass(pointIndex);
 
                 // Tornado strength is lower at the edges
                 float const tornadoDepth =
-                    (1.0f - LinearStep(0.9f, 1.0f, rn))
+                    (1.0f - LinearStep(0.9f, 1.0f, absRn))
                     * (1.0f - LinearStep(args.Size.height, effectiveHeight, (p.y - effectiveBottom)));
 
                 if (!mPoints.IsEphemeral(pointIndex))
@@ -1183,7 +1184,7 @@ void Ship::ApplyTornado(
                 float const cForceX =
                     -m
                     * effectiveOrbitV * effectiveOrbitV / effectiveRadius
-                    * std::sinf(Pi<float> / 2.0f * (rn + 0.2f * attractorX * (1.0f - rn))) // Disturb with attractor, but mostly where needed (at equilibrium)
+                    * std::sinf(Pi<float> / 2.0f * (rn + 0.2f * attractorX * (1.0f - absRn))) // Disturb with attractor, but mostly where needed (at equilibrium)
                     * (1.0f - LinearStep(200.0f, 1500.0, m)) // Modulate with mass so to avoid humongous momenta
                     * tornadoDepth;
 
