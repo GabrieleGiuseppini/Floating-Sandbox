@@ -904,7 +904,7 @@
 				- First applies
 				- Then updates
 		= Impl:
-			= "GlobalForceFields" -> "InteractiveBodies"
+			+ "GlobalForceFields" -> "InteractiveBodies"
 				+ Tornado:
 					- CurrentX, TargetX
 					- CurrentVelocityX, TargetVelocityX
@@ -927,7 +927,7 @@
 						+ Create new one
 				+ UpdateTornado(...)
 				+ EndUpdateTornado(...)
-				= Update(Ships &, Npcs &, OceanSurface const &, ...):
+				+ Update(Ships &, Npcs &, OceanSurface const &, ...):
 					+ Update TargetVelocityX w/Hooke force: vX=min(k*(targetX-curX), some_constant)
 					+ Converge CurrentVelocityX to target - with destination check
 					+ Calculate newCurrentX based on CurrentVelocityX
@@ -939,16 +939,14 @@
 					+ Converge others by convergence, with destination check
 						+ Update DirtyForRendering if anything had not reached target yet
 						+ Update LastActivitySimulationTimestamp if anything had not reached target yet
-							+ Not with viz
-					
+							+ Not with viz					
 					+ If currentSimulationTime > LastActivitySimulationTimestamp + IdleTimeout:
 						+ TargetVisibilityAlpha=0.0
 							+ Only place
-
 					+ If CurrentVisibilityAlpha==TargetVisibilityAlpha && TargetVisibilityAlpha==0.0:
 						+ assert currentSimulationTime > LastActivitySimulationTimestamp + IdleTimeout // Dangerous, might be in-use
 						+ Remove
-					= Else:
+					+ Else:
 						+ // Apply						
 						+ For each ship:
 							+ ApplyTornado(...)
@@ -969,11 +967,19 @@
 						+ OceanSurface
 							X Ugly if continuous, should pulse?
 							+ Beware of feedback loops
-						- Fishes? Would be:
-							- Freefall becomes "Free", and since we're doing this, becomes "Regime"
-							- Need force buffer for external forces
-								- Used next to gravity, then cleared @ end of Update()
-							- External forces: from ApplyTornado(...)
+						X Fishes? Would be:
+							+ Freefall becomes "Free", and since we're doing this, becomes "Regime"
+							+ Need force buffer for external forces
+								+ Used next to gravity, then cleared @ end of Update()
+							+ Analyze:
+								! gravity multiplier not needed
+								! Out-of-water multiplier needed for falling
+								X PROBLEM: TargetVelocity is constantly messed with (e.g. shoaling, etc.)
+								X PROBLEM: fish is wary of ocean-air interface
+							+ External forces: from ApplyTornado(...)
+						+ rn/abs fix
+							+ Ship
+							+ Npc
 				+ RenderUpload
 			+ Physics (ApplyTornado @Ship, @NPCs)
 				+ 1. Calculate strength (closed region around x)
@@ -1083,15 +1089,23 @@
 					+ Reset
 					+ Play with pitch?
 
-			= Add one or two new stress_medium_cable sounds
+			+ Add one or two new stress_medium_cable sounds
 				+ Have them at C:\Users\Neurodancer\Desktop\FS Scratch\Ship Scratch\Sounds\Cable\Stress
-				- Port to Android
+				+ Port to Android
 
 			+ If we decide to stay with 1 tornado, change BeginPlace algo to always pick it if alive
 
-			- Test:
-				- BeginPlaceAntiGravityField: we've changed to closest
-				- Boundaries
+			+ Test:
+				+ BeginPlaceAntiGravityField: we've changed to closest
+				+ Boundaries
+
+			- Ship::ApplyTornado: upForceY: try with small mass still contributing a bit, not 30
+				X Try first without
+				+ Try: normal mass & windReceptivity: mass * (1.0 + windReceptivity) = materialFactor
+					+ Also @ forceX
+				- Do linear
+
+			- Test NPCs at scale
 
 			= Smoke: add distance traveled next to expiry time
 				= State:
@@ -1109,9 +1123,16 @@
 							- 0.1	0.047
 							- 1.0	32
 							- 2.5	700
-							- BUT: use a multiplier, so normally time always wins
-					- Phase II. Expire with max(elapsedTime, elapsedDistanceTraveled)
-						- Make sure to incorporate randomization
+							- BUT: use a multiplier, so normally time always wins; use 1.5
+
+					- Phase II. Expire with both
+						- Calc MaxTotalSquareDistanceTraveled
+							- 0.1	0.0705
+							- 1.0	48.0
+							- 2.5	1050.0
+							- Make sure to incorporate randomization
+						- Expire with max(elapsedTime, elapsedDistanceTraveled) ON NORMALIZED!
+							- Use normalized, so can use max
 
 			- Android extra port agenda
 				- Perlin noise size (but check if needed first)

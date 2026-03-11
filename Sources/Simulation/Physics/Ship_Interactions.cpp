@@ -1124,6 +1124,10 @@ void Ship::ApplyTornado(
             {
                 float const m = mPoints.GetMass(pointIndex);
 
+                // We bump forces with the material's wind receptivity,
+                // as tornadoes are made of wind :-)
+                float const materialFactor = m * (1.0f + mPoints.GetMaterialWindReceptivity(pointIndex));
+
                 // Tornado strength is lower at the edges
                 float const tornadoDepth =
                     (1.0f - LinearStep(0.9f, 1.0f, absRn))
@@ -1182,7 +1186,7 @@ void Ship::ApplyTornado(
                 float const attractorX = std::sinf(args.RotationPhase * RotationSpeed + static_cast<float>(mPoints.GetPlaneId(pointIndex)));
 
                 float const cForceX =
-                    -m
+                    -materialFactor
                     * effectiveOrbitV * effectiveOrbitV / effectiveRadius
                     * std::sinf(Pi<float> / 2.0f * (rn + 0.2f * attractorX * (1.0f - absRn))) // Disturb with attractor, but mostly where needed (at equilibrium)
                     * (1.0f - LinearStep(200.0f, 1500.0, m)) // Modulate with mass so to avoid humongous momenta
@@ -1190,7 +1194,9 @@ void Ship::ApplyTornado(
 
                 // Updraft force
                 float const upForceY =
-                    std::max(m, 30.0f) // Very light materials get more force
+                    // TODOTEST
+                    // std::max(m, 30.0f) // Very light materials get more force
+                    materialFactor
                     * effectiveUpwardForceMagnitude
                     * (1.0f - LinearStep(550.0f, 2500.0, m)) // Less emphasis on heavier materials
                     * tornadoDepth;
