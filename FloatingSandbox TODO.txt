@@ -1103,7 +1103,7 @@
 				X Try first without
 				+ Try: normal mass & windReceptivity: mass * (1.0 + windReceptivity) = materialFactor
 					+ Also @ forceX
-				- Do linear
+				+ Do linear
 
 			- Test NPCs at scale
 

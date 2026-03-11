@@ -2056,7 +2056,7 @@ void Points::UploadAttributes(
     {
         renderContext.UploadShipPointAuxiliaryDataAsync(
             shipId,
-            mFactoryStrengthBuffer.data(),
+            mFactoryStrengthBuffer.data(), // In theory we should incorporate AdditionalWeakness
             0,
             partialPointCount);
     }

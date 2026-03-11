@@ -1193,12 +1193,18 @@ void Ship::ApplyTornado(
                     * tornadoDepth;
 
                 // Updraft force
+
+                // We bump force for lighter materials - so they are ripped off;
+                // We lower force for heavier materials as they shouldn't be asily lifted off the ground
+                float constexpr UpdraftLowMassThreshold = 30.0f;
+                float constexpr UpdraftLowMassMin = 5.0f;
+                float const updraftMassFactor = (m < UpdraftLowMassThreshold)
+                    ? UpdraftLowMassMin + (UpdraftLowMassThreshold - UpdraftLowMassMin) * (m / UpdraftLowMassThreshold)
+                    : m * (1.0f - LinearStep(550.0f, 2500.0, m));
+
                 float const upForceY =
-                    // TODOTEST
-                    // std::max(m, 30.0f) // Very light materials get more force
-                    materialFactor
+                    updraftMassFactor
                     * effectiveUpwardForceMagnitude
-                    * (1.0f - LinearStep(550.0f, 2500.0, m)) // Less emphasis on heavier materials
                     * tornadoDepth;
 
                 //
