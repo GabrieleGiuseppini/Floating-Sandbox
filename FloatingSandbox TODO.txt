@@ -1099,13 +1099,13 @@
 				+ BeginPlaceAntiGravityField: we've changed to closest
 				+ Boundaries
 
-			- Ship::ApplyTornado: upForceY: try with small mass still contributing a bit, not 30
+			+ Ship::ApplyTornado: upForceY: try with small mass still contributing a bit, not 30
 				X Try first without
 				+ Try: normal mass & windReceptivity: mass * (1.0 + windReceptivity) = materialFactor
 					+ Also @ forceX
 				+ Do linear
 
-			- Test NPCs at scale
+			+ Test NPCs at scale
 
 			= Smoke: add distance traveled next to expiry time
 				= State:
