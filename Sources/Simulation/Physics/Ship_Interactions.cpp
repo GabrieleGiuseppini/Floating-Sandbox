@@ -1143,10 +1143,9 @@ void Ship::ApplyTornado(
                     float constexpr TargetWeakness = 0.12f;
                     float const deltaWeakness = (TargetWeakness - mPoints.GetAdditionalWeakness(pointIndex)) * 0.1f; // Reach slowly
 
-                    // How much we weaken depends on the strength of the point, so we weaken "structurally", not homogeneuosly;
-                    // the weaker, the more we weaken; the stronger, the less we weaken.
-                    // Note: cloth won't be weakened; oak wood hull, just a bit
-                    float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.27f, mPoints.GetFactoryStrength(pointIndex));
+                    // How much we weaken depends on the strength of the point, so we may weaken "structurally", not homogeneuosly
+                    // float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.27f, mPoints.GetFactoryStrength(pointIndex)); // This was a totally different way, opposite (weakening the weak)
+                    float const weakeningStrength = LinearStep(0.01f, 0.07f, mPoints.GetFactoryStrength(pointIndex));
 
                     mPoints.SetAdditionalWeakness(
                         pointIndex,
@@ -1196,10 +1195,10 @@ void Ship::ApplyTornado(
 
                 // Updraft force
 
-                // We bump force for lighter materials - so they are ripped off;
+                // We bump force for lighter materials - so that they fly high;
                 // We lower force for heavier materials as they shouldn't be easily lifted off the ground
                 float constexpr UpdraftLowMassThreshold = 30.0f;
-                float constexpr UpdraftLowMassMin = 10.0f; // High enough to break ropes
+                float constexpr UpdraftLowMassMin = 5.0f;
                 float const updraftMassFactor = (m < UpdraftLowMassThreshold)
                     ? UpdraftLowMassMin + (UpdraftLowMassThreshold - UpdraftLowMassMin) * (m / UpdraftLowMassThreshold)
                     : m * (1.0f - LinearStep(550.0f, 2500.0, m));
