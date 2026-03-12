@@ -1107,14 +1107,16 @@
 
 			+ Test NPCs at scale
 
+			+ Try inverse weakness mask
+
 			= Smoke: add distance traveled next to expiry time
-				= State:
+				+ State:
 					+ PreviousPosition
 						+ Initd with start pos
 					+ TotalSquareDistanceTraveled
 						+ 0.0
-					- MaxTotalSquareDistanceTraveled
-						- Phase II: calculate
+					+ MaxTotalSquareDistanceTraveled
+						+ Phase II: calculate
 				= Update:
 					+ Phase I. Maintain TotalSquareDistanceTraveled
 						+ Then print total distance @ expiry, so we may calc (current) max distance from time
@@ -1125,14 +1127,31 @@
 							- 2.5	700
 							- BUT: use a multiplier, so normally time always wins; use 1.5
 
-					- Phase II. Expire with both
-						- Calc MaxTotalSquareDistanceTraveled
+						! White:	MaxTime		Distance		Theo factor
+							- 0.1	0.37/0.51	0.02/0.048
+							- 1.0	3.5/4.1/5.7	9.2/12.5/28.9		2.62
+							- 2.5	9.2/12.7/14.5	83.6/149.0/188.2
+
+							0.37	0.02
+							0.51	0.048
+							3.5	9.2
+							4.1	12.5
+							5.7	28.9
+							9.2	83.6
+							12.7	149.0
+							14.5	188.2
+							y = -2.019994 + 0.8145161*x + 0.8616222*x^2
+
+					= Phase II. Expire with both
+						+ Calc MaxTotalSquareDistanceTraveled
 							- 0.1	0.0705
 							- 1.0	48.0
 							- 2.5	1050.0
-							- Make sure to incorporate randomization
-						- Expire with max(elapsedTime, elapsedDistanceTraveled) ON NORMALIZED!
-							- Use normalized, so can use max
+							+ Make sure to incorporate randomization
+								+ We do so by means of using maxSimulationTime as our basis
+						+ Expire with max(elapsedTime, elapsedDistanceTraveled) ON NORMALIZED!
+							+ Use normalized, so can use max
+						- Fix render:
 
 			- Android extra port agenda
 				- Perlin noise size (but check if needed first)
