@@ -903,7 +903,7 @@
 			! Update(Ship &) changes into Update(Ships, Npcs)
 				- First applies
 				- Then updates
-		= Impl:
+		+ Impl:
 			+ "GlobalForceFields" -> "InteractiveBodies"
 				+ Tornado:
 					- CurrentX, TargetX
@@ -1109,7 +1109,7 @@
 
 			+ Try inverse weakness mask
 
-			= Smoke: add distance traveled next to expiry time
+			+ Smoke: add distance traveled next to expiry time
 				+ State:
 					+ PreviousPosition
 						+ Initd with start pos
@@ -1117,7 +1117,7 @@
 						+ 0.0
 					+ MaxTotalSquareDistanceTraveled
 						+ Phase II: calculate
-				= Update:
+				+ Update:
 					+ Phase I. Maintain TotalSquareDistanceTraveled
 						+ Then print total distance @ expiry, so we may calc (current) max distance from time
 						! Black: 9-26 (heavier)
@@ -1141,8 +1141,7 @@
 							12.7	149.0
 							14.5	188.2
 							y = -2.019994 + 0.8145161*x + 0.8616222*x^2
-
-					= Phase II. Expire with both
+					+ Phase II. Expire with both
 						+ Calc MaxTotalSquareDistanceTraveled
 							- 0.1	0.0705
 							- 1.0	48.0
@@ -1151,20 +1150,28 @@
 								+ We do so by means of using maxSimulationTime as our basis
 						+ Expire with max(elapsedTime, elapsedDistanceTraveled) ON NORMALIZED!
 							+ Use normalized, so can use max
-						- Fix render:
+						+ Fix render:
+							! scale can still depend on time only
+								- Verify first: emitter (both) should be fine
+							+ alpha needs to depend on both
+							+ Then, bump max distance to ensure it kicks-in only when we really need it
+						+ Remove log
 
-			- Android extra port agenda
-				- Perlin noise size (but check if needed first)
-				- Shader & WorldRenderContext
-					- Also: ShipRenderContext: useless ApplySkyChanged
-						- As WorldRenderContext::ApplySkyChanged already sets param in all shaders; verify it's the case also in Android
-				- Sound
+		- Android extra port agenda
+			- Perlin noise size (but check if needed first)
+			- Shader & WorldRenderContext
+				- Also: ShipRenderContext: useless ApplySkyChanged
+					- As WorldRenderContext::ApplySkyChanged already sets param in all shaders; verify it's the case also in Android
+			- Sound
 
 	- Look into "I tried to make a small gravity field and it crashed"
 		- Alex Cooper's crash dump
 
+	- Try modulating smoke quad shape with its velocity
+
 	- Look into masts on seafloor colliding over and over again
 		- Could be pressure?
+			- See hydrostatic pressure adjust
 
 	- Look into DKUZ's bug
 		- Settings screenshot is on Desktop now
@@ -1185,7 +1192,6 @@
 
 
 
-	- See hydrostatic pressure adjust
 
 	+ Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
 

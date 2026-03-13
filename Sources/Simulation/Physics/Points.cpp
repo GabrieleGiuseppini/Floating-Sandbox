@@ -443,8 +443,23 @@ void Points::InternalCreateEphemeralParticleSmoke(
             simulationParameters.SmokeMassAdjustment);
 
     // Calculate max distance traveled
-    // TODOHERE
-    float maxTotalSquareDistanceTraveled = 0.0f;
+    //
+    // From empirical observations, square distances traveled as a function of time are (independently from the type of smoke):
+    //
+    //  0.1:	0.37/0.51	    0.02/0.048
+    //  1.0:	3.5/4.1/5.7	    9.2/12.5/28.9
+    //  2.5:	9.2/12.7/14.5	83.6/149.0/188.2
+    //
+    // ...which yields (x is max time) (after nuking bogus y offset):
+    //  sqDistance = 0.8145161*x + 0.8616222*x^2
+    //
+    // We further bump it up to ensure that under normal conditions (default settings and NO wind)
+    // we expire by time only, and that distance expiration only comes into play under abnormal
+    // circumstances
+
+    float maxTotalSquareDistanceTraveled =
+        0.8145161f * maxSimulationLifetime + 0.8616222f * maxSimulationLifetime * maxSimulationLifetime
+        + 10.0f; // Magic bump
 
     //
     // Store attributes
@@ -1756,17 +1771,26 @@ void Points::UpdateEphemeralParticles(
                 {
                     auto & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke;
 
-                    // Calculate progress
-                    state.ElapsedSimulationTime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
-                    assert(mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime > 0.0f);
-                    float const lifetimeProgress =
-                        state.ElapsedSimulationTime
-                        / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
-
                     // Maintain total distance traveled
                     auto const & p = GetPosition(pointIndex);
                     state.TotalSquareDistanceTraveled += (p - state.PreviousPosition).squareLength();
                     state.PreviousPosition = p;
+
+                    // Calculate time progress
+                    state.ElapsedSimulationTime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
+                    assert(mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime > 0.0f);
+                    float const timeProgress =
+                        state.ElapsedSimulationTime
+                        / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
+
+                    // Calculate distance progress
+                    assert(state.MaxTotalSquareDistanceTraveled > 0.0f);
+                    float const distanceProgress =
+                        state.TotalSquareDistanceTraveled
+                        / state.MaxTotalSquareDistanceTraveled;
+
+                    // Combine progress
+                    float const lifetimeProgress = std::max(timeProgress, distanceProgress);
 
                     // Check if expired
                     if (lifetimeProgress >= 1.0f
@@ -1777,9 +1801,6 @@ void Points::UpdateEphemeralParticles(
                         //
 
                         ExpireEphemeralParticle(pointIndex);
-
-                        // TODOTEST
-                        LogMessage("!!! Expired at: ", state.TotalSquareDistanceTraveled, " (", int(state.SmokeKind), ")");
                     }
                     else
                     {
@@ -2325,10 +2346,13 @@ void Points::UploadEphemeralParticles(
                         float const maxSimulationLifetime = mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
                         float const timeScalingFactor = std::min(
                             maxSimulationLifetime / (RisePeriodTheo + DecreasePeriodTheo),
-                            1.0f);
+                            1.0f)
+                            / std::max(maxSimulationLifetime, 0.001f); // Incorporate maxSimulationLifetime, so we can modulate with LifetimeProgress
+                                                                       // (which also includes distance lifetime)
                         alpha =
-                            SmoothStep(0.0f, RisePeriodTheo * timeScalingFactor, state.ElapsedSimulationTime)
-                            - SmoothStep(maxSimulationLifetime - DecreasePeriodTheo * timeScalingFactor, maxSimulationLifetime, state.ElapsedSimulationTime);
+                            // Using combined lifetime here
+                            SmoothStep(0.0f, RisePeriodTheo * timeScalingFactor, state.LifetimeProgress)
+                            - SmoothStep(1.0f - DecreasePeriodTheo * timeScalingFactor, 1.0f, state.LifetimeProgress);
 
                         alpha = alpha * alpha * 0.7f;
 
