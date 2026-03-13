@@ -48,7 +48,7 @@ void InteractiveBodies::Update(
                 ship->ApplyAntiGravityField(antiGravityField.StartPosition, antiGravityField.EndPosition, antiGravityField.StrengthMultiplier);
             }
 
-            // TODO: NPCs?
+            // Futurework: NPCs?
 
             // Decay strength multiplier
             antiGravityField.StrengthMultiplier += (1.0f - antiGravityField.StrengthMultiplier) * 0.05f;
