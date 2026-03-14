@@ -1892,7 +1892,8 @@ void Ship::ApplyStaticPressureForces(
     //
     // We do this via iterative optimization: at each iteration, we pick
     // the particle that has the most potential to affect the net force
-    // and/or the net torque by getting its force reduced (via "lambda")
+    // and/or the net torque by getting its force reduced (via "lambda",
+    // the force multiplicative factor)
     //
 
     ElementCount iter;
@@ -2009,7 +2010,7 @@ void Ship::ApplyStaticPressureForces(
         netTorque -= thisTorque * (1.0f - bestLambda);
     }
 
-    // Update stats
+    // Update stats (aggregate across all frontiers)
     mStaticPressureNetForceMagnitudeSum += netForce.length();
     mStaticPressureNetForceMagnitudeCount += 1.0f;
     mStaticPressureIterationsPercentagesSum += static_cast<float>(iter + 1) / static_cast<float>(frontier.Size);
