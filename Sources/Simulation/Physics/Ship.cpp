@@ -1873,6 +1873,8 @@ void Ship::ApplyStaticPressureForces(
 
         // Advance
         nextEdgeIndex = nextEdge.NextEdgeIndex;
+
+        // Check whether we're done
         if (nextEdgeIndex == startEdgeIndex)
             break;
 
