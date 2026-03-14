@@ -1866,7 +1866,7 @@ void Ship::ApplyStaticPressureForces(
                 forceVector,
                 torqueArm);
 
-            // Update resultant force and torque
+            // Update resultant total force and torque
             netForce += forceVector;
             netTorque += torqueArm.cross(forceVector);
         }
