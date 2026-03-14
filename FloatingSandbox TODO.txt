@@ -6,892 +6,6 @@
 
 - Roadmap:
 
-	=========================================================================
-
-	+ Lower DisplacementWaveSmoothnessAdjust - 0.0 is quite cool
-
-	+ Try adding a setting for WaveMaker's speed <-> fatness of interactive waves
-		+ Param: "InteractiveWave"
-		+ Func: AdjustOceanSurfaceTo -> ImpartInteractiveWaveAt
-		+ Affects OceanSurface::AdjustTo and decay
-			+ OceanSurface stores value and uses it there		
-		+ SettingsDialog
-		+ Decide default value
-		+ If ok:
-			+ Port setting to Android (SettingsWindow)
-				+ Replace both DisplacementWaves in waves panel
-			+ Add to PC changelist
-
-	+ Replace need for "dWorld = abs(dFdy(yWorld)); // World per pixel" in ocean.glslinc with parameter
-		! Param does not exist already
-		+ WorldPerPixel, float
-		+ Set at WorldRenderContext::ApplyViewModelChanges
-		+ Verify with this real "derivative" it still looks good, at all zooms
-		+ Test:
-			+ Flat
-			+ Depth
-			+ Texture
-		+ Port to Android:
-			+ Render/ShaderSets
-			+ WorldRenderContext::ApplyViewModelChanges
-			+ shaders			
-
-	+ Texture preview improvement work (*)
-
-	+ ShipBuilder:
-		+ Make Undo survive return to game and back
-			+ Requires undo stack to be owned by MainFrame, rather than by Controller; latter takes it as &
-			+ Changelist
-
-	+ AntiGravity tool
-		+ Make branch: anti_gravity_field
-		+ First, test feasibility
-			+ Fixed min mass (so light materials have more force, thus move more and break)
-			! Try with mass imbalance; possible funcs f(m):
-				! f: 0 at 0, growing slowly with m => then mass = mass - f(m)
-			+ Try with segment
-		+ If ok:
-			! Physics::ForceFields manages N force fields; UI (tool) statelessly adds/removes from it
-			+ Cursor
-			+ Simulation/Physics/ForceFields
-				+ Container/manager of N force fields
-					+ Max N in SimulationParameters as new limit
-				+ BeginPlaceAntiGravityField(start position):
-					+ If one in radius (which depend on zoom): pick that one
-						+ AntiGravityField type: reset line to zero length
-						+ Return its ID
-					+ Else: if has room for a new one: create a new one
-						+ Return its ID
-					+ Else: kill the oldest one and replace it with new
-						+ Return its ID
-				+ UpdatePlaceAntiGravityField(ID, end position)
-				+ EndPlaceAntiGravityField(ID, end position)
-					+ If end position very close to start (wrt same world radius that depends on zoom): delete it
-					+ Else: finalize it
-				+ AbortPlaceAntiGravityField(ID)
-				+ Update(Ship & ship)
-					+ Ship::ApplyAntiGravityField(vec2f startPos, vec2f endPos)
-						+ Target height wrt line depending on mass - planet rings!
-						+ Add multiplier w/shift
-							+ "StrengthMultiplier"
-								+ Both arg and new method to boost
-								+ Stores a non-sticky value into each field
-									+ Decay @ Update()
-							+ Acts on velocity
-							+ Test also UV mode
-				+ Upload():
-					+ Each time there has been a change, re-uploads all the N fields; otherwise, they are sticky
-				+ Fix removal
-			+ WorldRenderContext: AntiGravityField(s)
-				! Treated as a physical entity, not as a UI thing
-				+ Start/Upload/End
-					+ Sticky; each Start marks as dirty (or whatever is the mechanism used by the others)
-					+ Each field is 3 quads (left and right; middle)
-					+ Thickness is fully in world coords
-				+ RenderPrepare/RenderDraw
-				+ Update orthomatrix
-				+ Shader
-					+ Find way to do that saturation with mix
-						+ Note: when x2=col > 1.0 and coeff leans towards x2, mix will "pull up" x1
-						+ See if there's a blend func
-					+ Optimize
-
-		+ Merge into master
-
-	+ DoDisplaceWater setting should also control Fishes and NPCs
-		+ NPCs swimming
-		+ Air bubbles
-		+ Fishes
-		+ Radial wind
-
-	+ See perf impact with double the world
-		+ REPEAT TEST with double resolution of sea, land
-			! Now: OceanSurface::Update() is 5.62%  --> interp --> 4.33%
-				! GenerateSamples: 3.18% --> interp --> 2.29%
-		+ Check on old Dell
-			+ Pre: UPD=16.1/16.2; 16.0
-			+ Post: UPD=18.1 --> interp --> 17.2/17.9
-		+ Check on new Dell:
-			+ Pre: UPD=2.10
-			+ Post: UPD=2.29 --> interp --> 2.22
-		+ Test game
-			+ Storm
-				- See if can adjust sin args so that at center (x=0) sin wave is smooth
-					- Does it just need offset so that x=0 is at a 2PI boundary? (or 1.0 normalized)
-			+ Peaks waves
-			+ Peaks floors
-				+ NOTE: with these more samples, the minimum possible width of a peak is way smaller - and it looks smaller than before (and *too* small) at "normal" zoom
-					+ Try 1:
-						+ Upload all samples simply; revert to 2K samples
-						+ Test game in Debug
-							+ Peaks
-							+ Boundary conditions
-						+ Test perf
-							+ New dell
-								+ Prev: 2.1, 0.06, 4.1/4.2 - ZOOMOUT: 0.08, 4.8
-								+ New: 2.3, 0.06, 4.2/4.3 - ZOOMOUT: 0.08, 5.6/5.8 !!!
-							+ Old dell (low-quality render though)
-								+ Prev: 15.8/16.8, 0.16/0.20, 13.4/13.9
-								+ New: 17.2/17.9, 0.20/0.25, 12.0/13.3 - ZOOMOUT: 0.3, 14.2/14.7
-							+ Moto
-								+ Prev: 15.44: 63-70, 0.83/1.0, 4.5 - ZOOMOUT: 1.12, 4.8/4.9
-								+ Port to Android
-								+ New: 14.7/14.9: 66-68, 0.9, 4.2 - ZOOMOUT: 1.20, 4.6/4.7
-						+ Cleanup code now (don't worry about caching yWorldBottom)
-		+ See if it's land noise that's killing us
-			+ Try smaller noise (*)
-		+ Experiment: ocean floor is invariant (all samples, world coords) and sticky, uploaded only when mIsDirtyForRendering
-			+ Make it STATIC_DRAW
-			+ Wrestle with yVisibleWorldBottom
-				+ Nuke RenderParams arg if not needed anymore
-			+ If ok, port to Android (together with the below)
-		X Wave spikes: do we calc "short" off 0 or off cur height?
-			+ It's off 0
-
-		+ Why do we use MinHeight of two ocean floor samples for underwater plants?
-			+ To cover roots?
-		+ changelist x 2
-
-		+ Port to Android:
-			+ FS code
-			+ Smaller Perlin (256, both perlin's)
-			+ WorldRenderContext: sticky OceanFloor/Land (dirty buffer indicator)
-
-		+ Check on other phones
-			+ DO PREV FIRST! And write down new standards
-			+ A53:
-				- Prev: 65/66: 9.9/10.20, 0.16/0.18, 3.8/4.2 -- ZOOMOUT: 0.19, 3.8/4.1
-				- New: 65/66: 9.9/10.6, 0.17, 3.9/4.2 -- ZOOMOUT: 0.17, 3.7/3.9
-			+ A14:
-				- Prev: 47/48: 19/23, 0.3/0.4, 7/8 -- ZOOMOUT: 0.59, 8.4
-				- New: 49/50: 19/22, 0.47/0.5, 8.3/9. -- ZOOMOUT: 0.55, 8.8/9.5
-			X If bad, #ifdef @ SimParams to set old world & # of samples
-
-		+ Port WorldRenderContext::RenderPrepareOcean optimization to Android
-
-		+ Re-send beta
-			+ Bump up version
-
-	+ Fix SettingsDialog/Russian-Ukrainian issue from Denis
-		+ Ask russian and ukrainian translators
-		+ UK should be final
-		+ RU should be final
-		+ Double-check myself
-
-	+ Improvements from Bandit:
-		! Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
-		! Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
-		! Spec:
-			! https://hal.science/hal-03251375/document
-			! Observations:
-				- max deltaPos observed with impact, calc'd for 1 mechanical iteration is 0.13
-			! Option 1:
-				! Gist:
-					! Ocean floor: has a soft layer (penetrable) on top of a hard layer (impenetrable) 
-					! Siltness adjustment dictates thickness of soft layer, and thus max penetration
-						! But it's randomized anyway, with a large radius
-					! Elasticity comes into play only after reaching hard layer (after penetration)
-					! The physics is based on kinetic energy of the incoming particle
-						! For example, the degree of penetration depends on kinetic energy
-						! And the more the penetration, the more the reduction in kinetic energy - i.e. in velocity
-					! Sand clouds when hitting the sand layer 
-						! TODO: "...for the first time"?
-				- Problems with this one:
-					- It happens every 2 spring relaxation iterations, very expensive
-			! Option 2:
-				! Gist:
-					! Ocean floor: has a soft layer (penetrable) on top of a hard layer (impenetrable) 
-					! Siltness adjustment dictates thickness of soft layer, and thus max penetration
-						! But it's randomized anyway, with a large radius
-					! Elasticity comes into play only after reaching hard layer (after penetration)
-					! A particle in the silt layer is subject to drag force
-						! The simulation happens at WorldForces calculation; kinda like buoyancy, a force
-						  that comes up if the particle is underneath the silt layer
-						! Note: no position change or explicit velocity lowering in this position, just drag force imparting (possibly with capping)
-					! Ocean floor impacts stay as they are now (but without silt calc'ns)
-						! If underneath:
-							! Move point back to pos: move from end pos along -velocity_dir so to reach y=BedrocK
-							! Do bounce velocity as usual
-				- Pro's:
-					- Less complexity at every other spring relaxation iteration
-				- Con's:
-					- If particle zips through silt layer too quickly, we don't notice it
-						- At option 1 we actually reconstruct trajectory, like we do with NPCs
-					- But note that if a particle zips through silt layer, we still detect it underneath and thus we still apply drag,
-					  which will come useful at the subsequent bedrock impact check (as it will have lowered velocity)
-					- Is it so bad? Especially if silt layer is supposed to be large-ish (more than the distance traveled in a big dt)
-						- V distance traveled by particle falling for ~100m: 0.54m
-		+ Impl:
-			+ BEFORE ALL: 
-				+ Run VS profiler w/ship on bedrock and save results
-				+ Re-take Android measurements on all 3 phones
-				+ Copy FS Next (world size) to Prev
-			+ Try Option 2: - WENT FOR OPTION 1!
-				+ World forces (at particle, not at surface/edge):
-					+ SiltY check, additive to water surface
-					+ Option 1: drag forces
-						+ Do basic
-							+ Problem: ship destroys itself while burrowing
-						+ Max drag magnitude: lower it to allow for burying
-					X Option 2: velocity damping
-						+ Do basic
-						X If we go for this, update description at call site: also changes velocities
-					+ Option 3: same as 2, but @ HandleCollisionsWithSeaFloor
-						+ Watch out drag constant: it's compound
-						+ Optimize retrieval of floor: both in one call
-							+ First check is for silt; only if underneath silt we also check bedrock
-					+ Option 4: like 3, but drag depends on burrow depth (between silt and bedrock)
-						+ Linear depth => DampCoeff
-						X If we want to simulate Titanic, relation w/depth needs to be non-linear
-						+ Fine tune here: 
-							+ Initial impact must be harder: make it so damping factor is lower (more destructive) with kinetic energy
-								+ Indicative K (default ship @ ~25m/s): 400000
-
-			+ Fine-tune again to go back to V1 behavior
-				+ Build & send
-				+ Bump up version
-			+ Finalize:
-				X Try moving from HandleCollisions to ApplyWorldForces
-					- Nope: even with dampingFactor=0.0, glass ball doesn't break
-					- And what's worse, structure gets crampled
-				+ FINALIZE Ship
-				+ If stay with HandleCollisions:
-					+ Cleanup ApplyWorldForces
-					+ Fix for compound damping
-						+ Test first: @ 2, glass ball does _not_ break when starts at -250
-						+ MinDepthHardness, MaxDepthHardness
-						+ Precalc integration velocity factor and silt harndess coefficients 
-							+ Into Ship members, new area
-							+ Call CalculateSpringRelaxationCoefficients at RunXXX()
-					+ Check HandleCollisions assembly, especially Clamp and LinearStep						
-		+ Rendering of silt layer above bedrock: 
-			! Gist:
-				X 1: Sand layer is opaque but drawn earlier, behind ship
-					! Bedrock layer stays like current: drawn _after_ ship, on top of it
-					! REQUIRES: two batches, NO depth
-					X Wrong: other pieces that fall look weird as they look suspended
-				X 2: Sand layer is opaque, drawn (together with bedrock) when we draw current (after ship), but its pixels have a lower depth than ship's
-					X Won't work as ship might have transparent areas which wouldn't be covered by sand
-				X 3: Sand layer is opaque, drawn (together with bedrock) BEFORE ship, but its pixels have a lower depth than ship's, and bedrock pixels have a higher depth
-					! Later-drawn ship would then be covered by land
-					X Requires everything else that need to be covered by bedrock to use depth, too much of a perf hit
-				! 4: Sand and bedrock layer are draw at the same time, opaque
-
-			+ Split World atlas into Ocean, LandBedrock, LandSilt
-				+ In json, as new groups
-				+ TextureDatabase Group specs
-			+ WorldRenderContext:
-				+ RenderParameters: split land texture index and other params
-					+ Fix defaults
-				+ On any land texture index changes:
-					+ Store two (OpenGL) textures: bedrock and silt
-				+ Move setting of Flat land colors to InternalDraw, which sets param based on arg
-				+ Buffers:
-					+ Vertex struct: one single vertex
-					+ Upload:
-						+ Populate vertices
-							+ Silt into first half of buffer, bedrock into second half of buffer
-						+ Verify:
-							+ Backsampling
-							+ ybottom
-				+ RenderDrawLand
-					+ Do strips count math
-			+ RenderContext:
-				+ Split call for drawing land
-			+ Shader:
-				+ Texture
-					+ New vertex attributes
-					+ Texture:
-						+ Calculate coords with fract math
-					+ See some alpha/overlap between junctures
-						+ Bedrock is above silt by D, and shader gets that D as a new attribute in 0-1 domain, directly usable as alpha
-				+ Flat
-			+ GameController:
-				+ Settings for land split into two
-			+ SettingsManager
-			+ Move plants on top of silt
-			+ Finalize default Flat land colors
-		+ OceanFloor:
-			+ Split two SampleValue members into two
-			! Interactions: target is Bedrock; silt calculated on top of that
-			+ Impl:
-				+ CalculateResultantSampleValues: does only Bedrock samples, and then at end calls CalculateSiltSampleValues()
-				+ CalculateSiltSampleValues():
-					+ Milestone 1: fixed offset
-						+ Applies offset (new SimulationSetting, replaces other: SiltThickness)
-						+ Applies sin wave
-					+ Milestone 2: nice silt distribution algorithm
-						X Accretion algo:
-							! Categorize segment as Downward, Upward, or Horizontal
-							- futureBudget=1
-							- Segment s:								
-								- D segment:
-									- Height of s[0] = 0
-									- Increase futureBudget
-								- H segment:
-									- Height of s[0] = futureBudget
-										- TODO: this is also end of previous segment
-											- Prev=D?
-											- Prev=U?
-									- Normalize futureBudget towards 1
-								- U segment: 
-									- Height of s[0] = futureBudget
-										- UGLY: bowl has higher profile on left (landing futureBudget) than right (normalized futureBudget)
-									- Decrease futureBudget
-						X Naive algo:
-							! Categorize segment as Downward, Upward, or Horizontal
-							! A->B: value at sample between A and B
-							- D->H: 1.5
-							- H->U: 1.5
-								- Note: means 1-sample peak peak will be covered :-( unless [1] is 0.0, but then ugly/asymmetric
-									- Or unless we special-case for 1-sample peak, and this is 0.0
-										+ Other side case - U->D - is 0.0 already
-							- H->H: 1.0
-							- H->D: 0.5
-							- U->H: 0.5
-							- D->D: 0.0
-							- U->U: 0.0
-							- D->U: 1.5
-							- U->D: 0.0
-
-						+ Try simplification:
-							+ 0.0 before or after U/D, and U/D with more slope
-
-					+ Profile changes (interactions and all):
-						+ SetHeightMap: calls CalculateResultantSampleValues, done
-						+ AdjustTo: calls SetTerrainHeight
-						+ DisplaceAt: calls SetTerrainHeight 
-						+ SetTerrainHeight:
-							+ Call CalculateSiltSampleValues(start, end) -- for all bedrock-impacted on
-					+ Try with dynamic height, based on abs(slope)
-						+ GetSlope replaces GetSegmentDirection
-
-			+ Upload all members at Upload
-			+ Export:
-				+ Npc: use silt
-				+ Underwater plants: use silt
-
-		+ Param smoother for silt thickness
-			+ And for silt bumpiness
-
-		+ SimulationParameters:
-			+ OceanFloorSiltThickness 
-			+ OceanFloorSiltHardness
-			+ Rename others as Bedrock
-
-		+ SettingsDialog: expose all new settings
-			+ Rendering (Texture, FlatColor): split Bedrock and Silt (silt above, bedrock below), incl. members
-				+ Make color picker buttons narrower
-				+ Swap Sky with Land 
-			+ Add/replace new silt settings:
-				+ Renames for "Bedrock" (elast, friction), incl. members
-				+ OceanFloorSiltThickness
-				+ OceanFloorSiltBumpiness
-				+ OceanFloorSiltHardness
-		+ Fix themes
-			+ Rendering params (texture and color split into Silt, bedrock)
-			+ Phyisics params (OceanFloor-Bedrock-Elast/Friction)
-			= Fix mariana trench
-				+ Verify old version
-				+ 1. Make LoadFromStream interpolate
-				+ Verify & commit
-				+ Add temp code to halve size 
-					+ assert identical sample values
-				+ Verify interpolated now
-				+ Save temp settings and move .bin
-				+ Remove temp code to halve size
-				+ Test boundaries
-		+ Send to testers
-		+ Bump up version
-		+ Sand dust upon impact
-			! Need to be spawned above silt
-			+ Core/GameTypes: EnergeticSiltImpact: float + vec2f, cctor makes zero
-				+ Also SimParams;
-					+ Max kinetic energy (in h AND cpp)
-					+ Lower bumpiness max: 0.5
-						+ Test slider
-					+ Cache line size @ SysSpecifics.h
-						+ Verify with sizeof in intellisense
-			+ Ship::HandleCollisionsWithSeaFloor: each run produces zero or 1 point which had the most kinetic energy decrease because of silt drag, above a threshold
-				+ Returns: K, ~pos taken @ air-silt boundary
-					+ K=0 if not produced
-				+ Threads stores into Ship member: array with one element per thread
-					+ Struct is cache-aligned
-						+ SysSpecifics declares cache align size (256)
-						+ https://www.aussieai.com/blog/false-sharing
-					+ Array is re-dimensioned at parallelization changes
-			+ SpringRelaxations stores all into vector, new member of ship
-				+ Vector gets cleaned before loop
-				+ After each spring relax run (all iterations), takes max(K) from all threads and produces one per-step
-					+ Only those with K>0
-					+ RunSprinRelaxation:
-						+ clear mSiltImpacts
-						+ Zero-out mPerThreadSiltImpacts
-						+ Run (all iterations, all threads):
-							+ HandleCollisionsWithSeaFloor compares against mPerThreadSiltImpacts, not local
-						+ Find max and eventually emplace (yes, just one)
-							+ Nuke CoalescePerThreadSiltImpacts
-						+ Remove previous work in each of RunSpringRelaxation_FullSpeed/StepByStep/Hybrid
-				+ Check assembly
-			+ Estimate # of clouds
-			+ Then, Ship::Update visits this new vector member and produces ephemerals for each
-				+ New function, and called only if not empty
-				+ Unique material
-					+ Json
-						+ Copy from Air
-					+ Material unique
-				+ Ship::Spawn
-					+ Upward velocity and lifetime and max scale depend on K
-						+ Max scale is 1 only when VERY large
-					+ Lifetime carefully calibrated to expire ~ when particle is back onto silt
-				+ Points::Create
-					+ Use material
-				+ Points dynamics			
-				+ Improvements:
-					+ Vy
-					+ Transparency
-					X If single-particle clouds bother: decrease effective K depending on number of connected springs
-				+ If code stays like this, do just one LinearStep
-			+ Texture
-				+ World dim: quite large; scale will always be small
-			+ Lower default silt thickness
-			+ Remove TODOTEST logs
-
-		+ Check Bandit wrt settings dialog layout
-
-		+ Make those deep fishes texture better aliased (no white border but darker instead)
-			+ Port to Android
-
-		+ Tests:
-			+ Boundaries
-				+ Impacts
-				+ TerrainAdjust
-			+ Old Dell perf
-				+ 33.3/33.7 r: 12.8/13 -> 31/32 r: 13.1/13.6
-				! Is it because of more OpenGL calls at RenderDraw()?
-
-		+ Cloud improvements:
-			+ When Vi is small (much x), lifetime is too short
-			+ Slower under water 
-				+ Minimal buoyancy
-				+ Lifetime - taking depth into account
-			+ Larger under water
-				+ Taking depth into account
-
-		+ Cleanup:
-			+ HandleCollisionsWithSeaFloor (All TODOs)
-			+ ApplyWorldForces
-
-		+ Check on Discord, 1
-			+ That bug with terrain adjust
-				! Repro's: from right, up to left, down
-				+ Is it SiltSampleValuePlusOneMinSampleValue being broken?
-				+ Test @ boundaries
-			+ More silt with lower impact
-			+ Try longer lifetime
-				X Try setting
-
-		+ Check on Discord, 2
-			+ Longer lifetime: try setting:
-				! First: do with locals
-				+ Setting only for underwater
-				+ Cleanup: 
-					+ Promote to setting
-					+ Add comment to buoyancy volume fill
-					+ Use actual masses
-			+ Fix ocean floor reloading (see Kiko's)
-				! It's a problem with alpha interface blend
-
-		+ Check if can prevent clouds from disappearing (maxMaxDepth issue - need sticky max)
-
-		+ Send to server again
-			+ Bump up version
-
-		+ Limit based on connectivity
-			+ @HandleCollisions
-			X Scale down K used for cilt cloud threshold, based on # of connected sptrings:
-				- # of connected springs -> multiplier:
-					- 0 -> Min
-					- 2 -> Max
-					- 1/max(3-c, 1)
-					- 1/(3 - min(2, c))
-			+ No debris if no triangle
-			+ Wait for feedback
-			+ Cleanup
-
-		+ Merge back into master
-			+ With PR, will serve for Android
-
-		+ Changelist - thank Bandit
-
-	+ See if fire may emit Heavy / black smoke
-		! Gist:
-			! Move generic texture draw as _last_ (or almost last) render
-				! All draw batches with internal transparency need to be last
-			! Then, smoke Z must be earlier than flame's
-				! This is the tricky part: it's not about PlaneID, it's about the actual Z
-				! Tentative 1:
-					! Even though generic texture draw is later, its ortho layer number comes before flames - and then we _just_ swap the order of draw calls
-			! Make full analysis, of both layer Z's and call order
-				! Layer ID, Render Order
-				    - 0, 2: Ropes (always behind)
-				    - 1, 0: Flames (background, i.e. flames that are on ropes, so these are drawn *behind* triangles on same plane, like ropes are)
-				    - 2, 3: Springs
-				    - 3, 1: Triangles (triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues)
-				    - 4, 4: Stressed springs, Frontier edges (temporally after)
-				    - 5, 5: Points
-				    - 6, 6: Electric sparks, Sparkles
-				    - 7, 7: Generic textures
-				    - 8, 8: Flames (foreground), Jet engine flames
-				    - 9, 9: NPCs
-				    - 10, 10: Explosions
-				    - 11, 11: Highlights, Centers
-				    - 12, 12: Vectors, Point-to-Point Arrows
-		+ Impl:
-			+ Better png's
-			+ ShipRenderContext:
-				+ Switch order of draw's between flames and generic mipmapped textures
-
-			=== New plan
-
-			+ StructuralMaterial: Light Smoke and Heavy Smoke
-				! Independent from texture
-			+ ElectricalMaterial:
-				+ New enum: SmokeEmitterSmokeElementType (Black, White)
-					+ Mandatory for smoke emitter
-				+ Split Smoke Emitter in two, with different SmokeEmitterSmokeElementType
-					! For now leave particle_emission_rate as-is
-			+ SimulationParameters:
-				+ Split rate and density: SmokeEmitterXYZ, CombustionSmokeXYZ
-			+ Points:
-				+ SmokeState::Kind: SmokeEmitterWhite, SmokeEmitterBlack, CombustionSmoke
-				+ CreateEphParticleSmokeEmitterSmoke(ElecMaterial::SmokeEmitterSmokeKind, lifetime)
-				+ CreateEphParticleCombustionSmoke(lifetime)
-				+ => InternalCreateEphemeralParticleSmoke(smokeKind, lifetime)
-				+ EphParticleUpdate
-				+ EphParticleUpload
-					+ switch X 3, deciding texture group
-			+ ElectricalMaterials emission:
-				+ Calculate density with SmokeEmitter parameters + elec material's emission rate (already in SmokeEmitter state)
-				+ Calculate lifetime with SmokeEmitter parameters
-				! Lifetime was:
-					    float const maxSimulationLifetime =
-						simulationParameters.SmokeParticleLifetimeAdjustment
-						* GameRandomEngine::GetInstance().GenerateUniformReal(
-						    3.5f,
-						    6.0f);
-			+ Points::Combustion emission:
-				+ Calculate density and lifetime with CombustionSmoke parameters
-				! Lifetime was:
-					    float const maxSimulationLifetime =
-						simulationParameters.SmokeParticleLifetimeAdjustment
-						* GameRandomEngine::GetInstance().GenerateUniformReal(
-						    3.5f,
-						    6.0f);
-			+ SettingsDialog: Air panel:
-				+ Two new sliders
-			+ Art:
-				+ New textures for "dark"
-					+ Make with brushes
-			+ FIX: scale with long lifetime
-				+ Combustion smoke
-				X SmokeEmitterWhite
-				+ SmokeEmitterBlack
-			+ Max persistence adjust for smoke, both types: 2.5
-
-			+ Flag for turning off smoke from fire
-				+ SimParameters
-				+ Honor
-				+ SettingsDialog: above sliders
-					+ "Fire Emits Smoke"
-					+ Reconciliation between checkbox and 2 sliders enabled
-				+ Turn off at calibration
-
-			+ Test:
-				+ ShipBuilder: both materials (palette & works)
-				+ Timer bomb fuse
-				+ All settings functional
-
-			+ Fine-tune:
-				+ TimerBomb fuse lifetime: in-code at TimerBombGadget::Update
-				X SmokeEmitter Black density: particle_emission_rate in Smoke Emitter Black material json
-				+ SmokeEmitter Black lifetime: in-code at ElectricalElements
-				+ SmokeEmitter Black rendering (scale+alpha): in-code at Points::UploadEphParticles()
-				+ CombustionSmoke density: test with adj setting but set final value(s) in-code at Points::CombustionHighFreq, where we calc next timestamp, to achieve adjustment=1
-					0.75
-				+ CombustionSmoke lifetime: test with adj setting but set final value(s) in-code at SimParams::Max/MinCombustionSmokeLifetime
-					1.5
-				+ CombustionSmoke rendering (scale+alpha): in-code at Points::UploadEphParticles()
-
-			+ Test with Titanic
-				+ Make heavy smoke slightly less subject to wind
-
-		+ Send to Discord
-
-		+ Initial tiny upward velocity instead of zero
-		+ normalise_approx
-		+ the black smoke should be slightly more opaque , and maybe more grey less full black?
-		X Smoke in front
-			+ Just change layer order
-		+ Rise speed setting
-		+ Fix gen textures locking depth for explosions 
-			+ Alpha/Z trick
-			X While you're here, check if shader may be optimized
-		+ Bump up version
-		+ Smoke in front
-			+ Z-layer: invert fire (first) and generic textures (next)
-				+ With proper comments on why
-				+ Then, fix comments @ draw removing the out-of-order
-			+ Fade-in slower so that smoke does not cover fire immediately
-			+ Test with small and large lifetime
-			+ Test with lighter and heavier mass
-		+ Send new beta
-			- Smoke is in front now, and fades-in more slowly
-			- Improved issue with sky background trapped around flames
-			- Slightly more opaque smoke, slightly less pitch black
-			- Slightly heavier
-			- Tried to improve on explosions clashing with smoke (the blue sky patches problem), slightly better now but it still happens visibly. We'll have to live with it as this is one of the main limitations of Floating Sandbox
-			- Added setting to adjust smoke mass (and thus speed with which it rises in the air)
-		+ Fix timer bomb fuse
-			+ 3s lifetime
-		+ Test other gen textures
-		+ Test NPCs		
-		+ Try different textures
-			+ Add more details around perimeter, random rotation of one smaller brush around the center
-		+ FIX: infinite clouds
-			+ Try massless K
-				+ Optimize
-				+ Add comments
-		+ Option to remove silt clouds
-			+ Or slider for sensitivity, 0.0 => no clouds
-		+ Send beta
-
-		+ Default Titanic:
-			+ Try mixed w/b smoke on each funnel
-
-		+ Test on Dell
-			+ Toggling checkbox
-
-		X See if smoke emitter/black smoke was somewhere else in the plan
-			X "Fire emits smoke"
-
-		+ Check Discord
-
-		+ Merge into master
-			+ With PR for Android
-		+ changelist
-
-	+ Change simulation #iterations setting to 0.25 step
-
-	+ I would like to point out that there are some hiccups on some of the new ships, 
-		+ Flying Dutchman has a density recommendation of 2812 (I assume a decimal was meant to be there), 
-		+ the White Star version of the Skandinavya has a pump #17 that I assume is meant to say "pumps", 
-		+ and Petit has a very, well, unprofessional description, for being a default ship in the base game.
-
-	+ Anti-gravity tool: remove all with ESC, but only when tool is engaged
-		+ ESC -> if (!ToolController::HandleEsc)
-		+ AntiGravityTool: return response from GC
-
-	+ Move tool: fix radius: when ship is very close, move tool does _not_ engage
-		+ ShipSearchRadiusScreen: it's in terms of screen, so cap resultant world so radius is at least SimulationParameters::MinShipSearchRadiusWorld (2.0f)
-			+ Do at all uses of ShipSearchRadiusScreen
-			! It's PC-only, no Android
-
-	+ Fishes on wreck (see paper in Malta book)
-		+ Alternative:
-			+ @Fishes
-			+ Every X (sim time, ~10s):
-				+ Take largest N AABBs (N~=3)
-				+ Compare with state maintained for the largest N AABBs (== position of center)
-					+ Note that state size might be lower than N here
-				+ Those that stay within threshold for more than T (T~=20s) are available to fishes
-			+ When a shoal needs to decide a new destination, it checks the available set first; if anything is found within a range R (large), that's the new destination
-			+ Shoal can keep re-checking for destination from time to time, like it probably does now
-			+ Impl:
-				+ Fish database: species get new "doesChaseWrecks" boolean
-					+ Set it only for small fishes which are cool if snoop around wrecks
-						+ Queen Snapper
-						+ Red Bream
-				+ Every X:
-					+ Take largest N AABBs (in terms of # of edges) which have both x-axes underneath 0 (so enough to check highest)
-					+ Compare center of ith with ith from mCandidateWrecks (as long as i is in mCandidateWrecks)
-						- vector of:
-							- AABB aabb
-							- uint64_t staticSampleCount
-						+ size always moves between 0 and N
-					+ If semi-static:
-						+ staticSampleCount++
-					+ Else:
-						+ staticSampleCount = 0
-					+ aabb = AABB
-					+ Ensure mCandidateWrecks' size kept consistent with # of largest AABBs found
-				+ Fish has new state variable: IsCirclingWreck, boolean
-				+ At fish target reach:
-					+ If species has canChaseWrecks:
-						+ Find closest wreck in mCandidateWrecks with staticSampleCount >= Threshold, and follow its side
-							+ Choose side of AABB furthest from target, and position offseted to cover target range check (which becomes a constant)
-						+ Update IsCirclingWreck accordingly
-						+ Make sure this keeps happening at next target check
-				+ At fish<->AABB collision check: only do check if !IsCirclingWreck
-		+ Fine-tuning:
-			+ Enforce min size of AABB
-			+ Turn off shoaling if going to wreck
-			+ Draw arrows
-			+ Try to reinstate shoaling
-				+ But prevent turning for someone else if we are chasin wrecks and they are not
-			+ Vertical and horizontal randomization (all fishes now are on same exact Y)
-				+ V
-					+ Take into account silt height				
-				+ H
-			+ Move wreck selection to Shoal, done by lead
-				+ Shoal: has wreck ID and counter 
-				+ Fish: has IsCircling
-				+ Lead chooses (with counter @ shoal)
-				+ Non-leads simply use shoal's
-				+ When a wreck stops existing, clear all shoals that circle it
-			+ Fix: target velocity never changes even if ship's motion makes it unaligned with target (or after bounce?)
-				! Remember: if we recalc it, need to check for steering
-				+ Just re-use wreck clock, and only if fish.IsCirclingWreck
-			+ Do proper tail for new fish
-			+ See if shoaling weight really needed
-			+ Faster heading towards wreck
-				+ Periodic check for heading to wreck, interrupting "target cruising"
-					+ If panic == 0.0:
-						+ HasNewTarget=false;
-						+ If time to check for wreck:
-							+ HasNewTarget=check for wreck
-						+ If !HasNewTarget and close to target:
-							+ fish.TargetPosition = FindNewCruisingTargetPosition()
-							+ HasNewTarget=true
-						+ If HasNewTarget:
-							+ Do rest
-					+ Else if reached end of panic:
-						+ Reset panic
-					+ Update next wreck check timestamp
-				+ Less shoaling component
-				+ Boost when distant
-					+ But needs to happen all the time: move acceleration boost from where it is now (@ new target) to dynamics
-			+ Don't stick to same wreck forever
-
-		+ Tests:
-			+ Free-falling while circling wreck
-
-		+ Remove logs
-		+ Remove point-to-point arrows
-
-	+ HandleCollisionsWithSeaFloor optimization:
-		+ Move mass constant to .cpp top
-		+ HandleCollisionsWithSeaFloor:
-			+ Adjust calc'd threshold via constant
-			+ Do not multiply
-		+ RunSpringRelaxation: at coalesce, multiply with constant
-
-	+ Release prep:
-		+ Localization:
-			+ Extract new strings
-			+ Update .po's and send to all translators except Chinese
-				+ RU
-				+ UK
-				+ ES
-				+ IT
-				+ PT_BR
-					+ Add Kiko to credits for localization
-			+ Do Italian
-			- When Chinese _old_ is ready:
-				- Update .po and re-send to them
-		+ Changelist
-			+ The Smoke'n'Silt Update
-		+ Video:
-			+ No status text
-			+ 1. Titanic, w/mixed smoke
-				+ Anti-gravity field
-			+ 2. TODO: ship?
-				+ Wreck falling, w/cushioning and clouds
-			+ End titles:
-				+ Say PC again
-				+ Say ShipBucket
-		+ Make sure release does NOT contain Chinese
-
-	+ Auto-adjust smoke density with # of burning particles
-		! Experiments:
-			! Base RND (Ark): 4.30/4.50
-			! With flames:
-				- 80 flames: 500 gmmt, RND=5/6 - Base point
-				- 200 flames: 1100 gmmt RND=9
-				- 223 flames: 1400 gmmt RND=10
-				- D=0.5:
-				- 220 flames: 700 gmmt RND=7
-				- 224 flames: 700 gmmt RND=7.5
-		+ Formula for baseline:
-			+ 80 burning points => baseline = 1.0
-			+ 220 burning points => baseline = 0.5
-
-	+ DiffuseLight optimizations (from Android plan)
-		+ Recap of positive results:
-			+ PC:
-				+ Interleave (doesn't change much for Android, so ok)
-				+ SSE: Unroll (rotating points) (already happens at NEON, so don't touch it)
-		+ Unit tests
-		+ Benchmarks
-		+ Verify perf matches experiments (*)
-		+ Changelist
-
-	+ Test langs yourself for latest strings
-	+ Send last beta, ask Localizer
-		+ Bump up build number
-
-	+ Check Discord
-	+ Release:
-		+ Build on Ubuntu
-		+ Windows
-			+ MSI variable
-			+ Commit & push
-			+ 64-bit MSI
-				+ Cleanup Install
-				+ Build Release Install (after clean)
-				+ Sign two exes
-				+ Make MSI
-				+ Rename MSI (e.g. Floating-Sandbox-1.20.0-x64)
-				+ Sign MSI
-				+ Test upgrade from previous version
-			+ 32-bit MSI
-				+ Cleanup Install
-				+ Build Release Install (after clean)
-				+ Sign two exes
-				+ Make MSI
-				+ Rename MSI (e.g. Floating-Sandbox-1.20.0-x86)
-				+ Sign MSI
-				+ Test clean install
-					+ Verify it's a 32-bit process
-		+ Ubuntu
-			+ rm -rf ~/floating-sandbox
-			+ pull 
-			+ rm -rf build; mkdir build; cd build
-			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-			+ make install
-			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.20.0-x64.tar . && cd ..")
-			+ Zip tar ("gzip Floating-Sandbox*.tar")
-			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-				+ export GDK_BACKEND=x11
-		+ Send x64 installer to dev server for final smoke test
-		+ Wait for test results
-		*******
-		+ Cut tag on github
-		+ Copy binaries to Prev
-		+ Copy MSIs to scratch and GoogleDrive
-		+ Upload packages to GameJolt
-			+ Youtube video
-				+ Say "Android will come soon" in text
-			+ GameJolt Post
-		- www.floatingsandbox.com:
-			- Update current version in FAQ
-			- Wait a day or two, to exclude disastrous bugs
-			- Upload changes2.txt
-				- Test w/old FS
-		- Bump up version
-
-
-
 	= Tornadoes:
 		! Gist
 			! Once tool is selected, user clicks down and tornado spawns there, or an existing tornado there is picked
@@ -1157,21 +271,38 @@
 							+ Then, bump max distance to ensure it kicks-in only when we really need it
 						+ Remove log
 
-		- Android extra port agenda
-			- Perlin noise size (but check if needed first)
-			- Shader & WorldRenderContext
-				- Also: ShipRenderContext: useless ApplySkyChanged
-					- As WorldRenderContext::ApplySkyChanged already sets param in all shaders; verify it's the case also in Android
-			- Sound
+		- Send to Discord
+
+	X Try modulating smoke quad shape with its velocity
+
+	= Look into masts on seafloor colliding over and over again
+		! It's Iron Hull (743Kg) @ 5K depth, going at 0.5/0.9 m/s
+			kevc=395.549 thr=57.1429
+			kevc=96.1035 thr=57.1429
+			kevc=130.007 thr=57.1429
+			kevc=271.74 thr=57.1429
+			kevc=92.6388 thr=57.1429
+			kevc=137.815 thr=57.1429
+			kevc=408.053 thr=57.1429
+			kevc=445.538 thr=57.1429
+			kevc=100.046 thr=57.1429
+			kevc=139.107 thr=57.1429
+			kevc=89.2419 thr=57.1429
+			kevc=91.5449 thr=57.1429
+			kevc=125.156 thr=57.1429
+			kevc=166.572 thr=57.1429
+			kevc=91.8853 thr=57.1429
+			kevc=127.652 thr=57.1429
+			kevc=177.66 thr=57.1429
+			kevc=84.9339 thr=57.1429
+			kevc=115.057 thr=57.1429
+			kevc=137.064 thr=57.1429
+		+ Due to pressure - doesn't happen with 1K but it does with 2K
+		+ It's hull, so no counterpressure
+		- See hydrostatic pressure adjust
 
 	- Look into "I tried to make a small gravity field and it crashed"
 		- Alex Cooper's crash dump
-
-	- Try modulating smoke quad shape with its velocity
-
-	- Look into masts on seafloor colliding over and over again
-		- Could be pressure?
-			- See hydrostatic pressure adjust
 
 	- Look into DKUZ's bug
 		- Settings screenshot is on Desktop now
@@ -19409,6 +18540,891 @@ IF WX:
 		+ Post on GameJolt
 		+ www.floatingsandbox.com:
 			+ Update current version in FAQ
+			+ Upload changes2.txt
+				+ Test w/old FS
+		+ Bump up version
+
+=========================================================================
+1.20.0
+
+	+ Lower DisplacementWaveSmoothnessAdjust - 0.0 is quite cool
+
+	+ Try adding a setting for WaveMaker's speed <-> fatness of interactive waves
+		+ Param: "InteractiveWave"
+		+ Func: AdjustOceanSurfaceTo -> ImpartInteractiveWaveAt
+		+ Affects OceanSurface::AdjustTo and decay
+			+ OceanSurface stores value and uses it there		
+		+ SettingsDialog
+		+ Decide default value
+		+ If ok:
+			+ Port setting to Android (SettingsWindow)
+				+ Replace both DisplacementWaves in waves panel
+			+ Add to PC changelist
+
+	+ Replace need for "dWorld = abs(dFdy(yWorld)); // World per pixel" in ocean.glslinc with parameter
+		! Param does not exist already
+		+ WorldPerPixel, float
+		+ Set at WorldRenderContext::ApplyViewModelChanges
+		+ Verify with this real "derivative" it still looks good, at all zooms
+		+ Test:
+			+ Flat
+			+ Depth
+			+ Texture
+		+ Port to Android:
+			+ Render/ShaderSets
+			+ WorldRenderContext::ApplyViewModelChanges
+			+ shaders			
+
+	+ Texture preview improvement work (*)
+
+	+ ShipBuilder:
+		+ Make Undo survive return to game and back
+			+ Requires undo stack to be owned by MainFrame, rather than by Controller; latter takes it as &
+			+ Changelist
+
+	+ AntiGravity tool
+		+ Make branch: anti_gravity_field
+		+ First, test feasibility
+			+ Fixed min mass (so light materials have more force, thus move more and break)
+			! Try with mass imbalance; possible funcs f(m):
+				! f: 0 at 0, growing slowly with m => then mass = mass - f(m)
+			+ Try with segment
+		+ If ok:
+			! Physics::ForceFields manages N force fields; UI (tool) statelessly adds/removes from it
+			+ Cursor
+			+ Simulation/Physics/ForceFields
+				+ Container/manager of N force fields
+					+ Max N in SimulationParameters as new limit
+				+ BeginPlaceAntiGravityField(start position):
+					+ If one in radius (which depend on zoom): pick that one
+						+ AntiGravityField type: reset line to zero length
+						+ Return its ID
+					+ Else: if has room for a new one: create a new one
+						+ Return its ID
+					+ Else: kill the oldest one and replace it with new
+						+ Return its ID
+				+ UpdatePlaceAntiGravityField(ID, end position)
+				+ EndPlaceAntiGravityField(ID, end position)
+					+ If end position very close to start (wrt same world radius that depends on zoom): delete it
+					+ Else: finalize it
+				+ AbortPlaceAntiGravityField(ID)
+				+ Update(Ship & ship)
+					+ Ship::ApplyAntiGravityField(vec2f startPos, vec2f endPos)
+						+ Target height wrt line depending on mass - planet rings!
+						+ Add multiplier w/shift
+							+ "StrengthMultiplier"
+								+ Both arg and new method to boost
+								+ Stores a non-sticky value into each field
+									+ Decay @ Update()
+							+ Acts on velocity
+							+ Test also UV mode
+				+ Upload():
+					+ Each time there has been a change, re-uploads all the N fields; otherwise, they are sticky
+				+ Fix removal
+			+ WorldRenderContext: AntiGravityField(s)
+				! Treated as a physical entity, not as a UI thing
+				+ Start/Upload/End
+					+ Sticky; each Start marks as dirty (or whatever is the mechanism used by the others)
+					+ Each field is 3 quads (left and right; middle)
+					+ Thickness is fully in world coords
+				+ RenderPrepare/RenderDraw
+				+ Update orthomatrix
+				+ Shader
+					+ Find way to do that saturation with mix
+						+ Note: when x2=col > 1.0 and coeff leans towards x2, mix will "pull up" x1
+						+ See if there's a blend func
+					+ Optimize
+
+		+ Merge into master
+
+	+ DoDisplaceWater setting should also control Fishes and NPCs
+		+ NPCs swimming
+		+ Air bubbles
+		+ Fishes
+		+ Radial wind
+
+	+ See perf impact with double the world
+		+ REPEAT TEST with double resolution of sea, land
+			! Now: OceanSurface::Update() is 5.62%  --> interp --> 4.33%
+				! GenerateSamples: 3.18% --> interp --> 2.29%
+		+ Check on old Dell
+			+ Pre: UPD=16.1/16.2; 16.0
+			+ Post: UPD=18.1 --> interp --> 17.2/17.9
+		+ Check on new Dell:
+			+ Pre: UPD=2.10
+			+ Post: UPD=2.29 --> interp --> 2.22
+		+ Test game
+			+ Storm
+				- See if can adjust sin args so that at center (x=0) sin wave is smooth
+					- Does it just need offset so that x=0 is at a 2PI boundary? (or 1.0 normalized)
+			+ Peaks waves
+			+ Peaks floors
+				+ NOTE: with these more samples, the minimum possible width of a peak is way smaller - and it looks smaller than before (and *too* small) at "normal" zoom
+					+ Try 1:
+						+ Upload all samples simply; revert to 2K samples
+						+ Test game in Debug
+							+ Peaks
+							+ Boundary conditions
+						+ Test perf
+							+ New dell
+								+ Prev: 2.1, 0.06, 4.1/4.2 - ZOOMOUT: 0.08, 4.8
+								+ New: 2.3, 0.06, 4.2/4.3 - ZOOMOUT: 0.08, 5.6/5.8 !!!
+							+ Old dell (low-quality render though)
+								+ Prev: 15.8/16.8, 0.16/0.20, 13.4/13.9
+								+ New: 17.2/17.9, 0.20/0.25, 12.0/13.3 - ZOOMOUT: 0.3, 14.2/14.7
+							+ Moto
+								+ Prev: 15.44: 63-70, 0.83/1.0, 4.5 - ZOOMOUT: 1.12, 4.8/4.9
+								+ Port to Android
+								+ New: 14.7/14.9: 66-68, 0.9, 4.2 - ZOOMOUT: 1.20, 4.6/4.7
+						+ Cleanup code now (don't worry about caching yWorldBottom)
+		+ See if it's land noise that's killing us
+			+ Try smaller noise (*)
+		+ Experiment: ocean floor is invariant (all samples, world coords) and sticky, uploaded only when mIsDirtyForRendering
+			+ Make it STATIC_DRAW
+			+ Wrestle with yVisibleWorldBottom
+				+ Nuke RenderParams arg if not needed anymore
+			+ If ok, port to Android (together with the below)
+		X Wave spikes: do we calc "short" off 0 or off cur height?
+			+ It's off 0
+
+		+ Why do we use MinHeight of two ocean floor samples for underwater plants?
+			+ To cover roots?
+		+ changelist x 2
+
+		+ Port to Android:
+			+ FS code
+			+ Smaller Perlin (256, both perlin's)
+			+ WorldRenderContext: sticky OceanFloor/Land (dirty buffer indicator)
+
+		+ Check on other phones
+			+ DO PREV FIRST! And write down new standards
+			+ A53:
+				- Prev: 65/66: 9.9/10.20, 0.16/0.18, 3.8/4.2 -- ZOOMOUT: 0.19, 3.8/4.1
+				- New: 65/66: 9.9/10.6, 0.17, 3.9/4.2 -- ZOOMOUT: 0.17, 3.7/3.9
+			+ A14:
+				- Prev: 47/48: 19/23, 0.3/0.4, 7/8 -- ZOOMOUT: 0.59, 8.4
+				- New: 49/50: 19/22, 0.47/0.5, 8.3/9. -- ZOOMOUT: 0.55, 8.8/9.5
+			X If bad, #ifdef @ SimParams to set old world & # of samples
+
+		+ Port WorldRenderContext::RenderPrepareOcean optimization to Android
+
+		+ Re-send beta
+			+ Bump up version
+
+	+ Fix SettingsDialog/Russian-Ukrainian issue from Denis
+		+ Ask russian and ukrainian translators
+		+ UK should be final
+		+ RU should be final
+		+ Double-check myself
+
+	+ Improvements from Bandit:
+		! Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
+		! Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
+		! Spec:
+			! https://hal.science/hal-03251375/document
+			! Observations:
+				- max deltaPos observed with impact, calc'd for 1 mechanical iteration is 0.13
+			! Option 1:
+				! Gist:
+					! Ocean floor: has a soft layer (penetrable) on top of a hard layer (impenetrable) 
+					! Siltness adjustment dictates thickness of soft layer, and thus max penetration
+						! But it's randomized anyway, with a large radius
+					! Elasticity comes into play only after reaching hard layer (after penetration)
+					! The physics is based on kinetic energy of the incoming particle
+						! For example, the degree of penetration depends on kinetic energy
+						! And the more the penetration, the more the reduction in kinetic energy - i.e. in velocity
+					! Sand clouds when hitting the sand layer 
+						! TODO: "...for the first time"?
+				- Problems with this one:
+					- It happens every 2 spring relaxation iterations, very expensive
+			! Option 2:
+				! Gist:
+					! Ocean floor: has a soft layer (penetrable) on top of a hard layer (impenetrable) 
+					! Siltness adjustment dictates thickness of soft layer, and thus max penetration
+						! But it's randomized anyway, with a large radius
+					! Elasticity comes into play only after reaching hard layer (after penetration)
+					! A particle in the silt layer is subject to drag force
+						! The simulation happens at WorldForces calculation; kinda like buoyancy, a force
+						  that comes up if the particle is underneath the silt layer
+						! Note: no position change or explicit velocity lowering in this position, just drag force imparting (possibly with capping)
+					! Ocean floor impacts stay as they are now (but without silt calc'ns)
+						! If underneath:
+							! Move point back to pos: move from end pos along -velocity_dir so to reach y=BedrocK
+							! Do bounce velocity as usual
+				- Pro's:
+					- Less complexity at every other spring relaxation iteration
+				- Con's:
+					- If particle zips through silt layer too quickly, we don't notice it
+						- At option 1 we actually reconstruct trajectory, like we do with NPCs
+					- But note that if a particle zips through silt layer, we still detect it underneath and thus we still apply drag,
+					  which will come useful at the subsequent bedrock impact check (as it will have lowered velocity)
+					- Is it so bad? Especially if silt layer is supposed to be large-ish (more than the distance traveled in a big dt)
+						- V distance traveled by particle falling for ~100m: 0.54m
+		+ Impl:
+			+ BEFORE ALL: 
+				+ Run VS profiler w/ship on bedrock and save results
+				+ Re-take Android measurements on all 3 phones
+				+ Copy FS Next (world size) to Prev
+			+ Try Option 2: - WENT FOR OPTION 1!
+				+ World forces (at particle, not at surface/edge):
+					+ SiltY check, additive to water surface
+					+ Option 1: drag forces
+						+ Do basic
+							+ Problem: ship destroys itself while burrowing
+						+ Max drag magnitude: lower it to allow for burying
+					X Option 2: velocity damping
+						+ Do basic
+						X If we go for this, update description at call site: also changes velocities
+					+ Option 3: same as 2, but @ HandleCollisionsWithSeaFloor
+						+ Watch out drag constant: it's compound
+						+ Optimize retrieval of floor: both in one call
+							+ First check is for silt; only if underneath silt we also check bedrock
+					+ Option 4: like 3, but drag depends on burrow depth (between silt and bedrock)
+						+ Linear depth => DampCoeff
+						X If we want to simulate Titanic, relation w/depth needs to be non-linear
+						+ Fine tune here: 
+							+ Initial impact must be harder: make it so damping factor is lower (more destructive) with kinetic energy
+								+ Indicative K (default ship @ ~25m/s): 400000
+
+			+ Fine-tune again to go back to V1 behavior
+				+ Build & send
+				+ Bump up version
+			+ Finalize:
+				X Try moving from HandleCollisions to ApplyWorldForces
+					- Nope: even with dampingFactor=0.0, glass ball doesn't break
+					- And what's worse, structure gets crampled
+				+ FINALIZE Ship
+				+ If stay with HandleCollisions:
+					+ Cleanup ApplyWorldForces
+					+ Fix for compound damping
+						+ Test first: @ 2, glass ball does _not_ break when starts at -250
+						+ MinDepthHardness, MaxDepthHardness
+						+ Precalc integration velocity factor and silt harndess coefficients 
+							+ Into Ship members, new area
+							+ Call CalculateSpringRelaxationCoefficients at RunXXX()
+					+ Check HandleCollisions assembly, especially Clamp and LinearStep						
+		+ Rendering of silt layer above bedrock: 
+			! Gist:
+				X 1: Sand layer is opaque but drawn earlier, behind ship
+					! Bedrock layer stays like current: drawn _after_ ship, on top of it
+					! REQUIRES: two batches, NO depth
+					X Wrong: other pieces that fall look weird as they look suspended
+				X 2: Sand layer is opaque, drawn (together with bedrock) when we draw current (after ship), but its pixels have a lower depth than ship's
+					X Won't work as ship might have transparent areas which wouldn't be covered by sand
+				X 3: Sand layer is opaque, drawn (together with bedrock) BEFORE ship, but its pixels have a lower depth than ship's, and bedrock pixels have a higher depth
+					! Later-drawn ship would then be covered by land
+					X Requires everything else that need to be covered by bedrock to use depth, too much of a perf hit
+				! 4: Sand and bedrock layer are draw at the same time, opaque
+
+			+ Split World atlas into Ocean, LandBedrock, LandSilt
+				+ In json, as new groups
+				+ TextureDatabase Group specs
+			+ WorldRenderContext:
+				+ RenderParameters: split land texture index and other params
+					+ Fix defaults
+				+ On any land texture index changes:
+					+ Store two (OpenGL) textures: bedrock and silt
+				+ Move setting of Flat land colors to InternalDraw, which sets param based on arg
+				+ Buffers:
+					+ Vertex struct: one single vertex
+					+ Upload:
+						+ Populate vertices
+							+ Silt into first half of buffer, bedrock into second half of buffer
+						+ Verify:
+							+ Backsampling
+							+ ybottom
+				+ RenderDrawLand
+					+ Do strips count math
+			+ RenderContext:
+				+ Split call for drawing land
+			+ Shader:
+				+ Texture
+					+ New vertex attributes
+					+ Texture:
+						+ Calculate coords with fract math
+					+ See some alpha/overlap between junctures
+						+ Bedrock is above silt by D, and shader gets that D as a new attribute in 0-1 domain, directly usable as alpha
+				+ Flat
+			+ GameController:
+				+ Settings for land split into two
+			+ SettingsManager
+			+ Move plants on top of silt
+			+ Finalize default Flat land colors
+		+ OceanFloor:
+			+ Split two SampleValue members into two
+			! Interactions: target is Bedrock; silt calculated on top of that
+			+ Impl:
+				+ CalculateResultantSampleValues: does only Bedrock samples, and then at end calls CalculateSiltSampleValues()
+				+ CalculateSiltSampleValues():
+					+ Milestone 1: fixed offset
+						+ Applies offset (new SimulationSetting, replaces other: SiltThickness)
+						+ Applies sin wave
+					+ Milestone 2: nice silt distribution algorithm
+						X Accretion algo:
+							! Categorize segment as Downward, Upward, or Horizontal
+							- futureBudget=1
+							- Segment s:								
+								- D segment:
+									- Height of s[0] = 0
+									- Increase futureBudget
+								- H segment:
+									- Height of s[0] = futureBudget
+										- TODO: this is also end of previous segment
+											- Prev=D?
+											- Prev=U?
+									- Normalize futureBudget towards 1
+								- U segment: 
+									- Height of s[0] = futureBudget
+										- UGLY: bowl has higher profile on left (landing futureBudget) than right (normalized futureBudget)
+									- Decrease futureBudget
+						X Naive algo:
+							! Categorize segment as Downward, Upward, or Horizontal
+							! A->B: value at sample between A and B
+							- D->H: 1.5
+							- H->U: 1.5
+								- Note: means 1-sample peak peak will be covered :-( unless [1] is 0.0, but then ugly/asymmetric
+									- Or unless we special-case for 1-sample peak, and this is 0.0
+										+ Other side case - U->D - is 0.0 already
+							- H->H: 1.0
+							- H->D: 0.5
+							- U->H: 0.5
+							- D->D: 0.0
+							- U->U: 0.0
+							- D->U: 1.5
+							- U->D: 0.0
+
+						+ Try simplification:
+							+ 0.0 before or after U/D, and U/D with more slope
+
+					+ Profile changes (interactions and all):
+						+ SetHeightMap: calls CalculateResultantSampleValues, done
+						+ AdjustTo: calls SetTerrainHeight
+						+ DisplaceAt: calls SetTerrainHeight 
+						+ SetTerrainHeight:
+							+ Call CalculateSiltSampleValues(start, end) -- for all bedrock-impacted on
+					+ Try with dynamic height, based on abs(slope)
+						+ GetSlope replaces GetSegmentDirection
+
+			+ Upload all members at Upload
+			+ Export:
+				+ Npc: use silt
+				+ Underwater plants: use silt
+
+		+ Param smoother for silt thickness
+			+ And for silt bumpiness
+
+		+ SimulationParameters:
+			+ OceanFloorSiltThickness 
+			+ OceanFloorSiltHardness
+			+ Rename others as Bedrock
+
+		+ SettingsDialog: expose all new settings
+			+ Rendering (Texture, FlatColor): split Bedrock and Silt (silt above, bedrock below), incl. members
+				+ Make color picker buttons narrower
+				+ Swap Sky with Land 
+			+ Add/replace new silt settings:
+				+ Renames for "Bedrock" (elast, friction), incl. members
+				+ OceanFloorSiltThickness
+				+ OceanFloorSiltBumpiness
+				+ OceanFloorSiltHardness
+		+ Fix themes
+			+ Rendering params (texture and color split into Silt, bedrock)
+			+ Phyisics params (OceanFloor-Bedrock-Elast/Friction)
+			= Fix mariana trench
+				+ Verify old version
+				+ 1. Make LoadFromStream interpolate
+				+ Verify & commit
+				+ Add temp code to halve size 
+					+ assert identical sample values
+				+ Verify interpolated now
+				+ Save temp settings and move .bin
+				+ Remove temp code to halve size
+				+ Test boundaries
+		+ Send to testers
+		+ Bump up version
+		+ Sand dust upon impact
+			! Need to be spawned above silt
+			+ Core/GameTypes: EnergeticSiltImpact: float + vec2f, cctor makes zero
+				+ Also SimParams;
+					+ Max kinetic energy (in h AND cpp)
+					+ Lower bumpiness max: 0.5
+						+ Test slider
+					+ Cache line size @ SysSpecifics.h
+						+ Verify with sizeof in intellisense
+			+ Ship::HandleCollisionsWithSeaFloor: each run produces zero or 1 point which had the most kinetic energy decrease because of silt drag, above a threshold
+				+ Returns: K, ~pos taken @ air-silt boundary
+					+ K=0 if not produced
+				+ Threads stores into Ship member: array with one element per thread
+					+ Struct is cache-aligned
+						+ SysSpecifics declares cache align size (256)
+						+ https://www.aussieai.com/blog/false-sharing
+					+ Array is re-dimensioned at parallelization changes
+			+ SpringRelaxations stores all into vector, new member of ship
+				+ Vector gets cleaned before loop
+				+ After each spring relax run (all iterations), takes max(K) from all threads and produces one per-step
+					+ Only those with K>0
+					+ RunSprinRelaxation:
+						+ clear mSiltImpacts
+						+ Zero-out mPerThreadSiltImpacts
+						+ Run (all iterations, all threads):
+							+ HandleCollisionsWithSeaFloor compares against mPerThreadSiltImpacts, not local
+						+ Find max and eventually emplace (yes, just one)
+							+ Nuke CoalescePerThreadSiltImpacts
+						+ Remove previous work in each of RunSpringRelaxation_FullSpeed/StepByStep/Hybrid
+				+ Check assembly
+			+ Estimate # of clouds
+			+ Then, Ship::Update visits this new vector member and produces ephemerals for each
+				+ New function, and called only if not empty
+				+ Unique material
+					+ Json
+						+ Copy from Air
+					+ Material unique
+				+ Ship::Spawn
+					+ Upward velocity and lifetime and max scale depend on K
+						+ Max scale is 1 only when VERY large
+					+ Lifetime carefully calibrated to expire ~ when particle is back onto silt
+				+ Points::Create
+					+ Use material
+				+ Points dynamics			
+				+ Improvements:
+					+ Vy
+					+ Transparency
+					X If single-particle clouds bother: decrease effective K depending on number of connected springs
+				+ If code stays like this, do just one LinearStep
+			+ Texture
+				+ World dim: quite large; scale will always be small
+			+ Lower default silt thickness
+			+ Remove TODOTEST logs
+
+		+ Check Bandit wrt settings dialog layout
+
+		+ Make those deep fishes texture better aliased (no white border but darker instead)
+			+ Port to Android
+
+		+ Tests:
+			+ Boundaries
+				+ Impacts
+				+ TerrainAdjust
+			+ Old Dell perf
+				+ 33.3/33.7 r: 12.8/13 -> 31/32 r: 13.1/13.6
+				! Is it because of more OpenGL calls at RenderDraw()?
+
+		+ Cloud improvements:
+			+ When Vi is small (much x), lifetime is too short
+			+ Slower under water 
+				+ Minimal buoyancy
+				+ Lifetime - taking depth into account
+			+ Larger under water
+				+ Taking depth into account
+
+		+ Cleanup:
+			+ HandleCollisionsWithSeaFloor (All TODOs)
+			+ ApplyWorldForces
+
+		+ Check on Discord, 1
+			+ That bug with terrain adjust
+				! Repro's: from right, up to left, down
+				+ Is it SiltSampleValuePlusOneMinSampleValue being broken?
+				+ Test @ boundaries
+			+ More silt with lower impact
+			+ Try longer lifetime
+				X Try setting
+
+		+ Check on Discord, 2
+			+ Longer lifetime: try setting:
+				! First: do with locals
+				+ Setting only for underwater
+				+ Cleanup: 
+					+ Promote to setting
+					+ Add comment to buoyancy volume fill
+					+ Use actual masses
+			+ Fix ocean floor reloading (see Kiko's)
+				! It's a problem with alpha interface blend
+
+		+ Check if can prevent clouds from disappearing (maxMaxDepth issue - need sticky max)
+
+		+ Send to server again
+			+ Bump up version
+
+		+ Limit based on connectivity
+			+ @HandleCollisions
+			X Scale down K used for cilt cloud threshold, based on # of connected sptrings:
+				- # of connected springs -> multiplier:
+					- 0 -> Min
+					- 2 -> Max
+					- 1/max(3-c, 1)
+					- 1/(3 - min(2, c))
+			+ No debris if no triangle
+			+ Wait for feedback
+			+ Cleanup
+
+		+ Merge back into master
+			+ With PR, will serve for Android
+
+		+ Changelist - thank Bandit
+
+	+ See if fire may emit Heavy / black smoke
+		! Gist:
+			! Move generic texture draw as _last_ (or almost last) render
+				! All draw batches with internal transparency need to be last
+			! Then, smoke Z must be earlier than flame's
+				! This is the tricky part: it's not about PlaneID, it's about the actual Z
+				! Tentative 1:
+					! Even though generic texture draw is later, its ortho layer number comes before flames - and then we _just_ swap the order of draw calls
+			! Make full analysis, of both layer Z's and call order
+				! Layer ID, Render Order
+				    - 0, 2: Ropes (always behind)
+				    - 1, 0: Flames (background, i.e. flames that are on ropes, so these are drawn *behind* triangles on same plane, like ropes are)
+				    - 2, 3: Springs
+				    - 3, 1: Triangles (triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues)
+				    - 4, 4: Stressed springs, Frontier edges (temporally after)
+				    - 5, 5: Points
+				    - 6, 6: Electric sparks, Sparkles
+				    - 7, 7: Generic textures
+				    - 8, 8: Flames (foreground), Jet engine flames
+				    - 9, 9: NPCs
+				    - 10, 10: Explosions
+				    - 11, 11: Highlights, Centers
+				    - 12, 12: Vectors, Point-to-Point Arrows
+		+ Impl:
+			+ Better png's
+			+ ShipRenderContext:
+				+ Switch order of draw's between flames and generic mipmapped textures
+
+			=== New plan
+
+			+ StructuralMaterial: Light Smoke and Heavy Smoke
+				! Independent from texture
+			+ ElectricalMaterial:
+				+ New enum: SmokeEmitterSmokeElementType (Black, White)
+					+ Mandatory for smoke emitter
+				+ Split Smoke Emitter in two, with different SmokeEmitterSmokeElementType
+					! For now leave particle_emission_rate as-is
+			+ SimulationParameters:
+				+ Split rate and density: SmokeEmitterXYZ, CombustionSmokeXYZ
+			+ Points:
+				+ SmokeState::Kind: SmokeEmitterWhite, SmokeEmitterBlack, CombustionSmoke
+				+ CreateEphParticleSmokeEmitterSmoke(ElecMaterial::SmokeEmitterSmokeKind, lifetime)
+				+ CreateEphParticleCombustionSmoke(lifetime)
+				+ => InternalCreateEphemeralParticleSmoke(smokeKind, lifetime)
+				+ EphParticleUpdate
+				+ EphParticleUpload
+					+ switch X 3, deciding texture group
+			+ ElectricalMaterials emission:
+				+ Calculate density with SmokeEmitter parameters + elec material's emission rate (already in SmokeEmitter state)
+				+ Calculate lifetime with SmokeEmitter parameters
+				! Lifetime was:
+					    float const maxSimulationLifetime =
+						simulationParameters.SmokeParticleLifetimeAdjustment
+						* GameRandomEngine::GetInstance().GenerateUniformReal(
+						    3.5f,
+						    6.0f);
+			+ Points::Combustion emission:
+				+ Calculate density and lifetime with CombustionSmoke parameters
+				! Lifetime was:
+					    float const maxSimulationLifetime =
+						simulationParameters.SmokeParticleLifetimeAdjustment
+						* GameRandomEngine::GetInstance().GenerateUniformReal(
+						    3.5f,
+						    6.0f);
+			+ SettingsDialog: Air panel:
+				+ Two new sliders
+			+ Art:
+				+ New textures for "dark"
+					+ Make with brushes
+			+ FIX: scale with long lifetime
+				+ Combustion smoke
+				X SmokeEmitterWhite
+				+ SmokeEmitterBlack
+			+ Max persistence adjust for smoke, both types: 2.5
+
+			+ Flag for turning off smoke from fire
+				+ SimParameters
+				+ Honor
+				+ SettingsDialog: above sliders
+					+ "Fire Emits Smoke"
+					+ Reconciliation between checkbox and 2 sliders enabled
+				+ Turn off at calibration
+
+			+ Test:
+				+ ShipBuilder: both materials (palette & works)
+				+ Timer bomb fuse
+				+ All settings functional
+
+			+ Fine-tune:
+				+ TimerBomb fuse lifetime: in-code at TimerBombGadget::Update
+				X SmokeEmitter Black density: particle_emission_rate in Smoke Emitter Black material json
+				+ SmokeEmitter Black lifetime: in-code at ElectricalElements
+				+ SmokeEmitter Black rendering (scale+alpha): in-code at Points::UploadEphParticles()
+				+ CombustionSmoke density: test with adj setting but set final value(s) in-code at Points::CombustionHighFreq, where we calc next timestamp, to achieve adjustment=1
+					0.75
+				+ CombustionSmoke lifetime: test with adj setting but set final value(s) in-code at SimParams::Max/MinCombustionSmokeLifetime
+					1.5
+				+ CombustionSmoke rendering (scale+alpha): in-code at Points::UploadEphParticles()
+
+			+ Test with Titanic
+				+ Make heavy smoke slightly less subject to wind
+
+		+ Send to Discord
+
+		+ Initial tiny upward velocity instead of zero
+		+ normalise_approx
+		+ the black smoke should be slightly more opaque , and maybe more grey less full black?
+		X Smoke in front
+			+ Just change layer order
+		+ Rise speed setting
+		+ Fix gen textures locking depth for explosions 
+			+ Alpha/Z trick
+			X While you're here, check if shader may be optimized
+		+ Bump up version
+		+ Smoke in front
+			+ Z-layer: invert fire (first) and generic textures (next)
+				+ With proper comments on why
+				+ Then, fix comments @ draw removing the out-of-order
+			+ Fade-in slower so that smoke does not cover fire immediately
+			+ Test with small and large lifetime
+			+ Test with lighter and heavier mass
+		+ Send new beta
+			- Smoke is in front now, and fades-in more slowly
+			- Improved issue with sky background trapped around flames
+			- Slightly more opaque smoke, slightly less pitch black
+			- Slightly heavier
+			- Tried to improve on explosions clashing with smoke (the blue sky patches problem), slightly better now but it still happens visibly. We'll have to live with it as this is one of the main limitations of Floating Sandbox
+			- Added setting to adjust smoke mass (and thus speed with which it rises in the air)
+		+ Fix timer bomb fuse
+			+ 3s lifetime
+		+ Test other gen textures
+		+ Test NPCs		
+		+ Try different textures
+			+ Add more details around perimeter, random rotation of one smaller brush around the center
+		+ FIX: infinite clouds
+			+ Try massless K
+				+ Optimize
+				+ Add comments
+		+ Option to remove silt clouds
+			+ Or slider for sensitivity, 0.0 => no clouds
+		+ Send beta
+
+		+ Default Titanic:
+			+ Try mixed w/b smoke on each funnel
+
+		+ Test on Dell
+			+ Toggling checkbox
+
+		X See if smoke emitter/black smoke was somewhere else in the plan
+			X "Fire emits smoke"
+
+		+ Check Discord
+
+		+ Merge into master
+			+ With PR for Android
+		+ changelist
+
+	+ Change simulation #iterations setting to 0.25 step
+
+	+ I would like to point out that there are some hiccups on some of the new ships, 
+		+ Flying Dutchman has a density recommendation of 2812 (I assume a decimal was meant to be there), 
+		+ the White Star version of the Skandinavya has a pump #17 that I assume is meant to say "pumps", 
+		+ and Petit has a very, well, unprofessional description, for being a default ship in the base game.
+
+	+ Anti-gravity tool: remove all with ESC, but only when tool is engaged
+		+ ESC -> if (!ToolController::HandleEsc)
+		+ AntiGravityTool: return response from GC
+
+	+ Move tool: fix radius: when ship is very close, move tool does _not_ engage
+		+ ShipSearchRadiusScreen: it's in terms of screen, so cap resultant world so radius is at least SimulationParameters::MinShipSearchRadiusWorld (2.0f)
+			+ Do at all uses of ShipSearchRadiusScreen
+			! It's PC-only, no Android
+
+	+ Fishes on wreck (see paper in Malta book)
+		+ Alternative:
+			+ @Fishes
+			+ Every X (sim time, ~10s):
+				+ Take largest N AABBs (N~=3)
+				+ Compare with state maintained for the largest N AABBs (== position of center)
+					+ Note that state size might be lower than N here
+				+ Those that stay within threshold for more than T (T~=20s) are available to fishes
+			+ When a shoal needs to decide a new destination, it checks the available set first; if anything is found within a range R (large), that's the new destination
+			+ Shoal can keep re-checking for destination from time to time, like it probably does now
+			+ Impl:
+				+ Fish database: species get new "doesChaseWrecks" boolean
+					+ Set it only for small fishes which are cool if snoop around wrecks
+						+ Queen Snapper
+						+ Red Bream
+				+ Every X:
+					+ Take largest N AABBs (in terms of # of edges) which have both x-axes underneath 0 (so enough to check highest)
+					+ Compare center of ith with ith from mCandidateWrecks (as long as i is in mCandidateWrecks)
+						- vector of:
+							- AABB aabb
+							- uint64_t staticSampleCount
+						+ size always moves between 0 and N
+					+ If semi-static:
+						+ staticSampleCount++
+					+ Else:
+						+ staticSampleCount = 0
+					+ aabb = AABB
+					+ Ensure mCandidateWrecks' size kept consistent with # of largest AABBs found
+				+ Fish has new state variable: IsCirclingWreck, boolean
+				+ At fish target reach:
+					+ If species has canChaseWrecks:
+						+ Find closest wreck in mCandidateWrecks with staticSampleCount >= Threshold, and follow its side
+							+ Choose side of AABB furthest from target, and position offseted to cover target range check (which becomes a constant)
+						+ Update IsCirclingWreck accordingly
+						+ Make sure this keeps happening at next target check
+				+ At fish<->AABB collision check: only do check if !IsCirclingWreck
+		+ Fine-tuning:
+			+ Enforce min size of AABB
+			+ Turn off shoaling if going to wreck
+			+ Draw arrows
+			+ Try to reinstate shoaling
+				+ But prevent turning for someone else if we are chasin wrecks and they are not
+			+ Vertical and horizontal randomization (all fishes now are on same exact Y)
+				+ V
+					+ Take into account silt height				
+				+ H
+			+ Move wreck selection to Shoal, done by lead
+				+ Shoal: has wreck ID and counter 
+				+ Fish: has IsCircling
+				+ Lead chooses (with counter @ shoal)
+				+ Non-leads simply use shoal's
+				+ When a wreck stops existing, clear all shoals that circle it
+			+ Fix: target velocity never changes even if ship's motion makes it unaligned with target (or after bounce?)
+				! Remember: if we recalc it, need to check for steering
+				+ Just re-use wreck clock, and only if fish.IsCirclingWreck
+			+ Do proper tail for new fish
+			+ See if shoaling weight really needed
+			+ Faster heading towards wreck
+				+ Periodic check for heading to wreck, interrupting "target cruising"
+					+ If panic == 0.0:
+						+ HasNewTarget=false;
+						+ If time to check for wreck:
+							+ HasNewTarget=check for wreck
+						+ If !HasNewTarget and close to target:
+							+ fish.TargetPosition = FindNewCruisingTargetPosition()
+							+ HasNewTarget=true
+						+ If HasNewTarget:
+							+ Do rest
+					+ Else if reached end of panic:
+						+ Reset panic
+					+ Update next wreck check timestamp
+				+ Less shoaling component
+				+ Boost when distant
+					+ But needs to happen all the time: move acceleration boost from where it is now (@ new target) to dynamics
+			+ Don't stick to same wreck forever
+
+		+ Tests:
+			+ Free-falling while circling wreck
+
+		+ Remove logs
+		+ Remove point-to-point arrows
+
+	+ HandleCollisionsWithSeaFloor optimization:
+		+ Move mass constant to .cpp top
+		+ HandleCollisionsWithSeaFloor:
+			+ Adjust calc'd threshold via constant
+			+ Do not multiply
+		+ RunSpringRelaxation: at coalesce, multiply with constant
+
+	+ Release prep:
+		+ Localization:
+			+ Extract new strings
+			+ Update .po's and send to all translators except Chinese
+				+ RU
+				+ UK
+				+ ES
+				+ IT
+				+ PT_BR
+					+ Add Kiko to credits for localization
+			+ Do Italian
+			- When Chinese _old_ is ready:
+				- Update .po and re-send to them
+		+ Changelist
+			+ The Smoke'n'Silt Update
+		+ Video:
+			+ No status text
+			+ 1. Titanic, w/mixed smoke
+				+ Anti-gravity field
+			+ 2. TODO: ship?
+				+ Wreck falling, w/cushioning and clouds
+			+ End titles:
+				+ Say PC again
+				+ Say ShipBucket
+		+ Make sure release does NOT contain Chinese
+
+	+ Auto-adjust smoke density with # of burning particles
+		! Experiments:
+			! Base RND (Ark): 4.30/4.50
+			! With flames:
+				- 80 flames: 500 gmmt, RND=5/6 - Base point
+				- 200 flames: 1100 gmmt RND=9
+				- 223 flames: 1400 gmmt RND=10
+				- D=0.5:
+				- 220 flames: 700 gmmt RND=7
+				- 224 flames: 700 gmmt RND=7.5
+		+ Formula for baseline:
+			+ 80 burning points => baseline = 1.0
+			+ 220 burning points => baseline = 0.5
+
+	+ DiffuseLight optimizations (from Android plan)
+		+ Recap of positive results:
+			+ PC:
+				+ Interleave (doesn't change much for Android, so ok)
+				+ SSE: Unroll (rotating points) (already happens at NEON, so don't touch it)
+		+ Unit tests
+		+ Benchmarks
+		+ Verify perf matches experiments (*)
+		+ Changelist
+
+	+ Test langs yourself for latest strings
+	+ Send last beta, ask Localizer
+		+ Bump up build number
+
+	+ Check Discord
+	+ Release:
+		+ Build on Ubuntu
+		+ Windows
+			+ MSI variable
+			+ Commit & push
+			+ 64-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI (e.g. Floating-Sandbox-1.20.0-x64)
+				+ Sign MSI
+				+ Test upgrade from previous version
+			+ 32-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI (e.g. Floating-Sandbox-1.20.0-x86)
+				+ Sign MSI
+				+ Test clean install
+					+ Verify it's a 32-bit process
+		+ Ubuntu
+			+ rm -rf ~/floating-sandbox
+			+ pull 
+			+ rm -rf build; mkdir build; cd build
+			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			+ make install
+			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.20.0-x64.tar . && cd ..")
+			+ Zip tar ("gzip Floating-Sandbox*.tar")
+			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+				+ export GDK_BACKEND=x11
+		+ Send x64 installer to dev server for final smoke test
+		+ Wait for test results
+		*******
+		+ Cut tag on github
+		+ Copy binaries to Prev
+		+ Copy MSIs to scratch and GoogleDrive
+		+ Upload packages to GameJolt
+			+ Youtube video
+				+ Say "Android will come soon" in text
+			+ GameJolt Post
+		+ www.floatingsandbox.com:
+			+ Update current version in FAQ
+			+ Wait a day or two, to exclude disastrous bugs
 			+ Upload changes2.txt
 				+ Test w/old FS
 		+ Bump up version
