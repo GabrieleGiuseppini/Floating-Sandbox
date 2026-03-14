@@ -1748,8 +1748,8 @@ void Ship::ApplyStaticPressureForces(
     //      F(Ei) = -Ni * D * Mw * G * |Ei|
     //
     // Where Ni is the normal to Ei, D is the depth (which we take constant
-    // so to not produce buoyancy forces), Mw * G is the weight of water, and
-    // |Ei| accounts for wider edges being subject to more pressure.
+    // per-frontier so to not produce buoyancy forces), Mw * G is the weight
+    // of water, and |Ei| accounts for wider edges being subject to more pressure.
     //
     //
     // We will rewrite F(Ei) as:
@@ -1766,10 +1766,10 @@ void Ship::ApplyStaticPressureForces(
     //  - We use the frontiers' gemetric centers as the place that depth is calculated at;
     //    as a consequence, if the ship is interactively moved or rotated, the centers
     //    that we use here are stale. Not a big deal...
-    //    Outside of these "moving" interactions, the centers we use here are also
+    //    Outside of these "moving" interactions, the centers we use here would also be
     //    inconsistent with the current positions because of integration during dynamic
-    //    iterations, unless hydrostatic pressures are calculated on the *first* dynamic
-    //    iteration.
+    //    iterations; for this reason, hydrostatic pressures are integrated only during
+    //    the *first* dynamic iteration.
     //
 
     vec2f const & geometricCenterPosition = frontier.GeometricCenterPosition;
@@ -1853,9 +1853,11 @@ void Ship::ApplyStaticPressureForces(
         if (neighboringHullPointsCount == 3) // Avoid applying force to one or two isolated hull particles, allows for more stability of wretched wrecks
         {
             // Calculate internal pressure counterbalance: we want the force vector
-            // to be zero when internal pressure == external pressure, at 1.0 counterbalance
+            // to be zero when internal pressure == external pressure, at 1.0 counterbalance.
+            // Note that will be negative when internal>external - outward force!
             float const internalPressureCounterbalanceFactor = 1.0f - mPoints.GetInternalPressure(thisPointIndex) * hydrostaticPressureCounterbalanceAdjustmentFactor;
 
+            // Calculate static pressure force, and torque on whole body
             vec2f const forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f * internalPressureCounterbalanceFactor;
             vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
 
