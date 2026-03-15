@@ -2209,7 +2209,7 @@ void MainFrame::RunGameIteration()
         auto const outcome = mUpdateChecker->GetOutcome();
         if (outcome.has_value())
         {
-            // Forget about the update check
+            // Forget about the update checker
             // (immediately, to prevent OnIdle events firing while the dialog is open to re-enter here)
             mUpdateChecker.reset();
 
