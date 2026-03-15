@@ -618,6 +618,9 @@ void RenderContext::Draw(float currentSimulationTime)
             if (mDoInvokeGlFinish)
             {
                 // Flush all pending operations
+                //
+                // Note: if removed, we pay the synchronization price at the next following render call,
+                // hence better to do it now so we know we've concluded a cycle
                 glFinish();
             }
 
