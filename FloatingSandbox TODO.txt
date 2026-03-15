@@ -272,14 +272,20 @@
 						+ Remove log
 		+ Send to Discord
 
-		- Faster convergence of tool's changes
+		+ Faster convergence of tool's changes
 
 		- Try changing shape with strength
 
-		- Slider height: see consensus
+		- Slider height: fixed
+
+		- Resend beta:
+- Tornado more responsive to mouse
+- @mia: fixed your crash; please test it and tell me how it goes
 
 		- Storm supercell above it
 		- Also appearing with storms
+
+	- See ocean floor custom settings bug on community server
 
 	+ Fix Mia's crash
 		+ ImageTools::InternalResizeDimension_BoxFilter

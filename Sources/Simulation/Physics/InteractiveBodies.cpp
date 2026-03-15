@@ -76,7 +76,7 @@ void InteractiveBodies::Update(
             tornado.TargetVelocityX *= -1.0f;
 
         // Converge current velocity to target velocity
-        tornado.CurrentVelocityX += (tornado.TargetVelocityX - tornado.CurrentVelocityX) * 0.05f;
+        tornado.CurrentVelocityX += (tornado.TargetVelocityX - tornado.CurrentVelocityX) * 0.075f;
         if (std::fabsf(tornado.TargetVelocityX - tornado.CurrentVelocityX) < ConvergenceThreshold)
         {
             tornado.CurrentVelocityX = tornado.TargetVelocityX;
@@ -136,7 +136,7 @@ void InteractiveBodies::Update(
 
         if (tornado.CurrentForceMultiplier != tornado.TargetForceMultiplier)
         {
-            tornado.CurrentForceMultiplier += (tornado.TargetForceMultiplier - tornado.CurrentForceMultiplier) * 0.015f;
+            tornado.CurrentForceMultiplier += (tornado.TargetForceMultiplier - tornado.CurrentForceMultiplier) * 0.0175f;
             if (std::fabsf(tornado.TargetForceMultiplier - tornado.CurrentForceMultiplier) < ConvergenceThreshold)
             {
                 tornado.CurrentForceMultiplier = tornado.TargetForceMultiplier;
@@ -147,7 +147,7 @@ void InteractiveBodies::Update(
 
         if (tornado.CurrentHeatDepth != tornado.TargetHeatDepth)
         {
-            tornado.CurrentHeatDepth += (tornado.TargetHeatDepth - tornado.CurrentHeatDepth) * 0.01f;
+            tornado.CurrentHeatDepth += (tornado.TargetHeatDepth - tornado.CurrentHeatDepth) * 0.0175f;
             if (std::fabsf(tornado.TargetHeatDepth - tornado.CurrentHeatDepth) < ConvergenceThreshold)
             {
                 tornado.CurrentHeatDepth = tornado.TargetHeatDepth;
@@ -168,7 +168,7 @@ void InteractiveBodies::Update(
         // Check whether it's been idle enough to start disappearing
         //
 
-        float constexpr IdleTimeoutSimSeconds = 35.0f;
+        float constexpr IdleTimeoutSimSeconds = 30.0f;
         if (currentSimulationTime > tornado.LastActivitySimulationTimestamp + IdleTimeoutSimSeconds)
         {
             // Start disappearing
