@@ -42,13 +42,8 @@ RenderContext::RenderContext(
     , mRenderThread(ThreadManager::ThreadTaskKind::Render, "FS RenderThread", 0, threadManager.IsRenderingMultiThreaded(), threadManager)
     , mLastRenderUploadEndCompletionIndicator()
     , mLastRenderDrawCompletionIndicator()
-    // Shader manager
-    , mShaderManager()
-    // Child contextes
-    , mGlobalRenderContext()
-    , mWorldRenderContext()
-    , mShips()
-    , mNotificationRenderContext()
+    // Inner context
+    , mInnerContext(new InnerContext())
     // Non-render parameters
     , mAmbientLightIntensity(1.0f)
     , mMoonlightColor(0x17, 0x3d, 0x5b)
@@ -90,7 +85,7 @@ RenderContext::RenderContext(
             LogMessage("RenderContext: DoInvokeGlFinish=", mDoInvokeGlFinish);
 
             // Initialize the shared texture unit once and for all
-            mShaderManager->ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
+            mInnerContext->ShaderManager->ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
             glEnable(GL_TEXTURE_1D);
             glEnable(GL_TEXTURE_2D);
 
@@ -131,7 +126,7 @@ RenderContext::RenderContext(
 
             LogMessage("Initializing shaders...");
 
-            mShaderManager = ShaderManager<GameShaderSets::ShaderSet>::CreateInstance(assetManager, SimpleProgressCallback::Dummy());
+            mInnerContext->ShaderManager = ShaderManager<GameShaderSets::ShaderSet>::CreateInstance(assetManager, SimpleProgressCallback::Dummy());
 
             LogMessage("...shaders initialized.");
         });
@@ -141,9 +136,9 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mGlobalRenderContext = std::make_unique<GlobalRenderContext>(assetManager , *mShaderManager);
+            mInnerContext->GlobalRenderContext = std::make_unique<GlobalRenderContext>(assetManager , *mInnerContext->ShaderManager);
 
-            mGlobalRenderContext->InitializeNoiseTextures();
+            mInnerContext->GlobalRenderContext->InitializeNoiseTextures();
         });
 
     progressCallback(0.15f, ProgressMessageType::LoadingGenericTextures);
@@ -151,7 +146,7 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mGlobalRenderContext->InitializeGenericTextures();
+            mInnerContext->GlobalRenderContext->InitializeGenericTextures();
         });
 
     progressCallback(0.2f, ProgressMessageType::LoadingExplosionTextureAtlas);
@@ -159,22 +154,22 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mGlobalRenderContext->InitializeExplosionTextures();
+            mInnerContext->GlobalRenderContext->InitializeExplosionTextures();
         });
 
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mGlobalRenderContext->InitializeNpcTextures(std::move(npcTextureAtlas)); // Safe as it's synchronous
+            mInnerContext->GlobalRenderContext->InitializeNpcTextures(std::move(npcTextureAtlas)); // Safe as it's synchronous
         });
 
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mWorldRenderContext = std::make_unique<WorldRenderContext>(
+            mInnerContext->WorldRenderContext = std::make_unique<WorldRenderContext>(
                 assetManager,
-                *mShaderManager,
-                *mGlobalRenderContext);
+                *mInnerContext->ShaderManager,
+                *mInnerContext->GlobalRenderContext);
         });
 
     progressCallback(0.45f, ProgressMessageType::LoadingCloudTextureAtlas);
@@ -182,7 +177,7 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mWorldRenderContext->InitializeCloudTextures();
+            mInnerContext->WorldRenderContext->InitializeCloudTextures();
         });
 
     progressCallback(0.65f, ProgressMessageType::LoadingFishTextureAtlas);
@@ -190,7 +185,7 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mWorldRenderContext->InitializeFishTextures();
+            mInnerContext->WorldRenderContext->InitializeFishTextures();
         });
 
     progressCallback(0.7f, ProgressMessageType::LoadingWorldTextures);
@@ -198,7 +193,7 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mWorldRenderContext->InitializeWorldTextures();
+            mInnerContext->WorldRenderContext->InitializeWorldTextures();
         });
 
     progressCallback(0.8f, ProgressMessageType::LoadingFonts);
@@ -210,10 +205,10 @@ RenderContext::RenderContext(
             // Initialize notification render context
             //
 
-            mNotificationRenderContext = std::make_unique<NotificationRenderContext>(
+            mInnerContext->NotificationRenderContext = std::make_unique<NotificationRenderContext>(
                 assetManager,
-                *mShaderManager,
-                *mGlobalRenderContext);
+                *mInnerContext->ShaderManager,
+                *mInnerContext->GlobalRenderContext);
         });
 
     progressCallback(0.9f, ProgressMessageType::InitializingGraphics);
@@ -241,11 +236,11 @@ RenderContext::RenderContext(
 
                 ProcessParameterChanges(initialRenderParameters);
 
-                mGlobalRenderContext->ProcessParameterChanges(initialRenderParameters);
+                mInnerContext->GlobalRenderContext->ProcessParameterChanges(initialRenderParameters);
 
-                mWorldRenderContext->ProcessParameterChanges(initialRenderParameters);
+                mInnerContext->WorldRenderContext->ProcessParameterChanges(initialRenderParameters);
 
-                mNotificationRenderContext->ProcessParameterChanges(initialRenderParameters);
+                mInnerContext->NotificationRenderContext->ProcessParameterChanges(initialRenderParameters);
             }
 
 
@@ -275,6 +270,14 @@ RenderContext::~RenderContext()
         mLastRenderDrawCompletionIndicator->Wait();
         mLastRenderDrawCompletionIndicator.reset();
     }
+
+    // Now zapp all OpenGL machinery - on the rendering thread as
+    // that's where the current OpenGL is bound to
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            mInnerContext.reset();
+        });
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -297,10 +300,10 @@ void RenderContext::Reset()
         [&]()
         {
             // Clear ships
-            mShips.clear();
+            mInnerContext->Ships.clear();
 
             // Notify other layers
-            mWorldRenderContext->OnReset(mRenderParameters);
+            mInnerContext->WorldRenderContext->OnReset(mRenderParameters);
         });
 }
 
@@ -334,12 +337,12 @@ void RenderContext::AddShip(
     // Add ship
     //
 
-    assert(shipId == mShips.size());
+    assert(shipId == mInnerContext->Ships.size());
 
-    size_t const newShipCount = mShips.size() + 1;
+    size_t const newShipCount = mInnerContext->Ships.size() + 1;
 
     // Tell all ships
-    for (auto const & ship : mShips)
+    for (auto const & ship : mInnerContext->Ships)
     {
         ship->SetShipCount(newShipCount);
     }
@@ -348,7 +351,7 @@ void RenderContext::AddShip(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mShips.emplace_back(
+            mInnerContext->Ships.emplace_back(
                 new ShipRenderContext(
                     shipId,
                     pointCount,
@@ -357,8 +360,8 @@ void RenderContext::AddShip(
                     maxSpringsPerPoint,
                     std::move(exteriorTextureImage),
                     std::move(interiorViewImage),
-                    *mShaderManager,
-                    *mGlobalRenderContext,
+                    *mInnerContext->ShaderManager,
+                    *mInnerContext->GlobalRenderContext,
                     mRenderParameters,
                     mShipFlameSizeAdjustment,
                     mVectorFieldLengthMultiplier));
@@ -449,16 +452,16 @@ void RenderContext::UploadStart()
         mPerfStats.Update<PerfMeasurement::TotalWaitForRenderDraw>(GameChronometer::Now() - waitStart);
     }
 
-    mWorldRenderContext->UploadStart();
+    mInnerContext->WorldRenderContext->UploadStart();
 
-    mNotificationRenderContext->UploadStart();
+    mInnerContext->NotificationRenderContext->UploadStart();
 }
 
 void RenderContext::UploadEnd()
 {
-    mWorldRenderContext->UploadEnd();
+    mInnerContext->WorldRenderContext->UploadEnd();
 
-    mNotificationRenderContext->UploadEnd();
+    mInnerContext->NotificationRenderContext->UploadEnd();
 
     // Queue an indicator here, so we may wait for it
     // when we want to touch CPU buffers again
@@ -488,16 +491,16 @@ void RenderContext::Draw(float currentSimulationTime)
             {
                 ProcessParameterChanges(renderParameters);
 
-                mGlobalRenderContext->ProcessParameterChanges(renderParameters);
+                mInnerContext->GlobalRenderContext->ProcessParameterChanges(renderParameters);
 
-                mWorldRenderContext->ProcessParameterChanges(renderParameters);
+                mInnerContext->WorldRenderContext->ProcessParameterChanges(renderParameters);
 
-                for (auto const & ship : mShips)
+                for (auto const & ship : mInnerContext->Ships)
                 {
                     ship->ProcessParameterChanges(renderParameters);
                 }
 
-                mNotificationRenderContext->ProcessParameterChanges(renderParameters);
+                mInnerContext->NotificationRenderContext->ProcessParameterChanges(renderParameters);
             }
 
             //
@@ -507,47 +510,47 @@ void RenderContext::Draw(float currentSimulationTime)
             {
                 if (lampToolToSet)
                 {
-                    mShaderManager->SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::LampToolAttributes>(*lampToolToSet);
+                    mInnerContext->ShaderManager->SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::LampToolAttributes>(*lampToolToSet);
                 }
 
-                mGlobalRenderContext->RenderPrepareStart();
+                mInnerContext->GlobalRenderContext->RenderPrepareStart();
 
-                mWorldRenderContext->RenderPrepareStars(renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareStars(renderParameters);
 
-                mWorldRenderContext->RenderPrepareLightnings(renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareLightnings(renderParameters);
 
-                mWorldRenderContext->RenderPrepareClouds(renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareClouds(renderParameters);
 
-                mWorldRenderContext->RenderPrepareOcean(renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareOcean(renderParameters);
 
-                for (auto const & ship : mShips)
+                for (auto const & ship : mInnerContext->Ships)
                 {
                     ship->RenderPrepare(renderParameters);
                 }
 
-                mWorldRenderContext->RenderPrepareOceanFloor(renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareOceanFloor(renderParameters);
 
-                mWorldRenderContext->RenderPrepareFishes(renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareFishes(renderParameters);
 
-                mWorldRenderContext->RenderPrepareUnderwaterPlants(currentSimulationTime, renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareUnderwaterPlants(currentSimulationTime, renderParameters);
 
-                mWorldRenderContext->RenderPrepareAntiGravityFields(currentSimulationTime, renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareAntiGravityFields(currentSimulationTime, renderParameters);
 
-                mWorldRenderContext->RenderPrepareTornadoes(currentSimulationTime, renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareTornadoes(currentSimulationTime, renderParameters);
 
-                mWorldRenderContext->RenderPrepareAMBombPreImplosions(renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareAMBombPreImplosions(renderParameters);
 
-                mWorldRenderContext->RenderPrepareCrossesOfLight(renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareCrossesOfLight(renderParameters);
 
-                mWorldRenderContext->RenderPrepareRain(renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareRain(renderParameters);
 
-                mWorldRenderContext->RenderPrepareAABBs(renderParameters);
+                mInnerContext->WorldRenderContext->RenderPrepareAABBs(renderParameters);
 
-                mNotificationRenderContext->RenderPrepare();
+                mInnerContext->NotificationRenderContext->RenderPrepare();
 
-                mWorldRenderContext->RenderPrepareEnd();
+                mInnerContext->WorldRenderContext->RenderPrepareEnd();
 
-                mGlobalRenderContext->RenderPrepareEnd(); // Updates global element indices
+                mInnerContext->GlobalRenderContext->RenderPrepareEnd(); // Updates global element indices
 
                 // Update stats
                 mPerfStats.Update<PerfMeasurement::TotalUploadRenderDraw>(GameChronometer::Now() - startTime);
@@ -558,57 +561,57 @@ void RenderContext::Draw(float currentSimulationTime)
             //
 
             {
-                mWorldRenderContext->RenderDrawSky(renderParameters); // Acts as canvas clear
+                mInnerContext->WorldRenderContext->RenderDrawSky(renderParameters); // Acts as canvas clear
 
-                mWorldRenderContext->RenderDrawStars(renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawStars(renderParameters);
 
-                mWorldRenderContext->RenderDrawCloudsAndBackgroundLightnings(renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawCloudsAndBackgroundLightnings(renderParameters);
 
                 // Render ocean opaquely, over sky
-                mWorldRenderContext->RenderDrawOcean(true, renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawOcean(true, renderParameters);
 
                 // Render tornadoes, in the background
-                mWorldRenderContext->RenderDrawTornadoes(DepthKindType::Background, renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawTornadoes(DepthKindType::Background, renderParameters);
 
                 glEnable(GL_DEPTH_TEST); // Required by ships
 
-                for (auto const & ship : mShips)
+                for (auto const & ship : mInnerContext->Ships)
                 {
                     ship->RenderDraw(renderParameters, renderStats);
                 }
 
                 glDisable(GL_DEPTH_TEST);
 
-                mWorldRenderContext->RenderDrawUnderwaterPlants(renderParameters); // To be covered by ocean floor and last ocean layer
+                mInnerContext->WorldRenderContext->RenderDrawUnderwaterPlants(renderParameters); // To be covered by ocean floor and last ocean layer
 
-                mWorldRenderContext->RenderDrawOceanFloor(renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawOceanFloor(renderParameters);
 
-                mWorldRenderContext->RenderDrawFishes(renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawFishes(renderParameters);
 
                 // Render ocean transparently, over the rest of the world, unless disabled
                 if (!renderParameters.ShowShipThroughOcean)
                 {
-                    mWorldRenderContext->RenderDrawOcean(false, renderParameters);
+                    mInnerContext->WorldRenderContext->RenderDrawOcean(false, renderParameters);
                 }
 
-                mWorldRenderContext->RenderDrawAntiGravityFields(renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawAntiGravityFields(renderParameters);
 
                 // Render tornadoes, in the foreground
-                mWorldRenderContext->RenderDrawTornadoes(DepthKindType::Foreground, renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawTornadoes(DepthKindType::Foreground, renderParameters);
 
-                mWorldRenderContext->RenderDrawAMBombPreImplosions(renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawAMBombPreImplosions(renderParameters);
 
-                mWorldRenderContext->RenderDrawCrossesOfLight(renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawCrossesOfLight(renderParameters);
 
-                mWorldRenderContext->RenderDrawForegroundLightnings(renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawForegroundLightnings(renderParameters);
 
-                mWorldRenderContext->RenderDrawRain(renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawRain(renderParameters);
 
-                mWorldRenderContext->RenderDrawAABBs(renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawAABBs(renderParameters);
 
-                mWorldRenderContext->RenderDrawWorldBorder(renderParameters);
+                mInnerContext->WorldRenderContext->RenderDrawWorldBorder(renderParameters);
 
-                mNotificationRenderContext->RenderDraw();
+                mInnerContext->NotificationRenderContext->RenderDraw();
             }
 
             //

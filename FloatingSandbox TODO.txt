@@ -329,11 +329,11 @@
 			+ Add comment to glFinish on paying for it anyway at first draw calls
 			- VSync: https://community.khronos.org/t/odd-intermittent-frame-time-spike-that-resolves-when-enabling-debug-context/107622/4
 
-	- Fix crash at exit on nVidia
-		- Changelist
-		- Port to Android plan
-			- Also checks for element buffers in ShipRenderContext
-		- Revert to non-nVidia
+	+ Fix crash at exit on nVidia
+		+ Changelist
+		+ Port to Android plan
+			+ Also checks for element buffers in ShipRenderContext
+		+ Revert to non-nVidia
 
 	X Try modulating smoke quad shape with its velocity
 

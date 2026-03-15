@@ -1,3 +1,6 @@
+TODO
+- Fixed a crash when exiting the game on systems with certain nVidia cards
+
 1.20.0
 - Redesigned ocean floor physics: a customizable layer of soft silt cushions impacts and allows for wrecks to slowly burrow under sand
 	- Thanks to Bandit for their help in the redesign!	
