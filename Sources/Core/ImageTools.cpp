@@ -131,6 +131,7 @@ TImageData ImageTools::Resize(
 
             InternalResizeDimension_BoxFilter<TImageData>(
                 image.Size.width,
+                newSize.width,
                 widthScaleFactor,
                 widthScaleFactorInverse,
                 [&](int srcX) -> f_color_type
@@ -222,6 +223,7 @@ TImageData ImageTools::Resize(
         {
             InternalResizeDimension_BoxFilter<TImageData>(
                 image.Size.height,
+                newSize.height,
                 heightScaleFactor,
                 heightScaleFactorInverse,
                 [&](int srcY) -> f_color_type
@@ -483,6 +485,7 @@ void ImageTools::InternalResizeDimension_Bilinear(
 template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
 void ImageTools::InternalResizeDimension_BoxFilter(
     int srcSize,
+    int tgtSize,
     float srcToTgt,
     float tgtToSrc,
     TSourceGetter const & srcGetter,
@@ -551,6 +554,13 @@ void ImageTools::InternalResizeDimension_BoxFilter(
             currentTgtPixelWeightSum = (1.0f - pixelFraction);
             currentTgtEnd += 1.0f;
             ++tgtI;
+
+            // Due to numerical noise, we might have reached target with some source pixels yet unconsumed;
+            // this normally happens with large texture sizes
+            if (tgtI == tgtSize)
+            {
+                break;
+            }
         }
         else
         {

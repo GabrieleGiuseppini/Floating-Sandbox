@@ -270,8 +270,37 @@
 							+ alpha needs to depend on both
 							+ Then, bump max distance to ensure it kicks-in only when we really need it
 						+ Remove log
+		+ Send to Discord
 
-		- Send to Discord
+		- Faster convergence of tool's changes
+
+		- Try changing shape with strength
+
+		- Slider height: see consensus
+
+		- Storm supercell above it
+		- Also appearing with storms
+
+	+ Fix Mia's crash
+		+ ImageTools::InternalResizeDimension_BoxFilter
+			! With a 11-k ship: Willem Ruys
+			! Image width: 11353
+			! Target width: 200
+			! widthScaleFactor = 0.0176164899
+			! widthScaleFactorInverse = 56.7649994
+			! In loop:
+				- srcToTgt = 0.0176164899
+				- tgtF = 200.011139
+				- srcI == latSize (11352)
+		+ Port to Android
+			+ Just ImageTools.cpp/.h
+
+
+	- Look into stutter:
+		+ See if mouse moves: it does :-(
+		- Thread prio
+		- See if it's relax thread waiting for count=0
+		- See if it's inter-frame wx timer
 
 	X Try modulating smoke quad shape with its velocity
 
@@ -299,7 +328,9 @@
 			kevc=137.064 thr=57.1429
 		+ Due to pressure - doesn't happen with 1K but it does with 2K
 		+ It's hull, so no counterpressure
-		- See hydrostatic pressure adjust
+		! Due to static pressure forces, verified
+		- Try with a mesh-based visit to gauge thickness
+			- Along springs with triangles, in direction of force vector
 
 	- Look into "I tried to make a small gravity field and it crashed"
 		- Alex Cooper's crash dump
@@ -307,17 +338,22 @@
 	- Look into DKUZ's bug
 		- Settings screenshot is on Desktop now
 
-	- Look into stutter:
-		- See if mouse moves
-		- Thread prio
-		- See if it's relax thread waiting for count=0
-		- See if it's timer
+	- Splashes
+		- TODO: see if can incorporate also "mist" for tornadoes
+		- Same concept as silt dust
+		- OLD: WAS:
+		- Option A) Ephemeral particles with own shader:
+			- Texture of splash
+			- Elongated with vertical velocity
+		- Option B) Same as A, but instead of one single texture, a (small) set of frames
+		- Option C) Fully "movie" (not ephemeral particles), just like explosions
+
 
 	- Run Discord poll for next:
 		- Longhorn materials (includes redesign of material palette, as it would become too slow)
 		- Rot redesign (includes better rusting, and organic alge growth)
 		- NPC phase II: ShipBuilder (Floorplan layer and Interior Texture layer), areas (e.g. assembly area), and behaviors (swimming, etc.)
-		- Hydrostatic pressure fix for rotation
+		- Hydrostatic pressure fix for rotation (TODO: working on it now may be?)
 		- Fireworks
 
 
@@ -450,57 +486,6 @@
 	- Test: underwater forces based on waves (derivative @ surface plus damper for depth)
 		- Just test feasibility
 		- If ok, optimize using cached depth?
-
-	- Ship in mud
-		- 1. Impact
-			- "My idea could be using the sea bed as a sort of cushion and quick sand effect, I'm thinking that the sea floor can have a softer silt Simulation. 
-			   It seems like the silt doesn't allow any give even at the softest setting and it still hitting the ground like a wall."
-			- Also: floor deforming upon impact
-				+ Note: we already have OceanFloor::DisplaceAt; read below
-			- Render:
-				- Dust clouds
-					- Could be short-lived ephemeral particles driving rendering of a texture, much like smoke
-						- Springing up from impact, then quickly falling down (very heavy)
-		- 2. Silting
-			- Once on the floor, should dive more than today
-			- Render:
-				- Ideally the ship shows through the floor, with a random pattern 
-					- think: Perlin controlling alphaing of floor over ship
-		- Possible 1:
-			- OceanFloorDatabase: replaces flat list of textures with declaration of textures + physical properties (i.e. hardness)
-				- Move ocean floor textures into own folder, referenced by database implementation
-				- We still verify at runtime that folder content is covered
-			- Physics:
-				- Velocity @ impact time determines reponse (both P and V), via function that careully modulates input V to do:
-					- Right penetration and impact response
-					- Right generation of dust clouds
-			- Rendering:
-				- Dust clouds:
-					- Eph particles
-					- Shader does radial expansion (or Perlin-based like clouds)
-						- Speed depends on V of particles
-					- Lifetime:
-						- TODO: based on dust settling down?
-					- Alpha based on lifetime
-						- So clouds continue on floor
-				- Floor transparency:
-					- TODO: how can we avoid having to work on floor shader? Z depth tricks?
-
-		- WAS:
-			= Ocean floor deforming upon impact (*)
-				! Better done after frontier work, so that may calculate pointness
-				+ ParentWorld exposes DisplaceOceanFloor(x, offsetY)
-				- @ Ocean floor collision: upon (non-orphaned) point entering floor:
-					- Ocean floor's H goes back (opposite) by displacement * FloorFriability * f(pointness, massiveness)
-						- displacement is whatever displacement we moved (bounced) the point by
-						- FloorFriability = new param [0.0, ..., 1.0]
-						- pointness = TBD, based off frontier
-						- massiveness = point's connected component size
-				- WATCH OUT: might be ugly with peaks (very vertical slope)
-					- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
-					- Another way to reduce the warping is to have varying resolution, btw - e.g. the ocean floor becoming more detailed where an impact happens
-						- That could also open up to simulating a layer of sand that gets disturbed with the impact, without having to use particles, but by just playing with that higher-resolution "bitmap"
-				- Could also have a "dust cloud" effect
 
 
 	- New SplashScreenDialog:
@@ -651,13 +636,6 @@
 	- Test: re-try cache layout optimizations
 		- See current optimization's impact first with NOP optimization
 		- Check if simply ordering points by X makes it faster (because of improved ocean floor/ocean surface sampling locality)
-
-	- Splashes
-		- Option A) Ephemeral particles with own shader:
-			- Texture of splash
-			- Elongated with vertical velocity
-		- Option B) Same as A, but instead of one single texture, a (small) set of frames
-		- Option C) Fully "movie" (not ephemeral particles), just like explosions
 
 	= Do shader at Anti-Matter bomb pre-implosion
 		+ Shader already started: https://www.shadertoy.com/view/3sVSRc
