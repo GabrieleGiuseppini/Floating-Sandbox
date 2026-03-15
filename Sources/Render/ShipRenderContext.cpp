@@ -1541,12 +1541,13 @@ void ShipRenderContext::RenderDraw(
         // would result in the same artifact
         //
 
-        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe
+        if ((renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
+            && !mTriangleElementBuffer.empty())
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
             {
@@ -1575,6 +1576,8 @@ void ShipRenderContext::RenderDraw(
                 GL_UNSIGNED_INT,
                 (GLvoid *)mTriangleElementVBOStartIndex);
 
+            CheckOpenGLError(); // Quells crashes on nVidia?!?!?
+
             // Update stats
             renderStats.LastRenderedShipTriangles += mTriangleElementBuffer.size();
         }
@@ -1592,8 +1595,9 @@ void ShipRenderContext::RenderDraw(
         // as springs.
         //
 
-        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
+        if ((renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
+            && !mRopeElementBuffer.empty())
         {
             mShaderManager.ActivateProgram(mShipRopesProgram);
 
@@ -1620,13 +1624,14 @@ void ShipRenderContext::RenderDraw(
         // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be here.
         //
 
-        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Springs
+        if ((renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Springs
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::EdgeSprings
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
+            && !mSpringElementBuffer.empty())
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
             {
