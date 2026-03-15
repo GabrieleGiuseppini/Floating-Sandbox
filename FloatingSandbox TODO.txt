@@ -273,13 +273,12 @@
 		+ Send to Discord
 
 		+ Faster convergence of tool's changes
-
-		- Try changing shape with strength
-
+		+ Try changing shape with strength
 		- Slider height: fixed
 
 		- Resend beta:
 - Tornado more responsive to mouse
+- Tornado shape changes with intensity
 - @mia: fixed your crash; please test it and tell me how it goes
 
 		- Storm supercell above it
@@ -306,7 +305,11 @@
 		+ See if mouse moves: it does :-(
 		- Thread prio
 		- See if it's relax thread waiting for count=0
+			- Add probe
+			- Remove probe
 		- See if it's inter-frame wx timer
+			- Add probe
+			- Remove probe
 
 	X Try modulating smoke quad shape with its velocity
 

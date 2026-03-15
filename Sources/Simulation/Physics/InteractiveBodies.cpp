@@ -570,10 +570,7 @@ FloatSize InteractiveBodies::CalculateTornadoEffectiveSize(float visibilityAlpha
 
 float InteractiveBodies::CalculateTornadoBottomWidthFraction(float strengthMultiplier)
 {
-    // Futurework?
-    //return LinearStep(1.25f, 2.0f, strengthMultiplier) * 0.1f;
-    (void)strengthMultiplier;
-    return 0.0f;
+    return LinearStep(1.0f, 2.0f, strengthMultiplier) * 0.25f;
 }
 
 }
