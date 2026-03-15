@@ -2516,15 +2516,93 @@ public:
             //  - @ BottomY : S=1.0 H=1.0
             //
 
-            float constexpr MinDeltaY = 20.0f; // Zero-center
+            // TODOTEST: extends to top/bottom
+
+            ////float constexpr MinDeltaY = 20.0f; // Zero-center
+            ////int constexpr ScreenMargin = 30;
+
+            ////float strengthMultiplier = 1.0f;
+            ////float heatDepth = 0.0f;
+
+            ////int const yTop = mToolManager.GetCanvasOrigin().y + ScreenMargin;
+            ////int const yBottom = std::max(mToolManager.GetCanvasOrigin().y + mToolManager.GetCanvasSize().height - ScreenMargin, yTop);
+            ////if (yTop < yBottom) // Safety
+            ////{
+            ////    rgbaColor constexpr PowerMeterBackgroundColor(0, 0, 0, rgbaColor::data_type_max); // Black
+
+            ////    if (inputState.MousePosition.y <= mEngagementData->StartScreenY)
+            ////    {
+            ////        // Above
+
+            ////        int yEnd = std::max(inputState.MousePosition.y, yTop); // Top
+            ////        int yStart = std::max(mEngagementData->StartScreenY, yEnd); // Bottom
+            ////        if (yStart > yTop) // Safety
+            ////        {
+            ////            int deltaY = yStart - yEnd;
+            ////            assert(deltaY >= 0);
+
+            ////            if (deltaY >= MinDeltaY)
+            ////            {
+            ////                float const powerupNormalized = static_cast<float>(deltaY) / static_cast<float>(yStart - yTop);
+            ////                strengthMultiplier = 1.0f + powerupNormalized;
+            ////                assert(strengthMultiplier >= 1.0f && strengthMultiplier <= 2.0f);
+
+            ////                // Show power meter
+            ////                rgbaColor constexpr PowerMeterColor(0, 0, rgbaColor::data_type_max, rgbaColor::data_type_max); // Blue
+            ////                mGameController.ShowPowerMeter(
+            ////                    inputState.MousePosition.x,
+            ////                    yStart,
+            ////                    yTop,
+            ////                    PowerMeterColor,
+            ////                    powerupNormalized,
+            ////                    PowerMeterBackgroundColor);
+            ////            }
+            ////        }
+            ////    }
+            ////    else
+            ////    {
+            ////        // Below
+
+            ////        int yEnd = std::min(inputState.MousePosition.y, yBottom); // Bottom
+            ////        int yStart = std::min(mEngagementData->StartScreenY, yEnd); // Top
+            ////        if (yBottom > yStart) // Safety
+            ////        {
+            ////            int deltaY = yEnd - yStart;
+            ////            assert(deltaY >= 0);
+
+            ////            if (deltaY >= MinDeltaY)
+            ////            {
+            ////                heatDepth = static_cast<float>(deltaY) / static_cast<float>(yBottom - yStart);
+            ////                assert(heatDepth >= 0.0f && heatDepth <= 1.0f);
+
+            ////                // Show power meter
+            ////                rgbaColor constexpr PowerMeterColor(rgbaColor::data_type_max, 0, 0, rgbaColor::data_type_max); // Red
+            ////                mGameController.ShowPowerMeter(
+            ////                    inputState.MousePosition.x,
+            ////                    yStart,
+            ////                    yBottom,
+            ////                    PowerMeterColor,
+            ////                    heatDepth,
+            ////                    PowerMeterBackgroundColor);
+            ////            }
+            ////        }
+            ////    }
+            ////}
+
+
+
+            // TODOTEST: extends to fixed size
+
+            int const sliderHeight = mToolManager.GetCanvasSize().height / 5.0f;
+            float constexpr MinDeltaY = 20.0f; // Pixels; zero-center
             int constexpr ScreenMargin = 30;
 
             float strengthMultiplier = 1.0f;
             float heatDepth = 0.0f;
 
-            int const yTop = mToolManager.GetCanvasOrigin().y + ScreenMargin;
-            int const yBottom = std::max(mToolManager.GetCanvasOrigin().y + mToolManager.GetCanvasSize().height - ScreenMargin, yTop);
-            if (yTop < yBottom) // Safety
+            int const yMinTop = mToolManager.GetCanvasOrigin().y + ScreenMargin;
+            int const yMaxBottom = std::max(mToolManager.GetCanvasOrigin().y + mToolManager.GetCanvasSize().height - ScreenMargin, yMinTop);
+            if (yMinTop < yMaxBottom) // Safety
             {
                 rgbaColor constexpr PowerMeterBackgroundColor(0, 0, 0, rgbaColor::data_type_max); // Black
 
@@ -2532,16 +2610,16 @@ public:
                 {
                     // Above
 
-                    int yEnd = std::max(inputState.MousePosition.y, yTop); // Top
-                    int yStart = std::max(mEngagementData->StartScreenY, yEnd); // Bottom
-                    if (yStart > yTop) // Safety
+                    int const ySliderTop = std::max(mEngagementData->StartScreenY - sliderHeight, yMinTop); // Bottommost of the two
+                    int const ySliderBottom = mEngagementData->StartScreenY;
+                    if (ySliderBottom > ySliderTop) // Safety
                     {
-                        int deltaY = yStart - yEnd;
+                        int const deltaY = mEngagementData->StartScreenY - inputState.MousePosition.y;
                         assert(deltaY >= 0);
 
                         if (deltaY >= MinDeltaY)
                         {
-                            float const powerupNormalized = static_cast<float>(deltaY) / static_cast<float>(yStart - yTop);
+                            float const powerupNormalized = std::min(static_cast<float>(deltaY) / static_cast<float>(ySliderBottom - ySliderTop), 1.0f);
                             strengthMultiplier = 1.0f + powerupNormalized;
                             assert(strengthMultiplier >= 1.0f && strengthMultiplier <= 2.0f);
 
@@ -2549,8 +2627,8 @@ public:
                             rgbaColor constexpr PowerMeterColor(0, 0, rgbaColor::data_type_max, rgbaColor::data_type_max); // Blue
                             mGameController.ShowPowerMeter(
                                 inputState.MousePosition.x,
-                                yStart,
-                                yTop,
+                                ySliderBottom,
+                                ySliderTop,
                                 PowerMeterColor,
                                 powerupNormalized,
                                 PowerMeterBackgroundColor);
@@ -2561,24 +2639,24 @@ public:
                 {
                     // Below
 
-                    int yEnd = std::min(inputState.MousePosition.y, yBottom); // Bottom
-                    int yStart = std::min(mEngagementData->StartScreenY, yEnd); // Top
-                    if (yBottom > yStart) // Safety
+                    int const ySliderTop = mEngagementData->StartScreenY;
+                    int const ySliderBottom = std::min(mEngagementData->StartScreenY + sliderHeight, yMaxBottom); // Topmost of the two
+                    if (ySliderBottom > ySliderTop) // Safety
                     {
-                        int deltaY = yEnd - yStart;
+                        int const deltaY = inputState.MousePosition.y - mEngagementData->StartScreenY;
                         assert(deltaY >= 0);
 
                         if (deltaY >= MinDeltaY)
                         {
-                            heatDepth = static_cast<float>(deltaY) / static_cast<float>(yBottom - yStart);
+                            heatDepth = std::min(static_cast<float>(deltaY) / static_cast<float>(ySliderBottom - ySliderTop), 1.0f);
                             assert(heatDepth >= 0.0f && heatDepth <= 1.0f);
 
                             // Show power meter
                             rgbaColor constexpr PowerMeterColor(rgbaColor::data_type_max, 0, 0, rgbaColor::data_type_max); // Red
                             mGameController.ShowPowerMeter(
                                 inputState.MousePosition.x,
-                                yStart,
-                                yBottom,
+                                ySliderTop,
+                                ySliderBottom,
                                 PowerMeterColor,
                                 heatDepth,
                                 PowerMeterBackgroundColor);

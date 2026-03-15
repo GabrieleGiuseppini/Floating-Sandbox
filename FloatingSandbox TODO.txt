@@ -274,12 +274,10 @@
 
 		+ Faster convergence of tool's changes
 		+ Try changing shape with strength
-		- Slider height: fixed
+		+ Slider height: fixed
+		+ Resend beta
 
-		- Resend beta:
-- Tornado more responsive to mouse
-- Tornado shape changes with intensity
-- @mia: fixed your crash; please test it and tell me how it goes
+		- Cleanup tool slider based on outcome
 
 		- Storm supercell above it
 		- Also appearing with storms
@@ -338,6 +336,8 @@
 		+ Due to pressure - doesn't happen with 1K but it does with 2K
 		+ It's hull, so no counterpressure
 		! Due to static pressure forces, verified
+		- Try with a proxy for "bulkiness" 
+			- TODOHERE
 		- Try with a mesh-based visit to gauge thickness
 			- Along springs with triangles, in direction of force vector
 
