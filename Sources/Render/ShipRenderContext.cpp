@@ -1576,7 +1576,7 @@ void ShipRenderContext::RenderDraw(
                 GL_UNSIGNED_INT,
                 (GLvoid *)mTriangleElementVBOStartIndex);
 
-            CheckOpenGLError(); // Quells crashes on nVidia?!?!?
+            CheckOpenGLError(); // Quells later errors on nVidia?!?!?
 
             // Update stats
             renderStats.LastRenderedShipTriangles += mTriangleElementBuffer.size();
