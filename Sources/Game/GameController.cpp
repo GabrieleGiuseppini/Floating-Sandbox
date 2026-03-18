@@ -778,10 +778,13 @@ void GameController::PickObjectToMove(
     std::optional<ShipId> & shipId)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    float const worldSearchRadius = std::max(
+        mRenderContext->ScreenOffsetToWorldOffset(mSimulationParameters.ShipSearchRadiusScreen),
+        SimulationParameters::MinShipSearchRadiusWorld);
 
     // Apply action
     assert(!!mWorld);
-    auto const elementIndex = mWorld->GetNearestPointAt(worldCoordinates, 1.0f);
+    auto const elementIndex = mWorld->GetNearestPointAt(worldCoordinates, worldSearchRadius);
     if (elementIndex.has_value())
         shipId = std::optional<ShipId>(elementIndex->GetShipId());
     else

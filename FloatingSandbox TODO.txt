@@ -362,16 +362,80 @@
 		+ Due to pressure - doesn't happen with 1K but it does with 2K
 		+ It's hull, so no counterpressure
 		! Due to static pressure forces, verified
-		- Try with a proxy for "bulkiness" 
-			- TODOHERE
-		- Try with a mesh-based visit to gauge thickness
-			- Along springs with triangles, in direction of force vector
+		= Try with a mesh-based visit to gauge thickness
+			! Along springs with triangles, in direction of force vector
+			+ 1: distance to next edge
+				+ Make sure outward pressure works fine
+				+ Test perf
+					! Red October
+					! UPD without: 2.04/2.16
+					! UPD with: 2.04/2.15
+				+ Check assembly
+				! Problem: doesn't quell; larger structures exhibit same behavior
+					! Max residuals: torque=0.27
+						! But small annoying piece: 4.9
+						! But torque as low as 0.13 causes havoc
+				+ Keep, and add comments
+			+ 2: modulate pressure forces based on frontier size
+				! Facts:
+					! default_ship: 529
+					! ball: 100
+					! wild mast: 376
+					! Triton: 235
+					! Titanic: 807
+					! Small pieces: largest is 88
+					! Annoying pieces:
+						! 47
+						! 13 - VERY!
+				+ Scale:
+					- 235=1
+					- 180=1
+					-  47~=0
+					-  13=0
+				! Problem: big pieces still do it
+				+ Keep
+			= 3: just limit total pressure force, regardless of frontier size
+				+ Just cap final force_vector's forceMultiplier to value it would have at a depth that we deem reasonable
+					! Facts:
+						- @ 3000m without frontier-size based: repro
+						- @ 3000m with frontier-size based: no repro
+						- @ 4000m without frontier-size based: repro
+						- @ 4000m with frontier-size based: no repro
+						- @ 5000m with frontier-size based: repro
+						- @ 6000m with frontier-size based: repro
+						- @ 7500m with frontier-size based: repro
+						- @ 10000m with frontier-size based: repro
+				+ 4000
+				- Uhmmm...once done, repro's at 10k 
+					- Capping needs to happen before normalization!
+						- But it also needs to apply to both pressures!
+			- Check outward pressure
+			- Check sub & titan still implode
+			- Add toggle (but no SettingsDialog yet)
+			- Test on old Dell
+				- See if might want to turn it off on slow machines
+			+ Check sudden breakage
 
-	- Look into "I tried to make a small gravity field and it crashed"
-		- Alex Cooper's crash dump
+	- Air bubbles trapped in silt
+
+	+ GameController::PickObjectToMove: must also do radius like Pick(connected component)
+		+ See if needs to be ported to Android
+
+	X Look into "I tried to make a small gravity field and it crashed"
+		+ Alex Cooper's crash dump
+			! 48 8B 75 A8 48 8B 7D 90 4C 8B 75 C0 44 8B 64 24 58
+		X It's OpenAL
 
 	- Look into DKUZ's bug
 		- Settings screenshot is on Desktop now
+
+	- See if can improve FindFreeEphemeralParticle
+		= Thing 1: remove need for currentSimulationTime
+		- Thing 2:
+			- A stack for free ephemeral particles (init'd with all)
+			- A TODO for ordered by time in-use ephemeral particles (remember we address it by content (i.e. point index, when we kill an eph particle)
+				- List, but with cheap allocation
+				
 
 	- Splashes
 		- TODO: see if can incorporate also "mist" for tornadoes
