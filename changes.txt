@@ -1,5 +1,6 @@
 TODO
 - Fixed a crash when exiting the game on systems with certain nVidia cards
+- Added 1 new ship
 
 1.20.0
 - Redesigned ocean floor physics: a customizable layer of soft silt cushions impacts and allows for wrecks to slowly burrow under sand
