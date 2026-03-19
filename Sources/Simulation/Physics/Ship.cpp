@@ -1969,17 +1969,18 @@ void Ship::ApplyStaticPressureForces(
 
             //// TODOTEST: SILT BEGIN
 
-            //auto const prevPointPosition = mPoints.GetPosition(prevPointIndex);
-            //bool isPrevPointerUnderSilt = prevPointPosition.y <= mParentWorld.GetOceanFloor().GetSiltHeightAt(prevPointPosition.x);
-            //auto const thisPointPosition = mPoints.GetPosition(thisPointIndex);
-            //bool isThisPointerUnderSilt = thisPointPosition.y <= mParentWorld.GetOceanFloor().GetSiltHeightAt(thisPointPosition.x);
-            //auto const nextPointPosition = mPoints.GetPosition(nextPointIndex);
-            //bool isNextPointerUnderSilt = nextPointPosition.y <= mParentWorld.GetOceanFloor().GetSiltHeightAt(nextPointPosition.x);
-            //if (isPrevPointerUnderSilt || isThisPointerUnderSilt || isNextPointerUnderSilt)
-            //{
-            //    forceVector *= 0.0f;
-            //    todoIsTaintedBySilt = true;
-            //}
+            auto const prevPointPosition = mPoints.GetPosition(prevPointIndex);
+            bool isPrevPointerUnderSilt = prevPointPosition.y <= mParentWorld.GetOceanFloor().GetSiltHeightAt(prevPointPosition.x);
+            auto const thisPointPosition = mPoints.GetPosition(thisPointIndex);
+            bool isThisPointerUnderSilt = thisPointPosition.y <= mParentWorld.GetOceanFloor().GetSiltHeightAt(thisPointPosition.x);
+            auto const nextPointPosition = mPoints.GetPosition(nextPointIndex);
+            bool isNextPointerUnderSilt = nextPointPosition.y <= mParentWorld.GetOceanFloor().GetSiltHeightAt(nextPointPosition.x);
+            if (isPrevPointerUnderSilt || isThisPointerUnderSilt || isNextPointerUnderSilt)
+            {
+                forceVector *= 0.0f;
+                // TODOTEST
+                //todoIsTaintedBySilt = true;
+            }
 
             //// TODOTEST: SILT END
 
@@ -2163,27 +2164,32 @@ void Ship::ApplyStaticPressureForces(
     //  180=1
     //   47~=0
     //   13=0
-    float const pressureBulkinessMultiplier = LinearStep(40.0f, 180.0f, static_cast<float>(frontier.Size));
+    // TODOTEST
+    //float const pressureBulkinessMultiplier = LinearStep(40.0f, 180.0f, static_cast<float>(frontier.Size));
+    float const pressureBulkinessMultiplier = 1.0f;
 
-    // Trick: overall cap of force: cap the force to the value that would be exherted
-    // at an empirically-derived depth, and when pressure differential is maximal
-    // (i.e. with zero internal pressure).
-    // Note that we don't cap _negative_ differentials (i.e. large internal pressures).
-    float const forceCap = Formulae::CalculateTotalPressureAt(
-        -3500.0f, // Magic depth
-        oceanSurfaceY,
-        effectiveAirDensity,
-        effectiveWaterDensity,
-        simulationParameters);
+    // TODOTEST
+    //// Trick: overall cap of force: cap the force to the value that would be exherted
+    //// at an empirically-derived depth, and when pressure differential is maximal
+    //// (i.e. with zero internal pressure).
+    //// Note that we don't cap _negative_ differentials (i.e. large internal pressures).
+    //float const forceCap = Formulae::CalculateTotalPressureAt(
+    //    -3500.0f, // Magic depth
+    //    oceanSurfaceY,
+    //    effectiveAirDensity,
+    //    effectiveWaterDensity,
+    //    simulationParameters);
 
     float const forceMultiplier =
-        std::min(totalExternalPressure, forceCap) // Force vector is normalized to external pressure, and remember: it includes contribution from internal pressure
+        // TODOTEST
+        //std::min(totalExternalPressure, forceCap) // Force vector is normalized to external pressure, and remember: it includes contribution from internal pressure
+        totalExternalPressure // Force vector is normalized to external pressure, and remember: it includes contribution from internal pressure
         * pressureBulkinessMultiplier
         * simulationParameters.StaticPressureForceAdjustment
         * mRepairGracePeriodMultiplier; // Static pressure hinders the repair process
 
     // TODOTEST
-    LogMessage("FrSize=", frontier.Size, " totExt=", totalExternalPressure, " cap=", forceCap, " bulkMul=", pressureBulkinessMultiplier, " --> fMul=", forceMultiplier);
+    LogMessage("FrSize=", frontier.Size, " totExt=", totalExternalPressure, /* " cap=", forceCap, */ " bulkMul=", pressureBulkinessMultiplier, " --> fMul=", forceMultiplier);
     float todoMaxForceMag = 0.0f;
 
     size_t const particleCount = mStaticPressureBuffer.GetCurrentPopulatedSize();

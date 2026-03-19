@@ -394,7 +394,7 @@
 					-  13=0
 				! Problem: big pieces still do it
 				+ Keep
-			= 3: just limit total pressure force, regardless of frontier size
+			+ 3: just limit total pressure force, regardless of frontier size
 				+ Just cap final force_vector's forceMultiplier to value it would have at a depth that we deem reasonable
 					! Facts:
 						- @ 3000m without frontier-size based: repro
@@ -406,26 +406,59 @@
 						- @ 7500m with frontier-size based: repro
 						- @ 10000m with frontier-size based: repro
 				+ 4000
-				- Uhmmm...once done, repro's at 10k - sub at 2.5k
-					- TODOHERE: problem is counterbalance adj factor: at real 4K it's around 0.3; at real 10K it's around 0.98
-					- TODOHERE: was bug in "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, but when fixed it's even worse - unbalanced forces are huge
+				+ Uhmmm...once done, repro's at 10k - sub at 2.5k
+					+ Problem is counterbalance adj factor: at real 4K it's around 0.3; at real 10K it's around 0.98
+					+ Was bug in "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, but when fixed it's even worse - unbalanced forces are huge
 						! Root of the problem is fully-hull structures, where differential is max
 						X Due to forces being dyn?
 							X Try 1: try with static (divide by num iterations though)
 								X No: even with static forces, at 10K (where sub doesn't even break) forces are big enough to cause it
-							- Try 2: skip first iter for clouds?
-						= Try with not applying force when under silt
+							- Try 2: skip first iter for clouds
+						X Try with not applying force when under silt
 							+ In edge loop
-							= TODOHERE: Even with static_pressure_adj=0, at 10K something happens that doesn't happen at 2.5K
+							X NOPE: Even with static_pressure_adj=0, at 10K something happens that doesn't happen at 2.5K
+				! CONFIRMED: it's the floating point precision loss at -10K
+				+ Try 1: increase sensitivity with abs value of y
+					! Build empirical table for sensitivity: max value < 1 before repro's w/out pressure, maintaining clouds at impact; + see if global cap still needed
+						- @2500 (2): 1.0
+						- @5100 (3): 0.938
+						- @7500 (3): 0.938
+						- @8500 (4): 0.4
+						- @10000 (4): 0.375
+					+ Do formula:
+						< 4096: 1.0
+						< 8192: 0.938 // a bit less! 0.906
+						< 16K: 0.375
+						+ Better implementation
+							+ Rewrite scaling down k
+							+ Do first if for < -4096
+
+			= When done: undo all changes one by one and only keep if needed
+				+ "Turn off under silt": (with bulkiness, without global cap)
+					+ Nice at 5K
+					+ Nice at 10K
+				+ "Turn off under silt": (without bulkiness, without global cap)
+					+ Nice at 5K
+					+ Nice at 10K
+				- TODOHERE: continue
 
 			- Remember to fix "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, that was broken anyway
 				- Need to re-include depth non-linearity
 					- TODO: rethink whole need for counter-balance adjustment: see how ugly it is if it stops crushing when flooded
 						- If remove: nuke setting
 
+			- Cleanup code after decided what to keep
+
+			- See if still need triangle check @ silt collisions
+
 			- Check outward pressure
 			- Check sub & titan still implode
+
+			- merge back into tornadoes
+
 			- Add toggle for structural bulkiness check (but no SettingsDialog yet)
+				- TODO: only if we keep complicated code
+
 			- Test on old Dell
 				- See if might want to turn it off on slow machines
 			+ Check sudden breakage
