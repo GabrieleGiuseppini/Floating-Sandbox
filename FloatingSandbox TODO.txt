@@ -406,12 +406,26 @@
 						- @ 7500m with frontier-size based: repro
 						- @ 10000m with frontier-size based: repro
 				+ 4000
-				- Uhmmm...once done, repro's at 10k 
-					- Capping needs to happen before normalization!
-						- But it also needs to apply to both pressures!
+				- Uhmmm...once done, repro's at 10k - sub at 2.5k
+					- TODOHERE: problem is counterbalance adj factor: at real 4K it's around 0.3; at real 10K it's around 0.98
+					- TODOHERE: was bug in "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, but when fixed it's even worse - unbalanced forces are huge
+						! Root of the problem is fully-hull structures, where differential is max
+						X Due to forces being dyn?
+							X Try 1: try with static (divide by num iterations though)
+								X No: even with static forces, at 10K (where sub doesn't even break) forces are big enough to cause it
+							- Try 2: skip first iter for clouds?
+						= Try with not applying force when under silt
+							+ In edge loop
+							= TODOHERE: Even with static_pressure_adj=0, at 10K something happens that doesn't happen at 2.5K
+
+			- Remember to fix "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, that was broken anyway
+				- Need to re-include depth non-linearity
+					- TODO: rethink whole need for counter-balance adjustment: see how ugly it is if it stops crushing when flooded
+						- If remove: nuke setting
+
 			- Check outward pressure
 			- Check sub & titan still implode
-			- Add toggle (but no SettingsDialog yet)
+			- Add toggle for structural bulkiness check (but no SettingsDialog yet)
 			- Test on old Dell
 				- See if might want to turn it off on slow machines
 			+ Check sudden breakage
