@@ -2325,9 +2325,7 @@ private:
         mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
     }
 
-    inline ElementIndex FindFreeEphemeralParticle(
-        float currentSimulationTime,
-        bool doForce);
+    inline ElementIndex FindFreeEphemeralParticle(bool doForce);
 
     inline void ExpireEphemeralParticle(ElementIndex pointElementIndex)
     {

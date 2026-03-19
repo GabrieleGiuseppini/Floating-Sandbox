@@ -149,7 +149,7 @@ void Points::CreateEphemeralParticleAirBubble(
     PlaneId planeId)
 {
     // Get a free slot (but don't steal one)
-    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, false);
+    auto pointIndex = FindFreeEphemeralParticle(false);
     if (NoneElementIndex == pointIndex)
         return; // No luck
 
@@ -249,7 +249,7 @@ void Points::CreateEphemeralParticleDebris(
     PlaneId planeId)
 {
     // Get a free slot (or steal one)
-    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
+    auto pointIndex = FindFreeEphemeralParticle(true);
     assert(NoneElementIndex != pointIndex);
 
     //
@@ -333,7 +333,7 @@ void Points::CreateEphemeralParticleSiltCloud(
     SimulationParameters const & simulationParameters)
 {
     // Get a free slot (or steal one)
-    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
+    auto pointIndex = FindFreeEphemeralParticle(true);
     assert(NoneElementIndex != pointIndex);
 
     //
@@ -428,7 +428,7 @@ void Points::InternalCreateEphemeralParticleSmoke(
     SimulationParameters const & simulationParameters)
 {
     // Get a free slot (or steal one)
-    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
+    auto pointIndex = FindFreeEphemeralParticle(true);
     assert(NoneElementIndex != pointIndex);
 
     // Calculate mass multiplier
@@ -555,7 +555,7 @@ void Points::CreateEphemeralParticleSparkle(
     PlaneId planeId)
 {
     // Get a free slot (or steal one)
-    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
+    auto pointIndex = FindFreeEphemeralParticle(true);
     assert(NoneElementIndex != pointIndex);
 
     //
@@ -629,7 +629,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     SimulationParameters const & simulationParameters)
 {
     // Get a free slot (but don't steal one)
-    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, false);
+    auto pointIndex = FindFreeEphemeralParticle(false);
     if (NoneElementIndex == pointIndex)
         return; // No luck
 
@@ -2634,9 +2634,7 @@ void Points::CalculateCombustionDecayParameters(
     mCombustionDecayAlphaFunctionC = c_num / den;
 }
 
-ElementIndex Points::FindFreeEphemeralParticle(
-    float currentSimulationTime,
-    bool doForce)
+ElementIndex Points::FindFreeEphemeralParticle(bool doForce)
 {
     //
     // Search for the firt free ephemeral particle; if a free one is not found, reuse the
@@ -2644,7 +2642,7 @@ ElementIndex Points::FindFreeEphemeralParticle(
     //
 
     ElementIndex oldestParticle = NoneElementIndex;
-    float oldestParticleLifetime = 0.0f;
+    float oldestParticleStartSimulationTime = std::numeric_limits<float>::max();
 
     assert(mFreeEphemeralParticleSearchStartIndex >= mAlignedShipPointCount
         && mFreeEphemeralParticleSearchStartIndex < mAllPointCount);
@@ -2664,11 +2662,11 @@ ElementIndex Points::FindFreeEphemeralParticle(
         }
 
         // Check whether it's the oldest
-        auto const lifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[p].StartSimulationTime;
-        if (lifetime >= oldestParticleLifetime)
+        auto const startSimulationTime = mEphemeralParticleAttributes1Buffer[p].StartSimulationTime;
+        if (startSimulationTime < oldestParticleStartSimulationTime)
         {
             oldestParticle = p;
-            oldestParticleLifetime = lifetime;
+            oldestParticleStartSimulationTime = startSimulationTime;
         }
 
         // Advance
@@ -2689,7 +2687,6 @@ ElementIndex Points::FindFreeEphemeralParticle(
 
     if (!doForce)
         return NoneElementIndex;
-
 
     //
     // Steal the oldest
