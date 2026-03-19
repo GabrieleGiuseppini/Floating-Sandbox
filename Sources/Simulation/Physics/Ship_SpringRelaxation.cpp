@@ -926,7 +926,7 @@ void Ship::HandleCollisionsWithSeaFloor(
                 //
 
                 // Velocity-based hardness
-                float const kineticEnergyVelocityComponent = pointVelocity.squareLength() * 0.5f;
+                float kineticEnergyVelocityComponent = pointVelocity.squareLength() * 0.5f;
                 float const kineticEnergy = mPoints.GetMass(pointIndex) * kineticEnergyVelocityComponent;
                 float const kineticEnergyHardness = LinearStep(0.0f, 30000.0f, kineticEnergy);
 
@@ -954,6 +954,21 @@ void Ship::HandleCollisionsWithSeaFloor(
                 //
                 // Silt clouds
                 //
+
+                // Now, a sad hack.
+                // Due to the constant *relative* precision of floats, at higher distances from zero (e.g. 10K metres away)
+                // spring relaxation incurs more error, resulting in wider vibrations of the meshes, which in turn would
+                // trigger silt clouds more easily. We thus scale down the kinetic energy component with the (logarithm)
+                // of y. We should technically do it with both x and y, but we expect large depths to be occurring more frequently
+                // than large horizontal distances
+                if (position.y <= -4096.0f)
+                {
+                    // Factors have been determined empirically
+                    if (position.y > -8192.0f)
+                        kineticEnergyVelocityComponent *= 0.938f;
+                    else
+                        kineticEnergyVelocityComponent *= 0.375f;
+                }
 
                 // We won't allow huge masses to generate a ton of clouds, so we use just velocity
                 // and a pretend mass (later) to keep values reasonably real
