@@ -2176,8 +2176,7 @@ void Ship::ApplyStaticPressureForces(
         effectiveWaterDensity,
         simulationParameters);
 
-    // TODO: const
-    float forceMultiplier =
+    float const forceMultiplier =
         std::min(totalExternalPressure, forceCap) // Force vector is normalized to external pressure, and remember: it includes contribution from internal pressure
         * pressureBulkinessMultiplier
         * simulationParameters.StaticPressureForceAdjustment
