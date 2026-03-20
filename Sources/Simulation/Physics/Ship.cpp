@@ -1909,78 +1909,82 @@ void Ship::ApplyStaticPressureForces(
             vec2f forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f * internalPressureCounterbalanceFactor;
             vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
 
-            //
-            // Trick: avoid applying forces on the sides of a thin structure;
-            // if we did, we'd cause contorsions of those poor structures
-            //
+            // TODOTEST
+            //////
+            ////// Trick: avoid applying forces on the sides of a thin structure;
+            ////// if we did, we'd cause contorsions of those poor structures
+            //////
 
-            if (internalPressureCounterbalanceFactor > 0.0f) // Only act on inward pressure
-            {
-                // Calculate bulkiness heuristic: thickness of structure in the direction
-                // of force vector
+            ////if (internalPressureCounterbalanceFactor > 0.0f) // Only act on inward pressure
+            ////{
+            ////    // Calculate bulkiness heuristic: thickness of structure in the direction
+            ////    // of force vector
 
-                vec2f const forceDir = forceVector.normalise();
+            ////    vec2f const forceDir = forceVector.normalise();
 
-                int distanceToOppositeEdge = 0;
-                int constexpr MaxDistanceToOppositeEdge = 3; // Limit search space
-                ElementIndex currentVisitPointIndex = thisPointIndex;
-                for (; distanceToOppositeEdge < MaxDistanceToOppositeEdge; ++distanceToOppositeEdge)
-                {
-                    vec2f const & currentVisitPointPosition = mPoints.GetPosition(currentVisitPointIndex);
+            ////    int distanceToOppositeEdge = 0;
+            ////    int constexpr MaxDistanceToOppositeEdge = 3; // Limit search space
+            ////    ElementIndex currentVisitPointIndex = thisPointIndex;
+            ////    for (; distanceToOppositeEdge < MaxDistanceToOppositeEdge; ++distanceToOppositeEdge)
+            ////    {
+            ////        vec2f const & currentVisitPointPosition = mPoints.GetPosition(currentVisitPointIndex);
 
-                    // Find best spring
-                    float bestProjection = 0.9063f; // cos(25): the angle between two adjacent springs is 45, half of it is the worst case scenario for a direction between two springs
-                    ElementIndex bestNextPointIndex = NoneElementIndex;
-                    for (auto const & connectedSpring : mPoints.GetConnectedSprings(currentVisitPointIndex).ConnectedSprings)
-                    {
-                        // Make sure there's a structure here
-                        if (mSprings.GetCoveringTrianglesCount(connectedSpring.SpringIndex) > 0)
-                        {
-                            auto const springDir = (mPoints.GetPosition(connectedSpring.OtherEndpointIndex) - currentVisitPointPosition).normalise();
-                            auto const projection = springDir.dot(forceDir);
-                            if (projection >= bestProjection)
-                            {
-                                bestProjection = projection;
-                                bestNextPointIndex = connectedSpring.OtherEndpointIndex;
-                            }
-                        }
-                    }
+            ////        // Find best spring
+            ////        float bestProjection = 0.9063f; // cos(25): the angle between two adjacent springs is 45, half of it is the worst case scenario for a direction between two springs
+            ////        ElementIndex bestNextPointIndex = NoneElementIndex;
+            ////        for (auto const & connectedSpring : mPoints.GetConnectedSprings(currentVisitPointIndex).ConnectedSprings)
+            ////        {
+            ////            // Make sure there's a structure here
+            ////            if (mSprings.GetCoveringTrianglesCount(connectedSpring.SpringIndex) > 0)
+            ////            {
+            ////                auto const springDir = (mPoints.GetPosition(connectedSpring.OtherEndpointIndex) - currentVisitPointPosition).normalise();
+            ////                auto const projection = springDir.dot(forceDir);
+            ////                if (projection >= bestProjection)
+            ////                {
+            ////                    bestProjection = projection;
+            ////                    bestNextPointIndex = connectedSpring.OtherEndpointIndex;
+            ////                }
+            ////            }
+            ////        }
 
-                    if (bestNextPointIndex == NoneElementIndex)
-                    {
-                        // No luck, visit stops here
-                        break;
-                    }
+            ////        if (bestNextPointIndex == NoneElementIndex)
+            ////        {
+            ////            // No luck, visit stops here
+            ////            break;
+            ////        }
 
-                    // Advance
-                    currentVisitPointIndex = bestNextPointIndex;
-                }
+            ////        // Advance
+            ////        currentVisitPointIndex = bestNextPointIndex;
+            ////    }
 
-                // Calculate scaling factor s:
-                //  - distance = 0, 1: s = 0.0
-                //  - distance = 2:s = 0.1
-                //  - distance = 3+: s = 1.0
+            ////    // Calculate scaling factor s:
+            ////    //  - distance = 0, 1: s = 0.0
+            ////    //  - distance = 2:s = 0.1
+            ////    //  - distance = 3+: s = 1.0
 
-                assert(distanceToOppositeEdge <= MaxDistanceToOppositeEdge);
-                static float BulkinessScalingFactorsByDistance[MaxDistanceToOppositeEdge + 1] = { 0.0f, 0.0f, 0.1f, 1.0f };
+            ////    assert(distanceToOppositeEdge <= MaxDistanceToOppositeEdge);
+            ////    static float BulkinessScalingFactorsByDistance[MaxDistanceToOppositeEdge + 1] = { 0.0f, 0.0f, 0.1f, 1.0f };
 
-                forceVector *= BulkinessScalingFactorsByDistance[distanceToOppositeEdge];
-            }
+            ////    forceVector *= BulkinessScalingFactorsByDistance[distanceToOppositeEdge];
+            ////}
 
             //// TODOTEST: SILT BEGIN
 
+            float constexpr TODOSLACK = 1.0f;
+
             auto const prevPointPosition = mPoints.GetPosition(prevPointIndex);
-            bool isPrevPointerUnderSilt = prevPointPosition.y <= mParentWorld.GetOceanFloor().GetSiltHeightAt(prevPointPosition.x);
+            auto const prevSiltY = mParentWorld.GetOceanFloor().GetSiltHeightAt(prevPointPosition.x);
+            float const prevFactor = LinearStep(prevSiltY, prevSiltY + TODOSLACK, prevPointPosition.y);
+
             auto const thisPointPosition = mPoints.GetPosition(thisPointIndex);
-            bool isThisPointerUnderSilt = thisPointPosition.y <= mParentWorld.GetOceanFloor().GetSiltHeightAt(thisPointPosition.x);
+            auto const thisSiltY = mParentWorld.GetOceanFloor().GetSiltHeightAt(thisPointPosition.x);
+            float const thisFactor = LinearStep(thisSiltY, thisSiltY + TODOSLACK, thisPointPosition.y);
+
             auto const nextPointPosition = mPoints.GetPosition(nextPointIndex);
-            bool isNextPointerUnderSilt = nextPointPosition.y <= mParentWorld.GetOceanFloor().GetSiltHeightAt(nextPointPosition.x);
-            if (isPrevPointerUnderSilt || isThisPointerUnderSilt || isNextPointerUnderSilt)
-            {
-                forceVector *= 0.0f;
-                // TODOTEST
-                //todoIsTaintedBySilt = true;
-            }
+            auto const nextSiltY = mParentWorld.GetOceanFloor().GetSiltHeightAt(nextPointPosition.x);
+            float const nextFactor = LinearStep(nextSiltY, nextSiltY + TODOSLACK, nextPointPosition.y);
+
+            forceVector *= prevFactor * thisFactor * nextFactor;
 
             //// TODOTEST: SILT END
 
@@ -2165,8 +2169,8 @@ void Ship::ApplyStaticPressureForces(
     //   47~=0
     //   13=0
     // TODOTEST
-    //float const pressureBulkinessMultiplier = LinearStep(40.0f, 180.0f, static_cast<float>(frontier.Size));
-    float const pressureBulkinessMultiplier = 1.0f;
+    float const pressureBulkinessMultiplier = LinearStep(40.0f, 180.0f, static_cast<float>(frontier.Size));
+    //float const pressureBulkinessMultiplier = 1.0f;
 
     // TODOTEST
     //// Trick: overall cap of force: cap the force to the value that would be exherted

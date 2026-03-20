@@ -434,13 +434,26 @@
 							+ Do first if for < -4096
 
 			= When done: undo all changes one by one and only keep if needed
-				+ "Turn off under silt": (with bulkiness, without global cap)
+				+ "Turn off under silt": (with bulkiness, without global cap, with thickness adjustment)
 					+ Nice at 5K
 					+ Nice at 10K
-				+ "Turn off under silt": (without bulkiness, without global cap)
+				+ "Turn off under silt": (without bulkiness, without global cap, with thickness adjustment)
 					+ Nice at 5K
 					+ Nice at 10K
-				- TODOHERE: continue
+				+ Above, but without thickness adjustment
+					X Nope, 2-px mast is crazy
+					+ TODOHERE: WITH thickness adjustment, a 4-pixel mast is crazy @ 2500
+						+ Try with smoother silt/non-silt transition
+							+ Turnoff begins at silt+0.2 and ends at silt
+						- Then see if the 2-px mast crazyness was due to discontinuity
+				+ WITHOUT bulkiness, with silt-depth smoothing, WITHOUT thickness (distance) adjustment, WITHOUT global cap:
+					+ 2px mast ok @ 10000
+					X Titanic not ok @ 2500
+				+ With bulkiness, with silt-depth smoothing, WITHOUT thickness (distance) adjustment, WITHOUT global cap:
+					+ Titanic OK @ 10k
+					+ Triton OK @ 10k
+				- Add global cap (linear)
+
 
 			- Remember to fix "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, that was broken anyway
 				- Need to re-include depth non-linearity
@@ -448,6 +461,8 @@
 						- If remove: nuke setting
 
 			- Cleanup code after decided what to keep
+				- Rewrite silt-depth check
+				- Revisit big comment afterwards
 
 			- See if still need triangle check @ silt collisions
 
