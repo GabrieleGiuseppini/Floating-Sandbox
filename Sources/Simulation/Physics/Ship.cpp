@@ -1816,31 +1816,17 @@ void Ship::ApplyStaticPressureForces(
     assert(totalExternalPressure != 0.0f); // Air pressure is never zero
 
     // Counterbalance adjustment: a "trick" to reduce the effect of inner pressure on the external pressure
-    // applied to the hull, so to generate higher hydrostatic forces - at lower depths.
-    // Factor for counterbalance adjustment:
-    //  - At adj=0.0, we want the internal pressure to NEVER counterbalance the external pressure as-is => factor = 0.0 at every depth
-    //  - At adj=0.5, we want the internal pressure to start counterbalancing the external pressure somewhere mid-way along the depth => factor grows with depth (towards 1/ext_pressure)
-    //  - At adj=1.0, we want the internal pressure to ALWAYS counterbalance the external pressure => factor = 1/ext_pressure at every depth
+    // applied to the hull, so to generate higher hydrostatic forces - at lower depths. Basically to make
+    // completely-flooded structures still implode.
     //
-    // Note that this factor is also responsible for the normalization of forces to the external pressure calculated at the center of the body
-    float const hydrostaticPressureCounterbalanceAdjustmentFactor =
-        1.0f / totalExternalPressure
-        // TODOTEST
-        ////* (1.0f - SmoothStep(
-        ////    SimulationParameters::HalfMaxWorldHeight,
-        ////    SimulationParameters::HalfMaxWorldHeight * 2.0f,
-        ////    depth + (1.0f - simulationParameters.HydrostaticPressureCounterbalanceAdjustment) * SimulationParameters::HalfMaxWorldHeight * 2.0f) * Step(0.0f, depth));
-        * SmoothStep(
-            SimulationParameters::HalfMaxWorldHeight,
-            SimulationParameters::HalfMaxWorldHeight * 2.0f,
-            depth + (1.0f - simulationParameters.HydrostaticPressureCounterbalanceAdjustment) * SimulationParameters::HalfMaxWorldHeight * 2.0f)
-        // TODOHERE
-        // NO: s must be 1 above water
-        //* Step(0.0f, depth);
-        ;
+    // We want factor=1 above-water, and lower than 1 but converging to 1 the deeper we go;
+    // to avoid discontinuities though, we lower it in a narrow band underwater
+    float constexpr SmoothToZeroDepth = 50.0f;
+    float const pressureCounterbalanceAdjustmentFactor = (depth < SmoothToZeroDepth)
+        ? 1.0f - LinearStep(0.0f, SmoothToZeroDepth, depth)
+        : LinearStep(SmoothToZeroDepth, SimulationParameters::HalfMaxWorldHeight, depth);
 
-    // TODOTEST
-    LogMessage("!!! d=", depth, " hpcbFact=", hydrostaticPressureCounterbalanceAdjustmentFactor * totalExternalPressure);
+    float const forceNormalizationFactor = 1.0f / totalExternalPressure * pressureCounterbalanceAdjustmentFactor;
 
     //
     // 1. Calculate geometry of forces and populate interim buffer
@@ -1902,9 +1888,9 @@ void Ship::ApplyStaticPressureForces(
         if (neighboringHullPointsCount == 3) // Avoid applying force to one or two isolated hull particles, allows for more stability of wretched wrecks
         {
             // Calculate normalized pressure force: we want the force vector
-            // to be zero when internal pressure == external pressure, at 1.0 counterbalance.
+            // to be zero when internal pressure == external pressure.
             // Note that will be negative when internal>external - outward force!
-            float const normalizedForceMagnitude = 1.0f - mPoints.GetInternalPressure(thisPointIndex) * hydrostaticPressureCounterbalanceAdjustmentFactor;
+            float const normalizedForceMagnitude = 1.0f - mPoints.GetInternalPressure(thisPointIndex) * forceNormalizationFactor;
 
             // Calculate static pressure force, and torque on whole body
             vec2f const forceVector =
@@ -1913,7 +1899,7 @@ void Ship::ApplyStaticPressureForces(
 
             vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
 
-            // TODOTEST: thickness adjustment
+            // EXPERIMENTAL: thickness adjustment
             //////
             ////// Trick: avoid applying forces on the sides of a thin structure;
             ////// if we did, we'd cause contorsions of those poor structures

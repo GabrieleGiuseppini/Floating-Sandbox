@@ -459,21 +459,21 @@
 					+ Silt damping factors: mParent.GetOceanFloor
 					+ prev=this, this=next
 
-			- Remember to fix "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, that was broken anyway
-				- Need to re-include depth non-linearity
-					- TODO: rethink whole need for counter-balance adjustment: see how ugly it is if it stops crushing when flooded
-						- If remove: nuke setting
-				- Cleanup remaining
+			+ Remember to fix "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, that was broken anyway
+				+ Need to re-include depth non-linearity
+				+ Nuke setting
+					+ Also SettingsDialog
+				+ Cleanup remaining code
 
-			- Check outward pressure
-			- Check sub & titan still implode
+			+ With final look'n'feel:
+				+ Check outward pressure
+				+ Check sub & triton still implode
+
+			- See if can use cached depths for silt coeff
 
 			- Changelist X 2
 
 			- merge back into tornadoes
-
-			- Add toggle for structural bulkiness check (but no SettingsDialog yet)
-				- TODO: only if we keep complicated code
 
 			- Test on old Dell
 				- See if might want to turn it off on slow machines

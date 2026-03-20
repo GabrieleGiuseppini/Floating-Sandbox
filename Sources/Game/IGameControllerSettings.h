@@ -88,9 +88,6 @@ struct IGameControllerSettings
     virtual float GetWaterImpactForceAdjustment() const = 0;
     virtual void SetWaterImpactForceAdjustment(float value) = 0;
 
-    virtual float GetHydrostaticPressureCounterbalanceAdjustment() const = 0;
-    virtual void SetHydrostaticPressureCounterbalanceAdjustment(float value) = 0;
-
     virtual float GetWaterIntakeAdjustment() const = 0;
     virtual void SetWaterIntakeAdjustment(float value) = 0;
 

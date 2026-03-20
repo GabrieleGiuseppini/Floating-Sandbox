@@ -182,10 +182,6 @@ struct SimulationParameters
     static float constexpr MinWaterImpactForceAdjustment = 0.0f;
     static float constexpr MaxWaterImpactForceAdjustment = 10.0f;
 
-    float HydrostaticPressureCounterbalanceAdjustment;
-    static float constexpr MinHydrostaticPressureCounterbalanceAdjustment = 0.0f;
-    static float constexpr MaxHydrostaticPressureCounterbalanceAdjustment = 1.0f;
-
     float WaterIntakeAdjustment;
     static float constexpr MinWaterIntakeAdjustment = 0.001f;
     static float constexpr MaxWaterIntakeAdjustment = 10.0f;

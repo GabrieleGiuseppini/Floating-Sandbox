@@ -515,11 +515,6 @@ public:
     float GetMinWaterImpactForceAdjustment() const override { return SimulationParameters::MinWaterImpactForceAdjustment; }
     float GetMaxWaterImpactForceAdjustment() const override { return SimulationParameters::MaxWaterImpactForceAdjustment; }
 
-    float GetHydrostaticPressureCounterbalanceAdjustment() const override { return mSimulationParameters.HydrostaticPressureCounterbalanceAdjustment; }
-    void SetHydrostaticPressureCounterbalanceAdjustment(float value) override { mSimulationParameters.HydrostaticPressureCounterbalanceAdjustment = value; }
-    float GetMinHydrostaticPressureCounterbalanceAdjustment() const override { return SimulationParameters::MinHydrostaticPressureCounterbalanceAdjustment; }
-    float GetMaxHydrostaticPressureCounterbalanceAdjustment() const override { return SimulationParameters::MaxHydrostaticPressureCounterbalanceAdjustment; }
-
     float GetWaterIntakeAdjustment() const override { return mSimulationParameters.WaterIntakeAdjustment; }
     void SetWaterIntakeAdjustment(float value) override { mSimulationParameters.WaterIntakeAdjustment = value; }
     float GetMinWaterIntakeAdjustment() const override { return SimulationParameters::MinWaterIntakeAdjustment; }
