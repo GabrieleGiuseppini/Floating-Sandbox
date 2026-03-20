@@ -1731,6 +1731,17 @@ void Ship::ApplyStaticPressureForces(
     }
 }
 
+namespace {
+
+    static inline float CalculateSiltPressureDamping(vec2f const & position, OceanFloor const & oceanFloor)
+    {
+        auto const siltY = oceanFloor.GetSiltHeightAt(position.x);
+
+        // Nature abhors discontinuity
+        return LinearStep(0.0f, 1.0f, position.y - siltY);
+    }
+}
+
 void Ship::ApplyStaticPressureForces(
     Frontiers::Frontier const & frontier,
     float effectiveAirDensity,
@@ -1763,20 +1774,17 @@ void Ship::ApplyStaticPressureForces(
 
     //
     // Given the discrete nature of the simulation, this implementation unfortunately results in residual unbalanced forces when all forces
-    // are applied to the body. Such residual forces can takes two forms: residual net force and/or torque, and distortion forces (whole body
-    // being under zero net force/torque, but parts of it contorting).
+    // are applied to the body. Such residual forces can take two forms: residual net force and/or torque, and large vibrations of the particles
+    // in the mesh.
     //
     // These imperfections become seriously noticeable when pressure differentials (external-internal) are huge, which mostly happens at
-    // great depths.
+    // great depths. It shows up as rotations, translations, contorsions, and still parts picking up silt from the bottom.
     //
     // In order to counteract these imperfections, we employ various mechanisms:
     // - We strive to ensure zero net-force and net-curl on the whole body; we do this
     //   by iteratively lowering forces according to their contribution to net-force and net-curl;
-    // - We avoid applying forces to the sides of a thing structure, as that would cause contorsions,
-    //   especially with large pressure differentials (e.g. 2-particle wide hull masts);
-    // - We scale down forces applied to small structures;
-    // - We cap the total amount of the final force (and this sucks a bit), basically pretending
-    //   that we are never deeper than a max magical depth that was determined empirically.
+    // - We zero pressure against particles that are buried or close to silt;
+    // - We scale down forces applied to small structures.
     //
 
     // Notes:
@@ -1793,9 +1801,9 @@ void Ship::ApplyStaticPressureForces(
     float const depth = oceanSurfaceY - geometricCenterPosition.y;
 
     //
-    // The forces that we calculate here are pressure differentials (ext - int), normalized to the external
-    // pressure calculated at the center of the body. At the end of the algorithm we will de-normalize them
-    // by multiplying with the actual external pressure.
+    // The forces that we calculate here are pressure differentials (ext - int), normalized to the expected
+    // max differential which is the external pressure calculated at the center of the body.
+    // At the end of the algorithm we will recover them by multiplying with the actual external pressure.
     //
 
     float const totalExternalPressure = Formulae::CalculateTotalPressureAt(
@@ -1839,7 +1847,7 @@ void Ship::ApplyStaticPressureForces(
     //
     // Here we calculate the *perpendicular* to each edge, rather than the normal, in order
     // to take into account the length of the edge, as the pressure force on an edge is
-    // proportional to its length
+    // proportional to its "area" (length)
     //
 
     mStaticPressureBuffer.clear();
@@ -1858,12 +1866,15 @@ void Ship::ApplyStaticPressureForces(
 
     ElementIndex edge1Index = frontier.StartingEdgeIndex;
     ElementIndex prevPointIndex = mFrontiers.GetFrontierEdge(edge1Index).PointAIndex;
+    vec2f prevPointPosition = mPoints.GetPosition(prevPointIndex);
+    float prevPointSiltDamping = CalculateSiltPressureDamping(prevPointPosition, mParentWorld.GetOceanFloor());
 
     ElementIndex edge2Index = mFrontiers.GetFrontierEdge(edge1Index).NextEdgeIndex;
     ElementIndex thisPointIndex = mFrontiers.GetFrontierEdge(edge2Index).PointAIndex;
+    vec2f thisPointPosition = mPoints.GetPosition(thisPointIndex);
+    float thisPointSiltDamping = CalculateSiltPressureDamping(thisPointPosition, mParentWorld.GetOceanFloor());
 
-    vec2f edge1PerpVector =
-        -(mPoints.GetPosition(thisPointIndex) - mPoints.GetPosition(prevPointIndex)).to_perpendicular();
+    vec2f edge1PerpVector = -(thisPointPosition - prevPointPosition).to_perpendicular();
 
     int neighboringHullPointsCount =
         (mPoints.GetIsHull(prevPointIndex) ? 1 : 0)
@@ -1875,10 +1886,6 @@ void Ship::ApplyStaticPressureForces(
 
     ElementIndex const startEdgeIndex = mFrontiers.GetFrontierEdge(edge2Index).NextEdgeIndex;
 
-    // TODOTEST
-    float todoMaxinternalPressureCounterbalanceFactor = 0.0f;
-    //bool todoIsTaintedBySilt = false;
-
     for (ElementIndex nextEdgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
     {
 #ifdef _DEBUG
@@ -1886,30 +1893,27 @@ void Ship::ApplyStaticPressureForces(
 #endif
         auto const & nextEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
         ElementIndex const nextPointIndex = nextEdge.PointAIndex;
+        vec2f nextPointPosition = mPoints.GetPosition(nextPointIndex);
+        float nextPointSiltDamping = CalculateSiltPressureDamping(nextPointPosition, mParentWorld.GetOceanFloor());
 
-        vec2f edge2PerpVector =
-            -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
+        vec2f edge2PerpVector = -(nextPointPosition - thisPointPosition).to_perpendicular();
 
         neighboringHullPointsCount += (mPoints.GetIsHull(nextPointIndex) ? 1 : 0);
         if (neighboringHullPointsCount == 3) // Avoid applying force to one or two isolated hull particles, allows for more stability of wretched wrecks
         {
-            // Calculate internal pressure counterbalance: we want the force vector
+            // Calculate normalized pressure force: we want the force vector
             // to be zero when internal pressure == external pressure, at 1.0 counterbalance.
             // Note that will be negative when internal>external - outward force!
-            // TODO: rename to normalizedForceMagnitude
-            float const internalPressureCounterbalanceFactor = 1.0f - mPoints.GetInternalPressure(thisPointIndex) * hydrostaticPressureCounterbalanceAdjustmentFactor;
-
-            // TODOTEST
-            if (std::fabsf(internalPressureCounterbalanceFactor) > todoMaxinternalPressureCounterbalanceFactor)
-            {
-                todoMaxinternalPressureCounterbalanceFactor = std::fabsf(internalPressureCounterbalanceFactor);
-            }
+            float const normalizedForceMagnitude = 1.0f - mPoints.GetInternalPressure(thisPointIndex) * hydrostaticPressureCounterbalanceAdjustmentFactor;
 
             // Calculate static pressure force, and torque on whole body
-            vec2f forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f * internalPressureCounterbalanceFactor;
+            vec2f const forceVector =
+                (edge1PerpVector + edge2PerpVector) / 2.0f * normalizedForceMagnitude
+                * prevPointSiltDamping * thisPointSiltDamping * nextPointSiltDamping;
+
             vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
 
-            // TODOTEST
+            // TODOTEST: thickness adjustment
             //////
             ////// Trick: avoid applying forces on the sides of a thin structure;
             ////// if we did, we'd cause contorsions of those poor structures
@@ -1968,26 +1972,6 @@ void Ship::ApplyStaticPressureForces(
             ////    forceVector *= BulkinessScalingFactorsByDistance[distanceToOppositeEdge];
             ////}
 
-            //// TODOTEST: SILT BEGIN
-
-            float constexpr TODOSLACK = 1.0f;
-
-            auto const prevPointPosition = mPoints.GetPosition(prevPointIndex);
-            auto const prevSiltY = mParentWorld.GetOceanFloor().GetSiltHeightAt(prevPointPosition.x);
-            float const prevFactor = LinearStep(prevSiltY, prevSiltY + TODOSLACK, prevPointPosition.y);
-
-            auto const thisPointPosition = mPoints.GetPosition(thisPointIndex);
-            auto const thisSiltY = mParentWorld.GetOceanFloor().GetSiltHeightAt(thisPointPosition.x);
-            float const thisFactor = LinearStep(thisSiltY, thisSiltY + TODOSLACK, thisPointPosition.y);
-
-            auto const nextPointPosition = mPoints.GetPosition(nextPointIndex);
-            auto const nextSiltY = mParentWorld.GetOceanFloor().GetSiltHeightAt(nextPointPosition.x);
-            float const nextFactor = LinearStep(nextSiltY, nextSiltY + TODOSLACK, nextPointPosition.y);
-
-            forceVector *= prevFactor * thisFactor * nextFactor;
-
-            //// TODOTEST: SILT END
-
             // Store force
             mStaticPressureBuffer.emplace_back(
                 thisPointIndex,
@@ -2009,7 +1993,12 @@ void Ship::ApplyStaticPressureForces(
         neighboringHullPointsCount -= (mPoints.GetIsHull(prevPointIndex) ? 1 : 0);
 
         prevPointIndex = thisPointIndex;
+        prevPointPosition = thisPointPosition;
+        prevPointSiltDamping = thisPointSiltDamping;
         thisPointIndex = nextPointIndex;
+        thisPointPosition = nextPointPosition;
+        thisPointSiltDamping = nextPointSiltDamping;
+
         edge1PerpVector = edge2PerpVector;
     }
 
@@ -2168,33 +2157,13 @@ void Ship::ApplyStaticPressureForces(
     //  180=1
     //   47~=0
     //   13=0
-    // TODOTEST
     float const pressureBulkinessMultiplier = LinearStep(40.0f, 180.0f, static_cast<float>(frontier.Size));
-    //float const pressureBulkinessMultiplier = 1.0f;
-
-    // TODOTEST
-    //// Trick: overall cap of force: cap the force to the value that would be exherted
-    //// at an empirically-derived depth, and when pressure differential is maximal
-    //// (i.e. with zero internal pressure).
-    //// Note that we don't cap _negative_ differentials (i.e. large internal pressures).
-    //float const forceCap = Formulae::CalculateTotalPressureAt(
-    //    -3500.0f, // Magic depth
-    //    oceanSurfaceY,
-    //    effectiveAirDensity,
-    //    effectiveWaterDensity,
-    //    simulationParameters);
 
     float const forceMultiplier =
-        // TODOTEST
-        //std::min(totalExternalPressure, forceCap) // Force vector is normalized to external pressure, and remember: it includes contribution from internal pressure
         totalExternalPressure // Force vector is normalized to external pressure, and remember: it includes contribution from internal pressure
         * pressureBulkinessMultiplier
         * simulationParameters.StaticPressureForceAdjustment
         * mRepairGracePeriodMultiplier; // Static pressure hinders the repair process
-
-    // TODOTEST
-    LogMessage("FrSize=", frontier.Size, " totExt=", totalExternalPressure, /* " cap=", forceCap, */ " bulkMul=", pressureBulkinessMultiplier, " --> fMul=", forceMultiplier);
-    float todoMaxForceMag = 0.0f;
 
     size_t const particleCount = mStaticPressureBuffer.GetCurrentPopulatedSize();
     for (size_t hpi = 0; hpi < particleCount; ++hpi)
@@ -2202,15 +2171,7 @@ void Ship::ApplyStaticPressureForces(
         mPoints.AddDynamicForce(
             mStaticPressureBuffer[hpi].PointIndex,
             mStaticPressureBuffer[hpi].ForceVector * forceMultiplier);
-
-        // TODOTEST
-        if ((mStaticPressureBuffer[hpi].ForceVector).length() > todoMaxForceMag)
-        {
-            todoMaxForceMag = (mStaticPressureBuffer[hpi].ForceVector).length();
-        }
     }
-
-    LogMessage("   maxForceMag=", todoMaxForceMag, " maxCounterb=", todoMaxinternalPressureCounterbalanceFactor);
 }
 
 void Ship::TrimForWorldBounds(SimulationParameters const & simulationParameters)

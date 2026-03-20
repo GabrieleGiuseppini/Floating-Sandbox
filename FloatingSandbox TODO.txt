@@ -433,7 +433,7 @@
 							+ Rewrite scaling down k
 							+ Do first if for < -4096
 
-			= When done: undo all changes one by one and only keep if needed
+			+ When done: undo all changes one by one and only keep if needed
 				+ "Turn off under silt": (with bulkiness, without global cap, with thickness adjustment)
 					+ Nice at 5K
 					+ Nice at 10K
@@ -445,29 +445,30 @@
 					+ TODOHERE: WITH thickness adjustment, a 4-pixel mast is crazy @ 2500
 						+ Try with smoother silt/non-silt transition
 							+ Turnoff begins at silt+0.2 and ends at silt
-						- Then see if the 2-px mast crazyness was due to discontinuity
+						+ Then see if the 2-px mast crazyness was due to discontinuity
 				+ WITHOUT bulkiness, with silt-depth smoothing, WITHOUT thickness (distance) adjustment, WITHOUT global cap:
 					+ 2px mast ok @ 10000
 					X Titanic not ok @ 2500
 				+ With bulkiness, with silt-depth smoothing, WITHOUT thickness (distance) adjustment, WITHOUT global cap:
 					+ Titanic OK @ 10k
 					+ Triton OK @ 10k
-				- Add global cap (linear)
-
+			+ Cleanup code after decided what to keep
+				+ Rewrite silt-depth check
+				+ Revisit big comment afterwards
+				+ Check assembly:
+					+ Silt damping factors: mParent.GetOceanFloor
+					+ prev=this, this=next
 
 			- Remember to fix "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, that was broken anyway
 				- Need to re-include depth non-linearity
 					- TODO: rethink whole need for counter-balance adjustment: see how ugly it is if it stops crushing when flooded
 						- If remove: nuke setting
-
-			- Cleanup code after decided what to keep
-				- Rewrite silt-depth check
-				- Revisit big comment afterwards
-
-			- See if still need triangle check @ silt collisions
+				- Cleanup remaining
 
 			- Check outward pressure
 			- Check sub & titan still implode
+
+			- Changelist X 2
 
 			- merge back into tornadoes
 

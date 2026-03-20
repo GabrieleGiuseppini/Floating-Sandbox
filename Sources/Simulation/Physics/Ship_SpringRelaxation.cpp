@@ -963,6 +963,8 @@ void Ship::HandleCollisionsWithSeaFloor(
                 // than large horizontal distances
                 if (position.y <= -4096.0f)
                 {
+                    static_assert(SimulationParameters::HalfMaxWorldHeight < 16384.0f); // Or else need another reduction step
+
                     // Factors have been determined empirically
                     if (position.y > -8192.0f)
                         kineticEnergyVelocityComponent *= 0.938f;
