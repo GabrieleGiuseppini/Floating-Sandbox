@@ -1914,7 +1914,7 @@ void Ship::ApplyStaticPressureForces(
             ////// if we did, we'd cause contorsions of those poor structures
             //////
 
-            ////if (internalPressureCounterbalanceFactor > 0.0f) // Only act on inward pressure
+            ////if (normalizedForceMagnitude > 0.0f) // Only act on inward pressure
             ////{
             ////    // Calculate bulkiness heuristic: thickness of structure in the direction
             ////    // of force vector
