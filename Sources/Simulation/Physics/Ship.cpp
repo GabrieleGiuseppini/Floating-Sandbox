@@ -1908,7 +1908,8 @@ void Ship::ApplyStaticPressureForces(
 
             vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
 
-            // EXPERIMENTAL: thickness adjustment
+            // EXPERIMENTAL: thickness adjustment, reduces some crazy clouds but does not make them
+            // disappear completely, and given its price, we've turned it off for now.
             //////
             ////// Trick: avoid applying forces on the sides of a thin structure;
             ////// if we did, we'd cause contorsions of those poor structures
