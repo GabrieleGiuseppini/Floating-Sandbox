@@ -1787,6 +1787,15 @@ void Ship::ApplyStaticPressureForces(
     // - We scale down forces applied to small structures.
     //
 
+    // Minimum size of a frontier to get some pressure. We do this early check to avoid
+    // spending time when there's a zillion of frontiers, as in that case each frontier
+    // would be small
+    size_t constexpr MinFrontierSize = 40;
+    if (frontier.Size < MinFrontierSize)
+    {
+        return;
+    }
+
     // Notes:
     //  - We use the frontiers' gemetric centers as the place that depth is calculated at;
     //    as a consequence, if the ship is interactively moved or rotated, the centers
@@ -2132,18 +2141,18 @@ void Ship::ApplyStaticPressureForces(
     //    phantom forces and torques otherwise
     //
 
-    // Trick: avoid applying too much pressure to small frontiers
-    //
-    // Huge forces on small frontiers would cause the "wild mast" issue: small
-    // pieces of structures moving too much at great depths, where even if optimized
-    // forces are small, the external pressure coefficient would be huge.
+    // Trick: avoid applying too much pressure to small frontiers, as
+    // huge forces on small frontiers are difficult to round out.
     //
     // Empirical table:
     //  235=1
     //  180=1
     //   47~=0
     //   13=0
-    float const pressureBulkinessMultiplier = LinearStep(40.0f, 180.0f, static_cast<float>(frontier.Size));
+    float const pressureBulkinessMultiplier = LinearStep(
+        static_cast<float>(MinFrontierSize),
+        180.0f,
+        static_cast<float>(frontier.Size));
 
     float const forceMultiplier =
         totalExternalPressure // Force vector is normalized to external pressure, and remember: it includes contribution from internal pressure

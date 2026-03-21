@@ -469,11 +469,12 @@
 				+ Check outward pressure
 				+ Check sub & triton still implode
 
-			- See if can use cached depths for silt coeff
+			= Cut early if bulkiness check (frontier size) would be zero
 
-			- Changelist X 2
+			+ Changelist X 2
 
 			- merge back into tornadoes
+			- Discord
 
 			- Test on old Dell
 				- See if might want to turn it off on slow machines
@@ -491,6 +492,7 @@
 
 	- Look into DKUZ's bug
 		- Settings screenshot is on Desktop now
+		- Port to Android
 
 	- See if can improve FindFreeEphemeralParticle
 		= Thing 1: remove need for currentSimulationTime
@@ -515,7 +517,6 @@
 		- Longhorn materials (includes redesign of material palette, as it would become too slow)
 		- Rot redesign (includes better rusting, and organic alge growth)
 		- NPC phase II: ShipBuilder (Floorplan layer and Interior Texture layer), areas (e.g. assembly area), and behaviors (swimming, etc.)
-		- Hydrostatic pressure fix for rotation (TODO: working on it now may be?)
 		- Fireworks
 
 
