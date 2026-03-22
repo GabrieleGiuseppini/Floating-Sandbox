@@ -2014,7 +2014,7 @@ void Ship::ApplyStaticPressureForces(
     //
 
     ElementCount iter;
-    for (iter = 0; iter < frontier.Size; ++iter)
+    for (iter = 0; iter < frontier.Size; ++iter) // Heuristical max visit iterations, to ensure no super-long loops
     {
         // Check if we've reached a "minimum" that we're happy with
         if (netForce.length() < 0.5f
@@ -2110,7 +2110,8 @@ void Ship::ApplyStaticPressureForces(
             }
         }
 
-        if (!bestHPIndex.has_value())
+        if (!bestHPIndex.has_value()
+            || bestLambda > 0.999f) // Infinitesimal change which provides *most magnitude change* won't change much
         {
             // Couldn't find a minimizer, stop
             break;
