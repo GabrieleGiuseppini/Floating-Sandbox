@@ -1,6 +1,6 @@
 TODO
 - Improved hydrostatic pressure simulation - less crazy behaviors at great depths
-- Fixed "wild mast" issue, where masts on the ocean floor would pick up silt clouds
+- Improved "wild mast" issue, where masts on the ocean floor would pick up silt clouds
 - Fixed a crash when exiting the game on systems with certain nVidia cards
 - Added 1 new ship
 
