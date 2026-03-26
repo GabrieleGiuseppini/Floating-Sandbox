@@ -37,7 +37,8 @@ RenderContext::RenderContext(
     ThreadManager & threadManager,
     IAssetManager const & assetManager,
     ProgressCallback const & progressCallback)
-    : mDoInvokeGlFinish(false) // Will be recalculated
+    : mIsMultisamplingSupported(renderDeviceProperties.IsMultisamplingSupported)
+    , mDoInvokeGlFinish(false) // Will be recalculated
     // Thread
     , mRenderThread(ThreadManager::ThreadTaskKind::Render, "FS RenderThread", 0, threadManager.IsRenderingMultiThreaded(), threadManager)
     , mLastRenderUploadEndCompletionIndicator()
@@ -93,9 +94,17 @@ RenderContext::RenderContext(
             // Initialize global OpenGL settings
             //
 
-            // Set anti-aliasing for lines
-            glEnable(GL_LINE_SMOOTH);
-            glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+            if (mIsMultisamplingSupported)
+            {
+                // Start with disabled; we'll enable it where needed
+                glDisable(GL_MULTISAMPLE);
+            }
+            else
+            {
+                // Set anti-aliasing for lines
+                glEnable(GL_LINE_SMOOTH);
+                glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+            }
 
             // Enable blending for alpha transparency
             glEnable(GL_BLEND);
@@ -126,7 +135,10 @@ RenderContext::RenderContext(
 
             LogMessage("Initializing shaders...");
 
-            mInnerContext->ShaderManager = ShaderManager<GameShaderSets::ShaderSet>::CreateInstance(assetManager, SimpleProgressCallback::Dummy());
+            mInnerContext->ShaderManager = ShaderManager<GameShaderSets::ShaderSet>::CreateInstance(
+                assetManager,
+                mIsMultisamplingSupported,
+                SimpleProgressCallback::Dummy());
 
             LogMessage("...shaders initialized.");
         });

@@ -1386,6 +1386,7 @@ private:
     // Boot settings
     //
 
+    bool const mIsMultisamplingSupported;
     bool mDoInvokeGlFinish;
 
     //
