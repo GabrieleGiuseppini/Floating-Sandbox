@@ -277,7 +277,9 @@
 		+ Slider height: fixed
 		+ Resend beta
 
-		- Cleanup tool slider code based on outcome
+		- Cleanup tool slider (server decided fixed-height, i.e. new one)
+
+		- More shapes
 
 		- Storm supercell above it
 		- Also appearing with storms
@@ -469,18 +471,22 @@
 				+ Check outward pressure
 				+ Check sub & triton still implode
 
-			= Cut early if bulkiness check (frontier size) would be zero
+			+ Cut early if bulkiness check (frontier size) would be zero
 
 			+ Changelist X 2
 
-			- merge back into tornadoes
+			+ See what's going on with Base 3/complexity
+				! Loops for all iterations, as lambda's are basically 1 and reduction is super slow
+				+ Stop loop if lambda which provides most reduction is very close to 1
+
+			- merge back into tornadoes, via github for checking
+			= Do DKUZ bug below
+			
 			- Discord
 
 			- Test on old Dell
 				- See if might want to turn it off on slow machines
 			+ Check sudden breakage
-
-	- Air bubbles trapped in silt
 
 	+ GameController::PickObjectToMove: must also do radius like Pick(connected component)
 		+ See if needs to be ported to Android
@@ -490,9 +496,101 @@
 			! 48 8B 75 A8 48 8B 7D 90 4C 8B 75 C0 44 8B 64 24 58
 		X It's OpenAL
 
-	- Look into DKUZ's bug
-		- Settings screenshot is on Desktop now
-		- Port to Android
+	= Look into DKUZ's bug
+		! It's shader with high-derivative depth slopes
+		! Even with multisample and without derivatives, still silt-bedrock transparency shows
+			! Now it's any quantity that lowers with y: multisample interpolation generates value outside of range
+			+ Try centroid
+				= It works!
+					- Try real shader
+				+ Perf:
+					+ Pre: 5.80 (whole world) 3.60 (ship)
+					+ Post: 5.30 (whole world) 3.60 (ship)
+				= Test on nVidia
+					! Problem! Now there are seams between triangles, not due to centroid
+				- Comment in shader
+			X Try without strip
+				= Without multisampling
+					X nVidia
+						X Seam issue
+							! STILL PRESENT!
+								= Only when really close though
+									- Can we live with it? It's super-ugly...								
+								+ See if multisample+centroid was also when really close
+							X Test with squares (so just one long diagonal)
+								X Still happens
+							X Try exact same x @ OceanFloor
+							X Try normalizing coords							
+								X Isn't it the same once we run the vertex shader and transform to NDC?
+						+ Interp issue
+							+ With only alpha-silt: OK
+							X With alpha-silt + anti-alias: WRONG
+					+ Intel UHD
+						+ Seam issue: OK
+						+ Interp issue
+							+ With only alpha-silt: OK
+							X With alpha-silt + anti-alias: WRONG
+			! Recap:
+				! nVidia shows ghost lines (though only when really close) from day 0
+					! Didn't help: GL_DEPTH_CLAMP, glDisable(GL_CULL_FACE), glDisable(GL_POLYGON_SMOOTH)
+					! Didn't help: just squares
+					! With not-too-tall triangles (i.e. with not-tall floor, i.e. a bit above world bottom), lines are red
+				! Multi-sample fixes anti-aliasing but not ghost lines
+				! Multi-sample+centroid fixes anti-aliasing and ghost lines
+					+ centroid required or else MS introduces out-of-range samples, which generate ghost lines
+				! Multi-sample doesn't work on old Dell
+			= Plan A: Multisample+centroid (fixes anti-aliasing and ghost lines), but we accept nVidia's "close-by" seams
+				= Multisample+Centroid:
+					+ Detect failure @ OpenGL context creation on old Dell and revert to single-sampled
+						+ Use Create() -> bool
+						+ GameGLCanvas:
+							+ Rename
+							+ static Create() -> GameGLCanvas *
+					+ RenderDeviceProperties has bool for whether MS is supported
+					= RenderContext:
+						+ cctor stores flag
+						+ Initialization: if supported, turn off
+							+ Do LINE_SMOOTH iff not MS
+						+ Test on old Dell
+						+ ShaderManager::CreateInstance() takes flag
+							+ Passes to SplitSource (->"PreProcessSource") which uses it to inject "#define " for centroid
+								+ Pre-build injected header, with #define IS_MULTISAMPLING_SUPPORTED
+								+ Unit tests								
+						+ Test: ugly lines and edges, NVidia close-by lines 
+						- DrawOceanFloor: if supported: enable; disable
+						- Draw[TODO: Ropes or Springs?]: if supported: enable; disable
+							- TODOHERE: if glDisabled(MS), lines (also along borders) look ugly; verify they look good afterwards
+					- Shader: 
+						- #define centroid based on IS_MULTISAMPLING_SUPPORTED
+							- See glsl spec
+						- Add centroid
+						- Nuke anti-aliasing, and revert everything else in fragment shader, and keep vec4 vertex attrib split (for centroid)
+					- Test anti-aliasing and ghost lines on Intel UHD
+				- Revert other changes, one at a time
+					- WorldRenderContext::UploadLand
+					- ...
+
+				- See if edge springs are still required
+
+				- Tests: anti-aliasing (ocean floor peaks, ropes, ship edges, NPCs), ocean floor shader ghost lines, nVidia close-by lines
+					- Also test tools' notifications
+					- Also test ShipBuilder
+
+				- Test on new Dell, Intel UHD
+				- Test on new Dell, nVidia
+				- Test on old Dell
+					- Also perf, once we go back to triangle strip
+				- Test on Ubuntu
+				
+		- Add to Android plan:
+			- Check ghost lines
+				- If so: try MS route
+			- Check anti-aliasing
+				- See if even needed in shader
+					- Depends on whether MS is enabled or not?
+
+	- Look into guy's ocean floor on server
+	- Air bubbles trapped in silt
 
 	- See if can improve FindFreeEphemeralParticle
 		= Thing 1: remove need for currentSimulationTime

@@ -64,7 +64,7 @@ SplashScreenDialog::SplashScreenDialog(GameAssetManager const & gameAssetManager
     //
 
     {
-        mGLCanvas = new GLCanvas(this, wxID_ANY);
+        mGLCanvas = GameGLCanvas::Create(this, wxID_ANY);
 
         mainVSizer->Add(mGLCanvas);
     }

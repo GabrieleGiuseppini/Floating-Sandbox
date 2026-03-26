@@ -87,7 +87,7 @@ bbb
         GameException);
 }
 
-TEST_F(ShaderManagerTests, SplitsShaders)
+TEST_F(ShaderManagerTests, PreProcessSource_SplitsShaders)
 {
     std::string source = R"(###VERTEX-120
 vfoo
@@ -95,13 +95,41 @@ vfoo
  fbar
 )";
 
-    auto [vertexSource, fragmentSource] = TestShaderManager::SplitSource(source);
+    auto [vertexSource, fragmentSource] = TestShaderManager::PreProcessSource(source, false);
 
     EXPECT_EQ("#version 120\nvfoo\n", vertexSource);
     EXPECT_EQ("#version 999\n fbar\n", fragmentSource);
 }
 
-TEST_F(ShaderManagerTests, SplitsShaders_DuplicatesCommonSectionToVertexAndFragment)
+TEST_F(ShaderManagerTests, PreProcessSource_MultiSamplingEnabled_On)
+{
+    std::string source = R"(###VERTEX-120
+vfoo
+    ###FRAGMENT-999
+ fbar
+)";
+
+    auto [vertexSource, fragmentSource] = TestShaderManager::PreProcessSource(source, true);
+
+    EXPECT_EQ("#version 120\n#define IS_MULTISAMPLING_ENABLED\nvfoo\n", vertexSource);
+    EXPECT_EQ("#version 999\n#define IS_MULTISAMPLING_ENABLED\n fbar\n", fragmentSource);
+}
+
+TEST_F(ShaderManagerTests, PreProcessSource_MultiSamplingEnabled_Off)
+{
+    std::string source = R"(###VERTEX-120
+vfoo
+    ###FRAGMENT-999
+ fbar
+)";
+
+    auto [vertexSource, fragmentSource] = TestShaderManager::PreProcessSource(source, false);
+
+    EXPECT_EQ("#version 120\nvfoo\n", vertexSource);
+    EXPECT_EQ("#version 999\n fbar\n", fragmentSource);
+}
+
+TEST_F(ShaderManagerTests, PreProcessSource_DuplicatesCommonSectionToVertexAndFragment)
 {
     std::string source = R"(  #define foo bar this is common
 
@@ -112,13 +140,13 @@ vfoo
  fbar
 )";
 
-    auto [vertexSource, fragmentSource] = TestShaderManager::SplitSource(source);
+    auto [vertexSource, fragmentSource] = TestShaderManager::PreProcessSource(source, false);
 
     EXPECT_EQ("#version 120\n  #define foo bar this is common\n\nanother define\nvfoo\n", vertexSource);
     EXPECT_EQ("#version 120\n  #define foo bar this is common\n\nanother define\n fbar\n", fragmentSource);
 }
 
-TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMalformedVertexSection)
+TEST_F(ShaderManagerTests, PreProcessSource_ErrorsOnMalformedVertexSection)
 {
     std::string source = R"(###VERTEX-1a0
 vfoo
@@ -127,11 +155,11 @@ vfoo
 )";
 
     EXPECT_THROW(
-        TestShaderManager::SplitSource(source),
+        TestShaderManager::PreProcessSource(source, false),
         GameException);
 }
 
-TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingVertexSection)
+TEST_F(ShaderManagerTests, PreProcessSource_ErrorsOnMissingVertexSection)
 {
     std::string source = R"(vfoo
 ###FRAGMENT
@@ -139,20 +167,20 @@ fbar
     )";
 
     EXPECT_THROW(
-        TestShaderManager::SplitSource(source),
+        TestShaderManager::PreProcessSource(source, false),
         GameException);
 }
 
-TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingVertexSection_EmptyFile)
+TEST_F(ShaderManagerTests, PreProcessSource_ErrorsOnMissingVertexSection_EmptyFile)
 {
     std::string source = "";
 
     EXPECT_THROW(
-        TestShaderManager::SplitSource(source),
+        TestShaderManager::PreProcessSource(source, false),
         GameException);
 }
 
-TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingFragmentSection)
+TEST_F(ShaderManagerTests, PreProcessSource_ErrorsOnMissingFragmentSection)
 {
     std::string source = R"(###VERTEX
 vfoo
@@ -160,6 +188,6 @@ fbar
     )";
 
     EXPECT_THROW(
-        TestShaderManager::SplitSource(source),
+        TestShaderManager::PreProcessSource(source, false),
         GameException);
 }

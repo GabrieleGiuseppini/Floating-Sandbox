@@ -170,8 +170,10 @@ MainFrame::MainFrame(
     //
     // Build OpenGL canvas - this is where we render the game to
     //
+    // Throws if cannot find a suitable pixel format
+    //
 
-    mMainGLCanvas = new GLCanvas(
+    mMainGLCanvas = GameGLCanvas::Create(
         mMainPanel,
         ID_MAIN_CANVAS);
 
@@ -1056,6 +1058,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                     mMainGLCanvas->GetSize().GetWidth(),
                     mMainGLCanvas->GetSize().GetHeight()),
                 mMainGLCanvas->GetContentScaleFactor(),
+                mMainGLCanvas->GetIsMultisamplingSupported(),
                 mBootSettings.DoForceNoGlFinish,
                 mBootSettings.DoForceNoMultithreadedRendering,
                 std::bind(&MainFrame::MakeOpenGLContextCurrent, this),
