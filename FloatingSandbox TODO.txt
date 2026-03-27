@@ -547,7 +547,7 @@
 							+ Rename
 							+ static Create() -> GameGLCanvas *
 					+ RenderDeviceProperties has bool for whether MS is supported
-					= RenderContext:
+					+ RenderContext:
 						+ cctor stores flag
 						+ Initialization: if supported, turn off
 							+ Do LINE_SMOOTH iff not MS
@@ -558,8 +558,7 @@
 								+ Unit tests								
 						+ Test: ugly lines and edges, NVidia close-by lines 
 						+ DrawOceanFloor: if supported: enable; disable
-						- Draw[TODO: Ropes or Springs?]: if supported: enable; disable
-							- TODOHERE: if glDisabled(MS), lines (also along borders) look ugly; verify they look good afterwards
+						+ Draw[Ropes, Springs]: if supported: enable; disable
 					= Shader: 
 						+ #define _centroid based on IS_MULTISAMPLING_SUPPORTED
 						+ Add _centroid
@@ -568,13 +567,13 @@
 							+ Keep anti-aliasing only for not IS_MS_SUPPORTED
 							+ Revert everything else in fragment shader
 						- Final cleanup
-					- Test anti-aliasing and ghost lines on Intel UHD
-						- OceanFloor: 
-							- Anti-aliasing w/peaks: OK
+					= Test anti-aliasing and ghost lines on Intel UHD
+						- OceanFloor (with and without silt): 
+							+ Anti-aliasing w/peaks: OK
 							- Ghost lines: WRONG, NEW KIND
-						- Ropes, edges
-							- Segmentation: WRONG
-							- Anti-aliasing: WRONG
+						+ Ropes, edges
+							+ Segmentation: OK
+							+ Anti-aliasing: OK
 				+ Revert other changes, one at a time
 					+ WorldRenderContext::UploadLand
 

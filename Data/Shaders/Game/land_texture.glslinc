@@ -57,12 +57,17 @@ uniform float paramOceanDepthDarkeningRate;
 
 void main()
 {
+
 #ifdef IS_MULTISAMPLING_ENABLED
+
     float alpha = 1.0;
+
 #else
+
     // Anti-aliasing
     float alpha = min(vertexDepth / (0.2 + abs(dFdx(vertexDepth))), 1.0); // No anti-aliasing, well ghost lines
     //float alpha = min(vertexDepth / (0.2 + abs(dFdy(vertexDepth))), 1.0); // Yes anti-aliasing, no ghost lines (obviously)
+
 #endif
 
     // Smooth transition between two layers
