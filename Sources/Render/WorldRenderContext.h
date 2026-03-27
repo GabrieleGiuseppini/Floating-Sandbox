@@ -39,7 +39,8 @@ public:
     WorldRenderContext(
         IAssetManager const & assetManager,
         ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
-        GlobalRenderContext & globalRenderContext);
+        GlobalRenderContext & globalRenderContext,
+        bool isMultisamplingSupported);
 
     ~WorldRenderContext() = default;
 
@@ -1106,6 +1107,8 @@ private:
     IAssetManager const & mAssetManager;
     ShaderManager<GameShaderSets::ShaderSet> & mShaderManager;
     GlobalRenderContext & mGlobalRenderContext;
+
+    bool const mIsMultisamplingSupported;
 
 private:
 

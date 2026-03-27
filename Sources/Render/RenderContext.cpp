@@ -181,7 +181,8 @@ RenderContext::RenderContext(
             mInnerContext->WorldRenderContext = std::make_unique<WorldRenderContext>(
                 assetManager,
                 *mInnerContext->ShaderManager,
-                *mInnerContext->GlobalRenderContext);
+                *mInnerContext->GlobalRenderContext,
+                mIsMultisamplingSupported);
         });
 
     progressCallback(0.45f, ProgressMessageType::LoadingCloudTextureAtlas);
@@ -375,6 +376,7 @@ void RenderContext::AddShip(
                     *mInnerContext->ShaderManager,
                     *mInnerContext->GlobalRenderContext,
                     mRenderParameters,
+                    mIsMultisamplingSupported,
                     mShipFlameSizeAdjustment,
                     mVectorFieldLengthMultiplier));
         });

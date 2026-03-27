@@ -23,10 +23,12 @@ ShipRenderContext::ShipRenderContext(
     ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
     GlobalRenderContext & globalRenderContext,
     RenderParameters const & renderParameters,
+    bool isMultisamplingSupported,
     float shipFlameSizeAdjustment,
     float vectorFieldLengthMultiplier)
     : mShaderManager(shaderManager)
     , mGlobalRenderContext(globalRenderContext)
+    , mIsMultisamplingSupported(isMultisamplingSupported)
     //
     , mShipId(shipId)
     , mPointCount(pointCount)

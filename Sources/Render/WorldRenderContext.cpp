@@ -17,10 +17,12 @@ int constexpr ThumbnailSize = 32;
 WorldRenderContext::WorldRenderContext(
     IAssetManager const & assetManager,
     ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
-    GlobalRenderContext & globalRenderContext)
+    GlobalRenderContext & globalRenderContext,
+    bool isMultisamplingSupported)
     : mAssetManager(assetManager)
     , mShaderManager(shaderManager)
     , mGlobalRenderContext(globalRenderContext)
+    , mIsMultisamplingSupported(isMultisamplingSupported)
     // Buffers and parameters
     , mSkyVBO()
     , mStarVertexBuffer()
@@ -1692,6 +1694,13 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
         }
     }
 
+    // If we can, enable multi-sampling, especially for steep peaks which
+    // would be aliased
+    if (mIsMultisamplingSupported)
+    {
+        glEnable(GL_MULTISAMPLE);
+    }
+
     glBindVertexArray(*mLandVAO);
 
     // Silt
@@ -1792,6 +1801,12 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
         static_cast<GLsizei>(mLandVertexBuffer.size() / 2));
 
     glBindVertexArray(0);
+
+    if (mIsMultisamplingSupported)
+    {
+        // Undo enabling
+        glDisable(GL_MULTISAMPLE);
+    }
 }
 
 void WorldRenderContext::RenderPrepareFishes(RenderParameters const & /*renderParameters*/)

@@ -557,30 +557,50 @@
 								+ Pre-build injected header, with #define IS_MULTISAMPLING_SUPPORTED
 								+ Unit tests								
 						+ Test: ugly lines and edges, NVidia close-by lines 
-						- DrawOceanFloor: if supported: enable; disable
+						+ DrawOceanFloor: if supported: enable; disable
 						- Draw[TODO: Ropes or Springs?]: if supported: enable; disable
 							- TODOHERE: if glDisabled(MS), lines (also along borders) look ugly; verify they look good afterwards
-					- Shader: 
-						- #define centroid based on IS_MULTISAMPLING_SUPPORTED
-							- See glsl spec
-						- Add centroid
-						- Nuke anti-aliasing, and revert everything else in fragment shader, and keep vec4 vertex attrib split (for centroid)
+					= Shader: 
+						+ #define _centroid based on IS_MULTISAMPLING_SUPPORTED
+						+ Add _centroid
+						+ Keep vec4 vertex attrib split (for centroid)
+						+ Fragment:
+							+ Keep anti-aliasing only for not IS_MS_SUPPORTED
+							+ Revert everything else in fragment shader
+						- Final cleanup
 					- Test anti-aliasing and ghost lines on Intel UHD
-				- Revert other changes, one at a time
-					- WorldRenderContext::UploadLand
-					- ...
+						- OceanFloor: 
+							- Anti-aliasing w/peaks: OK
+							- Ghost lines: WRONG, NEW KIND
+						- Ropes, edges
+							- Segmentation: WRONG
+							- Anti-aliasing: WRONG
+				+ Revert other changes, one at a time
+					+ WorldRenderContext::UploadLand
 
-				- See if edge springs are still required
-
-				- Tests: anti-aliasing (ocean floor peaks, ropes, ship edges, NPCs), ocean floor shader ghost lines, nVidia close-by lines
-					- Also test tools' notifications
-					- Also test ShipBuilder
-
+				- Tests: anti-aliasing (ocean floor peaks, ropes, ship edges, NPCs, tools notif's), ocean floor shader ghost lines, nVidia close-by lines, ShipBuilder				
 				- Test on new Dell, Intel UHD
+					- AA:
+						- Ocean floor peaks
+						- Ropes, ship edges
+						- NPCs
+						- Tools Notif's
+					- Ocean floor ghost lines
+						- With Silt
+						- Without Silt
+					- nVidia close-by lines (expected to still exist)
+					- ShipBuilder
 				- Test on new Dell, nVidia
 				- Test on old Dell
 					- Also perf, once we go back to triangle strip
 				- Test on Ubuntu
+
+				- See if edge springs are still required
+					- New Dell UHD
+					- New Dell nVidia
+					- Old Dell
+
+				- merge back into tornadoes..._wild_mast_experiments, with PR
 				
 		- Add to Android plan:
 			- Check ghost lines
