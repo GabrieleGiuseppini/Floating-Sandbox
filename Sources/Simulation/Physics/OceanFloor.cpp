@@ -111,8 +111,6 @@ void OceanFloor::Upload(
 
         float sampleIndexX = -SimulationParameters::HalfMaxWorldWidth;
 
-        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-        // quad side must be at the end of its width
         for (size_t s = 0; s < SamplesCount; ++s)
         {
             float const nextSampleIndexX = sampleIndexX + Dx;
