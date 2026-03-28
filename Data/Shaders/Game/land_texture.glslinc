@@ -112,19 +112,4 @@ void main()
             paramEffectiveAmbientLightIntensity, 
             lampToolIntensity),
         textureColor.w * alpha);
-
-    // Interp issue
-/*
-    gl_FragColor = vec4(
-        step(10.0f, vertexInterfaceBlendDepth),
-        1.0,
-        0.0, 0.0001 * step(10.0, gl_FragColor.y), 1.0);
-*/
-
-    // Seam issue
-/*
-    gl_FragColor = vec4(
-        1.0,
-        0.0, 0.0001 * step(10.0, gl_FragColor.y), 1.0);
-*/
 } 

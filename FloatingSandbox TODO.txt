@@ -543,7 +543,7 @@
 					+ centroid required or else MS introduces out-of-range samples, which generate ghost lines
 				! Multi-sample doesn't work on old Dell
 			= Plan A: Multisample+centroid (fixes anti-aliasing and ghost lines), but we accept nVidia's "close-by" seams
-				= Multisample+Centroid:
+				+ Multisample+Centroid:
 					+ Detect failure @ OpenGL context creation on old Dell and revert to single-sampled
 						+ Use Create() -> bool
 						+ GameGLCanvas:
@@ -562,19 +562,19 @@
 						+ Test: ugly lines and edges, NVidia close-by lines 
 						+ DrawOceanFloor: if supported: enable; disable
 						+ Draw[Ropes, Springs]: if supported: enable; disable
-					= Shader: 
+					+ Shader: 
 						+ #define _centroid based on IS_MULTISAMPLING_SUPPORTED
 						+ Add _centroid
 						+ Keep vec4 vertex attrib split (for centroid)
 						+ Fragment:
 							+ Keep anti-aliasing only for not IS_MS_SUPPORTED
 							+ Revert everything else in fragment shader
-						- Final cleanup
-					= Test anti-aliasing and ghost lines on Intel UHD
-						= OceanFloor (with and without silt): 
+						+ Final cleanup
+					+ Test anti-aliasing and ghost lines on Intel UHD
+						+ OceanFloor (with and without silt): 
 							+ Anti-aliasing w/peaks: OK
-							= Ghost lines: WRONG, NEW KIND - also on nVidia, and on nVidia seams are worse
-								= Try with new segmentation
+							+ Ghost lines: WRONG, NEW KIND - also on nVidia, and on nVidia seams are worse
+								+ Try with new segmentation
 									+ Fix lip: depth at yDE is not necessarily dummy
 										+ Now we've introduced NEW KIND again
 											X Need another slice? 
@@ -582,10 +582,10 @@
 											X Try centroid for depth first
 
 									+ 5 tri's -> 4 tri's
-									- See RND perf on UHD
-									- nVidia close-by lines: try with centroid on vertex coords as well (if it is a texture sampling issue?)
-									- Cleanup all
-										- incl. OceanFloor comment on slices+1
+									+ See RND perf on UHD
+									X nVidia close-by lines: try with centroid on vertex coords as well (if it is a texture sampling issue?)
+									+ Cleanup all
+										+ incl. OceanFloor comment on slices+1
 						+ Ropes, edges
 							+ Segmentation: OK
 							+ Anti-aliasing: OK

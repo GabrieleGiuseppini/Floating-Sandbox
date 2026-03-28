@@ -991,12 +991,7 @@ void WorldRenderContext::UploadLandStart(size_t slices)
     mLandSiltVertexCount = (slices + 1) * 2;
 
     // Bedrock: 2 quads per slice
-    // TODOTEST
     size_t const bedrockVertexCount = slices * (2 * 6);
-
-    // TODOOLD
-    //// Bedrock: triangles; max is 1 triangle + 2 quads per slice
-    //size_t const bedrockVertexCount = slices * (3 + 2 * 6);
 
     mLandVertexBuffer.reset_full(mLandSiltVertexCount + bedrockVertexCount, mLandSiltVertexCount);
 
