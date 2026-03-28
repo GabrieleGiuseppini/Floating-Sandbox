@@ -57,22 +57,9 @@ uniform float paramOceanDepthDarkeningRate;
 
 void main()
 {
-
-#ifdef IS_MULTISAMPLING_ENABLED
-
-    float alpha = 1.0;
-
-#else
-
-    // Anti-aliasing
-    float alpha = min(vertexDepth / (0.2 + abs(dFdx(vertexDepth))), 1.0); // No anti-aliasing, well ghost lines
-    //float alpha = min(vertexDepth / (0.2 + abs(dFdy(vertexDepth))), 1.0); // Yes anti-aliasing, no ghost lines (obviously)
-
-#endif
-
     // Smooth transition between two layers
     #define MaxTransitionThickness 10.0 // Keep in-sync with code!
-    alpha *= min(vertexInterfaceBlendDepth / MaxTransitionThickness, 1.0);
+    float alpha = min(vertexInterfaceBlendDepth / MaxTransitionThickness, 1.0);
 
     // Sample texture
     #define LipThickness 2.0 // Keep in-sync with code!

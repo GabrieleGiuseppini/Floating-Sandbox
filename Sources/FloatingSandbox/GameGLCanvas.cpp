@@ -15,6 +15,7 @@ GameGLCanvas * GameGLCanvas::Create(
 {
     wxGLAttributes ssAttributes;
     ssAttributes
+        .PlatformDefaults() // Necessary for enforcing "arb" (in wxWidgets parlance)
         .RGBA()
         .DoubleBuffer()
         .Depth(16);
