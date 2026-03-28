@@ -282,7 +282,10 @@
 		- More shapes
 
 		- Storm supercell above it
-		- Also appearing with storms
+			- TornadoesWhatever uploads straight to World/RenderContext
+				- ...which does parallax
+
+		- Also as phenomenon
 
 	- See ocean floor custom settings bug on community server
 
@@ -568,9 +571,18 @@
 							+ Revert everything else in fragment shader
 						- Final cleanup
 					= Test anti-aliasing and ghost lines on Intel UHD
-						- OceanFloor (with and without silt): 
+						= OceanFloor (with and without silt): 
 							+ Anti-aliasing w/peaks: OK
-							- Ghost lines: WRONG, NEW KIND
+							= Ghost lines: WRONG, NEW KIND - also on nVidia, and on nVidia seams are worse
+								= Try with new segmentation
+									= TODOHERE: fix lip: depth at yDE is not necessarily dummy
+										- Now we've introduced NEW KIND again
+											- Need another slice? 
+											- Or should we change DE to be at "bottom" of depth (i.e. after all lips and AA are over)?
+											X Try centroid for depth first
+
+									- 5 tri's -> 4 tri's
+									- Take shortcuts
 						+ Ropes, edges
 							+ Segmentation: OK
 							+ Anti-aliasing: OK

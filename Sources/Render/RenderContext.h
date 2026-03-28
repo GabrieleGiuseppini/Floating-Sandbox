@@ -1008,16 +1008,22 @@ public:
 
     inline void UploadLand(
         size_t iSlice,
-        float x,
-        float ySilt,
-        float yBedrock,
+        float x1,
+        float ySilt1,
+        float yBedrock1,
+        float x2,
+        float ySilt2,
+        float yBedrock2,
         float yWorldBottom)
     {
         mInnerContext->WorldRenderContext->UploadLand(
             iSlice,
-            x,
-            ySilt,
-            yBedrock,
+            x1,
+            ySilt1,
+            yBedrock1,
+            x2,
+            ySilt2,
+            yBedrock2,
             yWorldBottom);
     }
 

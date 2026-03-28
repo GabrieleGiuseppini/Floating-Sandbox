@@ -38,6 +38,7 @@ WorldRenderContext::WorldRenderContext(
     , mCloudVBO()
     , mCloudVBOAllocatedVertexSize(0u)
     , mLandVertexBuffer()
+    , mLandSiltVertexCount(0u)
     , mLandVBO()
     , mLandVBOAllocatedVertexSize(0u)
     , mIsLandVertexBufferDirty(false) // Will eventually be uploaded
@@ -986,7 +987,14 @@ void WorldRenderContext::UploadLandStart(size_t slices)
     // Land segments are sticky: we upload them as needed
     //
 
-    mLandVertexBuffer.reset_full((slices + 1) * 2 * 2); // Two vertices per slice, then by Silt, followed by bedrock
+    // Silt: a single triangle strip; two vertices per slice
+    mLandSiltVertexCount = (slices + 1) * 2;
+
+    // Bedrock: triangles; max is 1 triangle + 2 quads per slice
+    size_t const bedrockVertexCount = slices * (3 + 2 * 6);
+
+    mLandVertexBuffer.reset_full(mLandSiltVertexCount + bedrockVertexCount, mLandSiltVertexCount);
+
     mIsLandVertexBufferDirty = true;
 }
 
@@ -1755,12 +1763,14 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
     if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
         glLineWidth(0.1f);
 
-    assert((mLandVertexBuffer.size() % 2) == 0);
-
-    glDrawArrays(
-        GL_TRIANGLE_STRIP,
-        static_cast<GLint>(0),
-        static_cast<GLsizei>(mLandVertexBuffer.size() / 2));
+    // Draw the triangle strip
+    if (mLandSiltVertexCount > 0)
+    {
+        glDrawArrays(
+            GL_TRIANGLE_STRIP,
+            static_cast<GLint>(0),
+            static_cast<GLsizei>(mLandSiltVertexCount));
+    }
 
     // Bedrock
 
@@ -1793,12 +1803,14 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
         }
     }
 
-    assert((mLandVertexBuffer.size() % 2) == 0);
-
-    glDrawArrays(
-        GL_TRIANGLE_STRIP,
-        static_cast<GLint>(mLandVertexBuffer.size() / 2),
-        static_cast<GLsizei>(mLandVertexBuffer.size() / 2));
+    if (mLandVertexBuffer.size() > mLandSiltVertexCount)
+    {
+        glDrawArrays(
+            GL_TRIANGLES,
+            static_cast<GLint>(mLandSiltVertexCount),
+            static_cast<GLsizei>(mLandVertexBuffer.size() - mLandSiltVertexCount));
+        CheckOpenGLError();
+    }
 
     glBindVertexArray(0);
 
@@ -2154,7 +2166,10 @@ void WorldRenderContext::RenderDrawAMBombPreImplosions(RenderParameters const & 
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AMBombPreImplosion>();
 
         assert((mAMBombPreImplosionVertexBuffer.size() % 6) == 0);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mAMBombPreImplosionVertexBuffer.size()));
+        glDrawArrays(
+            GL_TRIANGLES, 
+            0, 
+            static_cast<GLsizei>(mAMBombPreImplosionVertexBuffer.size()));
 
         glBindVertexArray(0);
     }

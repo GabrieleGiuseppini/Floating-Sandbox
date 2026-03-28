@@ -310,34 +310,226 @@ public:
 
     inline void UploadLand(
         size_t iSlice,
-        float x,
-        float ySilt,
-        float yBedrock,
+        float x1,
+        float ySilt1,
+        float yBedrock1,
+        float x2,
+        float ySilt2,
+        float yBedrock2,
         float yWorldBottom)
     {
         //
-        // Store quads
+        //       B    --- yB = yBedrock2 + transition thickness 2 (i.e. max)
+        //      /|
+        //     / |
+        //  A /___ C  --- yAC = yBedrock1 + transition thickness 1 (i.e. min)
+        //    |  |
+        //  D +--+ E  --- yDE = min(yBedrock1, yBedrock2)
+        //    |  |
+        //    |  |
+        //    |  |
+        //  F ---- G  --- yFG = yWorldBottom
         //
 
-        assert((mLandVertexBuffer.size() % 2) == 0);
+        // The upward overlap of bedrock over silt to blend with it
+        float constexpr MaxTransitionThickness = 10.0f; // Magic - keep in-sync with shader!
 
-        LandVertex * siltVertex = &(mLandVertexBuffer[iSlice * 2]);
-        LandVertex * bedrockVertex = &(mLandVertexBuffer[mLandVertexBuffer.size() / 2 + iSlice * 2]);
+        //
+        // Silt
+        //
+
+        LandVertex * siltVertex;
+
+        if (iSlice == 0) // We use 1 only for the first
+        {
+            siltVertex = &(mLandVertexBuffer[iSlice * 2]);
+            siltVertex[0] = LandVertex{ {x1, ySilt1}, 0.0f, MaxTransitionThickness };
+            siltVertex[1] = LandVertex{ {x1, yBedrock1}, ySilt1 - yBedrock1, MaxTransitionThickness };
+        }
+
+        siltVertex = &(mLandVertexBuffer[(iSlice + 1) * 2]);
+        siltVertex[0] = LandVertex{ {x2, ySilt2}, 0.0f, MaxTransitionThickness };
+        siltVertex[1] = LandVertex{ {x2, yBedrock2}, ySilt2 - yBedrock2, MaxTransitionThickness };
+
+        //
+        // Bedrock
+        //
 
         // "Pretend" yBedrock to cover silt a bit, providing a band over which we blend
-        assert(ySilt >= yBedrock);
-        float constexpr MaxTransitionThickness = 10.0f; // Magic - keep in-sync with shader!
-        float const effectiveTransitionThickness = std::min(ySilt - yBedrock, MaxTransitionThickness);
+        assert(ySilt1 >= yBedrock1);
+        float const effectiveTransitionThickness1 = std::min(ySilt1 - yBedrock1, MaxTransitionThickness);
+        assert(ySilt2 >= yBedrock2);
+        float const effectiveTransitionThickness2 = std::min(ySilt2 - yBedrock2, MaxTransitionThickness);
 
-        // Silt
-        siltVertex[0] = LandVertex{ {x, ySilt}, 0.0f, MaxTransitionThickness };
-        siltVertex[1] = LandVertex{ {x, yBedrock}, ySilt - yBedrock, MaxTransitionThickness };
+        // Add vertices
+        //  - Depth (for AA and texture edge): distance from silt; 0 at silt (so only if no silt)
+        //  - Interface blend depth: 0 at theoretical yBedrock + MaxTransitionThickness, +X'' at world bottom
 
-        // Bedrock
-        //  - Interface blend depth: 0 at theoretical yBedrock + MaxTransitionThickness, +X at bottom
-        bedrockVertex[0] = LandVertex{ {x, yBedrock + effectiveTransitionThickness}, ySilt - yBedrock, MaxTransitionThickness - effectiveTransitionThickness };
-        // Final y (bottom): (MaxTransitionThickness - effectiveTransitionThickness) + (yBedrock + effectiveTransitionThickness - yWorldBottom)
-        bedrockVertex[1] = LandVertex{ {x, yWorldBottom}, ySilt - yWorldBottom, MaxTransitionThickness + yBedrock - yWorldBottom };
+        // A-B-C
+
+        float yAC;
+        float depthA;
+        float interfaceBlendDepthA;
+        float depthC;
+        float interfaceBlendDepthC;
+
+        if (yBedrock1 + effectiveTransitionThickness1 >= yBedrock2 + effectiveTransitionThickness2)
+        {
+            // B     --- yBedrock1 + effectiveTransitionThickness1
+            // |\
+            // | \
+            // A--C  --- yBedrock2 + effectiveTransitionThickness2
+
+            float const yB = yBedrock1 + effectiveTransitionThickness1;
+            yAC = yBedrock2 + effectiveTransitionThickness2;
+
+            depthA = ySilt1 - yBedrock1 + (yB - yAC);
+            interfaceBlendDepthA = MaxTransitionThickness - effectiveTransitionThickness1 + (yB - yAC);
+            mLandVertexBuffer.emplace_back(
+                vec2f(x1, yAC),
+                depthA,
+                interfaceBlendDepthA);
+
+            mLandVertexBuffer.emplace_back(
+                vec2f(x1, yB),
+                ySilt1 - yBedrock1,
+                MaxTransitionThickness - effectiveTransitionThickness1);
+
+            depthC = ySilt2 - yBedrock2;
+            interfaceBlendDepthC = MaxTransitionThickness - effectiveTransitionThickness2;
+            mLandVertexBuffer.emplace_back(
+                vec2f(x2, yAC),
+                depthC,
+                interfaceBlendDepthC);
+        }
+        else
+        {
+            //    B  --- yBedrock2 + effectiveTransitionThickness2
+            //   /|
+            //  / |
+            // A--C  --- yBedrock1 + effectiveTransitionThickness1
+
+            float const yB = yBedrock2 + effectiveTransitionThickness2;
+            yAC = yBedrock1 + effectiveTransitionThickness1;
+
+            depthA = ySilt1 - yBedrock1;
+            interfaceBlendDepthA = MaxTransitionThickness - effectiveTransitionThickness1;
+            mLandVertexBuffer.emplace_back(
+                vec2f(x1, yAC),
+                depthA,
+                interfaceBlendDepthA);
+
+            mLandVertexBuffer.emplace_back(
+                vec2f(x2, yB),
+                ySilt2 - yBedrock2,
+                MaxTransitionThickness - effectiveTransitionThickness2);
+
+            depthC = ySilt2 - yBedrock2 + (yB - yAC);
+            interfaceBlendDepthC = MaxTransitionThickness - effectiveTransitionThickness2 + (yB - yAC);
+            mLandVertexBuffer.emplace_back(
+                vec2f(x2, yAC),
+                depthC,
+                interfaceBlendDepthC);
+        }
+
+        // A-C
+        // | |
+        // D-E
+
+        float const yDE = std::min(yBedrock1, yBedrock2);
+
+        // A-D-C
+
+        mLandVertexBuffer.emplace_back(
+            vec2f(x1, yAC),
+            depthA,
+            interfaceBlendDepthA);
+        float const depthD = depthA + (yAC - yDE);
+        mLandVertexBuffer.emplace_back(
+            vec2f(x1, yDE),
+            depthD,
+            interfaceBlendDepthA + (yAC - yDE));
+        mLandVertexBuffer.emplace_back(
+            vec2f(x2, yAC),
+            depthC,
+            interfaceBlendDepthC);
+
+        // D-C-E
+
+        mLandVertexBuffer.emplace_back(
+            vec2f(x1, yDE),
+            depthD,
+            interfaceBlendDepthA + (yAC - yDE));
+        mLandVertexBuffer.emplace_back(
+            vec2f(x2, yAC),
+            depthC,
+            interfaceBlendDepthC);
+        float const depthE = depthC + (yAC - yDE);
+        mLandVertexBuffer.emplace_back(
+            vec2f(x2, yDE),
+            depthE,
+            interfaceBlendDepthC + (yAC - yDE));
+
+        // D-E
+        // | |
+        // F-G
+
+        float constexpr DummyInterfaceBlendDepth = 10.0f;
+
+        // D-F-E
+
+        mLandVertexBuffer.emplace_back(
+            vec2f(x1, yDE),
+            depthD,
+            DummyInterfaceBlendDepth);
+        mLandVertexBuffer.emplace_back(
+            vec2f(x1, yWorldBottom),
+            depthD + (yDE - yWorldBottom),
+            DummyInterfaceBlendDepth);
+        mLandVertexBuffer.emplace_back(
+            vec2f(x2, yDE),
+            depthE,
+            DummyInterfaceBlendDepth);
+
+        // F-E-G
+
+        mLandVertexBuffer.emplace_back(
+            vec2f(x1, yWorldBottom),
+            depthD + (yDE - yWorldBottom),
+            DummyInterfaceBlendDepth);
+        mLandVertexBuffer.emplace_back(
+            vec2f(x2, yDE),
+            depthE,
+            DummyInterfaceBlendDepth);
+        mLandVertexBuffer.emplace_back(
+            vec2f(x2, yWorldBottom),
+            depthE + (yDE - yWorldBottom),
+            DummyInterfaceBlendDepth);
+
+        // TODOOLD
+
+        ////
+        //// Store quads
+        ////
+
+        //assert((mLandVertexBuffer.size() % 2) == 0);
+
+        //LandVertex * siltVertex = &(mLandVertexBuffer[iSlice * 2]);
+        //LandVertex * bedrockVertex = &(mLandVertexBuffer[mLandVertexBuffer.size() / 2 + iSlice * 2]);
+
+        //// "Pretend" yBedrock to cover silt a bit, providing a band over which we blend
+        //assert(ySilt >= yBedrock);
+        //float const effectiveTransitionThickness = std::min(ySilt - yBedrock, MaxTransitionThickness);
+
+        //// Silt
+        //siltVertex[0] = LandVertex{ {x, ySilt}, 0.0f, MaxTransitionThickness };
+        //siltVertex[1] = LandVertex{ {x, yBedrock}, ySilt - yBedrock, MaxTransitionThickness };
+
+        //// Bedrock
+        ////  - Interface blend depth: 0 at theoretical yBedrock + MaxTransitionThickness, +X at bottom
+        //bedrockVertex[0] = LandVertex{ {x, yBedrock + effectiveTransitionThickness}, ySilt - yBedrock, MaxTransitionThickness - effectiveTransitionThickness };
+        //// Final y (bottom): (MaxTransitionThickness - effectiveTransitionThickness) + (yBedrock + effectiveTransitionThickness - yWorldBottom)
+        //bedrockVertex[1] = LandVertex{ {x, yWorldBottom}, ySilt - yWorldBottom, MaxTransitionThickness + yBedrock - yWorldBottom };
     }
 
     void UploadLandEnd();
@@ -1199,6 +1391,15 @@ private:
         vec2f position; // World
         float depth;
         float interfaceBlendDepth;
+
+        LandVertex(
+            vec2f _position,
+            float _depth,
+            float _interfaceBlendDepth)
+            : position(_position)
+            , depth(_depth)
+            , interfaceBlendDepth(_interfaceBlendDepth)
+        {}
     };
 
     struct OceanBasicSegment
@@ -1458,7 +1659,8 @@ private:
     GameOpenGLVBO mCloudVBO;
     size_t mCloudVBOAllocatedVertexSize;
 
-    BoundedVector<LandVertex> mLandVertexBuffer; // Two triangle strips: silt followed by bedrock; size always even
+    BoundedVector<LandVertex> mLandVertexBuffer; // Silt laid out as a single triangle strip; bedrock as triangles
+    size_t mLandSiltVertexCount;
     GameOpenGLVBO mLandVBO;
     size_t mLandVBOAllocatedVertexSize;
     bool mIsLandVertexBufferDirty;
