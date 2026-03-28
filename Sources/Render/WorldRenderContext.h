@@ -365,7 +365,6 @@ public:
         //    | \|D   --- yD = yBedrock2 - Lip
         //    | /|
         //  C |/ |    --- yC = yBedrock1 - Lip
-        //    |  |
         //  E ---- F  --- yE,F = yWorldBottom
         //
 

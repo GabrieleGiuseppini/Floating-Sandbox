@@ -86,7 +86,7 @@ BootSettingsDialog::BootSettingsDialog(
                 forceNoGlFinishBox->SetSizer(forceNoGlFinishBoxSizer);
             }
 
-            optionsSizer->Add(forceNoGlFinishBox, 0, wxALIGN_CENTER_VERTICAL | wxALL, InternalWindowMargin);
+            optionsSizer->Add(forceNoGlFinishBox, 0, wxEXPAND | wxALL, InternalWindowMargin);
         }
 
         {
@@ -131,7 +131,7 @@ BootSettingsDialog::BootSettingsDialog(
                 forceNoMultithreadedRenderingBox->SetSizer(forceNoMultithreadedRenderingBoxSizer);
             }
 
-            optionsSizer->Add(forceNoMultithreadedRenderingBox, 0, wxALIGN_CENTER_VERTICAL | wxALL, InternalWindowMargin);
+            optionsSizer->Add(forceNoMultithreadedRenderingBox, 0, wxEXPAND | wxALL, InternalWindowMargin);
         }
 
         {
@@ -176,9 +176,8 @@ BootSettingsDialog::BootSettingsDialog(
                 forceNoMultiSamplingBox->SetSizer(forceNoMultiSamplingBoxSizer);
             }
 
-            optionsSizer->Add(forceNoMultiSamplingBox, 0, wxALIGN_CENTER_VERTICAL | wxALL, InternalWindowMargin);
+            optionsSizer->Add(forceNoMultiSamplingBox, 0, wxEXPAND | wxALL, InternalWindowMargin);
         }
-
 
         vSizer->Add(optionsSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, InternalWindowMargin);
     }

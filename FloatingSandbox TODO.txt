@@ -629,7 +629,8 @@
 						+ ShipBuilder
 				= Test on old Dell
 					- Also perf
-				- Test on Ubuntu
+				= Test on Ubuntu
+					- ULTRA GHOST LINES!
 
 				- See if edge springs are still required
 					- New Dell UHD

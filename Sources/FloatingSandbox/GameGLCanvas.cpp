@@ -56,7 +56,7 @@ GameGLCanvas::GameGLCanvas(
         0L)
     , mIsMultisamplingSupported(isMultisamplingSupported)
 {
-    LogMessage("GameGLCanvas(", id, "): IsMultisamplingSupported=", mIsMultisamplingSupported, " ContentScaleFactor = ", this->GetContentScaleFactor(), " DPIScaleFactor = ", this->GetDPIScaleFactor(),
+    LogMessage("GameGLCanvas(", id, "): IsMultisamplingSupported=", mIsMultisamplingSupported, " ContentScaleFactor=", this->GetContentScaleFactor(), " DPIScaleFactor=", this->GetDPIScaleFactor(),
         " 100x100dip=", this->FromDIP(wxSize(100, 100)).GetWidth(), "x", this->FromDIP(wxSize(100, 100)).GetHeight(), "px");
 }
 
