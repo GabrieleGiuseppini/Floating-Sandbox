@@ -990,8 +990,13 @@ void WorldRenderContext::UploadLandStart(size_t slices)
     // Silt: a single triangle strip; two vertices per slice
     mLandSiltVertexCount = (slices + 1) * 2;
 
-    // Bedrock: triangles; max is 1 triangle + 2 quads per slice
-    size_t const bedrockVertexCount = slices * (3 + 2 * 6);
+    // Bedrock: 2 quads per slice
+    // TODOTEST
+    size_t const bedrockVertexCount = slices * (2 * 6);
+
+    // TODOOLD
+    //// Bedrock: triangles; max is 1 triangle + 2 quads per slice
+    //size_t const bedrockVertexCount = slices * (3 + 2 * 6);
 
     mLandVertexBuffer.reset_full(mLandSiltVertexCount + bedrockVertexCount, mLandSiltVertexCount);
 
@@ -2167,8 +2172,8 @@ void WorldRenderContext::RenderDrawAMBombPreImplosions(RenderParameters const & 
 
         assert((mAMBombPreImplosionVertexBuffer.size() % 6) == 0);
         glDrawArrays(
-            GL_TRIANGLES, 
-            0, 
+            GL_TRIANGLES,
+            0,
             static_cast<GLsizei>(mAMBombPreImplosionVertexBuffer.size()));
 
         glBindVertexArray(0);

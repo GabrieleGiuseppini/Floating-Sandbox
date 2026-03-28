@@ -318,21 +318,13 @@ public:
         float yBedrock2,
         float yWorldBottom)
     {
-        //
-        //       B    --- yB = yBedrock2 + transition thickness 2 (i.e. max)
-        //      /|
-        //     / |
-        //  A /___ C  --- yAC = yBedrock1 + transition thickness 1 (i.e. min)
-        //    |  |
-        //  D +--+ E  --- yDE = min(yBedrock1, yBedrock2)
-        //    |  |
-        //    |  |
-        //    |  |
-        //  F ---- G  --- yFG = yWorldBottom
-        //
-
         // The upward overlap of bedrock over silt to blend with it
         float constexpr MaxTransitionThickness = 10.0f; // Magic - keep in-sync with shader!
+
+        // TODOTEST
+        // The thickness on the _depth_ coordinate over which we skew texture
+        // coordinates to give bedrock a 3d-like "lip"
+        float constexpr LipThickness = 2.0f; // Magic - keep in-sync with shader!
 
         //
         // Silt
@@ -365,148 +357,226 @@ public:
         //  - Depth (for AA and texture edge): distance from silt; 0 at silt (so only if no silt)
         //  - Interface blend depth: 0 at theoretical yBedrock + MaxTransitionThickness, +X'' at world bottom
 
-        // A-B-C
+        // TODOTEST
 
-        float yAC;
-        float depthA;
-        float interfaceBlendDepthA;
-        float depthC;
-        float interfaceBlendDepthC;
+        //
+        //       B    --- yB = yBedrock2 + transition thickness 2
+        //      /|
+        //     / |
+        //  A /  |    --- yA = yBedrock1 + transition thickness 1
+        //    |\ |
+        //    | \|D   --- yD = yBedrock2 - Lip
+        //    | /|
+        //  C |/ |    --- yC = yBedrock1 - Lip
+        //    |  |
+        //  E ---- F  --- yE,F = yWorldBottom
+        //
 
-        if (yBedrock1 + effectiveTransitionThickness1 >= yBedrock2 + effectiveTransitionThickness2)
-        {
-            // B     --- yBedrock1 + effectiveTransitionThickness1
-            // |\
-            // | \
-            // A--C  --- yBedrock2 + effectiveTransitionThickness2
-
-            float const yB = yBedrock1 + effectiveTransitionThickness1;
-            yAC = yBedrock2 + effectiveTransitionThickness2;
-
-            depthA = ySilt1 - yBedrock1 + (yB - yAC);
-            interfaceBlendDepthA = MaxTransitionThickness - effectiveTransitionThickness1 + (yB - yAC);
-            mLandVertexBuffer.emplace_back(
-                vec2f(x1, yAC),
-                depthA,
-                interfaceBlendDepthA);
-
-            mLandVertexBuffer.emplace_back(
-                vec2f(x1, yB),
-                ySilt1 - yBedrock1,
-                MaxTransitionThickness - effectiveTransitionThickness1);
-
-            depthC = ySilt2 - yBedrock2;
-            interfaceBlendDepthC = MaxTransitionThickness - effectiveTransitionThickness2;
-            mLandVertexBuffer.emplace_back(
-                vec2f(x2, yAC),
-                depthC,
-                interfaceBlendDepthC);
-        }
-        else
-        {
-            //    B  --- yBedrock2 + effectiveTransitionThickness2
-            //   /|
-            //  / |
-            // A--C  --- yBedrock1 + effectiveTransitionThickness1
-
-            float const yB = yBedrock2 + effectiveTransitionThickness2;
-            yAC = yBedrock1 + effectiveTransitionThickness1;
-
-            depthA = ySilt1 - yBedrock1;
-            interfaceBlendDepthA = MaxTransitionThickness - effectiveTransitionThickness1;
-            mLandVertexBuffer.emplace_back(
-                vec2f(x1, yAC),
-                depthA,
-                interfaceBlendDepthA);
-
-            mLandVertexBuffer.emplace_back(
-                vec2f(x2, yB),
-                ySilt2 - yBedrock2,
-                MaxTransitionThickness - effectiveTransitionThickness2);
-
-            depthC = ySilt2 - yBedrock2 + (yB - yAC);
-            interfaceBlendDepthC = MaxTransitionThickness - effectiveTransitionThickness2 + (yB - yAC);
-            mLandVertexBuffer.emplace_back(
-                vec2f(x2, yAC),
-                depthC,
-                interfaceBlendDepthC);
-        }
-
-        // A-C
-        // | |
-        // D-E
-
-        float const yDE = std::min(yBedrock1, yBedrock2);
-
-        // A-D-C
-
+        // B - D - A
         mLandVertexBuffer.emplace_back(
-            vec2f(x1, yAC),
-            depthA,
-            interfaceBlendDepthA);
-        float const depthD = depthA + (yAC - yDE);
+            vec2f(x2, yBedrock2 + effectiveTransitionThickness2),
+            ySilt2 - (yBedrock2 + effectiveTransitionThickness2),
+            MaxTransitionThickness - effectiveTransitionThickness2);
         mLandVertexBuffer.emplace_back(
-            vec2f(x1, yDE),
-            depthD,
-            interfaceBlendDepthA + (yAC - yDE));
+            vec2f(x2, yBedrock2 - LipThickness),
+            ySilt2 - yBedrock2 + LipThickness,
+            MaxTransitionThickness + LipThickness);
         mLandVertexBuffer.emplace_back(
-            vec2f(x2, yAC),
-            depthC,
-            interfaceBlendDepthC);
+            vec2f(x1, yBedrock1 + effectiveTransitionThickness1),
+            ySilt1 - (yBedrock1 + effectiveTransitionThickness1),
+            MaxTransitionThickness - effectiveTransitionThickness1);
 
-        // D-C-E
-
+        // D - A - C
         mLandVertexBuffer.emplace_back(
-            vec2f(x1, yDE),
-            depthD,
-            interfaceBlendDepthA + (yAC - yDE));
+            vec2f(x2, yBedrock2 - LipThickness),
+            ySilt2 - yBedrock2 + LipThickness,
+            MaxTransitionThickness + LipThickness);
         mLandVertexBuffer.emplace_back(
-            vec2f(x2, yAC),
-            depthC,
-            interfaceBlendDepthC);
-        float const depthE = depthC + (yAC - yDE);
+            vec2f(x1, yBedrock1 + effectiveTransitionThickness1),
+            ySilt1 - (yBedrock1 + effectiveTransitionThickness1),
+            MaxTransitionThickness - effectiveTransitionThickness1);
         mLandVertexBuffer.emplace_back(
-            vec2f(x2, yDE),
-            depthE,
-            interfaceBlendDepthC + (yAC - yDE));
+            vec2f(x1, yBedrock1 - LipThickness),
+            ySilt1 - yBedrock1 + LipThickness,
+            MaxTransitionThickness + LipThickness);
 
-        // D-E
-        // | |
-        // F-G
-
-        float constexpr DummyInterfaceBlendDepth = 10.0f;
-
-        // D-F-E
-
+        // C - E - D
         mLandVertexBuffer.emplace_back(
-            vec2f(x1, yDE),
-            depthD,
-            DummyInterfaceBlendDepth);
+            vec2f(x1, yBedrock1 - LipThickness),
+            ySilt1 - yBedrock1 + LipThickness,
+            MaxTransitionThickness + LipThickness);
         mLandVertexBuffer.emplace_back(
             vec2f(x1, yWorldBottom),
-            depthD + (yDE - yWorldBottom),
-            DummyInterfaceBlendDepth);
+            ySilt1 - yBedrock1 + LipThickness, // Fixed
+            MaxTransitionThickness + LipThickness); // Fixed
         mLandVertexBuffer.emplace_back(
-            vec2f(x2, yDE),
-            depthE,
-            DummyInterfaceBlendDepth);
+            vec2f(x2, yBedrock2 - LipThickness),
+            ySilt2 - yBedrock2 + LipThickness,
+            MaxTransitionThickness + LipThickness);
 
-        // F-E-G
-
+        // E - D - F
         mLandVertexBuffer.emplace_back(
             vec2f(x1, yWorldBottom),
-            depthD + (yDE - yWorldBottom),
-            DummyInterfaceBlendDepth);
+            ySilt1 - yBedrock1 + LipThickness, // Fixed
+            MaxTransitionThickness + LipThickness); // Fixed
         mLandVertexBuffer.emplace_back(
-            vec2f(x2, yDE),
-            depthE,
-            DummyInterfaceBlendDepth);
+            vec2f(x2, yBedrock2 - LipThickness),
+            ySilt2 - yBedrock2 + LipThickness,
+            MaxTransitionThickness + LipThickness);
         mLandVertexBuffer.emplace_back(
             vec2f(x2, yWorldBottom),
-            depthE + (yDE - yWorldBottom),
-            DummyInterfaceBlendDepth);
+            ySilt2 - yBedrock2 + LipThickness, // Fixed
+            MaxTransitionThickness + LipThickness); // Fixed
+
+
+
 
         // TODOOLD
+
+        //// A-B-C
+
+        //float yAC;
+        //float depthA;
+        //float interfaceBlendDepthA;
+        //float depthC;
+        //float interfaceBlendDepthC;
+
+        //if (yBedrock1 + effectiveTransitionThickness1 >= yBedrock2 + effectiveTransitionThickness2)
+        //{
+        //    // B     --- yBedrock1 + effectiveTransitionThickness1
+        //    // |\
+        //    // | \
+        //    // A--C  --- yBedrock2 + effectiveTransitionThickness2
+
+        //    float const yB = yBedrock1 + effectiveTransitionThickness1;
+        //    yAC = yBedrock2 + effectiveTransitionThickness2;
+
+        //    depthA = ySilt1 - yBedrock1 + (yB - yAC);
+        //    interfaceBlendDepthA = MaxTransitionThickness - effectiveTransitionThickness1 + (yB - yAC);
+        //    mLandVertexBuffer.emplace_back(
+        //        vec2f(x1, yAC),
+        //        depthA,
+        //        interfaceBlendDepthA);
+
+        //    mLandVertexBuffer.emplace_back(
+        //        vec2f(x1, yB),
+        //        ySilt1 - yBedrock1,
+        //        MaxTransitionThickness - effectiveTransitionThickness1);
+
+        //    depthC = ySilt2 - yBedrock2;
+        //    interfaceBlendDepthC = MaxTransitionThickness - effectiveTransitionThickness2;
+        //    mLandVertexBuffer.emplace_back(
+        //        vec2f(x2, yAC),
+        //        depthC,
+        //        interfaceBlendDepthC);
+        //}
+        //else
+        //{
+        //    //    B  --- yBedrock2 + effectiveTransitionThickness2
+        //    //   /|
+        //    //  / |
+        //    // A--C  --- yBedrock1 + effectiveTransitionThickness1
+
+        //    float const yB = yBedrock2 + effectiveTransitionThickness2;
+        //    yAC = yBedrock1 + effectiveTransitionThickness1;
+
+        //    depthA = ySilt1 - yBedrock1;
+        //    interfaceBlendDepthA = MaxTransitionThickness - effectiveTransitionThickness1;
+        //    mLandVertexBuffer.emplace_back(
+        //        vec2f(x1, yAC),
+        //        depthA,
+        //        interfaceBlendDepthA);
+
+        //    mLandVertexBuffer.emplace_back(
+        //        vec2f(x2, yB),
+        //        ySilt2 - yBedrock2,
+        //        MaxTransitionThickness - effectiveTransitionThickness2);
+
+        //    depthC = ySilt2 - yBedrock2 + (yB - yAC);
+        //    interfaceBlendDepthC = MaxTransitionThickness - effectiveTransitionThickness2 + (yB - yAC);
+        //    mLandVertexBuffer.emplace_back(
+        //        vec2f(x2, yAC),
+        //        depthC,
+        //        interfaceBlendDepthC);
+        //}
+
+        //// A-C
+        //// | |
+        //// D-E
+
+        //float const yDE = std::min(yBedrock1, yBedrock2);
+
+        //// A-D-C
+
+        //mLandVertexBuffer.emplace_back(
+        //    vec2f(x1, yAC),
+        //    depthA,
+        //    interfaceBlendDepthA);
+        //float const depthD = depthA + (yAC - yDE);
+        //mLandVertexBuffer.emplace_back(
+        //    vec2f(x1, yDE),
+        //    depthD,
+        //    interfaceBlendDepthA + (yAC - yDE));
+        //mLandVertexBuffer.emplace_back(
+        //    vec2f(x2, yAC),
+        //    depthC,
+        //    interfaceBlendDepthC);
+
+        //// D-C-E
+
+        //mLandVertexBuffer.emplace_back(
+        //    vec2f(x1, yDE),
+        //    depthD,
+        //    interfaceBlendDepthA + (yAC - yDE));
+        //mLandVertexBuffer.emplace_back(
+        //    vec2f(x2, yAC),
+        //    depthC,
+        //    interfaceBlendDepthC);
+        //float const depthE = depthC + (yAC - yDE);
+        //mLandVertexBuffer.emplace_back(
+        //    vec2f(x2, yDE),
+        //    depthE,
+        //    interfaceBlendDepthC + (yAC - yDE));
+
+        //// D-E
+        //// | |
+        //// F-G
+
+        //float constexpr DummyInterfaceBlendDepth = 10.0f;
+
+        //// D-F-E
+
+        //mLandVertexBuffer.emplace_back(
+        //    vec2f(x1, yDE),
+        //    depthD,
+        //    DummyInterfaceBlendDepth);
+        //mLandVertexBuffer.emplace_back(
+        //    vec2f(x1, yWorldBottom),
+        //    depthD + (yDE - yWorldBottom),
+        //    DummyInterfaceBlendDepth);
+        //mLandVertexBuffer.emplace_back(
+        //    vec2f(x2, yDE),
+        //    depthE,
+        //    DummyInterfaceBlendDepth);
+
+        //// F-E-G
+
+        //mLandVertexBuffer.emplace_back(
+        //    vec2f(x1, yWorldBottom),
+        //    depthD + (yDE - yWorldBottom),
+        //    DummyInterfaceBlendDepth);
+        //mLandVertexBuffer.emplace_back(
+        //    vec2f(x2, yDE),
+        //    depthE,
+        //    DummyInterfaceBlendDepth);
+        //mLandVertexBuffer.emplace_back(
+        //    vec2f(x2, yWorldBottom),
+        //    depthE + (yDE - yWorldBottom),
+        //    DummyInterfaceBlendDepth);
+
+
+
+        // TODOOLD - OLDER
 
         ////
         //// Store quads
