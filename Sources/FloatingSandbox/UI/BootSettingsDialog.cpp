@@ -179,7 +179,7 @@ BootSettingsDialog::BootSettingsDialog(
             optionsSizer->Add(forceNoMultiSamplingBox, 0, wxEXPAND | wxALL, InternalWindowMargin);
         }
 
-        vSizer->Add(optionsSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, InternalWindowMargin);
+        vSizer->Add(optionsSizer, 1, wxALIGN_CENTER_HORIZONTAL | wxALL, InternalWindowMargin);
     }
 
     {
