@@ -11,7 +11,7 @@
 
 float constexpr AutoFocusNdcFractionZoomTarget = 0.7f; // Fraction of the [0, 2] NDC space that needs to be occupied by AABB in auto-focus
 
-float constexpr SmootherTerminationThreshold = 0.0001f; // How close to target we stop smoothing
+float constexpr SmootherTerminationThreshold = 0.00005f; // How close to target we stop smoothing
 
 ViewManager::ViewManager(
     std::optional<AutoFocusTargetKindType> autoFocusTarget,
