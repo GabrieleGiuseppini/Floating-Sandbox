@@ -10,7 +10,8 @@
 
 GameGLCanvas * GameGLCanvas::Create(
     wxWindow * parent,
-    wxWindowID id)
+    wxWindowID id,
+    bool doForceNoMultiSampling)
 {
     wxGLAttributes ssAttributes;
     ssAttributes
@@ -26,7 +27,7 @@ GameGLCanvas * GameGLCanvas::Create(
 
     ssAttributes.EndList();
 
-    if (wxGLCanvas::IsDisplaySupported(msAttributes))
+    if (!doForceNoMultiSampling && wxGLCanvas::IsDisplaySupported(msAttributes))
     {
         return new GameGLCanvas(parent, id, msAttributes, true);
     }

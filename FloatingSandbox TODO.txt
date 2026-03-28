@@ -595,7 +595,21 @@
 				- Tests: anti-aliasing (ocean floor peaks, ropes, ship edges, NPCs, tools notif's), ocean floor shader ghost lines, nVidia close-by lines, ShipBuilder				
 				- Test on new Dell, Intel UHD
 					- AA on UHD with manually-induced SS
-						- Add boot setting
+						+ Add boot setting
+						= Ocean floor peaks
+							- New ghost lines! Fiddle with vertex attribs
+						- Ropes, ship edges
+						- NPCs
+						- Tools Notif's
+					- AA on nVidia with manually-induced SS
+						- Ocean floor peaks
+						- Ropes, ship edges
+						- NPCs
+						- Tools Notif's
+
+					- Cleanup boot settings
+
+					TODO: PLAN
 					- AA:
 						- Ocean floor peaks
 						- Ropes, ship edges
@@ -607,6 +621,9 @@
 					- nVidia close-by lines (expected to still exist)
 					- ShipBuilder
 				- Test on new Dell, nVidia
+
+
+
 				- Test on old Dell
 					- Also perf, once we go back to triangle strip
 				- Test on Ubuntu

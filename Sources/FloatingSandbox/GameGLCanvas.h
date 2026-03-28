@@ -18,7 +18,8 @@ public:
     // Throws if cannot find a suitable pixel format
     static GameGLCanvas * Create(
         wxWindow * parent,
-        wxWindowID id);
+        wxWindowID id,
+        bool doForceNoMultiSampling);
 
     ~GameGLCanvas();
 

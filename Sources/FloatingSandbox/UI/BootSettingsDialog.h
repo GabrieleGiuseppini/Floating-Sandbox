@@ -35,6 +35,9 @@ private:
     wxRadioButton * mDoForceNoMultithreadedRendering_UnsetRadioButton;
     wxRadioButton * mDoForceNoMultithreadedRendering_TrueRadioButton;
     wxRadioButton * mDoForceNoMultithreadedRendering_FalseRadioButton;
+    wxRadioButton * mDoForceNoMultiSampling_UnsetRadioButton;
+    wxRadioButton * mDoForceNoMultiSampling_TrueRadioButton;
+    wxRadioButton * mDoForceNoMultiSampling_FalseRadioButton;
 
 private:
 

@@ -166,7 +166,6 @@ MainFrame::MainFrame(
 
     mMainPanelSizer = new wxBoxSizer(wxVERTICAL);
 
-
     //
     // Build OpenGL canvas - this is where we render the game to
     //
@@ -175,7 +174,8 @@ MainFrame::MainFrame(
 
     mMainGLCanvas = GameGLCanvas::Create(
         mMainPanel,
-        ID_MAIN_CANVAS);
+        ID_MAIN_CANVAS,
+        bootSettings.DoForceNoMultiSampling.value_or(false));
 
     mMainGLCanvas->Connect(wxEVT_PAINT, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasPaint, 0, this);
     mMainGLCanvas->Connect(wxEVT_SIZE, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasResize, 0, this);
@@ -1017,7 +1017,9 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     try
     {
-        splash = std::make_unique<SplashScreenDialog>(mGameAssetManager);
+        splash = std::make_unique<SplashScreenDialog>(
+            mBootSettings.DoForceNoMultiSampling.value_or(false),
+            mGameAssetManager);
     }
     catch (std::exception const & e)
     {

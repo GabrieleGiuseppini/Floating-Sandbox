@@ -134,6 +134,52 @@ BootSettingsDialog::BootSettingsDialog(
             optionsSizer->Add(forceNoMultithreadedRenderingBox, 0, wxALIGN_CENTER_VERTICAL | wxALL, InternalWindowMargin);
         }
 
+        {
+            wxStaticBox * forceNoMultiSamplingBox = new wxStaticBox(this, wxID_ANY, _("Force no multi-sampling"));
+
+            {
+                wxBoxSizer * forceNoMultiSamplingBoxSizer = new wxBoxSizer(wxVERTICAL);
+
+                forceNoMultiSamplingBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+                mDoForceNoMultiSampling_UnsetRadioButton = new wxRadioButton(forceNoMultiSamplingBox, wxID_ANY, _("Default"),
+                    wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+
+                forceNoMultiSamplingBoxSizer->Add(
+                    mDoForceNoMultiSampling_UnsetRadioButton,
+                    0,
+                    wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM,
+                    RadioButtonMargin);
+
+                forceNoMultiSamplingBoxSizer->AddSpacer(InterRadioBoxMargin);
+
+                mDoForceNoMultiSampling_TrueRadioButton = new wxRadioButton(forceNoMultiSamplingBox, wxID_ANY, _("True"),
+                    wxDefaultPosition, wxDefaultSize);
+
+                forceNoMultiSamplingBoxSizer->Add(
+                    mDoForceNoMultiSampling_TrueRadioButton,
+                    0,
+                    wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM,
+                    RadioButtonMargin);
+
+                forceNoMultiSamplingBoxSizer->AddSpacer(InterRadioBoxMargin);
+
+                mDoForceNoMultiSampling_FalseRadioButton = new wxRadioButton(forceNoMultiSamplingBox, wxID_ANY, _("False"),
+                    wxDefaultPosition, wxDefaultSize);
+
+                forceNoMultiSamplingBoxSizer->Add(
+                    mDoForceNoMultiSampling_FalseRadioButton,
+                    0,
+                    wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM,
+                    RadioButtonMargin);
+
+                forceNoMultiSamplingBox->SetSizer(forceNoMultiSamplingBoxSizer);
+            }
+
+            optionsSizer->Add(forceNoMultiSamplingBox, 0, wxALIGN_CENTER_VERTICAL | wxALL, InternalWindowMargin);
+        }
+
+
         vSizer->Add(optionsSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, InternalWindowMargin);
     }
 
@@ -193,6 +239,16 @@ void BootSettingsDialog::PopulateCheckboxes(BootSettings const & settings)
         else
             mDoForceNoMultithreadedRendering_FalseRadioButton->SetValue(true);
     }
+
+    if (!settings.DoForceNoMultiSampling.has_value())
+        mDoForceNoMultiSampling_UnsetRadioButton->SetValue(true);
+    else
+    {
+        if (*(settings.DoForceNoMultiSampling))
+            mDoForceNoMultiSampling_TrueRadioButton->SetValue(true);
+        else
+            mDoForceNoMultiSampling_FalseRadioButton->SetValue(true);
+    }
 }
 
 void BootSettingsDialog::OnRevertToDefaultsButton(wxCommandEvent & /*event*/)
@@ -216,9 +272,16 @@ void BootSettingsDialog::OnSaveAndQuitButton(wxCommandEvent & /*event*/)
     else if (mDoForceNoMultithreadedRendering_FalseRadioButton->GetValue())
         doForceNoMultithrededRendering = false;
 
+    std::optional<bool> doForceNoMultiSampling;
+    if (mDoForceNoMultiSampling_TrueRadioButton->GetValue())
+        doForceNoMultiSampling = true;
+    else if (mDoForceNoMultiSampling_FalseRadioButton->GetValue())
+        doForceNoMultiSampling = false;
+
     BootSettings settings(
         doForceNoGlFinish,
-        doForceNoMultithrededRendering);
+        doForceNoMultithrededRendering,
+        doForceNoMultiSampling);
 
     BootSettings defaultSettings;
 

@@ -24,7 +24,9 @@ class SplashScreenDialog : public wxFrame
 {
 public:
 
-	SplashScreenDialog(GameAssetManager const & gameAssetManager);
+	SplashScreenDialog(
+		bool doForceNoMultiSampling,
+		GameAssetManager const & gameAssetManager);
 
 	virtual ~SplashScreenDialog();
 
