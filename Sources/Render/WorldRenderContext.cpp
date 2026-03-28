@@ -290,10 +290,6 @@ WorldRenderContext::WorldRenderContext(
     glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Land), 4, GL_FLOAT, GL_FALSE, sizeof(LandVertex), (void *)0);
     CheckOpenGLError();
 
-    // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-    // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
-    ////mGlobalRenderContext.GetElementIndices().Bind()
-
     glBindVertexArray(0);
 
     // Set (noise) texture parameters

@@ -42,7 +42,7 @@ OceanFloorHeightMap OceanFloorHeightMap::LoadFromImage(RgbImageData const & imag
     float const imageHalfHeight = static_cast<float>(imageData.Size.height) / 2.0f;
 
     // Calculate SampleI->WorldX factor, i.e. world width between two samples
-    float constexpr Dx = SimulationParameters::MaxWorldWidth / SimulationParameters::OceanFloorTerrainSamples<float>;
+    float constexpr SampleIndexToWorldX = SimulationParameters::MaxWorldWidth / SimulationParameters::OceanFloorTerrainSamples<float>;
 
     // Calculate WorldX->ImageX factor: we want the entire width of this image to fit the entire
     // world width (by stretching or compressing)
@@ -51,7 +51,7 @@ OceanFloorHeightMap OceanFloorHeightMap::LoadFromImage(RgbImageData const & imag
     for (size_t s = 0; s < Size; ++s)
     {
         // Calculate pixel X
-        float const worldX = static_cast<float>(s) * Dx;
+        float const worldX = static_cast<float>(s) * SampleIndexToWorldX;
 
         // Calulate image X
         float const imageX = worldX * worldXToImageX;

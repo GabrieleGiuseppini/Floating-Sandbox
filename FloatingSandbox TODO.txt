@@ -482,8 +482,9 @@
 				! Loops for all iterations, as lambda's are basically 1 and reduction is super slow
 				+ Stop loop if lambda which provides most reduction is very close to 1
 
-			- merge back into tornadoes, via github for checking
 			= Do DKUZ bug below
+
+			- merge back into tornadoes, via github for checking
 			
 			- Discord
 
@@ -627,10 +628,15 @@
 							+ With Silt
 							+ Without Silt
 						+ ShipBuilder
-				= Test on old Dell
-					- Also perf
+				+ Test on old Dell
+					+ AA ship
+					+ AA ocean floor peaks
+					+ Ghost lines ocean floor peaks
+					+ Perf
 				= Test on Ubuntu
-					- ULTRA GHOST LINES!
+					! ULTRA GHOST LINES!
+					= Try with round OceanFloor Dx (samples=2049)
+					- Test Mariana
 
 				- See if edge springs are still required
 					- New Dell UHD
