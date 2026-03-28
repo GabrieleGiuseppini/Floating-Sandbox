@@ -635,8 +635,12 @@
 					+ Perf
 				= Test on Ubuntu
 					! ULTRA GHOST LINES!
-					= Try with round OceanFloor Dx (samples=2049)
-					- Test Mariana
+					+ Try with round OceanFloor Dx (samples=2049)
+					+ Test Mariana
+					- Test the heck out of it
+
+				- Try with further segmentation for nVidia
+					- Test: see using Lip for test
 
 				- See if edge springs are still required
 					- New Dell UHD
