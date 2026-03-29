@@ -277,10 +277,17 @@
 		+ Slider height: fixed
 		+ Resend beta
 
-		- Cleanup tool slider code based on outcome
+		- Cleanup tool slider (server decided fixed-height, i.e. new one)
+
+		- Send beta with wild masts + DKuz bug
+
+		- More shapes
 
 		- Storm supercell above it
-		- Also appearing with storms
+			- TornadoesWhatever uploads straight to World/RenderContext
+				- ...which does parallax
+
+		- Also as phenomenon
 
 	- See ocean floor custom settings bug on community server
 
@@ -394,7 +401,7 @@
 					-  13=0
 				! Problem: big pieces still do it
 				+ Keep
-			= 3: just limit total pressure force, regardless of frontier size
+			+ 3: just limit total pressure force, regardless of frontier size
 				+ Just cap final force_vector's forceMultiplier to value it would have at a depth that we deem reasonable
 					! Facts:
 						- @ 3000m without frontier-size based: repro
@@ -406,31 +413,82 @@
 						- @ 7500m with frontier-size based: repro
 						- @ 10000m with frontier-size based: repro
 				+ 4000
-				- Uhmmm...once done, repro's at 10k - sub at 2.5k
-					- TODOHERE: problem is counterbalance adj factor: at real 4K it's around 0.3; at real 10K it's around 0.98
-					- TODOHERE: was bug in "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, but when fixed it's even worse - unbalanced forces are huge
+				+ Uhmmm...once done, repro's at 10k - sub at 2.5k
+					+ Problem is counterbalance adj factor: at real 4K it's around 0.3; at real 10K it's around 0.98
+					+ Was bug in "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, but when fixed it's even worse - unbalanced forces are huge
 						! Root of the problem is fully-hull structures, where differential is max
 						X Due to forces being dyn?
 							X Try 1: try with static (divide by num iterations though)
 								X No: even with static forces, at 10K (where sub doesn't even break) forces are big enough to cause it
-							- Try 2: skip first iter for clouds?
-						= Try with not applying force when under silt
+							- Try 2: skip first iter for clouds
+						X Try with not applying force when under silt
 							+ In edge loop
-							= TODOHERE: Even with static_pressure_adj=0, at 10K something happens that doesn't happen at 2.5K
+							X NOPE: Even with static_pressure_adj=0, at 10K something happens that doesn't happen at 2.5K
+				! CONFIRMED: it's the floating point precision loss at -10K
+				+ Try 1: increase sensitivity with abs value of y
+					! Build empirical table for sensitivity: max value < 1 before repro's w/out pressure, maintaining clouds at impact; + see if global cap still needed
+						- @2500 (2): 1.0
+						- @5100 (3): 0.938
+						- @7500 (3): 0.938
+						- @8500 (4): 0.4
+						- @10000 (4): 0.375
+					+ Do formula:
+						< 4096: 1.0
+						< 8192: 0.938 // a bit less! 0.906
+						< 16K: 0.375
+						+ Better implementation
+							+ Rewrite scaling down k
+							+ Do first if for < -4096
 
-			- Remember to fix "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, that was broken anyway
-				- Need to re-include depth non-linearity
-					- TODO: rethink whole need for counter-balance adjustment: see how ugly it is if it stops crushing when flooded
-						- If remove: nuke setting
+			+ When done: undo all changes one by one and only keep if needed
+				+ "Turn off under silt": (with bulkiness, without global cap, with thickness adjustment)
+					+ Nice at 5K
+					+ Nice at 10K
+				+ "Turn off under silt": (without bulkiness, without global cap, with thickness adjustment)
+					+ Nice at 5K
+					+ Nice at 10K
+				+ Above, but without thickness adjustment
+					X Nope, 2-px mast is crazy
+					+ TODOHERE: WITH thickness adjustment, a 4-pixel mast is crazy @ 2500
+						+ Try with smoother silt/non-silt transition
+							+ Turnoff begins at silt+0.2 and ends at silt
+						+ Then see if the 2-px mast crazyness was due to discontinuity
+				+ WITHOUT bulkiness, with silt-depth smoothing, WITHOUT thickness (distance) adjustment, WITHOUT global cap:
+					+ 2px mast ok @ 10000
+					X Titanic not ok @ 2500
+				+ With bulkiness, with silt-depth smoothing, WITHOUT thickness (distance) adjustment, WITHOUT global cap:
+					+ Titanic OK @ 10k
+					+ Triton OK @ 10k
+			+ Cleanup code after decided what to keep
+				+ Rewrite silt-depth check
+				+ Revisit big comment afterwards
+				+ Check assembly:
+					+ Silt damping factors: mParent.GetOceanFloor
+					+ prev=this, this=next
 
-			- Check outward pressure
-			- Check sub & titan still implode
-			- Add toggle for structural bulkiness check (but no SettingsDialog yet)
-			- Test on old Dell
-				- See if might want to turn it off on slow machines
+			+ Remember to fix "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, that was broken anyway
+				+ Need to re-include depth non-linearity
+				+ Nuke setting
+					+ Also SettingsDialog
+				+ Cleanup remaining code
+
+			+ With final look'n'feel:
+				+ Check outward pressure
+				+ Check sub & triton still implode
+
+			+ Cut early if bulkiness check (frontier size) would be zero
+
+			+ Changelist X 2
+
+			+ See what's going on with Base 3/complexity
+				! Loops for all iterations, as lambda's are basically 1 and reduction is super slow
+				+ Stop loop if lambda which provides most reduction is very close to 1
+
+			- merge back into tornadoes
+
+			+ Test on old Dell
+				+ See if might want to turn it off on slow machines
 			+ Check sudden breakage
-
-	- Air bubbles trapped in silt
 
 	+ GameController::PickObjectToMove: must also do radius like Pick(connected component)
 		+ See if needs to be ported to Android
@@ -440,8 +498,172 @@
 			! 48 8B 75 A8 48 8B 7D 90 4C 8B 75 C0 44 8B 64 24 58
 		X It's OpenAL
 
-	- Look into DKUZ's bug
-		- Settings screenshot is on Desktop now
+	+ Look into DKUZ's bug
+		! It's shader with high-derivative depth slopes
+		! Even with multisample and without derivatives, still silt-bedrock transparency shows
+			! Now it's any quantity that lowers with y: multisample interpolation generates value outside of range
+			+ Try centroid
+				= It works!
+					- Try real shader
+				+ Perf:
+					+ Pre: 5.80 (whole world) 3.60 (ship)
+					+ Post: 5.30 (whole world) 3.60 (ship)
+				= Test on nVidia
+					! Problem! Now there are seams between triangles, not due to centroid
+				- Comment in shader
+			X Try without strip
+				= Without multisampling
+					X nVidia
+						X Seam issue
+							! STILL PRESENT!
+								= Only when really close though
+									- Can we live with it? It's super-ugly...								
+								+ See if multisample+centroid was also when really close
+							X Test with squares (so just one long diagonal)
+								X Still happens
+							X Try exact same x @ OceanFloor
+							X Try normalizing coords							
+								X Isn't it the same once we run the vertex shader and transform to NDC?
+						+ Interp issue
+							+ With only alpha-silt: OK
+							X With alpha-silt + anti-alias: WRONG
+					+ Intel UHD
+						+ Seam issue: OK
+						+ Interp issue
+							+ With only alpha-silt: OK
+							X With alpha-silt + anti-alias: WRONG
+			! Recap:
+				! nVidia shows ghost lines (though only when really close) from day 0
+					! Didn't help: GL_DEPTH_CLAMP, glDisable(GL_CULL_FACE), glDisable(GL_POLYGON_SMOOTH)
+					! Didn't help: just squares
+					! With not-too-tall triangles (i.e. with not-tall floor, i.e. a bit above world bottom), lines are red
+				! Multi-sample fixes anti-aliasing but not ghost lines
+				! Multi-sample+centroid fixes anti-aliasing and ghost lines
+					+ centroid required or else MS introduces out-of-range samples, which generate ghost lines
+				! Multi-sample doesn't work on old Dell
+			+ Plan A: Multisample+centroid (fixes anti-aliasing and ghost lines), but we accept nVidia's "close-by" seams
+				+ Multisample+Centroid:
+					+ Detect failure @ OpenGL context creation on old Dell and revert to single-sampled
+						+ Use Create() -> bool
+						+ GameGLCanvas:
+							+ Rename
+							+ static Create() -> GameGLCanvas *
+					+ RenderDeviceProperties has bool for whether MS is supported
+					+ RenderContext:
+						+ cctor stores flag
+						+ Initialization: if supported, turn off
+							+ Do LINE_SMOOTH iff not MS
+						+ Test on old Dell
+						+ ShaderManager::CreateInstance() takes flag
+							+ Passes to SplitSource (->"PreProcessSource") which uses it to inject "#define " for centroid
+								+ Pre-build injected header, with #define IS_MULTISAMPLING_SUPPORTED
+								+ Unit tests								
+						+ Test: ugly lines and edges, NVidia close-by lines 
+						+ DrawOceanFloor: if supported: enable; disable
+						+ Draw[Ropes, Springs]: if supported: enable; disable
+					+ Shader: 
+						+ #define _centroid based on IS_MULTISAMPLING_SUPPORTED
+						+ Add _centroid
+						+ Keep vec4 vertex attrib split (for centroid)
+						+ Fragment:
+							+ Keep anti-aliasing only for not IS_MS_SUPPORTED
+							+ Revert everything else in fragment shader
+						+ Final cleanup
+					+ Test anti-aliasing and ghost lines on Intel UHD
+						+ OceanFloor (with and without silt): 
+							+ Anti-aliasing w/peaks: OK
+							+ Ghost lines: WRONG, NEW KIND - also on nVidia, and on nVidia seams are worse
+								+ Try with new segmentation
+									+ Fix lip: depth at yDE is not necessarily dummy
+										+ Now we've introduced NEW KIND again
+											X Need another slice? 
+											+ Or should we change DE to be at "bottom" of depth (i.e. after all lips and AA are over)?
+											X Try centroid for depth first
+
+									+ 5 tri's -> 4 tri's
+									+ See RND perf on UHD
+									X nVidia close-by lines: try with centroid on vertex coords as well (if it is a texture sampling issue?)
+									+ Cleanup all
+										+ incl. OceanFloor comment on slices+1
+						+ Ropes, edges
+							+ Segmentation: OK
+							+ Anti-aliasing: OK
+				+ Revert other changes, one at a time
+					+ WorldRenderContext::UploadLand
+
+				+ Test on new Dell, Intel UHD
+					+ AA on UHD with manually-induced SS
+						+ Add boot setting
+						+ Ocean floor peaks
+							! New ghost lines!
+							+ Nuke AA altogether
+							+ WE HAVE ALIASING
+						+ Ropes, ship edges: WE HAVE ALIASING
+						+ NPCs: OK
+					+ AA on nVidia with manually-induced SS
+						+ FIX: glad initialization failure - GDI renderer!
+							+ See if need HW accel (i.e. Platform defaults)
+						+ Ocean floor peaks
+							+ WE HAVE ALIASING
+							+ WE HAVE CLOSE-BY nVidia LINES
+						+ Ropes, ship edges: OK
+						+ NPCs: OK
+					+ Cleanup boot settings X 2 (Debug, RelWithDebInfo)
+					+ nVidia, with default MS:
+						+ AA:
+							+ Ocean floor peaks: OK
+							+ Ropes, ship edges
+						+ Ocean floor ghost lines
+							+ With Silt
+							+ Without Silt
+						+ ShipBuilder
+						+ nVidia close-by lines (expected to still exist): EXIST
+					+ UHD, with default MS:
+						+ AA:
+							+ Ocean floor peaks
+							+ Ropes, ship edges
+						+ Ocean floor ghost lines
+							+ With Silt
+							+ Without Silt
+						+ ShipBuilder
+				+ Test on old Dell
+					+ AA ship
+					+ AA ocean floor peaks
+					+ Ghost lines ocean floor peaks
+					+ Perf
+				+ Test on Ubuntu
+					! ULTRA GHOST LINES!
+					+ Try with round OceanFloor Dx (samples=2049)
+					+ Test Mariana
+					+ Test the heck out of it
+						+ Test impacts
+
+				X nVidia close-by seams issue:
+					X Try optimization step?
+					+ Regardless: OceanFloor::Upload should upload nSamples - 1 slices
+					X Try with further segmentation for nVidia
+						+ Test: see using Lip for test:
+							+ 1K: OK
+							X 4K: generates lines (and lip starts ghosting)
+
+				X See if edge springs are still required
+					X ROPES ARE DISCONNECTED FROM STRUCTURES
+					- Move enabling of GL_MULTISAMPLE before triangles
+					- Spings::Upload decides based on RenderContext::IsMultisamplingEnabled/Supported
+					- New Dell UHD
+					- New Dell nVidia
+					- Old Dell
+					- Ubuntu
+
+				+ Changelist
+				+ merge back into tornadoes..._wild_mast_experiments, with PR
+				+ Remove nVidia for all binaries				
+		+ Add to Android plan
+
+	- Look into guy's ocean floor on server
+	- Air bubbles trapped in silt
+
+	- See if ocean waves transitions can become better, with same trick as vortex's speed may be?
 
 	- See if can improve FindFreeEphemeralParticle
 		= Thing 1: remove need for currentSimulationTime
@@ -466,7 +688,6 @@
 		- Longhorn materials (includes redesign of material palette, as it would become too slow)
 		- Rot redesign (includes better rusting, and organic alge growth)
 		- NPC phase II: ShipBuilder (Floorplan layer and Interior Texture layer), areas (e.g. assembly area), and behaviors (swimming, etc.)
-		- Hydrostatic pressure fix for rotation (TODO: working on it now may be?)
 		- Fireworks
 
 

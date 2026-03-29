@@ -16,7 +16,9 @@
 
 #include <cassert>
 
-SplashScreenDialog::SplashScreenDialog(GameAssetManager const & gameAssetManager)
+SplashScreenDialog::SplashScreenDialog(
+    bool doForceNoMultiSampling,
+    GameAssetManager const & gameAssetManager)
 {
 	Create(
         nullptr, // Orphan
@@ -64,7 +66,7 @@ SplashScreenDialog::SplashScreenDialog(GameAssetManager const & gameAssetManager
     //
 
     {
-        mGLCanvas = new GLCanvas(this, wxID_ANY);
+        mGLCanvas = GameGLCanvas::Create(this, wxID_ANY, doForceNoMultiSampling);
 
         mainVSizer->Add(mGLCanvas);
     }

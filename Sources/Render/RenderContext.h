@@ -169,7 +169,7 @@ public:
         // Re-calculate effective ambient light intensity
         mRenderParameters.EffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity(
             mAmbientLightIntensity,
-            mInnerContext->WorldRenderContext->GetStormAmbientDarkening());
+            mInnerContext->worldRenderContext->GetStormAmbientDarkening());
         mRenderParameters.IsEffectiveAmbientLightIntensityDirty = true;
     }
 
@@ -180,7 +180,7 @@ public:
 
     void SetSunRaysInclination(float value)
     {
-        mInnerContext->WorldRenderContext->SetSunRaysInclination(value);
+        mInnerContext->worldRenderContext->SetSunRaysInclination(value);
     }
 
     void SetLamp(
@@ -362,7 +362,7 @@ public:
 
     inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
     {
-        return mInnerContext->WorldRenderContext->GetTextureOceanAvailableThumbnails();
+        return mInnerContext->worldRenderContext->GetTextureOceanAvailableThumbnails();
     }
 
     size_t GetTextureOceanTextureIndex() const
@@ -422,7 +422,7 @@ public:
 
     std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandBedrockAvailableThumbnails() const
     {
-        return mInnerContext->WorldRenderContext->GetTextureLandBedrockAvailableThumbnails();
+        return mInnerContext->worldRenderContext->GetTextureLandBedrockAvailableThumbnails();
     }
 
     size_t GetTextureLandBedrockTextureIndex() const
@@ -449,7 +449,7 @@ public:
 
     std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandSiltAvailableThumbnails() const
     {
-        return mInnerContext->WorldRenderContext->GetTextureLandSiltAvailableThumbnails();
+        return mInnerContext->worldRenderContext->GetTextureLandSiltAvailableThumbnails();
     }
 
     size_t GetTextureLandSiltTextureIndex() const
@@ -476,7 +476,7 @@ public:
 
     size_t GetUnderwaterPlantsSpeciesCount() const
     {
-        return mInnerContext->WorldRenderContext->GetUnderwaterPlantsSpeciesCount();
+        return mInnerContext->worldRenderContext->GetUnderwaterPlantsSpeciesCount();
     }
 
     //
@@ -558,7 +558,7 @@ public:
     {
         mShipFlameSizeAdjustment = shipFlameSizeAdjustment;
 
-        for (auto & s : mInnerContext->Ships)
+        for (auto & s : mInnerContext->ships)
         {
             s->SetShipFlameSizeAdjustment(mShipFlameSizeAdjustment);
         }
@@ -694,7 +694,7 @@ public:
     {
         mVectorFieldRenderMode = vectorFieldRenderMode;
 
-        for (auto & s : mInnerContext->Ships)
+        for (auto & s : mInnerContext->ships)
         {
             s->SetVectorFieldLengthMultiplier(mVectorFieldLengthMultiplier);
         }
@@ -845,16 +845,16 @@ public:
 
     inline ShipRenderContext & GetShipRenderContext(ShipId shipId) const
     {
-        assert(shipId >= 0 && shipId < mInnerContext->Ships.size());
+        assert(shipId >= 0 && shipId < mInnerContext->ships.size());
 
-        return *(mInnerContext->Ships[shipId]);
+        return *(mInnerContext->ships[shipId]);
     }
 
     inline NotificationRenderContext & GetNoficationRenderContext() const
     {
-        assert(mInnerContext->NotificationRenderContext);
+        assert(mInnerContext->notificationRenderContext);
 
-        return *mInnerContext->NotificationRenderContext;
+        return *mInnerContext->notificationRenderContext;
     }
 
     RgbImageData TakeScreenshot();
@@ -873,7 +873,7 @@ public:
         size_t uploadCount,
         size_t totalCount)
     {
-        mInnerContext->WorldRenderContext->UploadStarsStart(uploadCount, totalCount);
+        mInnerContext->worldRenderContext->UploadStarsStart(uploadCount, totalCount);
     }
 
     inline void UploadStar(
@@ -881,7 +881,7 @@ public:
         vec2f const & positionNdc,
         float brightness)
     {
-        mInnerContext->WorldRenderContext->UploadStar(
+        mInnerContext->worldRenderContext->UploadStar(
             starIndex,
             positionNdc,
             brightness);
@@ -889,26 +889,26 @@ public:
 
     inline void UploadStarsEnd()
     {
-        mInnerContext->WorldRenderContext->UploadStarsEnd();
+        mInnerContext->worldRenderContext->UploadStarsEnd();
     }
 
     inline void UploadWind(vec2f const & instantSpeed, float basisWindMagnitude)
     {
-        mInnerContext->WorldRenderContext->UploadWind(instantSpeed, basisWindMagnitude);
+        mInnerContext->worldRenderContext->UploadWind(instantSpeed, basisWindMagnitude);
     }
 
     inline void UploadUnderwaterCurrent(float spaceVelocity, float timeVelocity)
     {
-        mInnerContext->WorldRenderContext->UploadUnderwaterCurrent(spaceVelocity, timeVelocity);
+        mInnerContext->worldRenderContext->UploadUnderwaterCurrent(spaceVelocity, timeVelocity);
     }
 
     inline void UploadStormAmbientDarkening(float darkening)
     {
-        if (mInnerContext->WorldRenderContext->UploadStormAmbientDarkening(darkening))
+        if (mInnerContext->worldRenderContext->UploadStormAmbientDarkening(darkening))
         {
             mRenderParameters.EffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity(
                 mAmbientLightIntensity,
-                mInnerContext->WorldRenderContext->GetStormAmbientDarkening());
+                mInnerContext->worldRenderContext->GetStormAmbientDarkening());
 
             mRenderParameters.IsEffectiveAmbientLightIntensityDirty = true;
         }
@@ -916,12 +916,12 @@ public:
 
     inline void UploadRain(float density)
     {
-        mInnerContext->WorldRenderContext->UploadRain(density);
+        mInnerContext->worldRenderContext->UploadRain(density);
     }
 
     inline void UploadLightningsStart(size_t lightningCount)
     {
-        mInnerContext->WorldRenderContext->UploadLightningsStart(lightningCount);
+        mInnerContext->worldRenderContext->UploadLightningsStart(lightningCount);
     }
 
     inline void UploadBackgroundLightning(
@@ -930,7 +930,7 @@ public:
         float renderProgress,
         float personalitySeed)
     {
-        mInnerContext->WorldRenderContext->UploadBackgroundLightning(
+        mInnerContext->worldRenderContext->UploadBackgroundLightning(
             ndcX,
             progress,
             renderProgress,
@@ -944,7 +944,7 @@ public:
         float renderProgress,
         float personalitySeed)
     {
-        mInnerContext->WorldRenderContext->UploadForegroundLightning(
+        mInnerContext->worldRenderContext->UploadForegroundLightning(
             tipWorldCoordinates,
             progress,
             renderProgress,
@@ -954,12 +954,12 @@ public:
 
     inline void UploadLightningsEnd()
     {
-        mInnerContext->WorldRenderContext->UploadLightningsEnd();
+        mInnerContext->worldRenderContext->UploadLightningsEnd();
     }
 
     inline void UploadCloudsStart(size_t cloudCount)
     {
-        mInnerContext->WorldRenderContext->UploadCloudsStart(cloudCount);
+        mInnerContext->worldRenderContext->UploadCloudsStart(cloudCount);
     }
 
     inline void UploadCloud(
@@ -971,7 +971,7 @@ public:
         float darkening,        // 0.0:dark, 1.0:light
         float volumetricGrowthProgress)
     {
-        mInnerContext->WorldRenderContext->UploadCloud(
+        mInnerContext->worldRenderContext->UploadCloud(
             cloudId,
             virtualX,
             virtualY,
@@ -984,7 +984,7 @@ public:
 
     inline void UploadCloudsEnd()
     {
-        mInnerContext->WorldRenderContext->UploadCloudsEnd();
+        mInnerContext->worldRenderContext->UploadCloudsEnd();
     }
 
     inline void UploadCloudShadows(
@@ -995,7 +995,7 @@ public:
         mRenderThread.QueueTask(
             [=]()
             {
-                mInnerContext->WorldRenderContext->UploadCloudShadows(
+                mInnerContext->worldRenderContext->UploadCloudShadows(
                     shadowBuffer,
                     shadowSampleCount);
             });
@@ -1003,39 +1003,44 @@ public:
 
     inline void UploadLandStart(size_t slices)
     {
-        mInnerContext->WorldRenderContext->UploadLandStart(slices);
+        mInnerContext->worldRenderContext->UploadLandStart(slices);
     }
 
     inline void UploadLand(
         size_t iSlice,
-        float x,
-        float ySilt,
-        float yBedrock,
-        float yWorldBottom)
+        float x1,
+        float ySilt1,
+        float yBedrock1,
+        float x2,
+        float ySilt2,
+        float yBedrock2)
     {
-        mInnerContext->WorldRenderContext->UploadLand(
+        mInnerContext->worldRenderContext->UploadLand(
             iSlice,
-            x,
-            ySilt,
-            yBedrock,
-            yWorldBottom);
+            x1,
+            ySilt1,
+            yBedrock1,
+            x2,
+            ySilt2,
+            yBedrock2,
+            -mRenderParameters.View.GetHalfMaxWorldHeight());
     }
 
     inline void UploadLandEnd()
     {
-        mInnerContext->WorldRenderContext->UploadLandEnd();
+        mInnerContext->worldRenderContext->UploadLandEnd(-mRenderParameters.View.GetHalfMaxWorldHeight());
     }
 
     inline void UploadOceanBasicStart(size_t slices)
     {
-        mInnerContext->WorldRenderContext->UploadOceanBasicStart(slices);
+        mInnerContext->worldRenderContext->UploadOceanBasicStart(slices);
     }
 
     inline void UploadOceanBasic(
         float x,
         float yOcean)
     {
-        mInnerContext->WorldRenderContext->UploadOceanBasic(
+        mInnerContext->worldRenderContext->UploadOceanBasic(
             x,
             yOcean,
             mRenderParameters);
@@ -1043,12 +1048,12 @@ public:
 
     inline void UploadOceanBasicEnd()
     {
-        mInnerContext->WorldRenderContext->UploadOceanBasicEnd();
+        mInnerContext->worldRenderContext->UploadOceanBasicEnd();
     }
 
     inline void UploadOceanDetailedStart(size_t slices)
     {
-        mInnerContext->WorldRenderContext->UploadOceanDetailedStart(slices);
+        mInnerContext->worldRenderContext->UploadOceanDetailedStart(slices);
     }
 
     inline void UploadOceanDetailed(
@@ -1058,7 +1063,7 @@ public:
         float yFront,
         float d2YFront)
     {
-        mInnerContext->WorldRenderContext->UploadOceanDetailed(
+        mInnerContext->worldRenderContext->UploadOceanDetailed(
             x,
             yBack,
             yMid,
@@ -1069,12 +1074,12 @@ public:
 
     inline void UploadOceanDetailedEnd()
     {
-        mInnerContext->WorldRenderContext->UploadOceanDetailedEnd();
+        mInnerContext->worldRenderContext->UploadOceanDetailedEnd();
     }
 
     inline void UploadFishesStart(size_t fishCount)
     {
-        mInnerContext->WorldRenderContext->UploadFishesStart(fishCount);
+        mInnerContext->worldRenderContext->UploadFishesStart(fishCount);
     }
 
     inline void UploadFish(
@@ -1087,7 +1092,7 @@ public:
         float tailSwing,
         float tailProgress)
     {
-        mInnerContext->WorldRenderContext->UploadFish(
+        mInnerContext->worldRenderContext->UploadFish(
             textureFrameId,
             position,
             worldSize,
@@ -1100,12 +1105,12 @@ public:
 
     inline void UploadFishesEnd()
     {
-        mInnerContext->WorldRenderContext->UploadFishesEnd();
+        mInnerContext->worldRenderContext->UploadFishesEnd();
     }
 
     inline void UploadUnderwaterPlantStaticVertexAttributesStart(size_t underwaterPlantCount)
     {
-        mInnerContext->WorldRenderContext->UploadUnderwaterPlantStaticVertexAttributesStart(underwaterPlantCount);
+        mInnerContext->worldRenderContext->UploadUnderwaterPlantStaticVertexAttributesStart(underwaterPlantCount);
     }
 
     inline void UploadUnderwaterPlantStaticVertexAttributes(
@@ -1115,7 +1120,7 @@ public:
         float personalitySeed,
         bool isSpecular)
     {
-        mInnerContext->WorldRenderContext->UploadUnderwaterPlantStaticVertexAttributes(
+        mInnerContext->worldRenderContext->UploadUnderwaterPlantStaticVertexAttributes(
             centerBottomPosition,
             speciesIndex,
             scale,
@@ -1125,42 +1130,42 @@ public:
 
     inline void UploadUnderwaterPlantStaticVertexAttributesEnd()
     {
-        mInnerContext->WorldRenderContext->UploadUnderwaterPlantStaticVertexAttributesEnd();
+        mInnerContext->worldRenderContext->UploadUnderwaterPlantStaticVertexAttributesEnd();
     }
 
     template<typename TOceanDepths>
     inline void UploadUnderwaterPlantOceanDepths(TOceanDepths const & oceanDepths)
     {
-        mInnerContext->WorldRenderContext->UploadUnderwaterPlantOceanDepths(oceanDepths);
+        mInnerContext->worldRenderContext->UploadUnderwaterPlantOceanDepths(oceanDepths);
     }
 
     inline void UploadUnderwaterPlantRotationAngle(float rotationAngle)
     {
-        mInnerContext->WorldRenderContext->UploadUnderwaterPlantRotationAngle(rotationAngle);
+        mInnerContext->worldRenderContext->UploadUnderwaterPlantRotationAngle(rotationAngle);
     }
 
     inline void UploadAntiGravityFieldsStart()
     {
-        mInnerContext->WorldRenderContext->UploadAntiGravityFieldsStart();
+        mInnerContext->worldRenderContext->UploadAntiGravityFieldsStart();
     }
 
     inline void UploadAntiGravityField(
         vec2f const & startPos,
         vec2f const & endPos)
     {
-        mInnerContext->WorldRenderContext->UploadAntiGravityField(
+        mInnerContext->worldRenderContext->UploadAntiGravityField(
             startPos,
             endPos);
     }
 
     inline void UploadAntiGravityFieldsEnd()
     {
-        mInnerContext->WorldRenderContext->UploadAntiGravityFieldsEnd();
+        mInnerContext->worldRenderContext->UploadAntiGravityFieldsEnd();
     }
 
     inline void UploadTornadoesStart()
     {
-        mInnerContext->WorldRenderContext->UploadTornadoesStart();
+        mInnerContext->worldRenderContext->UploadTornadoesStart();
     }
 
     inline void UploadTornado(
@@ -1172,7 +1177,7 @@ public:
         float visibilityAlpha, // 0..1
         float rotationPhase)
     {
-        mInnerContext->WorldRenderContext->UploadTornado(
+        mInnerContext->worldRenderContext->UploadTornado(
             bottomCenterPos,
             size,
             bottomWidthFraction,
@@ -1184,7 +1189,7 @@ public:
 
     inline void UploadTornadoesEnd()
     {
-        mInnerContext->WorldRenderContext->UploadTornadoesEnd();
+        mInnerContext->worldRenderContext->UploadTornadoesEnd();
     }
 
     inline void UploadAMBombPreImplosion(
@@ -1192,7 +1197,7 @@ public:
         float progress,
         float radius)
     {
-        mInnerContext->WorldRenderContext->UploadAMBombPreImplosion(
+        mInnerContext->worldRenderContext->UploadAMBombPreImplosion(
             centerPosition,
             progress,
             radius);
@@ -1202,7 +1207,7 @@ public:
         vec2f const & centerPosition,
         float progress)
     {
-        mInnerContext->WorldRenderContext->UploadCrossOfLight(
+        mInnerContext->worldRenderContext->UploadCrossOfLight(
             centerPosition,
             progress,
             mRenderParameters);
@@ -1210,21 +1215,21 @@ public:
 
     inline void UploadAABBsStart(size_t aabbCount)
     {
-        mInnerContext->WorldRenderContext->UploadAABBsStart(aabbCount);
+        mInnerContext->worldRenderContext->UploadAABBsStart(aabbCount);
     }
 
     inline void UploadAABB(
         Geometry::AABB const & aabb,
         vec4f const & color)
     {
-        mInnerContext->WorldRenderContext->UploadAABB(
+        mInnerContext->worldRenderContext->UploadAABB(
             aabb,
             color);
     }
 
     inline void UploadAABBsEnd()
     {
-        mInnerContext->WorldRenderContext->UploadAABBsEnd();
+        mInnerContext->worldRenderContext->UploadAABBsEnd();
     }
 
     inline void UploadShipsStart()
@@ -1240,13 +1245,13 @@ public:
         size_t startDst,
         size_t count)
     {
-        assert(shipId >= 0 && shipId < mInnerContext->Ships.size());
+        assert(shipId >= 0 && shipId < mInnerContext->ships.size());
 
         // Run upload asynchronously
         mRenderThread.QueueTask(
             [=]()
             {
-                mInnerContext->Ships[shipId]->UploadPointColors(
+                mInnerContext->ships[shipId]->UploadPointColors(
                     color,
                     startDst,
                     count);
@@ -1261,13 +1266,13 @@ public:
         size_t startDst,
         size_t count)
     {
-        assert(shipId >= 0 && shipId < mInnerContext->Ships.size());
+        assert(shipId >= 0 && shipId < mInnerContext->ships.size());
 
         // Run upload asynchronously
         mRenderThread.QueueTask(
             [=]()
             {
-                mInnerContext->Ships[shipId]->UploadPointTemperature(
+                mInnerContext->ships[shipId]->UploadPointTemperature(
                     temperature,
                     startDst,
                     count);
@@ -1282,13 +1287,13 @@ public:
         size_t startDst,
         size_t count)
     {
-        assert(shipId >= 0 && shipId < mInnerContext->Ships.size());
+        assert(shipId >= 0 && shipId < mInnerContext->ships.size());
 
         // Run upload asynchronously
         mRenderThread.QueueTask(
             [=]()
             {
-                mInnerContext->Ships[shipId]->UploadPointStress(
+                mInnerContext->ships[shipId]->UploadPointStress(
                     stress,
                     startDst,
                     count);
@@ -1303,13 +1308,13 @@ public:
         size_t startDst,
         size_t count)
     {
-        assert(shipId >= 0 && shipId < mInnerContext->Ships.size());
+        assert(shipId >= 0 && shipId < mInnerContext->ships.size());
 
         // Run upload asynchronously
         mRenderThread.QueueTask(
             [=]()
             {
-                mInnerContext->Ships[shipId]->UploadPointAuxiliaryData(
+                mInnerContext->ships[shipId]->UploadPointAuxiliaryData(
                     auxiliaryData,
                     startDst,
                     count);
@@ -1322,13 +1327,13 @@ public:
         ShipId shipId,
         ColorWithProgress const * colors)
     {
-        assert(shipId >= 0 && shipId < mInnerContext->Ships.size());
+        assert(shipId >= 0 && shipId < mInnerContext->ships.size());
 
         // Run upload asynchronously
         mRenderThread.QueueTask(
             [=]()
             {
-                mInnerContext->Ships[shipId]->UploadPointFrontierColors(colors);
+                mInnerContext->ships[shipId]->UploadPointFrontierColors(colors);
             });
     }
 
@@ -1345,7 +1350,7 @@ public:
         rgbColor const & color,
         float elapsedSimulationTime)
     {
-        mInnerContext->NotificationRenderContext->UploadRectSelection(
+        mInnerContext->notificationRenderContext->UploadRectSelection(
             centerPosition,
             verticalDir,
             width,
@@ -1386,6 +1391,7 @@ private:
     // Boot settings
     //
 
+    bool const mIsMultisamplingSupported;
     bool mDoInvokeGlFinish;
 
     //
@@ -1410,16 +1416,16 @@ private:
         // Shader manager
         //
 
-        std::unique_ptr<ShaderManager<GameShaderSets::ShaderSet>> ShaderManager;
+        std::unique_ptr<ShaderManager<GameShaderSets::ShaderSet>> shaderManager;
 
         //
         // Child contextes
         //
 
-        std::unique_ptr<GlobalRenderContext> GlobalRenderContext;
-        std::unique_ptr<WorldRenderContext> WorldRenderContext;
-        std::vector<std::unique_ptr<ShipRenderContext>> Ships;
-        std::unique_ptr<NotificationRenderContext> NotificationRenderContext;
+        std::unique_ptr<GlobalRenderContext> globalRenderContext;
+        std::unique_ptr<WorldRenderContext> worldRenderContext;
+        std::vector<std::unique_ptr<ShipRenderContext>> ships;
+        std::unique_ptr<NotificationRenderContext> notificationRenderContext;
     };
 
     std::unique_ptr<InnerContext> mInnerContext;

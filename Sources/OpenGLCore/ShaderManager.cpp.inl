@@ -14,6 +14,7 @@
 template<typename TShaderSet>
 ShaderManager<TShaderSet>::ShaderManager(
     IAssetManager const & assetManager,
+    bool isMultisamplingEnabled,
     SimpleProgressCallback const & progressCallback)
 {
     //
@@ -51,7 +52,8 @@ ShaderManager<TShaderSet>::ShaderManager(
             CompileShader(
                 entryIt.second.Name,
                 entryIt.second.Source,
-                shaderSources);
+                shaderSources,
+                isMultisamplingEnabled);
         }
 
         ++progress;
@@ -75,7 +77,8 @@ template<typename TShaderSet>
 void ShaderManager<TShaderSet>::CompileShader(
     std::string const & shaderName,
     std::string const & shaderSource,
-    std::map<std::string, ShaderInfo> const & allShaderSources)
+    std::map<std::string, ShaderInfo> const & allShaderSources,
+    bool isMultiSamplingEnabled)
 {
     try
     {
@@ -98,8 +101,8 @@ void ShaderManager<TShaderSet>::CompileShader(
             shaderSource,
             allShaderSources);
 
-        // Split the source file
-        auto [vertexShaderSource, fragmentShaderSource] = SplitSource(preprocessedShaderSource);
+        // Pre-process - and split - the source file
+        auto [vertexShaderSource, fragmentShaderSource] = PreProcessSource(preprocessedShaderSource, isMultiSamplingEnabled);
 
 
         //
@@ -213,7 +216,7 @@ void ShaderManager<TShaderSet>::CompileShader(
 template<typename TShaderSet>
 std::string ShaderManager<TShaderSet>::ResolveIncludes(
     std::string const & shaderSource,
-    std::map<std::string, ShaderInfo> const & shaderSources)
+    std::map<std::string, ShaderInfo> const & allShaderSources)
 {
     /*
      * Strategy:
@@ -248,8 +251,8 @@ std::string ShaderManager<TShaderSet>::ResolveIncludes(
                 assert(2 == match.size());
 
                 auto includeFilename = match[1].str();
-                auto includeIt = shaderSources.find(includeFilename);
-                if (includeIt == shaderSources.end())
+                auto includeIt = allShaderSources.find(includeFilename);
+                if (includeIt == allShaderSources.end())
                 {
                     throw GameException("Cannot find include file \"" + includeFilename + "\"");
                 }
@@ -289,7 +292,9 @@ std::string ShaderManager<TShaderSet>::ResolveIncludes(
 }
 
 template<typename TShaderSet>
-std::tuple<std::string, std::string> ShaderManager<TShaderSet>::SplitSource(std::string const & source)
+std::tuple<std::string, std::string> ShaderManager<TShaderSet>::PreProcessSource(
+    std::string const & source,
+    bool isMultiSamplingEnabled)
 {
     static std::regex const VertexHeaderRegex(R"!(\s*###VERTEX-(\d{3})\s*)!");
     static std::regex const FragmentHeaderRegex(R"!(\s*###FRAGMENT-(\d{3})\s*)!");
@@ -299,6 +304,11 @@ std::tuple<std::string, std::string> ShaderManager<TShaderSet>::SplitSource(std:
     std::string line;
 
     std::stringstream commonCode;
+    if (isMultiSamplingEnabled)
+    {
+        commonCode << "#define IS_MULTISAMPLING_ENABLED" << sSource.widen('\n');
+    }
+
     std::stringstream vertexShaderCode;
     std::stringstream fragmentShaderCode;
 
@@ -366,7 +376,6 @@ std::tuple<std::string, std::string> ShaderManager<TShaderSet>::SplitSource(std:
     {
         fragmentShaderCode << line << sSource.widen('\n');
     }
-
 
     return std::make_tuple(
         vertexShaderCode.str(),

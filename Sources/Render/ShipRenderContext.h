@@ -53,6 +53,7 @@ public:
         ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
         GlobalRenderContext & globalRenderContext,
         RenderParameters const & renderParameters,
+        bool isMultisamplingSupported,
         float shipFlameSizeAdjustment,
         float vectorFieldLengthMultiplier);
 
@@ -1396,6 +1397,7 @@ private:
 
     ShaderManager<GameShaderSets::ShaderSet> & mShaderManager;
     GlobalRenderContext & mGlobalRenderContext;
+    bool const mIsMultisamplingSupported;
 
 private:
 

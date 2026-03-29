@@ -92,7 +92,10 @@ View::View(
     // Load shader manager
     //
 
-    mShaderManager = ShaderManager<ShaderSet>::CreateInstance(gameAssetManager, SimpleProgressCallback::Dummy());
+    mShaderManager = ShaderManager<ShaderSet>::CreateInstance(
+        gameAssetManager,
+        false,  // Don't need multi-sampling
+        SimpleProgressCallback::Dummy());
 
     // Set texture samplers in programs
     mShaderManager->ActivateProgram<ProgramKind::MipMappedTextureQuad>();

@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "../GLCanvas.h"
+#include "../GameGLCanvas.h"
 
 #include <Game/GameAssetManager.h>
 
@@ -24,7 +24,9 @@ class SplashScreenDialog : public wxFrame
 {
 public:
 
-	SplashScreenDialog(GameAssetManager const & gameAssetManager);
+	SplashScreenDialog(
+		bool doForceNoMultiSampling,
+		GameAssetManager const & gameAssetManager);
 
 	virtual ~SplashScreenDialog();
 
@@ -33,7 +35,7 @@ public:
 	 * which may be used for binding an OpenGL context to while
 	 * the main frame's canvas is still hiddden
 	 */
-	GLCanvas * GetOpenGLCanvas() const
+	GameGLCanvas * GetOpenGLCanvas() const
 	{
 		assert(nullptr != mGLCanvas);
 		return mGLCanvas;
@@ -49,7 +51,7 @@ private:
 
 private:
 
-	GLCanvas * mGLCanvas;
+	GameGLCanvas * mGLCanvas;
 	wxGauge * mGauge;
 	wxStaticText * mProgressText;
 
