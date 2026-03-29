@@ -648,27 +648,22 @@
 							+ 1K: OK
 							X 4K: generates lines (and lip starts ghosting)
 
-				- See if edge springs are still required
+				X See if edge springs are still required
+					X ROPES ARE DISCONNECTED FROM STRUCTURES
+					- Move enabling of GL_MULTISAMPLE before triangles
 					- Spings::Upload decides based on RenderContext::IsMultisamplingEnabled/Supported
 					- New Dell UHD
 					- New Dell nVidia
 					- Old Dell
 					- Ubuntu
 
-				- Changelist
+				+ Changelist
 
 				- merge back into tornadoes..._wild_mast_experiments, with PR
 
 				- Remove nVidia for all binaries
 				
-		- Add to Android plan:
-			- Port code (# of ocean floor samples), hence:
-				- Adjust default floor (needed? see if it's still at 1024 like PC; if so, leave it alone)
-			- Check ghost lines
-				- If so: try MS route
-			- Check anti-aliasing
-				- See if even needed in shader
-					- Depends on whether MS is enabled or not?
+		+ Add to Android plan
 
 	- Look into guy's ocean floor on server
 	- Air bubbles trapped in silt
