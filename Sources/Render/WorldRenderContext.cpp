@@ -994,9 +994,169 @@ void WorldRenderContext::UploadLandStart(size_t slices)
     mIsLandVertexBufferDirty = true;
 }
 
-void WorldRenderContext::UploadLandEnd()
+void WorldRenderContext::UploadLandEnd(float /*yWorldBottom*/)
 {
-    // Nop
+    // Futurework: on GEForce RTX (nVidia), steep triangles cause
+    // seams - with or without multi-sampling.
+    // This code improves the situation, but not completely.
+    // Given its complexity, we won't use it
+
+    //////
+    ////// Optimize
+    //////
+
+    ////size_t const prevLandVertexBufferSize = mLandVertexBuffer.size();
+
+    ////// Dummy values for Depth, InterfaceBlendDepth -- not too big, but larger than lip and max transition thickness, so to be nop (keep in sync with shader and code!)
+    ////float constexpr DummyAnyDepth = 100.0f;
+
+    ////float constexpr MaxDeltaYForCoalescing = 100.0f;
+
+    ////assert(mLandPureBedrockSamples.size() >= 2);
+
+    ////float currentMaxY = std::max(mLandPureBedrockSamples[0].y, mLandPureBedrockSamples[1].y);
+    ////float currentMinY = std::min(mLandPureBedrockSamples[0].y, mLandPureBedrockSamples[1].y);
+    ////size_t currentStreakSampleIndexStart = 0; // At any given moment, we have covered the left of it and _not_ the right of it
+
+    ////for (size_t s = 1; s < mLandPureBedrockSamples.size(); ++s)
+    ////{
+    ////    //
+    ////    // Check whether incorporating s+1 would overshoot our margin
+    ////    //
+
+    ////    float newMaxY;
+    ////    float newMinY;
+    ////    if (s < mLandPureBedrockSamples.size() - 1)
+    ////    {
+    ////        newMaxY = std::max(currentMaxY, mLandPureBedrockSamples[s + 1].y);
+    ////        newMinY = std::min(currentMinY, mLandPureBedrockSamples[s + 1].y);
+    ////    }
+    ////    else
+    ////    {
+    ////        // Just trigger closure
+    ////        newMinY = 0.0f;
+    ////        newMaxY = MaxDeltaYForCoalescing;
+    ////    }
+
+    ////    assert(newMaxY >= newMinY);
+    ////    if (newMaxY >= newMinY + MaxDeltaYForCoalescing)
+    ////    {
+    ////        //
+    ////        // Interrupt streak
+    ////        //
+
+    ////        //
+    ////        // Close [streakStart, s]
+    ////        //
+
+    ////        // 1. Generate "topping" quads for all samples whose Y is above minY
+
+    ////        for (size_t ss = currentStreakSampleIndexStart; ss < s; ++ss)
+    ////        {
+    ////            if (mLandPureBedrockSamples[ss].y > currentMinY)
+    ////            {
+    ////                // |\
+
+    ////                mLandVertexBuffer.emplace_back(
+    ////                    mLandPureBedrockSamples[ss],
+    ////                    DummyAnyDepth, DummyAnyDepth);
+    ////                mLandVertexBuffer.emplace_back(
+    ////                    vec2f(mLandPureBedrockSamples[ss].x, currentMinY),
+    ////                    DummyAnyDepth, DummyAnyDepth);
+    ////                mLandVertexBuffer.emplace_back(
+    ////                    vec2f(mLandPureBedrockSamples[ss + 1].x, currentMinY),
+    ////                    DummyAnyDepth, DummyAnyDepth);
+
+    ////                if (mLandPureBedrockSamples[ss + 1].y > currentMinY)
+    ////                {
+    ////                    // \|
+
+    ////                    mLandVertexBuffer.emplace_back(
+    ////                        mLandPureBedrockSamples[ss],
+    ////                        DummyAnyDepth, DummyAnyDepth);
+    ////                    mLandVertexBuffer.emplace_back(
+    ////                        mLandPureBedrockSamples[ss + 1],
+    ////                        DummyAnyDepth, DummyAnyDepth);
+    ////                    mLandVertexBuffer.emplace_back(
+    ////                        vec2f(mLandPureBedrockSamples[ss + 1].x, currentMinY),
+    ////                        DummyAnyDepth, DummyAnyDepth);
+    ////                }
+    ////                else
+    ////                {
+    ////                    assert(mLandPureBedrockSamples[ss + 1].y == currentMinY);
+    ////                }
+    ////            }
+    ////            else if (mLandPureBedrockSamples[ss + 1].y > currentMinY)
+    ////            {
+    ////                // /|
+
+    ////                mLandVertexBuffer.emplace_back(
+    ////                    mLandPureBedrockSamples[ss + 1],
+    ////                    DummyAnyDepth, DummyAnyDepth);
+    ////                mLandVertexBuffer.emplace_back(
+    ////                    vec2f(mLandPureBedrockSamples[ss + 1].x, currentMinY),
+    ////                    DummyAnyDepth, DummyAnyDepth);
+    ////                mLandVertexBuffer.emplace_back(
+    ////                    vec2f(mLandPureBedrockSamples[ss].x, currentMinY),
+    ////                    DummyAnyDepth, DummyAnyDepth);
+    ////            }
+    ////        }
+
+    ////        // 2. Generate single "fat" quad for all these samples
+
+    ////        float fatQuadLeftX = mLandPureBedrockSamples[currentStreakSampleIndexStart].x;
+    ////        float fatQuadRightX = mLandPureBedrockSamples[s].x;
+
+    ////        // |/
+
+    ////        mLandVertexBuffer.emplace_back(
+    ////            vec2f(fatQuadLeftX, currentMinY),
+    ////            DummyAnyDepth, DummyAnyDepth);
+    ////        mLandVertexBuffer.emplace_back(
+    ////            vec2f(fatQuadLeftX, yWorldBottom),
+    ////            DummyAnyDepth, DummyAnyDepth);
+    ////        mLandVertexBuffer.emplace_back(
+    ////            vec2f(fatQuadRightX, currentMinY),
+    ////            DummyAnyDepth, DummyAnyDepth);
+
+    ////        // /|
+
+    ////        mLandVertexBuffer.emplace_back(
+    ////            vec2f(fatQuadLeftX, yWorldBottom),
+    ////            DummyAnyDepth, DummyAnyDepth);
+    ////        mLandVertexBuffer.emplace_back(
+    ////            vec2f(fatQuadRightX, currentMinY),
+    ////            DummyAnyDepth, DummyAnyDepth);
+    ////        mLandVertexBuffer.emplace_back(
+    ////            vec2f(fatQuadRightX, yWorldBottom),
+    ////            DummyAnyDepth, DummyAnyDepth);
+
+    ////        //
+    ////        // Start new streak
+    ////        //
+
+    ////        if (s < mLandPureBedrockSamples.size() - 1)
+    ////        {
+    ////            currentMaxY = std::max(mLandPureBedrockSamples[s].y, mLandPureBedrockSamples[s + 1].y);
+    ////            currentMinY = std::min(mLandPureBedrockSamples[s].y, mLandPureBedrockSamples[s + 1].y);
+    ////            currentStreakSampleIndexStart = s;
+    ////        }
+    ////        else
+    ////        {
+    ////            break;
+    ////        }
+    ////    }
+    ////    else
+    ////    {
+    ////        // Incorporate this one
+    ////        assert(s < mLandPureBedrockSamples.size() - 1);
+    ////        currentMaxY = newMaxY;
+    ////        currentMinY = newMinY;
+    ////    }
+    ////}
+
+    ////size_t const baseLandVerticesAfterOptimization = (mLandPureBedrockSamples.size() - 1) * 6;
+    ////LogMessage("TODOTEST: Land vertices added by optimization: ", mLandVertexBuffer.size() - prevLandVertexBufferSize, " (base: ", baseLandVerticesAfterOptimization, ")");
 }
 
 void WorldRenderContext::UploadOceanBasicStart(size_t slices)

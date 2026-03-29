@@ -640,9 +640,10 @@
 					+ Test the heck out of it
 						+ Test impacts
 
-				- nVidia close-by seams issue:
-					- Try optimization step?
-					- Try with further segmentation for nVidia
+				X nVidia close-by seams issue:
+					X Try optimization step?
+					+ Regardless: OceanFloor::Upload should upload nSamples - 1 slices
+					X Try with further segmentation for nVidia
 						+ Test: see using Lip for test:
 							+ 1K: OK
 							X 4K: generates lines (and lip starts ghosting)
@@ -657,6 +658,8 @@
 				- Changelist
 
 				- merge back into tornadoes..._wild_mast_experiments, with PR
+
+				- Remove nVidia for all binaries
 				
 		- Add to Android plan:
 			- Port code (# of ocean floor samples), hence:

@@ -111,7 +111,8 @@ void OceanFloor::Upload(
 
         float sampleIndexX = -SimulationParameters::HalfMaxWorldWidth;
 
-        for (size_t s = 0; s < SamplesCount; ++s)
+        // Upload all slices, with slice i encompassing sample i and i+1
+        for (size_t s = 0; s < SamplesCount - 1; ++s)
         {
             float const nextSampleIndexX = sampleIndexX + Dx;
             renderContext.UploadLand(

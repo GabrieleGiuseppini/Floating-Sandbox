@@ -427,7 +427,7 @@ public:
             MaxTransitionThickness + LipThickness); // Fixed
     }
 
-    void UploadLandEnd();
+    void UploadLandEnd(float yWorldBottom);
 
     void UploadOceanBasicStart(size_t slices);
 

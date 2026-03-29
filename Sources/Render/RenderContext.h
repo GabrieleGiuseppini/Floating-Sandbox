@@ -1028,7 +1028,7 @@ public:
 
     inline void UploadLandEnd()
     {
-        mInnerContext->worldRenderContext->UploadLandEnd();
+        mInnerContext->worldRenderContext->UploadLandEnd(-mRenderParameters.View.GetHalfMaxWorldHeight());
     }
 
     inline void UploadOceanBasicStart(size_t slices)
