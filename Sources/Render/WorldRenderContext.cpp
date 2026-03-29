@@ -999,7 +999,7 @@ void WorldRenderContext::UploadLandEnd(float /*yWorldBottom*/)
     // Futurework: on GEForce RTX (nVidia), steep triangles cause
     // seams - with or without multi-sampling.
     // This code improves the situation, but not completely.
-    // Given its complexity, we won't use it
+    // Given its complexity, and t he fact that it requires more triangles, we won't use it
 
     //////
     ////// Optimize
