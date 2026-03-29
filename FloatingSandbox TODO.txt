@@ -277,11 +277,14 @@
 		+ Slider height: fixed
 		+ Resend beta
 		+ Cleanup tool slider (server decided fixed-height, i.e. new one)
+		+ Send beta with wild masts + DKuz bug
+		+ Bump up version
 
-		- Send beta with wild masts + DKuz bug
-		- Bump up version
+		- Fix nVidia RTX bug
+			- Just split those vertical quads
+				- Might be nice though to incorporate adjacent ones....
 
-		- More shapes
+		- More tornado shapes
 
 		- Storm supercell above it
 			- TornadoesWhatever uploads straight to World/RenderContext
@@ -290,6 +293,8 @@
 		- Also as phenomenon
 
 	- See ocean floor custom settings bug on community server
+
+	- See Longhorn's "The electrical panel fails to render a bit above 200 elements and the ship in question will no longer save, freezing in the "Checking ship..." dialogue."
 
 	+ Fix Mia's crash
 		+ ImageTools::InternalResizeDimension_BoxFilter
