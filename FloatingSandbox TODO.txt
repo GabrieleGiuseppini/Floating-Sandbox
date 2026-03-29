@@ -276,10 +276,10 @@
 		+ Try changing shape with strength
 		+ Slider height: fixed
 		+ Resend beta
-
-		- Cleanup tool slider (server decided fixed-height, i.e. new one)
+		+ Cleanup tool slider (server decided fixed-height, i.e. new one)
 
 		- Send beta with wild masts + DKuz bug
+		- Bump up version
 
 		- More shapes
 
@@ -309,15 +309,14 @@
 	X Look into stutter:
 		+ See if mouse moves: it does :-(
 		+ Add probes
-
-    // TODOTEST
-    auto now = GameChronometer::Now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTimestamp);
-    if (elapsed.count() > 70)
-    {
-        LogMessage("!!! Step 1: Actual=", elapsed.count());
-    }
-    auto previousTimestamp = now;
+		    // TODOTEST
+		    auto now = GameChronometer::Now();
+		    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTimestamp);
+		    if (elapsed.count() > 70)
+		    {
+			LogMessage("!!! Step 1: Actual=", elapsed.count());
+		    }
+		    auto previousTimestamp = now;
 
 		! Findings
 			! It's RunGameIteration step for sure, NOT the wxTimer
@@ -344,7 +343,7 @@
 
 	X Try modulating smoke quad shape with its velocity
 
-	= Look into masts on seafloor colliding over and over again
+	+ Look into masts on seafloor colliding over and over again
 		! It's Iron Hull (743Kg) @ 5K depth, going at 0.5/0.9 m/s
 			kevc=395.549 thr=57.1429
 			kevc=96.1035 thr=57.1429
@@ -369,7 +368,7 @@
 		+ Due to pressure - doesn't happen with 1K but it does with 2K
 		+ It's hull, so no counterpressure
 		! Due to static pressure forces, verified
-		= Try with a mesh-based visit to gauge thickness
+		+ Try with a mesh-based visit to gauge thickness
 			! Along springs with triangles, in direction of force vector
 			+ 1: distance to next edge
 				+ Make sure outward pressure works fine
@@ -483,9 +482,7 @@
 			+ See what's going on with Base 3/complexity
 				! Loops for all iterations, as lambda's are basically 1 and reduction is super slow
 				+ Stop loop if lambda which provides most reduction is very close to 1
-
-			- merge back into tornadoes
-
+			+ merge back into tornadoes
 			+ Test on old Dell
 				+ See if might want to turn it off on slow machines
 			+ Check sudden breakage
