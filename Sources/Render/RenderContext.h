@@ -1013,8 +1013,7 @@ public:
         float yBedrock1,
         float x2,
         float ySilt2,
-        float yBedrock2,
-        float yWorldBottom)
+        float yBedrock2)
     {
         mInnerContext->worldRenderContext->UploadLand(
             iSlice,
@@ -1024,7 +1023,7 @@ public:
             x2,
             ySilt2,
             yBedrock2,
-            yWorldBottom);
+            -mRenderParameters.View.GetHalfMaxWorldHeight());
     }
 
     inline void UploadLandEnd()

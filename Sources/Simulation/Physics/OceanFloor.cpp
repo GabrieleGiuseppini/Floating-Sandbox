@@ -121,8 +121,7 @@ void OceanFloor::Upload(
                 mSamples[s].BedrockSampleValue,
                 nextSampleIndexX,
                 mSamples[s + 1].SiltSampleValue,
-                mSamples[s + 1].BedrockSampleValue,
-                -SimulationParameters::HalfMaxWorldHeight);
+                mSamples[s + 1].BedrockSampleValue);
 
             sampleIndexX = nextSampleIndexX;
         }

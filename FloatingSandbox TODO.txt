@@ -670,6 +670,8 @@
 	- Look into guy's ocean floor on server
 	- Air bubbles trapped in silt
 
+	- See if ocean waves transitions can become better, with same trick as vortex's speed may be?
+
 	- See if can improve FindFreeEphemeralParticle
 		= Thing 1: remove need for currentSimulationTime
 		- Thing 2:
