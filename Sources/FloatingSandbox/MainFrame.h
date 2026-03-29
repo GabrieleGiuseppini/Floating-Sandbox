@@ -114,7 +114,7 @@ private:
     // OpenGL Canvas and Context
     //
 
-    GLCanvas * mMainGLCanvas;
+    GameGLCanvas * mMainGLCanvas;
     std::unique_ptr<wxGLContext> mMainGLCanvasContext;
 
     // Pointer to the canvas that the OpenGL context may be made current on

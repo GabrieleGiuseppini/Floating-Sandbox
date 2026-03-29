@@ -28,6 +28,7 @@ BootSettings BootSettings::Load(std::filesystem::path const & filePath)
                 {
                     settings.DoForceNoGlFinish = Utils::GetOptionalJsonMember<bool>(rootObject, "force_no_glfinish");
                     settings.DoForceNoMultithreadedRendering = Utils::GetOptionalJsonMember<bool>(rootObject, "force_no_multithreaded_rendering");
+                    settings.DoForceNoMultiSampling = Utils::GetOptionalJsonMember<bool>(rootObject, "force_no_multisampling");
                 }
             }
         }
@@ -53,6 +54,9 @@ void BootSettings::Save(
 
     if (settings.DoForceNoMultithreadedRendering.has_value())
         rootObject["force_no_multithreaded_rendering"] = picojson::value(*(settings.DoForceNoMultithreadedRendering));
+
+    if (settings.DoForceNoMultiSampling.has_value())
+        rootObject["force_no_multisampling"] = picojson::value(*(settings.DoForceNoMultiSampling));
 
     // Save
     GameAssetManager::SaveJson(

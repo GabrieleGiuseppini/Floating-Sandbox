@@ -16,6 +16,7 @@ struct RenderDeviceProperties
     DisplayLogicalSize InitialCanvasSize;
     int LogicalToPhysicalDisplayFactor;
 
+    bool IsMultisamplingSupported;
     std::optional<bool> DoForceNoGlFinish;
     std::optional<bool> DoForceNoMultithreadedRendering;
 
@@ -25,12 +26,14 @@ struct RenderDeviceProperties
     RenderDeviceProperties(
         DisplayLogicalSize initialCanvasSize,
         int logicalToPhysicalDisplayFactor,
+        bool isMultisamplingSupported,
         std::optional<bool> doForceNoGlFinish,
         std::optional<bool> doForceNoMultithreadedRendering,
         std::function<void()> makeRenderContextCurrentFunction,
         std::function<void()> swapRenderBuffersFunction)
         : InitialCanvasSize(initialCanvasSize)
         , LogicalToPhysicalDisplayFactor(logicalToPhysicalDisplayFactor)
+        , IsMultisamplingSupported(isMultisamplingSupported)
         , DoForceNoGlFinish(doForceNoGlFinish)
         , DoForceNoMultithreadedRendering(doForceNoMultithreadedRendering)
         , MakeRenderContextCurrentFunction(std::move(makeRenderContextCurrentFunction))

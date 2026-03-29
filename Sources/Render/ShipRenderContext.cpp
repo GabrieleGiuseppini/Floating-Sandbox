@@ -23,10 +23,12 @@ ShipRenderContext::ShipRenderContext(
     ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
     GlobalRenderContext & globalRenderContext,
     RenderParameters const & renderParameters,
+    bool isMultisamplingSupported,
     float shipFlameSizeAdjustment,
     float vectorFieldLengthMultiplier)
     : mShaderManager(shaderManager)
     , mGlobalRenderContext(globalRenderContext)
+    , mIsMultisamplingSupported(isMultisamplingSupported)
     //
     , mShipId(shipId)
     , mPointCount(pointCount)
@@ -1589,6 +1591,16 @@ void ShipRenderContext::RenderDraw(
         glLineWidth(renderParameters.View.WorldOffsetToPhysicalDisplayOffset(0.1f * 2.0f));
 
         //
+        // If we can, enable multi-sampling for ropes and springs, which would be aliased
+        // and segmented otherwise
+        //
+
+        if (mIsMultisamplingSupported)
+        {
+            glEnable(GL_MULTISAMPLE);
+        }
+
+        //
         // Draw ropes, unless it's a debug mode that doesn't want them
         //
         // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be uploaded
@@ -1658,6 +1670,12 @@ void ShipRenderContext::RenderDraw(
 
             // Update stats
             renderStats.LastRenderedShipSprings += mSpringElementBuffer.size();
+        }
+
+        if (mIsMultisamplingSupported)
+        {
+            // Undo enabling
+            glDisable(GL_MULTISAMPLE);
         }
 
         //

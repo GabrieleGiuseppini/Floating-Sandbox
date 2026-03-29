@@ -1,6 +1,9 @@
 TODO
 - Improved hydrostatic pressure simulation - less crazy behaviors at great depths
 - Improved "wild mast" issue, where masts on the ocean floor would pick up silt clouds
+- Rendering improvements:
+	- Enabled multi-sampling, reducing aliasing around the ship's structure and landmasses
+	- Redesigned ocean floor tessellation, reducing rendering artifacts
 - Fixed a crash when exiting the game on systems with certain nVidia cards
 - Added 1 new ship
 

@@ -9,7 +9,7 @@
 
 #include <cassert>
 
-float constexpr NdcFractionZoomTarget = 0.7f; // Fraction of the [0, 2] NDC space that needs to be occupied by AABB
+float constexpr AutoFocusNdcFractionZoomTarget = 0.7f; // Fraction of the [0, 2] NDC space that needs to be occupied by AABB in auto-focus
 
 float constexpr SmootherTerminationThreshold = 0.00005f; // How close to target we stop smoothing
 
@@ -485,8 +485,8 @@ float ViewManager::InternalCalculateZoomForAABB(
     float const height = std::max(aabb.GetHeight(), 1.0f) * heightMultiplier;
 
     return std::min(
-        renderContext.CalculateZoomForWorldWidth(width / NdcFractionZoomTarget),
-        renderContext.CalculateZoomForWorldHeight(height / NdcFractionZoomTarget));
+        renderContext.CalculateZoomForWorldWidth(width / AutoFocusNdcFractionZoomTarget),
+        renderContext.CalculateZoomForWorldHeight(height / AutoFocusNdcFractionZoomTarget));
 }
 
 float ViewManager::InternalCalculateAutoFocusOnShipMaxZoom(Geometry::AABB const & aabb) const

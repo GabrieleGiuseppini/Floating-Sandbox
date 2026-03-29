@@ -100,6 +100,12 @@ public:
         mSize = maxSize;
     }
 
+    inline void reset_full(size_t maxSize, size_t populatedSize)
+    {
+        internal_reset(maxSize);
+        mSize = populatedSize;
+    }
+
     inline void ensure_size(size_t maxSize)
     {
         if (maxSize > mAllocatedSize)

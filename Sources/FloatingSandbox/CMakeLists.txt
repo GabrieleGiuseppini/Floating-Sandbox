@@ -7,7 +7,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	AudioController.h
 	BootSettings.cpp
 	BootSettings.h
-	GLCanvas.h
+	GameGLCanvas.cpp
+	GameGLCanvas.h
 	MainApp.cpp
 	MainFrame.cpp
 	MainFrame.h

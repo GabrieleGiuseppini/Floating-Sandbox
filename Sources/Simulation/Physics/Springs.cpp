@@ -206,7 +206,7 @@ void Springs::UploadElements(
 
     for (ElementIndex i : *this)
     {
-        // Only upload non-deleted springs that are not covered by two super-triangles, unless
+        // Only upload non-deleted springs that are not covered by two super-triangles (i.e. edge springs), unless
         // we are in springs render mode
         if (!mIsDeletedBuffer[i])
         {

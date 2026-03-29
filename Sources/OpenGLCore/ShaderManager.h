@@ -35,10 +35,11 @@ public:
 
     static std::unique_ptr<ShaderManager> CreateInstance(
         IAssetManager const & assetManager,
+        bool isMultisamplingEnabled,
         SimpleProgressCallback const & progressCallback)
     {
         return std::unique_ptr<ShaderManager>(
-            new ShaderManager(assetManager, progressCallback));
+            new ShaderManager(assetManager, isMultisamplingEnabled, progressCallback));
     }
 
     template <typename TShaderSet::ProgramKindType Program>
@@ -396,6 +397,7 @@ private:
 
     ShaderManager(
         IAssetManager const & assetManager,
+        bool isMultisamplingEnabled,
         SimpleProgressCallback const & progressCallback);
 
     struct ShaderInfo
@@ -408,13 +410,16 @@ private:
     void CompileShader(
         std::string const & shaderName,
         std::string const & shaderSource,
-        std::map<std::string, ShaderInfo> const & shaderSources);
+        std::map<std::string, ShaderInfo> const & allShaderSources,
+        bool isMultiSamplingEnabled);
 
     static std::string ResolveIncludes(
         std::string const & shaderSource,
-        std::map<std::string, ShaderInfo> const & shaderSources);
+        std::map<std::string, ShaderInfo> const & allShaderSources);
 
-    static std::tuple<std::string, std::string> SplitSource(std::string const & source);
+    static std::tuple<std::string, std::string> PreProcessSource(
+        std::string const & source,
+        bool isMultiSamplingEnabled);
 
     static std::set<std::string> ExtractVertexAttributeNames(GameOpenGLShaderProgram const & shaderProgram);
 
@@ -446,12 +451,14 @@ private:
     friend class ShaderManagerTests_ProcessesIncludes_AllowsLoops_Test;
     friend class ShaderManagerTests_ProcessesIncludes_ComplainsWhenIncludeNotFound_Test;
 
-    friend class ShaderManagerTests_SplitsShaders_Test;
-    friend class ShaderManagerTests_SplitsShaders_DuplicatesCommonSectionToVertexAndFragment_Test;
-    friend class ShaderManagerTests_SplitsShaders_ErrorsOnMalformedVertexSection_Test;
-    friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingVertexSection_Test;
-    friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingVertexSection_EmptyFile_Test;
-    friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingFragmentSection_Test;
+    friend class ShaderManagerTests_PreProcessSource_SplitsShaders_Test;
+    friend class ShaderManagerTests_PreProcessSource_MultiSamplingEnabled_On_Test;
+    friend class ShaderManagerTests_PreProcessSource_MultiSamplingEnabled_Off_Test;
+    friend class ShaderManagerTests_PreProcessSource_DuplicatesCommonSectionToVertexAndFragment_Test;
+    friend class ShaderManagerTests_PreProcessSource_ErrorsOnMalformedVertexSection_Test;
+    friend class ShaderManagerTests_PreProcessSource_ErrorsOnMissingVertexSection_Test;
+    friend class ShaderManagerTests_PreProcessSource_ErrorsOnMissingVertexSection_EmptyFile_Test;
+    friend class ShaderManagerTests_PreProcessSource_ErrorsOnMissingFragmentSection_Test;
 
     friend class ShaderManagerTests_ExtractsShaderParameters_Single_Test;
     friend class ShaderManagerTests_ExtractsShaderParameters_Multiple_Test;

@@ -14,23 +14,28 @@ public:
 
     std::optional<bool> DoForceNoGlFinish;
     std::optional<bool> DoForceNoMultithreadedRendering;
+    std::optional<bool> DoForceNoMultiSampling;
 
     BootSettings()
         : DoForceNoGlFinish()
         , DoForceNoMultithreadedRendering()
+        , DoForceNoMultiSampling()
     {}
 
     BootSettings(
         std::optional<bool> doForceNoGlFinish,
-        std::optional<bool> doForceNoMultithreadedRendering)
+        std::optional<bool> doForceNoMultithreadedRendering,
+        std::optional<bool> doForceNoMultiSampling)
         : DoForceNoGlFinish(doForceNoGlFinish)
         , DoForceNoMultithreadedRendering(doForceNoMultithreadedRendering)
+        , DoForceNoMultiSampling(doForceNoMultiSampling)
     {}
 
     bool operator==(BootSettings const & rhs) const
     {
         return this->DoForceNoGlFinish == rhs.DoForceNoGlFinish
-            && this->DoForceNoMultithreadedRendering == rhs.DoForceNoMultithreadedRendering;
+            && this->DoForceNoMultithreadedRendering == rhs.DoForceNoMultithreadedRendering
+            && this->DoForceNoMultiSampling == rhs.DoForceNoMultiSampling;
     }
 
 public:

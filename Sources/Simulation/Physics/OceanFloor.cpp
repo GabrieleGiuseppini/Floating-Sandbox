@@ -111,16 +111,20 @@ void OceanFloor::Upload(
 
         float sampleIndexX = -SimulationParameters::HalfMaxWorldWidth;
 
-        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-        // quad side must be at the end of its width
-        for (size_t s = 0; s <= SamplesCount; ++s, sampleIndexX += Dx)
+        // Upload all slices, with slice i encompassing sample i and i+1
+        for (size_t s = 0; s < SamplesCount - 1; ++s)
         {
+            float const nextSampleIndexX = sampleIndexX + Dx;
             renderContext.UploadLand(
                 s,
                 sampleIndexX,
                 mSamples[s].SiltSampleValue,
                 mSamples[s].BedrockSampleValue,
-                -SimulationParameters::HalfMaxWorldHeight);
+                nextSampleIndexX,
+                mSamples[s + 1].SiltSampleValue,
+                mSamples[s + 1].BedrockSampleValue);
+
+            sampleIndexX = nextSampleIndexX;
         }
 
         renderContext.UploadLandEnd();
