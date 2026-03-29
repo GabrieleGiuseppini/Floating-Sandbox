@@ -219,7 +219,7 @@ struct SimulationParameters
     // The number of ocean floor terrain samples for the entire world width;
     // a higher value means more spatial resolution, at the expense of cache misses
     template <typename T>
-    static T constexpr OceanFloorTerrainSamples = 2049; // Implies 2048 slices, each WorldWidth/2048 wide; better precision with power-of-two
+    static T constexpr OceanFloorTerrainSamples = 2049; // 2048 slices, each WorldWidth/2048 wide (better precision with power-of-two); N+1 samples
 
     float OceanFloorBedrockBumpiness;
     static float constexpr MinOceanFloorBedrockBumpiness = 0.0f;

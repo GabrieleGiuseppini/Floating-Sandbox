@@ -633,25 +633,34 @@
 					+ AA ocean floor peaks
 					+ Ghost lines ocean floor peaks
 					+ Perf
-				= Test on Ubuntu
+				+ Test on Ubuntu
 					! ULTRA GHOST LINES!
 					+ Try with round OceanFloor Dx (samples=2049)
 					+ Test Mariana
-					- Test the heck out of it
+					+ Test the heck out of it
+						+ Test impacts
 
-				- Try with further segmentation for nVidia
-					- Test: see using Lip for test
+				- nVidia close-by seams issue:
+					- Try optimization step?
+					- Try with further segmentation for nVidia
+						+ Test: see using Lip for test:
+							+ 1K: OK
+							X 4K: generates lines (and lip starts ghosting)
 
 				- See if edge springs are still required
+					- Spings::Upload decides based on RenderContext::IsMultisamplingEnabled/Supported
 					- New Dell UHD
 					- New Dell nVidia
 					- Old Dell
+					- Ubuntu
 
 				- Changelist
 
 				- merge back into tornadoes..._wild_mast_experiments, with PR
 				
 		- Add to Android plan:
+			- Port code (# of ocean floor samples), hence:
+				- Adjust default floor (needed? see if it's still at 1024 like PC; if so, leave it alone)
 			- Check ghost lines
 				- If so: try MS route
 			- Check anti-aliasing
