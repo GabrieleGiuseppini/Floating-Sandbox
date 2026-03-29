@@ -279,6 +279,8 @@
 
 		- Cleanup tool slider (server decided fixed-height, i.e. new one)
 
+		- Send beta with wild masts + DKuz bug
+
 		- More shapes
 
 		- Storm supercell above it
@@ -482,14 +484,10 @@
 				! Loops for all iterations, as lambda's are basically 1 and reduction is super slow
 				+ Stop loop if lambda which provides most reduction is very close to 1
 
-			= Do DKUZ bug below
+			- merge back into tornadoes
 
-			- merge back into tornadoes, via github for checking
-			
-			- Discord
-
-			- Test on old Dell
-				- See if might want to turn it off on slow machines
+			+ Test on old Dell
+				+ See if might want to turn it off on slow machines
 			+ Check sudden breakage
 
 	+ GameController::PickObjectToMove: must also do radius like Pick(connected component)
@@ -500,7 +498,7 @@
 			! 48 8B 75 A8 48 8B 7D 90 4C 8B 75 C0 44 8B 64 24 58
 		X It's OpenAL
 
-	= Look into DKUZ's bug
+	+ Look into DKUZ's bug
 		! It's shader with high-derivative depth slopes
 		! Even with multisample and without derivatives, still silt-bedrock transparency shows
 			! Now it's any quantity that lowers with y: multisample interpolation generates value outside of range
@@ -543,7 +541,7 @@
 				! Multi-sample+centroid fixes anti-aliasing and ghost lines
 					+ centroid required or else MS introduces out-of-range samples, which generate ghost lines
 				! Multi-sample doesn't work on old Dell
-			= Plan A: Multisample+centroid (fixes anti-aliasing and ghost lines), but we accept nVidia's "close-by" seams
+			+ Plan A: Multisample+centroid (fixes anti-aliasing and ghost lines), but we accept nVidia's "close-by" seams
 				+ Multisample+Centroid:
 					+ Detect failure @ OpenGL context creation on old Dell and revert to single-sampled
 						+ Use Create() -> bool
@@ -658,11 +656,8 @@
 					- Ubuntu
 
 				+ Changelist
-
-				- merge back into tornadoes..._wild_mast_experiments, with PR
-
-				- Remove nVidia for all binaries
-				
+				+ merge back into tornadoes..._wild_mast_experiments, with PR
+				+ Remove nVidia for all binaries				
 		+ Add to Android plan
 
 	- Look into guy's ocean floor on server
