@@ -4,6 +4,7 @@ TODO
 - Rendering improvements:
 	- Enabled multi-sampling, reducing aliasing around the ship's structure and landmasses
 	- Redesigned ocean floor tessellation, reducing rendering artifacts
+- Fixed a glitch with ocean waves flattening out on the right side of the screen
 - Fixed a crash when exiting the game on systems with certain nVidia cards
 - Added 1 new ship
 

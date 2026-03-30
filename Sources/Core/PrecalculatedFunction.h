@@ -109,7 +109,6 @@ public:
      * Gets the value linearly-interpolated between the two samples at the specified value,
      * assumed to be periodic around one.
      */
-    template<bool IsNonNegative=false>
     inline float GetLinearlyInterpolatedPeriodic(float x) const
     {
         // Fractional absolute index in the (infinite) sample array
@@ -126,19 +125,36 @@ public:
         // Fractional part within sample index and the next sample index
         float sampleIndexDx = absoluteSampleIndexF - absoluteSampleIndexI;
 
-        if constexpr (IsNonNegative)
+        if (x < 0.0f)
         {
-            assert(x >= 0.0f);
+            // Wrap around and anchor to the left sample
+            sampleIndexI += SamplesCount - 1; // Includes shift to left
+            sampleIndexDx += 1.0f;
         }
-        else
-        {
-            if (x < 0.0f)
-            {
-                // Wrap around and anchor to the left sample
-                sampleIndexI += SamplesCount - 1; // Includes shift to left
-                sampleIndexDx += 1.0f;
-            }
-        }
+
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+
+        return mSamples[sampleIndexI].SampleValue
+            + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+    }
+
+    /*
+     * Gets the value linearly-interpolated between the two samples at the specified value,
+     * assumed to be normalized to one, and different than +1.0f.
+     */
+    inline float GetLinearlyInterpolatedPeriodicFromNormalized(float x) const
+    {
+        assert(x >= 0.0f && x < 1.0f);
+
+        // Fractional absolute index in the (infinite) sample array
+        float const sampleIndexF = x / Dx;
+
+        // Integral part
+        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+
+        // Fractional part within sample index and the next sample index
+        float sampleIndexDx = sampleIndexF - sampleIndexI;
 
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
         assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);

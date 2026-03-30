@@ -280,14 +280,14 @@
 		+ Send beta with wild masts + DKuz bug
 		+ Bump up version
 
-		= FIX:
-			= Ocean waves (wind = 0, high waves) "only on one half"
-				- Option 1: ensure all positive (like now), then scale back if > 1.0f
-					- Limits large numbers
-					- Change meaning of bool @ interpol (search usages), and skip wrap check
-						- Unit tests
+		+ FIX:
+			+ Ocean waves (wind = 0, high waves) "only on one half"
+				+ Option 1: ensure all positive (like now), then scale back if > 1.0f
+					+ Limits large numbers
+					+ Change meaning of bool @ interpol (search usages), and skip wrap check
+						+ Unit tests
 				- Option 2: back to where we were
-				- Changelist
+				+ Changelist (PC only)
 			+ Silt stripe
 
 		- Fix nVidia RTX bug
