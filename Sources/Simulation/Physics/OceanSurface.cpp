@@ -1114,18 +1114,27 @@ void OceanSurface::GenerateSamples(
             * SWEHeightFieldAmplification;
 
         sinArg1 += sinArg1Dx;
+        if (sinArg1 >= 1.0f)
+            sinArg1 -= 1.0f;
+        assert(sinArg1 >= 0.0f && sinArg1 < 1.0f);
         float const basalValue1 =
-            mBasalWaveSin1.GetLinearlyInterpolatedPeriodic<true>(sinArg1);
+            mBasalWaveSin1.GetLinearlyInterpolatedPeriodic<false>(sinArg1);
 
         sinArg2 += sinArg2Dx;
+        if (sinArg2 >= 1.0f)
+            sinArg2 -= 1.0f;
+        assert(sinArg2 >= 0.0f && sinArg2 < 1.0f);
         float const basalValue2 =
             basalWave2AmplitudeCoeff
-            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic<true>(sinArg2);
+            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic<false>(sinArg2);
 
         sinArgRipple += sinArgRippleDx;
+        if (sinArgRipple >= 1.0f)
+            sinArgRipple -= 1.0f;
+        assert(sinArgRipple >= 0.0f && sinArgRipple < 1.0f);
         float const rippleValue =
             rippleWaveAmplitudeCoeff
-            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic<true>(sinArgRipple);
+            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic<false>(sinArgRipple);
 
         float const sampleValue =
             sweValue

@@ -280,8 +280,14 @@
 		+ Send beta with wild masts + DKuz bug
 		+ Bump up version
 
-		- FIX:
-			- Ocean waves (wind = 0, high waves) "only on one half"
+		= FIX:
+			= Ocean waves (wind = 0, high waves) "only on one half"
+				- Option 1: ensure all positive (like now), then scale back if > 1.0f
+					- Limits large numbers
+					- Change meaning of bool @ interpol (search usages), and skip wrap check
+						- Unit tests
+				- Option 2: back to where we were
+				- Changelist
 			+ Silt stripe
 
 		- Fix nVidia RTX bug
@@ -296,6 +302,11 @@
 
 		- Storm supercell above it
 			- TornadoesWhatever uploads straight to World/RenderContext
+				- NDCx: fixed, 0.0, with some lateral parallax depending on CamX
+				- NDCy: non-linear:
+					- If cloudBottomWorldY (~= tornado top) >= visibleWorldBottom: just it (but in NDC coords)
+					- Else: vertical parallax: extent is TODOHERE until visibleWorldBottom is at max top
+
 				- ...which does parallax
 
 		- Also as phenomenon
