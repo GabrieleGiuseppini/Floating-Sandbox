@@ -280,8 +280,16 @@
 		+ Send beta with wild masts + DKuz bug
 		+ Bump up version
 
+		- FIX:
+			- Ocean waves (wind = 0, high waves) "only on one half"
+			+ Silt stripe
+
 		- Fix nVidia RTX bug
-			- Just split those vertical quads
+			+ Note: Longhorn didn't see it in 19.0, so it's either TRIANGLES vs TRIANGLE_STRIP, or alpha
+				+ Send him a beta for the alpha - with alpha=1
+				+ Undo shader & bump up version
+			- 1. Try strip for two bedrock layers, w/ 1 degenerate
+			- 2. Just split those vertical quads
 				- Might be nice though to incorporate adjacent ones....
 
 		- More tornado shapes

@@ -107,12 +107,14 @@ void OceanFloor::Upload(
 {
     if (mIsDirtyForRendering)
     {
-        renderContext.UploadLandStart(SamplesCount);
+        size_t constexpr SliceCount = SamplesCount - 1;
+
+        renderContext.UploadLandStart(SliceCount);
 
         float sampleIndexX = -SimulationParameters::HalfMaxWorldWidth;
 
         // Upload all slices, with slice i encompassing sample i and i+1
-        for (size_t s = 0; s < SamplesCount - 1; ++s)
+        for (size_t s = 0; s < SliceCount; ++s)
         {
             float const nextSampleIndexX = sampleIndexX + Dx;
             renderContext.UploadLand(
