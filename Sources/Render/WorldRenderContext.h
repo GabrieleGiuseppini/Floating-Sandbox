@@ -306,7 +306,9 @@ public:
         float const * shadowBuffer,
         size_t shadowSampleCount);
 
-    void UploadLandStart(size_t slices);
+    void UploadLandStart(
+        size_t slices,
+        float maxWorldHeight);
 
     // TODOTEST: make it inline again when done
     void UploadLand(

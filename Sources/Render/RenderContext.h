@@ -1003,7 +1003,9 @@ public:
 
     inline void UploadLandStart(size_t slices)
     {
-        mInnerContext->worldRenderContext->UploadLandStart(slices);
+        mInnerContext->worldRenderContext->UploadLandStart(
+            slices,
+            mRenderParameters.View.GetMaxWorldHeight());
     }
 
     inline void UploadLand(

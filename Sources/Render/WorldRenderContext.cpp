@@ -983,7 +983,9 @@ void WorldRenderContext::UploadCloudShadows(
     CheckOpenGLError();
 }
 
-void WorldRenderContext::UploadLandStart(size_t slices)
+void WorldRenderContext::UploadLandStart(
+    size_t slices,
+    float maxWorldHeight)
 {
     //
     // Land segments are sticky: we upload them as needed
@@ -997,8 +999,7 @@ void WorldRenderContext::UploadLandStart(size_t slices)
     //  max N quads, with N = WorldHeight / MaxQuadTriangleHeight
     size_t const maxBedrockVertexCount =
         slices * 6
-        // TODOHERE: take this as arg
-        + static_cast<size_t>(std::ceilf(22000.0f / MaxQuadTriangleHeight)) * slices * 6;
+        + static_cast<size_t>(std::ceilf(maxWorldHeight / MaxQuadTriangleHeight)) * slices * 6;
 
     mLandVertexBuffer.reset_full(mLandSiltVertexCount + maxBedrockVertexCount, mLandSiltVertexCount);
 
@@ -1033,10 +1034,6 @@ void WorldRenderContext::GenerateLandQuad(
         leftBottom.position.y - leftTop.position.y,
         rightBottom.position.y - rightTop.position.y };
 
-    // TODOHERE: rethink dx
-    std::array<float, 2> originalDx{
-        leftBottom.position.x - leftTop.position.x,
-        rightBottom.position.x - rightTop.position.x };
     std::array<float, 2> originalDdepth{
         leftBottom.depth - leftTop.depth,
         rightBottom.depth - rightTop.depth };
@@ -1086,16 +1083,12 @@ void WorldRenderContext::GenerateLandQuad(
             : bottom[iSideToSegment].position.y;
 
         //
-        // Interpolate x, depth, and interface blend depth on this side,
+        // Interpolate depth, and interface blend depth on this side,
         // using global vals rather than local vals for better precision
         //
 
         assert(originalDy[iSideToSegment] < 0.0f);
         float const dy = (newBottomY - top[iSideToSegment].position.y) / originalDy[iSideToSegment];
-
-        float const newX =
-            top[iSideToSegment].position.x
-            + originalDx[iSideToSegment] * dy;
 
         float const newDepth =
             top[iSideToSegment].depth
@@ -1106,7 +1099,7 @@ void WorldRenderContext::GenerateLandQuad(
             + originalDinterfaceBlendDepth[iSideToSegment] * dy;
 
         auto const newCurrent = LandVertex{
-            { newX, newBottomY },
+            { current[iSideToSegment].position.x, newBottomY },
             newDepth,
             newInterfaceBlendDepth
         };

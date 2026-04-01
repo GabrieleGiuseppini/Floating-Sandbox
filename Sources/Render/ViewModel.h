@@ -25,6 +25,7 @@ public:
         DisplayLogicalSize const & logicalCanvasSize,
         int logicalToPhysicalPixelFactor)
         : mHalfMaxWorldWidth(maxWorldSize.width / 2.0f)
+        , mMaxWorldHeight(maxWorldSize.height)
         , mHalfMaxWorldHeight(maxWorldSize.height / 2.0f)
         , mZoom(zoom)
         , mCam(cameraWorldPosition)
@@ -179,6 +180,11 @@ public:
     float const GetHalfMaxWorldWidth() const
     {
         return mHalfMaxWorldWidth;
+    }
+
+    float const GetMaxWorldHeight() const
+    {
+        return mMaxWorldHeight;
     }
 
     float const GetHalfMaxWorldHeight() const
@@ -595,6 +601,7 @@ private:
 
     // Primary inputs
     float const mHalfMaxWorldWidth;
+    float const mMaxWorldHeight;
     float const mHalfMaxWorldHeight;
     float mZoom;
     vec2f mCam; // World coordinates

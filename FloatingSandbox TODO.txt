@@ -302,6 +302,15 @@
 			- 2. Just split those vertical quads
 				! Old # vertices: 28674=458,784B=0.5MB
 				! New # vertices: LandVertexBuffer.size=146703 allocatedSize=286722=4,587,552B=4.5MB
+				+ Basic
+				- With whole delta Y constrain
+
+				- Test perf with test floor:
+					- Before UHD
+					- After UHD
+					- Before nVidia
+					- After nVidia
+					- Old Dell
 
 				- Might be nice though to incorporate adjacent ones....
 
