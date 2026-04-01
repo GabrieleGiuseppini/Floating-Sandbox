@@ -14,6 +14,12 @@
 
 int constexpr ThumbnailSize = 32;
 
+// We segment quads so that no triangle is taller than this;
+// fights against thin/steep triangles, which on RTX's are bad
+// (show seams between triangles, even if they share vertices
+// and even if they are drawn as triangle strips)
+float constexpr MaxQuadTriangleHeight = 1000.0f;
+
 WorldRenderContext::WorldRenderContext(
     IAssetManager const & assetManager,
     ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
@@ -986,16 +992,325 @@ void WorldRenderContext::UploadLandStart(size_t slices)
     // Silt: a single triangle strip; two vertices per slice
     mLandSiltVertexCount = (slices + 1) * 2;
 
-    // Bedrock: 2 quads per slice
-    size_t const bedrockVertexCount = slices * (2 * 6);
+    // Bedrock: for each slice:
+    //  1 quad
+    //  max N quads, with N = WorldHeight / MaxQuadTriangleHeight
+    size_t const maxBedrockVertexCount =
+        slices * 6
+        // TODOHERE: take this as arg
+        + static_cast<size_t>(std::ceilf(22000.0f / MaxQuadTriangleHeight)) * slices * 6;
 
-    mLandVertexBuffer.reset_full(mLandSiltVertexCount + bedrockVertexCount, mLandSiltVertexCount);
+    mLandVertexBuffer.reset_full(mLandSiltVertexCount + maxBedrockVertexCount, mLandSiltVertexCount);
 
     mIsLandVertexBufferDirty = true;
 }
 
+// TODOTEST: move?
+void WorldRenderContext::GenerateLandQuad(
+    LandVertex leftTop,
+    LandVertex leftBottom,
+    LandVertex rightTop,
+    LandVertex rightBottom)
+{
+    //       B
+    //      /|
+    //     / |
+    //  A /  |
+    //    |\ |
+    //    | \|D
+    //    | /
+    //  C |/
+
+    assert(leftTop.position.y >= leftBottom.position.y);
+    assert(rightTop.position.y >= rightBottom.position.y);
+
+    // Ease interpolations: make arrays for sides, so we may treat
+    // either side agnostically
+    std::array<LandVertex, 2> top{ leftTop, rightTop };
+    std::array<LandVertex, 2> bottom{ leftBottom, rightBottom };
+
+    std::array<float, 2> originalDy{ // Negative, but we also use other negative d's
+        leftBottom.position.y - leftTop.position.y,
+        rightBottom.position.y - rightTop.position.y };
+
+    // TODOHERE: rethink dx
+    std::array<float, 2> originalDx{
+        leftBottom.position.x - leftTop.position.x,
+        rightBottom.position.x - rightTop.position.x };
+    std::array<float, 2> originalDdepth{
+        leftBottom.depth - leftTop.depth,
+        rightBottom.depth - rightTop.depth };
+    std::array<float, 2> originalDinterfaceBlendDepth{
+        leftBottom.interfaceBlendDepth - leftTop.interfaceBlendDepth,
+        rightBottom.interfaceBlendDepth - rightTop.interfaceBlendDepth };
+
+    // We slide these down until we're at end
+    std::array<LandVertex, 2> current{ leftTop, rightTop };
+
+    while (current[0].position.y > bottom[0].position.y
+        || current[1].position.y > bottom[1].position.y)
+    {
+        // Decide which side we slide down: the one that's highest now
+        size_t iSideToSegment;
+        if (current[0].position.y >= current[1].position.y)
+        {
+            if (current[0].position.y > bottom[0].position.y)
+            {
+                iSideToSegment = 0;
+            }
+            else
+            {
+                // We have no choice
+                assert(current[1].position.y > bottom[1].position.y);
+                iSideToSegment = 1;
+            }
+        }
+        else
+        {
+            if (current[1].position.y > bottom[1].position.y)
+            {
+                iSideToSegment = 1;
+            }
+            else
+            {
+                // We have no choice
+                assert(current[0].position.y > bottom[0].position.y);
+                iSideToSegment = 0;
+            }
+        }
+
+        // Decide new bottom y for the side that will be segmented
+        // TODO: slack in check to avoid thin triangles?
+        float const newBottomY = (current[iSideToSegment].position.y - MaxQuadTriangleHeight > bottom[iSideToSegment].position.y)
+            ? current[iSideToSegment].position.y - MaxQuadTriangleHeight
+            : bottom[iSideToSegment].position.y;
+
+        //
+        // Interpolate x, depth, and interface blend depth on this side,
+        // using global vals rather than local vals for better precision
+        //
+
+        assert(originalDy[iSideToSegment] < 0.0f);
+        float const dy = (newBottomY - top[iSideToSegment].position.y) / originalDy[iSideToSegment];
+
+        float const newX =
+            top[iSideToSegment].position.x
+            + originalDx[iSideToSegment] * dy;
+
+        float const newDepth =
+            top[iSideToSegment].depth
+            + originalDdepth[iSideToSegment] * dy;
+
+        float const newInterfaceBlendDepth =
+            top[iSideToSegment].interfaceBlendDepth
+            + originalDinterfaceBlendDepth[iSideToSegment] * dy;
+
+        auto const newCurrent = LandVertex{
+            { newX, newBottomY },
+            newDepth,
+            newInterfaceBlendDepth
+        };
+
+        //
+        // Produce triangle
+        //
+
+        mLandVertexBuffer.emplace_back(current[iSideToSegment]);
+        mLandVertexBuffer.emplace_back(current[1 - iSideToSegment]);
+        mLandVertexBuffer.emplace_back(newCurrent);
+
+        //
+        // Advance
+        //
+
+        current[iSideToSegment] = newCurrent;
+    }
+}
+
+// TODOTEST: make it inline again when done
+void WorldRenderContext::UploadLand(
+    size_t iSlice,
+    float x1,
+    float ySilt1,
+    float yBedrock1,
+    float x2,
+    float ySilt2,
+    float yBedrock2,
+    float yWorldBottom)
+{
+    // The upward overlap of bedrock over silt to blend with it
+    float constexpr MaxTransitionThickness = 10.0f; // Magic - keep in-sync with shader!
+
+    // The thickness on the _depth_ coordinate over which we skew texture
+    // coordinates to give bedrock a 3d-like "lip"
+    float constexpr LipThickness = 2.0f; // Magic - keep in-sync with shader!
+
+    //
+    // Silt
+    //
+
+    LandVertex * siltVertex;
+
+    if (iSlice == 0) // We use 1 only for the first
+    {
+        siltVertex = &(mLandVertexBuffer[iSlice * 2]);
+        siltVertex[0] = LandVertex{ {x1, ySilt1}, 0.0f, MaxTransitionThickness };
+        siltVertex[1] = LandVertex{ {x1, yBedrock1}, ySilt1 - yBedrock1, MaxTransitionThickness };
+    }
+
+    siltVertex = &(mLandVertexBuffer[(iSlice + 1) * 2]);
+    siltVertex[0] = LandVertex{ {x2, ySilt2}, 0.0f, MaxTransitionThickness };
+    siltVertex[1] = LandVertex{ {x2, yBedrock2}, ySilt2 - yBedrock2, MaxTransitionThickness };
+
+    //
+    // Bedrock
+    //
+
+    // "Pretend" yBedrock to cover silt a bit, providing a band over which we blend
+    assert(ySilt1 >= yBedrock1);
+    float const effectiveTransitionThickness1 = std::min(ySilt1 - yBedrock1, MaxTransitionThickness);
+    assert(ySilt2 >= yBedrock2);
+    float const effectiveTransitionThickness2 = std::min(ySilt2 - yBedrock2, MaxTransitionThickness);
+
+    // Add vertices
+    //  - Depth (for AA and texture edge): distance from silt; 0 at silt (so only if no silt)
+    //  - Interface blend depth: 0 at theoretical yBedrock + MaxTransitionThickness, +X'' at world bottom
+
+    //
+    //       B    --- yB = yBedrock2 + transition thickness 2
+    //      /|
+    //     / |
+    //  A /  |    --- yA = yBedrock1 + transition thickness 1
+    //    |\ |
+    //    | \|D   --- yD = yBedrock2 - Lip
+    //    | /|
+    //  C |/ |    --- yC = yBedrock1 - Lip
+    //    |  |
+    //    |  |
+    //  E ---- F  --- yE,F = yWorldBottom
+    //
+
+    // TODOTEST
+
+    // ABCD
+    GenerateLandQuad(
+        // A
+        {
+            vec2f(x1, yBedrock1 + effectiveTransitionThickness1),
+            ySilt1 - (yBedrock1 + effectiveTransitionThickness1),
+            MaxTransitionThickness - effectiveTransitionThickness1
+        },
+        // C
+        {
+            vec2f(x1, yBedrock1 - LipThickness),
+            ySilt1 - (yBedrock1 - LipThickness),
+            MaxTransitionThickness + LipThickness
+        },
+        // B
+        {
+            vec2f(x2, yBedrock2 + effectiveTransitionThickness2),
+            ySilt2 - (yBedrock2 + effectiveTransitionThickness2),
+            MaxTransitionThickness - effectiveTransitionThickness2
+        },
+        // D
+        {
+            vec2f(x2, yBedrock2 - LipThickness),
+            ySilt2 - (yBedrock2 - LipThickness),
+            MaxTransitionThickness + LipThickness
+        });
+
+    // CEDF
+    GenerateLandQuad(
+        // C
+        {
+            vec2f(x1, yBedrock1 - LipThickness),
+            ySilt1 - (yBedrock1 - LipThickness),
+            MaxTransitionThickness + LipThickness
+        },
+        // E
+        {
+            vec2f(x1, yWorldBottom),
+            ySilt1 - (yBedrock1 - LipThickness), // Fixed
+            MaxTransitionThickness + LipThickness // Fixed
+        },
+        // D
+        {
+            vec2f(x2, yBedrock2 - LipThickness),
+            ySilt2 - (yBedrock2 - LipThickness),
+            MaxTransitionThickness + LipThickness
+        },
+        // F
+        {
+            vec2f(x2, yWorldBottom),
+            ySilt2 - (yBedrock2 - LipThickness), // Fixed
+            MaxTransitionThickness + LipThickness // Fixed
+        }
+    );
+
+    // TODOHOLD
+
+    //// B - D - A
+    //mLandVertexBuffer.emplace_back(
+    //    vec2f(x2, yBedrock2 + effectiveTransitionThickness2),
+    //    ySilt2 - (yBedrock2 + effectiveTransitionThickness2),
+    //    MaxTransitionThickness - effectiveTransitionThickness2);
+    //mLandVertexBuffer.emplace_back(
+    //    vec2f(x2, yBedrock2 - LipThickness),
+    //    ySilt2 - (yBedrock2 - LipThickness),
+    //    MaxTransitionThickness + LipThickness);
+    //mLandVertexBuffer.emplace_back(
+    //    vec2f(x1, yBedrock1 + effectiveTransitionThickness1),
+    //    ySilt1 - (yBedrock1 + effectiveTransitionThickness1),
+    //    MaxTransitionThickness - effectiveTransitionThickness1);
+
+    //// D - A - C
+    //mLandVertexBuffer.emplace_back(
+    //    vec2f(x2, yBedrock2 - LipThickness),
+    //    ySilt2 - (yBedrock2 - LipThickness),
+    //    MaxTransitionThickness + LipThickness);
+    //mLandVertexBuffer.emplace_back(
+    //    vec2f(x1, yBedrock1 + effectiveTransitionThickness1),
+    //    ySilt1 - (yBedrock1 + effectiveTransitionThickness1),
+    //    MaxTransitionThickness - effectiveTransitionThickness1);
+    //mLandVertexBuffer.emplace_back(
+    //    vec2f(x1, yBedrock1 - LipThickness),
+    //    ySilt1 - (yBedrock1 - LipThickness),
+    //    MaxTransitionThickness + LipThickness);
+
+    //// C - E - D
+    //mLandVertexBuffer.emplace_back(
+    //    vec2f(x1, yBedrock1 - LipThickness),
+    //    ySilt1 - (yBedrock1 - LipThickness),
+    //    MaxTransitionThickness + LipThickness);
+    //mLandVertexBuffer.emplace_back(
+    //    vec2f(x1, yWorldBottom),
+    //    ySilt1 - (yBedrock1 - LipThickness), // Fixed
+    //    MaxTransitionThickness + LipThickness); // Fixed
+    //mLandVertexBuffer.emplace_back(
+    //    vec2f(x2, yBedrock2 - LipThickness),
+    //    ySilt2 - (yBedrock2 - LipThickness),
+    //    MaxTransitionThickness + LipThickness);
+
+    //// E - D - F
+    //mLandVertexBuffer.emplace_back(
+    //    vec2f(x1, yWorldBottom),
+    //    ySilt1 - (yBedrock1 - LipThickness), // Fixed
+    //    MaxTransitionThickness + LipThickness); // Fixed
+    //mLandVertexBuffer.emplace_back(
+    //    vec2f(x2, yBedrock2 - LipThickness),
+    //    ySilt2 - (yBedrock2 - LipThickness),
+    //    MaxTransitionThickness + LipThickness);
+    //mLandVertexBuffer.emplace_back(
+    //    vec2f(x2, yWorldBottom),
+    //    ySilt2 - (yBedrock2 - LipThickness), // Fixed
+    //    MaxTransitionThickness + LipThickness); // Fixed
+}
+
 void WorldRenderContext::UploadLandEnd(float /*yWorldBottom*/)
 {
+    // TODOTEST
+    LogMessage("TODOTEST: LandVertexBuffer.size=", mLandVertexBuffer.size(), " allocatedSize=", mLandVertexBuffer.max_size());
+
     // Futurework: on GEForce RTX (nVidia), steep triangles cause
     // seams - with or without multi-sampling.
     // This code improves the situation, but not completely.
@@ -1965,6 +2280,7 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
             GL_TRIANGLES,
             static_cast<GLint>(mLandSiltVertexCount),
             static_cast<GLsizei>(mLandVertexBuffer.size() - mLandSiltVertexCount));
+
         CheckOpenGLError();
     }
 

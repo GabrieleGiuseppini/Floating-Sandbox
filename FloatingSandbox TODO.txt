@@ -290,13 +290,24 @@
 				+ Changelist (PC only)
 			+ Silt stripe
 
-		- Fix nVidia RTX bug
+		= Fix nVidia RTX bug
 			+ Note: Longhorn didn't see it in 19.0, so it's either TRIANGLES vs TRIANGLE_STRIP, or alpha
 				+ Send him a beta for the alpha - with alpha=1
 				+ Undo shader & bump up version
-			- 1. Try strip for two bedrock layers, w/ 1 degenerate
+				+ Check feedback
+			+ 1. Try strip for two bedrock layers, w/ 1 degenerate
+				+ Strip (x3)
+				+ Send to Discord, bump up version
+				X Degenerate (x2)
 			- 2. Just split those vertical quads
+				! Old # vertices: 28674=458,784B=0.5MB
+				! New # vertices: LandVertexBuffer.size=146703 allocatedSize=286722=4,587,552B=4.5MB
+
 				- Might be nice though to incorporate adjacent ones....
+
+				- Make WorldRenderContext::UploadLand(slice) inline again
+
+				- Send to testers
 
 		- More tornado shapes
 
