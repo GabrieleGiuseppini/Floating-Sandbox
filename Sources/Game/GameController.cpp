@@ -204,7 +204,7 @@ GameController::GameController(
         {
             this->mSimulationParameters.OceanFloorBedrockBumpiness = value;
         },
-        GenericParameterConvergenceFactor,
+        0.13f,
         GenericParameterTerminationThreshold);
 
     assert(mFloatParameterSmoothers.size() == OceanFloorBedrockDetailAmplificationParameterSmoother);
@@ -217,7 +217,7 @@ GameController::GameController(
         {
             this->mSimulationParameters.OceanFloorBedrockDetailAmplification = value;
         },
-        GenericParameterConvergenceFactor,
+        0.13f,
         GenericParameterTerminationThreshold);
 
     assert(mFloatParameterSmoothers.size() == OceanFloorSiltThicknessParameterSmoother);
@@ -230,7 +230,7 @@ GameController::GameController(
         {
             this->mSimulationParameters.OceanFloorSiltThickness = value;
         },
-        GenericParameterConvergenceFactor,
+        0.13f,
         GenericParameterTerminationThreshold);
 
     assert(mFloatParameterSmoothers.size() == OceanFloorSiltBumpinessParameterSmoother);
@@ -243,7 +243,7 @@ GameController::GameController(
         {
             this->mSimulationParameters.OceanFloorSiltBumpiness = value;
         },
-        GenericParameterConvergenceFactor,
+        0.13f,
         GenericParameterTerminationThreshold);
 
     assert(mFloatParameterSmoothers.size() == FlameSizeAdjustmentParameterSmoother);
