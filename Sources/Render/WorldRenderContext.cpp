@@ -997,9 +997,11 @@ void WorldRenderContext::UploadLandStart(
     // Bedrock: for each slice:
     //  1 quad
     //  max N quads, with N = WorldHeight / MaxQuadTriangleHeight
+    //  2 extra triangles for (eventual) small above- and below-triangles
     size_t const maxBedrockVertexCount =
         slices * 6
-        + static_cast<size_t>(std::ceilf(maxWorldHeight / MaxQuadTriangleHeight)) * slices * 6;
+        + static_cast<size_t>(std::ceilf(maxWorldHeight / MaxQuadTriangleHeight)) * slices * 6
+        + 2 * slices * 3;
 
     mLandVertexBuffer.reset_full(mLandSiltVertexCount + maxBedrockVertexCount, mLandSiltVertexCount);
 
@@ -1016,24 +1018,27 @@ void WorldRenderContext::GenerateLandQuad(
     //       B
     //      /|
     //     / |
-    //  A /  |
+    //  A /  | B'
     //    |\ |
-    //    | \|D
+    //  C'| \|D
     //    | /
     //  C |/
 
+    assert(leftTop.position.x < rightTop.position.x);
+    assert(leftTop.position.x == leftBottom.position.x);
+    assert(rightTop.position.x == rightTop.position.x);
     assert(leftTop.position.y >= leftBottom.position.y);
     assert(rightTop.position.y >= rightBottom.position.y);
 
-    // Ease interpolations: make arrays for sides, so we may treat
-    // either side agnostically
-    std::array<LandVertex, 2> top{ leftTop, rightTop };
-    std::array<LandVertex, 2> bottom{ leftBottom, rightBottom };
+    std::array<LandVertex, 2> originalTops{ leftTop, rightTop };
 
+    // We slide these down until we're at end
+    std::array<LandVertex, 2> current = originalTops;
+
+    // To prevent accumulating errors, we interpolate based on distances from originals
     std::array<float, 2> originalDy{ // Negative, but we also use other negative d's
         leftBottom.position.y - leftTop.position.y,
         rightBottom.position.y - rightTop.position.y };
-
     std::array<float, 2> originalDdepth{
         leftBottom.depth - leftTop.depth,
         rightBottom.depth - rightTop.depth };
@@ -1041,83 +1046,277 @@ void WorldRenderContext::GenerateLandQuad(
         leftBottom.interfaceBlendDepth - leftTop.interfaceBlendDepth,
         rightBottom.interfaceBlendDepth - rightTop.interfaceBlendDepth };
 
-    // We slide these down until we're at end
-    std::array<LandVertex, 2> current{ leftTop, rightTop };
+    // We try to avoid leftovers this tall
+    float constexpr MinQuadTriangleHeight = 10.0f;
 
-    while (current[0].position.y > bottom[0].position.y
-        || current[1].position.y > bottom[1].position.y)
+    //
+    // 1) Segment top triangle (if any), until we remain with a flat-top rectangle (A-B')
+    //
+
+    int iVerticalSide = -1;
+    if (current[1].position.y > current[0].position.y)
     {
-        // Decide which side we slide down: the one that's highest now
-        size_t iSideToSegment;
-        if (current[0].position.y >= current[1].position.y)
+        // Segment along right side
+        iVerticalSide = 1;
+    }
+    else if (current[0].position.y > current[1].position.y)
+    {
+        // Segment along left side
+        iVerticalSide = 0;
+    }
+
+    if (iVerticalSide >= 0)
+    {
+        // To prevent accumulating errors, we interpolate based on distances from originals
+        LandVertex current_Schuin = current[iVerticalSide]; // This one slides over top up to reaching current[1-i], current[1-i] stays constant
+        float const originalDx_Schuin = current[1 - iVerticalSide].position.x - current[iVerticalSide].position.x; // Negative or positive
+        float const originalDy_Schuin = current[1 - iVerticalSide].position.y - current[iVerticalSide].position.y; // Negative, but dy is also negative
+        assert(originalDy_Schuin < 0.0f);
+        float const originalDdepth_Schuin = current[1 - iVerticalSide].depth - current[iVerticalSide].depth;
+        float const originalDinterfaceBlendDepth_Schuin = current[1 - iVerticalSide].interfaceBlendDepth - current[iVerticalSide].interfaceBlendDepth;
+
+        while (current[iVerticalSide].position.y > current[1 - iVerticalSide].position.y)
         {
-            if (current[0].position.y > bottom[0].position.y)
+            // Calculate bottom y for this segment
+            float newBottomY = current[1 - iVerticalSide].position.y; // Shoot for max first
+            if (newBottomY < current[iVerticalSide].position.y - MaxQuadTriangleHeight - MinQuadTriangleHeight)
             {
-                iSideToSegment = 0;
+                newBottomY = current[iVerticalSide].position.y - MaxQuadTriangleHeight;
             }
-            else
-            {
-                // We have no choice
-                assert(current[1].position.y > bottom[1].position.y);
-                iSideToSegment = 1;
-            }
+
+            //
+            // Interpolate x, Depth, InterfaceBlendDepth for "top" side (schuin) and "vertical" side
+            //
+
+            float const dy = newBottomY - originalTops[iVerticalSide].position.y; // Negative
+            assert(dy < 0.0f);
+
+            // x = x[i] + Dx * dy / Dy
+            float const newDepth_Vertical = originalTops[iVerticalSide].depth + originalDdepth[iVerticalSide] * dy / originalDy[iVerticalSide];
+            float const newInterfaceBlendDepth_Vertical = originalTops[iVerticalSide].interfaceBlendDepth + originalDinterfaceBlendDepth[iVerticalSide] * dy / originalDy[iVerticalSide];
+            float const newX_Schuin = originalTops[iVerticalSide].position.x + originalDx_Schuin * dy / originalDy_Schuin;
+            float const newDepth_Schuin = originalTops[iVerticalSide].depth + originalDdepth_Schuin * dy / originalDy_Schuin;
+            float const newInterfaceBlendDepth_Schuin = originalTops[iVerticalSide].interfaceBlendDepth + originalDinterfaceBlendDepth_Schuin * dy / originalDy_Schuin;
+
+            //
+            // Produce quad
+            //
+            //      A'-----B'
+            //     /       |
+            //    /        |
+            // A''---------B''
+            //
+
+            LandVertex a2{
+                vec2f(newX_Schuin, newBottomY),
+                newDepth_Schuin,
+                newInterfaceBlendDepth_Schuin };
+
+            LandVertex b2{
+                vec2f(current[iVerticalSide].position.x, newBottomY),
+                newDepth_Vertical,
+                newInterfaceBlendDepth_Vertical };
+
+            // A'-B'-B''
+            mLandVertexBuffer.emplace_back(current_Schuin);
+            mLandVertexBuffer.emplace_back(current[iVerticalSide]);
+            mLandVertexBuffer.emplace_back(b2);
+            // A'-B''-A''
+            mLandVertexBuffer.emplace_back(current_Schuin);
+            mLandVertexBuffer.emplace_back(b2);
+            mLandVertexBuffer.emplace_back(a2);
+
+            //
+            // Advance vertical side
+            //
+
+            current[iVerticalSide].position.y = newBottomY;
+            current[iVerticalSide].depth = newDepth_Vertical;
+            current[iVerticalSide].interfaceBlendDepth = newInterfaceBlendDepth_Vertical;
+
+            //
+            // Advance schuin side
+            //
+
+            current_Schuin = a2;
         }
-        else
+    }
+
+    //
+    // 2) Segment middle flat-top rectangle
+    //
+
+    // We stop at the first bottom we encounter
+    float const maxBottom = std::max(leftBottom.position.y, rightBottom.position.y);
+
+    while (current[0].position.y > maxBottom)
+    {
+        // It's a flat-top rectangle
+        assert(current[0].position.y == current[1].position.y);
+
+        // Calculate bottom y for this segment
+        float newBottomY = maxBottom; // Shoot for max first
+        if (newBottomY < current[0].position.y - MaxQuadTriangleHeight - MinQuadTriangleHeight)
         {
-            if (current[1].position.y > bottom[1].position.y)
-            {
-                iSideToSegment = 1;
-            }
-            else
-            {
-                // We have no choice
-                assert(current[0].position.y > bottom[0].position.y);
-                iSideToSegment = 0;
-            }
+            newBottomY = current[0].position.y - MaxQuadTriangleHeight;
         }
 
-        // Decide new bottom y for the side that will be segmented
-        // TODO: slack in check to avoid thin triangles?
-        float const newBottomY = (current[iSideToSegment].position.y - MaxQuadTriangleHeight > bottom[iSideToSegment].position.y)
-            ? current[iSideToSegment].position.y - MaxQuadTriangleHeight
-            : bottom[iSideToSegment].position.y;
-
         //
-        // Interpolate depth, and interface blend depth on this side,
-        // using global vals rather than local vals for better precision
+        // Interpolate Depth, InterfaceBlendDepth for both sides
         //
 
-        assert(originalDy[iSideToSegment] < 0.0f);
-        float const dy = (newBottomY - top[iSideToSegment].position.y) / originalDy[iSideToSegment];
+        float const dy_Left = newBottomY - originalTops[0].position.y; // Negative
+        assert(dy_Left < 0.0f);
+        // x = x[i] + Dx * dy / Dy
+        float const newDepth_Left = originalTops[0].depth + originalDdepth[0] * dy_Left / originalDy[0];
+        float const newInterfaceBlendDepth_Left = originalTops[0].interfaceBlendDepth + originalDinterfaceBlendDepth[0] * dy_Left / originalDy[0];
 
-        float const newDepth =
-            top[iSideToSegment].depth
-            + originalDdepth[iSideToSegment] * dy;
-
-        float const newInterfaceBlendDepth =
-            top[iSideToSegment].interfaceBlendDepth
-            + originalDinterfaceBlendDepth[iSideToSegment] * dy;
-
-        auto const newCurrent = LandVertex{
-            { current[iSideToSegment].position.x, newBottomY },
-            newDepth,
-            newInterfaceBlendDepth
-        };
+        float const dy_Right = newBottomY - originalTops[1].position.y; // Negative
+        assert(dy_Right < 0.0f);
+        // x = x[i] + Dx * dy / Dy
+        float const newDepth_Right = originalTops[1].depth + originalDdepth[1] * dy_Right / originalDy[1];
+        float const newInterfaceBlendDepth_Right = originalTops[1].interfaceBlendDepth + originalDinterfaceBlendDepth[1] * dy_Right / originalDy[1];
 
         //
-        // Produce triangle
+        // Produce quad
+        //
+        //    A'--------B'
+        //      |      |
+        //      |      |
+        //   A''--------B''
         //
 
-        mLandVertexBuffer.emplace_back(current[iSideToSegment]);
-        mLandVertexBuffer.emplace_back(current[1 - iSideToSegment]);
-        mLandVertexBuffer.emplace_back(newCurrent);
+        LandVertex newCurrent0{
+            vec2f(current[0].position.x, newBottomY),
+            newDepth_Left,
+            newInterfaceBlendDepth_Left };
+
+        LandVertex newCurrent1{
+            vec2f(current[1].position.x, newBottomY),
+            newDepth_Right,
+            newInterfaceBlendDepth_Right };
+
+        // A'-B'-B''
+        mLandVertexBuffer.emplace_back(current[0]);
+        mLandVertexBuffer.emplace_back(current[1]);
+        mLandVertexBuffer.emplace_back(newCurrent1);
+        // A'-B''-A''
+        mLandVertexBuffer.emplace_back(current[0]);
+        mLandVertexBuffer.emplace_back(newCurrent1);
+        mLandVertexBuffer.emplace_back(newCurrent0);
 
         //
         // Advance
         //
 
-        current[iSideToSegment] = newCurrent;
+        current[0] = newCurrent0;
+        current[1] = newCurrent1;
     }
+
+    //
+    // 3) Segment bottom triangle
+    //
+
+    // TODOHERE: mirror of above
+    // TODOHERE: But see if can move all in the same loop
+        // After all, main loop should be expecting current left and right Y to be the same, so can do that if
+
+
+    ////// TODOOLD
+
+    ////// Ease interpolations: make arrays for sides, so we may treat
+    ////// either side agnostically
+    ////std::array<LandVertex, 2> top{ leftTop, rightTop };
+    ////std::array<LandVertex, 2> bottom{ leftBottom, rightBottom };
+
+    ////std::array<float, 2> originalDy{ // Negative, but we also use other negative d's
+    ////    leftBottom.position.y - leftTop.position.y,
+    ////    rightBottom.position.y - rightTop.position.y };
+
+    ////std::array<float, 2> originalDdepth{
+    ////    leftBottom.depth - leftTop.depth,
+    ////    rightBottom.depth - rightTop.depth };
+    ////std::array<float, 2> originalDinterfaceBlendDepth{
+    ////    leftBottom.interfaceBlendDepth - leftTop.interfaceBlendDepth,
+    ////    rightBottom.interfaceBlendDepth - rightTop.interfaceBlendDepth };
+
+    ////// We slide these down until we're at end
+    ////std::array<LandVertex, 2> current{ leftTop, rightTop };
+
+    ////while (current[0].position.y > bottom[0].position.y
+    ////    || current[1].position.y > bottom[1].position.y)
+    ////{
+    ////    // Decide which side we slide down: the one that's highest now
+    ////    size_t iSideToSegment;
+    ////    if (current[0].position.y >= current[1].position.y)
+    ////    {
+    ////        if (current[0].position.y > bottom[0].position.y)
+    ////        {
+    ////            iSideToSegment = 0;
+    ////        }
+    ////        else
+    ////        {
+    ////            // We have no choice
+    ////            assert(current[1].position.y > bottom[1].position.y);
+    ////            iSideToSegment = 1;
+    ////        }
+    ////    }
+    ////    else
+    ////    {
+    ////        if (current[1].position.y > bottom[1].position.y)
+    ////        {
+    ////            iSideToSegment = 1;
+    ////        }
+    ////        else
+    ////        {
+    ////            // We have no choice
+    ////            assert(current[0].position.y > bottom[0].position.y);
+    ////            iSideToSegment = 0;
+    ////        }
+    ////    }
+
+    ////    // Decide new bottom y for the side that will be segmented
+    ////    // TODO: slack in check to avoid thin triangles?
+    ////    float const newBottomY = (current[iSideToSegment].position.y - MaxQuadTriangleHeight > bottom[iSideToSegment].position.y)
+    ////        ? current[iSideToSegment].position.y - MaxQuadTriangleHeight
+    ////        : bottom[iSideToSegment].position.y;
+
+    ////    //
+    ////    // Interpolate depth, and interface blend depth on this side,
+    ////    // using global vals rather than local vals for better precision
+    ////    //
+
+    ////    assert(originalDy[iSideToSegment] < 0.0f);
+    ////    float const dy = (newBottomY - top[iSideToSegment].position.y) / originalDy[iSideToSegment];
+
+    ////    float const newDepth =
+    ////        top[iSideToSegment].depth
+    ////        + originalDdepth[iSideToSegment] * dy;
+
+    ////    float const newInterfaceBlendDepth =
+    ////        top[iSideToSegment].interfaceBlendDepth
+    ////        + originalDinterfaceBlendDepth[iSideToSegment] * dy;
+
+    ////    auto const newCurrent = LandVertex{
+    ////        { current[iSideToSegment].position.x, newBottomY },
+    ////        newDepth,
+    ////        newInterfaceBlendDepth
+    ////    };
+
+    ////    //
+    ////    // Produce triangle
+    ////    //
+
+    ////    mLandVertexBuffer.emplace_back(current[iSideToSegment]);
+    ////    mLandVertexBuffer.emplace_back(current[1 - iSideToSegment]);
+    ////    mLandVertexBuffer.emplace_back(newCurrent);
+
+    ////    //
+    ////    // Advance
+    ////    //
+
+    ////    current[iSideToSegment] = newCurrent;
+    ////}
 }
 
 // TODOTEST: make it inline again when done
