@@ -482,26 +482,30 @@ struct TestLandVertex
 // TODOTEST: move to GameGeometry
 template<typename TLandVertex, typename TVertexBuffer>
 void GenerateSegmentedLandQuadTriangle(
-    TLandVertex & vertex1,
-    TLandVertex & vertex2,
-    TLandVertex & vertex3,
-    float height, // Top-to-bottom, but guaranteed positive
+    TLandVertex & apex1,
+    TLandVertex & base1,
+    TLandVertex & base2,
+    float height, // Absolute
+    float width, // Absolute
     float maxQuadTriangleHeight,
     float minQuadTriangleHeight,
     TVertexBuffer & vertexBuffer)
 {
-    //  1
+    //  apex
     //  |\
     //  | \
-    //  2 --3
+    // b1--b2
+
+    assert(height > 0.0f);
+    assert(width > 0.0f);
 
     for (float currentHeight = 0.0f; currentHeight < height; /* incremented in loop */)
     {
         // Calculate bottom height for this segment
         float newBottomHeight = height; // Shoot for max first
-        if (newBottomHeight > currentHeight + MaxQuadTriangleHeight + MinQuadTriangleHeight)
+        if (newBottomHeight > currentHeight + maxQuadTriangleHeight + minQuadTriangleHeight)
         {
-            newBottomHeight = currentHeight + MaxQuadTriangleHeight;
+            newBottomHeight = currentHeight + maxQuadTriangleHeight;
         }
 
         // TODOHERE
@@ -522,9 +526,9 @@ void GenerateSegmentedLandQuad(
     //       B
     //      /|
     //     / |
-    //  A /  | B'
-    //    |\ |
-    //  C'| \|D
+    //  A /--| B'
+    //    |  |
+    //  A'|--|D
     //    | /
     //  C |/
 
@@ -534,191 +538,407 @@ void GenerateSegmentedLandQuad(
     assert(leftTop.position.y >= leftBottom.position.y);
     assert(rightTop.position.y >= rightBottom.position.y);
 
-    // Start scan line from top
+    // For convenience
+    size_t constexpr A = 0;
+    size_t constexpr B = 1;
+    size_t constexpr C = 2;
+    size_t constexpr D = 3;
+    std::array<TLandVertex const, 4> const vertices = { leftTop, rightTop, leftBottom, rightBottom };
+
+    // The two segments (left and right) that we are currently scanning down along
+
+    struct Segment
+    {
+        size_t Start;
+        size_t End;
+    };
+
+    // Left, right
+    std::array<Segment, 2> currentSegmentEndpoints;
+
+    //
+    // Initialize segments
+    //
+
+    if (leftTop.position.y > rightTop.position.y)
+    {
+        currentSegmentEndpoints = { Segment{A, C}, Segment{A, B} };
+    }
+    else if (rightTop.position.y > leftTop.position.y)
+    {
+        currentSegmentEndpoints = { Segment{B, A}, Segment{B, D} };
+    }
+    else
+    {
+        assert(leftTop.position.y == rightTop.position.y);
+        currentSegmentEndpoints = { Segment{A, C}, Segment{B, D} };
+    }
+
+    //
+    // Scan line down
+    //
+
+    // The current left and right vertices of this scan line;
+    // we've created quads up to here.
+    //
+    // Not always at real vertices (might be halfway through a real edge)
+    std::array<TLandVertex, 2> currentScanLineVertices = { vertices[currentSegmentEndpoints[0].Start], vertices[currentSegmentEndpoints[1].Start] };
+
     float currentY = std::max(leftTop.position.y, rightTop.position.y);
-
-    // Stop at last at bottom
+    assert(currentY == std::max(currentScanLineVertices[0].position.y, currentScanLineVertices[1].position.y));
     float const maxBottomY = std::min(leftBottom.position.y, rightBottom.position.y);
-
-    // Current vertices; at each iteration we've generated up to these
-    std::array<TLandVertex, 2> currentVertices{ leftTop, rightTop };
-
-    // Prepare interpolations; delta's are all positive
-    //std::array<float, 2> const Dx = { rightTop.position.x - leftTop.position.x, leftTop.position.x - rightTop.position.x };
-    std::array<float, 2> const Dy = { leftTop.position.y - leftBottom.position.y, rightTop.position.y - rightBottom.position.y };
-    std::array<float, 2> const Ddepth = { leftTop.depth - leftBottom.depth, rightTop.depth - rightBottom.depth };
-    std::array<float, 2> const DinterfaceBlendDepth = { leftTop.interfaceBlendDepth - leftBottom.interfaceBlendDepth, rightTop.interfaceBlendDepth - rightBottom.interfaceBlendDepth };
 
     while (currentY > maxBottomY)
     {
-        // We have generated quads up to currentVertices
+        //
+        // Scan current segments down until we meet the first one
+        //
 
-        // Decide whether to do vertical interpolation (when we're sliding down the edged)
-        // or horizontal (when we're sliding down the top or bottom triangle)
+        // Prepare interpolations
 
-        int iVerticalSide = -1;
+        // Slopes on entire quad sides: end-start; left, right
+        std::array<float, 2> Dx = {
+            vertices[currentSegmentEndpoints[0].End].position.x - vertices[currentSegmentEndpoints[0].Start].position.x,
+            vertices[currentSegmentEndpoints[1].End].position.x - vertices[currentSegmentEndpoints[1].Start].position.x };
+        std::array<float, 2> Dy = {
+            vertices[currentSegmentEndpoints[0].End].position.y - vertices[currentSegmentEndpoints[0].Start].position.y,
+            vertices[currentSegmentEndpoints[1].End].position.y - vertices[currentSegmentEndpoints[1].Start].position.y };
+        std::array<float, 2> Ddepth = {
+            vertices[currentSegmentEndpoints[0].End].depth - vertices[currentSegmentEndpoints[0].Start].depth,
+            vertices[currentSegmentEndpoints[1].End].depth - vertices[currentSegmentEndpoints[1].Start].depth };
+        std::array<float, 2> DinterfaceBlendDepth = {
+            vertices[currentSegmentEndpoints[0].End].interfaceBlendDepth - vertices[currentSegmentEndpoints[0].Start].interfaceBlendDepth,
+            vertices[currentSegmentEndpoints[1].End].interfaceBlendDepth - vertices[currentSegmentEndpoints[1].Start].interfaceBlendDepth };
 
-        // TODOHERE: condition broken for bottom triangle
-        // Regular down if currentVertices[each].position.y == currentY; oblique otherwise
-        if (currentVertices[0].position.y == currentY)
+        // This is where we stop
+        float const currentBottomY = std::max(vertices[currentSegmentEndpoints[0].End].position.y, vertices[currentSegmentEndpoints[1].End].position.y);
+
+        while (currentY > currentBottomY)
         {
-            if (currentVertices[1].position.y == currentY)
+            // The current vertices are at the same y
+            assert(currentScanLineVertices[0].position.y == currentScanLineVertices[1].position.y);
+
+            // Calculate bottom y for this segment
+            float newBottomY = currentBottomY; // Shoot for max first
+            if (newBottomY < currentY - maxQuadTriangleHeight - minQuadTriangleHeight)
             {
-                // Do rectangle slice
-            }
-            else
-            {
-                // Do oblique side, right
-                assert(currentY > currentVertices[1].position.y);
-                assert(currentVertices[0].position.y == currentY);
-                iVerticalSide = 0;
-            }
-        }
-        else
-        {
-            // Do oblique side, left
-            assert(currentY > currentVertices[0].position.y);
-            assert(currentVertices[1].position.y == currentY);
-            iVerticalSide = 1;
-        }
-
-        if (iVerticalSide >= 0)
-        {
-            //
-            // Slice triangle, doing horizontal interpolation along oblique side,
-            // and vertical interpolation along straight side
-            //
-
-            TLandVertex const verticalVertexOrigin = (iVerticalSide == 1) ? rightTop : leftTop; // We calc delta's always from origin, instead of incrementally, to reduce numeric errors
-
-            // All "positive", i.e. vertical minus other
-            // TODO: broken for bottom triangle
-            float const Dx_Oblique = currentVertices[iVerticalSide].position.x - currentVertices[1 - iVerticalSide].position.x;
-            float const Dy_Oblique = currentVertices[iVerticalSide].position.y - currentVertices[1 - iVerticalSide].position.y;
-            float const Ddepth_Oblique = currentVertices[iVerticalSide].depth - currentVertices[1 - iVerticalSide].depth;
-            float const DinterfaceBlendDepth_Oblique = currentVertices[iVerticalSide].interfaceBlendDepth - currentVertices[1 - iVerticalSide].interfaceBlendDepth;
-
-            while (currentY > currentVertices[1 - iVerticalSide].position.y)
-            {
-                // Calculate bottom y for this segment
-                float newBottomY = currentVertices[1 - iVerticalSide].position.y; // Shoot for max first
-                if (newBottomY < currentY - maxQuadTriangleHeight - minQuadTriangleHeight)
-                {
-                    newBottomY = currentY - maxQuadTriangleHeight;
-                }
-
-                //
-                // Interpolate x, Depth, InterfaceBlendDepth horizontally for top/bottom side (oblique),
-                // and vertically for vertical side
-                //
-
-                float const dy_Vertical = verticalVertexOrigin.position.y - newBottomY; // Positive
-                assert(dy_Vertical >= 0.0f);
-
-                // TODOHERE: need to calc dy_Oblique as delta height of triangle; depends on how we detect this case
-
-                // x = x[i] + Dx * dy / Dy
-                float const newDepth_Vertical = verticalVertexOrigin.depth + Ddepth[iVerticalSide] * dy_Vertical / Dy[iVerticalSide];
-                float const newInterfaceBlendDepth_Vertical = verticalVertexOrigin.interfaceBlendDepth + DinterfaceBlendDepth[iVerticalSide] * dy_Vertical / Dy[iVerticalSide];
-                float const newX_Oblique = verticalVertexOrigin.position.x + Dx_Oblique * dy_Oblique / Dy_Oblique;
-                float const newDepth_Oblique = verticalVertexOrigin.depth + Ddepth_Oblique * dy_Oblique / Dy_Oblique;
-                float const newInterfaceBlendDepth_Oblique = verticalVertexOrigin.interfaceBlendDepth + DinterfaceBlendDepth_Oblique * dy_Oblique / Dy_Oblique;
-
-                // TODOHERE
+                newBottomY = currentY - maxQuadTriangleHeight;
             }
 
-            // TODO: advance current
-        }
-        else
-        {
             //
-            // Slice rectangle until we reach the first (topmost) of current,
-            // interpolating vertically along both sides
+            // Interpolate x, depth, interface blend depth, for both sides
+            //
+            // Always refer to the origins, to reduce error
             //
 
-            float const rectBottomY = std::max(leftBottom.position.y, rightBottom.position.y);
-            while (currentY > rectBottomY)
+            float const dyDy_Left = Dy[0] != 0.0f
+                ? (newBottomY - vertices[currentSegmentEndpoints[0].Start].position.y) / Dy[0]
+                : 0.0f;
+            float const dyDy_Right = Dy[1] != 0.0f
+                ? (newBottomY - vertices[currentSegmentEndpoints[1].Start].position.y) / Dy[1]
+                : 0.0f;
+
+            TLandVertex newLeftVertex = {
+                vec2f(
+                    vertices[currentSegmentEndpoints[0].Start].position.x + Dx[0] * dyDy_Left,
+                    //vertices[currentSegmentEndpoints[0].Start].position.y + Dy[0] * dyDy_Left),
+                    newBottomY),
+                vertices[currentSegmentEndpoints[0].Start].depth + Ddepth[0] * dyDy_Left,
+                vertices[currentSegmentEndpoints[0].Start].interfaceBlendDepth + DinterfaceBlendDepth[0] * dyDy_Left };
+
+            TLandVertex newRightVertex = {
+                vec2f(
+                    vertices[currentSegmentEndpoints[1].Start].position.x + Dx[1] * dyDy_Right,
+                    //vertices[currentSegmentEndpoints[1].Start].position.y + Dy[1] * dyDy_Right),
+                    newBottomY),
+                vertices[currentSegmentEndpoints[1].Start].depth + Ddepth[1] * dyDy_Right,
+                vertices[currentSegmentEndpoints[1].Start].interfaceBlendDepth + DinterfaceBlendDepth[1] * dyDy_Right };
+
+            //
+            // Produce quad
+            //
+            //    J------K
+            //    |      |
+            //    |      |
+            //   J'------K'
+            //
+
+            if (currentScanLineVertices[0].position.x < currentScanLineVertices[1].position.x) // J != K
             {
-                // It's a flat-top rectangle
-                assert(currentVertices[0].position.y == currentVertices[1].position.y);
-                assert(currentVertices[0].position.y == currentY);
-
-                // Calculate bottom y for this segment
-                float newBottomY = rectBottomY; // Shoot for max first
-                if (newBottomY < currentY - maxQuadTriangleHeight - minQuadTriangleHeight)
-                {
-                    newBottomY = currentY - maxQuadTriangleHeight;
-                }
-
-                //
-                // Interpolate Depth, InterfaceBlendDepth vertically, for both sides
-                //
-
-                float const dy_Left = newBottomY - leftTop.position.y; // Negative
-                assert(dy_Left < 0.0f);
-                // x = x[i] + Dx * dy / Dy
-                float const newDepth_Left = leftTop.depth + Ddepth[0] * dy_Left / Dy[0];
-                float const newInterfaceBlendDepth_Left = leftTop.interfaceBlendDepth + DinterfaceBlendDepth[0] * dy_Left / Dy[0];
-
-                float const dy_Right = newBottomY - rightTop.position.y; // Negative
-                assert(dy_Right < 0.0f);
-                // x = x[i] + Dx * dy / Dy
-                float const newDepth_Right = rightTop.depth + Ddepth[1] * dy_Right / Dy[1];
-                float const newInterfaceBlendDepth_Right = rightTop.interfaceBlendDepth + DinterfaceBlendDepth[1] * dy_Right / Dy[1];
-
-                //
-                // Produce quad
-                //
-                //    A'--------B'
-                //      |      |
-                //      |      |
-                //   A''--------B''
-                //
-
-                TLandVertex newCurrentVertex0{
-                    vec2f(leftTop.position.x, newBottomY),
-                    newDepth_Left,
-                    newInterfaceBlendDepth_Left };
-
-                TLandVertex newCurrentVertex1{
-                    vec2f(rightTop.position.x, newBottomY),
-                    newDepth_Right,
-                    newInterfaceBlendDepth_Right };
-
-                // A'-B'-B''
-                vertexBuffer.emplace_back(currentVertices[0]);
-                vertexBuffer.emplace_back(currentVertices[1]);
-                vertexBuffer.emplace_back(newCurrentVertex1);
-                // A'-B''-A''
-                vertexBuffer.emplace_back(currentVertices[0]);
-                vertexBuffer.emplace_back(newCurrentVertex1);
-                vertexBuffer.emplace_back(newCurrentVertex0);
-
-                //
-                // Advance
-                //
-
-                currentVertices[0] = newCurrentVertex0;
-                currentVertices[1] = newCurrentVertex1;
-                currentY = newBottomY;
+                // J-K-K'
+                vertexBuffer.emplace_back(currentScanLineVertices[0]);
+                vertexBuffer.emplace_back(currentScanLineVertices[1]);
+                vertexBuffer.emplace_back(newRightVertex);
             }
 
-            // Reset current's to reduce errors
-
-            if (rectBottomY == leftBottom.position.y)
+            if (newLeftVertex.position.x < newRightVertex.position.x) // J' != K'
             {
-                currentVertices[0] = leftBottom;
+                // J-K'-J'
+                vertexBuffer.emplace_back(currentScanLineVertices[0]);
+                vertexBuffer.emplace_back(newRightVertex);
+                vertexBuffer.emplace_back(newLeftVertex);
             }
 
-            if (rectBottomY == rightBottom.position.y)
-            {
-                currentVertices[1] = rightBottom;
-            }
+            //
+            // Advance
+            //
+
+            currentScanLineVertices[0] = newLeftVertex;
+            currentScanLineVertices[1] = newRightVertex;
+            currentY = newBottomY;
         }
+
+        //
+        // We have reached one or both ends; generate next segment(s)
+        //
+
+        assert(currentY == vertices[currentSegmentEndpoints[0].End].position.y || currentY == vertices[currentSegmentEndpoints[1].End].position.y);
+
+        // TODO: advance
     }
+
+
+    // TODOOLD 2
+
+    //// Current vertices; at each phase we've generated up to these
+    //std::array<TLandVertex, 2> currentVertices{ leftTop, rightTop };
+
+    ////
+    //// Phase 1. Do top triangle, if any
+    ////
+
+    //if (leftTop.position.y > rightTop.position.y)
+    //{
+    //    // Interpolate A down to A'
+    //    float const dy = leftTop.position.y - rightTop.position.y
+    //    float const Dy = leftTop.position.y - leftBottom.position.y;
+    //    TLandVertex aPrimeVertex = {
+    //        vec2f(leftTop.position.x, rightTop.position.y),
+    //        Dy != 0.0f ? leftTop.depth + (leftBottom.depth - leftTop.depth) * dy / Dy : leftTop.depth,
+    //        Dy != 0.0f ? leftTop.interfaceBlendDepth + (leftBottom.interfaceBlendDepth - leftTop.interfaceBlendDepth) * dy / Dy : leftTop.interfaceBlendDepth };
+
+    //    GenerateSegmentedLandQuadTriangle(
+    //        leftTop,
+    //        aPrimeVertex,
+    //        rightTop,
+    //        leftTop.position.y - rightTop.position.y,
+    //        rightTop.position.x - leftTop.position.x,
+    //        maxQuadTriangleHeight,
+    //        minQuadTriangleHeight,
+    //        vertexBuffer);
+
+    //    currentVertex[0] = aPrimeVertex;
+    //}
+    //else if (rightTop.position.y > leftTop.position.y)
+    //{
+    //    // TODOHERE
+    //}
+    //else
+    //{
+    //    // No triangle on top
+    //    assert(leftTop.position.y == rightTop.position.y);
+    //}
+
+    ////
+    //// Phase 2. Flat-top rectangle
+    ////
+
+    //assert(currentVertices[0].position.y == currentVertices[1].position.y);
+
+    //// TODOHERE
+
+
+
+
+
+    //// TODOOLD
+
+
+    //// Start scan line from top
+    //float currentY = std::max(leftTop.position.y, rightTop.position.y);
+
+    //// Stop at last at bottom
+    //float const maxBottomY = std::min(leftBottom.position.y, rightBottom.position.y);
+
+    //// Current vertices; at each iteration we've generated up to these
+    //std::array<TLandVertex, 2> currentVertices{ leftTop, rightTop };
+
+    //// Prepare interpolations; delta's are all positive
+    ////std::array<float, 2> const Dx = { rightTop.position.x - leftTop.position.x, leftTop.position.x - rightTop.position.x };
+    //std::array<float, 2> const Dy = { leftTop.position.y - leftBottom.position.y, rightTop.position.y - rightBottom.position.y };
+    //std::array<float, 2> const Ddepth = { leftTop.depth - leftBottom.depth, rightTop.depth - rightBottom.depth };
+    //std::array<float, 2> const DinterfaceBlendDepth = { leftTop.interfaceBlendDepth - leftBottom.interfaceBlendDepth, rightTop.interfaceBlendDepth - rightBottom.interfaceBlendDepth };
+
+    //while (currentY > maxBottomY)
+    //{
+    //    // We have generated quads up to currentVertices
+
+    //    // Decide whether to do vertical interpolation (when we're sliding down the edged)
+    //    // or horizontal (when we're sliding down the top or bottom triangle)
+
+    //    int iVerticalSide = -1;
+
+    //    // TODOHERE: condition broken for bottom triangle
+    //    // Regular down if currentVertices[each].position.y == currentY; oblique otherwise
+    //    if (currentVertices[0].position.y == currentY)
+    //    {
+    //        if (currentVertices[1].position.y == currentY)
+    //        {
+    //            // Do rectangle slice
+    //        }
+    //        else
+    //        {
+    //            // Do oblique side, right
+    //            assert(currentY > currentVertices[1].position.y);
+    //            assert(currentVertices[0].position.y == currentY);
+    //            iVerticalSide = 0;
+    //        }
+    //    }
+    //    else
+    //    {
+    //        // Do oblique side, left
+    //        assert(currentY > currentVertices[0].position.y);
+    //        assert(currentVertices[1].position.y == currentY);
+    //        iVerticalSide = 1;
+    //    }
+
+    //    if (iVerticalSide >= 0)
+    //    {
+    //        //
+    //        // Slice triangle, doing horizontal interpolation along oblique side,
+    //        // and vertical interpolation along straight side
+    //        //
+
+    //        TLandVertex const verticalVertexOrigin = (iVerticalSide == 1) ? rightTop : leftTop; // We calc delta's always from origin, instead of incrementally, to reduce numeric errors
+
+    //        // All "positive", i.e. vertical minus other
+    //        // TODO: broken for bottom triangle
+    //        float const Dx_Oblique = currentVertices[iVerticalSide].position.x - currentVertices[1 - iVerticalSide].position.x;
+    //        float const Dy_Oblique = currentVertices[iVerticalSide].position.y - currentVertices[1 - iVerticalSide].position.y;
+    //        float const Ddepth_Oblique = currentVertices[iVerticalSide].depth - currentVertices[1 - iVerticalSide].depth;
+    //        float const DinterfaceBlendDepth_Oblique = currentVertices[iVerticalSide].interfaceBlendDepth - currentVertices[1 - iVerticalSide].interfaceBlendDepth;
+
+    //        while (currentY > currentVertices[1 - iVerticalSide].position.y)
+    //        {
+    //            // Calculate bottom y for this segment
+    //            float newBottomY = currentVertices[1 - iVerticalSide].position.y; // Shoot for max first
+    //            if (newBottomY < currentY - maxQuadTriangleHeight - minQuadTriangleHeight)
+    //            {
+    //                newBottomY = currentY - maxQuadTriangleHeight;
+    //            }
+
+    //            //
+    //            // Interpolate x, Depth, InterfaceBlendDepth horizontally for top/bottom side (oblique),
+    //            // and vertically for vertical side
+    //            //
+
+    //            float const dy_Vertical = verticalVertexOrigin.position.y - newBottomY; // Positive
+    //            assert(dy_Vertical >= 0.0f);
+
+    //            // TODOHERE: need to calc dy_Oblique as delta height of triangle; depends on how we detect this case
+
+    //            // x = x[i] + Dx * dy / Dy
+    //            float const newDepth_Vertical = verticalVertexOrigin.depth + Ddepth[iVerticalSide] * dy_Vertical / Dy[iVerticalSide];
+    //            float const newInterfaceBlendDepth_Vertical = verticalVertexOrigin.interfaceBlendDepth + DinterfaceBlendDepth[iVerticalSide] * dy_Vertical / Dy[iVerticalSide];
+    //            float const newX_Oblique = verticalVertexOrigin.position.x + Dx_Oblique * dy_Oblique / Dy_Oblique;
+    //            float const newDepth_Oblique = verticalVertexOrigin.depth + Ddepth_Oblique * dy_Oblique / Dy_Oblique;
+    //            float const newInterfaceBlendDepth_Oblique = verticalVertexOrigin.interfaceBlendDepth + DinterfaceBlendDepth_Oblique * dy_Oblique / Dy_Oblique;
+
+    //            // TODOHERE
+    //        }
+
+    //        // TODO: advance current
+    //    }
+    //    else
+    //    {
+    //        //
+    //        // Slice rectangle until we reach the first (topmost) of current,
+    //        // interpolating vertically along both sides
+    //        //
+
+    //        float const rectBottomY = std::max(leftBottom.position.y, rightBottom.position.y);
+    //        while (currentY > rectBottomY)
+    //        {
+    //            // It's a flat-top rectangle
+    //            assert(currentVertices[0].position.y == currentVertices[1].position.y);
+    //            assert(currentVertices[0].position.y == currentY);
+
+    //            // Calculate bottom y for this segment
+    //            float newBottomY = rectBottomY; // Shoot for max first
+    //            if (newBottomY < currentY - maxQuadTriangleHeight - minQuadTriangleHeight)
+    //            {
+    //                newBottomY = currentY - maxQuadTriangleHeight;
+    //            }
+
+    //            //
+    //            // Interpolate Depth, InterfaceBlendDepth vertically, for both sides
+    //            //
+
+    //            float const dy_Left = newBottomY - leftTop.position.y; // Negative
+    //            assert(dy_Left < 0.0f);
+    //            // x = x[i] + Dx * dy / Dy
+    //            float const newDepth_Left = leftTop.depth + Ddepth[0] * dy_Left / Dy[0];
+    //            float const newInterfaceBlendDepth_Left = leftTop.interfaceBlendDepth + DinterfaceBlendDepth[0] * dy_Left / Dy[0];
+
+    //            float const dy_Right = newBottomY - rightTop.position.y; // Negative
+    //            assert(dy_Right < 0.0f);
+    //            // x = x[i] + Dx * dy / Dy
+    //            float const newDepth_Right = rightTop.depth + Ddepth[1] * dy_Right / Dy[1];
+    //            float const newInterfaceBlendDepth_Right = rightTop.interfaceBlendDepth + DinterfaceBlendDepth[1] * dy_Right / Dy[1];
+
+    //            //
+    //            // Produce quad
+    //            //
+    //            //    A'--------B'
+    //            //      |      |
+    //            //      |      |
+    //            //   A''--------B''
+    //            //
+
+    //            TLandVertex newCurrentVertex0{
+    //                vec2f(leftTop.position.x, newBottomY),
+    //                newDepth_Left,
+    //                newInterfaceBlendDepth_Left };
+
+    //            TLandVertex newCurrentVertex1{
+    //                vec2f(rightTop.position.x, newBottomY),
+    //                newDepth_Right,
+    //                newInterfaceBlendDepth_Right };
+
+    //            // A'-B'-B''
+    //            vertexBuffer.emplace_back(currentVertices[0]);
+    //            vertexBuffer.emplace_back(currentVertices[1]);
+    //            vertexBuffer.emplace_back(newCurrentVertex1);
+    //            // A'-B''-A''
+    //            vertexBuffer.emplace_back(currentVertices[0]);
+    //            vertexBuffer.emplace_back(newCurrentVertex1);
+    //            vertexBuffer.emplace_back(newCurrentVertex0);
+
+    //            //
+    //            // Advance
+    //            //
+
+    //            currentVertices[0] = newCurrentVertex0;
+    //            currentVertices[1] = newCurrentVertex1;
+    //            currentY = newBottomY;
+    //        }
+
+    //        // Reset current's to reduce errors
+
+    //        if (rectBottomY == leftBottom.position.y)
+    //        {
+    //            currentVertices[0] = leftBottom;
+    //        }
+
+    //        if (rectBottomY == rightBottom.position.y)
+    //        {
+    //            currentVertices[1] = rightBottom;
+    //        }
+    //    }
+    //}
 }
 
-TEST(GeometryTests, GenerateLandQuad_TriangleAboveOnly)
+TEST(GeometryTests, GenerateSegmentedLandQuad_TriangleAboveOnly)
 {
     //      B    150.0
     //     /|
@@ -735,7 +955,7 @@ TEST(GeometryTests, GenerateLandQuad_TriangleAboveOnly)
     float const rDd = 60.0f;
     float const rDibd = 10.0f;
 
-    GenerateLandQuad(
+    GenerateSegmentedLandQuad(
         // A
         TestLandVertex{ {0.0f, 150.0f - Dy}, 0.0f, 100.0f },
         // C
@@ -751,7 +971,7 @@ TEST(GeometryTests, GenerateLandQuad_TriangleAboveOnly)
     ASSERT_EQ(vertexBuffer.size(), 3 + 2 * 3);
 
     {
-        // B-B-B'
+        // B-B'-A'
 
         EXPECT_TRUE(ApproxEquals(vertexBuffer[0].position.x, 2.0f, 0.0000f));
         EXPECT_TRUE(ApproxEquals(vertexBuffer[0].position.y, 150.0f, 0.0000f));
@@ -759,37 +979,56 @@ TEST(GeometryTests, GenerateLandQuad_TriangleAboveOnly)
         EXPECT_TRUE(ApproxEquals(vertexBuffer[0].interfaceBlendDepth, 110.0f, 0.0000f));
 
         EXPECT_TRUE(ApproxEquals(vertexBuffer[1].position.x, 2.0f, 0.0000f));
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].position.y, 150.0f, 0.0000f));
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].depth, 20.0f, 0.0000f));
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].interfaceBlendDepth, 110.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].position.y, 140.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].depth, 20.0f + rDd * 10.0f / Dy, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].interfaceBlendDepth, 110.0f + rDibd * 10.0f / Dy, 0.0001f));
 
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].position.x, 2.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].position.x, 2.0f - oDx * 10.0f / Dy, 0.0001f));
         EXPECT_TRUE(ApproxEquals(vertexBuffer[2].position.y, 140.0f, 0.0000f));
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].depth, 20.0f + rDd * 10.0f / Dy, 0.0001f));
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].interfaceBlendDepth, 110.0f + rDibd * 10.0f / Dy, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].depth, 20.0f - oDd * 10.0f / Dy, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].interfaceBlendDepth, 110.0f - oDibd * 10.0f / Dy, 0.0001f));
+    }
 
-        // B-B'-A'
+    {
+        // A'-B'-D
 
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[3].position.x, 2.0f, 0.0000f));
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[3].position.y, 150.0f, 0.0000f));
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[3].depth, 20.0f, 0.0000f));
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[3].interfaceBlendDepth, 110.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[3].position.x, 2.0f - oDx * 10.0f / Dy, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[3].position.y, 140.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[3].depth, 20.0f - oDd * 10.0f / Dy, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[3].interfaceBlendDepth, 110.0f - oDibd * 10.0f / Dy, 0.0001f));
 
         EXPECT_TRUE(ApproxEquals(vertexBuffer[4].position.x, 2.0f, 0.0000f));
         EXPECT_TRUE(ApproxEquals(vertexBuffer[4].position.y, 140.0f, 0.0000f));
         EXPECT_TRUE(ApproxEquals(vertexBuffer[4].depth, 20.0f + rDd * 10.0f / Dy, 0.0001f));
         EXPECT_TRUE(ApproxEquals(vertexBuffer[4].interfaceBlendDepth, 110.0f + rDibd * 10.0f / Dy, 0.0001f));
 
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[5].position.x, 2.0f - oDx * 10.0f / Dy, 0.0001f));
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[5].position.y, 20.0f, 0.0000f));
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[5].depth, 20.0f - oDd * 10.0f / Dy, 0.0001f));
-        EXPECT_TRUE(ApproxEquals(vertexBuffer[5].interfaceBlendDepth, 110.0f - oDibd * 10.0f / Dy, 0.0001f));
-    }
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[5].position.x, 2.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[5].position.y, 133.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[5].depth, 20.0f + rDd, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[5].interfaceBlendDepth, 110.0f + rDibd, 0.0000f));
 
-    // TODOHERE
+        // A'-D-AC
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[6].position.x, 2.0f - oDx * 10.0f / Dy, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[6].position.y, 140.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[6].depth, 20.0f - oDd * 10.0f / Dy, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[6].interfaceBlendDepth, 110.0f - oDibd * 10.0f / Dy, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[7].position.x, 2.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[7].position.y, 133.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[7].depth, 20.0f + rDd, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[7].interfaceBlendDepth, 110.0f + rDibd, 0.0000f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[8].position.x, 0.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[8].position.y, 133.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[8].depth, 0.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[8].interfaceBlendDepth, 100.0f, 0.0000f));
+    }
 }
 
-TEST(GeometryTests, GenerateLandQuad_RectOnly)
+// TODO: TriangleOnly, other orientation
+
+TEST(GeometryTests, GenerateSegmentedLandQuad_RectOnly)
 {
     //   A--B    150.0
     //   |  |
@@ -805,7 +1044,7 @@ TEST(GeometryTests, GenerateLandQuad_RectOnly)
     float const rDd = 60.0f;
     float const rDibd = 10.0f;
 
-    GenerateLandQuad(
+    GenerateSegmentedLandQuad(
         // A
         TestLandVertex{ {0.0f, 150.0f}, 0.0f, 100.0f },
         // C
@@ -1001,11 +1240,65 @@ TEST(GeometryTests, GenerateLandQuad_RectOnly)
     }
 }
 
-// TODO: only triangle below
+TEST(GeometryTests, GenerateSegmentedLandQuad_TriangleBelowOnly)
+{
+    //  AC--B    150.0
+    //   \  |
+    //    \ |
+    //     \|
+    //      D    133.0
 
-// TODO: full, but fewer segments
-// TODO: triangle above + rect, but fewer segments
-// TODO: rect + triangle below, but fewer segments
+    std::vector<TestLandVertex> vertexBuffer;
+
+    float const oDx = 2.0f;
+    float const Dy = 150.0f - 133.0f;
+    //float const oDd = 20.0f - 0.0f;
+    //float const oDibd = 110.0f - 100.0f;
+    float const rDd = 60.0f;
+    float const rDibd = 10.0f;
+
+    GenerateSegmentedLandQuad(
+        // A
+        TestLandVertex{ {0.0f, 150.0f }, 0.0f, 100.0f },
+        // C
+        TestLandVertex{ {0.0f, 150.0f }, 0.0f, 100.0f },
+        // B
+        TestLandVertex{ {0.0f + oDx, 150.0f}, 20.0f, 110.0f },
+        // D
+        TestLandVertex{ {0.0f + oDx, 150.0f - Dy}, 20.0f + rDd, 110.0f + rDibd },
+        10.0f,
+        2.0f,
+        vertexBuffer);
+
+    ASSERT_EQ(vertexBuffer.size(), 2 * 3 + 3);
+
+    {
+        // AC-B-B'
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[0].position.x, 0.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[0].position.y, 150.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[0].depth, 0.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[0].interfaceBlendDepth, 100.0f, 0.0000f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].position.x, 2.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].position.y, 150.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].depth, 20.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].interfaceBlendDepth, 110.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].position.x, 2.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].position.y, 140.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].depth, 20.0f - rDd * 10.0f / Dy, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].interfaceBlendDepth, 110.0f - rDibd * 10.0f / Dy, 0.0001f));
+
+        // AC-B'-A'
+        // TODOHERE
+    }
+}
+
+// TODO: TriangleOnly, other orientation
+
+// TODO: full
+// TODO: full - with no vertical intersections
 
 // TODO: 3 pieces but each shorter
 
