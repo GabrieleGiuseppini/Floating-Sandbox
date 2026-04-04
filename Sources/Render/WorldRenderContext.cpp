@@ -992,10 +992,12 @@ void WorldRenderContext::UploadLandStart(
     //  1 quad
     //  max N quads, with N = WorldHeight / MaxQuadTriangleHeight
     //  2 extra triangles for (eventual) small above- and below-triangles
-    size_t const maxBedrockVertexCount =
-        slices * 6
-        + static_cast<size_t>(std::ceilf(maxWorldHeight / MaxQuadTriangleHeight)) * slices * 6
-        + 2 * slices * 3;
+    size_t const maxBedrockVertexCount = GameOpenGL::PreventSteepTriangles
+        ? (
+            slices * 6
+            + static_cast<size_t>(std::ceilf(maxWorldHeight / MaxQuadTriangleHeight)) * slices * 6
+            + 2 * slices * 3)
+        : slices * 12;
 
     mLandVertexBuffer.reset_full(mLandSiltVertexCount + maxBedrockVertexCount, mLandSiltVertexCount);
 

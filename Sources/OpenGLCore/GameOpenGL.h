@@ -207,6 +207,7 @@ public:
     static int MaxSupportedOpenGLVersionMajor;
     static int MaxSupportedOpenGLVersionMinor;
 
+    static bool PreventSteepTriangles;
     static bool AvoidGlFinish;
 
 public:

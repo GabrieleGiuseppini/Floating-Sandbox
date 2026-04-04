@@ -323,21 +323,20 @@
 					+ Load+Exit (try to reproduce that "not responding")
 				+ Make WorldRenderContext::UploadLand(slice) inline again
 					+ Remove print @ UploadEnd
-
-				= Send to testers
-					- Fine-tune max height
-
-				- Do it only for nVidia
-					- OpenGL init: store IsNvidia and RequiresTODO
-						- 15:01:44.395045:GL_VENDOR=NVIDIA Corporation
+				+ Send to testers
+				+ Do it only for nVidia
+					+ OpenGL init: store IsNvidia and RequiresTODO
+						! 15:01:44.395045:GL_VENDOR=NVIDIA Corporation
 						  15:01:44.395049:GL_RENDERER=NVIDIA GeForce RTX 3060/PCIe/SSE2
-						- 17:27:41.248221:GL_VENDOR=NVIDIA Corporation
+						! 17:27:41.248221:GL_VENDOR=NVIDIA Corporation
 						  17:27:41.248225:GL_RENDERER=Quadro RTX 3000/PCIe/SSE2
-						- Log
-					- Use @ UploadOcean
+						+ Log
+					+ Use @ UploadOcean
+					+ Use @ count init - 12*slices
 
-				- Try with changing triangle sizes?
-				- Might be nice to incorporate adjacent ones, so to lower @ of triangles....
+				- Quest for optimal:
+					- Try with changing triangle sizes so not to overlap
+					- Might be nice to incorporate adjacent ones, so to lower @ of triangles
 
 				- Test on old dell
 

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <memory>
 #include <numeric>
+#include <regex>
 
 int GameOpenGL::MaxVertexAttributes = 0;
 int GameOpenGL::MaxViewportWidth = 0;
@@ -20,6 +21,7 @@ int GameOpenGL::MaxRenderbufferSize = 0;
 int GameOpenGL::MaxSupportedOpenGLVersionMajor = 0;
 int GameOpenGL::MaxSupportedOpenGLVersionMinor = 0;
 
+bool GameOpenGL::PreventSteepTriangles = false;
 bool GameOpenGL::AvoidGlFinish = false;
 
 #ifdef _DEBUG
@@ -129,6 +131,21 @@ void GameOpenGL::InitOpenGL()
     // Initialize switches
     //
 
+    // Avoid steep triangles on NVidia cards (RTX's show pesky seams with steep triangles)
+
+    static std::regex const NVidiaRegex(R"!(\bNVIDIA\b)!", std::regex::icase);
+    static std::regex const RTXRegex(R"!(\bRTX\b)!", std::regex::icase);
+
+    if (std::regex_search(vendor, NVidiaRegex)
+        && std::regex_search(renderer, RTXRegex))
+    {
+        PreventSteepTriangles = true;
+    }
+    else
+    {
+        PreventSteepTriangles = false;
+    }
+
     // Avoid calling glFinish() on Intel HD Graphics (including 2000 and 4000) cards
 
     if (renderer == "Intel(R) HD Graphics"
@@ -142,8 +159,7 @@ void GameOpenGL::InitOpenGL()
         AvoidGlFinish = false;
     }
 
-    LogMessage("AvoidGlFinish=", AvoidGlFinish);
-
+    LogMessage("PreventSteepTriangles=", PreventSteepTriangles, " AvoidGlFinish=", AvoidGlFinish);
 
     //
     // Initialize debugging

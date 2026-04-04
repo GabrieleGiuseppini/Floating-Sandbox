@@ -369,9 +369,6 @@ public:
         // Add vertices
         //  - Depth (for AA and texture edge): distance from silt; 0 at silt (so only if no silt)
         //  - Interface blend depth: 0 at theoretical yBedrock + MaxTransitionThickness, +X'' at world bottom
-        //
-        // We segment all quads into not-too-tall slices, because on GEForce RTX (nVidia),
-        // steep triangles cause seams - with or without multi-sampling.
 
         //
         //       B    --- yB = yBedrock2 + transition thickness 2
@@ -387,63 +384,124 @@ public:
         //  E ---- F  --- yE,F = yWorldBottom
         //
 
-        // ABCD
-        Geometry::GenerateSegmentedLandQuad(
-            // A
-            LandVertex{
-                vec2f(x1, yBedrock1 + effectiveTransitionThickness1),
-                ySilt1 - (yBedrock1 + effectiveTransitionThickness1),
-                MaxTransitionThickness - effectiveTransitionThickness1
-            },
-            // C
-            LandVertex{
-                vec2f(x1, yBedrock1 - LipThickness),
-                ySilt1 - (yBedrock1 - LipThickness),
-                MaxTransitionThickness + LipThickness
-            },
-            // B
-            LandVertex{
+        if (GameOpenGL::PreventSteepTriangles)
+        {
+            // ABCD
+            Geometry::GenerateSegmentedLandQuad(
+                // A
+                LandVertex{
+                    vec2f(x1, yBedrock1 + effectiveTransitionThickness1),
+                    ySilt1 - (yBedrock1 + effectiveTransitionThickness1),
+                    MaxTransitionThickness - effectiveTransitionThickness1
+                },
+                // C
+                LandVertex{
+                    vec2f(x1, yBedrock1 - LipThickness),
+                    ySilt1 - (yBedrock1 - LipThickness),
+                    MaxTransitionThickness + LipThickness
+                },
+                // B
+                LandVertex{
+                    vec2f(x2, yBedrock2 + effectiveTransitionThickness2),
+                    ySilt2 - (yBedrock2 + effectiveTransitionThickness2),
+                    MaxTransitionThickness - effectiveTransitionThickness2
+                },
+                // D
+                LandVertex{
+                    vec2f(x2, yBedrock2 - LipThickness),
+                    ySilt2 - (yBedrock2 - LipThickness),
+                    MaxTransitionThickness + LipThickness
+                },
+                MaxQuadTriangleHeight, MinQuadTriangleHeight,
+                mLandVertexBuffer);
+
+            // CEDF
+            Geometry::GenerateSegmentedLandQuad(
+                // C
+                LandVertex{
+                    vec2f(x1, yBedrock1 - LipThickness),
+                    ySilt1 - (yBedrock1 - LipThickness),
+                    MaxTransitionThickness + LipThickness
+                },
+                // E
+                LandVertex{
+                    vec2f(x1, yWorldBottom),
+                    ySilt1 - (yBedrock1 - LipThickness), // Fixed
+                    MaxTransitionThickness + LipThickness // Fixed
+                },
+                // D
+                LandVertex{
+                    vec2f(x2, yBedrock2 - LipThickness),
+                    ySilt2 - (yBedrock2 - LipThickness),
+                    MaxTransitionThickness + LipThickness
+                },
+                // F
+                LandVertex{
+                    vec2f(x2, yWorldBottom),
+                    ySilt2 - (yBedrock2 - LipThickness), // Fixed
+                    MaxTransitionThickness + LipThickness // Fixed
+                },
+                MaxQuadTriangleHeight, MinQuadTriangleHeight,
+                mLandVertexBuffer);
+        }
+        else
+        {
+            // B - D - A
+            mLandVertexBuffer.emplace_back(
                 vec2f(x2, yBedrock2 + effectiveTransitionThickness2),
                 ySilt2 - (yBedrock2 + effectiveTransitionThickness2),
-                MaxTransitionThickness - effectiveTransitionThickness2
-            },
-            // D
-            LandVertex{
+                MaxTransitionThickness - effectiveTransitionThickness2);
+            mLandVertexBuffer.emplace_back(
                 vec2f(x2, yBedrock2 - LipThickness),
-                ySilt2 - (yBedrock2 - LipThickness),
-                MaxTransitionThickness + LipThickness
-            },
-            MaxQuadTriangleHeight, MinQuadTriangleHeight,
-            mLandVertexBuffer);
+                ySilt2 - yBedrock2 + LipThickness,
+                MaxTransitionThickness + LipThickness);
+            mLandVertexBuffer.emplace_back(
+                vec2f(x1, yBedrock1 + effectiveTransitionThickness1),
+                ySilt1 - (yBedrock1 + effectiveTransitionThickness1),
+                MaxTransitionThickness - effectiveTransitionThickness1);
 
-        // CEDF
-        Geometry::GenerateSegmentedLandQuad(
-            // C
-            LandVertex{
-                vec2f(x1, yBedrock1 - LipThickness),
-                ySilt1 - (yBedrock1 - LipThickness),
-                MaxTransitionThickness + LipThickness
-            },
-            // E
-            LandVertex{
-                vec2f(x1, yWorldBottom),
-                ySilt1 - (yBedrock1 - LipThickness), // Fixed
-                MaxTransitionThickness + LipThickness // Fixed
-            },
-            // D
-            LandVertex{
+            // D - A - C
+            mLandVertexBuffer.emplace_back(
                 vec2f(x2, yBedrock2 - LipThickness),
-                ySilt2 - (yBedrock2 - LipThickness),
-                MaxTransitionThickness + LipThickness
-            },
-            // F
-            LandVertex{
+                ySilt2 - yBedrock2 + LipThickness,
+                MaxTransitionThickness + LipThickness);
+            mLandVertexBuffer.emplace_back(
+                vec2f(x1, yBedrock1 + effectiveTransitionThickness1),
+                ySilt1 - (yBedrock1 + effectiveTransitionThickness1),
+                MaxTransitionThickness - effectiveTransitionThickness1);
+            mLandVertexBuffer.emplace_back(
+                vec2f(x1, yBedrock1 - LipThickness),
+                ySilt1 - yBedrock1 + LipThickness,
+                MaxTransitionThickness + LipThickness);
+
+            // C - E - D
+            mLandVertexBuffer.emplace_back(
+                vec2f(x1, yBedrock1 - LipThickness),
+                ySilt1 - yBedrock1 + LipThickness,
+                MaxTransitionThickness + LipThickness);
+            mLandVertexBuffer.emplace_back(
+                vec2f(x1, yWorldBottom),
+                ySilt1 - yBedrock1 + LipThickness, // Fixed
+                MaxTransitionThickness + LipThickness); // Fixed
+            mLandVertexBuffer.emplace_back(
+                vec2f(x2, yBedrock2 - LipThickness),
+                ySilt2 - yBedrock2 + LipThickness,
+                MaxTransitionThickness + LipThickness);
+
+            // E - D - F
+            mLandVertexBuffer.emplace_back(
+                vec2f(x1, yWorldBottom),
+                ySilt1 - yBedrock1 + LipThickness, // Fixed
+                MaxTransitionThickness + LipThickness); // Fixed
+            mLandVertexBuffer.emplace_back(
+                vec2f(x2, yBedrock2 - LipThickness),
+                ySilt2 - yBedrock2 + LipThickness,
+                MaxTransitionThickness + LipThickness);
+            mLandVertexBuffer.emplace_back(
                 vec2f(x2, yWorldBottom),
-                ySilt2 - (yBedrock2 - LipThickness), // Fixed
-                MaxTransitionThickness + LipThickness // Fixed
-            },
-            MaxQuadTriangleHeight, MinQuadTriangleHeight,
-            mLandVertexBuffer);
+                ySilt2 - yBedrock2 + LipThickness, // Fixed
+                MaxTransitionThickness + LipThickness); // Fixed
+        }
     }
 
     void UploadLandEnd(float yWorldBottom);
