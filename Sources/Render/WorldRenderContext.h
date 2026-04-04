@@ -18,6 +18,7 @@
 #include <Core/BoundedVector.h>
 #include <Core/Buffer2D.h>
 #include <Core/Colors.h>
+#include <Core/GameGeometry.h>
 #include <Core/GameTypes.h>
 #include <Core/IAssetManager.h>
 #include <Core/ImageData.h>
@@ -310,7 +311,17 @@ public:
         size_t slices,
         float maxWorldHeight);
 
-    // TODOTEST: make it inline again when done
+private:
+
+    // We segment quads so that no triangle is taller than this;
+    // fights against thin/steep triangles, which on RTX's are bad
+    // (show seams between triangles, even if they share vertices
+    // and even if they are drawn as triangle strips)
+    static float constexpr MaxQuadTriangleHeight = 1000.0f;
+    static float constexpr MinQuadTriangleHeight = 50.0f; // To prevent tiny triangles
+
+public:
+
     void UploadLand(
         size_t iSlice,
         float x1,
@@ -319,7 +330,121 @@ public:
         float x2,
         float ySilt2,
         float yBedrock2,
-        float yWorldBottom);
+        float yWorldBottom)
+    {
+        // The upward overlap of bedrock over silt to blend with it
+        float constexpr MaxTransitionThickness = 10.0f; // Magic - keep in-sync with shader!
+
+        // The thickness on the _depth_ coordinate over which we skew texture
+        // coordinates to give bedrock a 3d-like "lip"
+        float constexpr LipThickness = 2.0f; // Magic - keep in-sync with shader!
+
+        //
+        // Silt
+        //
+
+        LandVertex * siltVertex;
+
+        if (iSlice == 0) // We use 1 only for the first
+        {
+            siltVertex = &(mLandVertexBuffer[iSlice * 2]);
+            siltVertex[0] = LandVertex{ {x1, ySilt1}, 0.0f, MaxTransitionThickness };
+            siltVertex[1] = LandVertex{ {x1, yBedrock1}, ySilt1 - yBedrock1, MaxTransitionThickness };
+        }
+
+        siltVertex = &(mLandVertexBuffer[(iSlice + 1) * 2]);
+        siltVertex[0] = LandVertex{ {x2, ySilt2}, 0.0f, MaxTransitionThickness };
+        siltVertex[1] = LandVertex{ {x2, yBedrock2}, ySilt2 - yBedrock2, MaxTransitionThickness };
+
+        //
+        // Bedrock
+        //
+
+        // "Pretend" yBedrock to cover silt a bit, providing a band over which we blend
+        assert(ySilt1 >= yBedrock1);
+        float const effectiveTransitionThickness1 = std::min(ySilt1 - yBedrock1, MaxTransitionThickness);
+        assert(ySilt2 >= yBedrock2);
+        float const effectiveTransitionThickness2 = std::min(ySilt2 - yBedrock2, MaxTransitionThickness);
+
+        // Add vertices
+        //  - Depth (for AA and texture edge): distance from silt; 0 at silt (so only if no silt)
+        //  - Interface blend depth: 0 at theoretical yBedrock + MaxTransitionThickness, +X'' at world bottom
+        //
+        // We segment all quads into not-too-tall slices, because on GEForce RTX (nVidia),
+        // steep triangles cause seams - with or without multi-sampling.
+
+        //
+        //       B    --- yB = yBedrock2 + transition thickness 2
+        //      /|
+        //     / |
+        //  A /  |    --- yA = yBedrock1 + transition thickness 1
+        //    |\ |
+        //    | \|D   --- yD = yBedrock2 - Lip
+        //    | /|
+        //  C |/ |    --- yC = yBedrock1 - Lip
+        //    |  |
+        //    |  |
+        //  E ---- F  --- yE,F = yWorldBottom
+        //
+
+        // ABCD
+        Geometry::GenerateSegmentedLandQuad(
+            // A
+            LandVertex{
+                vec2f(x1, yBedrock1 + effectiveTransitionThickness1),
+                ySilt1 - (yBedrock1 + effectiveTransitionThickness1),
+                MaxTransitionThickness - effectiveTransitionThickness1
+            },
+            // C
+            LandVertex{
+                vec2f(x1, yBedrock1 - LipThickness),
+                ySilt1 - (yBedrock1 - LipThickness),
+                MaxTransitionThickness + LipThickness
+            },
+            // B
+            LandVertex{
+                vec2f(x2, yBedrock2 + effectiveTransitionThickness2),
+                ySilt2 - (yBedrock2 + effectiveTransitionThickness2),
+                MaxTransitionThickness - effectiveTransitionThickness2
+            },
+            // D
+            LandVertex{
+                vec2f(x2, yBedrock2 - LipThickness),
+                ySilt2 - (yBedrock2 - LipThickness),
+                MaxTransitionThickness + LipThickness
+            },
+            MaxQuadTriangleHeight, MinQuadTriangleHeight,
+            mLandVertexBuffer);
+
+        // CEDF
+        Geometry::GenerateSegmentedLandQuad(
+            // C
+            LandVertex{
+                vec2f(x1, yBedrock1 - LipThickness),
+                ySilt1 - (yBedrock1 - LipThickness),
+                MaxTransitionThickness + LipThickness
+            },
+            // E
+            LandVertex{
+                vec2f(x1, yWorldBottom),
+                ySilt1 - (yBedrock1 - LipThickness), // Fixed
+                MaxTransitionThickness + LipThickness // Fixed
+            },
+            // D
+            LandVertex{
+                vec2f(x2, yBedrock2 - LipThickness),
+                ySilt2 - (yBedrock2 - LipThickness),
+                MaxTransitionThickness + LipThickness
+            },
+            // F
+            LandVertex{
+                vec2f(x2, yWorldBottom),
+                ySilt2 - (yBedrock2 - LipThickness), // Fixed
+                MaxTransitionThickness + LipThickness // Fixed
+            },
+            MaxQuadTriangleHeight, MinQuadTriangleHeight,
+            mLandVertexBuffer);
+    }
 
     void UploadLandEnd(float yWorldBottom);
 
@@ -975,13 +1100,6 @@ public:
     void RenderPrepareEnd();
 
 private:
-
-    struct LandVertex;
-    inline void GenerateLandQuad(
-        LandVertex leftTop,
-        LandVertex leftBottom,
-        LandVertex rightTop,
-        LandVertex rightBottom);
 
     inline void StoreLightningVertices(
         float ndcX,

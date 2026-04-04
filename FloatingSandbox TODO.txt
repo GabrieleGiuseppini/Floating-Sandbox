@@ -299,33 +299,47 @@
 				+ Strip (x3)
 				+ Send to Discord, bump up version
 				X Degenerate (x2)
-			- 2. Just split those vertical quads
+			= 2. Just split those vertical quads
 				! Old # vertices: 28674=458,784B=0.5MB
 				! New # vertices: LandVertexBuffer.size=146703 allocatedSize=286722=4,587,552B=4.5MB
 				+ Basic
-				= With whole delta Y constrain
+				+ With whole delta Y constrain
 					+ 2/3
 					+ Send to Discord
-					= Code
-						- Can avoid interpolating when we know we're hitting end vertex?
-							- Then see if we still need to reset scan line vertices
-					= Unit tests
-					- Incorporate in WorldRenderContext
-
+					+ Code
+						+ Can avoid interpolating when we know we're hitting end vertex?
+							+ newScanLineVertices[2]' populate each in turn
+							+ Then see if we still need to reset scan line vertices
+					+ Unit tests
+					+ Incorporate in WorldRenderContext
 				+ Change smoothers to last shorter
+				+ Test perf with test floor:
+					+ Before UHD 3.8
+					+ After UHD 3.3/3.8
+					+ Before nVidia 1.2/1.3
+					+ After nVidia 1.9/2.0
+				+ Tests in Debug:
+					+ Test whole screen being floor
+					+ Load+Exit (try to reproduce that "not responding")
+				+ Make WorldRenderContext::UploadLand(slice) inline again
+					+ Remove print @ UploadEnd
 
-				- Test perf with test floor:
-					- Before UHD
-					- After UHD
-					- Before nVidia
-					- After nVidia
-					- Old Dell
+				= Send to testers
+					- Fine-tune max height
 
-				- Might be nice though to incorporate adjacent ones....
+				- Do it only for nVidia
+					- OpenGL init: store IsNvidia and RequiresTODO
+						- 15:01:44.395045:GL_VENDOR=NVIDIA Corporation
+						  15:01:44.395049:GL_RENDERER=NVIDIA GeForce RTX 3060/PCIe/SSE2
+						- 17:27:41.248221:GL_VENDOR=NVIDIA Corporation
+						  17:27:41.248225:GL_RENDERER=Quadro RTX 3000/PCIe/SSE2
+						- Log
+					- Use @ UploadOcean
 
-				- Make WorldRenderContext::UploadLand(slice) inline again
+				- Try with changing triangle sizes?
+				- Might be nice to incorporate adjacent ones, so to lower @ of triangles....
 
-				- Send to testers
+				- Test on old dell
 
 		- More tornado shapes
 

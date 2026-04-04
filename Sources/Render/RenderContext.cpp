@@ -98,6 +98,8 @@ RenderContext::RenderContext(
             {
                 // Start with disabled; we'll enable it where needed
                 glDisable(GL_MULTISAMPLE);
+
+                glDisable(GL_LINE_SMOOTH); // Not needed, and might give problems
             }
             else
             {
@@ -105,6 +107,8 @@ RenderContext::RenderContext(
                 glEnable(GL_LINE_SMOOTH);
                 glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
             }
+
+            glDisable(GL_POLYGON_SMOOTH); // Not needed, and might give problems
 
             // Enable blending for alpha transparency
             glEnable(GL_BLEND);
