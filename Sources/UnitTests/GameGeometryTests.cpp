@@ -1620,7 +1620,7 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_Full_NoVerticalOverlap)
 {
     //            D    150.0
     //           /|
-    //          / |
+    //       A1 / | D1
     //         /  |
     //     A' /   C    135.0
     //       /   /
@@ -1633,9 +1633,9 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_Full_NoVerticalOverlap)
 
     std::vector<TestLandVertex> vertexBuffer;
 
-    //float const lDy = 120.0f - 105.0f;
-    //float const lDd = 10.0f - 20.0f;
-    //float const lDibd = 100.0f - 200.0f;
+    float const lDy = 120.0f - 105.0f;
+    float const lDd = 10.0f - 20.0f;
+    float const lDibd = 100.0f - 200.0f;
 
     float const rDy = 150.0f - 135.0f;
     float const rDd = 100.0f - 200.0f;
@@ -1643,8 +1643,8 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_Full_NoVerticalOverlap)
 
     float const tDd = 100.0f - 10.0f;
     float const tDibd = 1000.0f - 100.0f;
-    //float const bDd = 200.0f - 20.0f;
-    //float const bDibd = 2000.0f - 200.0f;
+    float const bDd = 200.0f - 20.0f;
+    float const bDibd = 2000.0f - 200.0f;
 
     GenerateSegmentedLandQuad(
         // A
@@ -1685,7 +1685,37 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_Full_NoVerticalOverlap)
     {
         // A1-D1-C
 
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[3].position.x, 2.0f - 2.0f * 10.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[3].position.y, 140.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[3].depth, 100.0f - tDd * 10.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[3].interfaceBlendDepth, 1000.0f - tDibd * 10.0f / 30.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[4].position.x, 2.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[4].position.y, 140.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[4].depth, 100.0f - rDd * 10.0f / rDy, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[4].interfaceBlendDepth, 1000.0f - rDibd * 10.0f / rDy, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[5].position.x, 2.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[5].position.y, 135.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[5].depth, 200.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[5].interfaceBlendDepth, 2000.0f, 0.0000f));
+
         // A1-C-A'
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[6].position.x, 2.0f - 2.0f * 10.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[6].position.y, 140.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[6].depth, 100.0f - tDd * 10.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[6].interfaceBlendDepth, 1000.0f - tDibd * 10.0f / 30.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[7].position.x, 2.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[7].position.y, 135.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[7].depth, 200.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[7].interfaceBlendDepth, 2000.0f, 0.0000f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[8].position.x, 2.0f - 2.0f * 15.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[8].position.y, 135.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[8].depth, 100.0f - tDd * 15.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[8].interfaceBlendDepth, 1000.0f - tDibd * 15.0f / 30.0f, 0.0001f));
     }
 
     // Rect
@@ -1693,13 +1723,73 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_Full_NoVerticalOverlap)
     {
         // A'-C-C1
 
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[9].position.x, 2.0f - 2.0f * 15.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[9].position.y, 135.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[9].depth, 100.0f - tDd * 15.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[9].interfaceBlendDepth, 1000.0f - tDibd * 15.0f / 30.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[10].position.x, 2.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[10].position.y, 135.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[10].depth, 200.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[10].interfaceBlendDepth, 2000.0f, 0.0000f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[11].position.x, 2.0f - 2.0f * 10.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[11].position.y, 125.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[11].depth, 200.0f - bDd * 10.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[11].interfaceBlendDepth, 2000.0f - bDibd * 10.0f / 30.0f, 0.0001f));
+
         // A'-C1-A2
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[12].position.x, 2.0f - 2.0f * 15.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[12].position.y, 135.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[12].depth, 100.0f - tDd * 15.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[12].interfaceBlendDepth, 1000.0f - tDibd * 15.0f / 30.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[13].position.x, 2.0f - 2.0f * 10.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[13].position.y, 125.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[13].depth, 200.0f - bDd * 10.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[13].interfaceBlendDepth, 2000.0f - bDibd * 10.0f / 30.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[14].position.x, 2.0f - 2.0f * 25.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[14].position.y, 125.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[14].depth, 100.0f - tDd * 25.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[14].interfaceBlendDepth, 1000.0f - tDibd * 25.0f / 30.0f, 0.0001f));
     }
 
     {
         // A2-C1-C'
 
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[15].position.x, 2.0f - 2.0f * 25.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[15].position.y, 125.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[15].depth, 100.0f - tDd * 25.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[15].interfaceBlendDepth, 1000.0f - tDibd * 25.0f / 30.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[16].position.x, 2.0f - 2.0f * 10.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[16].position.y, 125.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[16].depth, 200.0f - bDd * 10.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[16].interfaceBlendDepth, 2000.0f - bDibd * 10.0f / 30.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[17].position.x, 2.0f - 2.0f * 15.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[17].position.y, 120.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[17].depth, 200.0f - bDd * 15.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[17].interfaceBlendDepth, 2000.0f - bDibd * 15.0f / 30.0f, 0.0001f));
+
         // A2-C'-A
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[18].position.x, 2.0f - 2.0f * 25.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[18].position.y, 125.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[18].depth, 100.0f - tDd * 25.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[18].interfaceBlendDepth, 1000.0f - tDibd * 25.0f / 30.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[19].position.x, 2.0f - 2.0f * 15.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[19].position.y, 120.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[19].depth, 200.0f - bDd * 15.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[19].interfaceBlendDepth, 2000.0f - bDibd * 15.0f / 30.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[20].position.x, 0.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[20].position.y, 120.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[20].depth, 10.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[20].interfaceBlendDepth, 100.0f, 0.0000f));
     }
 
     // Bottom
@@ -1707,10 +1797,55 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_Full_NoVerticalOverlap)
     {
         // A-C'-C2
 
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[21].position.x, 0.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[21].position.y, 120.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[21].depth, 10.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[21].interfaceBlendDepth, 100.0f, 0.0000f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[22].position.x, 2.0f - 2.0f * 15.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[22].position.y, 120.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[22].depth, 200.0f - bDd * 15.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[22].interfaceBlendDepth, 2000.0f - bDibd * 15.0f / 30.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[23].position.x, 2.0f - 2.0f * 25.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[23].position.y, 110.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[23].depth, 200.0f - bDd * 25.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[23].interfaceBlendDepth, 2000.0f - bDibd * 25.0f / 30.0f, 0.0001f));
+
         // A-C2-A3
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[24].position.x, 0.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[24].position.y, 120.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[24].depth, 10.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[24].interfaceBlendDepth, 100.0f, 0.0000f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[25].position.x, 2.0f - 2.0f * 25.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[25].position.y, 110.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[25].depth, 200.0f - bDd * 25.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[25].interfaceBlendDepth, 2000.0f - bDibd * 25.0f / 30.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[26].position.x, 0.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[26].position.y, 110.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[26].depth, 10.0f - lDd * 10.0f / lDy, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[26].interfaceBlendDepth, 100.0f - lDibd * 10.0f / lDy, 0.0001f));
     }
 
     {
         // A3-C2-B
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[27].position.x, 0.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[27].position.y, 110.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[27].depth, 10.0f - lDd * 10.0f / lDy, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[27].interfaceBlendDepth, 100.0f - lDibd * 10.0f / lDy, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[28].position.x, 2.0f - 2.0f * 25.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[28].position.y, 110.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[28].depth, 200.0f - bDd * 25.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[28].interfaceBlendDepth, 2000.0f - bDibd * 25.0f / 30.0f, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[29].position.x, 0.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[29].position.y, 105.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[29].depth, 20.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[29].interfaceBlendDepth, 200.0f, 0.0000f));
     }
 }
