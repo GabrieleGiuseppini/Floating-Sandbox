@@ -303,9 +303,16 @@
 				! Old # vertices: 28674=458,784B=0.5MB
 				! New # vertices: LandVertexBuffer.size=146703 allocatedSize=286722=4,587,552B=4.5MB
 				+ Basic
-				- With whole delta Y constrain
+				= With whole delta Y constrain
+					+ 2/3
+					+ Send to Discord
+					= Code
+						- Can avoid interpolating when we know we're hitting end vertex?
+							- Then see if we still need to reset scan line vertices
+					= Unit tests
+					- Incorporate in WorldRenderContext
 
-				- Change smoothers to last shorter
+				+ Change smoothers to last shorter
 
 				- Test perf with test floor:
 					- Before UHD

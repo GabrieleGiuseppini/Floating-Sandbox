@@ -602,22 +602,21 @@ void GenerateSegmentedLandQuad(
             float const dyDy_Left = Dy[0] != 0.0f
                 ? (newBottomY - vertices[currentSegmentEndpoints[0].Start].position.y) / Dy[0]
                 : 0.0f;
-            float const dyDy_Right = Dy[1] != 0.0f
-                ? (newBottomY - vertices[currentSegmentEndpoints[1].Start].position.y) / Dy[1]
-                : 0.0f;
 
             TLandVertex newLeftVertex = {
                 vec2f(
                     vertices[currentSegmentEndpoints[0].Start].position.x + Dx[0] * dyDy_Left,
-                    //vertices[currentSegmentEndpoints[0].Start].position.y + Dy[0] * dyDy_Left),
                     newBottomY),
                 vertices[currentSegmentEndpoints[0].Start].depth + Ddepth[0] * dyDy_Left,
                 vertices[currentSegmentEndpoints[0].Start].interfaceBlendDepth + DinterfaceBlendDepth[0] * dyDy_Left };
 
+            float const dyDy_Right = Dy[1] != 0.0f
+                ? (newBottomY - vertices[currentSegmentEndpoints[1].Start].position.y) / Dy[1]
+                : 0.0f;
+
             TLandVertex newRightVertex = {
                 vec2f(
                     vertices[currentSegmentEndpoints[1].Start].position.x + Dx[1] * dyDy_Right,
-                    //vertices[currentSegmentEndpoints[1].Start].position.y + Dy[1] * dyDy_Right),
                     newBottomY),
                 vertices[currentSegmentEndpoints[1].Start].depth + Ddepth[1] * dyDy_Right,
                 vertices[currentSegmentEndpoints[1].Start].interfaceBlendDepth + DinterfaceBlendDepth[1] * dyDy_Right };
@@ -670,6 +669,9 @@ void GenerateSegmentedLandQuad(
             {
                 currentSegmentEndpoints[0].End -= 4;
             }
+
+            // Make sure we don't accumulate errors
+            currentScanLineVertices[0] = vertices[currentSegmentEndpoints[0].Start];
         }
 
         if (currentY == vertices[currentSegmentEndpoints[1].End].position.y)
@@ -680,6 +682,9 @@ void GenerateSegmentedLandQuad(
             {
                 currentSegmentEndpoints[1].End += 4;
             }
+
+            // Make sure we don't accumulate errors
+            currentScanLineVertices[1] = vertices[currentSegmentEndpoints[1].Start];
         }
     }
 }
@@ -1611,5 +1616,101 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_Full_NoneSegmented)
     }
 }
 
-// TODO: full - with no vertical intersections
+TEST(GeometryTests, GenerateSegmentedLandQuad_Full_NoVerticalOverlap)
+{
+    //            D    150.0
+    //           /|
+    //          / |
+    //         /  |
+    //     A' /   C    135.0
+    //       /   /
+    //     A/   / C'   120.0
+    //     |   /
+    //  A3 |  / C2
+    //     | /
+    //     |/
+    //     B           105.0
 
+    std::vector<TestLandVertex> vertexBuffer;
+
+    //float const lDy = 120.0f - 105.0f;
+    //float const lDd = 10.0f - 20.0f;
+    //float const lDibd = 100.0f - 200.0f;
+
+    float const rDy = 150.0f - 135.0f;
+    float const rDd = 100.0f - 200.0f;
+    float const rDibd = 1000.0f - 2000.0f;
+
+    float const tDd = 100.0f - 10.0f;
+    float const tDibd = 1000.0f - 100.0f;
+    //float const bDd = 200.0f - 20.0f;
+    //float const bDibd = 2000.0f - 200.0f;
+
+    GenerateSegmentedLandQuad(
+        // A
+        TestLandVertex{ {0.0f, 120.0f}, 10.0f, 100.0f },
+        // B
+        TestLandVertex{ {0.0f, 105.0f}, 20.0f, 200.0f },
+        // D
+        TestLandVertex{ {2.0f, 150.0f}, 100.0f, 1000.0f },
+        // C
+        TestLandVertex{ {2.0f, 135.0f}, 200.0f, 2000.0f },
+        10.0f,
+        2.0f,
+        vertexBuffer);
+
+    ASSERT_EQ(vertexBuffer.size(), 3 * (3 + 4 + 3));
+
+    // Top
+
+    {
+        // D-D1-A1
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[0].position.x, 2.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[0].position.y, 150.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[0].depth, 100.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[0].interfaceBlendDepth, 1000.0f, 0.0000f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].position.x, 2.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].position.y, 140.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].depth, 100.0f - rDd * 10.0f / rDy, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[1].interfaceBlendDepth, 1000.0f - rDibd * 10.0f / rDy, 0.0001f));
+
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].position.x, 2.0f - 2.0f * 10.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].position.y, 140.0f, 0.0000f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].depth, 100.0f - tDd * 10.0f / 30.0f, 0.0001f));
+        EXPECT_TRUE(ApproxEquals(vertexBuffer[2].interfaceBlendDepth, 1000.0f - tDibd * 10.0f / 30.0f, 0.0001f));
+    }
+
+    {
+        // A1-D1-C
+
+        // A1-C-A'
+    }
+
+    // Rect
+
+    {
+        // A'-C-C1
+
+        // A'-C1-A2
+    }
+
+    {
+        // A2-C1-C'
+
+        // A2-C'-A
+    }
+
+    // Bottom
+
+    {
+        // A-C'-C2
+
+        // A-C2-A3
+    }
+
+    {
+        // A3-C2-B
+    }
+}
