@@ -479,216 +479,6 @@ struct TestLandVertex
     }
 };
 
-
-// TODOTEST: move to GameGeometry
-template<typename TLandVertex, typename TVertexBuffer>
-void GenerateSegmentedLandQuad(
-    TLandVertex leftTop,
-    TLandVertex leftBottom,
-    TLandVertex rightTop,
-    TLandVertex rightBottom,
-    float maxQuadTriangleHeight,
-    float minQuadTriangleHeight,
-    TVertexBuffer & vertexBuffer)
-{
-    //       D
-    //      /|
-    //     / |
-    //  A /--| D'
-    //    |  |
-    //  A'|--|C
-    //    | /
-    //  B |/
-
-    assert(leftTop.position.x < rightTop.position.x);
-    assert(leftTop.position.x == leftBottom.position.x);
-    assert(rightTop.position.x == rightTop.position.x);
-    assert(leftTop.position.y >= leftBottom.position.y);
-    assert(rightTop.position.y >= rightBottom.position.y);
-
-    // For convenience
-    int constexpr A = 0;
-    int constexpr B = 1;
-    int constexpr C = 2;
-    int constexpr D = 3;
-    std::array<TLandVertex const, 4> const vertices = { leftTop, leftBottom, rightBottom, rightTop };
-
-    // The two segments (left and right) that we are currently scanning down along
-
-    struct Segment
-    {
-        int Start;
-        int End;
-    };
-
-    // Left, right
-    std::array<Segment, 2> currentSegmentEndpoints;
-
-    //
-    // Initialize segments
-    //
-
-    if (leftTop.position.y > rightTop.position.y)
-    {
-        currentSegmentEndpoints = { Segment{A, B}, Segment{A, D} };
-    }
-    else if (rightTop.position.y > leftTop.position.y)
-    {
-        currentSegmentEndpoints = { Segment{D, A}, Segment{D, C} };
-    }
-    else
-    {
-        assert(leftTop.position.y == rightTop.position.y);
-        currentSegmentEndpoints = { Segment{A, B}, Segment{D, C} };
-    }
-
-    //
-    // Scan line down
-    //
-
-    // The current left and right vertices of this scan line;
-    // we've created quads up to here.
-    //
-    // Not always at real vertices (might be halfway through a real edge)
-    std::array<TLandVertex, 2> currentScanLineVertices = { vertices[currentSegmentEndpoints[0].Start], vertices[currentSegmentEndpoints[1].Start] };
-
-    float currentY = std::max(leftTop.position.y, rightTop.position.y);
-    assert(currentY == std::max(currentScanLineVertices[0].position.y, currentScanLineVertices[1].position.y));
-    float const maxBottomY = std::min(leftBottom.position.y, rightBottom.position.y);
-
-    while (currentY > maxBottomY)
-    {
-        //
-        // Scan current segments down until we meet the first one
-        //
-
-        // Prepare interpolations
-
-        // Slopes on entire quad sides: end-start; left, right
-        std::array<float, 2> Dx = {
-            vertices[currentSegmentEndpoints[0].End].position.x - vertices[currentSegmentEndpoints[0].Start].position.x,
-            vertices[currentSegmentEndpoints[1].End].position.x - vertices[currentSegmentEndpoints[1].Start].position.x };
-        std::array<float, 2> Dy = {
-            vertices[currentSegmentEndpoints[0].End].position.y - vertices[currentSegmentEndpoints[0].Start].position.y,
-            vertices[currentSegmentEndpoints[1].End].position.y - vertices[currentSegmentEndpoints[1].Start].position.y };
-        std::array<float, 2> Ddepth = {
-            vertices[currentSegmentEndpoints[0].End].depth - vertices[currentSegmentEndpoints[0].Start].depth,
-            vertices[currentSegmentEndpoints[1].End].depth - vertices[currentSegmentEndpoints[1].Start].depth };
-        std::array<float, 2> DinterfaceBlendDepth = {
-            vertices[currentSegmentEndpoints[0].End].interfaceBlendDepth - vertices[currentSegmentEndpoints[0].Start].interfaceBlendDepth,
-            vertices[currentSegmentEndpoints[1].End].interfaceBlendDepth - vertices[currentSegmentEndpoints[1].Start].interfaceBlendDepth };
-
-        // This is where we stop
-        float const currentBottomY = std::max(vertices[currentSegmentEndpoints[0].End].position.y, vertices[currentSegmentEndpoints[1].End].position.y);
-
-        while (currentY > currentBottomY)
-        {
-            // The current vertices are at the same y
-            assert(currentScanLineVertices[0].position.y == currentScanLineVertices[1].position.y);
-
-            // Calculate bottom y for this segment
-            float newBottomY = currentBottomY; // Shoot for max first
-            if (newBottomY < currentY - maxQuadTriangleHeight - minQuadTriangleHeight)
-            {
-                newBottomY = currentY - maxQuadTriangleHeight;
-            }
-
-            //
-            // Interpolate x, depth, interface blend depth, for both sides
-            //
-            // Always refer to the origins, to reduce error
-            //
-
-            float const dyDy_Left = Dy[0] != 0.0f
-                ? (newBottomY - vertices[currentSegmentEndpoints[0].Start].position.y) / Dy[0]
-                : 0.0f;
-
-            TLandVertex newLeftVertex = {
-                vec2f(
-                    vertices[currentSegmentEndpoints[0].Start].position.x + Dx[0] * dyDy_Left,
-                    newBottomY),
-                vertices[currentSegmentEndpoints[0].Start].depth + Ddepth[0] * dyDy_Left,
-                vertices[currentSegmentEndpoints[0].Start].interfaceBlendDepth + DinterfaceBlendDepth[0] * dyDy_Left };
-
-            float const dyDy_Right = Dy[1] != 0.0f
-                ? (newBottomY - vertices[currentSegmentEndpoints[1].Start].position.y) / Dy[1]
-                : 0.0f;
-
-            TLandVertex newRightVertex = {
-                vec2f(
-                    vertices[currentSegmentEndpoints[1].Start].position.x + Dx[1] * dyDy_Right,
-                    newBottomY),
-                vertices[currentSegmentEndpoints[1].Start].depth + Ddepth[1] * dyDy_Right,
-                vertices[currentSegmentEndpoints[1].Start].interfaceBlendDepth + DinterfaceBlendDepth[1] * dyDy_Right };
-
-            //
-            // Produce quad
-            //
-            //    J------K
-            //    |      |
-            //    |      |
-            //   J'------K'
-            //
-
-            if (currentScanLineVertices[0].position.x < currentScanLineVertices[1].position.x) // J != K
-            {
-                // J-K-K'
-                vertexBuffer.emplace_back(currentScanLineVertices[0]);
-                vertexBuffer.emplace_back(currentScanLineVertices[1]);
-                vertexBuffer.emplace_back(newRightVertex);
-            }
-
-            if (newLeftVertex.position.x < newRightVertex.position.x) // J' != K'
-            {
-                // J-K'-J'
-                vertexBuffer.emplace_back(currentScanLineVertices[0]);
-                vertexBuffer.emplace_back(newRightVertex);
-                vertexBuffer.emplace_back(newLeftVertex);
-            }
-
-            //
-            // Advance
-            //
-
-            currentScanLineVertices[0] = newLeftVertex;
-            currentScanLineVertices[1] = newRightVertex;
-            currentY = newBottomY;
-        }
-
-        //
-        // We have reached one or both ends; generate next segment(s)
-        //
-
-        assert(currentY == vertices[currentSegmentEndpoints[0].End].position.y || currentY == vertices[currentSegmentEndpoints[1].End].position.y);
-
-        if (currentY == vertices[currentSegmentEndpoints[0].End].position.y)
-        {
-            currentSegmentEndpoints[0].Start = currentSegmentEndpoints[0].End;
-            currentSegmentEndpoints[0].End = currentSegmentEndpoints[0].End + 1;
-            if (currentSegmentEndpoints[0].End >= 4)
-            {
-                currentSegmentEndpoints[0].End -= 4;
-            }
-
-            // Make sure we don't accumulate errors
-            currentScanLineVertices[0] = vertices[currentSegmentEndpoints[0].Start];
-        }
-
-        if (currentY == vertices[currentSegmentEndpoints[1].End].position.y)
-        {
-            currentSegmentEndpoints[1].Start = currentSegmentEndpoints[1].End;
-            currentSegmentEndpoints[1].End = currentSegmentEndpoints[1].End - 1;
-            if (currentSegmentEndpoints[1].End < 0)
-            {
-                currentSegmentEndpoints[1].End += 4;
-            }
-
-            // Make sure we don't accumulate errors
-            currentScanLineVertices[1] = vertices[currentSegmentEndpoints[1].Start];
-        }
-    }
-}
-
 TEST(GeometryTests, GenerateSegmentedLandQuad_TriangleAboveOnly_Orientation1)
 {
     //      D    150.0
@@ -706,7 +496,7 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_TriangleAboveOnly_Orientation1)
     float const rDd = 60.0f;
     float const rDibd = 10.0f;
 
-    GenerateSegmentedLandQuad(
+    Geometry::GenerateSegmentedLandQuad(
         // A
         TestLandVertex{ {0.0f, 150.0f - Dy}, 0.0f, 100.0f },
         // B
@@ -794,7 +584,7 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_TriangleAboveOnly_Orientation2)
     float const lDd = 70.0f;
     float const lDibd = 20.0f;
 
-    GenerateSegmentedLandQuad(
+    Geometry::GenerateSegmentedLandQuad(
         // A
         TestLandVertex{ {0.0f, 150.0f}, 10.0f, 100.0f },
         // B
@@ -881,7 +671,7 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_RectOnly)
     float const rDd = 60.0f;
     float const rDibd = 10.0f;
 
-    GenerateSegmentedLandQuad(
+    Geometry::GenerateSegmentedLandQuad(
         // A
         TestLandVertex{ {0.0f, 150.0f}, 0.0f, 100.0f },
         // C
@@ -1095,7 +885,7 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_TriangleBelowOnly_Orientation1)
     float const oDd = (20.0f + rDd) - 0.0f;
     float const oDibd = (110.0f + rDibd) - 100.0f;
 
-    GenerateSegmentedLandQuad(
+    Geometry::GenerateSegmentedLandQuad(
         // A
         TestLandVertex{ {0.0f, 150.0f }, 0.0f, 100.0f },
         // B
@@ -1184,7 +974,7 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_TriangleBelowOnly_Orientation2)
     float const oDd = 20.0f - 60.0f;
     float const oDibd = 120.0f - 110.0f;
 
-    GenerateSegmentedLandQuad(
+    Geometry::GenerateSegmentedLandQuad(
         // A
         TestLandVertex{ {0.0f, 150.0f }, 0.0f, 100.0f },
         // B
@@ -1287,7 +1077,7 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_Full)
     float const bDd = 200.0f - 20.0f;
     float const bDibd = 2000.0f - 200.0f;
 
-    GenerateSegmentedLandQuad(
+    Geometry::GenerateSegmentedLandQuad(
         // A
         TestLandVertex{ {0.0f, 130.0f}, 10.0f, 100.0f },
         // B
@@ -1520,7 +1310,7 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_Full_NoneSegmented)
     float const rDd = 100.0f - 200.0f;
     float const rDibd = 1000.0f - 2000.0f;
 
-    GenerateSegmentedLandQuad(
+    Geometry::GenerateSegmentedLandQuad(
         // A
         TestLandVertex{ {0.0f, 139.0f}, 10.0f, 100.0f },
         // B
@@ -1646,7 +1436,7 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_Full_NoVerticalOverlap)
     float const bDd = 200.0f - 20.0f;
     float const bDibd = 2000.0f - 200.0f;
 
-    GenerateSegmentedLandQuad(
+    Geometry::GenerateSegmentedLandQuad(
         // A
         TestLandVertex{ {0.0f, 120.0f}, 10.0f, 100.0f },
         // B
