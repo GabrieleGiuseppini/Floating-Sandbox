@@ -5,7 +5,7 @@
     "ocean_floor_bedrock_bumpiness": 0,
     "sea_depth": 10000,
     "texture_land_bedrock_texture_index": 1,
-    "ocean_floor_silt_thickness": 0
+    "ocean_floor_silt_thickness": 4.0
   },
   "version": "1.13.0.4"
 }
