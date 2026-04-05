@@ -85,11 +85,6 @@ RenderContext::RenderContext(
             mDoInvokeGlFinish = CalculateDoInvokeGlFinish(doForceNoGlFinish);
             LogMessage("RenderContext: DoInvokeGlFinish=", mDoInvokeGlFinish);
 
-            // Initialize the shared texture unit once and for all
-            mInnerContext->shaderManager->ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
-            glEnable(GL_TEXTURE_1D);
-            glEnable(GL_TEXTURE_2D);
-
             //
             // Initialize global OpenGL settings
             //
@@ -145,6 +140,11 @@ RenderContext::RenderContext(
                 SimpleProgressCallback::Dummy());
 
             LogMessage("...shaders initialized.");
+
+            // Initialize the shared texture unit once and for all
+            mInnerContext->shaderManager->ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
+            glEnable(GL_TEXTURE_1D);
+            glEnable(GL_TEXTURE_2D);
         });
 
     progressCallback(0.1f, ProgressMessageType::InitializingNoise);

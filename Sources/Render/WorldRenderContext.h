@@ -213,7 +213,7 @@ public:
             progress,
             renderProgress,
             personalitySeed,
-            mLightningVertexBuffer.max_size() - (mForegroundLightningVertexCount + 6));
+            mLightningVertexBuffer.size() - (mForegroundLightningVertexCount + 6));
 
         mForegroundLightningVertexCount += 6;
     }
