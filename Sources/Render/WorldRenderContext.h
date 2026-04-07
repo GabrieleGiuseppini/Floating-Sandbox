@@ -317,7 +317,7 @@ private:
     // fights against thin/steep triangles, which on RTX's are bad
     // (show seams between triangles, even if they share vertices
     // and even if they are drawn as triangle strips)
-    static float constexpr MaxQuadTriangleHeight = 1000.0f;
+    static float constexpr MaxQuadTriangleHeight = 1024.0f;
     static float constexpr MinQuadTriangleHeight = 50.0f; // To prevent tiny triangles
 
 public:

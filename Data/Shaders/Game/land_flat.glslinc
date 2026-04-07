@@ -1,3 +1,9 @@
+#ifdef IS_MULTISAMPLING_ENABLED
+#define _centroid centroid
+#else
+#define _centroid
+#endif
+
 ###VERTEX-120
 
 #define in attribute
@@ -10,12 +16,15 @@ in vec4 inLand; // Position (vec2), Depth (float) (0 at top, +X at bottom), Inte
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
-out vec4 worldAndDepthAndInterfaceBlendDepth;
+out vec2 vertexWorld;
+_centroid out float vertexInterfaceBlendDepth;
 
 void main()
 {
+    vertexWorld = inLand.xy;
+    vertexInterfaceBlendDepth = inLand.w;
+
     gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
-    worldAndDepthAndInterfaceBlendDepth = inLand;
 }
 
 ###FRAGMENT-120
@@ -27,7 +36,9 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in vec4 worldAndDepthAndInterfaceBlendDepth;
+in vec2 vertexWorld;
+_centroid in float vertexInterfaceBlendDepth;
+
 
 // Textures
 #ifdef DETAILED_LAND
@@ -46,7 +57,7 @@ void main()
 
     vec3 color = ApplyLandNoise(
         paramLandFlatColor,
-        worldAndDepthAndInterfaceBlendDepth.xy,
+        vertexWorld,
         paramNoiseTexture);
 
 #else
@@ -57,7 +68,7 @@ void main()
 
     // Calculate depth darkening
     float darkeningFactor = CalculateOceanDepthDarkeningFactor(
-        worldAndDepthAndInterfaceBlendDepth.y,
+        vertexWorld.y,
         paramOceanDepthDarkeningRate);
 
     // Calculate lamp tool intensity
@@ -69,12 +80,9 @@ void main()
         vec3(0.),
         darkeningFactor * (1.0 - lampToolIntensity));
 
-    // Anti-aliasing
-    float alpha = min(worldAndDepthAndInterfaceBlendDepth.z / (0.2 + abs(fwidth(worldAndDepthAndInterfaceBlendDepth.z))), 1.0);
-
     // Smooth transition between two layers
     #define MaxTransitionThickness 10.0 // Keep in-sync with code!
-    alpha *= min(worldAndDepthAndInterfaceBlendDepth.w / MaxTransitionThickness, 1.0);
+    float alpha = min(vertexInterfaceBlendDepth / MaxTransitionThickness, 1.0);
 
     // Apply ambient light
     gl_FragColor = vec4(

@@ -731,17 +731,46 @@
 				+ Remove nVidia for all binaries				
 		+ Add to Android plan
 
+	X Attempt steep triangle fix with coords scaling
+		X FIRST: try on Android: highp precision also @ vertex shader
+		+ Comment-out nVidia case at UploadLand()
+		+ Verify repro on nVidia
+		+ Make orthomatrix building method @ View ("CalculateNormalizedGlobalOrthoMatrix")
+			+ Just rescale proper kernel cells after copying, by 16384.0f
+		+ Use orthomatrix building method
+		+ Scale coords at UploadLand()
+		+ Adjust scaling coords param 
+		+ Shader: world coords are also needed for others; multiply before sending
+		+ Evaluate
+			X New Dell Nvidia: still occurs :-(
+		X Attempt floating origin
+		X If works:
+			X Figure out where the scaling factor lives - also needed by shader		
+		X Port to Android if works
+	= Check flat rendering - shader is still old one
+		! AA leak plus lines
+		= See if AA needed
+			+ With MS: not needed
+			- Without MS (old Dell)
+		+ See if centroid needed
+			+ With MS: Needed
+		= Test on:
+			+ UHD
+			+ nVidia
+			- Old Dell
+		- Port changes to Android
+			- Just flat shader
+
 	- Look into guy's ocean floor on server
 	- Air bubbles trapped in silt
 
-	- See if ocean waves transitions can become better, with same trick as vortex's speed may be?
-
-	- See if can improve FindFreeEphemeralParticle
+	- See if can improve FindFreeEphemeralParticle's perf
 		= Thing 1: remove need for currentSimulationTime
 		- Thing 2:
 			- A stack for free ephemeral particles (init'd with all)
-			- A TODO for ordered by time in-use ephemeral particles (remember we address it by content (i.e. point index, when we kill an eph particle)
+			- A TODO for ordered by time in-use ephemeral particles (remember we address it by content (i.e. point index, when we kill an eph particle))
 				- List, but with cheap allocation
+				- Epk particle i needs pointer to own node in list
 				
 
 	- Splashes
