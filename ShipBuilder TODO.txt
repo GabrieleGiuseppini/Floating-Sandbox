@@ -4,6 +4,9 @@
 
 - Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
 
+- Fix: after modifying and saving ship, going to game, and coming back, any undo operation (on the now not-empty undo stack) should
+  mark appropriate layers and model as dirty
+	- Right now you can't save if you undo
 
 
 

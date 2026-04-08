@@ -747,19 +747,20 @@
 		X If works:
 			X Figure out where the scaling factor lives - also needed by shader		
 		X Port to Android if works
-	= Check flat rendering - shader is still old one
+	+ Check flat rendering - shader is still old one
 		! AA leak plus lines
-		= See if AA needed
+		+ See if AA needed
 			+ With MS: not needed
-			- Without MS (old Dell)
+			+ Without MS (old Dell)
+				+ Aliasing is present; we'll live with it
 		+ See if centroid needed
 			+ With MS: Needed
-		= Test on:
+		+ Test on:
 			+ UHD
 			+ nVidia
-			- Old Dell
-		- Port changes to Android
-			- Just flat shader
+			+ Old Dell
+		+ Port changes to Android
+			+ Just flat shader
 
 	- Look into guy's ocean floor on server
 	- Air bubbles trapped in silt
