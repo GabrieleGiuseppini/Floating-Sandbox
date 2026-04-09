@@ -349,7 +349,9 @@ public:
             // Look at the desired playing state
             if (mDesiredPlayingStateAfterPause
                 && sf::Sound::Status::Paused == this->getStatus())
+            {
                 sf::Sound::play(); // Resume
+            }
         }
     }
 

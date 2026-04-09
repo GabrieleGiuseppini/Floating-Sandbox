@@ -39,6 +39,7 @@ enum class UITextureGroups : uint16_t
     OceanDepthDarkeningIcon,
     OceanDepthThumbnail, // Dedicated
     OceanTextureThumbnail, // Dedicated
+    PlayPauseIcons,
     ReloadIcon,
     RenderShipIcon,
     RenderWorldIcon,
@@ -133,6 +134,8 @@ struct UITextureDatabase
             return UITextureGroups::OceanDepthThumbnail;
         else if (Utils::CaseInsensitiveEquals(str, "ocean_texture_thumbnail"))
             return UITextureGroups::OceanTextureThumbnail;
+        else if (Utils::CaseInsensitiveEquals(str, "play_pause_icons"))
+            return UITextureGroups::PlayPauseIcons;
         else if (Utils::CaseInsensitiveEquals(str, "reload_icon"))
             return UITextureGroups::ReloadIcon;
         else if (Utils::CaseInsensitiveEquals(str, "render_ship_icon"))
