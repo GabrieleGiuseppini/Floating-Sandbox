@@ -1016,6 +1016,8 @@ void SoundController::SetPaused(bool isPaused)
     // we only pause the sounds of those that stop functioning
     mWaveMakerSound.SetPaused(isPaused);
 
+    // All these sounds are started by a simulation update step, so it's fine
+    // to not remember a "paused" state for sounds that may not have started yet
     mWaterRushSound.SetPaused(isPaused);
     mWaterSplashSound.SetPaused(isPaused);
     mAirBubblesSurfacingSound.SetPaused(isPaused);
@@ -1026,7 +1028,7 @@ void SoundController::SetPaused(bool isPaused)
     mTimerBombSlowFuseSound.SetPaused(isPaused);
     mTimerBombFastFuseSound.SetPaused(isPaused);
     mAntiMatterBombContainedSounds.SetPaused(isPaused);
-    mLoopedSounds.SetPaused(isPaused);
+    mLoopedSounds.SetPaused(isPaused); // Engines, WaterPump, ShipSounds
 }
 
 // Master effects

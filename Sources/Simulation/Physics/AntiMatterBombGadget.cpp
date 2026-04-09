@@ -28,7 +28,7 @@ AntiMatterBombGadget::AntiMatterBombGadget(
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
-    , mState(State::Contained_1)
+    , mState(State::JustPlaced_0)
     , mLastUpdateTimePoint(GameWallClock::GetInstance().Now())
     , mNextStateTransitionTimePoint(GameWallClock::time_point::max())
     , mCurrentStateStartTimePoint(mLastUpdateTimePoint)
@@ -36,8 +36,6 @@ AntiMatterBombGadget::AntiMatterBombGadget(
     , mCurrentCloudRotationAngle(0.0f)
     , mExplosionPosition(vec2f::zero())
 {
-    // Notify start containment
-    mSimulationEventHandler.OnAntiMatterBombContained(mId, true);
 }
 
 bool AntiMatterBombGadget::Update(
@@ -51,6 +49,22 @@ bool AntiMatterBombGadget::Update(
 
     switch (mState)
     {
+        case State::JustPlaced_0:
+        {
+            //
+            // Fake state, transition immediately to Contained_1
+            //
+
+            mState = State::Contained_1;
+            mCurrentStateStartTimePoint = currentWallClockTime;
+            mCurrentStateProgress = 0.0f;
+
+            // Notify start containment
+            mSimulationEventHandler.OnAntiMatterBombContained(mId, true);
+
+            return true;
+        }
+
         case State::Contained_1:
         {
             // Check if our particle has reached the trigger temperature
@@ -332,6 +346,7 @@ void AntiMatterBombGadget::Upload(
 
     switch (mState)
     {
+        case State::JustPlaced_0:
         case State::Contained_1:
         case State::TriggeringPreImploding_2:
         {

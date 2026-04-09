@@ -79,6 +79,9 @@ private:
 
     enum class State
     {
+        // We've just placed the bomb; will transition to SlowFuseBurning immediately
+        JustPlaced,
+
         // In this state the fuse burns slowly, and after a while the bomb moves
         // to detonation lead-in
         SlowFuseBurning,

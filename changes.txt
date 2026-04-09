@@ -7,6 +7,7 @@ TODO
 - Fixed a glitch with ocean waves flattening out on the right side of the screen
 - Fixed a crash when exiting the game on systems with certain nVidia cards
 - Added 1 new ship
+- ...and a few more small improvements and glitch fixes here and there!
 
 1.20.0
 - Redesigned ocean floor physics: a customizable layer of soft silt cushions impacts and allows for wrecks to slowly burrow under sand

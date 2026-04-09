@@ -28,8 +28,8 @@ TimerBombGadget::TimerBombGadget(
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
-    , mState(State::SlowFuseBurning)
-    , mNextStateTransitionTimePoint(GameWallClock::GetInstance().Now() + SlowFuseToDetonationLeadInInterval / FuseStepCount)
+    , mState(State::JustPlaced)
+    , mNextStateTransitionTimePoint(GameWallClock::time_point::max())
     , mFuseFlameFrameIndex(0)
     , mFuseStepCounter(0)
     , mDefuseStepCounter(0)
@@ -38,10 +38,6 @@ TimerBombGadget::TimerBombGadget(
     , mExplosionPosition(vec2f::zero())
     , mExplosionPlaneId(NonePlaneId)
 {
-    // Notify start slow fuse
-    mSimulationEventHandler.OnTimerBombFuse(
-        mId,
-        false);
 }
 
 bool TimerBombGadget::Update(
@@ -52,6 +48,23 @@ bool TimerBombGadget::Update(
 {
     switch (mState)
     {
+        case State::JustPlaced:
+        {
+            //
+            // Fake state, transition immediately to SlowFuseBurning
+            //
+
+            mState = State::SlowFuseBurning;
+            mNextStateTransitionTimePoint = GameWallClock::GetInstance().Now() + SlowFuseToDetonationLeadInInterval / FuseStepCount;
+
+            // Notify start slow fuse
+            mSimulationEventHandler.OnTimerBombFuse(
+                mId,
+                false);
+
+            return true;
+        }
+
         case State::SlowFuseBurning:
         case State::FastFuseBurning:
         {
@@ -282,6 +295,7 @@ void TimerBombGadget::Upload(
 
     switch (mState)
     {
+        case State::JustPlaced:
         case State::SlowFuseBurning:
         case State::FastFuseBurning:
         {

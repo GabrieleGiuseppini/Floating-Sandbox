@@ -44,8 +44,8 @@ public:
 
     virtual bool MayBeRemoved() const override
     {
-        // We may only be removed if we're in the Contained state
-        return (State::Contained_1 == mState);
+        // We may only be removed if we're in the JustPlaced or Contained state
+        return (State::JustPlaced_0 == mState || State::Contained_1 == mState);
     }
 
     virtual void OnExternallyRemoved() override
@@ -83,6 +83,9 @@ private:
 
     enum class State
     {
+        // We've just placed the bomb; will transition to Contained_1 immediately
+        JustPlaced_0,
+
         // In this state the bomb is contained and awaiting for detonation
         Contained_1,
 
