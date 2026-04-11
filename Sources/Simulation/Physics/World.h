@@ -418,9 +418,9 @@ public:
 
     void TriggerStorm();
 
-    void TriggerLightning(SimulationParameters const & simulationParameters);
+    void TriggerRandomLightning(SimulationParameters const & simulationParameters);
 
-    void TriggerLightningAt(vec2f const & targetWorldPosition);
+    void TriggerInteractiveLightningAt(vec2f const & targetWorldPosition);
 
     void HighlightElectricalElement(GlobalElectricalElementId electricalElementId);
 

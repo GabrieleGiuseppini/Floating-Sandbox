@@ -4447,7 +4447,7 @@ public:
 
     void OnLeftMouseDown(InputState const & inputState) override
     {
-        mGameController.TriggerLightningAt(inputState.MousePosition);
+        mGameController.TriggerInteractiveLightningAt(inputState.MousePosition);
     }
 
     void OnLeftMouseUp(InputState const & /*inputState*/) override {}

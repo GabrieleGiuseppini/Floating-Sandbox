@@ -348,26 +348,32 @@ void Storm::TriggerStorm()
     }
 }
 
-void Storm::TriggerLightning(SimulationParameters const & simulationParameters)
+void Storm::TriggerRandomLightning(SimulationParameters const & simulationParameters)
 {
-	// Do a foreground lightning if we have a target and if we feel like doing it
-	if (GameRandomEngine::GetInstance().GenerateUniformBoolean(simulationParameters.LightningBlastProbability))
+	if (mLightnings.size() < SimulationParameters::MaxLightnings) // Honor global limit when it's an interaction
 	{
-		auto const target = mParentWorld.FindSuitableLightningTarget();
-		if (target.has_value())
+		// Do a foreground lightning if we have a target and if we feel like doing it
+		if (GameRandomEngine::GetInstance().GenerateUniformBoolean(simulationParameters.LightningBlastProbability))
 		{
-			DoTriggerForegroundLightning(GameWallClock::GetInstance().Now(), *target);
-			return;
+			auto const target = mParentWorld.FindSuitableLightningTarget();
+			if (target.has_value())
+			{
+				DoTriggerForegroundLightning(GameWallClock::GetInstance().Now(), *target);
+				return;
+			}
 		}
-	}
 
-	// No luck, do a background lightning
-	DoTriggerBackgroundLightning(GameWallClock::GetInstance().Now());
+		// No luck, do a background lightning
+		DoTriggerBackgroundLightning(GameWallClock::GetInstance().Now());
+	}
 }
 
-void Storm::TriggerForegroundLightningAt(vec2f const & targetWorldPosition)
+void Storm::TriggerInteractiveLightningAt(vec2f const & targetWorldPosition)
 {
-    DoTriggerForegroundLightning(GameWallClock::GetInstance().Now(), targetWorldPosition);
+	if (mLightnings.size() < SimulationParameters::MaxLightnings) // Honor global limit when it's an interaction
+	{
+		DoTriggerForegroundLightning(GameWallClock::GetInstance().Now(), targetWorldPosition);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////

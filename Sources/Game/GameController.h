@@ -290,7 +290,7 @@ public:
     void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
     void SetLampAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusScreenFraction) override;
     void ResetLamp() override;
-    void TriggerLightningAt(DisplayLogicalCoordinates const & screenCoordinates) override;
+    void TriggerInteractiveLightningAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     NpcKindType GetNpcKind(NpcId id) override;
     std::optional<PickedNpc> BeginPlaceNewFurnitureNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
     std::optional<PickedNpc> BeginPlaceNewHumanNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
@@ -320,7 +320,7 @@ public:
     void TriggerTsunami() override;
     void TriggerRogueWave() override;
     void TriggerStorm() override;
-    void TriggerLightning() override;
+    void TriggerRandomLightning() override;
 
     void HighlightElectricalElement(GlobalElectricalElementId electricalElementId) override;
 

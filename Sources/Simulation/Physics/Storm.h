@@ -71,9 +71,9 @@ public:
 
     void TriggerStorm();
 
-	void TriggerLightning(SimulationParameters const & simulationParameters);
+	void TriggerRandomLightning(SimulationParameters const & simulationParameters);
 
-    void TriggerForegroundLightningAt(vec2f const & targetWorldPosition);
+    void TriggerInteractiveLightningAt(vec2f const & targetWorldPosition);
 
 private:
 

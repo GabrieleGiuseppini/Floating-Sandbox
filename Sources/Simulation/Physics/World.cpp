@@ -1261,14 +1261,14 @@ void World::TriggerStorm()
     mStorm.TriggerStorm();
 }
 
-void World::TriggerLightning(SimulationParameters const & simulationParameters)
+void World::TriggerRandomLightning(SimulationParameters const & simulationParameters)
 {
-    mStorm.TriggerLightning(simulationParameters);
+    mStorm.TriggerRandomLightning(simulationParameters);
 }
 
-void World::TriggerLightningAt(vec2f const & targetWorldPosition)
+void World::TriggerInteractiveLightningAt(vec2f const & targetWorldPosition)
 {
-    mStorm.TriggerForegroundLightningAt(targetWorldPosition);
+    mStorm.TriggerInteractiveLightningAt(targetWorldPosition);
 }
 
 void World::TriggerRogueWave()

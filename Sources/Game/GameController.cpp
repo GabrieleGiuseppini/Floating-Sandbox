@@ -1586,13 +1586,13 @@ void GameController::ResetLamp()
     mRenderContext->ResetLamp();
 }
 
-void GameController::TriggerLightningAt(DisplayLogicalCoordinates const & screenCoordinates)
+void GameController::TriggerInteractiveLightningAt(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Do action
     assert(!!mWorld);
-    mWorld->TriggerLightningAt(worldCoordinates);
+    mWorld->TriggerInteractiveLightningAt(worldCoordinates);
 }
 
 NpcKindType GameController::GetNpcKind(NpcId id)
@@ -1873,10 +1873,10 @@ void GameController::TriggerStorm()
     mWorld->TriggerStorm();
 }
 
-void GameController::TriggerLightning()
+void GameController::TriggerRandomLightning()
 {
     assert(!!mWorld);
-    mWorld->TriggerLightning(mSimulationParameters);
+    mWorld->TriggerRandomLightning(mSimulationParameters);
 }
 
 void GameController::HighlightElectricalElement(GlobalElectricalElementId electricalElementId)

@@ -789,6 +789,7 @@ struct SimulationParameters
     static size_t constexpr MaxGadgets = 64u;
     static size_t constexpr MaxPinnedPoints = 64u;
     static size_t constexpr MaxThanosSnaps = 8u;
+    static size_t constexpr MaxLightnings = 64u;
     static size_t constexpr MaxAntiGravityForceFields = 4u;
     static size_t constexpr MaxTornadoes = 1u;
 

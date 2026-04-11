@@ -2002,7 +2002,7 @@ void MainFrame::OnDeselectNpcMenuItemSelected(wxCommandEvent & /*event*/)
 void MainFrame::OnTriggerLightningMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-    mGameController->TriggerLightning();
+    mGameController->TriggerRandomLightning();
 }
 
 void MainFrame::OnRCBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)

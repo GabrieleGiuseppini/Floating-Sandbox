@@ -168,7 +168,7 @@ struct IGameController
     virtual void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
     virtual void SetLampAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusScreenFraction) = 0;
     virtual void ResetLamp() = 0;
-    virtual void TriggerLightningAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual void TriggerInteractiveLightningAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
     virtual NpcKindType GetNpcKind(NpcId id) = 0;
     virtual std::optional<PickedNpc> BeginPlaceNewFurnitureNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
     virtual std::optional<PickedNpc> BeginPlaceNewHumanNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
@@ -198,7 +198,7 @@ struct IGameController
     virtual void TriggerTsunami() = 0;
     virtual void TriggerRogueWave() = 0;
     virtual void TriggerStorm() = 0;
-    virtual void TriggerLightning() = 0;
+    virtual void TriggerRandomLightning() = 0;
 
     virtual void HighlightElectricalElement(GlobalElectricalElementId electricalElementId) = 0;
 
