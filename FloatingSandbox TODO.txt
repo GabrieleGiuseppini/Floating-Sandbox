@@ -338,28 +338,34 @@
 					- Try with changing triangle sizes so not to overlap
 					- Might be nice to incorporate adjacent ones, so to lower @ of triangles
 
-		- More tornado shapes
-			- Add mid width
-				- @ all physics
-					- Ship
-					- NPCs
-					- ? anything else?
-				- @ quad render
-			- 3 arrays of widths (top, mid, bottom), as many elements as the number of shapes
-			- New quantity for shape, 0->1, whose bucketization onto number of shapes dictates shape widths; driven by strengthMultiplier, but slower convergence
-				- BUT first: try without it, may be strength multiplier is already ok
-				- Used @ Apply and Render
+		+ More tornado shapes
+			+ Add mid width
+				+ @ all physics
+					+ Ship
+					+ NPCs
+				+ @ quad render
+			+ 3 arrays of widths (top, mid, bottom), as many elements as the number of shapes
+			+ New quantity for shape, 0->1, whose bucketization onto number of shapes dictates shape widths; driven by strengthMultiplier, but slower convergence
+				X BUT first: try without it, may be strength multiplier is already ok
+				+ Used @ Apply and Render
+		+ Send beta, bump up version
+		- Don't commit until feedback
 
 		- Storm supercell above it
-			- TornadoesWhatever uploads straight to World/RenderContext
+			- InteractiveBodies uploads straight to World/RenderContext
+				- ...which does parallax
 				- NDCx: fixed, 0.0, with some lateral parallax depending on CamX
 				- NDCy: non-linear:
 					- If cloudBottomWorldY (~= tornado top) >= visibleWorldBottom: just it (but in NDC coords)
 					- Else: vertical parallax: extent is TODOHERE until visibleWorldBottom is at max top
 
-				- ...which does parallax
+				
 
-		- Also as phenomenon
+		- Tornado also as phenomenon ?
+			- Spawned by InteractiveBodies? But then it's not "interactive" bodies anymore....
+
+	- See coean glitch: bulkyness to minimum, then wavemaker waterline
+		- Port to Android
 
 	- See ocean floor custom settings bug on community server
 
