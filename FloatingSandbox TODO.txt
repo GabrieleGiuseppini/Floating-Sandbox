@@ -762,7 +762,6 @@
 		+ Port changes to Android
 			+ Just flat shader
 
-	- Look into guy's ocean floor on server
 	- Air bubbles trapped in silt
 
 	- See if can improve FindFreeEphemeralParticle's perf
