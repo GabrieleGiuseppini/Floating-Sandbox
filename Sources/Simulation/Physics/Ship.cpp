@@ -2284,7 +2284,7 @@ void Ship::UpdatePressureAndWaterInflow(
         auto const & pointCompositeLeaking = mPoints.GetLeakingComposite(pointIndex);
         if (pointCompositeLeaking.IsCumulativelyLeaking)
         {
-            assert(!mPoints.GetIsHull(pointIndex)); // Hull points are never leaking
+            // Point could be structurally hull or not; could be leaking if it's a watertight door
 
             float const pointDepth = mPoints.GetCachedDepth(pointIndex);
 
