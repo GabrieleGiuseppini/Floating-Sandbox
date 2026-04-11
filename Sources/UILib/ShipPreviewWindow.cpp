@@ -831,8 +831,8 @@ std::function<bool(ShipPreviewWindow::InfoTile const &, ShipPreviewWindow::InfoT
         else
         {
             // Neither has metadata...
-            // ...sort on filename
-            return (l.ShipFilepath.filename() < r.ShipFilepath.filename()) != (isSortDescending);
+            // ...sort on stem
+            return (l.ShipFilepath.stem() < r.ShipFilepath.stem()) != (isSortDescending);
         }
     };
 }
