@@ -1685,9 +1685,9 @@ public:
         float currentSimulationTime,
         SimulationParameters const & simulationParameters)
     {
-        // Start structural leaking - but only if the point is originally not hull,
+        // Start structural leaking - but only if the point is not hull,
         // as we never allow hull points to take water in
-        if (!mMaterialsBuffer[pointElementIndex].Structural->IsHull)
+        if (!GetIsHull(pointElementIndex))
         {
             SetStructurallyLeaking(pointElementIndex);
         }

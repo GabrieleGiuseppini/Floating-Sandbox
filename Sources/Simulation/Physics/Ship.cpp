@@ -1143,7 +1143,6 @@ void Ship::Finalize()
         }
     }
 
-
     //
     // 2. Do a first connectivity pass (for the first Update)
     //
