@@ -2200,6 +2200,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Growth Rate Adjustment
             {
+                // Note: bulkiness (UI only) is 1/growth_rate_adjustment
+
                 mInteractiveWaveGrowthRateAdjustmentAdjustmentSlider = new SliderControl<float>(
                     interactiveWavesBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,

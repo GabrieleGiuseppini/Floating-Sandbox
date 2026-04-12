@@ -13,7 +13,6 @@
 #include <Render/GameTextureDatabases.h>
 
 #include <Core/Conversions.h>
-#include <Core/GameMath.h>
 #include <Core/Log.h>
 #include <Core/TextureAtlas.h>
 

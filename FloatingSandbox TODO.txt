@@ -364,8 +364,13 @@
 		- Tornado also as phenomenon ?
 			- Spawned by InteractiveBodies? But then it's not "interactive" bodies anymore....
 
-	- See coean glitch: bulkyness to minimum, then wavemaker waterline
-		- Port to Android
+	+ See ocean glitch: bulkyness to minimum, then wavemaker waterline
+		! Actual sim param value is 1/UI_param, thus 0.3333 => 3.0
+		+ Change max: 3->2
+			+ Then clamp @ GameController::Setter for settings loading
+		+ Fix sin args: when 1.0-mod can be 1.0
+		+ Default smoothing: 0.016
+		+ Port to Android
 
 	- See ocean floor custom settings bug on community server
 

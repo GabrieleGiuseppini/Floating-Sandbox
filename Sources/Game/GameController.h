@@ -32,6 +32,7 @@
 
 #include <Core/Colors.h>
 #include <Core/GameChronometer.h>
+#include <Core/GameMath.h>
 #include <Core/GameTypes.h>
 #include <Core/GameWallClock.h>
 #include <Core/ImageData.h>
@@ -587,7 +588,13 @@ public:
     float GetMaxBasalWaveSpeedAdjustment() const override { return SimulationParameters::MaxBasalWaveSpeedAdjustment; }
 
     float GetInteractiveWaveGrowthRateAdjustment() const override { return mSimulationParameters.InteractiveWaveGrowthRateAdjustment; }
-    void SetInteractiveWaveGrowthRateAdjustment(float value) override { mSimulationParameters.InteractiveWaveGrowthRateAdjustment = value; }
+    void SetInteractiveWaveGrowthRateAdjustment(float value) override {
+        // We've changed limits @ 1.20.1
+        mSimulationParameters.InteractiveWaveGrowthRateAdjustment = Clamp(
+            value,
+            SimulationParameters::MinInteractiveWaveGrowthRateAdjustment,
+            SimulationParameters::MaxInteractiveWaveGrowthRateAdjustment);
+    }
     float GetMinInteractiveWaveGrowthRateAdjustment() const override { return SimulationParameters::MinInteractiveWaveGrowthRateAdjustment; }
     float GetMaxInteractiveWaveGrowthRateAdjustment() const override { return SimulationParameters::MaxInteractiveWaveGrowthRateAdjustment; }
 

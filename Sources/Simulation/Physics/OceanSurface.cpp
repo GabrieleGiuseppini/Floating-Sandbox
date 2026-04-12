@@ -289,7 +289,7 @@ void OceanSurface::ApplyInteractiveWaveAt(
 
     // Calculate the growth rate for the height growth coefficient; we want small waves to raise fast
     // and tall waves to raise slow; our formula is thus:
-    // AsymptoticRate + (1.0 - AsymptoticRate) * alpha^2 / (h + alpha)^2
+    // AsymptoticRate + (1.0 - AsymptoticRate) * epsilon^2 / (epsilon + alpha)^2
     float constexpr AsymptoticRate = 0.0001f;
     float const heightGrowthCoefficientGrowthRate = AsymptoticRate + (1.0f - AsymptoticRate) * (0.1f * 0.1f / ((std::abs(targetRelativeHeight) + 0.1f) * (std::abs(targetRelativeHeight) + 0.1f)));
 
@@ -1059,13 +1059,19 @@ void OceanSurface::GenerateSamples(
             (mSWEHeightField[SWEBufferPrefixSize + 0] - SWEHeightFieldOffset)
             * SWEHeightFieldAmplification;
 
+        if (sinArg1 >= 1.0f)
+            sinArg1 -= 1.0f;
         float const basalValue1 =
             mBasalWaveSin1.GetLinearlyInterpolatedPeriodicFromNormalized(sinArg1);
 
+        if (sinArg2 >= 1.0f)
+            sinArg2 -= 1.0f;
         float const basalValue2 =
             basalWave2AmplitudeCoeff
             * mBasalWaveSin1.GetLinearlyInterpolatedPeriodicFromNormalized(sinArg2);
 
+        if (sinArgRipple >= 1.0f)
+            sinArgRipple -= 1.0f;
         float const rippleValue =
             rippleWaveAmplitudeCoeff
             * mBasalWaveSin1.GetLinearlyInterpolatedPeriodicFromNormalized(sinArgRipple);

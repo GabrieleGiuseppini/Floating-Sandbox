@@ -66,7 +66,7 @@ SimulationParameters::SimulationParameters()
     , RogueWaveRate(32)
     , DoDisplaceWater(true)
     , WaterDisplacementWaveHeightAdjustment(1.0f)
-    , WaveSmoothnessAdjustment(0.0f) // Was 0.203125f up to 1.19.2
+    , WaveSmoothnessAdjustment(0.016f) // Was 0.203125f up to 1.19.2
     // Storm
     , StormRate(60)
     , StormDuration(60 * 4) // 4 minutes
