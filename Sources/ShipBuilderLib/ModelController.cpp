@@ -3096,6 +3096,7 @@ void ModelController::WriteParticle(
         {
             mTotalMass -= mass;
         }
+
         mCenterOfMassSum -= coords.ToFloat() * mass;
     }
 
