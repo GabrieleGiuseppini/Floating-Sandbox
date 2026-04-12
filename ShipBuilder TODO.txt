@@ -4,9 +4,18 @@
 
 - Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
 
-- Fix: after modifying and saving ship, going to game, and coming back, any undo operation (on the now not-empty undo stack) should
-  mark appropriate layers and model as dirty
-	- Right now you can't save if you undo
+- Fix: 
+	+ 1: After modifying and saving ship, going to game, and coming back with "New Ship", previous ship's undo still shows
+	- 2: After modifying and saving ship, going to game, and coming back with "Edit this Ship", any undo operation (on the now not-empty undo stack) should
+	   mark appropriate layers and model as dirty
+		! Right now you can't save if you undo
+		+ Watch out: stack only has to survive if same ship
+		- Not that easy, "dirty" is a collection of flags for each "part" that may be dirty:
+			1. Applying undo actions doesn't necessarily mark model as dirty, so we can't rely on applying that action to update the model's dirty state accordingly
+			2. UndoStack doesn't know what a given (one or sequence of) Undo actions ends up dirtying
+				- Would need to be given a ModelDirtyState telling what would have gotten dirty with that change *in isolation*, which would be guaranteed to reflect
+				  dirtyness when applied backwards
+					- Synthesize a ModelDirtyState at Undo slot creation
 
 
 

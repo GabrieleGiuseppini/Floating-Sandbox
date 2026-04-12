@@ -5741,6 +5741,9 @@ void MainFrame::DoNewShip()
     // Reset current ship filename
     mCurrentShipFilePath.reset();
 
+    // Reset undo stack
+    mUndoStack.Reset();
+
     // Ask user for ship name
     NewShipNameDialog dlg(this, *mShipNameNormalizer, mGameAssetManager);
     std::string const shipName = dlg.AskName();
@@ -5782,6 +5785,11 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     {
         // Different ship, clear undo
         mUndoStack.Reset();
+    }
+    else
+    {
+        // Same ship, make sure all undo actions mark model as dirty
+        // TODOHERE: see spec
     }
 
     // Reset current ship filename
