@@ -36,6 +36,7 @@
 				- ColorKey is the same from the base
 					- Ser/Deser will store additional (local) Index deambiguitor, see below
 					- TODOHERE: do these dupe ColorKey's pose a problem?
+			- Removal: if material is in use, pops up dialog
 		- Modifications happen on CustomMaterialPalette
 			- CustomMaterialPalette contains business logic
 			- Always loaded/saved at startup/shutdown
@@ -49,6 +50,8 @@
 				- Assigned local indices
 			- Buffer: color_key + local index in MaterialPalette
 		- Deserialize returns CustomStructuralMaterials (vector<uq_ptr<StructuralMaterial>>) in ShipDefinition
+		- If no custom materials are present, ships should be loadable by older FS versions; only if custom materials are present, the load should fail with "newer version" error
+			- So file format version should be conditional on presence of custom materials
 	- ShipFactory:
 		- Passes vector<uq_ptr<StructuralMaterial>> for custom materials to Ship ("shipSpecificStructuralMaterials"), just for extending their lifetime
 		
