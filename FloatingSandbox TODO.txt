@@ -349,11 +349,18 @@
 				X BUT first: try without it, may be strength multiplier is already ok
 				+ Used @ Apply and Render
 		+ Send beta, bump up version
+		- At strongest should be wedge: almost vertical @ top, then restricts like cone (https://cajunnavy2016.org/tornado/what-is-a-wedge-tornado/)
+			- Sacrifice cylinder, and redo sequence
+		- Send beta, bump up version
 		- Don't commit until feedback
 
 		- Storm supercell above it
 			- InteractiveBodies uploads straight to World/RenderContext
 				- ...which does parallax
+				- TODO: needs to be drawn above tornado
+					! Z won't work as clouds are mostly transparent, so needs to be drawn afterwards
+					- Requires a second batch
+						- TODO: decide which buffer these clouds go: should end in same VBO as other clouds?
 				- NDCx: fixed, 0.0, with some lateral parallax depending on CamX
 				- NDCy: non-linear:
 					- If cloudBottomWorldY (~= tornado top) >= visibleWorldBottom: just it (but in NDC coords)
@@ -796,7 +803,8 @@
 
 
 	- Run Discord poll for next:
-		- Longhorn materials (includes redesign of material palette, as it would become too slow)
+		- Customizable materials
+			- WAS: Longhorn materials (includes redesign of material palette, as it would become too slow)
 		- Rot redesign (includes better rusting, and organic alge growth)
 		- NPC phase II: ShipBuilder (Floorplan layer and Interior Texture layer), areas (e.g. assembly area), and behaviors (swimming, etc.)
 		- Fireworks
