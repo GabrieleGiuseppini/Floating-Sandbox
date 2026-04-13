@@ -10,14 +10,48 @@
 	   mark appropriate layers and model as dirty
 		! Right now you can't save if you undo
 		+ Watch out: stack only has to survive if same ship
-		- Not that easy, "dirty" is a collection of flags for each "part" that may be dirty:
+		! Not that easy, "dirty" is a collection of flags for each "part" that may be dirty:
 			1. Applying undo actions doesn't necessarily mark model as dirty, so we can't rely on applying that action to update the model's dirty state accordingly
 			2. UndoStack doesn't know what a given (one or sequence of) Undo actions ends up dirtying
-				- Would need to be given a ModelDirtyState telling what would have gotten dirty with that change *in isolation*, which would be guaranteed to reflect
+				! Would need to be given a ModelDirtyState telling what would have gotten dirty with that change *in isolation*, which would be guaranteed to reflect
 				  dirtyness when applied backwards
-					- Synthesize a ModelDirtyState at Undo slot creation
+		- Creators synthesize an ActionDirtyEffect ModelDirtyState at Undo slot creation
+			- TODOHERE: not too easy, sometimes it's deep chained calls where at the bottom we figure out what's really dirty
+		- In MainFrame, when we restart after reloading the ship, we change all Undo actions' OriginalDirtyState to reflect cumulative effect of applying undo
+		  actions *backward* (last, last-1, ..., first)
 
 
+- Custom materials:
+	! Gist:
+		! SB: materials created and their pointers just used in structural layer
+		! Deser: returns custom materials just for lifetime; structural layer populated with pointers to those
+
+	- SB's material palette:
+		- Can add custom, remove custom, or edit custom materials
+			- Controls appear for each base material, first in the series
+			- A custom material is cloned from the base material, and contains these overrides:
+				- RenderColor
+				- Name
+				- ? Strength, Mass ?
+				- ColorKey is the same from the base
+					- Ser/Deser will store additional (local) Index deambiguitor, see below
+					- TODOHERE: do these dupe ColorKey's pose a problem?
+		- Modifications happen on CustomMaterialPalette
+			- CustomMaterialPalette contains business logic
+			- Always loaded/saved at startup/shutdown
+			- Can also merge another custom palette into it, via an ad-hoc ribbon button
+				- Checks for dupes
+	- SB can simply store StructuralMaterial* from CustomMaterialPalette
+	- De/Serialize:
+		- New structural layer set of tags:
+			- MaterialPalette: custom materials used in Buffer
+				- (Implicitly) pruned @ Serialize to only contain used ones
+				- Assigned local indices
+			- Buffer: color_key + local index in MaterialPalette
+		- Deserialize returns CustomStructuralMaterials (vector<uq_ptr<StructuralMaterial>>) in ShipDefinition
+	- ShipFactory:
+		- Passes vector<uq_ptr<StructuralMaterial>> for custom materials to Ship ("shipSpecificStructuralMaterials"), just for extending their lifetime
+		
 
 ================================================================================================================================================================================
 
