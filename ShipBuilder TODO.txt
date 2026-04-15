@@ -25,31 +25,52 @@
 	! Gist:
 		! SB: materials created and their pointers just used in structural layer
 		! Deser: returns custom materials just for lifetime; structural layer populated with pointers to those
+		! MaterialDatabase is basically "Standard" materials database
+		! Placement: sub_ordinal ignored and made up by palette logic
+			! After all custom materials' sub_ordinals might become stale when we change ordinals in default materials
 
-	- SB's material palette:
-		- Can add custom, remove custom, or edit custom materials
-			- Controls appear for each base material, first in the series
-			- A custom material is cloned from the base material, and contains these overrides:
+	- Structural material:
+		- opt<struct StructuralMaterial::VariantOverridesType> VariantOverrides
+			- Contains:
 				- RenderColor
 				- Name
-				- ? Strength, Mass ?
-				- ColorKey is the same from the base
-					- Ser/Deser will store additional (local) Index deambiguitor, see below
+				- Strength, Mass
+				- json Ser/Deser
+			- Only populated for variants; values of material are already variants though, so this is only for Serialization (see below)
+		- IaLstInGroup: only set for last (or only) of a series of render color options
+			- Not for variants
+		- static uq_ptr<StructuralMaterial> MaterialDB::MakeStructuralMaterialVariant(color_key const & parentColorKey, VariantOverridesType const &)
+			- Clones all, then overrides, and then stores VariantOverridesType
+				- ColorKey is the same from the base (parent)
+					- .shp2 Ser/Deser will store additional (local) Index deambiguitor, see below
 					- TODOHERE: do these dupe ColorKey's pose a problem?
+			- Also copies palette coordinates, but overrides sub_ordinal as zero as it's not used
+	- SB's material palette:
+		- Can add custom, remove custom, or edit custom materials
+			- Custom ones and control to add appear for each base material, last in the series (after LastInGroup)
+				- Their palette coordinates - with the exclusion of ordinal - dictate where
+				- Ordinal is basically made up with logic here
+			- Edit, Remove are small buttons on custom ones (which also helps distinguish them)
+			- A custom material is cloned from the base material, and contains StructuralMaterial::VariantOverridesType overrides
 			- Removal: if material is in use, pops up dialog
 		- Modifications happen on CustomMaterialPalette
 			- CustomMaterialPalette contains business logic
+				- And ser/deser: parent color_key and VariantOverridesType
+					- Materialization from json takes materials DB and produces variants
 			- Always loaded/saved at startup/shutdown
-			- Can also merge another custom palette into it, via an ad-hoc ribbon button
+			- Can also merge another custom palette into it, via an ad-hoc ribbon button, or import from ship
 				- Checks for dupes
+				- Then shows user list with checkboxes to choose which ones
+			- TODO: backup mechanism to avoid loss, with clear involvement of user if has to fallback
 	- SB can simply store StructuralMaterial* from CustomMaterialPalette
 	- De/Serialize:
 		- New structural layer set of tags:
 			- MaterialPalette: custom materials used in Buffer
 				- (Implicitly) pruned @ Serialize to only contain used ones
-				- Assigned local indices
+				- Stores (parent) color_key and content of VariantOverridesType
+				- Assigned local indices for new Buffer to address (see below)
 			- Buffer: color_key + local index in MaterialPalette
-		- Deserialize returns CustomStructuralMaterials (vector<uq_ptr<StructuralMaterial>>) in ShipDefinition
+		- Deserialize() returns CustomStructuralMaterials (vector<uq_ptr<StructuralMaterial>>) in ShipDefinition, just for lifetime extension
 		- If no custom materials are present, ships should be loadable by older FS versions; only if custom materials are present, the load should fail with "newer version" error
 			- So file format version should be conditional on presence of custom materials
 	- ShipFactory:
