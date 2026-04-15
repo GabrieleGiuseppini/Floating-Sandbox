@@ -356,18 +356,43 @@
 		+ Don't commit until feedback
 
 		- Storm supercell above it
-			- InteractiveBodies uploads straight to World/RenderContext
+			= Option 1: InteractiveBodies uploads straight to World/RenderContext
 				- ...which does parallax
-				- TODO: needs to be drawn above tornado
+
+				- Buffer:
+					+ UploadCloudsStart adds + 1 to max size
+					- UploadAdditionalCloud - which may be invoked outside start/end but after start - appends 
+				- Draw above tornado
 					! Z won't work as clouds are mostly transparent, so needs to be drawn afterwards
-					- Requires a second batch
-						- TODO: decide which buffer these clouds go: should end in same VBO as other clouds?
+					- Requires a second batch, invoked after tornado
 				- NDCx: fixed, 0.0, with some lateral parallax depending on CamX
 				- NDCy: non-linear:
 					- If cloudBottomWorldY (~= tornado top) >= visibleWorldBottom: just it (but in NDC coords)
 					- Else: vertical parallax: extent is TODOHERE until visibleWorldBottom is at max top
 
-				
+				- TODO: graded appear/dissolve, with max of all visibilityAlpha's
+				- TODO: volumetric growth progress: calc at Upload
+
+				- Tests:
+					- With zero clouds
+					- During storm
+
+			- Option 2: new shader & betch, parallel to tornado
+				- WorldRenderContext: 
+					- New buffer & VBO, "tornadoCloud"
+					- OrthoMatrix, & Time
+					- UploadTornadoes() populates both
+						- WorldWidth = 2 * MaxWorldWidth
+						- WorldHeight = HalfMaxWorldHeight
+						- Res | visible vCoords * Res gives 0...R in texture coords
+							- Res = visibleWorldSize / cloudWorldSize (TODO: check v-coords ranges)
+					- RenderPrep/Draw does both
+				- Shader
+					- Width fractions hardcoded
+					
+
+			- If works:
+				- Add to Android port plan: rendering of cloud
 
 		- Tornado also as phenomenon ?
 			- Spawned by InteractiveBodies? But then it's not "interactive" bodies anymore....
@@ -809,6 +834,8 @@
 		- Rot redesign (includes better rusting, and organic alge growth)
 		- NPC phase II: ShipBuilder (Floorplan layer and Interior Texture layer), areas (e.g. assembly area), and behaviors (swimming, etc.)
 		- Fireworks
+
+		- https://forms.gle/PcmJ2kCqxp8UVmfX8
 
 
 
