@@ -5,11 +5,13 @@
 
 // Inputs
 in vec4 inTornado1;  // Position, TornadoSpaceCoords
-in vec4 inTornado2; //  BottomWidthFraction, StrengthMultiplier, HeatDepth, VisibilityAlpha
-in float inTornado3; // RotationPhase
+in vec4 inTornado2; //  TopWidthFraction, MiddleWidthFraction, BottomWidthFraction, StrengthMultiplier
+in vec3 inTornado3; // HeatDepth, VisibilityAlpha, RotationPhase
 
 // Outputs
 out vec2 vertexSpaceCoords;
+out float vertexTopWidthFraction;
+out float vertexMiddleWidthFraction;
 out float vertexBottomWidthFraction;
 out float vertexStrengthMultiplier;
 out float vertexHeatDepth;
@@ -22,11 +24,13 @@ uniform mat4 paramOrthoMatrix;
 void main()
 {
     vertexSpaceCoords = inTornado1.zw;
-    vertexBottomWidthFraction = inTornado2.x;
-    vertexStrengthMultiplier = inTornado2.y;
-    vertexHeatDepth = inTornado2.z;
-    vertexVisibilityAlpha = inTornado2.w;
-    vertexRotationPhase = inTornado3;
+    vertexTopWidthFraction = inTornado2.x;
+    vertexMiddleWidthFraction = inTornado2.y;
+    vertexBottomWidthFraction = inTornado2.z;
+    vertexStrengthMultiplier = inTornado2.w;
+    vertexHeatDepth = inTornado3.x;
+    vertexVisibilityAlpha = inTornado3.y;
+    vertexRotationPhase = inTornado3.z;
 
     gl_Position = paramOrthoMatrix * vec4(inTornado1.xy, -1.0, 1.0);
 }
@@ -40,6 +44,8 @@ void main()
 
 // Inputs from previous shader
 in vec2 vertexSpaceCoords;
+in float vertexTopWidthFraction;
+in float vertexMiddleWidthFraction;
 in float vertexBottomWidthFraction;
 in float vertexStrengthMultiplier;
 in float vertexHeatDepth;
@@ -75,7 +81,10 @@ void main()
     // Smoke
     //
     
-    float width = vertexBottomWidthFraction + (1.0 - vertexBottomWidthFraction) * contortedVertexSpaceCoords.y;      
+    float isUpper = step(0.5, contortedVertexSpaceCoords.y);
+    float width = 
+        (vertexBottomWidthFraction + (vertexMiddleWidthFraction - vertexBottomWidthFraction) * contortedVertexSpaceCoords.y * 2.0f) * (1.0 - isUpper)
+        + (vertexMiddleWidthFraction + (vertexTopWidthFraction - vertexMiddleWidthFraction) * (contortedVertexSpaceCoords.y - 0.5) * 2.0) * isUpper;
     
     // Noise
     

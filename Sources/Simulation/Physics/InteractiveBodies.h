@@ -11,6 +11,7 @@
 #include <Core/Vectors.h>
 
 #include <algorithm>
+#include <array>
 #include <optional>
 #include <vector>
 
@@ -78,7 +79,7 @@ public:
 
     static inline FloatSize CalculateTornadoEffectiveSize(float visibilityAlpha);
 
-    static inline float CalculateTornadoBottomWidthFraction(float strengthMultiplier);
+    static inline std::array<float, 3> CalculateTornadoWidthFractions(float strengthMultiplier);
 
 private:
 

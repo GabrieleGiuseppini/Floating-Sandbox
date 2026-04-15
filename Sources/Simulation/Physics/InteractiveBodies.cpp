@@ -194,7 +194,7 @@ void InteractiveBodies::Update(
 
             vec2f const position = vec2f(tornado.CurrentX, tornado.CurrentBaseY);
             FloatSize const size = CalculateTornadoEffectiveSize(tornado.CurrentVisibilityAlpha);
-            float const bottomWidthFraction = CalculateTornadoBottomWidthFraction(tornado.CurrentForceMultiplier);
+            auto const widthFractions = CalculateTornadoWidthFractions(tornado.CurrentForceMultiplier);
             float const strengthMultiplier = tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha;
 
             // Ships
@@ -204,7 +204,7 @@ void InteractiveBodies::Update(
                 ship->ApplyTornado(
                     position,
                     size,
-                    bottomWidthFraction,
+                    widthFractions,
                     tornado.CurrentRotationPhase,
                     strengthMultiplier,
                     tornado.CurrentHeatDepth);
@@ -214,7 +214,7 @@ void InteractiveBodies::Update(
             npcs.ApplyTornado(
                 position,
                 size,
-                bottomWidthFraction,
+                widthFractions,
                 tornado.CurrentRotationPhase,
                 strengthMultiplier,
                 tornado.CurrentHeatDepth,
@@ -262,10 +262,12 @@ void InteractiveBodies::Upload(RenderContext & renderContext) const
 
         for (auto const & tornado : mTornadoes)
         {
+            auto const widthFractions = CalculateTornadoWidthFractions(tornado.CurrentForceMultiplier);
+
             renderContext.UploadTornado(
                 vec2f(tornado.CurrentX, tornado.CurrentBaseY),
                 CalculateTornadoEffectiveSize(tornado.CurrentVisibilityAlpha),
-                CalculateTornadoBottomWidthFraction(tornado.CurrentForceMultiplier),
+                widthFractions,
                 tornado.CurrentForceMultiplier * tornado.CurrentVisibilityAlpha,
                 tornado.CurrentHeatDepth,
                 tornado.CurrentVisibilityAlpha,
@@ -568,9 +570,29 @@ FloatSize InteractiveBodies::CalculateTornadoEffectiveSize(float visibilityAlpha
         SimulationParameters::TornadoHeight);
 }
 
-float InteractiveBodies::CalculateTornadoBottomWidthFraction(float strengthMultiplier)
+std::array<float, 3> InteractiveBodies::CalculateTornadoWidthFractions(float strengthMultiplier)
 {
-    return LinearStep(1.0f, 2.0f, strengthMultiplier) * 0.25f;
+    size_t constexpr NumShapes = 5;
+    std::array<vec3f, NumShapes> shapeWidthFractions = {
+        vec3f(1.0f, 0.5f, 0.0f), // V-Shaped
+        vec3f(1.0f, 0.625f, 0.25f), // Cone
+        vec3f(1.0f, 0.4f, 0.55f), // Hourglass
+        vec3f(0.25f, 0.4f, 0.55f), // Flared Base
+        vec3f(1.0f, 0.95f, 0.15f), // Wedge
+    };
+
+    // Map strengthMultiplier:1.0-2.0 to shape index 0-NumShapes-1
+    float const shapeF = Clamp(strengthMultiplier - 1.0f, 0.0f, 1.0f) * static_cast<float>(NumShapes - 1);
+    size_t const shapeI = std::min(
+        static_cast<size_t>(std::floorf(shapeF)),
+        NumShapes - 2); // We hit NumShapes-1 only when strengthMultiplier is at max=1.0; in that case we want sizeDf = 1.0
+    float const sizeDf = shapeF - static_cast<float>(shapeI);
+
+    vec3f const widthFractions =
+        shapeWidthFractions[shapeI] * (1.0f - sizeDf)
+        + shapeWidthFractions[shapeI + 1] * sizeDf;
+
+    return std::array<float, 3>{widthFractions.x, widthFractions.y, widthFractions.z};
 }
 
 }

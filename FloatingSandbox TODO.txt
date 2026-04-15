@@ -349,10 +349,11 @@
 				X BUT first: try without it, may be strength multiplier is already ok
 				+ Used @ Apply and Render
 		+ Send beta, bump up version
-		- At strongest should be wedge: almost vertical @ top, then restricts like cone (https://cajunnavy2016.org/tornado/what-is-a-wedge-tornado/)
-			- Sacrifice cylinder, and redo sequence
-		- Send beta, bump up version
-		- Don't commit until feedback
+		+ At strongest should be wedge: almost vertical @ top, then restricts like cone (https://cajunnavy2016.org/tornado/what-is-a-wedge-tornado/)
+			+ Sacrifice cylinder, and redo sequence
+		        //vec3f(0.55f, 0.55f, 0.55f), // Cylinder
+		+ Send beta, bump up version
+		+ Don't commit until feedback
 
 		- Storm supercell above it
 			- InteractiveBodies uploads straight to World/RenderContext

@@ -1173,7 +1173,7 @@ public:
     inline void UploadTornado(
         vec2f const & bottomCenterPos,
         FloatSize const & size,
-        float bottomWidthFraction,
+        std::array<float, 3> widthFractions,
         float strengthMultiplier,
         float heatDepth, // 0..1
         float visibilityAlpha, // 0..1
@@ -1182,7 +1182,7 @@ public:
         mInnerContext->worldRenderContext->UploadTornado(
             bottomCenterPos,
             size,
-            bottomWidthFraction,
+            widthFractions,
             strengthMultiplier,
             heatDepth,
             visibilityAlpha,

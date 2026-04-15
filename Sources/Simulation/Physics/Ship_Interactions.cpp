@@ -1058,7 +1058,7 @@ void Ship::ApplyAntiGravityField(
 void Ship::ApplyTornado(
     vec2f const & bottomCenterPos,
     FloatSize const & size,
-    float bottomWidthFraction,
+    std::array<float, 3> const & widthFractions,
     float rotationPhase,
     float strengthMultiplier,
     float heatDepth)
@@ -1068,7 +1068,7 @@ void Ship::ApplyTornado(
         Interaction::ArgumentsUnion::TornadoArguments(
             bottomCenterPos,
             size,
-            bottomWidthFraction,
+            widthFractions,
             rotationPhase,
             strengthMultiplier,
             heatDepth));
@@ -1080,8 +1080,9 @@ void Ship::ApplyTornado(
 {
     // To make damage outside of the visible vortex
     float constexpr ExtraWidthFraction = 2.2f; // MUCH wider
-    float const effectiveTopRadius = args.Size.width / 2.0f * ExtraWidthFraction;
-    float const effectiveBottomRadius = effectiveTopRadius * args.BottomWidthFraction;
+    float const effectiveTopRadius = args.Size.width * args.WidthFractions[0] / 2.0f * ExtraWidthFraction;
+    float const effectiveMiddleRadius = args.Size.width * args.WidthFractions[1] / 2.0f * ExtraWidthFraction;
+    float const effectiveBottomRadius = args.Size.width * args.WidthFractions[2] / 2.0f * ExtraWidthFraction;
     float constexpr ExtraHeightFraction = 1.1f;
     float const effectiveHeight = args.Size.height * ExtraHeightFraction;
 
@@ -1115,7 +1116,10 @@ void Ship::ApplyTornado(
         if (p.y > effectiveBottom && p.y <= effectiveTop) // Note: skipping y=effectiveBottom to ensure non-zero radius
         {
             // Calculate radius, depending on y
-            float const effectiveRadius = effectiveBottomRadius + (effectiveTopRadius - effectiveBottomRadius) * (p.y - effectiveBottom) / effectiveHeight;
+            float const shapeYFactor = std::min((p.y - effectiveBottom) / args.Size.height, 1.0f);
+            float const effectiveRadius = (shapeYFactor <= 0.5f)
+                ? effectiveBottomRadius + (effectiveMiddleRadius - effectiveBottomRadius) * (shapeYFactor * 2.0f)
+                : effectiveMiddleRadius + (effectiveTopRadius - effectiveMiddleRadius) * ((shapeYFactor - 0.5f) * 2.0f);
 
             // Normalized distance from center
             float const rn = (p.x - centerX) / effectiveRadius;

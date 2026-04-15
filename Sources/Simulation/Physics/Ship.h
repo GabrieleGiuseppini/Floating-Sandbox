@@ -27,6 +27,7 @@
 #include <Core/ThreadManager.h>
 #include <Core/Vectors.h>
 
+#include <array>
 #include <atomic>
 #include <list>
 #include <memory>
@@ -233,7 +234,7 @@ public:
     void ApplyTornado(
         vec2f const & bottomCenterPos,
         FloatSize const & size,
-        float bottomWidthFraction,
+        std::array<float, 3> const & widthFractions,
         float rotationPhase,
         float strengthMultiplier,
         float heatDepth);
@@ -460,7 +461,7 @@ private:
             {
                 vec2f BottomCenterPos;
                 FloatSize Size;
-                float BottomWidthFraction;
+                std::array<float, 3> WidthFractions;
                 float RotationPhase;
                 float StrengthMultiplier;
                 float HeatDepth;
@@ -468,13 +469,13 @@ private:
                 TornadoArguments(
                     vec2f const & bottomCenterPos,
                     FloatSize const & size,
-                    float bottomWidthFraction,
+                    std::array<float, 3> const & widthFractions,
                     float rotationPhase,
                     float strengthMultiplier,
                     float heatDepth)
                     : BottomCenterPos(bottomCenterPos)
                     , Size(size)
-                    , BottomWidthFraction(bottomWidthFraction)
+                    , WidthFractions(widthFractions)
                     , RotationPhase(rotationPhase)
                     , StrengthMultiplier(strengthMultiplier)
                     , HeatDepth(heatDepth)

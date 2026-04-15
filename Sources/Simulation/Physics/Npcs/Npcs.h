@@ -25,6 +25,7 @@
 #include <Core/Vectors.h>
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <functional>
 #include <memory>
@@ -1320,7 +1321,7 @@ public:
 	void ApplyTornado(
 		vec2f const & bottomCenterPos,
 		FloatSize const & size,
-		float bottomWidthFraction,
+		std::array<float, 3> const & widthFractions,
 		float rotationPhase,
 		float strengthMultiplier,
 		float heatDepth,

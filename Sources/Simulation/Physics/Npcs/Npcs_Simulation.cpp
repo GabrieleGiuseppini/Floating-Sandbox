@@ -8,7 +8,6 @@
 #include <Core/Conversions.h>
 #include <Core/GameMath.h>
 
-#include <array>
 #include <limits>
 
 #ifdef _MSC_VER

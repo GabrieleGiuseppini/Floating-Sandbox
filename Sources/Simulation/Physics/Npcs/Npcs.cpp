@@ -2696,7 +2696,7 @@ void Npcs::ApplyAntiMatterBombExplosion(
 void Npcs::ApplyTornado(
     vec2f const & bottomCenterPos,
     FloatSize const & size,
-    float bottomWidthFraction,
+    std::array<float, 3> const & widthFractions,
     float rotationPhase,
     float strengthMultiplier,
     float heatDepth,
@@ -2707,8 +2707,9 @@ void Npcs::ApplyTornado(
 
     // To act outside of the visible vortex
     float constexpr ExtraWidthFraction = 1.2f;
-    float const effectiveTopRadius = size.width / 2.0f * ExtraWidthFraction;
-    float const effectiveBottomRadius = effectiveTopRadius * std::max(bottomWidthFraction, 0.05f); // Bottom needs to be wide enough to catch NPCs
+    float const effectiveTopRadius = size.width * widthFractions[0] / 2.0f * ExtraWidthFraction;
+    float const effectiveMiddleRadius = size.width * widthFractions[1] / 2.0f * ExtraWidthFraction;
+    float const effectiveBottomRadius = size.width * std::max(widthFractions[2], 0.05f) / 2.0f * ExtraWidthFraction; // Bottom needs to be wide enough to catch NPCs
     float constexpr ExtraHeightFraction = 1.02f;
     float const effectiveHeight = size.height * ExtraHeightFraction + ExtraBottomOffset;
 
@@ -2750,7 +2751,12 @@ void Npcs::ApplyTornado(
                 if (particlePosition.y > effectiveBottom && particlePosition.y <= effectiveTop) // Note: skipping y=effectiveBottom to ensure non-zero radius
                 {
                     // Calculate radius, depending on y
-                    float const effectiveRadius = effectiveBottomRadius + (effectiveTopRadius - effectiveBottomRadius) * (particlePosition.y - effectiveBottom) / effectiveHeight;
+                    //
+                    // We cheat a bit wrt the tornado geometry
+                    float const shapeYFactor = std::min((particlePosition.y - effectiveBottom) / effectiveHeight, 1.0f);
+                    float const effectiveRadius = (shapeYFactor <= 0.5f)
+                        ? effectiveBottomRadius + (effectiveMiddleRadius - effectiveBottomRadius) * (shapeYFactor * 2.0f)
+                        : effectiveMiddleRadius + (effectiveTopRadius - effectiveMiddleRadius) * ((shapeYFactor - 0.5f) * 2.0f);
 
                     // Normalized distance from center
                     float const rn = (particlePosition.x - centerX) / effectiveRadius;

@@ -526,13 +526,13 @@ WorldRenderContext::WorldRenderContext(
         // Describe vertex attributes
 
         glBindBuffer(GL_ARRAY_BUFFER, *mTornadoVBO);
-        static_assert(sizeof(TornadoVertex) == (2 + 2 + 4 + 1) * sizeof(float));
+        static_assert(sizeof(TornadoVertex) == (2 + 2 + 3 + 4) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado1));
         glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado1), 4, GL_FLOAT, GL_FALSE, sizeof(TornadoVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado2));
         glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado2), 4, GL_FLOAT, GL_FALSE, sizeof(TornadoVertex), (void *)(4 * sizeof(float)));
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado3));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado3), 1, GL_FLOAT, GL_FALSE, sizeof(TornadoVertex), (void *)((4 + 4) * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Tornado3), 3, GL_FLOAT, GL_FALSE, sizeof(TornadoVertex), (void *)((4 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
@@ -1165,7 +1165,7 @@ void WorldRenderContext::UploadLandEnd(float /*yWorldBottom*/)
     ////}
 
     ////size_t const baseLandVerticesAfterOptimization = (mLandPureBedrockSamples.size() - 1) * 6;
-    ////LogMessage("TODOTEST: Land vertices added by optimization: ", mLandVertexBuffer.size() - prevLandVertexBufferSize, " (base: ", baseLandVerticesAfterOptimization, ")");
+    ////LogMessage("Land vertices added by optimization: ", mLandVertexBuffer.size() - prevLandVertexBufferSize, " (base: ", baseLandVerticesAfterOptimization, ")");
 }
 
 void WorldRenderContext::UploadOceanBasicStart(size_t slices)

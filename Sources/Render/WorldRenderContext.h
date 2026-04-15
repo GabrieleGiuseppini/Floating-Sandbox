@@ -974,7 +974,7 @@ public:
     void UploadTornado(
         vec2f const & bottomCenterPos,
         FloatSize const & size,
-        float bottomWidthFraction,
+        std::array<float, 3> widthFractions,
         float strengthMultiplier,
         float heatDepth, // 0..1
         float visibilityAlpha, // 0..1
@@ -986,7 +986,7 @@ public:
         mTornadoVertexBuffer.emplace_back(
             bottomCenterPos + vec2f(-size.width / 2.0f, size.height),
             vec2f(-1.0, 1.0f),
-            bottomWidthFraction,
+            widthFractions[0], widthFractions[1], widthFractions[2],
             strengthMultiplier,
             heatDepth,
             visibilityAlpha,
@@ -996,7 +996,7 @@ public:
         mTornadoVertexBuffer.emplace_back(
             bottomCenterPos + vec2f(-size.width / 2.0f, 0.0f),
             vec2f(-1.0, 0.0f),
-            bottomWidthFraction,
+            widthFractions[0], widthFractions[1], widthFractions[2],
             strengthMultiplier,
             heatDepth,
             visibilityAlpha,
@@ -1006,7 +1006,7 @@ public:
         mTornadoVertexBuffer.emplace_back(
             bottomCenterPos + vec2f(size.width / 2.0f, size.height),
             vec2f(1.0, 1.0f),
-            bottomWidthFraction,
+            widthFractions[0], widthFractions[1], widthFractions[2],
             strengthMultiplier,
             heatDepth,
             visibilityAlpha,
@@ -1016,7 +1016,7 @@ public:
         mTornadoVertexBuffer.emplace_back(
             bottomCenterPos + vec2f(size.width / 2.0f, 0.0f),
             vec2f(1.0, 0.0f),
-            bottomWidthFraction,
+            widthFractions[0], widthFractions[1], widthFractions[2],
             strengthMultiplier,
             heatDepth,
             visibilityAlpha,
@@ -1500,6 +1500,8 @@ private:
     {
         vec2f position;
         vec2f tornadoSpaceCoords;
+        float topWidthFraction;
+        float middleWidthFraction;
         float bottomWidthFraction;
         float strengthMultiplier;
         float heatDepth;
@@ -1509,6 +1511,8 @@ private:
         TornadoVertex(
             vec2f _position,
             vec2f _tornadoSpaceCoords,
+            float _topWidthFraction,
+            float _middleWidthFraction,
             float _bottomWidthFraction,
             float _strengthMultiplier,
             float _heatDepth,
@@ -1516,6 +1520,8 @@ private:
             float _rotationPhase)
             : position(_position)
             , tornadoSpaceCoords(_tornadoSpaceCoords)
+            , topWidthFraction(_topWidthFraction)
+            , middleWidthFraction(_middleWidthFraction)
             , bottomWidthFraction(_bottomWidthFraction)
             , strengthMultiplier(_strengthMultiplier)
             , heatDepth(_heatDepth)
