@@ -22,8 +22,12 @@ RgbaImageData TextureAlignmentOptimizer::OptimizeAlignment(
 	RgbaImageData const & source,
 	ShipSpaceSize const & structureMeshSize)
 {
+	// Calculate overestimation of texture pixels per ship quad, to use for min segment lengths et al
+	int const pixelsPerQuadH = static_cast<int>(std::ceilf(static_cast<float>(source.Size.width) / static_cast<float>(structureMeshSize.width)));
+	int const pixelsPerQuadV = static_cast<int>(std::ceilf(static_cast<float>(source.Size.height) / static_cast<float>(structureMeshSize.height)));
+
 	//
-	// Calculate edges
+	// Calculate edges of texture
 	//
 	//	* y=0 is at bottom, grows going up
 	//
@@ -35,25 +39,23 @@ RgbaImageData TextureAlignmentOptimizer::OptimizeAlignment(
 
 	CalculateEdges(source, leftX, rightX, topY, bottomY);
 
-	int const minX = *std::min_element(leftX.cbegin(), leftX.cend());
-	int const maxX = *std::max_element(rightX.cbegin(), rightX.cend());
-	int const minY = *std::min_element(bottomY.cbegin(), bottomY.cend());
-	int const maxY = *std::max_element(topY.cbegin(), topY.cend());
+	// Calculate bounding rect, leaving extra half texture-pixels-in-one-structure-pixel
+	// to ensure no truncation
+	int const minX = std::max(*std::min_element(leftX.cbegin(), leftX.cend()) - pixelsPerQuadH / 2, 0);
+	int const maxX = std::min(*std::max_element(rightX.cbegin(), rightX.cend()) + pixelsPerQuadH / 2, source.Size.width - 1);
+	int const minY = std::max(*std::min_element(bottomY.cbegin(), bottomY.cend()) - pixelsPerQuadV / 2, 0);
+	int const maxY = std::min(*std::max_element(topY.cbegin(), topY.cend()) + pixelsPerQuadV / 2, source.Size.height - 1);
 
 	//
 	// Calculate segments
 	//
 
-	// Calculate overestimation of texture pixels per ship quad, to use for min segment lengths
-	int const minSegmentHLength = static_cast<int>(std::ceilf(static_cast<float>(source.Size.width) / static_cast<float>(structureMeshSize.width)));
-	int const minSegmentVLength = static_cast<int>(std::ceilf(static_cast<float>(source.Size.height) / static_cast<float>(structureMeshSize.height)));
+	LogMessage("TextureAlignmentOptimizer: pixelsPerQuadH=", pixelsPerQuadH, " pixelsPerQuadV=", pixelsPerQuadV);
 
-	LogMessage("TextureAlignmentOptimizer: pixelsPerQuadH=", minSegmentHLength, " pixelsPerQuadW=", minSegmentVLength);
-
-	std::vector<Segment> leftSegments = CalculateSegments(leftX, source.Size.width, minSegmentVLength);
-	std::vector<Segment> rightSegments = CalculateSegments(rightX, -1, minSegmentVLength);
-	std::vector<Segment> bottomSegments = CalculateSegments(bottomY, source.Size.height, minSegmentHLength);
-	std::vector<Segment> topSegments = CalculateSegments(topY, -1, minSegmentHLength);
+	std::vector<Segment> leftSegments = CalculateSegments(leftX, source.Size.width, pixelsPerQuadV);
+	std::vector<Segment> rightSegments = CalculateSegments(rightX, -1, pixelsPerQuadV);
+	std::vector<Segment> bottomSegments = CalculateSegments(bottomY, source.Size.height, pixelsPerQuadV);
+	std::vector<Segment> topSegments = CalculateSegments(topY, -1, pixelsPerQuadV);
 
 	//LogMessage("Left segments:");
 	//for (auto const & s : leftSegments)
