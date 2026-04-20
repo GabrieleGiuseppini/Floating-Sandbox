@@ -377,25 +377,71 @@
 					- With zero clouds
 					- During storm
 
-			- Option 2: new shader & betch, parallel to tornado
-				- WorldRenderContext: 
-					- New buffer & VBO, "tornadoCloud"
-					- OrthoMatrix, & Time
-					- UploadTornadoes() populates both
-						- WorldWidth = 2 * MaxWorldWidth
-						- WorldHeight = HalfMaxWorldHeight
-						- Res | visible vCoords * Res gives 0...R in texture coords
-							- Res = visibleWorldSize / cloudWorldSize (TODO: check v-coords ranges)
-					- RenderPrep/Draw does both
+			= Option 2: new shader & betch, parallel to tornado
+				= WorldRenderContext: 
+					+ New buffer & VBO, "tornadoCloud"
+					+ OrthoMatrix, & Time
+					+ UploadTornadoes() populates both
+						+ WorldWidth = 2 * MaxWorldWidth
+						+ WorldHeight = HalfMaxWorldHeight
+						+ Res | visible vCoords * Res gives 0...R in texture coords
+							+ Res = visibleWorldSize / cloudWorldSize (TODO: check v-coords ranges)
+							+ But also include aspect ratio: squares need to stay as squares
+						+ Populate vertices
+					+ RenderPrep/Draw does both
+					= Improvements:
+						+ Rez: why < 1.0?
+							! Because of tornado top
+						+ Scaled rez
+						+ Bottom overlap with flanges
+							+ Bottom
+							+ Sides
+						- Rez: different curve
 				- Shader
+					+ Shape: more rounded
+						+ Don't make it go all the way up: max width is 2 or more
+					= See if can fix detachment
+						+ Just reduce "red" band (pure zeroing)
+						= Now translate to real code
+							- Try to keep width of green band independent from zoom
+							+ Simplify: if we multiplt y's by scaling everywhere in smoothstep, then we don't need it
+						+ Taller tornado (and thus wider) - and thus raise cloud
+					
+					- Just flat bottom?
+						- If so, can simplify a) side flanges, and b) width altogether
+					- Dynamic smoke - bubbling
+					- Visibility dynamics: cloud visible earlier
+					= Double-side transparency
 					- Width fractions hardcoded
+
+					
+				- Darkening
+					- Using min among all sources
+				- Decide on heat/flame & thus also flame params (also @ GlobalRenderContext)
+				- Decide on time
+				- Decide on vertexStrengthMultiplier
+
+
+				- Put WorldRenderContext::UploadTornadoes() back as inline
 					
 
 			- If works:
 				- Add to Android port plan: rendering of cloud
 
+		- Alternatives to cloud:
+			- Cluster of clouds above tornado
+				- Option 1: actual clouds, fully dark
+				- Option 2: using the same shader - but how to make shape?
+			- Storm clouds rolling
+				- Background might be enough
+
+		- P.S: One last thing I nearly forgot: in the current beta, when you pause and then use the Tornado slider, it'll still spawn every severity meter spawned when paused, 
+		  but only for a split second when you unpause. Not something that necessarily needs to be addressed, only if you think it's an issue that should be or not for the effort it'd take
+
 		- Tornado also as phenomenon ?
 			- Spawned by InteractiveBodies? But then it's not "interactive" bodies anymore....
+
+	+ Fix: ShaderManager: infoLog: null-terminate strings
 
 	+ See ocean glitch: bulkyness to minimum, then wavemaker waterline
 		! Actual sim param value is 1/UI_param, thus 0.3333 => 3.0

@@ -202,6 +202,7 @@ void GameOpenGL::CompileShader(
     {
         char infoLog[1024];
         glGetShaderInfoLog(shader, sizeof(infoLog) - 1, NULL, infoLog);
+        infoLog[sizeof(infoLog) - 1] = '\0'; // Just to be sure
         throw GameException("Error compiling " + shaderTypeName + " shader: " + std::string(infoLog));
     }
 
