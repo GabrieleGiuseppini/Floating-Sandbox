@@ -35,9 +35,11 @@
 				- RenderColor
 				- Name
 				- Strength, Mass
+				- Possibly BuoyancyVolumeFill
 				- json Ser/Deser
+				- Equality and hash
 			- Only populated for variants; values of material are already variants though, so this is only for Serialization (see below)
-		- IaLstInGroup: only set for last (or only) of a series of render color options
+		- IsLastInGroup: only set for last (or only) of a series of render color options
 			- Not for variants
 		- static uq_ptr<StructuralMaterial> MaterialDB::MakeStructuralMaterialVariant(color_key const & parentColorKey, VariantOverridesType const &)
 			- Clones all, then overrides, and then stores VariantOverridesType
@@ -46,13 +48,18 @@
 					- TODOHERE: do these dupe ColorKey's pose a problem?
 			- Also copies palette coordinates, but overrides sub_ordinal as zero as it's not used
 	- SB's material palette:
+		- At any given moment, the palette shows default + CustomMaterialPalette + ship's original custom (but only distinct's among the last two)
+			- At each change of last two, palette is re-created
 		- Can add custom, remove custom, or edit custom materials
 			- Custom ones and control to add appear for each base material, last in the series (after LastInGroup)
 				- Their palette coordinates - with the exclusion of ordinal - dictate where
-				- Ordinal is basically made up with logic here
+				- Ordinal is basically made up with logic here, laying out both custom sets
 			- Edit, Remove are small buttons on custom ones (which also helps distinguish them)
 			- A custom material is cloned from the base material, and contains StructuralMaterial::VariantOverridesType overrides
 			- Removal: if material is in use, pops up dialog
+			- If it's from ship only (i.e. not from custom set), there's button to import
+				- No need to remove it from ship's afterwards, we can live with dupes among the two custom sets
+		- Ranges on physical properties are very narrow and don't allow crazy values
 		- Modifications happen on CustomMaterialPalette
 			- CustomMaterialPalette contains business logic
 				- And ser/deser: parent color_key and VariantOverridesType
@@ -60,7 +67,7 @@
 			- Always loaded/saved at startup/shutdown
 			- Can also merge another custom palette into it, via an ad-hoc ribbon button, or import from ship
 				- Checks for dupes
-				- Then shows user list with checkboxes to choose which ones
+				- Then shows user list with checkboxes to choose which ones, and which shows which are dupe's and won't be imported
 			- TODO: backup mechanism to avoid loss, with clear involvement of user if has to fallback
 	- SB can simply store StructuralMaterial* from CustomMaterialPalette
 	- De/Serialize:
