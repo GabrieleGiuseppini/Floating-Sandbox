@@ -431,9 +431,17 @@
 		- Alternatives to cloud:
 			- Cluster of clouds above tornado
 				- Option 1: actual clouds, fully dark
+					- Ad-hoc upload (i.e. outside of Clouds container) as we have to calc our own NDC coords
 				- Option 2: using the same shader - but how to make shape?
 			- Storm clouds rolling
-				- Background might be enough
+				- In background might be enough
+				- Via Clouds container
+
+			- Darkening
+				- Using min among all sources
+
+			- If works:
+				- Add to Android port plan: TODO
 
 		- P.S: One last thing I nearly forgot: in the current beta, when you pause and then use the Tornado slider, it'll still spawn every severity meter spawned when paused, 
 		  but only for a split second when you unpause. Not something that necessarily needs to be addressed, only if you think it's an issue that should be or not for the effort it'd take

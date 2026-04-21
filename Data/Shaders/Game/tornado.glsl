@@ -43,7 +43,7 @@ void main()
 #include "lamp_tool.glslinc"
 
 // Inputs from previous shader
-in vec2 vertexSpaceCoords;
+in vec2 vertexSpaceCoords; // [-1..+1, 0..+1]
 in float vertexTopWidthFraction;
 in float vertexMiddleWidthFraction;
 in float vertexBottomWidthFraction;
@@ -120,7 +120,7 @@ void main()
     alpha *= 1.0 - smoothstep(0.92, 1.0, contortedVertexSpaceCoords.y + 0.05 * smokeNoise);
 
     // Bottom flange
-    alpha *= smoothstep(0.0, 1.0-0.99, contortedVertexSpaceCoords.y - 0.05 * smokeNoise);
+    alpha *= smoothstep(0.0, (1.0-0.99), contortedVertexSpaceCoords.y - 0.05 * smokeNoise);
     
     // Color
     vec3 smokeColor = vec3(smokeNoise * 0.8); // On the darker side

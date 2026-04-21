@@ -24,9 +24,7 @@ public:
         vec2f cameraWorldPosition,
         DisplayLogicalSize const & logicalCanvasSize,
         int logicalToPhysicalPixelFactor)
-        : mMaxWorldWidth(maxWorldSize.width)
-        , mHalfMaxWorldWidth(maxWorldSize.width / 2.0f)
-        , mMaxWorldHeight(maxWorldSize.height)
+        : mHalfMaxWorldWidth(maxWorldSize.width / 2.0f)
         , mHalfMaxWorldHeight(maxWorldSize.height / 2.0f)
         , mZoom(zoom)
         , mCam(cameraWorldPosition)
@@ -173,6 +171,13 @@ public:
         return mVisibleWorld;
     }
 
+    FloatSize GetMinVisibleWorldSize() const
+    {
+        return FloatSize(
+            CalculateVisibleWorldWidth(MaxZoom),
+            CalculateVisibleWorldHeight(MaxZoom));
+    }
+
     VisibleWorld const & GetVisibleWorldWithPixelOffset() const
     {
         return mVisibleWorldWithPixelOffset;
@@ -180,7 +185,7 @@ public:
 
     float const GetMaxWorldWidth() const
     {
-        return mMaxWorldWidth;
+        return mHalfMaxWorldWidth * 2.0f;
     }
 
     float const GetHalfMaxWorldWidth() const
@@ -190,7 +195,7 @@ public:
 
     float const GetMaxWorldHeight() const
     {
-        return mMaxWorldHeight;
+        return mHalfMaxWorldHeight * 2.0f;
     }
 
     float const GetHalfMaxWorldHeight() const
@@ -606,9 +611,7 @@ private:
     static float constexpr CloudPerspectiveZMax = 20.0f * CloudPerspectiveZMin; // Magic number: so that at this (furthest) Z, denominator is so large that clouds at virtualY=1.0 appear slightly above the horizon
 
     // Primary inputs
-    float const mMaxWorldWidth;
     float const mHalfMaxWorldWidth;
-    float const mMaxWorldHeight;
     float const mHalfMaxWorldHeight;
     float mZoom;
     vec2f mCam; // World coordinates
