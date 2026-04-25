@@ -71,7 +71,7 @@ void TaskThread::ThreadLoop(
     // Initialize thread
     //
 
-    threadManager->InitializeThisThread(threadTaskKind, threadName, threadTaskIndex);
+    threadManager->InitializeThisThread(threadTaskKind, std::nullopt, threadTaskIndex, threadName);
 
     //
     // Run loop

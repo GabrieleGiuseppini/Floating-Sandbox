@@ -30,10 +30,28 @@ ThreadPool::ThreadPool(
     // Start N-1 threads (main thread is one of them)
     for (size_t i = 0; i < parallelism - 1; ++i)
     {
-        std::string threadName = "FS TPool " + std::to_string(i + 1);
-        mThreads.emplace_back([this, threadName, i, &threadManager]()
+        // Decide cpu ID
+        std::optional<size_t> cpuId;
+        std::string threadName;
+        if (mThreadTaskKind == ThreadManager::ThreadTaskKind::Simulation)
+        {
+            // Take next fastest CPU
+            size_t cpuResourceIndex =
+                1 // Main thread
+                + i;
+            cpuId = threadManager.GetNthFastestCpu(cpuResourceIndex).CpuId;
+
+            threadName = "FS SimTPool " + std::to_string(i + 1);
+        }
+        else
+        {
+            threadName = "FS XTPool " + std::to_string(i + 1);
+        }
+
+        mThreads.emplace_back(
+            [this, cpuId, i, threadName, &threadManager]()
             {
-                ThreadLoop(threadName, i + 1, threadManager);
+                ThreadLoop(cpuId, i + 1, threadName, threadManager);
             });
     }
 }
@@ -110,15 +128,16 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
 }
 
 void ThreadPool::ThreadLoop(
-    std::string threadName,
+    std::optional<size_t> cpuId,
     size_t threadTaskIndex,
+    std::string const & threadName,
     ThreadManager & threadManager)
 {
     //
     // Initialize thread
     //
 
-    threadManager.InitializeThisThread(mThreadTaskKind, threadName, threadTaskIndex);
+    threadManager.InitializeThisThread(mThreadTaskKind, cpuId, threadTaskIndex, threadName);
 
     //
     // Run thread loop until thread pool is destroyed

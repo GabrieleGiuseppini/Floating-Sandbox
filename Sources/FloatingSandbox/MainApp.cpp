@@ -124,6 +124,8 @@ public:
 
 private:
 
+    static std::vector<ThreadManager::CpuInfo> MakeCpuResources();
+
     bool RunSecretTypingStateMachine(wxKeyEvent const & keyEvent);
 
 private:
@@ -259,19 +261,26 @@ bool MainApp::OnInit()
         // Create thread manager
         //
 
+        auto const cpuResources = MakeCpuResources();
+
         mThreadManager = std::make_unique<ThreadManager>(
             CalculateIsRenderingMultithreaded(bootSettings.DoForceNoMultithreadedRendering),
             CalculateInitialSimulationParallelism(CalculateIsRenderingMultithreaded(bootSettings.DoForceNoMultithreadedRendering)),
-            [this](ThreadManager::ThreadTaskKind, std::string const &, size_t)
+            cpuResources,
+            [this](ThreadManager::ThreadTaskKind, std::optional<size_t>, size_t, std::string const &)
             {
                 // No platform-specific initialization for PC
             });
 
         //
-        // Initialize this thread
+        // Initialize main thread
         //
 
-        mThreadManager->InitializeThisThread(ThreadManager::ThreadTaskKind::MainAndSimulation, "FS Main Thread", 0);
+        mThreadManager->InitializeThisThread(
+            ThreadManager::ThreadTaskKind::MainAndSimulation,
+            cpuResources[0].CpuId,
+            0,
+            "FS Main Thread");
 
         //
         // Initialize wxWidgets and language used for localization
@@ -415,6 +424,20 @@ int MainApp::FilterEvent(wxEvent & event)
 
     // Event not handled, continue processing
     return Event_Skip;
+}
+
+std::vector<ThreadManager::CpuInfo> MainApp::MakeCpuResources()
+{
+    std::vector<ThreadManager::CpuInfo> cpuResources;
+
+    for (size_t c = 0; c < ThreadManager::GetNumberOfProcessors(); ++c)
+    {
+        cpuResources.emplace_back(
+            0,
+            1.0f); // On PC we assume all processors have equal speed
+    }
+
+    return cpuResources;
 }
 
 bool MainApp::RunSecretTypingStateMachine(wxKeyEvent const & keyEvent)

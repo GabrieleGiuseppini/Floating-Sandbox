@@ -9,6 +9,7 @@
 #include "Log.h"
 #include "SysSpecifics.h"
 
+#include <algorithm>
 #include <cassert>
 
 #if FS_IS_OS_WINDOWS()
@@ -30,13 +31,19 @@ size_t ThreadManager::GetNumberOfProcessors()
 ThreadManager::ThreadManager(
     bool isRenderingMultithreaded,
     size_t simulationParallelism,
+    std::vector<CpuInfo> const & cpuResources,
     PlatformSpecificThreadInitializationFunction && platformSpecificThreadInitializationFunctor)
     : mIsRenderingMultithreaded(isRenderingMultithreaded)
     , mMaxSimulationParallelism(GetNumberOfProcessors())
+    , mCpuResources(SortCpuResources(cpuResources))
     , mPlatformSpecificThreadInitializationFunctor(std::move(platformSpecificThreadInitializationFunctor))
 {
+    assert(simulationParallelism <= cpuResources.size());
+    assert(cpuResources.size() <= GetNumberOfProcessors());
+
     LogMessage("ThreadManager: isRenderingMultithreaded=", (mIsRenderingMultithreaded ? "YES" : "NO"),
         " simulationParallelism=", simulationParallelism,
+        " cpuResources=[", mCpuResources.size(), "]",
         " maxSimulationParallelism=", mMaxSimulationParallelism);
 
     // Set parallelism
@@ -45,8 +52,9 @@ ThreadManager::ThreadManager(
 
 void ThreadManager::InitializeThisThread(
     ThreadTaskKind threadTaskKind,
-    std::string const & threadName,
-    size_t threadTaskIndex)
+    std::optional<size_t> cpuId,
+    size_t threadTaskIndex,
+    std::string const & threadName)
 {
     //
     // Initialize floating point handling
@@ -59,7 +67,7 @@ void ThreadManager::InitializeThisThread(
     EnableFloatingPointExceptions();
 #endif
 
-    mPlatformSpecificThreadInitializationFunctor(threadTaskKind, threadName, threadTaskIndex);
+    mPlatformSpecificThreadInitializationFunctor(threadTaskKind, cpuId, threadTaskIndex, threadName);
 }
 
 size_t ThreadManager::GetThisThreadProcessor()
@@ -102,4 +110,18 @@ void ThreadManager::SetSimulationParallelism(size_t parallelism)
 ThreadPool & ThreadManager::GetSimulationThreadPool()
 {
     return *mSimulationThreadPool;
+}
+
+std::vector<ThreadManager::CpuInfo> ThreadManager::SortCpuResources(std::vector<CpuInfo> const & src)
+{
+    std::vector<ThreadManager::CpuInfo> newCpuResources = src;
+    std::sort(
+        newCpuResources.begin(),
+        newCpuResources.end(),
+        [](CpuInfo const & c1, CpuInfo const & c2) -> bool
+        {
+            return c1.Speed > c2.Speed;
+        });
+
+    return newCpuResources;
 }

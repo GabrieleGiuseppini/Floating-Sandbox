@@ -58,8 +58,9 @@ public:
 private:
 
     void ThreadLoop(
-        std::string threadName,
+        std::optional<size_t> cpuId,
         size_t threadTaskIndex,
+        std::string const & threadName,
         ThreadManager & threadManager);
 
     void RunRemainingTasksLoop();
