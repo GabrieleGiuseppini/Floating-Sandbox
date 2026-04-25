@@ -99,13 +99,10 @@ private:
     // The condition variable to wake up threads
     std::condition_variable mWorkerThreadSignal;
 
-    // The tasks assigned to threads
+    // The tasks assigned to threads; serves also as semaphore.
+    // Populated by main thread in a lock, cleared by thread in a lock.
+    // Sized for all threads
     std::vector<Task const *> mThreadAssignedTasks;
-
-    // Counts how many task-assigned tasks have yet to complete;
-    // serves as a semaphore
-    // TODO: see if still needed
-    std::atomic<int> mThreadAssignedTasksToComplete;
 
     // Number of task-assigned tasks that have completed. Trails opposite of mTasksToComplete
     std::atomic<size_t> mThreadAssignedCompletedTasks;

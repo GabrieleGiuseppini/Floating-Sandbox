@@ -19,7 +19,6 @@ ThreadPool::ThreadPool(
     , mThreads()
     , mWorkerThreadSignal()
     , mThreadAssignedTasks()
-    , mThreadAssignedTasksToComplete(0)
     , mThreadAssignedCompletedTasks(0)
     , mIsStop(false)
 {
@@ -48,6 +47,8 @@ ThreadPool::ThreadPool(
     //
     // Start N-1 threads (calling thread is one of them)
     //
+
+    mThreadAssignedTasks.resize(parallelism - 1);
 
     for (size_t i = 0; i < parallelism - 1; ++i)
     {
@@ -95,7 +96,7 @@ ThreadPool::~ThreadPool()
         mIsStop = true;
     }
 
-    // Signal threads
+    // Signal threads so they can check stop flag
     mWorkerThreadSignal.notify_all();
 
     // Wait for all threads to exit
@@ -137,13 +138,16 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
     {
         std::unique_lock const lock{ mLock };
 
-        mThreadAssignedTasks.clear();
-        for (size_t t = 0; t < tasksAssignedToThreads; ++t)
+        size_t t;
+        for (t = 0; t < tasksAssignedToThreads; ++t)
         {
-            mThreadAssignedTasks.push_back(&tasks[t + 1]); // Reserve first for caller
+            mThreadAssignedTasks[t] = &tasks[t + 1]; // Reserve first task for caller
+        }
+        for (; t < mThreads.size() - 1; ++t)
+        {
+            mThreadAssignedTasks[t] = nullptr; // No tasks for extra threads
         }
 
-        mThreadAssignedTasksToComplete.store(static_cast<int>(tasksAssignedToThreads));
         mThreadAssignedCompletedTasks.store(0);
     }
 
@@ -181,6 +185,7 @@ void ThreadPool::ThreadLoop(
     ThreadManager & threadManager)
 {
     assert(threadTaskIndex > 0);
+    assert(mThreadAssignedTasks.size() == mThreads.size() - 1);
 
     //
     // Initialize thread
@@ -194,6 +199,7 @@ void ThreadPool::ThreadLoop(
 
     while (true)
     {
+        Task const * task = nullptr;
         {
             std::unique_lock lock{ mLock };
 
@@ -206,10 +212,10 @@ void ThreadPool::ThreadLoop(
             // Wait for signal that tasks have been queued (or that we've been stopped)
             mWorkerThreadSignal.wait(
                 lock,
-                [this]()
+                [this, threadTaskIndex]()
                 {
                     // Condition to leave the wait
-                    return mIsStop || mThreadAssignedTasksToComplete.load() > 0;
+                    return mIsStop || mThreadAssignedTasks[threadTaskIndex - 1] != nullptr;
                 });
 
             if (mIsStop)
@@ -217,21 +223,25 @@ void ThreadPool::ThreadLoop(
                 // We're done!
                 break;
             }
+
+            // Remove semaphore, while we're in a lock
+            std::swap(task, mThreadAssignedTasks[threadTaskIndex - 1]);
         }
 
         // Tasks have been queued...
+        assert(task != nullptr);
 
         //
         // Run the task
         //
 
-        assert(threadTaskIndex - 1 < mThreadAssignedTasks.size());
+        // TODOTEST
+        //LogMessage("Running thread-assigned task ", threadTaskIndex - 1);
 
-        LogMessage("Running task ", threadTaskIndex);
+        RunTask(*task);
 
-        RunTask(*mThreadAssignedTasks[threadTaskIndex - 1]);
-
-        LogMessage("Completed task ", threadTaskIndex);
+        // TODOTEST
+        //LogMessage("Completed thread-assigned task ", threadTaskIndex - 1);
 
         //
         // Signal task completion
