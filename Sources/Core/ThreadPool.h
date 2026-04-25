@@ -42,12 +42,12 @@ public:
     }
 
     /*
-     * The first task is guaranteed to run on the main thread.
+     * The first task is guaranteed to run on the calling thread.
      */
     void Run(std::vector<Task> const & tasks);
 
     /*
-     * The first task is guaranteed to run on the main thread.
+     * The first task is guaranteed to run on the calling thread.
      */
     inline void RunAndClear(std::vector<Task> & tasks)
     {
@@ -74,7 +74,7 @@ private:
     // Our thread lock
     std::mutex mLock;
 
-    // Our threads (N-1, as main thread also plays)
+    // Our threads (N-1, as calling thread also plays)
     std::vector<std::thread> mThreads;
 
     // The condition variable to wake up threads
@@ -85,7 +85,7 @@ private:
     std::vector<Task> const * mTasksToRun;
 
     // Also serves as proxy to index of next task to pick.
-    // Begins with N-1, as last task is for main thread, and can go lower than zero if too many threads are eager to work
+    // Begins with N-1, as last task is for calling thread, and can go lower than zero if too many threads are eager to work
     std::atomic<int> mTasksToComplete;
 
     // Number of tasks that still have to complete. Trails opposite of mTasksToComplete

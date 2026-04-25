@@ -27,7 +27,7 @@ ThreadPool::ThreadPool(
 
     assert(parallelism > 0);
 
-    // Start N-1 threads (main thread is one of them)
+    // Start N-1 threads (calling thread is one of them)
     for (size_t i = 0; i < parallelism - 1; ++i)
     {
         // Decide cpu ID
@@ -35,9 +35,12 @@ ThreadPool::ThreadPool(
         std::string threadName;
         if (mThreadTaskKind == ThreadManager::ThreadTaskKind::Simulation)
         {
+            // Note: here we assume there is only one Simulation thread pool, hence
+            // we eagerly steal the first N CPUs
+
             // Take next fastest CPU
             size_t cpuResourceIndex =
-                1 // Main thread
+                1 // Calling thread
                 + i;
             cpuId = threadManager.GetNthFastestCpu(cpuResourceIndex).CpuId;
 
@@ -97,17 +100,17 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
         std::unique_lock const lock{ mLock };
 
         mTasksToRun = &tasks;
-        mTasksToComplete.store(static_cast<int>(tasks.size()) - 1); // Take already the main thread one into account
-        mCompletedTasks.store(1); // Take already the main thread one into account
+        mTasksToComplete.store(static_cast<int>(tasks.size()) - 1); // Take already the calling thread one into account
+        mCompletedTasks.store(1); // Take already the calling thread one into account
     }
 
     // Signal threads that tasks are available
     mWorkerThreadSignal.notify_all();
 
-    // Run the Nth task on the main thread
+    // Run the Nth task on the calling thread
     RunTask(tasks.back());
 
-    // Run the remaining tasks on main thread, if needed
+    // Run the remaining tasks on calling thread, if needed
     RunRemainingTasksLoop();
 
     // Only returns when there are no more tasks
