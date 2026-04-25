@@ -18,20 +18,41 @@ ThreadPool::ThreadPool(
     , mLock()
     , mThreads()
     , mWorkerThreadSignal()
-    , mTasksToRun(nullptr)
-    , mTasksToComplete(0)
-    , mCompletedTasks(0)
+    , mThreadAssignedTasks()
+    , mThreadAssignedTasksToComplete(0)
+    , mThreadAssignedCompletedTasks(0)
     , mIsStop(false)
 {
     LogMessage("ThreadPool: creating thread pool with parallelism=", parallelism);
 
     assert(parallelism > 0);
 
+    //
+    // Store calling thread
+    //
+
+    std::optional<ThreadManager::CpuInfo> callingThreadCpuInfo;
+    if (mThreadTaskKind == ThreadManager::ThreadTaskKind::Simulation)
+    {
+        // Note: here we assume there is only one Simulation thread pool, hence
+        // we eagerly steal the first N CPUs
+
+        // Take fastest CPU
+        callingThreadCpuInfo = threadManager.GetNthFastestCpu(0);
+    }
+
+    mThreads.emplace_back(
+        std::nullopt,
+        callingThreadCpuInfo);
+
+    //
     // Start N-1 threads (calling thread is one of them)
+    //
+
     for (size_t i = 0; i < parallelism - 1; ++i)
     {
         // Decide cpu ID
-        std::optional<size_t> cpuId;
+        std::optional<ThreadManager::CpuInfo> cpuInfo;
         std::string threadName;
         if (mThreadTaskKind == ThreadManager::ThreadTaskKind::Simulation)
         {
@@ -42,7 +63,7 @@ ThreadPool::ThreadPool(
             size_t cpuResourceIndex =
                 1 // Calling thread
                 + i;
-            cpuId = threadManager.GetNthFastestCpu(cpuResourceIndex).CpuId;
+            cpuInfo = threadManager.GetNthFastestCpu(cpuResourceIndex);
 
             threadName = "FS SimTPool " + std::to_string(i + 1);
         }
@@ -52,10 +73,16 @@ ThreadPool::ThreadPool(
         }
 
         mThreads.emplace_back(
-            [this, cpuId, i, threadName, &threadManager]()
-            {
-                ThreadLoop(cpuId, i + 1, threadName, threadManager);
-            });
+            std::thread(
+                [this, cpuInfo, i, threadName, &threadManager]()
+                {
+                    ThreadLoop(
+                        cpuInfo.has_value() ? cpuInfo->CpuId : std::optional<size_t>(),
+                        i + 1,
+                        threadName,
+                        threadManager);
+                }),
+            cpuInfo);
     }
 }
 
@@ -72,20 +99,21 @@ ThreadPool::~ThreadPool()
     mWorkerThreadSignal.notify_all();
 
     // Wait for all threads to exit
-    for (auto & t : mThreads)
+    for (size_t t = 1; t < mThreads.size(); ++t)
     {
-        t.join();
+        assert(mThreads[t].Thread.has_value());
+
+        mThreads[t].Thread->join();
     }
 }
 
 void ThreadPool::Run(std::vector<Task> const & tasks)
 {
     assert(!tasks.empty());
-    assert(mTasksToComplete <= 0);
 
     // Shortcut to avoid paying synchronization penalties
     // in trivial cases
-    if (mThreads.empty() || tasks.size() == 1)
+    if (mThreads.size() < 2 || tasks.size() == 1)
     {
         for (Task const & task : tasks)
         {
@@ -95,34 +123,50 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
         return;
     }
 
-    // Queue all the tasks
+    //
+    // Tasks run:
+    //  - Task 0: calling thread
+    //  - Task 1: thread 1
+    //  - Task 2: thread 2
+    //  - Task N: thread N
+    //  - Tasks N+1, ...: calling thread
+    //
+
+    // Assign tasks to threads
+    size_t const tasksAssignedToThreads = std::min(tasks.size() - 1, mThreads.size());
     {
         std::unique_lock const lock{ mLock };
 
-        mTasksToRun = &tasks;
-        mTasksToComplete.store(static_cast<int>(tasks.size()) - 1); // Take already the calling thread one into account
-        mCompletedTasks.store(1); // Take already the calling thread one into account
+        mThreadAssignedTasks.clear();
+        for (size_t t = 0; t < tasksAssignedToThreads; ++t)
+        {
+            mThreadAssignedTasks.push_back(&tasks[t + 1]); // Reserve first for caller
+        }
+
+        mThreadAssignedTasksToComplete.store(static_cast<int>(tasksAssignedToThreads));
+        mThreadAssignedCompletedTasks.store(0);
     }
 
     // Signal threads that tasks are available
     mWorkerThreadSignal.notify_all();
 
-    // Run the Nth task on the calling thread
-    RunTask(tasks.back());
+    // Run our own task - the calling thread's task
+    RunTask(tasks[0]);
 
     // Run the remaining tasks on calling thread, if needed
-    RunRemainingTasksLoop();
-
-    // Only returns when there are no more tasks
-    assert(mTasksToComplete.load() <= 0);
+    // (we assume there are few here, at most 1)
+    for (size_t t = 1 + tasksAssignedToThreads; t < tasks.size(); ++t)
+    {
+        RunTask(tasks[t]);
+    }
 
     // Wait until all tasks are completed
     {
         // ...in a spinlock
         while (true)
         {
-            assert(mCompletedTasks.load() >= 0 && mCompletedTasks.load() <= tasks.size());
-            if (mCompletedTasks.load() == tasks.size())
+            assert(mThreadAssignedCompletedTasks.load() >= 0 && mThreadAssignedCompletedTasks.load() <= tasksAssignedToThreads);
+            if (mThreadAssignedCompletedTasks.load() == tasksAssignedToThreads)
             {
                 break;
             }
@@ -136,6 +180,8 @@ void ThreadPool::ThreadLoop(
     std::string const & threadName,
     ThreadManager & threadManager)
 {
+    assert(threadTaskIndex > 0);
+
     //
     // Initialize thread
     //
@@ -163,8 +209,7 @@ void ThreadPool::ThreadLoop(
                 [this]()
                 {
                     // Condition to leave the wait
-                    // Note: other threads may empty mTasksToComplete - that's fine, this thread won't run
-                    return mIsStop || mTasksToComplete.load() > 0;
+                    return mIsStop || mThreadAssignedTasksToComplete.load() > 0;
                 });
 
             if (mIsStop)
@@ -176,44 +221,26 @@ void ThreadPool::ThreadLoop(
 
         // Tasks have been queued...
 
-        // ...run the remaining tasks
-        RunRemainingTasksLoop();
-    }
-
-    LogMessage("Thread exiting");
-}
-
-void ThreadPool::RunRemainingTasksLoop()
-{
-    //
-    // Run tasks until queue is empty
-    //
-
-    while (true)
-    {
-        //
-        // De-queue a task
-        //
-
-        int const oldTasksToComplete = mTasksToComplete.fetch_sub(1);
-        if (oldTasksToComplete <= 0)
-        {
-            // No more tasks
-            return;
-        }
-
         //
         // Run the task
         //
 
-        RunTask((*mTasksToRun)[oldTasksToComplete - 1]);
+        assert(threadTaskIndex - 1 < mThreadAssignedTasks.size());
+
+        LogMessage("Running task ", threadTaskIndex);
+
+        RunTask(*mThreadAssignedTasks[threadTaskIndex - 1]);
+
+        LogMessage("Completed task ", threadTaskIndex);
 
         //
         // Signal task completion
         //
 
-        ++mCompletedTasks;
+        ++mThreadAssignedCompletedTasks;
     }
+
+    LogMessage("Thread exiting");
 }
 
 void ThreadPool::RunTask(Task const & task)

@@ -13,6 +13,7 @@
 #include <functional>
 #include <mutex>
 #include <deque>
+#include <optional>
 #include <string>
 #include <thread>
 #include <vector>
@@ -38,7 +39,13 @@ public:
 
     size_t GetParallelism() const
     {
-        return mThreads.size() + 1;
+        return mThreads.size();
+    }
+
+    std::optional<ThreadManager::CpuInfo> const & GetThreadCpuInfo(size_t threadIndex) // Calling thread is 0
+    {
+        assert(threadIndex < mThreads.size());
+        return mThreads[threadIndex].CpuInfo;
     }
 
     /*
@@ -63,10 +70,22 @@ private:
         std::string const & threadName,
         ThreadManager & threadManager);
 
-    void RunRemainingTasksLoop();
-
     void RunTask(Task const & task);
 
+private:
+
+    struct ThreadData
+    {
+        std::optional<std::thread> Thread; // Null for calling thread
+        std::optional<ThreadManager::CpuInfo> CpuInfo; // Only when assigned
+
+        ThreadData(
+            std::optional<std::thread> && thread,
+            std::optional<ThreadManager::CpuInfo> const & cpuInfo)
+            : Thread(std::move(thread))
+            , CpuInfo(cpuInfo)
+        { }
+    };
 private:
 
     ThreadManager::ThreadTaskKind const mThreadTaskKind;
@@ -74,22 +93,22 @@ private:
     // Our thread lock
     std::mutex mLock;
 
-    // Our threads (N-1, as calling thread also plays)
-    std::vector<std::thread> mThreads;
+    // Our threads, including calling thread
+    std::vector<ThreadData> mThreads;
 
     // The condition variable to wake up threads
     std::condition_variable mWorkerThreadSignal;
 
-    // The tasks currently awaiting to be picked up;
-    // threads takes all but the last one
-    std::vector<Task> const * mTasksToRun;
+    // The tasks assigned to threads
+    std::vector<Task const *> mThreadAssignedTasks;
 
-    // Also serves as proxy to index of next task to pick.
-    // Begins with N-1, as last task is for calling thread, and can go lower than zero if too many threads are eager to work
-    std::atomic<int> mTasksToComplete;
+    // Counts how many task-assigned tasks have yet to complete;
+    // serves as a semaphore
+    // TODO: see if still needed
+    std::atomic<int> mThreadAssignedTasksToComplete;
 
-    // Number of tasks that still have to complete. Trails opposite of mTasksToComplete
-    std::atomic<size_t> mCompletedTasks;
+    // Number of task-assigned tasks that have completed. Trails opposite of mTasksToComplete
+    std::atomic<size_t> mThreadAssignedCompletedTasks;
 
     // Set to true when have to stop
     bool mIsStop;

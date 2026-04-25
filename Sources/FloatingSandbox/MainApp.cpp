@@ -267,9 +267,11 @@ bool MainApp::OnInit()
             CalculateIsRenderingMultithreaded(bootSettings.DoForceNoMultithreadedRendering),
             CalculateInitialSimulationParallelism(CalculateIsRenderingMultithreaded(bootSettings.DoForceNoMultithreadedRendering)),
             cpuResources,
-            [this](ThreadManager::ThreadTaskKind, std::optional<size_t>, size_t, std::string const &)
+            [this](ThreadManager::ThreadTaskKind threadTaskKind, std::optional<size_t> cpuId, size_t threadTaskIndex, std::string const & threadName)
             {
                 // No platform-specific initialization for PC
+                LogMessage("  Thread type ", int(threadTaskKind), ": cpu=", cpuId.has_value() ? std::to_string(*cpuId) : "N/A",
+                    " index=", threadTaskIndex, " name=", threadName);
             });
 
         //
@@ -433,7 +435,7 @@ std::vector<ThreadManager::CpuInfo> MainApp::MakeCpuResources()
     for (size_t c = 0; c < ThreadManager::GetNumberOfProcessors(); ++c)
     {
         cpuResources.emplace_back(
-            0,
+            c,
             1.0f); // On PC we assume all processors have equal speed
     }
 
