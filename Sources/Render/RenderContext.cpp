@@ -583,7 +583,7 @@ void RenderContext::Draw(float currentSimulationTime)
 
                 mInnerContext->worldRenderContext->RenderDrawStars(renderParameters);
 
-                mInnerContext->worldRenderContext->RenderDrawCloudsAndBackgroundLightnings(renderParameters);
+                mInnerContext->worldRenderContext->RenderDrawSkyCloudsAndBackgroundLightnings(renderParameters);
 
                 // Render ocean opaquely, over sky
                 mInnerContext->worldRenderContext->RenderDrawOcean(true, renderParameters);
@@ -616,6 +616,7 @@ void RenderContext::Draw(float currentSimulationTime)
 
                 // Render tornadoes, in the foreground
                 mInnerContext->worldRenderContext->RenderDrawTornadoes(DepthKindType::Foreground, renderParameters);
+                mInnerContext->worldRenderContext->RenderDrawTornadoClouds(renderParameters);
 
                 mInnerContext->worldRenderContext->RenderDrawAMBombPreImplosions(renderParameters);
 

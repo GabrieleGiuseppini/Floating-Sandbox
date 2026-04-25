@@ -29,6 +29,7 @@ void InteractiveBodies::Update(
     std::vector<std::unique_ptr<Ship>> const & ships,
     Npcs & npcs,
     OceanSurface & oceanSurface,
+    Clouds & clouds,
     float currentSimulationTime,
     SimulationParameters const & simulationParameters)
 {
@@ -58,6 +59,9 @@ void InteractiveBodies::Update(
     //
     // Tornadoes
     //
+
+    float maxTornadoVisibilityAlpha = 0.0f;
+    bool const wereTornadoesEmpty = mTornadoes.empty();
 
     for (auto it = mTornadoes.begin(); it != mTornadoes.end(); /* incremented in loop */)
     {
@@ -133,6 +137,8 @@ void InteractiveBodies::Update(
                 }
             }
         }
+
+        maxTornadoVisibilityAlpha = std::max(maxTornadoVisibilityAlpha, tornado.CurrentVisibilityAlpha);
 
         if (tornado.CurrentForceMultiplier != tornado.TargetForceMultiplier)
         {
@@ -237,6 +243,20 @@ void InteractiveBodies::Update(
 
         // Unconditionally, a tornado has updated - or has been removed
         mAreTornadoesDirtyForRendering = true;
+    }
+
+    // Manage state machine with Clouds
+    if (mTornadoes.empty())
+    {
+        if (!wereTornadoesEmpty)
+        {
+            // Turn off
+            clouds.UpdateTornadoClouds(0.0f);
+        }
+    }
+    else
+    {
+        clouds.UpdateTornadoClouds(LinearStep(0.0f, 0.2f, maxTornadoVisibilityAlpha));
     }
 }
 

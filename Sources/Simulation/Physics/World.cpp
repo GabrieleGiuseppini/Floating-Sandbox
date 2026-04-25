@@ -1581,7 +1581,7 @@ void World::Update(
 
         assert(mNpcs);
 
-        mInteractiveBodies.Update(mAllShips, *mNpcs, mOceanSurface, mCurrentSimulationTime, simulationParameters);
+        mInteractiveBodies.Update(mAllShips, *mNpcs, mOceanSurface, mClouds, mCurrentSimulationTime, simulationParameters);
     }
 
     for (auto & ship : mAllShips)

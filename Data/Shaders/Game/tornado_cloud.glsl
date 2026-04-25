@@ -4,13 +4,15 @@
 #define out varying
 
 //
+// Re-using Clouds' VBO
+//
 // Clouds' inputs are directly in NDC coordinates
 //
 
 // Inputs
-in vec4 inCloud1; // Position (NDC) (vec2), TextureCoordinates (vec2)
-in vec4 inCloud2; // VirtualTextureCoordinates (vec2), Darkening, Alpha
-in vec2 inCloud3; // VolumetricGrowthProgress, TextureWidthAdjust (widest dimension)
+in vec4 inTornadoCloud1; // Position (NDC) (vec2), TextureCoordinates (vec2)
+in vec4 inTornadoCloud2; // VirtualTextureCoordinates (vec2), Darkening, Alpha
+in vec2 inTornadoCloud3; // VolumetricGrowthProgress, TextureWidthAdjust (widest dimension)
 
 // Outputs
 out vec2 vertexTextureCoords;
@@ -22,14 +24,14 @@ out float vertexTextureWidthAdjust;
 
 void main()
 {
-    vertexTextureCoords = inCloud1.zw;
-    vertexVirtualTextureCoords = inCloud2.xy;
-    vertexDarkness = inCloud2.z;
-    vertexAlpha = inCloud2.w;
-    vertexVolumetricGrowthProgress = inCloud3.x;
-    vertexTextureWidthAdjust = inCloud3.y;
+    vertexTextureCoords = inTornadoCloud1.zw;
+    vertexVirtualTextureCoords = inTornadoCloud2.xy;
+    vertexDarkness = inTornadoCloud2.z;
+    vertexAlpha = inTornadoCloud2.w;
+    vertexVolumetricGrowthProgress = inTornadoCloud3.x;
+    vertexTextureWidthAdjust = inTornadoCloud3.y;
 
-    gl_Position = vec4(inCloud1.xy, -1.0, 1.0);
+    gl_Position = vec4(inTornadoCloud1.xy, -1.0, 1.0);
 }
 
 ###FRAGMENT-120
@@ -49,9 +51,7 @@ in float vertexTextureWidthAdjust;
 
 // The texture
 uniform sampler2D paramCloudsAtlasTexture;
-#ifdef DETAILED_CLOUDS
 uniform sampler2D paramNoiseTexture;
-#endif
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
@@ -62,8 +62,6 @@ void main()
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
 
-#ifdef DETAILED_CLOUDS
-
     // Virtual texture coords -> Polar coords
     // (r, a) (r=[0.0, 1.0], a=[0.0, 2PI CCW from W])        
     vec2 ra = vec2(
@@ -71,7 +69,7 @@ void main()
         atan(vertexVirtualTextureCoords.y, vertexVirtualTextureCoords.x));
 
     // Evolve with time, and use as noise sample coords
-    #define SPEED 0.01
+    #define SPEED 0.02
     #define DENSITY 6.0
     vec2 noiseCoords = vec2(ra.x / DENSITY - vertexVolumetricGrowthProgress * SPEED, ra.y / (2. * PI));
     float n = texture2D(paramNoiseTexture, noiseCoords).x; // [0.0, 1.0]    
@@ -91,12 +89,21 @@ void main()
     // Sample cloud texture using noise as offset
     vec4 cloudColor = texture2D(paramCloudsAtlasTexture, vertexTextureCoords + vec2(n));
 
-#else
+    // Merge with "smoke"
+    //vec2 smokeCoords = (vertexVirtualTextureCoords + vec2(n)) * vec2(3., .5) * 1.2;
+    vec2 smokeCoords = (vertexVirtualTextureCoords) * vec2(3., .4) * 1.2;
+    float smokeSample = texture2D(paramNoiseTexture, smokeCoords).x; // [0.0, 1.0]    
+    //cloudColor.rgb = mix(cloudColor.rgb * vertexDarkness, vec3(smokeSample), smokeSample * .2);
+    //cloudColor.rgb = vec3(smokeSample * 0.8);
 
-    // Sample texture
-    vec4 cloudColor = texture2D(paramCloudsAtlasTexture, vertexTextureCoords);
 
-#endif
+    float distanceFromBorder = 
+        1.0 - smoothstep(0.5, 0.85, max(abs(vertexVirtualTextureCoords.x), abs(vertexVirtualTextureCoords.y)));
+    //cloudColor.rgb = mix(cloudColor.rgb * vertexDarkness, vec3(smokeSample), smokeSample * .1 * distanceFromBorder);
+    cloudColor.rgb = mix(cloudColor.rgb * vertexDarkness, vec3(smokeSample), smokeSample * distanceFromBorder);
+
+
+
 
     // Adjust for ambient light and mooncolor and (storm) darkness
     gl_FragColor = vec4(
@@ -104,6 +111,7 @@ void main()
             cloudColor.rgb,
             paramEffectiveMoonlightColor,
             paramEffectiveAmbientLightIntensity,
-            lampToolIntensity) * vertexDarkness,
+            //lampToolIntensity) * vertexDarkness,
+            lampToolIntensity),
         cloudColor.a * vertexAlpha);
 } 

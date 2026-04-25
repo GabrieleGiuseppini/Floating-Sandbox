@@ -354,9 +354,8 @@
 		        //vec3f(0.55f, 0.55f, 0.55f), // Cylinder
 		+ Send beta, bump up version
 		+ Don't commit until feedback
-
-		- Storm supercell above it
-			= Option 1: InteractiveBodies uploads straight to World/RenderContext
+		X Storm supercell above it
+			- Option 1: InteractiveBodies uploads straight to World/RenderContext
 				- ...which does parallax
 
 				- Buffer:
@@ -377,7 +376,7 @@
 					- With zero clouds
 					- During storm
 
-			= Option 2: new shader & betch, parallel to tornado
+			X Option 2: new shader & betch, parallel to tornado
 				= WorldRenderContext: 
 					+ New buffer & VBO, "tornadoCloud"
 					+ OrthoMatrix, & Time
@@ -428,23 +427,102 @@
 			- If works:
 				- Add to Android port plan: rendering of cloud
 
-		- Alternatives to cloud:
+		= Alternatives to cloud:
+			= Storm clouds rolling
+				! Via Clouds container
+				+ 1: Sim
+					+ Clouds:
+						+ New container for TornadoClouds
+							+ deque
+							+ Semantics differences: 
+								+ Y is meant in a render-defined band
+						+ void ToggleTornadoClouds(bool enabled)
+							+ Stores in state, mAreTornadoCloudsEnabled
+						+ Update: TornadoCloud "section":
+							+ If just enabled: populate all
+								+ Alpha=0
+									+ New cloud member
+									+ New vertex member
+									+ Use at shader
+							+ Whenever one is popped, one is inserted (as long as tornado enabled)
+								+ Better strategy, always inserting and nuking "at end"
+									+ Tornado::Update:
+										+ Calc hasStartedEmpty
+										+ Update/pop; calc max alpha
+										+ @ end:
+											+ If now empty:
+												+ if !hasStartedEmpty: 
+													+ Clouds::UpdateTornadoClouds(0.0)
+											+ Else:
+												+ Clouds::UpdateTornadoClouds(max alpha)
+									+ Clouds::UpdateTornadoClouds(alpha)
+										+ mTornadoCloudsAlpha = alpha
+									+ Clouds::Update(.)
+										+ if mTornadoCloudsAlpha > 0.0f:
+											+ if empty:
+												+ populate
+											+ update, using this alpha
+										+ else if !empty:
+											+ clear
+							+ Update alpha (target depends on mAreTornadoCloudsEnabled)
+							+ Dark
+					+ De/Activate from InteractiveBodies::Update
+						+ Takes Clouds
+				= 2: Render
+					+ UploadCloudStart: takes "sky" count and "tornado" count
+						+ Stores Sky count
+					= UploadCloud -> UploadSkyCloud and UploadTornadoCloud
+						= UploadTornadoCloud:
+							= ScaleMultiplier:
+								+ Linear mapping of 1/zoom onto empiric range
+									+ Need MinZoom, calc'd as constant at ViewModel cctor
+							= NDC x:
+								+ From cloud data, and own parallax - based on cam only (like clouds), no zoom
+							= NDC y:
+								+ World->NDC for TornadoHeight, plus cloud's Y scaled into constant-driven band, and scaled with ScaleMultiplier
+								+ Band height and cloud height are fixed in world coords; converted to NDC
+							= Size: from scale and ScaleMultiplier
+								+ But elongate along the x axis
+								+ height needs to become way smaller when from far (no danger there)
+								- Bottom of band is cool; we need to make it way taller above now							
+					+ Render: 
+						+ Clouds->SkyClouds, TornadoClouds
+						+ RenderPrepare: should be untouched
+						+ RenderDrawSkyClouds, RenderDrawTornadoClouds
+
+					- !!! See if cool to apply same smoke thing to clouds:
+						vec2 smokeCoords = (vertexTextureCoords + vec2(n)) * 4.;
+						// Perlin_4_32_043
+						float smokeSample = texture2D(paramNoiseTexture, smokeCoords).x; // [0.0, 1.0]    
+						//cloudColor.rgb = mix(cloudColor.rgb, vec3(smokeSample), smokeSample);
+						cloudColor.rgb = vec3(smokeSample);
+
+
+				- Test:
+					- Canvas resize (-> perspective)
+					- With storm
+
+				- Move UploadTornadoClouds() back to inlined
+
+				- Global darkening
+					- Using min among all sources
+
+				- Don't make tornado y go below 0.0 (but ok above)
+
+				- If works:
+					- Add to Android port plan: 
+						- Render:
+							- Clouds shader changes
+							- Clouds vertex changes
+							- Sky/Tornado separation
+
 			- Cluster of clouds above tornado
 				- Option 1: actual clouds, fully dark
 					- Ad-hoc upload (i.e. outside of Clouds container) as we have to calc our own NDC coords
 				- Option 2: using the same shader - but how to make shape?
-			- Storm clouds rolling
-				- In background might be enough
-				- Via Clouds container
-
-			- Darkening
-				- Using min among all sources
-
-			- If works:
-				- Add to Android port plan: TODO
 
 		- P.S: One last thing I nearly forgot: in the current beta, when you pause and then use the Tornado slider, it'll still spawn every severity meter spawned when paused, 
-		  but only for a split second when you unpause. Not something that necessarily needs to be addressed, only if you think it's an issue that should be or not for the effort it'd take
+		  but only for a split second when you unpause. Not something that necessarily needs to be addressed, only if you think it's an issue that should be or not for the effort it'd take		
 
 		- Tornado also as phenomenon ?
 			- Spawned by InteractiveBodies? But then it's not "interactive" bodies anymore....
@@ -462,6 +540,12 @@
 	- See ocean floor custom settings bug on community server
 
 	- See Longhorn's "The electrical panel fails to render a bit above 200 elements and the ship in question will no longer save, freezing in the "Checking ship..." dialogue."
+
+	- "Water Soluble Metal"
+		! Disintegrates when gets water in
+		- Not hull
+		- New property: WaterSolubility, optional, default = 0.0
+		- At Rot (low-freq), if f(quantity of water in, waterSolubility): destroy one connected spring
 
 	+ Fix Mia's crash
 		+ ImageTools::InternalResizeDimension_BoxFilter

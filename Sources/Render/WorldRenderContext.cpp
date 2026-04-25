@@ -35,6 +35,7 @@ WorldRenderContext::WorldRenderContext(
     , mLightningVBO()
     , mLightningVBOAllocatedVertexSize(0u)
     , mCloudVertexBuffer()
+    , mSkyCloudCount(0u)
     , mCloudVBO()
     , mCloudVBOAllocatedVertexSize(0u)
     , mLandVertexBuffer()
@@ -85,6 +86,7 @@ WorldRenderContext::WorldRenderContext(
     , mStarVAO()
     , mLightningVAO()
     , mCloudVAO()
+    , mTornadoCloudVAO()
     , mLandVAO()
     , mOceanBasicVAO()
     , mOceanDetailedVAO()
@@ -256,14 +258,14 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     // Describe vertex attributes
-    static_assert(sizeof(CloudVertex) == (4 + 4 + 1) * sizeof(float));
+    static_assert(sizeof(CloudVertex) == (4 + 4 + 2) * sizeof(float));
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud1));
     glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud1), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)0);
     glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud2));
     glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud2), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)(4 * sizeof(float)));
     glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud3));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud3), 1, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)((4 + 4) * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud3), 2, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)((4 + 4) * sizeof(float)));
     CheckOpenGLError();
 
     // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
@@ -272,6 +274,34 @@ WorldRenderContext::WorldRenderContext(
 
     glBindVertexArray(0);
 
+    //
+    // Initialize Tornado Cloud VAO
+    //
+    // Note: reusing the Cloud VBO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mTornadoCloudVAO = tmpGLuint;
+
+    glBindVertexArray(*mTornadoCloudVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
+    static_assert(sizeof(CloudVertex) == (4 + 4 + 2) * sizeof(float));
+    glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::TornadoCloud1));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::TornadoCloud1), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::TornadoCloud2));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::TornadoCloud2), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)(4 * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::TornadoCloud3));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::TornadoCloud3), 2, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)((4 + 4) * sizeof(float)));
+    CheckOpenGLError();
+
+    // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+    // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
+    ////mGlobalRenderContext.GetElementIndices().Bind()
+
+    glBindVertexArray(0);
 
     //
     // Initialize Land VAO
@@ -740,6 +770,8 @@ void WorldRenderContext::InitializeCloudTextures()
     mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::CloudsBasic>();
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsDetailed>();
     mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::CloudsDetailed>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::TornadoCloud>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::TornadoCloud>();
 }
 
 void WorldRenderContext::InitializeWorldTextures()
@@ -940,15 +972,183 @@ void WorldRenderContext::UploadLightningsEnd()
     // Nop
 }
 
-void WorldRenderContext::UploadCloudsStart(size_t cloudCount)
+void WorldRenderContext::UploadCloudsStart(
+    size_t skyCloudCount,
+    size_t tornadoCloudCount)
 {
     //
     // Clouds are not sticky: we upload them at each frame
     //
 
-    mCloudVertexBuffer.reset(4 * cloudCount);
+    mCloudVertexBuffer.reset(4 * (skyCloudCount + tornadoCloudCount));
+    mSkyCloudCount = 0; // We count the ones we actually insert
 
-    mGlobalRenderContext.GetElementIndices().EnsureSize(cloudCount);
+    mGlobalRenderContext.GetElementIndices().EnsureSize(std::max(skyCloudCount, tornadoCloudCount));
+}
+
+void WorldRenderContext::UploadTornadoCloud(
+    uint32_t cloudId,
+    float cloudLineBaseY,
+    float virtualX,         // [-1.5, +1.5]
+    float virtualY,         // [0.0, +1.0]
+    float virtualZ,         // Randomized around 1.0
+    float scale,            // Randomized around 1.0
+    float darkening,        // 0.0:dark, 1.0:light
+    float alpha,
+    float volumetricGrowthProgress, // 0.0 -> +INF
+    RenderParameters const & renderParameters)
+{
+    size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetAllFramesMetadata().size();
+    auto const & cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
+        GameTextureDatabases::CloudTextureGroups::Cloud,
+        static_cast<TextureFrameIndex>(cloudTextureIndex));
+
+    //
+    // We use Normalized Device Coordinates here
+    //
+
+    // Scale multiplier: based on zoom, remapped to a range we're comfortable with;
+    // we want to not be able to get too close by
+
+    // Map zoom to 1...V for the numerator of scaleMultiplierNumerator/1.5
+    float constexpr MaxScaleMultiplierHNumerator = 3.0f; // Nearest; guarantees that whole H NDC space is in view
+    float constexpr MinScaleMultiplierHNumerator = 0.08f; // Furthest
+    float const scaleMultiplierHNumerator = (renderParameters.View.GetZoom() <= 1.0f)
+        //? MinScaleMultiplierHNumerator + (1.5f - MinScaleMultiplierHNumerator) * LinearStep(0.0f, 1.0f, renderParameters.View.GetZoom()) // far --> 1...1.5 (default)
+        ? MinScaleMultiplierHNumerator + (1.5f - MinScaleMultiplierHNumerator) * LinearStep(0.0f, 1.0f, std::sqrtf(renderParameters.View.GetZoom())) // far --> 1...1.5 (default)
+        //: 1.5f + (MaxScaleMultiplierHNumerator - 1.5f) * LinearStep(1.0f, renderParameters.View.GetMaxZoom(), renderParameters.View.GetZoom()); // (default) 1.5...V <-- close
+        : 1.5f + (MaxScaleMultiplierHNumerator - 1.5f) * LinearStep(1.0f, std::sqrtf(renderParameters.View.GetMaxZoom()), std::sqrtf(renderParameters.View.GetZoom())); // 1.5...V
+    float const scaleMultiplierH = scaleMultiplierHNumerator / 1.5f; // Map virtualX range to the numerator
+
+    float constexpr MaxScaleMultiplierVNumerator = 3.0f; // Nearest
+    float constexpr MinScaleMultiplierVNumerator = 0.0005f; // Furthest
+    float const scaleMultiplierVNumerator = (renderParameters.View.GetZoom() <= 1.0f)
+        //? MinScaleMultiplierVNumerator + (1.5f - MinScaleMultiplierVNumerator) * LinearStep(0.0f, 1.0f, renderParameters.View.GetZoom()) // far --> 1...1.5 (default)
+        ? MinScaleMultiplierVNumerator + (1.5f - MinScaleMultiplierVNumerator) * LinearStep(0.0f, 1.0f, std::sqrtf(renderParameters.View.GetZoom())) // far --> 1...1.5 (default)
+        //: 1.5f + (MaxScaleMultiplierVNumerator - 1.5f) * LinearStep(1.0f, renderParameters.View.GetMaxZoom(), renderParameters.View.GetZoom()); // (default) 1.5...V <-- close
+        : 1.5f + (MaxScaleMultiplierVNumerator - 1.5f) * LinearStep(1.0f, std::sqrtf(renderParameters.View.GetMaxZoom()), std::sqrtf(renderParameters.View.GetZoom())); // 1.5...V
+    float const scaleMultiplierV = scaleMultiplierVNumerator / 1.0f;
+
+    // NDC x: from cloud data, and own parallax - based on cam only (like clouds), no zoom
+    float constexpr CloudPerspectiveZMin = 1.0f;
+    //float constexpr CloudPerspectiveZMax = 20.0f * CloudPerspectiveZMin; // Magic number: so that at this (furthest) Z, denominator is so large that clouds at virtualY=1.0 appear slightly above the horizon
+    float constexpr CloudPerspectiveZMax = 10.0f * CloudPerspectiveZMin; // Magic number: so that at this (furthest) Z, denominator is so large that clouds at virtualY=1.0 appear slightly above the horizon
+    float const normalizedZ = (CloudPerspectiveZMin + virtualZ * (CloudPerspectiveZMax - CloudPerspectiveZMin));
+    // Map input slice [-0.5, +0.5] into NDC [-1.0, +1.0]
+    // (and whole range into NDC [-3.0, 3.0])
+    float const normalizedViewCamX = renderParameters.View.GetCameraWorldPosition().x / renderParameters.View.GetHalfMaxWorldWidth();
+    float constexpr K = 4.0f; // Magic number
+    float const xScaler = 1.0f + 1.0f / 3.0f * K / normalizedZ;
+    float const ndcX = virtualX * 2.0f * xScaler - K * normalizedViewCamX / normalizedZ;
+
+    // TODOOLD 1
+    ////// NDC y: World->NDC for TornadoHeight, plus cloud's Y scaled into constant-driven band, and scaled with scaleMultiplier
+    ////float const cloudLineBaseNdcY = renderParameters.View.WorldToNdc(vec2f(0.0f, cloudLineBaseY)).y;
+    ////float constexpr YBandNdcHeight = 0.1f;
+    ////float const yOffset = (virtualY - 0.5f) * 2.0f * (YBandNdcHeight / 2.0f) * scaleMultiplier;
+    ////float const ndcY = cloudLineBaseNdcY + yOffset;
+
+    ////// Size: from scale and ScaleMultiplier
+    ////float constexpr BaseSize = 4.0f; // Multiplier of database's size
+    ////float const screenAspectRatio = renderParameters.View.GetAspectRatio() * 0.65f; // More elongated along the X axis
+    ////float const ndcWidth = BaseSize * scale * scaleMultiplier * cloudAtlasFrameMetadata.FrameMetadata.WorldWidth;
+    ////float const ndcHeight = BaseSize * scale * scaleMultiplier * cloudAtlasFrameMetadata.FrameMetadata.WorldHeight * screenAspectRatio;
+
+
+    // TODOOLD 2
+    // NDC y: World->NDC for TornadoHeight, plus cloud's Y scaled into constant-driven band, and scaled with scaleMultiplier
+    float const cloudLineBaseNdcY = renderParameters.View.WorldToNdc(vec2f(0.0f, cloudLineBaseY)).y;
+    float const yBandWorldHeight = cloudLineBaseY / 2.0f; // TODOTEST: better place for constant
+    float const yBandNdcHeight = renderParameters.View.WorldHeightToNdcHeight(yBandWorldHeight);
+    float const yOffset = (virtualY - 0.5f) * 2.0f * (yBandNdcHeight / 2.0f);
+    float const ndcY = cloudLineBaseNdcY + yOffset;
+
+    // Size: from scale and ScaleMultiplier
+    float constexpr BaseWidth = 4.0f; // Multiplier of database's size
+    float const ndcWidth = BaseWidth * scale * scaleMultiplierH * cloudAtlasFrameMetadata.FrameMetadata.WorldWidth;
+    float constexpr BaseHeight = 2.0f; // Multiplier of database's size
+    float const ndcHeight = BaseHeight * scale * scaleMultiplierV * cloudAtlasFrameMetadata.FrameMetadata.WorldHeight;
+
+
+    ////// NDC y: World->NDC for TornadoHeight, plus cloud's Y scaled into constant-driven band, and scaled with scaleMultiplier
+    ////float const cloudLineBaseNdcY = renderParameters.View.WorldToNdc(vec2f(0.0f, cloudLineBaseY)).y;
+    ////float const ndcBottomY = cloudLineBaseNdcY;
+    ////(void)virtualY;
+
+    ////// Size: from scale and ScaleMultiplier
+    ////float constexpr BaseWidth = 4.0f; // Multiplier of database's size
+    ////float const ndcWidth = BaseWidth * scale * scaleMultiplierH * cloudAtlasFrameMetadata.FrameMetadata.WorldWidth;
+    ////float constexpr BaseHeight = 8.0f; // Multiplier of database's size
+    ////float const ndcHeight = BaseHeight * scale * scaleMultiplierV * cloudAtlasFrameMetadata.FrameMetadata.WorldHeight;
+
+    // Cut short here if invisible
+    float const leftX = ndcX - ndcWidth / 2.0f;
+    float const rightX = leftX + ndcWidth;
+    if (leftX <= 1.0f && rightX >= -1.0f)
+    {
+        // TODOTEST
+        if (mCloudVertexBuffer.size() == mSkyCloudCount * 4)
+        {
+            LogMessage("Zoom=", renderParameters.View.GetZoom(), " ScaleMultiplierH=", scaleMultiplierH, " ScaleMultiplierV=", scaleMultiplierV, " NdcHeight=", ndcHeight, " NormalizedZ=", normalizedZ,
+                " VirtualX*2=", virtualX * 2.0f, " ndcX=", ndcX);
+        }
+
+        //
+        // Populate quad in buffer
+        //
+
+        // TODOOLD2
+        float const bottomY = ndcY - ndcHeight / 2.0f;
+        float const topY = bottomY + ndcHeight;
+
+
+        ////float const bottomY = ndcBottomY;
+        ////float const topY = bottomY + ndcHeight;
+
+
+
+        float const textureWidthAdjust = std::max(cloudAtlasFrameMetadata.TextureSpaceWidth, cloudAtlasFrameMetadata.TextureSpaceHeight);
+
+        // top-left
+        mCloudVertexBuffer.emplace_back(
+            vec2f(leftX, topY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
+            vec2f(-1.0f, 1.0f),
+            darkening,
+            alpha,
+            volumetricGrowthProgress,
+            textureWidthAdjust);
+
+        // bottom-left
+        mCloudVertexBuffer.emplace_back(
+            vec2f(leftX, bottomY),
+            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft,
+            vec2f(-1.0f, -1.0f),
+            darkening,
+            alpha,
+            volumetricGrowthProgress,
+            textureWidthAdjust);
+
+        // top-right
+        mCloudVertexBuffer.emplace_back(
+            vec2f(rightX, topY),
+            cloudAtlasFrameMetadata.TextureCoordinatesTopRight,
+            vec2f(1.0f, 1.0f),
+            darkening,
+            alpha,
+            volumetricGrowthProgress,
+            textureWidthAdjust);
+
+        // bottom-right
+        mCloudVertexBuffer.emplace_back(
+            vec2f(rightX, bottomY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
+            vec2f(1.0f, -1.0f),
+            darkening,
+            alpha,
+            volumetricGrowthProgress,
+            textureWidthAdjust);
+    }
 }
 
 void WorldRenderContext::UploadCloudsEnd()
@@ -1455,7 +1655,7 @@ void WorldRenderContext::RenderPrepareClouds(RenderParameters const & /*renderPa
     }
 }
 
-void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameters const & renderParameters)
+void WorldRenderContext::RenderDrawSkyCloudsAndBackgroundLightnings(RenderParameters const & renderParameters)
 {
     ////////////////////////////////////////////////////
     // Draw background clouds, iff there are background lightnings
@@ -1463,8 +1663,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
 
     bool const areCloudsHighQuality = (renderParameters.CloudRenderDetail == CloudRenderDetailType::Detailed);
 
-    assert((mCloudVertexBuffer.size() % 4) == 0);
-    size_t const elementIndexCount = mCloudVertexBuffer.size() / 4 * 6; // 4 vertices -> 6 element indices
+    size_t const elementIndexCount = mSkyCloudCount * 6; // 1 quad -> 6 element indices
 
     // The number of clouds we want to draw *over* background
     // lightnings
@@ -1472,7 +1671,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
     GLsizei cloudsOverLightningElementIndexStart = 0;
 
     if (mBackgroundLightningVertexCount > 0
-        && mCloudVertexBuffer.size() > 4 * CloudsOverLightnings)
+        && mSkyCloudCount > CloudsOverLightnings)
     {
         glBindVertexArray(*mCloudVAO);
 
@@ -1564,6 +1763,39 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
     }
 
     ////////////////////////////////////////////////////
+
+    glBindVertexArray(0);
+}
+
+void WorldRenderContext::RenderDrawTornadoClouds(RenderParameters const & renderParameters)
+{
+    assert((mCloudVertexBuffer.size() % 4) == 0);
+
+    if (mCloudVertexBuffer.size() > mSkyCloudCount * 4)
+    {
+        glBindVertexArray(*mTornadoCloudVAO);
+
+        // Intel bug: cannot associate with VAO
+        mGlobalRenderContext.GetElementIndices().Bind();
+
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::TornadoCloud>();
+
+        // Set Perlin noise as the noise for the shader
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
+        //glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_4_32_043));
+        glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_8_1024_073));
+
+        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
+            glLineWidth(0.1f);
+
+        glDrawElements(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(mCloudVertexBuffer.size() / 4 - mSkyCloudCount) * 6,
+            GL_UNSIGNED_INT,
+            (GLvoid *)(static_cast<size_t>(mSkyCloudCount * 6) * sizeof(int)));
+
+        CheckOpenGLError();
+    }
 
     glBindVertexArray(0);
 }

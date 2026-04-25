@@ -30,6 +30,7 @@ public:
         std::vector<std::unique_ptr<Ship>> const & ships,
         Npcs & npcs,
         OceanSurface & oceanSurface,
+        Clouds & clouds,
         float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 

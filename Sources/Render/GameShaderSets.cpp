@@ -215,6 +215,8 @@ ProgramKind ShaderNameToProgramKind(std::string const & str)
         return ProgramKind::TextureNotifications;
     else if (lstr == "tornado")
         return ProgramKind::Tornado;
+    else if (lstr == "tornado_cloud")
+        return ProgramKind::TornadoCloud;
     else if (lstr == "underwater_plant")
         return ProgramKind::UnderwaterPlant;
     else if (lstr == "world_border")
@@ -427,6 +429,8 @@ std::string ProgramKindToStr(ProgramKind program)
             return "TextureNotifications";
         case ProgramKind::Tornado:
             return "Tornado";
+        case ProgramKind::TornadoCloud:
+            return "TornadoCloud";
         case ProgramKind::UnderwaterPlant:
             return "UnderwaterPlant";
         case ProgramKind::WorldBorder:
@@ -724,6 +728,12 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
         return VertexAttributeKind::Tornado2;
     else if (Utils::CaseInsensitiveEquals(str, "Tornado3"))
         return VertexAttributeKind::Tornado3;
+    else if (Utils::CaseInsensitiveEquals(str, "TornadoCloud1"))
+        return VertexAttributeKind::TornadoCloud1;
+    else if (Utils::CaseInsensitiveEquals(str, "TornadoCloud2"))
+        return VertexAttributeKind::TornadoCloud2;
+    else if (Utils::CaseInsensitiveEquals(str, "TornadoCloud3"))
+        return VertexAttributeKind::TornadoCloud3;
     else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlantStatic1"))
         return VertexAttributeKind::UnderwaterPlantStatic1;
     else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlantStatic2"))

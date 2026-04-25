@@ -220,15 +220,18 @@ public:
 
     void UploadLightningsEnd();
 
-    void UploadCloudsStart(size_t cloudCount);
+    void UploadCloudsStart(
+        size_t skyCloudCount,
+        size_t tornadoCloudCount);
 
-    inline void UploadCloud(
+    inline void UploadSkyCloud(
         uint32_t cloudId,
         float virtualX,         // [-1.5, +1.5]
         float virtualY,         // [0.0, +1.0]
         float virtualZ,         // [0.0, +1.0]
         float scale,
         float darkening,        // 0.0:dark, 1.0:light
+        float alpha,
         float volumetricGrowthProgress, // 0.0 -> +INF
         RenderParameters const & renderParameters)
     {
@@ -269,6 +272,7 @@ public:
                 vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
                 vec2f(-1.0f, 1.0f),
                 darkening,
+                alpha,
                 volumetricGrowthProgress,
                 textureWidthAdjust);
 
@@ -278,6 +282,7 @@ public:
                 cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft,
                 vec2f(-1.0f, -1.0f),
                 darkening,
+                alpha,
                 volumetricGrowthProgress,
                 textureWidthAdjust);
 
@@ -287,6 +292,7 @@ public:
                 cloudAtlasFrameMetadata.TextureCoordinatesTopRight,
                 vec2f(1.0f, 1.0f),
                 darkening,
+                alpha,
                 volumetricGrowthProgress,
                 textureWidthAdjust);
 
@@ -296,10 +302,26 @@ public:
                 vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
                 vec2f(1.0f, -1.0f),
                 darkening,
+                alpha,
                 volumetricGrowthProgress,
                 textureWidthAdjust);
+
+            ++mSkyCloudCount;
         }
     }
+
+    // TODOTEST: re-make inlined
+    /*inline*/ void UploadTornadoCloud(
+        uint32_t cloudId,
+        float cloudLineBaseY,
+        float virtualX,         // [-1.5, +1.5]
+        float virtualY,         // [0.0, +1.0]
+        float virtualZ,         // Randomized around 1.0
+        float scale,            // Randomized around 1.0
+        float darkening,        // 0.0:dark, 1.0:light
+        float alpha,
+        float volumetricGrowthProgress, // 0.0 -> +INF
+        RenderParameters const & renderParameters);
 
     void UploadCloudsEnd();
 
@@ -1119,7 +1141,8 @@ public:
 
     void RenderPrepareLightnings(RenderParameters const & renderParameters);
     void RenderPrepareClouds(RenderParameters const & renderParameters);
-    void RenderDrawCloudsAndBackgroundLightnings(RenderParameters const & renderParameters);
+    void RenderDrawSkyCloudsAndBackgroundLightnings(RenderParameters const & renderParameters);
+    void RenderDrawTornadoClouds(RenderParameters const & renderParameters);
 
     void RenderPrepareOcean(RenderParameters const & renderParameters);
     void RenderDrawOcean(bool opaquely, RenderParameters const & renderParameters);
@@ -1339,6 +1362,7 @@ private:
         vec2f textureCoords;
         vec2f virtualTextureCoords;
         float darkness;
+        float alpha;
         float volumetricGrowthProgress;
         float textureWidthAdjust;
 
@@ -1347,12 +1371,14 @@ private:
             vec2f _textureCoords,
             vec2f _virtualTextureCoords,
             float _darkness,
+            float _alpha,
             float _volumetricGrowthProgress,
             float _textureWidthAdjust)
             : ndcPosition(_ndcPosition)
             , textureCoords(_textureCoords)
             , virtualTextureCoords(_virtualTextureCoords)
             , darkness(_darkness)
+            , alpha(_alpha)
             , volumetricGrowthProgress(_volumetricGrowthProgress)
             , textureWidthAdjust(_textureWidthAdjust)
         {}
@@ -1633,7 +1659,8 @@ private:
     GameOpenGLVBO mLightningVBO;
     size_t mLightningVBOAllocatedVertexSize;
 
-    BoundedVector<CloudVertex> mCloudVertexBuffer;
+    BoundedVector<CloudVertex> mCloudVertexBuffer; // Sky followed by Tornado
+    size_t mSkyCloudCount;
     GameOpenGLVBO mCloudVBO;
     size_t mCloudVBOAllocatedVertexSize;
 
@@ -1701,6 +1728,7 @@ private:
     GameOpenGLVAO mStarVAO;
     GameOpenGLVAO mLightningVAO;
     GameOpenGLVAO mCloudVAO;
+    GameOpenGLVAO mTornadoCloudVAO;
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanBasicVAO;
     GameOpenGLVAO mOceanDetailedVAO;

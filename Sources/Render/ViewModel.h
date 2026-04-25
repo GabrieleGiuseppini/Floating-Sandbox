@@ -35,6 +35,7 @@ public:
         , mLogicalToPhysicalDisplayFactor(logicalToPhysicalPixelFactor)
         , mPixelOffsetX(0.0f)
         , mPixelOffsetY(0.0f)
+        , mMinZoom(CalculateMinZoom(maxWorldSize, mCanvasPhysicalSize))
     {
         //
         // Initialize kernel ortho matrix
@@ -51,7 +52,7 @@ public:
         // Recalculate calculated attributes
         //
 
-        RecalculateAspectRatio();
+        mAspectRatio = CalculateAspectRatio(mCanvasPhysicalSize);
 
         RecalculateAttributes();
     }
@@ -59,6 +60,16 @@ public:
     float const & GetZoom() const
     {
         return mZoom;
+    }
+
+    float constexpr GetMaxZoom() const
+    {
+        return MaxZoom;
+    }
+
+    float const GetMinZoom() const
+    {
+        return mMinZoom;
     }
 
     /*
@@ -229,7 +240,7 @@ public:
             canvasSize.width * mLogicalToPhysicalDisplayFactor,
             canvasSize.height * mLogicalToPhysicalDisplayFactor);
 
-        RecalculateAspectRatio();
+        mAspectRatio = CalculateAspectRatio(mCanvasPhysicalSize);
 
         // Adjust zoom so that the new visible world dimensions are contained within the maximum
         SetZoom(mZoom);
@@ -280,6 +291,14 @@ public:
         return vec2f(
             (worldCoordinates.x - cameraWorldPosition.x) * 2.0f / visibleWorldWidth,
             (worldCoordinates.y - cameraWorldPosition.y) * 2.0f / visibleWorldHeight);
+    }
+
+    /*
+     * Equivalent of the transformation we usually perform in vertex shaders.
+     */
+    inline float WorldHeightToNdcHeight(float worldHeight) const
+    {
+        return worldHeight * mKernelOrthoMatrix[1][1];
     }
 
     /*
@@ -525,6 +544,21 @@ public:
 
 private:
 
+    static float constexpr CalculateMinZoom(
+        FloatSize const & maxWorldSize,
+        DisplayPhysicalSize const & canvasPhysicalSize)
+    {
+        if (maxWorldSize.width <= maxWorldSize.height)
+        {
+            float const aspectRatio = CalculateAspectRatio(canvasPhysicalSize);
+            return ZoomHeightConstant / maxWorldSize.width * aspectRatio;
+        }
+        else
+        {
+            return ZoomHeightConstant / maxWorldSize.height;
+        }
+    }
+
     float CalculateVisibleWorldWidth(float zoom) const
     {
         return CalculateVisibleWorldHeight(zoom) * mAspectRatio;
@@ -597,15 +631,15 @@ private:
         mCloudNormalizedViewCam.y = 2.0f / (1.0f + std::exp(-12.0f * mCam.y / mHalfMaxWorldHeight)) - 1.0f;
     }
 
-    void RecalculateAspectRatio()
+    static float CalculateAspectRatio(DisplayPhysicalSize const & canvasPhysicalSize)
     {
-        mAspectRatio = static_cast<float>(mCanvasPhysicalSize.width) / static_cast<float>(mCanvasPhysicalSize.height);
+        return static_cast<float>(canvasPhysicalSize.width) / static_cast<float>(canvasPhysicalSize.height);
     }
 
 private:
 
     // Constants
-    static float constexpr MaxZoom = 100.0f;
+    static float constexpr MaxZoom = 100.0f; // When very close
     static float constexpr ZoomHeightConstant = 2.0f * 70.0f; // World height at zoom=1.0
     static float constexpr CloudPerspectiveZMin = 1.0f;
     static float constexpr CloudPerspectiveZMax = 20.0f * CloudPerspectiveZMin; // Magic number: so that at this (furthest) Z, denominator is so large that clouds at virtualY=1.0 appear slightly above the horizon
@@ -622,6 +656,7 @@ private:
     float mPixelOffsetY;
 
     // Calculated attributes
+    float const mMinZoom; // When world is largest
     float mAspectRatio;
     VisibleWorld mVisibleWorld; // Does not account for pixel offset
     VisibleWorld mVisibleWorldWithPixelOffset;

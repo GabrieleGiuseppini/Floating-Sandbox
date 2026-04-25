@@ -957,27 +957,53 @@ public:
         mInnerContext->worldRenderContext->UploadLightningsEnd();
     }
 
-    inline void UploadCloudsStart(size_t cloudCount)
+    inline void UploadCloudsStart(size_t skyCloudCount, size_t tornadoCloudCount)
     {
-        mInnerContext->worldRenderContext->UploadCloudsStart(cloudCount);
+        mInnerContext->worldRenderContext->UploadCloudsStart(skyCloudCount, tornadoCloudCount);
     }
 
-    inline void UploadCloud(
+    inline void UploadSkyCloud(
         uint32_t cloudId,
         float virtualX,         // [-1.5, +1.5]
         float virtualY,         // [0.0, +1.0]
         float virtualZ,         // [0.0, +1.0]
         float scale,
         float darkening,        // 0.0:dark, 1.0:light
+        float alpha,
         float volumetricGrowthProgress)
     {
-        mInnerContext->worldRenderContext->UploadCloud(
+        mInnerContext->worldRenderContext->UploadSkyCloud(
             cloudId,
             virtualX,
             virtualY,
             virtualZ,
             scale,
             darkening,
+            alpha,
+            volumetricGrowthProgress,
+            mRenderParameters);
+    }
+
+    inline void UploadTornadoCloud(
+        uint32_t cloudId,
+        float cloudLineBaseY,
+        float virtualX,         // [-1.5, +1.5]
+        float virtualY,         // [0.0, +1.0]
+        float virtualZ,         // [0.0, +1.0]
+        float scale,
+        float darkening,        // 0.0:dark, 1.0:light
+        float alpha,
+        float volumetricGrowthProgress)
+    {
+        mInnerContext->worldRenderContext->UploadTornadoCloud(
+            cloudId,
+            cloudLineBaseY,
+            virtualX,
+            virtualY,
+            virtualZ,
+            scale,
+            darkening,
+            alpha,
             volumetricGrowthProgress,
             mRenderParameters);
     }

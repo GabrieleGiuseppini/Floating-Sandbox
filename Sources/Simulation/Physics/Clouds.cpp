@@ -20,6 +20,12 @@ float constexpr CloudSpaceWidth = 3.0f;
 float constexpr MaxCloudSpaceX = CloudSpaceWidth / 2.0f;
 
 //
+// The number of horizontal bands that we cluster tornado clouds around
+//
+
+size_t constexpr TornadoCloudsYBandCount = 3;
+
+//
 // Shadows: we map the entire X range of the clouds onto the shadow buffer,
 // conceptually divided into three blocks
 //
@@ -38,6 +44,9 @@ Clouds::Clouds()
     : mLastCloudId(0)
     , mClouds()
     , mStormClouds()
+    , mTornadoClouds()
+    , mLastTornadoBandChosen(0)
+    , mTornadoCloudsAlpha(0.0f)
     , mShadowBuffer(ShadowBufferSize)
 {
 }
@@ -94,6 +103,7 @@ void Clouds::Update(
                     z2,
                     scale,
                     1.0f, // Darkening
+                    1.0f, // Alpha
                     GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 100.0f), // VolumetricGrowthProgress
                     linearSpeedX));
         }
@@ -127,6 +137,7 @@ void Clouds::Update(
                     0.0f, // Z
                     stormParameters.CloudsSize,
                     stormParameters.CloudDarkening, // Darkening
+                    1.0f, // Alpha
                     GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 100.0f), // VolumetricGrowthProgress
                     GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f))); // Linear speed X
         }
@@ -146,6 +157,8 @@ void Clouds::Update(
     float const absoluteGlobalCloudSpeed = 0.005f * std::pow(std::abs(baseAndStormSpeedMagnitude), 2.1f);
     float const globalCloudSpeed = windSign * absoluteGlobalCloudSpeed;
 
+    // Normal clouds
+
     for (auto & cloud : mClouds)
     {
         cloud->Update(globalCloudSpeed);
@@ -164,6 +177,8 @@ void Clouds::Update(
         // (or else they remain dark)
         cloud->Darkening = stormParameters.CloudDarkening;
     }
+
+    // Storm clouds
 
     float const stormGlobalCloudSpeed = windSign * std::max(absoluteGlobalCloudSpeed, 12.0f); // Ensure storm clouds ultimately leave the screen
 
@@ -208,6 +223,67 @@ void Clouds::Update(
             ++it;
         }
     }
+
+    // Tornado clouds
+
+    float constexpr TornadoCloudSpeed = -0.085f;
+
+    if (mTornadoCloudsAlpha > 0.0f)
+    {
+        //
+        // Update tornado clouds
+        //
+
+        if (mTornadoClouds.empty())
+        {
+            //
+            // Initialize clouds
+            //
+
+            float constexpr CloudStep = 0.04f;
+            for (float x = -MaxCloudSpaceX + CloudStep; x < MaxCloudSpaceX; x += CloudStep)
+            {
+                mTornadoClouds.emplace_back(
+                    new Cloud(
+                        mLastCloudId++,
+                        x,
+                        0.0f, // Y, will be randomized
+                        0.0f, // Z, will be randomized
+                        0.0f, // Scale, will be randomized
+                        0.22f, // Darkness
+                        mTornadoCloudsAlpha, // Alpha
+                        GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 100.0f), // VolumetricGrowthProgress
+                        0.0f)); // LinearSpeedX, will be randomized
+
+                InitializeTornadoCloud(*mTornadoClouds.back());
+            }
+        }
+
+        for (auto & cloud : mTornadoClouds)
+        {
+            cloud->Update(TornadoCloudSpeed);
+
+            // Update alpha
+            cloud->Alpha += (mTornadoCloudsAlpha - cloud->Alpha) * 0.08f; // Converge
+
+            // Manage clouds leaving space: resuscitate or retire when cross border
+            static_assert(TornadoCloudSpeed < 0.0f);
+            if (cloud->X < -MaxCloudSpaceX)
+            {
+                // Resuscitate on the other side
+                cloud->X += CloudSpaceWidth;
+                InitializeTornadoCloud(*cloud);
+            }
+        }
+    }
+    else if (!mTornadoClouds.empty())
+    {
+        //
+        // Stop having tornado clouds
+        //
+
+        mTornadoClouds.clear();
+    }
 }
 
 void Clouds::Upload(RenderContext & renderContext)
@@ -216,29 +292,45 @@ void Clouds::Upload(RenderContext & renderContext)
     // Upload clouds
     //
 
-    renderContext.UploadCloudsStart(mClouds.size() + mStormClouds.size());
+    renderContext.UploadCloudsStart(mClouds.size() + mStormClouds.size(), mTornadoClouds.size());
 
     for (auto const & cloud : mClouds)
     {
-        renderContext.UploadCloud(
+        renderContext.UploadSkyCloud(
             cloud->Id,
             cloud->X,
             cloud->Y,
             cloud->Z,
             cloud->Scale,
             cloud->Darkening,
+            cloud->Alpha,
             cloud->VolumetricGrowthProgress);
     }
 
     for (auto const & cloud : mStormClouds)
     {
-        renderContext.UploadCloud(
+        renderContext.UploadSkyCloud(
             cloud->Id,
             cloud->X,
             cloud->Y,
             cloud->Z,
             cloud->Scale,
             cloud->Darkening,
+            cloud->Alpha,
+            cloud->VolumetricGrowthProgress);
+    }
+
+    for (auto const & cloud : mTornadoClouds)
+    {
+        renderContext.UploadTornadoCloud(
+            cloud->Id,
+            SimulationParameters::TornadoHeight,
+            cloud->X,
+            cloud->Y,
+            cloud->Z,
+            cloud->Scale,
+            cloud->Darkening,
+            cloud->Alpha,
             cloud->VolumetricGrowthProgress);
     }
 
@@ -268,6 +360,28 @@ void Clouds::Upload(RenderContext & renderContext)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+
+inline void Clouds::InitializeTornadoCloud(Cloud & cloud)
+{
+    // Y: random around band
+    float constexpr BandHeight = 1.0f / static_cast<float>(TornadoCloudsYBandCount);
+    size_t const yBand = GameRandomEngine::GetInstance().ChooseNew(TornadoCloudsYBandCount, mLastTornadoBandChosen);
+    mLastTornadoBandChosen = yBand;
+    cloud.Y =
+        BandHeight * static_cast<float>(yBand)
+        + GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, BandHeight);
+
+    // Z: randomized around 1.0
+    float constexpr ZRange = 0.2f;
+    cloud.Z = GameRandomEngine::GetInstance().GenerateUniformReal(1.0f - ZRange / 2.0f, 1.0f + ZRange / 2.0f);
+
+    // Scale: randomized around 1.0
+    float constexpr ScaleRange = 0.2f;
+    cloud.Scale = GameRandomEngine::GetInstance().GenerateUniformReal(1.0f - ScaleRange / 2.0f, 1.0f + ScaleRange / 2.0f);
+
+    // LinearSpeedX: random
+    cloud.LinearSpeedX = GameRandomEngine::GetInstance().GenerateUniformReal(0.95f, 1.05f);
+}
 
 void Clouds::UpdateShadows(
     std::vector<std::unique_ptr<Cloud>> const & clouds,
