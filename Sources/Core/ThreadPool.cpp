@@ -48,7 +48,7 @@ ThreadPool::ThreadPool(
     // Start N-1 threads (calling thread is one of them)
     //
 
-    mThreadAssignedTasks.resize(parallelism - 1);
+    mThreadAssignedTasks.resize(parallelism - 1, nullptr);
 
     for (size_t i = 0; i < parallelism - 1; ++i)
     {
@@ -185,7 +185,8 @@ void ThreadPool::ThreadLoop(
     ThreadManager & threadManager)
 {
     assert(threadTaskIndex > 0);
-    assert(mThreadAssignedTasks.size() == mThreads.size() - 1);
+    // Cannot really assert this, as mThreads might be not populated yet
+    //assert(mThreadAssignedTasks.size() == mThreads.size() - 1);
 
     //
     // Initialize thread

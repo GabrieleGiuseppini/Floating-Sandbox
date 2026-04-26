@@ -1133,6 +1133,12 @@ std::vector<size_t> Ship::CalculatePointShards(
     // account processors' speeds
     //
 
+    // Note: at this moment the subdivision is not totally fair:
+    // since each shard takes the _floor_ of the vectorization size,
+    // the last thread ends up taking all the leftovers.
+    // However, the number of leftovers becomes significant only
+    // with a large simulation parallelism.
+
     float const totalPointCost = static_cast<float>(totalPoints);
 
     // Calculate cpu speed normalization factor (denominator)
