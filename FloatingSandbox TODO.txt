@@ -355,7 +355,7 @@
 		+ Send beta, bump up version
 		+ Don't commit until feedback
 
-		- Storm supercell above it
+		= Storm supercell above it
 			= Option 1: InteractiveBodies uploads straight to World/RenderContext
 				- ...which does parallax
 
@@ -466,6 +466,7 @@
 			- Industrial Horn
 			- Queen Horn
 			- Steam Whistle FS Mobile 1
+			- Super whistle
 		- PC
 		- Android
 
@@ -866,16 +867,13 @@
 		+ Port changes to Android
 			+ Just flat shader
 
-	- Air bubbles trapped in silt
-
 	- See if can improve FindFreeEphemeralParticle's perf
-		= Thing 1: remove need for currentSimulationTime
+		+ Thing 1: remove need for currentSimulationTime
 		- Thing 2:
 			- A stack for free ephemeral particles (init'd with all)
 			- A TODO for ordered by time in-use ephemeral particles (remember we address it by content (i.e. point index, when we kill an eph particle))
 				- List, but with cheap allocation
-				- Epk particle i needs pointer to own node in list
-				
+				- Epk particle i needs pointer to own node in list				
 
 	- Splashes
 		- TODO: see if can incorporate also "mist" for tornadoes

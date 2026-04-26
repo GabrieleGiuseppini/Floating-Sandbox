@@ -998,7 +998,6 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
 
     size_t const perfectSquareSpringCount = perfectSquareCount * 4;
     assert(totalSprings >= perfectSquareSpringCount);
-    size_t const imperfectSquareSpringCount = totalSprings - perfectSquareSpringCount;
 
     // Calculate cpu speed normalization factor (denominator)
     float cpuSpeedNormalizationFactor = 0.0f;
@@ -1029,7 +1028,7 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
             : 0;
         size_t const remainingImperfectSquareSpringCount = totalSprings - std::max(perfectSquareSpringCount, springsAssignedCount);
         assert(remainingPerfectSquareSpringCount <= perfectSquareSpringCount);
-        assert(remainingImperfectSquareSpringCount <= imperfectSquareSpringCount);
+        assert(remainingImperfectSquareSpringCount <= totalSprings - perfectSquareSpringCount);
         assert(remainingPerfectSquareSpringCount + remainingImperfectSquareSpringCount == totalSprings - springsAssignedCount);
 
         // Total cost remaining
