@@ -1027,7 +1027,7 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
         cpuSpeedNormalizationFactor += cpuInfo->Speed;
     }
 
-    LogMessage("Ship::CalculateSpringRelaxationSpringShards(totalSprings=", totalSprings, ", perfectSquareCount=", perfectSquareCount, "): ",
+    LogMessage("Ship::CalculateSpringRelaxationSpringShards(totalSprings=", totalSprings, ", perfectSquareSpringCount=", perfectSquareSpringCount, "): ",
                "totalSpringCost=", totalSpringCost);
 
     //
@@ -1042,8 +1042,8 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
         // Total budget for this shard
         auto const cpuInfo = simulationThreadPool.GetThreadCpuInfo(s);
         assert(cpuInfo.has_value()); // It's a simulation thread
-        float shardBudget = cpuInfo->Speed / cpuSpeedNormalizationFactor * totalSpringCost;
-        float shardCost = 0.0f;
+        float const totalShardBudget = cpuInfo->Speed / cpuSpeedNormalizationFactor * totalSpringCost;
+        float remainingShardBudget = totalShardBudget;
 
         assert(springsAssignedCount <= totalSprings);
 
@@ -1057,7 +1057,8 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
 
             shardSpringCount = totalSprings - springsAssignedCount;
 
-            // TODOTEST
+            // Checks and balances
+            float shardCost = 0.0f;
             if (springsAssignedCount <= perfectSquareSpringCount)
             {
                 size_t const remainingPerfectSquareSpringCount = perfectSquareSpringCount - springsAssignedCount;
@@ -1068,9 +1069,10 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
             size_t const remainingImperfectSquareSpringCount = totalSprings - springsAssignedCount;
             shardCost += static_cast<float>(remainingImperfectSquareSpringCount) * ImperfectSquareSpringCost;
             springsAssignedCount += remainingImperfectSquareSpringCount;
-            assert(springsAssignedCount == totalSprings);
 
-            LogMessage("  Shard ", s, ": ", shardSpringCount, " (budget=", cpuInfo->Speed / cpuSpeedNormalizationFactor * totalSpringCost, " cost=", shardCost, ")");
+            LogMessage("  Shard ", s, ": ", shardSpringCount, " (budget=", totalShardBudget, " cost=", shardCost, ")");
+
+            assert(springsAssignedCount == totalSprings);
         }
         else
         {
@@ -1083,7 +1085,7 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
                 : 0;
             float const remainingPerfectSquareSpringCost = static_cast<float>(remainingPerfectSquareSpringCount) * PerfectSquareSpringCost;
 
-            float const shardPerfectSquareSpringCost = std::min(remainingPerfectSquareSpringCost, shardBudget);
+            float const shardPerfectSquareSpringCost = std::min(remainingPerfectSquareSpringCost, remainingShardBudget);
 
             size_t shardPerfectSquareSpringCount = static_cast<size_t>(std::floor(shardPerfectSquareSpringCost / PerfectSquareSpringCost));
             // Make sure we do full vectorization sizes
@@ -1096,8 +1098,8 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
             springsAssignedCount += shardPerfectSquareSpringCount;
 
             // Update remaining budget
-            shardBudget -= shardPerfectSquareSpringCost;
-            shardCost += shardPerfectSquareSpringCost;
+            remainingShardBudget -= shardPerfectSquareSpringCost;
+            float shardCost = shardPerfectSquareSpringCost;
             assert(shardBudget >= 0.0f);
 
             //
@@ -1112,7 +1114,7 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
                 assert(remainingImperfectSquareSpringCount <= imperfectSquareSpringCount);
                 float const remainingImperfectSquareSpringCost = static_cast<float>(remainingImperfectSquareSpringCount) * ImperfectSquareSpringCost;
 
-                float const shardImperfectSquareSpringCost = std::min(remainingImperfectSquareSpringCost, shardBudget);
+                float const shardImperfectSquareSpringCost = std::min(remainingImperfectSquareSpringCost, remainingShardBudget);
 
                 size_t shardImperfectSquareSpringCount = static_cast<size_t>(std::floor(shardImperfectSquareSpringCost / ImperfectSquareSpringCost));
                 // Make sure we do full vectorization sizes
@@ -1127,7 +1129,7 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
                 shardCost += shardImperfectSquareSpringCost;
             }
 
-            LogMessage("  Shard ", s, ": ", shardSpringCount, " (budget=", cpuInfo->Speed / cpuSpeedNormalizationFactor * totalSpringCost, " cost=", shardCost, ")");
+            LogMessage("  Shard ", s, ": ", shardSpringCount, " (budget=", totalShardBudget, " cost=", shardCost, ")");
         }
 
         springShards[s] = shardSpringCount;
