@@ -716,7 +716,7 @@ private:
 
     // Electrical
 
-    void RecalculateLightDiffusionParallelism(size_t simulationParallelism);
+    void RecalculateLightDiffusionParallelism(ThreadPool const & simulationThreadPool);
 
     void DiffuseLight(
         SimulationParameters const & simulationParameters,

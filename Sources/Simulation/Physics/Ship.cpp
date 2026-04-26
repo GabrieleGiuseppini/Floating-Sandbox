@@ -2951,42 +2951,29 @@ void Ship::UpdateSinking(float /*currentSimulationTime*/)
 // Electrical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::RecalculateLightDiffusionParallelism(size_t simulationParallelism)
+void Ship::RecalculateLightDiffusionParallelism(ThreadPool const & simulationThreadPool)
 {
-    // Clear threading state
-    mLightDiffusionTasks.clear();
+    auto const simulationParallelism = simulationThreadPool.GetParallelism();
 
-    //
-    // Given the available simulation parallelism as a constraint (max), calculate
-    // the best parallelism for the light diffusion algorithm
-    //
-
-    ElementCount const numberOfPoints = mPoints.GetAlignedShipPointCount(); // No real reason to skip ephemerals, other than they're not expected to have light
-
-    ElementCount constexpr PointsPerThread = 1000; // Was 2000 at 19.1
-
-    size_t const lightDiffusionParallelism = std::max(
-        std::min(static_cast<size_t>(numberOfPoints) / PointsPerThread, simulationParallelism),
-        size_t(1));
-
-    LogMessage("Ship::RecalculateLightDiffusionParallelism: points=", numberOfPoints, " simulationParallelism=", simulationParallelism,
-        " lightDiffusionParallelism=", lightDiffusionParallelism);
+    LogMessage("Ship::RecalculateLightDiffusionParallelism: simulationParallelism=", simulationParallelism);
 
     //
     // Prepare tasks
     //
-    // We want each thread to work on a multiple of our vectorization word size
-    //
 
-    assert(numberOfPoints >= static_cast<ElementCount>(lightDiffusionParallelism) * vectorization_float_count<ElementCount>);
-    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(lightDiffusionParallelism) * vectorization_float_count<ElementCount>);
+    mLightDiffusionTasks.clear();
+
+    ElementCount const numberOfPoints = mPoints.GetAlignedShipPointCount(); // No real reason to skip ephemerals, other than they're not expected to have light
+
+    auto const pointShards = CalculatePointShards(
+        numberOfPoints,
+        simulationThreadPool);
 
     ElementIndex pointStart = 0;
-    for (size_t t = 0; t < lightDiffusionParallelism; ++t)
+    for (size_t t = 0; t < simulationParallelism; ++t)
     {
-        ElementIndex const pointEnd = (t < lightDiffusionParallelism - 1)
-            ? pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>
-            : numberOfPoints;
+        ElementIndex const pointEnd = pointStart + static_cast<ElementCount>(pointShards[t]);
+        assert(pointEnd <= numberOfPoints);
 
         assert(((pointEnd - pointStart) % vectorization_float_count<ElementCount>) == 0);
 
@@ -3347,7 +3334,7 @@ void Ship::UpdateForSimulationParameters(
         RecalculateSpringRelaxationParallelism(simulationThreadPool, simulationParameters);
 
         // Re-calculate light diffusion parallelism
-        RecalculateLightDiffusionParallelism(simulationParallelism);
+        RecalculateLightDiffusionParallelism(simulationThreadPool);
 
         // Remember new values
         mCurrentSimulationParallelism = simulationParallelism;
