@@ -686,6 +686,10 @@ private:
         size_t perfectSquareCount,
         ThreadPool const & simulationThreadPool);
 
+    static std::vector<size_t> CalculatePointShards(
+        size_t totalPoints,
+        ThreadPool const & simulationThreadPool);
+
     //
     //
     //

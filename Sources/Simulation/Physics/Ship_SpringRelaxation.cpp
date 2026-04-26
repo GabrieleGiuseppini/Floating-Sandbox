@@ -233,8 +233,9 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
         mSprings.GetPerfectSquareCount(),
         simulationThreadPool);
 
-    ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
-    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(simulationParallelism) * vectorization_float_count<ElementCount>);
+    auto const pointShards = CalculatePointShards(
+        mPoints.GetBufferElementCount(),
+        simulationThreadPool);
 
     ElementIndex springStart = 0;
     ElementIndex pointStart = 0;
@@ -243,11 +244,8 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
         ElementIndex const springEnd = springStart + static_cast<ElementCount>(springShards[t]);
         assert(springEnd <= mSprings.GetElementCount());
 
-        ElementIndex const pointEnd = (t < simulationParallelism - 1)
-            ? std::min(
-                pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>,
-                numberOfPoints)
-            : numberOfPoints;
+        ElementIndex const pointEnd = pointStart + static_cast<ElementCount>(pointShards[t]);
+        assert(pointEnd <= mPoints.GetBufferElementCount());
 
         mSpringRelaxation_Hybrid_1_Tasks.emplace_back(
             [this, t, springStart, springEnd, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
@@ -1070,7 +1068,7 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
             shardCost += static_cast<float>(remainingImperfectSquareSpringCount) * ImperfectSquareSpringCost;
             springsAssignedCount += remainingImperfectSquareSpringCount;
 
-            LogMessage("  Shard ", s, ": ", shardSpringCount, " (budget=", totalShardBudget, " cost=", shardCost, ")");
+            LogMessage("  Shard ", s, ": ", shardSpringCount, " (cpu_speed=", cpuInfo->Speed / cpuSpeedNormalizationFactor, " budget=", totalShardBudget, " cost=", shardCost, ")");
 
             assert(springsAssignedCount == totalSprings);
         }
@@ -1098,9 +1096,8 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
             springsAssignedCount += shardPerfectSquareSpringCount;
 
             // Update remaining budget
-            remainingShardBudget -= shardPerfectSquareSpringCost;
             float shardCost = shardPerfectSquareSpringCost;
-            assert(shardBudget >= 0.0f);
+            remainingShardBudget = std::max(remainingShardBudget - shardCost, 0.0f);
 
             //
             // Imperfect squares now
@@ -1129,7 +1126,7 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
                 shardCost += shardImperfectSquareSpringCost;
             }
 
-            LogMessage("  Shard ", s, ": ", shardSpringCount, " (budget=", totalShardBudget, " cost=", shardCost, ")");
+            LogMessage("  Shard ", s, ": ", shardSpringCount, " (cpu_speed=", cpuInfo->Speed / cpuSpeedNormalizationFactor, " budget=", totalShardBudget, " cost=", shardCost, ")");
         }
 
         springShards[s] = shardSpringCount;
@@ -1138,5 +1135,88 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
     return springShards;
 }
 
+std::vector<size_t> Ship::CalculatePointShards(
+    size_t totalPoints,
+    ThreadPool const & simulationThreadPool)
+{
+    //
+    // Calculates number of points for each shard, taking into
+    // account processors' speeds
+    //
+
+    float const totalPointCost = static_cast<float>(totalPoints);
+
+    // Calculate cpu speed normalization factor (denominator)
+    float cpuSpeedNormalizationFactor = 0.0f;
+    for (size_t s = 0; s < simulationThreadPool.GetParallelism(); ++s)
+    {
+        auto const cpuInfo = simulationThreadPool.GetThreadCpuInfo(s);
+        assert(cpuInfo.has_value()); // It's a simulation thread
+
+        cpuSpeedNormalizationFactor += cpuInfo->Speed;
+    }
+
+    LogMessage("Ship::CalculatePointShards(totalPoints=", totalPoints, ")");
+
+    //
+    // Calculate shards
+    //
+
+    std::vector<size_t> pointShards(simulationThreadPool.GetParallelism(), 0u);
+
+    size_t pointsAssignedCount = 0;
+    for (size_t s = 0; s < simulationThreadPool.GetParallelism(); ++s)
+    {
+        // Total budget for this shard
+        auto const cpuInfo = simulationThreadPool.GetThreadCpuInfo(s);
+        assert(cpuInfo.has_value()); // It's a simulation thread
+        float const totalShardBudget = cpuInfo->Speed / cpuSpeedNormalizationFactor * totalPointCost;
+
+        assert(pointsAssignedCount <= totalPoints);
+
+        size_t shardPointCount;
+
+        if (s == simulationThreadPool.GetParallelism() - 1)
+        {
+            //
+            // Last shard, all points
+            //
+
+            shardPointCount = totalPoints - pointsAssignedCount;
+
+            // Checks and balances
+            float shardCost = static_cast<float>(shardPointCount);
+            pointsAssignedCount += shardPointCount;
+
+            LogMessage("  Shard ", s, ": ", shardPointCount, " (cpu_speed=", cpuInfo->Speed / cpuSpeedNormalizationFactor, " budget=", totalShardBudget, " cost=", shardCost, ")");
+
+            assert(pointsAssignedCount == totalPoints);
+        }
+        else
+        {
+            size_t const remainingPointCount = totalPoints - pointsAssignedCount;
+            float const remainingPointCost = static_cast<float>(remainingPointCount);
+
+            float const shardPointCost = std::min(remainingPointCost, totalShardBudget);
+
+            shardPointCount = static_cast<size_t>(std::floor(shardPointCost));
+            // Make sure we do full vectorization sizes
+            shardPointCount = (shardPointCount / vectorization_float_count<size_t>) * vectorization_float_count<size_t>;
+            // Make sure we don't overrun all points
+            shardPointCount = std::min(shardPointCount, totalPoints - pointsAssignedCount);
+
+            assert(pointsAssignedCount + shardPointCount <= totalPoints);
+            pointsAssignedCount += shardPointCount;
+
+            float const shardCost = static_cast<float>(shardPointCount);
+
+            LogMessage("  Shard ", s, ": ", shardPointCount, " (cpu_speed=", cpuInfo->Speed / cpuSpeedNormalizationFactor, " budget=", totalShardBudget, " cost=", shardCost, ")");
+        }
+
+        pointShards[s] = shardPointCount;
+    }
+
+    return pointShards;
+}
 
 }
