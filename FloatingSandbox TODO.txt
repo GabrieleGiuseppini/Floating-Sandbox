@@ -461,7 +461,13 @@
 
 	- See ocean floor custom settings bug on community server
 
-	- See Longhorn's "The electrical panel fails to render a bit above 200 elements and the ship in question will no longer save, freezing in the "Checking ship..." dialogue."
+	- TimCan's new sounds for PC+Mobile
+			- FS Deep Horn
+			- Industrial Horn
+			- Queen Horn
+			- Steam Whistle FS Mobile 1
+		- PC
+		- Android
 
 	+ Fix Mia's crash
 		+ ImageTools::InternalResizeDimension_BoxFilter
@@ -2613,6 +2619,9 @@
 	- Ship descriptions: use Mike's drawings
 
 - Sounds:
+
+	- Easter egg sounds from TimCan: ship sounds play a different sound at "magic, secret moments"
+		- Sounds under Scratch/Ship Sounds/TimCan's Easter Egg Sounds
 
 	- Ship Custom Sounds (*)
 		- Ship may come with custom sound(s) for horns et al 

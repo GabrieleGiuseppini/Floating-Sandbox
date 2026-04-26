@@ -266,8 +266,8 @@ void Ship::Update(
         simulationParameters);
 
     UpdateForSimulationParameters(
-        simulationParameters,
-        threadManager);
+        threadManager.GetSimulationThreadPool(),
+        simulationParameters);
 
     ///////////////////////////////////////////////////////////////////
     // Calculate some widely-used physical constants
@@ -3336,15 +3336,15 @@ void Ship::RotPoints(
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Ship::UpdateForSimulationParameters(
-    SimulationParameters const & simulationParameters,
-    ThreadManager & threadManager)
+    ThreadPool const & simulationThreadPool,
+    SimulationParameters const & simulationParameters)
 {
-    size_t const simulationParallelism = threadManager.GetSimulationParallelism();
+    size_t const simulationParallelism = simulationThreadPool.GetParallelism();
     if (simulationParallelism != mCurrentSimulationParallelism
         || simulationParameters.SpringRelaxationParallelComputationMode != mCurrentSpringRelaxationParallelComputationMode)
     {
         // Re-calculate spring relaxation parallelism
-        RecalculateSpringRelaxationParallelism(simulationParallelism, simulationParameters);
+        RecalculateSpringRelaxationParallelism(simulationThreadPool, simulationParameters);
 
         // Re-calculate light diffusion parallelism
         RecalculateLightDiffusionParallelism(simulationParallelism);

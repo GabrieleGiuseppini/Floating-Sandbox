@@ -42,7 +42,7 @@ public:
         return mThreads.size();
     }
 
-    std::optional<ThreadManager::CpuInfo> const & GetThreadCpuInfo(size_t threadIndex) // Calling thread is 0
+    std::optional<ThreadManager::CpuInfo> const & GetThreadCpuInfo(size_t threadIndex) const // Calling thread is 0
     {
         assert(threadIndex < mThreads.size());
         return mThreads[threadIndex].CpuInfo;

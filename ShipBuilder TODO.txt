@@ -29,6 +29,9 @@
 		! Placement: sub_ordinal ignored and made up by palette logic
 			! After all custom materials' sub_ordinals might become stale when we change ordinals in default materials
 
+	- Before all:
+		- See Longhorn's "The electrical panel fails to render a bit above 200 elements and the ship in question will no longer save, freezing in the "Checking ship..." dialogue."
+
 	- Structural material:
 		- opt<struct StructuralMaterial::VariantOverridesType> VariantOverrides
 			- Contains:

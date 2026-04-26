@@ -93,6 +93,8 @@ public:
         return mMaxSimulationParallelism;
     }
 
+    ThreadPool const & GetSimulationThreadPool() const;
+
     ThreadPool & GetSimulationThreadPool();
 
 private:

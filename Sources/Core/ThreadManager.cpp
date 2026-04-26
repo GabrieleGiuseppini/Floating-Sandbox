@@ -107,6 +107,11 @@ void ThreadManager::SetSimulationParallelism(size_t parallelism)
     mSimulationThreadPool = std::make_unique<ThreadPool>(ThreadManager::ThreadTaskKind::Simulation, parallelism, *this);
 }
 
+ThreadPool const & ThreadManager::GetSimulationThreadPool() const
+{
+    return *mSimulationThreadPool;
+}
+
 ThreadPool & ThreadManager::GetSimulationThreadPool()
 {
     return *mSimulationThreadPool;

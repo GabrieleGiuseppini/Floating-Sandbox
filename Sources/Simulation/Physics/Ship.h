@@ -611,19 +611,19 @@ private:
     //
 
     void RecalculateSpringRelaxationParallelism(
-        size_t simulationParallelism,
+        ThreadPool const & simulationThreadPool,
         SimulationParameters const & simulationParameters);
 
     void RecalculateSpringRelaxationParallelism_FullSpeed(
-        size_t simulationParallelism,
+        ThreadPool const & simulationThreadPool,
         SimulationParameters const & simulationParameters);
 
     void RecalculateSpringRelaxationParallelism_StepByStep(
-        size_t simulationParallelism,
+        ThreadPool const & simulationThreadPool,
         SimulationParameters const & simulationParameters);
 
     void RecalculateSpringRelaxationParallelism_Hybrid(
-        size_t simulationParallelism,
+        ThreadPool const & simulationThreadPool,
         SimulationParameters const & simulationParameters);
 
     void CalculateSpringRelaxationCoefficients(SimulationParameters const & simulationParameters);
@@ -680,6 +680,11 @@ private:
         ElementIndex endPointIndex,
         size_t threadIndex,
         SimulationParameters const & simulationParameters);
+
+    static std::vector<size_t> CalculateSpringRelaxationSpringShards(
+        size_t totalSprings,
+        size_t perfectSquareCount,
+        ThreadPool const & simulationThreadPool);
 
     //
     //
@@ -744,8 +749,8 @@ private:
     /////////////////////////////////////////////////////////////////////////
 
     inline void UpdateForSimulationParameters(
-        SimulationParameters const & simulationParameters,
-        ThreadManager & threadManager);
+        ThreadPool const & simulationThreadPool,
+        SimulationParameters const & simulationParameters);
 
     void RunConnectivityVisit();
 
