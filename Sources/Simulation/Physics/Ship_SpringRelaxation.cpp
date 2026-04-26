@@ -1133,14 +1133,6 @@ std::vector<size_t> Ship::CalculatePointShards(
     // account processors' speeds
     //
 
-    // Note: at this moment the subdivision is not totally fair:
-    // since each shard takes the _floor_ of the vectorization size,
-    // the last thread ends up taking all the leftovers.
-    // However, the number of leftovers becomes significant only
-    // with a large simulation parallelism.
-
-    float const totalPointCost = static_cast<float>(totalPoints);
-
     // Calculate cpu speed normalization factor (denominator)
     float cpuSpeedNormalizationFactor = 0.0f;
     for (size_t s = 0; s < simulationThreadPool.GetParallelism(); ++s)
@@ -1162,53 +1154,58 @@ std::vector<size_t> Ship::CalculatePointShards(
     size_t pointsAssignedCount = 0;
     for (size_t s = 0; s < simulationThreadPool.GetParallelism(); ++s)
     {
+        assert(pointsAssignedCount <= totalPoints);
+
+        // Total points remaining
+        size_t const remainingPointCount = totalPoints - pointsAssignedCount;
+
+        // Total cost remaining
+        float const remainingPointCost = static_cast<float>(remainingPointCount);
+
         // Total budget for this shard
         auto const cpuInfo = simulationThreadPool.GetThreadCpuInfo(s);
         assert(cpuInfo.has_value()); // It's a simulation thread
-        float const totalShardBudget = cpuInfo->Speed / cpuSpeedNormalizationFactor * totalPointCost;
+        float const totalShardBudget = cpuInfo->Speed / cpuSpeedNormalizationFactor * remainingPointCost;
 
-        assert(pointsAssignedCount <= totalPoints);
-
+        // Calculate points for this shard
         size_t shardPointCount;
-
         if (s == simulationThreadPool.GetParallelism() - 1)
         {
             //
             // Last shard, all points
             //
 
-            shardPointCount = totalPoints - pointsAssignedCount;
+            shardPointCount = remainingPointCount;
 
             // Checks and balances
-            float shardCost = static_cast<float>(shardPointCount);
             pointsAssignedCount += shardPointCount;
 
-            LogMessage("  Shard ", s, ": ", shardPointCount, " (cpu_speed=", cpuInfo->Speed / cpuSpeedNormalizationFactor, " budget=", totalShardBudget, " cost=", shardCost, ")");
+            LogMessage("  Shard ", s, ": ", shardPointCount, " (cpu_speed=", cpuInfo->Speed, " budget=", totalShardBudget, " cost=", remainingPointCost, ")");
 
             assert(pointsAssignedCount == totalPoints);
         }
         else
         {
-            size_t const remainingPointCount = totalPoints - pointsAssignedCount;
-            float const remainingPointCost = static_cast<float>(remainingPointCount);
-
             float const shardPointCost = std::min(remainingPointCost, totalShardBudget);
 
             shardPointCount = static_cast<size_t>(std::floor(shardPointCost));
             // Make sure we do full vectorization sizes
             shardPointCount = (shardPointCount / vectorization_float_count<size_t>) * vectorization_float_count<size_t>;
             // Make sure we don't overrun all points
-            shardPointCount = std::min(shardPointCount, totalPoints - pointsAssignedCount);
+            shardPointCount = std::min(shardPointCount, remainingPointCount);
 
             assert(pointsAssignedCount + shardPointCount <= totalPoints);
             pointsAssignedCount += shardPointCount;
 
             float const shardCost = static_cast<float>(shardPointCount);
 
-            LogMessage("  Shard ", s, ": ", shardPointCount, " (cpu_speed=", cpuInfo->Speed / cpuSpeedNormalizationFactor, " budget=", totalShardBudget, " cost=", shardCost, ")");
+            LogMessage("  Shard ", s, ": ", shardPointCount, " (cpu_speed=", cpuInfo->Speed, " budget=", totalShardBudget, " cost=", shardCost, ")");
         }
 
         pointShards[s] = shardPointCount;
+
+        // Reduce normalization factor to account for remaining threads
+        cpuSpeedNormalizationFactor -= cpuInfo->Speed;
     }
 
     return pointShards;
