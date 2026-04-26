@@ -52,7 +52,6 @@ void Ship::RecalculateSpringRelaxationParallelism_FullSpeed(
     ThreadPool const & simulationThreadPool,
     SimulationParameters const & simulationParameters)
 {
-    // TODOHERE
     auto const simulationParallelism = simulationThreadPool.GetParallelism();
 
     LogMessage("Ship::RecalculateSpringRelaxationParallelism_FullSpeed: simulationParallelism=", simulationParallelism);
@@ -66,32 +65,27 @@ void Ship::RecalculateSpringRelaxationParallelism_FullSpeed(
     //
     // Prepare tasks
     //
-    // We want threads to work on a multiple of the vectorization word size - unless there aren't enough elements
-    //
 
     mSpringRelaxation_FullSpeed_Tasks.clear();
 
-    ElementCount const numberOfSprings = mSprings.GetElementCount();
-    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(simulationParallelism) * vectorization_float_count<ElementCount>);
+    auto const springShards = CalculateSpringRelaxationSpringShards(
+        mSprings.GetElementCount(),
+        mSprings.GetPerfectSquareCount(),
+        simulationThreadPool);
 
-    ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
-    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(simulationParallelism) * vectorization_float_count<ElementCount>);
+    auto const pointShards = CalculatePointShards(
+        mPoints.GetBufferElementCount(),
+        simulationThreadPool);
 
     ElementIndex springStart = 0;
     ElementIndex pointStart = 0;
     for (size_t t = 0; t < simulationParallelism; ++t)
     {
-        ElementIndex const springEnd = (t < simulationParallelism - 1)
-            ? std::min(
-                springStart + numberOfVecSpringsPerThread * vectorization_float_count<ElementCount>,
-                numberOfSprings)
-            : numberOfSprings;
+        ElementIndex const springEnd = springStart + static_cast<ElementCount>(springShards[t]);
+        assert(springEnd <= mSprings.GetElementCount());
 
-        ElementIndex const pointEnd = (t < simulationParallelism - 1)
-            ? std::min(
-                pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>,
-                numberOfPoints)
-            : numberOfPoints;
+        ElementIndex const pointEnd = pointStart + static_cast<ElementCount>(pointShards[t]);
+        assert(pointEnd <= mPoints.GetBufferElementCount());
 
         mSpringRelaxation_FullSpeed_Tasks.emplace_back(
             [this, t, springStart, springEnd, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
@@ -115,7 +109,6 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
     ThreadPool const & simulationThreadPool,
     SimulationParameters const & simulationParameters)
 {
-    // TODOHERE
     auto const simulationParallelism = simulationThreadPool.GetParallelism();
 
     LogMessage("Ship::RecalculateSpringRelaxationParallelism_StepByStep: simulationParallelism=", simulationParallelism);
@@ -129,26 +122,26 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
     //
     // Prepare tasks
     //
-    // We want all but the last thread to work on a multiple of the vectorization word size
-    //
 
     mSpringRelaxation_StepByStep_SpringForcesTasks.clear();
     mSpringRelaxation_StepByStep_IntegrationTasks.clear();
     mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks.clear();
 
-    ElementCount const numberOfSprings = mSprings.GetElementCount();
-    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(simulationParallelism) * vectorization_float_count<ElementCount>);
+    auto const springShards = CalculateSpringRelaxationSpringShards(
+        mSprings.GetElementCount(),
+        mSprings.GetPerfectSquareCount(),
+        simulationThreadPool);
 
-    ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
-    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(simulationParallelism) * vectorization_float_count<ElementCount>);
+    auto const pointShards = CalculatePointShards(
+        mPoints.GetBufferElementCount(),
+        simulationThreadPool);
 
     ElementIndex springStart = 0;
     ElementIndex pointStart = 0;
     for (size_t t = 0; t < simulationParallelism; ++t)
     {
-        ElementIndex const springEnd = (t < simulationParallelism - 1)
-            ? springStart + numberOfVecSpringsPerThread * vectorization_float_count<ElementCount>
-            : numberOfSprings;
+        ElementIndex const springEnd = springStart + static_cast<ElementCount>(springShards[t]);
+        assert(springEnd <= mSprings.GetElementCount());
 
         vec2f * restrict const dynamicForceBuffer = mPoints.GetParallelDynamicForceBuffer(t);
 
@@ -165,9 +158,8 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
 
         springStart = springEnd;
 
-        ElementIndex const pointEnd = (t < simulationParallelism - 1)
-            ? pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>
-            : numberOfPoints;
+        ElementIndex const pointEnd = pointStart + static_cast<ElementCount>(pointShards[t]);
+        assert(pointEnd <= mPoints.GetBufferElementCount());
 
         assert(((pointEnd - pointStart) % vectorization_float_count<ElementCount>) == 0);
 
@@ -208,7 +200,6 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
     ThreadPool const & simulationThreadPool,
     SimulationParameters const & simulationParameters)
 {
-    // TODOHERE
     auto const simulationParallelism = simulationThreadPool.GetParallelism();
 
     LogMessage("Ship::RecalculateSpringRelaxationParallelism_Hybrid: simulationParallelism=", simulationParallelism);
@@ -221,8 +212,6 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
 
     //
     // Prepare tasks
-    //
-    // We want threads to work on a multiple of the vectorization word size - unless there aren't enough elements
     //
 
     mSpringRelaxation_Hybrid_1_Tasks.clear();
