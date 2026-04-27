@@ -875,35 +875,32 @@
 				- List, but with cheap allocation
 				- Epk particle i needs pointer to own node in list				
 
-	= Splashes
-		! Same concept as silt dust
-		+ Textures
-		+ Eph particles
-		+ Spawning of eph particles
-		- Fine-tune:
-			= Must not sink and must not remain underwater -- must always go to surface
-				+ Change props so it floats
-			- Less-dense texture
-				+ Try without that one
-			+ PlaneID
-			+ Multiple particles, random dir
+	= Splashes and Foam
+		+ Splashes:
+			! Same concept as silt dust
+			+ Textures
+			+ Eph particles
+			+ Spawning of eph particles
+			+ Fine-tune:
+				+ Must not sink and must not remain underwater -- must always go to surface
+					+ Change props so it floats
+				+ Less-dense texture
+					+ Try without that one
+				+ PlaneID
+				+ Multiple particles, random dir
 
-			- Foam
-				= Water splashes are only spawned for (negative) displacement with moderate magnitude
-					+ Make sure initial velocity starts proportionally high
-					- Try: other textures - less-dense
-					- Try: elongate texture in direction of velocity
-				- For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
-					- Foam: seamless texture along x, TODO where it lives
-						- Flat above, bubbly below
-					- Option 1: drawn by ocean surface detailed shader:
-						- Additional vertex attribute TODOHERE
-						- Only drawn for foreground
-					- Option 2: drawn by new batch, TODOHERE
-					- Doesn't have velocity
+		- Foam:
+			- For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
+				- Foam: seamless texture along x, TODO where it lives
+					- Flat above, bubbly below
+				- Option 1: drawn by ocean surface detailed shader:
+					- Additional vertex attribute TODOHERE
+					- Only drawn for foreground
+				- Option 2: drawn by new batch, TODOHERE
+				- Doesn't have velocity
 
 		- Test:
-			- When DoDisplaceWater is off
+			+ Water Splashes when DoDisplaceWater is off
 
 		- @ Bombs (blasts, incl. tool)
 		- @ Tornado bottom
