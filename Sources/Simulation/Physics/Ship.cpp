@@ -1765,7 +1765,7 @@ void Ship::ApplyWorldSurfaceForces(
                 GameRandomEngine::GetInstance().GenerateNormalReal(Pi<float> / 2.0f, Pi<float> / 3.0f),
                 Pi<float> / 2.0f - Pi<float> / 3.0f,
                 Pi<float> / 2.0f + Pi<float> / 3.0f);
-            vec2f const direction = vec2f::fromPolar(1.0f, -directionAngleCcw);
+            vec2f const direction = vec2f::fromPolar(1.0f, -directionAngleCcw); // TODOTEST
 
             // Create splash
             InternalSpawnWaterSplash(
@@ -3985,8 +3985,8 @@ void Ship::InternalSpawnWaterSplash(
     // Calculate velocity: magnitude depending on strength
     //
 
-    float constexpr MinVelocityMagnitude = 6.2f;
-    float constexpr MaxVelocityMagnitude = 8.0f;
+    float constexpr MinVelocityMagnitude = 5.2f;
+    float constexpr MaxVelocityMagnitude = 8.5f;
     float const velocityMagnitude =
         MinVelocityMagnitude
         + (MaxVelocityMagnitude - MinVelocityMagnitude) * strength;
@@ -3996,7 +3996,6 @@ void Ship::InternalSpawnWaterSplash(
     // Calculate scale: depends on strength
     //
 
-    //float constexpr MinMaxScale = 0.15f;
     float constexpr MinMaxScale = 0.4f;
     float constexpr MaxMaxScale = 1.4f;
     float const maxScale =
