@@ -883,18 +883,28 @@
 		- Fine-tune:
 			= Must not sink and must not remain underwater -- must always go to surface
 				+ Change props so it floats
-				- Try enforcing appearance on surface
-					- Calc ocean surface Y there
 			- Less-dense texture
+				+ Try without that one
 			+ PlaneID
 			+ Multiple particles, random dir
 
 			- Foam
+				= Water splashes are only spawned for (negative) displacement with moderate magnitude
+					+ Make sure initial velocity starts proportionally high
+					- Try: other textures - less-dense
+					- Try: elongate texture in direction of velocity
+				- For all other displacements (positive, or negative but little), we create "foam"
+					- Foam: seamless texture, TODO where it lives
+					- Ocean surface detailed shader:
+						- Additional vertex attribute TODOHERE
+					- TODOHERE
+					- Doesn't have velocity
 
 		- Test:
 			- When DoDisplaceWater is off
 
-		- @ Bombs
+		- @ Bombs (blasts, incl. tool)
+		- @ Tornado bottom
 
 		- TODO: see if can incorporate also "mist" for tornadoes
 		

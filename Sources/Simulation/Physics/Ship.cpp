@@ -1656,8 +1656,12 @@ void Ship::ApplyWorldSurfaceForces(
                     // Water splashes
                     //
 
-                    float constexpr MinAbsDisplacementForStrength = 0.3f; // Magic
-                    if (absDisplacement > MinAbsDisplacementForStrength)
+                    //float constexpr MinAbsDisplacementForStrength = 0.3f; // Magic
+                    float constexpr MinAbsDisplacementForStrength = 0.5f; // Magic
+                    // TODOTEST
+                    //if (absDisplacement > MinAbsDisplacementForStrength)
+                    if (displacement < -MinAbsDisplacementForStrength
+                        && thisPointDepth < 2.0f) // TODOTEST
                     {
                         float constexpr MaxAbsDisplacementForStrength = 1.0f; // Magic
                         float const strength = (absDisplacement - MinAbsDisplacementForStrength) / (MaxAbsDisplacementForStrength - MinAbsDisplacementForStrength);
@@ -1753,7 +1757,7 @@ void Ship::ApplyWorldSurfaceForces(
         // Secondary splashes
         //
 
-        size_t nSecondarySplashes = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(1, 3);
+        size_t nSecondarySplashes = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(1, 2);
         for (size_t s = 0; s < nSecondarySplashes; ++s)
         {
             // Decide direction
@@ -1767,7 +1771,7 @@ void Ship::ApplyWorldSurfaceForces(
             InternalSpawnWaterSplash(
                 strongestWaterSplash.Position,
                 direction,
-                strongestWaterSplash.Strength * 0.3f,
+                strongestWaterSplash.Strength * 1.3f,
                 strongestWaterSplash.Plane,
                 currentSimulationTime,
                 simulationParameters);
@@ -3981,7 +3985,7 @@ void Ship::InternalSpawnWaterSplash(
     // Calculate velocity: magnitude depending on strength
     //
 
-    float constexpr MinVelocityMagnitude = 0.2f;
+    float constexpr MinVelocityMagnitude = 6.2f;
     float constexpr MaxVelocityMagnitude = 8.0f;
     float const velocityMagnitude =
         MinVelocityMagnitude
@@ -3992,7 +3996,8 @@ void Ship::InternalSpawnWaterSplash(
     // Calculate scale: depends on strength
     //
 
-    float constexpr MinMaxScale = 0.15f;
+    //float constexpr MinMaxScale = 0.15f;
+    float constexpr MinMaxScale = 0.4f;
     float constexpr MaxMaxScale = 1.4f;
     float const maxScale =
         MinMaxScale
@@ -4005,7 +4010,7 @@ void Ship::InternalSpawnWaterSplash(
 
     float const maxLifetime =
         2.0f
-        * std::max(velocityMagnitude, 8.0f) // Long persistence
+        * std::max(velocityMagnitude, 10.0f) // Long persistence
         / SimulationParameters::GravityMagnitude;
 
     //
