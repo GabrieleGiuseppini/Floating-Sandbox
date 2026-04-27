@@ -1713,8 +1713,8 @@ void Npcs::UpdateHuman(
 					mParticles.GetPosition(secondaryParticleState.ParticleIndex),
 					SimulationParameters::NpcAirBubbleFinalScale,
 					mParticles.GetTemperature(secondaryParticleState.ParticleIndex), // Head temperature
-					currentSimulationTime,
 					npc.CurrentPlaneId,
+					currentSimulationTime,
 					simulationParameters);
 
 				// Calculate next emission timestamp

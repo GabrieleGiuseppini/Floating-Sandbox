@@ -1753,12 +1753,15 @@ void Ship::ApplyWorldSurfaceForces(
         // Secondary splashes
         //
 
-        size_t nSecondarySplashes = GameRandomEngine::GetInstance().Choose(1, 3);
+        size_t nSecondarySplashes = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(1, 3);
         for (size_t s = 0; s < nSecondarySplashes; ++s)
         {
             // Decide direction
-            float const directionAngleCw = GameRandomEngine::GetInstance().GenerateNormalReal(Pi<float> / 2.0f, Pi<float> / 8.0f);
-            vec2f const direction = vec2f::fromPolar(1.0f, directionAngleCw);
+            float const directionAngleCcw = Clamp(
+                GameRandomEngine::GetInstance().GenerateNormalReal(Pi<float> / 2.0f, Pi<float> / 3.0f),
+                Pi<float> / 2.0f - Pi<float> / 3.0f,
+                Pi<float> / 2.0f + Pi<float> / 3.0f);
+            vec2f const direction = vec2f::fromPolar(1.0f, -directionAngleCcw);
 
             // Create splash
             InternalSpawnWaterSplash(
@@ -3978,7 +3981,7 @@ void Ship::InternalSpawnWaterSplash(
     // Calculate velocity: magnitude depending on strength
     //
 
-    float constexpr MinVelocityMagnitude = 0.0f;
+    float constexpr MinVelocityMagnitude = 0.2f;
     float constexpr MaxVelocityMagnitude = 8.0f;
     float const velocityMagnitude =
         MinVelocityMagnitude

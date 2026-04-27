@@ -883,9 +883,11 @@
 		- Fine-tune:
 			= Must not sink and must not remain underwater -- must always go to surface
 				+ Change props so it floats
+				- Try enforcing appearance on surface
+					- Calc ocean surface Y there
 			- Less-dense texture
 			+ PlaneID
-			= Multiple particles, random dir
+			+ Multiple particles, random dir
 
 			- Foam
 
