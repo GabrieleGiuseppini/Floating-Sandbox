@@ -227,6 +227,18 @@
 			"frame_name_pattern": "timer_bomb_fuse_\\d+"
 		}
 	]
+},
+
+{
+	"group_name": "WaterSplash",
+	"has_own_ambient_light": false,
+	"frames":[
+		{	
+			"world_width": 15.0,
+			"world_height": 15.0,
+			"frame_name_pattern": "water_splash_\\d+"
+		}
+	]
 }
 
 ]

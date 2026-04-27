@@ -57,7 +57,8 @@ public:
         SiltCloud,
         Smoke,
         Sparkle,
-        WakeBubble
+        WakeBubble,
+        WaterSplash
     };
 
     /*
@@ -437,12 +438,40 @@ private:
             {}
         };
 
+        struct WaterSplashState
+        {
+            float MinScale;
+            float MaxScale;
+            float PersonalitySeed;
+            float LifetimeProgress;
+
+            WaterSplashState()
+                : MinScale(0.0f)
+                , MaxScale(0.0f)
+                , PersonalitySeed(0.0f)
+                , LifetimeProgress(0.0f)
+            {
+            }
+
+            WaterSplashState(
+                float minScale,
+                float maxScale,
+                float personalitySeed)
+                : MinScale(minScale)
+                , MaxScale(maxScale)
+                , PersonalitySeed(personalitySeed)
+                , LifetimeProgress(0.0f)
+            {
+            }
+        };
+
         AirBubbleState AirBubble;
         DebrisState Debris;
         SiltCloudState SiltCloud;
         SmokeState Smoke;
         SparkleState Sparkle;
         WakeBubbleState WakeBubble;
+        WaterSplashState WaterSplash;
 
         EphemeralState(AirBubbleState airBubble)
             : AirBubble(airBubble)
@@ -454,8 +483,7 @@ private:
 
         EphemeralState(SiltCloudState siltCloud)
             : SiltCloud(siltCloud)
-        {
-        }
+        {}
 
         EphemeralState(SmokeState smoke)
             : Smoke(smoke)
@@ -467,6 +495,10 @@ private:
 
         EphemeralState(WakeBubbleState wakeBubble)
             : WakeBubble(wakeBubble)
+        {}
+
+        EphemeralState(WaterSplashState waterSplash)
+            : WaterSplash(waterSplash)
         {}
     };
 
@@ -957,6 +989,17 @@ public:
         vec2f const & velocity,
         float depth,
         float currentSimulationTime,
+        PlaneId planeId,
+        SimulationParameters const & simulationParameters);
+
+    void CreateEphemeralParticleWaterSplash(
+        vec2f const & position,
+        float depth,
+        vec2f const & velocity,
+        float initialScale,
+        float maxScale,
+        float currentSimulationTime,
+        float maxSimulationLifetime,
         PlaneId planeId,
         SimulationParameters const & simulationParameters);
 

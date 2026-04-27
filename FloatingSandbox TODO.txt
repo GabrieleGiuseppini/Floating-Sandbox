@@ -875,9 +875,27 @@
 				- List, but with cheap allocation
 				- Epk particle i needs pointer to own node in list				
 
-	- Splashes
+	= Splashes
+		! Same concept as silt dust
+		+ Textures
+		+ Eph particles
+		+ Spawning of eph particles
+		- Fine-tune:
+			= Must not sink and must not remain underwater -- must always go to surface
+				+ Change props so it floats
+			- Less-dense texture
+			+ PlaneID
+			= Multiple particles, random dir
+
+			- Foam
+
+		- Test:
+			- When DoDisplaceWater is off
+
+		- @ Bombs
+
 		- TODO: see if can incorporate also "mist" for tornadoes
-		- Same concept as silt dust
+		
 		- OLD: WAS:
 		- Option A) Ephemeral particles with own shader:
 			- Texture of splash

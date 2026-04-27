@@ -711,6 +711,105 @@ void Points::CreateEphemeralParticleWakeBubble(
     mIsEphemeralColorBufferDirty = true;
 }
 
+void Points::CreateEphemeralParticleWaterSplash(
+    vec2f const & position,
+    float depth,
+    vec2f const & velocity,
+    float initialScale,
+    float maxScale,
+    float currentSimulationTime,
+    float maxSimulationLifetime,
+    PlaneId planeId,
+    SimulationParameters const & simulationParameters)
+{
+    // Get a free slot (or steal one)
+    auto pointIndex = FindFreeEphemeralParticle(true);
+    assert(NoneElementIndex != pointIndex);
+
+    //
+    // Store attributes
+    //
+
+    // We begin with water material, but then we tweak it to ensure it always stays afloat, on the surface
+    StructuralMaterial const & waterSplashStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Water);
+    float const mass = waterSplashStructuralMaterial.GetMass() * 0.2f;
+    float const buoyancyVolumeFill = 1.0f; // Must float
+
+    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    mMaterialsBuffer[pointIndex] = Materials(&waterSplashStructuralMaterial, nullptr);
+    mPositionBuffer[pointIndex] = position;
+    mVelocityBuffer[pointIndex] = velocity;
+    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
+    mStaticForceBuffer[pointIndex] = vec2f::zero();
+    mAugmentedMaterialMassBuffer[pointIndex] = mass;
+    mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
+    mMassBuffer[pointIndex] = mass;
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = buoyancyVolumeFill;
+    assert(mDecayBuffer[pointIndex] == 1.0f);
+    //mDecayBuffer[pointIndex] = 1.0f;
+    assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
+    //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
+    mPinningCoefficientBuffer[pointIndex] = 1.0f;
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
+        mCurrentElasticityAdjustment,
+        mCurrentStaticFrictionAdjustment,
+        mCurrentKineticFrictionAdjustment,
+        0.0f, // No elasticity, no friction
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f);
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 0.2f;
+    mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
+        buoyancyVolumeFill,
+        waterSplashStructuralMaterial.ThermalExpansionCoefficient);
+    mCachedDepthBuffer[pointIndex] = depth;
+
+    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mMaterialWaterIntakeBuffer[pointIndex] = waterSplashStructuralMaterial.WaterIntake;
+    //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterSplashStructuralMaterial.WaterRetention;
+    //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterSplashStructuralMaterial.WaterDiffusionSpeed;
+    mWaterBuffer[pointIndex] = 0.0f;
+    assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
+    //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
+
+    mTemperatureBuffer[pointIndex] = Formulae::CalculateWaterTemperature(depth, simulationParameters);
+    assert(waterSplashStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / waterSplashStructuralMaterial.GetHeatCapacity();
+    mMaterialThermalExpansionCoefficientBuffer[pointIndex] = waterSplashStructuralMaterial.ThermalExpansionCoefficient;
+    //mMaterialIgnitionTemperatureBuffer[pointIndex] = waterSplashStructuralMaterial.IgnitionTemperature;
+    //mMaterialCombustionTypeBuffer[pointIndex] = waterSplashStructuralMaterial.CombustionType;
+    //mCombustionStateBuffer[pointIndex] = CombustionState();
+
+    //mWaterReactionStateBuffer.emplace_back(0.0f);
+
+    assert(mLightBuffer[pointIndex] == 0.0f);
+    //mLightBuffer[pointIndex] = 0.0f;
+
+    mMaterialWindReceptivityBuffer[pointIndex] = waterSplashStructuralMaterial.WindReceptivity;
+
+    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
+    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
+
+    mEphemeralParticleAttributes1Buffer[pointIndex].Type = EphemeralType::WaterSplash;
+    mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime = currentSimulationTime;
+    mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime = maxSimulationLifetime;
+    mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::WaterSplashState(
+        initialScale,
+        maxScale,
+        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
+
+    assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
+    //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+    mPlaneIdBuffer[pointIndex] = planeId;
+    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
+    mIsPlaneIdBufferEphemeralDirty = true;
+
+    mColorBuffer[pointIndex] = waterSplashStructuralMaterial.RenderColor.toVec4f();
+    mIsEphemeralColorBufferDirty = true;
+}
+
 void Points::Detach(
     ElementIndex pointElementIndex,
     vec2f const & velocity,
@@ -1866,6 +1965,37 @@ void Points::UpdateEphemeralParticles(
                     break;
                 }
 
+                case EphemeralType::WaterSplash:
+                {
+                    // Calculate progress
+                    auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
+                    assert(mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime > 0.0f);
+                    float const lifetimeProgress =
+                        elapsedSimulationLifetime
+                        / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
+
+                    // Check if expired
+                    if (lifetimeProgress >= 1.0f)
+                    {
+                        //
+                        /// Expired
+                        //
+
+                        ExpireEphemeralParticle(pointIndex);
+                    }
+                    else
+                    {
+                        //
+                        // Still alive
+                        //
+
+                        // Update progress
+                        mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterSplash.LifetimeProgress = lifetimeProgress;
+                    }
+
+                    break;
+                }
+
                 case EphemeralType::None:
                 {
                     // Do nothing
@@ -2421,6 +2551,34 @@ void Points::UploadEphemeralParticles(
                     0.10f + 1.22f * state.Progress, // Scale, magic formula
                     mRandomNormalizedUniformFloatBuffer[pointIndex] * 2.0f * Pi<float>, // Angle
                     1.0f - state.Progress); // Alpha
+
+                break;
+            }
+
+            case EphemeralType::WaterSplash:
+            {
+                auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterSplash;
+
+                float const lifetimeProgress = state.LifetimeProgress;
+
+                // Calculate scale: ~parabolic with progress
+                float const scale = (lifetimeProgress < 0.5f)
+                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, lifetimeProgress)
+                    : state.MinScale * 2.0f + (state.MaxScale - state.MinScale * 2.0f) * (1.0f - SmoothStep(0.5f, 1.0f, lifetimeProgress));
+
+                // Calculate alpha: ~parabolic with progress
+                float const alpha =
+                    SmoothStep(0.0f, 0.05f, lifetimeProgress)
+                    - SmoothStep(0.5f, 1.0f, lifetimeProgress);
+
+                // Upload splash
+                shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
+                    maxPlaneId,
+                    state.PersonalitySeed,
+                    GameTextureDatabases::GenericMipMappedTextureGroups::WaterSplash,
+                    GetPosition(pointIndex),
+                    scale,
+                    alpha * 0.45f);
 
                 break;
             }

@@ -1259,8 +1259,8 @@ std::optional<ToolApplicationLocus> Ship::InjectBubblesAt(
             depth,
             SimulationParameters::ShipAirBubbleFinalScale,
             SimulationParameters::Temperature0,
-            currentSimulationTime,
             mMaxMaxPlaneId,
+            currentSimulationTime,
             simulationParameters);
 
         return ToolApplicationLocus::World | ToolApplicationLocus::UnderWater;
@@ -2013,8 +2013,8 @@ void Ship::SpawnAirBubble(
     vec2f const & position,
     float finalScale, // Relative to texture's world dimensions
     float temperature,
-    float currentSimulationTime,
     PlaneId planeId,
+    float currentSimulationTime,
     SimulationParameters const & simulationParameters)
 {
     InternalSpawnAirBubble(
@@ -2022,8 +2022,8 @@ void Ship::SpawnAirBubble(
         mParentWorld.GetOceanSurface().GetDepth(position),
         finalScale,
         temperature,
-        currentSimulationTime,
         planeId,
+        currentSimulationTime,
         simulationParameters);
 }
 

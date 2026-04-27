@@ -116,8 +116,9 @@ enum class GenericMipMappedTextureGroups : uint16_t
     SmokeLight,
     TimerBomb,
     TimerBombFuse,
+    WaterSplash,
 
-    _Last = TimerBombFuse
+    _Last = WaterSplash
 };
 
 struct GenericMipMappedTextureDatabase
@@ -164,6 +165,8 @@ struct GenericMipMappedTextureDatabase
             return GenericMipMappedTextureGroups::TimerBomb;
         else if (Utils::CaseInsensitiveEquals(str, "TimerBombFuse"))
             return GenericMipMappedTextureGroups::TimerBombFuse;
+        else if (Utils::CaseInsensitiveEquals(str, "WaterSplash"))
+            return GenericMipMappedTextureGroups::WaterSplash;
         else
             throw GameException("Unrecognized GenericMipMappedTexture texture group \"" + str + "\"");
     }

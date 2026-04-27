@@ -394,6 +394,7 @@ void Ship::Update(
     ApplyWorldForces(
         effectiveAirDensity,
         effectiveWaterDensity,
+        currentSimulationTime,
         simulationParameters,
         externalAabbSet);
 
@@ -1209,6 +1210,7 @@ void Ship::ApplyQueuedInteractionForces(SimulationParameters const & simulationP
 void Ship::ApplyWorldForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
+    float currentSimulationTime,
     SimulationParameters const & simulationParameters,
     Geometry::ShipAABBSet & externalAabbSet) // output
 {
@@ -1226,9 +1228,9 @@ void Ship::ApplyWorldForces(
     //
 
     if (simulationParameters.DoDisplaceWater)
-        ApplyWorldSurfaceForces<true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, simulationParameters, externalAabbSet);
+        ApplyWorldSurfaceForces<true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, currentSimulationTime, simulationParameters, externalAabbSet);
     else
-        ApplyWorldSurfaceForces<false>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, simulationParameters, externalAabbSet);
+        ApplyWorldSurfaceForces<false>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, currentSimulationTime, simulationParameters, externalAabbSet);
 
     // Commit new particle depth buffer
     mPoints.SwapCachedDepthBuffer(*newCachedPointDepths);
@@ -1384,6 +1386,7 @@ void Ship::ApplyWorldSurfaceForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
     Buffer<float> const & newCachedPointDepths,
+    float currentSimulationTime,
     SimulationParameters const & simulationParameters,
     Geometry::ShipAABBSet & externalAabbSet) // output
 {
@@ -1417,8 +1420,8 @@ void Ship::ApplyWorldSurfaceForces(
     // Water displacement constants
     //
 
-    float constexpr wdmX0 = 2.0f; // Vertical velocity at which displacement transitions from quadratic to linear
-    float constexpr wdmY0 = 0.16f; // Displacement magnitude at x0
+    float constexpr WdmX0 = 2.0f; // Vertical velocity at which displacement transitions from quadratic to linear
+    float constexpr WdmY0 = 0.16f; // Displacement magnitude at x0
 
     // Linear portion
     float const wdmLinearSlope =
@@ -1429,8 +1432,34 @@ void Ship::ApplyWorldSurfaceForces(
     //  y(0) = 0
     //  y'(x0) = slope
     //  y(x0) = y0
-    float const wdmQuadraticA = (wdmLinearSlope * wdmX0 - wdmY0) / (wdmX0 * wdmX0);
-    float const wdmQuadraticB = 2.0f * wdmY0 / wdmX0 - wdmLinearSlope;
+    float const wdmQuadraticA = (wdmLinearSlope * WdmX0 - WdmY0) / (WdmX0 * WdmX0);
+    float const wdmQuadraticB = 2.0f * WdmY0 / WdmX0 - wdmLinearSlope;
+
+    // Water splashes
+
+    struct WaterSplash
+    {
+        vec2f Position;
+        float Strength;
+        PlaneId Plane;
+
+        WaterSplash()
+            : Position()
+            , Strength(0.0f)
+            , Plane(NonePlaneId)
+        { }
+
+        WaterSplash(
+            vec2f const & position,
+            float strength,
+            PlaneId plane)
+            : Position(position)
+            , Strength(strength)
+            , Plane(plane)
+        { }
+    };
+
+    WaterSplash strongestWaterSplash;
 
     //
     // Visit all frontiers
@@ -1588,7 +1617,7 @@ void Ship::ApplyWorldSurfaceForces(
                     // Displacement magnitude calculation
                     //
 
-                    float const linearDisplacementMagnitude = wdmY0 + wdmLinearSlope * (absVerticalVelocity - wdmX0);
+                    float const linearDisplacementMagnitude = WdmY0 + wdmLinearSlope * (absVerticalVelocity - WdmX0);
                     float const quadraticDisplacementMagnitude = wdmQuadraticA * absVerticalVelocity * absVerticalVelocity + wdmQuadraticB * absVerticalVelocity;
 
                     //
@@ -1612,7 +1641,7 @@ void Ship::ApplyWorldSurfaceForces(
                     //
 
                     float const displacement =
-                        (absVerticalVelocity < wdmX0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
+                        (absVerticalVelocity < WdmX0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
                         * depthAttenuation
                         * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
                         * Step(0.0f, thisPointDepth) // No displacement for above-water points
@@ -1620,7 +1649,23 @@ void Ship::ApplyWorldSurfaceForces(
 
                     mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
 
-                    totalWaterDisplacementMagnitude += std::abs(displacement);
+                    float const absDisplacement = std::abs(displacement);
+                    totalWaterDisplacementMagnitude += absDisplacement;
+
+                    //
+                    // Water splashes
+                    //
+
+                    float constexpr MinAbsDisplacementForStrength = 0.3f; // Magic
+                    if (absDisplacement > MinAbsDisplacementForStrength)
+                    {
+                        float constexpr MaxAbsDisplacementForStrength = 1.0f; // Magic
+                        float const strength = (absDisplacement - MinAbsDisplacementForStrength) / (MaxAbsDisplacementForStrength - MinAbsDisplacementForStrength);
+                        if (strength > strongestWaterSplash.Strength)
+                        {
+                            strongestWaterSplash = WaterSplash(thisPointPosition, strength, mPoints.GetPlaneId(thisPointIndex));
+                        }
+                    }
                 }
 
                 //
@@ -1686,6 +1731,44 @@ void Ship::ApplyWorldSurfaceForces(
     if constexpr (DoDisplaceWater)
     {
         mSimulationEventHandler.OnWaterDisplaced(totalWaterDisplacementMagnitude);
+    }
+
+    if (strongestWaterSplash.Strength > 0.0f)
+    {
+        assert(strongestWaterSplash.Plane != NonePlaneId);
+
+        //
+        // Main splash
+        //
+
+        InternalSpawnWaterSplash(
+            strongestWaterSplash.Position,
+            vec2f(0.0f, 1.0f), // TODOTEST
+            strongestWaterSplash.Strength,
+            strongestWaterSplash.Plane,
+            currentSimulationTime,
+            simulationParameters);
+
+        //
+        // Secondary splashes
+        //
+
+        size_t nSecondarySplashes = GameRandomEngine::GetInstance().Choose(1, 3);
+        for (size_t s = 0; s < nSecondarySplashes; ++s)
+        {
+            // Decide direction
+            float const directionAngleCw = GameRandomEngine::GetInstance().GenerateNormalReal(Pi<float> / 2.0f, Pi<float> / 8.0f);
+            vec2f const direction = vec2f::fromPolar(1.0f, directionAngleCw);
+
+            // Create splash
+            InternalSpawnWaterSplash(
+                strongestWaterSplash.Position,
+                direction,
+                strongestWaterSplash.Strength * 0.3f,
+                strongestWaterSplash.Plane,
+                currentSimulationTime,
+                simulationParameters);
+        }
     }
 }
 
@@ -2464,8 +2547,8 @@ void Ship::UpdatePressureAndWaterInflow(
                         pointDepth,
                         SimulationParameters::ShipAirBubbleFinalScale,
                         mPoints.GetTemperature(pointIndex),
-                        currentSimulationTime,
                         mPoints.GetPlaneId(pointIndex),
+                        currentSimulationTime,
                         simulationParameters);
                 }
 
@@ -3625,8 +3708,8 @@ void Ship::InternalSpawnAirBubble(
     float depth,
     float finalScale, // Relative to texture's world dimensions
     float temperature,
-    float currentSimulationTime,
     PlaneId planeId,
+    float currentSimulationTime,
     SimulationParameters const & /*simulationParameters*/)
 {
     std::uint64_t constexpr PhasePeriod = 10;
@@ -3876,6 +3959,66 @@ void Ship::InternalSpawnSparklesForLightning(
             maxLifetime,
             mPoints.GetPlaneId(pointElementIndex));
     }
+}
+
+void Ship::InternalSpawnWaterSplash(
+    vec2f const & position,
+    vec2f const & direction,
+    float strength,
+    PlaneId planeId,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
+{
+    assert(position.x >= -SimulationParameters::HalfMaxWorldWidth
+        && position.x <= SimulationParameters::HalfMaxWorldWidth);
+
+    float const impactDepth = mParentWorld.GetOceanSurface().GetDepth(position);
+
+    //
+    // Calculate velocity: magnitude depending on strength
+    //
+
+    float constexpr MinVelocityMagnitude = 0.0f;
+    float constexpr MaxVelocityMagnitude = 8.0f;
+    float const velocityMagnitude =
+        MinVelocityMagnitude
+        + (MaxVelocityMagnitude - MinVelocityMagnitude) * strength;
+    vec2f const velocity = direction * velocityMagnitude;
+
+    //
+    // Calculate scale: depends on strength
+    //
+
+    float constexpr MinMaxScale = 0.15f;
+    float constexpr MaxMaxScale = 1.4f;
+    float const maxScale =
+        MinMaxScale
+        + (MaxMaxScale - MinMaxScale) * strength;
+    float const initialScale = maxScale / 2.0f;
+
+    //
+    // Calculate max lifetime: gravity is the only force acting on the splash
+    //
+
+    float const maxLifetime =
+        2.0f
+        * std::max(velocityMagnitude, 8.0f) // Long persistence
+        / SimulationParameters::GravityMagnitude;
+
+    //
+    // Create particle
+    //
+
+    mPoints.CreateEphemeralParticleWaterSplash(
+        position,
+        impactDepth,
+        velocity,
+        initialScale,
+        maxScale,
+        currentSimulationTime,
+        maxLifetime,
+        planeId,
+        simulationParameters);
 }
 
 /////////////////////////////////////////////////////////////////////////

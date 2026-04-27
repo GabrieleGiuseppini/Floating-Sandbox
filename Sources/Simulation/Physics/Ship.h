@@ -344,8 +344,8 @@ public:
         vec2f const & position,
         float finalScale, // Relative to texture's world dimensions
         float temperature,
-        float currentSimulationTime,
         PlaneId planeId,
+        float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
     bool DestroyTriangle(ElementIndex triangleIndex);
@@ -578,6 +578,7 @@ private:
     void ApplyWorldForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
+        float currentSimulationTime,
         SimulationParameters const & simulationParameters,
         Geometry::ShipAABBSet & externalAabbSet);
 
@@ -592,6 +593,7 @@ private:
         float effectiveAirDensity,
         float effectiveWaterDensity,
         Buffer<float> const & newCachedPointDepths,
+        float currentSimulationTime,
         SimulationParameters const & simulationParameters,
         Geometry::ShipAABBSet & externalAabbSet);
 
@@ -777,8 +779,8 @@ private:
         float depth,
         float finalScale, // Relative to texture's world dimensions
         float temperature,
-        float currentSimulationTime,
         PlaneId planeId,
+        float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
     void InternalSpawnDebris(
@@ -803,6 +805,14 @@ private:
 		ElementIndex pointElementIndex,
 		float currentSimulationTime,
 		SimulationParameters const & simulationParameters);
+
+    void InternalSpawnWaterSplash(
+        vec2f const & position,
+        vec2f const & direction,
+        float strength,
+        PlaneId planeId,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
 
     inline size_t GetPointConnectedComponentSize(ElementIndex pointIndex) const noexcept
     {
