@@ -1656,15 +1656,12 @@ void Ship::ApplyWorldSurfaceForces(
                     // Water splashes
                     //
 
-                    //float constexpr MinAbsDisplacementForStrength = 0.3f; // Magic
-                    float constexpr MinAbsDisplacementForStrength = 0.5f; // Magic
-                    // TODOTEST
-                    //if (absDisplacement > MinAbsDisplacementForStrength)
-                    if (displacement < -MinAbsDisplacementForStrength
-                        && thisPointDepth < 2.0f) // TODOTEST
+                    float constexpr MinAbsDisplacementForWaterSplash = 0.5f; // Magic
+                    if (displacement < -MinAbsDisplacementForWaterSplash
+                        && thisPointDepth < 2.0f) // Only spawn splashes on the surface
                     {
-                        float constexpr MaxAbsDisplacementForStrength = 1.0f; // Magic
-                        float const strength = (absDisplacement - MinAbsDisplacementForStrength) / (MaxAbsDisplacementForStrength - MinAbsDisplacementForStrength);
+                        float constexpr MaxAbsDisplacementForWaterSplash = 1.0f; // Magic
+                        float const strength = (absDisplacement - MinAbsDisplacementForWaterSplash) / (MaxAbsDisplacementForWaterSplash - MinAbsDisplacementForWaterSplash);
                         if (strength > strongestWaterSplash.Strength)
                         {
                             strongestWaterSplash = WaterSplash(thisPointPosition, strength, mPoints.GetPlaneId(thisPointIndex));
@@ -1747,7 +1744,7 @@ void Ship::ApplyWorldSurfaceForces(
 
         InternalSpawnWaterSplash(
             strongestWaterSplash.Position,
-            vec2f(0.0f, 1.0f), // TODOTEST
+            vec2f(0.0f, 1.0f),
             strongestWaterSplash.Strength,
             strongestWaterSplash.Plane,
             currentSimulationTime,
@@ -1765,7 +1762,7 @@ void Ship::ApplyWorldSurfaceForces(
                 GameRandomEngine::GetInstance().GenerateNormalReal(Pi<float> / 2.0f, Pi<float> / 3.0f),
                 Pi<float> / 2.0f - Pi<float> / 3.0f,
                 Pi<float> / 2.0f + Pi<float> / 3.0f);
-            vec2f const direction = vec2f::fromPolar(1.0f, -directionAngleCcw); // TODOTEST
+            vec2f const direction = vec2f::fromPolar(1.0f, -directionAngleCcw);
 
             // Create splash
             InternalSpawnWaterSplash(

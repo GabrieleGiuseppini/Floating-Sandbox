@@ -893,11 +893,13 @@
 					+ Make sure initial velocity starts proportionally high
 					- Try: other textures - less-dense
 					- Try: elongate texture in direction of velocity
-				- For all other displacements (positive, or negative but little), we create "foam"
-					- Foam: seamless texture, TODO where it lives
-					- Ocean surface detailed shader:
+				- For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
+					- Foam: seamless texture along x, TODO where it lives
+						- Flat above, bubbly below
+					- Option 1: drawn by ocean surface detailed shader:
 						- Additional vertex attribute TODOHERE
-					- TODOHERE
+						- Only drawn for foreground
+					- Option 2: drawn by new batch, TODOHERE
 					- Doesn't have velocity
 
 		- Test:
