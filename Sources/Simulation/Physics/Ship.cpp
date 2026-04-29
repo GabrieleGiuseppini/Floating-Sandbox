@@ -1459,6 +1459,7 @@ void Ship::ApplyWorldSurfaceForces(
         { }
     };
 
+    WaterSplash strongestWaterFoam;
     WaterSplash strongestWaterSplash;
 
     //
@@ -1653,6 +1654,22 @@ void Ship::ApplyWorldSurfaceForces(
                     totalWaterDisplacementMagnitude += absDisplacement;
 
                     //
+                    // Water foam
+                    //
+
+                    float constexpr MinAbsDisplacementForWaterFoam = 0.06f; // Magic
+                    if (absDisplacement >= -MinAbsDisplacementForWaterFoam
+                        && thisPointDepth < 2.5f) // Only spawn foam on the surface
+                    {
+                        float constexpr MaxAbsDisplacementForWaterFoam = 1.0f; // Magic
+                        float const strength = (absDisplacement - MinAbsDisplacementForWaterFoam) / (MaxAbsDisplacementForWaterFoam - MinAbsDisplacementForWaterFoam);
+                        if (strength > strongestWaterFoam.Strength)
+                        {
+                            strongestWaterFoam = WaterSplash(thisPointPosition, strength, mPoints.GetPlaneId(thisPointIndex));
+                        }
+                    }
+
+                    //
                     // Water splashes
                     //
 
@@ -1734,6 +1751,18 @@ void Ship::ApplyWorldSurfaceForces(
         mSimulationEventHandler.OnWaterDisplaced(totalWaterDisplacementMagnitude);
     }
 
+    if (strongestWaterFoam.Strength > 0.0f)
+    {
+        assert(strongestWaterFoam.Plane != NonePlaneId);
+
+        InternalSpawnWaterFoam(
+            strongestWaterFoam.Position,
+            strongestWaterFoam.Strength,
+            strongestWaterFoam.Plane,
+            currentSimulationTime,
+            simulationParameters);
+    }
+
     if (strongestWaterSplash.Strength > 0.0f)
     {
         assert(strongestWaterSplash.Plane != NonePlaneId);
@@ -1773,6 +1802,17 @@ void Ship::ApplyWorldSurfaceForces(
                 currentSimulationTime,
                 simulationParameters);
         }
+
+        //
+        // Foam
+        //
+
+        InternalSpawnWaterFoam(
+            strongestWaterSplash.Position,
+            strongestWaterSplash.Strength,
+            strongestWaterSplash.Plane,
+            currentSimulationTime,
+            simulationParameters);
     }
 }
 
@@ -3962,6 +4002,72 @@ void Ship::InternalSpawnSparklesForLightning(
             currentSimulationTime,
             maxLifetime,
             mPoints.GetPlaneId(pointElementIndex));
+    }
+}
+
+void Ship::InternalSpawnWaterFoam(
+    vec2f const & position,
+    float strength,
+    PlaneId planeId,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
+{
+    assert(position.x >= -SimulationParameters::HalfMaxWorldWidth
+        && position.x <= SimulationParameters::HalfMaxWorldWidth);
+
+    float const foamDepth = mParentWorld.GetOceanSurface().GetDepth(position);
+
+    //size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(2, 5);
+    size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(3, 7);
+    for (size_t p = 0; p < nParticles; ++p)
+    {
+        //
+        // Decide x velocity
+        //
+
+        float constexpr MaxXVelocity = 8.0f;
+        float const velocityX = Clamp(
+            GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, MaxXVelocity / 2.0f),
+            -MaxXVelocity,
+            MaxXVelocity);
+
+        //float const absVelocityX = std::abs(velocityX);
+
+        //
+        // Calculate scale: depends on strength, and randomized
+        //
+
+        float constexpr MinMaxScale = 0.4f;
+        float constexpr MaxMaxScale = 0.9f;
+        float const maxScale =
+            GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 0.9f)
+            + MinMaxScale + (MaxMaxScale - MinMaxScale) * strength;
+        float const initialScale = 0.0f;
+
+        //
+        // Calculate max lifetime: depends on scale
+        //
+
+        //float const maxLifetime = maxScale * 3.0f;
+
+        float constexpr MinMaxLifetime = 1.3f;
+        float constexpr MaxMaxLifetime = 5.0f;
+        float const maxLifetime = MinMaxLifetime + (MaxMaxLifetime - MinMaxLifetime) * strength;
+
+        //
+        // Create foam particle
+        //
+
+        mPoints.CreateEphemeralParticleWaterFoam(
+            position,
+            foamDepth,
+            velocityX,
+            initialScale,
+            maxScale,
+            currentSimulationTime,
+            maxLifetime,
+            planeId,
+            simulationParameters);
     }
 }
 

@@ -711,6 +711,105 @@ void Points::CreateEphemeralParticleWakeBubble(
     mIsEphemeralColorBufferDirty = true;
 }
 
+void Points::CreateEphemeralParticleWaterFoam(
+    vec2f const & position,
+    float depth,
+    float velocityX,
+    float initialScale,
+    float maxScale,
+    float currentSimulationTime,
+    float maxSimulationLifetime,
+    PlaneId planeId,
+    SimulationParameters const & simulationParameters)
+{
+    // Get a free slot (or steal one)
+    auto pointIndex = FindFreeEphemeralParticle(true);
+    assert(NoneElementIndex != pointIndex);
+
+    //
+    // Store attributes
+    //
+
+    // We begin with water material, but then we tweak it to ensure it always stays afloat, on the surface
+    StructuralMaterial const & waterFoamStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Water);
+    float const mass = waterFoamStructuralMaterial.GetMass();
+    float const buoyancyVolumeFill = 1.0f; // Must float
+
+    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    mMaterialsBuffer[pointIndex] = Materials(&waterFoamStructuralMaterial, nullptr);
+    mPositionBuffer[pointIndex] = position;
+    mVelocityBuffer[pointIndex] = vec2f(velocityX, 0.0f);
+    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
+    mStaticForceBuffer[pointIndex] = vec2f::zero();
+    mAugmentedMaterialMassBuffer[pointIndex] = mass;
+    mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
+    mMassBuffer[pointIndex] = mass;
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = buoyancyVolumeFill;
+    assert(mDecayBuffer[pointIndex] == 1.0f);
+    //mDecayBuffer[pointIndex] = 1.0f;
+    assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
+    //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
+    mPinningCoefficientBuffer[pointIndex] = 1.0f;
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
+        mCurrentElasticityAdjustment,
+        mCurrentStaticFrictionAdjustment,
+        mCurrentKineticFrictionAdjustment,
+        0.0f, // No elasticity, no friction
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f);
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 0.2f;
+    mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
+        buoyancyVolumeFill,
+        waterFoamStructuralMaterial.ThermalExpansionCoefficient);
+    mCachedDepthBuffer[pointIndex] = depth;
+
+    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mMaterialWaterIntakeBuffer[pointIndex] = waterFoamStructuralMaterial.WaterIntake;
+    //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterFoamStructuralMaterial.WaterRetention;
+    //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterFoamStructuralMaterial.WaterDiffusionSpeed;
+    mWaterBuffer[pointIndex] = 0.0f;
+    assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
+    //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
+
+    mTemperatureBuffer[pointIndex] = Formulae::CalculateWaterTemperature(depth, simulationParameters);
+    assert(waterFoamStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / waterFoamStructuralMaterial.GetHeatCapacity();
+    mMaterialThermalExpansionCoefficientBuffer[pointIndex] = waterFoamStructuralMaterial.ThermalExpansionCoefficient;
+    //mMaterialIgnitionTemperatureBuffer[pointIndex] = waterFoamStructuralMaterial.IgnitionTemperature;
+    //mMaterialCombustionTypeBuffer[pointIndex] = waterFoamStructuralMaterial.CombustionType;
+    //mCombustionStateBuffer[pointIndex] = CombustionState();
+
+    //mWaterReactionStateBuffer.emplace_back(0.0f);
+
+    assert(mLightBuffer[pointIndex] == 0.0f);
+    //mLightBuffer[pointIndex] = 0.0f;
+
+    mMaterialWindReceptivityBuffer[pointIndex] = waterFoamStructuralMaterial.WindReceptivity;
+
+    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
+    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
+
+    mEphemeralParticleAttributes1Buffer[pointIndex].Type = EphemeralType::WaterFoam;
+    mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime = currentSimulationTime;
+    mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime = maxSimulationLifetime;
+    mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::WaterFoamState(
+        initialScale,
+        maxScale,
+        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
+
+    assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
+    //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+    mPlaneIdBuffer[pointIndex] = planeId;
+    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
+    mIsPlaneIdBufferEphemeralDirty = true;
+
+    mColorBuffer[pointIndex] = waterFoamStructuralMaterial.RenderColor.toVec4f();
+    mIsEphemeralColorBufferDirty = true;
+}
+
 void Points::CreateEphemeralParticleWaterSplash(
     vec2f const & position,
     float depth,
@@ -1965,6 +2064,71 @@ void Points::UpdateEphemeralParticles(
                     break;
                 }
 
+                case EphemeralType::WaterFoam:
+                {
+                    // Constrain onto ocean surface
+                    //
+                    // Note: this is not nice - we're acting directly onto the positions of particles,
+                    // which is against the basic rules of the simulation; however, we're doing this
+                    // for these specific ephemeral particles only, so we may live with it
+                    mPositionBuffer[pointIndex].y += GetCachedDepth(pointIndex);
+                    mCachedDepthBuffer[pointIndex] = 0.0f;
+                    mVelocityBuffer[pointIndex].y = 0.0f;
+
+                    // Calculate progress
+                    auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
+                    assert(mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime > 0.0f);
+
+                    //float const lifetimeProgress =
+                    //    elapsedSimulationLifetime
+                    //    / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
+
+                    float constexpr EntryPhaseMaxDuration = 0.3f;
+                    float lifetimeProgress;
+                    if (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime / 2.0f > EntryPhaseMaxDuration)
+                    {
+                        if (elapsedSimulationLifetime < EntryPhaseMaxDuration)
+                        {
+                            // 0.0 ... 0.5
+                            lifetimeProgress = 0.5f * elapsedSimulationLifetime / EntryPhaseMaxDuration;
+                        }
+                        else
+                        {
+                            // 0.5 ... 1.0
+                            lifetimeProgress = 0.5f +
+                                (elapsedSimulationLifetime - EntryPhaseMaxDuration)
+                                / (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime - EntryPhaseMaxDuration);
+                        }
+                    }
+                    else
+                    {
+                        lifetimeProgress =
+                            elapsedSimulationLifetime
+                            / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
+                    }
+
+                    // Check if expired
+                    if (lifetimeProgress >= 1.0f)
+                    {
+                        //
+                        /// Expired
+                        //
+
+                        ExpireEphemeralParticle(pointIndex);
+                    }
+                    else
+                    {
+                        //
+                        // Still alive
+                        //
+
+                        // Update progress
+                        mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.LifetimeProgress = lifetimeProgress;
+                    }
+
+                    break;
+                }
+
                 case EphemeralType::WaterSplash:
                 {
                     // Calculate progress
@@ -2551,6 +2715,47 @@ void Points::UploadEphemeralParticles(
                     0.10f + 1.22f * state.Progress, // Scale, magic formula
                     mRandomNormalizedUniformFloatBuffer[pointIndex] * 2.0f * Pi<float>, // Angle
                     1.0f - state.Progress); // Alpha
+
+                break;
+            }
+
+            case EphemeralType::WaterFoam:
+            {
+                auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam;
+
+                // Note: it's skewed
+                float const lifetimeProgress = state.LifetimeProgress;
+
+                // Calculate scale: ~parabolic with progress
+                float const scale = (lifetimeProgress < 0.5f)
+                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, lifetimeProgress)
+                    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, lifetimeProgress));
+
+                // Calculate alpha: ~parabolic with progress
+                float const alpha =
+                    SmoothStep(0.0f, 0.5f, lifetimeProgress)
+                    - SmoothStep(0.75f, 1.0f, lifetimeProgress);
+
+                // TODOTEST
+                ////float const angle =
+                ////    GetRandomNormalizedUniformPersonalitySeed(pointIndex)
+                ////    +   lifetimeProgress * 2.5f * 2.0f * Pi<float>
+                ////        * Sign(GetRandomNormalizedUniformPersonalitySeed(pointIndex) - 0.5f);
+                float const angle =
+                    GetRandomNormalizedUniformPersonalitySeed(pointIndex)
+                    + lifetimeProgress * 2.5f * 2.0f * Pi<float> * Sign(GetVelocity(pointIndex).x);
+                ////float const angle =
+                ////    GetRandomNormalizedUniformPersonalitySeed(pointIndex) * 2.0f * Pi<float>;
+
+                // Upload splash
+                shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
+                    maxPlaneId,
+                    state.PersonalitySeed,
+                    GameTextureDatabases::GenericMipMappedTextureGroups::WaterFoam,
+                    GetPosition(pointIndex),
+                    scale,
+                    angle,
+                    alpha * 0.7f);
 
                 break;
             }

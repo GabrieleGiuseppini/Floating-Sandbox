@@ -875,15 +875,34 @@ public:
         float scale,
         float alpha)
     {
+        // Choose angle
+        float const angleCw = personalitySeed * 2.0f * Pi<float>;
+
+        UploadGenericMipMappedTextureRenderSpecification(
+            planeId,
+            personalitySeed,
+            textureGroup,
+            position,
+            scale,
+            angleCw,
+            alpha);
+    }
+
+    inline void UploadGenericMipMappedTextureRenderSpecification(
+        PlaneId planeId,
+        float personalitySeed,
+        GameTextureDatabases::GenericMipMappedTextureGroups textureGroup,
+        vec2f const & position,
+        float scale,
+        float angleCw,
+        float alpha)
+    {
         // Choose frame
         size_t const frameCount = mGenericMipMappedTextureAtlasMetadata.GetFrameCount(textureGroup);
         float frameIndexF = personalitySeed * frameCount;
         TextureFrameIndex const frameIndex = std::min(
             static_cast<TextureFrameIndex>(std::floor(frameIndexF)),
             static_cast<TextureFrameIndex>(frameCount - 1));
-
-        // Choose angle
-        float const angleCw = (frameIndexF - static_cast<float>(frameIndex)) * 2.0f * Pi<float>;
 
         UploadGenericMipMappedTextureRenderSpecification(
             planeId,

@@ -116,6 +116,7 @@ enum class GenericMipMappedTextureGroups : uint16_t
     SmokeLight,
     TimerBomb,
     TimerBombFuse,
+    WaterFoam,
     WaterSplash,
 
     _Last = WaterSplash
@@ -165,6 +166,8 @@ struct GenericMipMappedTextureDatabase
             return GenericMipMappedTextureGroups::TimerBomb;
         else if (Utils::CaseInsensitiveEquals(str, "TimerBombFuse"))
             return GenericMipMappedTextureGroups::TimerBombFuse;
+        else if (Utils::CaseInsensitiveEquals(str, "WaterFoam"))
+            return GenericMipMappedTextureGroups::WaterFoam;
         else if (Utils::CaseInsensitiveEquals(str, "WaterSplash"))
             return GenericMipMappedTextureGroups::WaterSplash;
         else

@@ -230,6 +230,18 @@
 },
 
 {
+	"group_name": "WaterFoam",
+	"has_own_ambient_light": false,
+	"frames":[
+		{	
+			"world_width": 2.0,
+			"world_height": 2.0,
+			"frame_name_pattern": "water_foam_\\d+"
+		}
+	]
+},
+
+{
 	"group_name": "WaterSplash",
 	"has_own_ambient_light": false,
 	"frames":[

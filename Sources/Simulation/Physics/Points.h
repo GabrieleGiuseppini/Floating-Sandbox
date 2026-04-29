@@ -58,6 +58,7 @@ public:
         Smoke,
         Sparkle,
         WakeBubble,
+        WaterFoam,
         WaterSplash
     };
 
@@ -438,6 +439,33 @@ private:
             {}
         };
 
+        struct WaterFoamState
+        {
+            float MinScale;
+            float MaxScale;
+            float PersonalitySeed;
+            float LifetimeProgress;
+
+            WaterFoamState()
+                : MinScale(0.0f)
+                , MaxScale(0.0f)
+                , PersonalitySeed(0.0f)
+                , LifetimeProgress(0.0f)
+            {
+            }
+
+            WaterFoamState(
+                float minScale,
+                float maxScale,
+                float personalitySeed)
+                : MinScale(minScale)
+                , MaxScale(maxScale)
+                , PersonalitySeed(personalitySeed)
+                , LifetimeProgress(0.0f)
+            {
+            }
+        };
+
         struct WaterSplashState
         {
             float MinScale;
@@ -471,6 +499,7 @@ private:
         SmokeState Smoke;
         SparkleState Sparkle;
         WakeBubbleState WakeBubble;
+        WaterFoamState WaterFoam;
         WaterSplashState WaterSplash;
 
         EphemeralState(AirBubbleState airBubble)
@@ -495,6 +524,10 @@ private:
 
         EphemeralState(WakeBubbleState wakeBubble)
             : WakeBubble(wakeBubble)
+        {}
+
+        EphemeralState(WaterFoamState waterFoam)
+            : WaterFoam(waterFoam)
         {}
 
         EphemeralState(WaterSplashState waterSplash)
@@ -989,6 +1022,17 @@ public:
         vec2f const & velocity,
         float depth,
         float currentSimulationTime,
+        PlaneId planeId,
+        SimulationParameters const & simulationParameters);
+
+    void CreateEphemeralParticleWaterFoam(
+        vec2f const & position,
+        float depth,
+        float velocityX,
+        float initialScale,
+        float maxScale,
+        float currentSimulationTime,
+        float maxSimulationLifetime,
         PlaneId planeId,
         SimulationParameters const & simulationParameters);
 

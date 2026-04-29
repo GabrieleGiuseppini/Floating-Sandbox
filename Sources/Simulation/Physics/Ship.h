@@ -806,6 +806,13 @@ private:
 		float currentSimulationTime,
 		SimulationParameters const & simulationParameters);
 
+    void InternalSpawnWaterFoam(
+        vec2f const & position,
+        float strength,
+        PlaneId planeId,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
+
     void InternalSpawnWaterSplash(
         vec2f const & position,
         vec2f const & direction,

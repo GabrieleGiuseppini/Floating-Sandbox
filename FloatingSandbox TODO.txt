@@ -895,6 +895,9 @@
 				- Shade texture depending on flat/depth/texture color
 					- TODO: based on blue
 
+			- Code cleanups
+				- Randomness of particles done @ Ship::InternalSpawnWaterSplash()
+
 			- Settings toggle:
 				- Or sensitivity, 0 for none
 				- SimulationParameters
@@ -950,11 +953,21 @@
 					- Optimize:
 						- OceanSurface::DecayFoamToggleBuffer()
 
-				- Option 2: with new eph particle, position-constrained onto surface
-					- Doesn't have y velocity, only x - and damped
-					- Constrained onto surface, by means of cached depth
-						- Adjust cached depth
-						- Zero y velocity
+				= Option 2: with new eph particle, position-constrained onto surface
+					= Spawn strategy:
+						= 1: When we spawn splash (only for testing)
+						- 2. With winner, but lower threshold
+							! Though will always match splash when it happens; good or bad?
+						- 3. All those above threshold
+					= Doesn't have y velocity, only x 
+						- Damp x over time - TODO: see if there's a quantity that may be used to control ApplyWorldForces; if not, do at Update()
+					= Constrained onto surface, by means of cached depth
+						+ Adjust cached depth
+						= Zero y velocity - NEEDED?
+
+					= Texture
+					= Eph particle
+						- Optimize Points::CreateEphParticleWaterFoam for things we do not need
 
 		- See if still makes sense to continuously displace ocean surface at ship update loop
 
