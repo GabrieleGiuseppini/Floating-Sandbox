@@ -898,13 +898,6 @@
 			- Code cleanups
 				- Randomness of particles done @ Ship::InternalSpawnWaterSplash()
 
-			- Settings toggle:
-				- Or sensitivity, 0 for none
-				- SimulationParameters
-				- SettingsManager
-				- SettingsDialog
-					- Close to DisplaceWater, enablement depends on that value
-
 		= Foam:
 			= For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
 				+ Foam: seamless texture along x, as Generic MipMapped
@@ -954,28 +947,40 @@
 						- OceanSurface::DecayFoamToggleBuffer()
 
 				= Option 2: with new eph particle, position-constrained onto surface
-					= Spawn strategy:
+					+ Spawn strategy:
 						+ 1: When we spawn splash (only for testing)
-						= 2. With winner, but lower threshold
+						+ 2. With winner, but lower threshold
 							! Though will always match splash when it happens; good or bad?
-							= Of the multiple ones, grow larger and larger with position
+							+ Of the multiple ones, grow larger and larger with position
 								+ Calc depth accordingly
-						- 3. All those above threshold
 					+ Doesn't have y velocity, only x 
 					+ Constrained onto surface, by means of cached depth
 						+ Adjust cached depth
 						+ Zero y velocity
 
+					- Better strategy for size: low strength cannot be large (make smaller), so random offset should be smaller
+
 					= Texture
-						= Try more dense (start with canvas-enlarged versions and copy to make round larger) 
-						= Make it white
+						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
+						+ Make it white
+						- Finalize authoring
+							- Redo after buying
 					= Eph particle
 						- Optimize Points::CreateEphParticleWaterFoam for things we do not need
 
 		- See if still makes sense to continuously displace ocean surface at ship update loop
 
+		- Try displacement also against waves: replace vertical velocity with velocity against water surface
+
 		- Test:
 			+ Water Splashes when DoDisplaceWater is off
+
+		- Settings toggle(s):
+			- Or sensitivity(ies), 0 for none
+			- SimulationParameters
+			- SettingsManager
+			- SettingsDialog
+				- Close to DisplaceWater, enablement depends on that value
 
 		- @ Bombs (blasts, incl. tool)
 		- @ Tornado bottom

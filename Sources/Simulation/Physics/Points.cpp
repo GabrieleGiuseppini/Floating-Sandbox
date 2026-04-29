@@ -2737,15 +2737,13 @@ void Points::UploadEphemeralParticles(
                 // Calculate alpha: ~parabolic with progress
                 float const alpha =
                     SmoothStep(0.0f, 0.5f, skewedLifetimeProgress)
-                    - SmoothStep(0.75f, 1.0f, skewedLifetimeProgress);
+                    - SmoothStep(0.5f, 1.0f, skewedLifetimeProgress);
 
                 // Calcualate rotation angle: starts random and rotates with constant velocity,
                 // obeying the expansion direction
                 float const angle =
                     GetRandomNormalizedUniformPersonalitySeed(pointIndex)
-                    + linearLifetimeProgress * 0.35f * 2.0f * Pi<float> * - Sign(GetVelocity(pointIndex).x);
-
-                //LogMessage(skewedLifetimeProgress, " ", linearLifetimeProgress);
+                    - linearLifetimeProgress * 0.35f * 2.0f * Pi<float> * Sign(GetVelocity(pointIndex).x);
 
                 // Upload splash
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
@@ -2755,7 +2753,8 @@ void Points::UploadEphemeralParticles(
                     GetPosition(pointIndex),
                     scale,
                     angle,
-                    alpha * 0.85f);
+                    //alpha * 0.85f);
+                    alpha);
 
                 break;
             }
