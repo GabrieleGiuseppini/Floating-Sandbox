@@ -2083,7 +2083,7 @@ void Points::UpdateEphemeralParticles(
                         elapsedSimulationLifetime
                         / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
 
-                    float constexpr EntryPhaseMaxDuration = 0.3f;
+                    float constexpr EntryPhaseMaxDuration = 0.5f;
                     float skewedLifetimeProgress;
                     if (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime / 2.0f > EntryPhaseMaxDuration)
                     {
@@ -2097,7 +2097,8 @@ void Points::UpdateEphemeralParticles(
                             // 0.5 ... 1.0
                             skewedLifetimeProgress = 0.5f +
                                 (elapsedSimulationLifetime - EntryPhaseMaxDuration)
-                                / (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime - EntryPhaseMaxDuration);
+                                / (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime - EntryPhaseMaxDuration)
+                                * 0.5f;
                         }
                     }
                     else
@@ -2726,32 +2727,25 @@ void Points::UploadEphemeralParticles(
                 float const skewedLifetimeProgress = state.SkewedLifetimeProgress;
 
                 // Calculate scale: ~parabolic with progress
-                float const scale = (linearLifetimeProgress < 0.5f)
-                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, linearLifetimeProgress)
-                    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, linearLifetimeProgress));
+                ////float const scale = (linearLifetimeProgress < 0.5f)
+                ////    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, linearLifetimeProgress)
+                ////    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, linearLifetimeProgress));
+                float const scale = (skewedLifetimeProgress < 0.5f)
+                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, skewedLifetimeProgress)
+                    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, skewedLifetimeProgress));
 
                 // Calculate alpha: ~parabolic with progress
                 float const alpha =
                     SmoothStep(0.0f, 0.5f, skewedLifetimeProgress)
                     - SmoothStep(0.75f, 1.0f, skewedLifetimeProgress);
 
-                // TODOTEST
-                ////float const angle =
-                ////    GetRandomNormalizedUniformPersonalitySeed(pointIndex)
-                ////    +   lifetimeProgress * 2.5f * 2.0f * Pi<float>
-                ////        * Sign(GetRandomNormalizedUniformPersonalitySeed(pointIndex) - 0.5f);
-                ////float const angle =
-                ////    GetRandomNormalizedUniformPersonalitySeed(pointIndex)
-                ////    + lifetimeProgress * 2.5f * 2.0f * Pi<float> * Sign(GetVelocity(pointIndex).x);
-
-                ////float const angle =
-                ////    GetRandomNormalizedUniformPersonalitySeed(pointIndex) * 2.0f * Pi<float>;
-
-                // Calcualate angle: starts random and rotates with constant velocity,
+                // Calcualate rotation angle: starts random and rotates with constant velocity,
                 // obeying the expansion direction
                 float const angle =
                     GetRandomNormalizedUniformPersonalitySeed(pointIndex)
-                    + linearLifetimeProgress * 0.5f * 2.0f * Pi<float> * - Sign(GetVelocity(pointIndex).x);
+                    + linearLifetimeProgress * 0.35f * 2.0f * Pi<float> * - Sign(GetVelocity(pointIndex).x);
+
+                //LogMessage(skewedLifetimeProgress, " ", linearLifetimeProgress);
 
                 // Upload splash
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
@@ -2761,7 +2755,7 @@ void Points::UploadEphemeralParticles(
                     GetPosition(pointIndex),
                     scale,
                     angle,
-                    alpha * 0.9f);
+                    alpha * 0.85f);
 
                 break;
             }

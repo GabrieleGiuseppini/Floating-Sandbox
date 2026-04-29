@@ -1657,8 +1657,9 @@ void Ship::ApplyWorldSurfaceForces(
                     // Water foam
                     //
 
-                    float constexpr MinAbsDisplacementForWaterFoam = 0.06f; // Magic
-                    if (absDisplacement >= -MinAbsDisplacementForWaterFoam
+                    float constexpr MinAbsDisplacementForWaterFoam = 0.07f; // Magic
+                    //if (absDisplacement >= MinAbsDisplacementForWaterFoam
+                    if (displacement < -MinAbsDisplacementForWaterFoam
                         && thisPointDepth < 1.5f) // Only spawn foam on the surface
                     {
                         float constexpr MaxAbsDisplacementForWaterFoam = 1.0f; // Magic
@@ -4015,8 +4016,6 @@ void Ship::InternalSpawnWaterFoam(
     assert(position.x >= -SimulationParameters::HalfMaxWorldWidth
         && position.x <= SimulationParameters::HalfMaxWorldWidth);
 
-    float const foamDepth = mParentWorld.GetOceanSurface().GetDepth(position);
-
     //size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(2, 5);
     //size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(3, 7);
     size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(3, 6);
@@ -4026,13 +4025,27 @@ void Ship::InternalSpawnWaterFoam(
         // Decide x velocity
         //
 
-        float constexpr MaxXVelocity = 12.0f;
+        float constexpr MaxXVelocity = 7.0f;
         float const velocityX = Clamp(
             GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, MaxXVelocity / 2.0f),
             -MaxXVelocity,
             MaxXVelocity);
 
-        //float const absVelocityX = std::abs(velocityX);
+        //
+        // Decide x position: spiraling around center
+        //
+
+        //float constexpr StepWorldWidth = 2.0f;
+        //float const numberOfSteps = static_cast<float>((p + 1) / 2);
+        //float const positionX =
+        //    position.x
+        //    + numberOfSteps * StepWorldWidth * Sign(velocityX);
+
+        //vec2f const foamPosition = vec2f(positionX, position.y);
+
+        vec2f const foamPosition = position;
+
+        float const foamDepth = mParentWorld.GetOceanSurface().GetDepth(foamPosition);
 
         //
         // Calculate scale: depends on strength, and randomized
@@ -4046,13 +4059,11 @@ void Ship::InternalSpawnWaterFoam(
         float const initialScale = 0.0f;
 
         //
-        // Calculate max lifetime: depends on scale
+        // Calculate max lifetime: depends on strength
         //
 
-        //float const maxLifetime = maxScale * 3.0f;
-
-        float constexpr MinMaxLifetime = 1.8f;
-        float constexpr MaxMaxLifetime = 5.3f;
+        float constexpr MinMaxLifetime = 2.5f;
+        float constexpr MaxMaxLifetime = 6.0f;
         float const maxLifetime = MinMaxLifetime + (MaxMaxLifetime - MinMaxLifetime) * strength;
 
         //
@@ -4060,7 +4071,7 @@ void Ship::InternalSpawnWaterFoam(
         //
 
         mPoints.CreateEphemeralParticleWaterFoam(
-            position,
+            foamPosition,
             foamDepth,
             velocityX,
             initialScale,

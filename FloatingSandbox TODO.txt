@@ -958,8 +958,8 @@
 						+ 1: When we spawn splash (only for testing)
 						= 2. With winner, but lower threshold
 							! Though will always match splash when it happens; good or bad?
-							- Of the multiple ones, grow larger and larger with position
-								- Calc depth accordingly
+							= Of the multiple ones, grow larger and larger with position
+								+ Calc depth accordingly
 						- 3. All those above threshold
 					+ Doesn't have y velocity, only x 
 					+ Constrained onto surface, by means of cached depth
@@ -967,7 +967,8 @@
 						+ Zero y velocity
 
 					= Texture
-						- Try more dense (start with canvas-enlarged versions and copy to make round larger) 
+						= Try more dense (start with canvas-enlarged versions and copy to make round larger) 
+						= Make it white
 					= Eph particle
 						- Optimize Points::CreateEphParticleWaterFoam for things we do not need
 

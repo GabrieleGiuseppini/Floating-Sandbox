@@ -234,8 +234,8 @@
 	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"world_width": 4.0,
-			"world_height": 4.0,
+			"world_width": 3.5,
+			"world_height": 3.5,
 			"frame_name_pattern": "water_foam_\\d+"
 		}
 	]
