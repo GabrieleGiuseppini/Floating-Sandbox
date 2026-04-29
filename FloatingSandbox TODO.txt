@@ -876,34 +876,95 @@
 				- Epk particle i needs pointer to own node in list				
 
 	= Splashes and Foam
-		+ Splashes:
+		= Splashes:
 			! Same concept as silt dust
 			+ Textures
 			+ Eph particles
 			+ Spawning of eph particles
-			+ Fine-tune:
+			= Fine-tune:
 				+ Must not sink and must not remain underwater -- must always go to surface
 					+ Change props so it floats
 				+ Less-dense texture
 					+ Try without that one
 				+ PlaneID
 				+ Multiple particles, random dir
+				- Particles still sink: constrain position by cachedDepth
+					- Update cachedDepth
+					- Zero out y velocity?
 
-		- Foam:
-			- For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
-				- Foam: seamless texture along x, TODO where it lives
-					- Flat above, bubbly below
-				- Option 1: drawn by ocean surface detailed shader:
-					- Additional vertex attribute TODOHERE
-					- Only drawn for foreground
-				- Option 2: drawn by new batch, TODOHERE
-				- Doesn't have velocity
+				- Shade texture depending on flat/depth/texture color
+					- TODO: based on blue
+
+			- Settings toggle:
+				- Or sensitivity, 0 for none
+				- SimulationParameters
+				- SettingsManager
+				- SettingsDialog
+					- Close to DisplaceWater, enablement depends on that value
+
+		= Foam:
+			= For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
+				+ Foam: seamless texture along x, as Generic MipMapped
+					+ Flat above, bubbly below
+				= Option 1: drawn by ocean surface detailed shader:
+					= NOTE: requires swapping order of Update in World: ship first, coean surface next - so that we smooth foam toggle before rendering
+						- Add extra update step for surface
+					= OceanSurface: new foam buffer
+						+ Init as zero
+						+ Converges to 0 at each Update
+						= Populated when displacements happen
+							+ When DeltaHeightBuffer is written to
+							= Experiment with displacement<->toggle mapping
+						= Smooth it, like delta-height buffer
+							= "DecayFoamToggle" -> "UpdateFoamToggle"; dynamics:
+								+ Displace into FoamBuffer
+								= UpdateFoamToggle:
+									= Zero out FoamBuffer_work
+									= Smooth from FoamBuffer to FoamBuffer_work
+									= Decay FoamBuffer_work
+									= Swap FoamBuffer<->FoamBuffer_work
+								+ Upload FoamBuffer
+					+ Uploaded with detailed ocean surface
+					= WorldRenderContext:
+						! Only Upper shaders (IS_UPPER), both background and foreground
+						+ Set tile params in shader(s)
+						+ Vertex: new float
+						= Shaders:
+							= Flat
+								+ Only for upper
+								+ GenericLinearTexture param: only for upper
+								+ foamToggle: only for upper
+								= CalculateDetailedOceanPlaneColorUpper: use foamToggle it as mix
+									= TODO: interface between two shaders
+										- Might just lower interface Y to allow for texture
+
+									- TODO:
+										- Atlas params access from func
+											- What about the others then? Should also be params?
+										- New param for texture ratio -- but can use tile size?
+							- Depth
+							- Texture
+
+						- See if can only confine this to foreground (i.e. no background)
+							
+					- Optimize:
+						- OceanSurface::DecayFoamToggleBuffer()
+
+				- Option 2: with new eph particle, position-constrained onto surface
+					- Doesn't have y velocity, only x - and damped
+					- Constrained onto surface, by means of cached depth
+						- Adjust cached depth
+						- Zero y velocity
+
+		- See if still makes sense to continuously displace ocean surface at ship update loop
 
 		- Test:
 			+ Water Splashes when DoDisplaceWater is off
 
 		- @ Bombs (blasts, incl. tool)
 		- @ Tornado bottom
+
+		- Android Port Plan
 
 		- TODO: see if can incorporate also "mist" for tornadoes
 		
