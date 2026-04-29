@@ -2079,36 +2079,34 @@ void Points::UpdateEphemeralParticles(
                     auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
                     assert(mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime > 0.0f);
 
-                    //float const lifetimeProgress =
-                    //    elapsedSimulationLifetime
-                    //    / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
+                    float const linearLifetimeProgress =
+                        elapsedSimulationLifetime
+                        / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
 
                     float constexpr EntryPhaseMaxDuration = 0.3f;
-                    float lifetimeProgress;
+                    float skewedLifetimeProgress;
                     if (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime / 2.0f > EntryPhaseMaxDuration)
                     {
                         if (elapsedSimulationLifetime < EntryPhaseMaxDuration)
                         {
                             // 0.0 ... 0.5
-                            lifetimeProgress = 0.5f * elapsedSimulationLifetime / EntryPhaseMaxDuration;
+                            skewedLifetimeProgress = 0.5f * elapsedSimulationLifetime / EntryPhaseMaxDuration;
                         }
                         else
                         {
                             // 0.5 ... 1.0
-                            lifetimeProgress = 0.5f +
+                            skewedLifetimeProgress = 0.5f +
                                 (elapsedSimulationLifetime - EntryPhaseMaxDuration)
                                 / (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime - EntryPhaseMaxDuration);
                         }
                     }
                     else
                     {
-                        lifetimeProgress =
-                            elapsedSimulationLifetime
-                            / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
+                        skewedLifetimeProgress = linearLifetimeProgress;
                     }
 
                     // Check if expired
-                    if (lifetimeProgress >= 1.0f)
+                    if (linearLifetimeProgress >= 1.0f)
                     {
                         //
                         /// Expired
@@ -2123,7 +2121,8 @@ void Points::UpdateEphemeralParticles(
                         //
 
                         // Update progress
-                        mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.LifetimeProgress = lifetimeProgress;
+                        mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.LinearLifetimeProgress = linearLifetimeProgress;
+                        mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.SkewedLifetimeProgress = skewedLifetimeProgress;
                     }
 
                     break;
@@ -2723,29 +2722,36 @@ void Points::UploadEphemeralParticles(
             {
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam;
 
-                // Note: it's skewed
-                float const lifetimeProgress = state.LifetimeProgress;
+                float const linearLifetimeProgress = state.LinearLifetimeProgress;
+                float const skewedLifetimeProgress = state.SkewedLifetimeProgress;
 
                 // Calculate scale: ~parabolic with progress
-                float const scale = (lifetimeProgress < 0.5f)
-                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, lifetimeProgress)
-                    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, lifetimeProgress));
+                float const scale = (linearLifetimeProgress < 0.5f)
+                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, linearLifetimeProgress)
+                    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, linearLifetimeProgress));
 
                 // Calculate alpha: ~parabolic with progress
                 float const alpha =
-                    SmoothStep(0.0f, 0.5f, lifetimeProgress)
-                    - SmoothStep(0.75f, 1.0f, lifetimeProgress);
+                    SmoothStep(0.0f, 0.5f, skewedLifetimeProgress)
+                    - SmoothStep(0.75f, 1.0f, skewedLifetimeProgress);
 
                 // TODOTEST
                 ////float const angle =
                 ////    GetRandomNormalizedUniformPersonalitySeed(pointIndex)
                 ////    +   lifetimeProgress * 2.5f * 2.0f * Pi<float>
                 ////        * Sign(GetRandomNormalizedUniformPersonalitySeed(pointIndex) - 0.5f);
-                float const angle =
-                    GetRandomNormalizedUniformPersonalitySeed(pointIndex)
-                    + lifetimeProgress * 2.5f * 2.0f * Pi<float> * Sign(GetVelocity(pointIndex).x);
+                ////float const angle =
+                ////    GetRandomNormalizedUniformPersonalitySeed(pointIndex)
+                ////    + lifetimeProgress * 2.5f * 2.0f * Pi<float> * Sign(GetVelocity(pointIndex).x);
+
                 ////float const angle =
                 ////    GetRandomNormalizedUniformPersonalitySeed(pointIndex) * 2.0f * Pi<float>;
+
+                // Calcualate angle: starts random and rotates with constant velocity,
+                // obeying the expansion direction
+                float const angle =
+                    GetRandomNormalizedUniformPersonalitySeed(pointIndex)
+                    + linearLifetimeProgress * 0.5f * 2.0f * Pi<float> * - Sign(GetVelocity(pointIndex).x);
 
                 // Upload splash
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
@@ -2755,7 +2761,7 @@ void Points::UploadEphemeralParticles(
                     GetPosition(pointIndex),
                     scale,
                     angle,
-                    alpha * 0.7f);
+                    alpha * 0.9f);
 
                 break;
             }

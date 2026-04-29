@@ -1659,7 +1659,7 @@ void Ship::ApplyWorldSurfaceForces(
 
                     float constexpr MinAbsDisplacementForWaterFoam = 0.06f; // Magic
                     if (absDisplacement >= -MinAbsDisplacementForWaterFoam
-                        && thisPointDepth < 2.5f) // Only spawn foam on the surface
+                        && thisPointDepth < 1.5f) // Only spawn foam on the surface
                     {
                         float constexpr MaxAbsDisplacementForWaterFoam = 1.0f; // Magic
                         float const strength = (absDisplacement - MinAbsDisplacementForWaterFoam) / (MaxAbsDisplacementForWaterFoam - MinAbsDisplacementForWaterFoam);
@@ -4018,14 +4018,15 @@ void Ship::InternalSpawnWaterFoam(
     float const foamDepth = mParentWorld.GetOceanSurface().GetDepth(position);
 
     //size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(2, 5);
-    size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(3, 7);
+    //size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(3, 7);
+    size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(3, 6);
     for (size_t p = 0; p < nParticles; ++p)
     {
         //
         // Decide x velocity
         //
 
-        float constexpr MaxXVelocity = 8.0f;
+        float constexpr MaxXVelocity = 12.0f;
         float const velocityX = Clamp(
             GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, MaxXVelocity / 2.0f),
             -MaxXVelocity,
@@ -4050,8 +4051,8 @@ void Ship::InternalSpawnWaterFoam(
 
         //float const maxLifetime = maxScale * 3.0f;
 
-        float constexpr MinMaxLifetime = 1.3f;
-        float constexpr MaxMaxLifetime = 5.0f;
+        float constexpr MinMaxLifetime = 1.8f;
+        float constexpr MaxMaxLifetime = 5.3f;
         float const maxLifetime = MinMaxLifetime + (MaxMaxLifetime - MinMaxLifetime) * strength;
 
         //

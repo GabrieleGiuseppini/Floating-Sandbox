@@ -444,13 +444,15 @@ private:
             float MinScale;
             float MaxScale;
             float PersonalitySeed;
-            float LifetimeProgress;
+            float LinearLifetimeProgress;
+            float SkewedLifetimeProgress; // 0.5 at fixed duration after start
 
             WaterFoamState()
                 : MinScale(0.0f)
                 , MaxScale(0.0f)
                 , PersonalitySeed(0.0f)
-                , LifetimeProgress(0.0f)
+                , LinearLifetimeProgress(0.0f)
+                , SkewedLifetimeProgress(0.0)
             {
             }
 
@@ -461,7 +463,8 @@ private:
                 : MinScale(minScale)
                 , MaxScale(maxScale)
                 , PersonalitySeed(personalitySeed)
-                , LifetimeProgress(0.0f)
+                , LinearLifetimeProgress(0.0f)
+                , SkewedLifetimeProgress(0.0)
             {
             }
         };

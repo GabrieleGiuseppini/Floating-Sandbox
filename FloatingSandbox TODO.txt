@@ -955,17 +955,19 @@
 
 				= Option 2: with new eph particle, position-constrained onto surface
 					= Spawn strategy:
-						= 1: When we spawn splash (only for testing)
-						- 2. With winner, but lower threshold
+						+ 1: When we spawn splash (only for testing)
+						= 2. With winner, but lower threshold
 							! Though will always match splash when it happens; good or bad?
+							- Of the multiple ones, grow larger and larger with position
+								- Calc depth accordingly
 						- 3. All those above threshold
-					= Doesn't have y velocity, only x 
-						- Damp x over time - TODO: see if there's a quantity that may be used to control ApplyWorldForces; if not, do at Update()
-					= Constrained onto surface, by means of cached depth
+					+ Doesn't have y velocity, only x 
+					+ Constrained onto surface, by means of cached depth
 						+ Adjust cached depth
-						= Zero y velocity - NEEDED?
+						+ Zero y velocity
 
 					= Texture
+						- Try more dense (start with canvas-enlarged versions and copy to make round larger) 
 					= Eph particle
 						- Optimize Points::CreateEphParticleWaterFoam for things we do not need
 
@@ -978,6 +980,8 @@
 		- @ Tornado bottom
 
 		- Android Port Plan
+			- Splashes
+			- Foam
 
 		- TODO: see if can incorporate also "mist" for tornadoes
 		
