@@ -2066,15 +2066,6 @@ void Points::UpdateEphemeralParticles(
 
                 case EphemeralType::WaterFoam:
                 {
-                    // Constrain onto ocean surface
-                    //
-                    // Note: this is not nice - we're acting directly onto the positions of particles,
-                    // which is against the basic rules of the simulation; however, we're doing this
-                    // for these specific ephemeral particles only, so we may live with it
-                    mPositionBuffer[pointIndex].y += GetCachedDepth(pointIndex);
-                    mCachedDepthBuffer[pointIndex] = 0.0f;
-                    mVelocityBuffer[pointIndex].y = 0.0f;
-
                     // Calculate progress
                     auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
                     assert(mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime > 0.0f);
@@ -2124,6 +2115,15 @@ void Points::UpdateEphemeralParticles(
                         // Update progress
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.LinearLifetimeProgress = linearLifetimeProgress;
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.SkewedLifetimeProgress = skewedLifetimeProgress;
+
+                        // Constrain onto ocean surface
+                        //
+                        // Note: this is not nice - we're acting directly onto the positions of particles,
+                        // which is against the basic rules of the simulation; however, we're doing this
+                        // for these specific ephemeral particles only, so we may live with it
+                        mPositionBuffer[pointIndex].y += GetCachedDepth(pointIndex);
+                        mCachedDepthBuffer[pointIndex] = 0.0f;
+                        mVelocityBuffer[pointIndex].y = 0.0f;
                     }
 
                     break;
