@@ -892,11 +892,11 @@
 					- Update cachedDepth
 					- Zero out y velocity?
 
-				- Shade texture depending on flat/depth/texture color
+				- Shade texture depending on flat/depth color and texture
 					- TODO: based on blue
 
 			- Code cleanups
-				- Randomness of particles done @ Ship::InternalSpawnWaterSplash()
+				- Multiple particle randomness loop moves to Ship::InternalSpawnWaterSplash()
 
 		= Foam:
 			= For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
@@ -965,8 +965,7 @@
 						+ Make it white
 						- Finalize authoring
 							- Redo after buying
-					= Eph particle
-						- Optimize Points::CreateEphParticleWaterFoam for things we do not need
+					+ Eph particle
 
 		- Try displacement also against waves: replace vertical velocity with velocity against water surface
 

@@ -275,9 +275,9 @@ inline float Step(
 }
 
 template <typename T>
-inline int Sign(T val)  // 0.0 returns +1.0
+inline T Sign(T val)  // 0.0 returns +1.0
 {
-    return (T(0) <= val) - (val < T(0));
+    return static_cast<T>((T(0) <= val) - (val < T(0)));
 }
 
 inline float SignStep(
