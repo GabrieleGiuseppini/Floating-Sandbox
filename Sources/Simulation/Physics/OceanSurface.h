@@ -100,6 +100,8 @@ public:
     }
 
     /*
+     * Normal to the ocean surface at the specified x coordinates; points up.
+     *
      * Assumption: x is in world boundaries.
      */
     inline vec2f GetNormalAt(float x) const noexcept
