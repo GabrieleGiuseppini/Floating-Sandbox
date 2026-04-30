@@ -1658,8 +1658,7 @@ void Ship::ApplyWorldSurfaceForces(
                     //
 
                     float constexpr MinAbsDisplacementForWaterFoam = 0.08f; // Magic
-                    //if (absDisplacement >= MinAbsDisplacementForWaterFoam
-                    if (displacement < -MinAbsDisplacementForWaterFoam
+                    if (absDisplacement >= MinAbsDisplacementForWaterFoam // Both upwards and downwards
                         && thisPointDepth < 1.5f) // Only spawn foam on the surface
                     {
                         float constexpr MaxAbsDisplacementForWaterFoam = 1.0f; // Magic
@@ -1675,7 +1674,7 @@ void Ship::ApplyWorldSurfaceForces(
                     //
 
                     float constexpr MinAbsDisplacementForWaterSplash = 0.475f; // Magic
-                    if (displacement < -MinAbsDisplacementForWaterSplash
+                    if (displacement < -MinAbsDisplacementForWaterSplash // Only downwards
                         && thisPointDepth < 2.0f) // Only spawn splashes on the surface
                     {
                         float constexpr MaxAbsDisplacementForWaterSplash = 1.0f; // Magic
@@ -4013,11 +4012,12 @@ void Ship::InternalSpawnWaterFoam(
     float currentSimulationTime,
     SimulationParameters const & simulationParameters)
 {
+    // Note: values of strength can get as high as 8.0, and possibly more
+    float const normalizedStrength = LinearStep(0.0f, 1.0f, strength);
+
     assert(position.x >= -SimulationParameters::HalfMaxWorldWidth
         && position.x <= SimulationParameters::HalfMaxWorldWidth);
 
-    //size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(2, 5);
-    //size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(3, 7);
     size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(3, 5);
     for (size_t p = 0; p < nParticles; ++p)
     {
@@ -4031,43 +4031,43 @@ void Ship::InternalSpawnWaterFoam(
         // Decide x velocity
         //
 
-        float constexpr MaxXVelocity = 7.0f;
-        float const velocityX = sign * std::min(
-            std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, MaxXVelocity / 2.0f)),
-            MaxXVelocity);
+        float constexpr MaxXVelocity = 4.0f;
+        float const velocityX =
+            sign
+            * std::min(
+                std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, MaxXVelocity / 2.0f)),
+                MaxXVelocity)
+            * (0.5f + 0.5f * normalizedStrength);
 
         //
         // Decide x position: spiraling around center
         //
 
-        float constexpr StepWorldWidth = 0.8f;
+        float constexpr StepWorldWidth = 0.7f;
         float const numberOfSteps = static_cast<float>((p + 1) / 2);
-        float const positionX =
-            position.x
-            + numberOfSteps * StepWorldWidth * sign;
+        float const positionX = Clamp(
+            position.x + numberOfSteps * StepWorldWidth * sign,
+            -SimulationParameters::HalfMaxWorldWidth,
+            SimulationParameters::HalfMaxWorldWidth);
 
         vec2f const foamPosition = vec2f(positionX, position.y);
-
-        ////vec2f const foamPosition = position;
 
         float const foamDepth = mParentWorld.GetOceanSurface().GetDepth(foamPosition);
 
         //
-        // Calculate scale: depends on strength, and randomized
+        // Calculate scale: depends on strength (only itsm 0.0...1.0 range), and randomized
         //
 
         float constexpr MinMaxScale = 0.3f;
-        float constexpr MaxMaxScale = 0.9f;
+        float constexpr MaxMaxScale = 1.4f;
         float const maxScale =
-            GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 0.9f)
-            + MinMaxScale + (MaxMaxScale - MinMaxScale) * strength;
+            (MinMaxScale + (MaxMaxScale - MinMaxScale) * normalizedStrength)
+            * GameRandomEngine::GetInstance().GenerateUniformReal(0.7f, 1.1f);
 
         //
         // Calculate max lifetime: depends on strength
         //
 
-        ////float constexpr MinMaxLifetime = 2.5f;
-        ////float constexpr MaxMaxLifetime = 6.0f;
         float constexpr MinMaxLifetime = 2.5f;
         float constexpr MaxMaxLifetime = 3.5f;
         float const maxLifetime = MinMaxLifetime + (MaxMaxLifetime - MinMaxLifetime) * strength;

@@ -958,7 +958,7 @@
 						+ Adjust cached depth
 						+ Zero y velocity
 
-					- Better strategy for size: low strength cannot be large (make smaller), so random offset should be smaller
+					+ Better strategy for size: low strength cannot be large (make smaller), so random offset should be smaller
 
 					= Texture
 						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
@@ -968,9 +968,9 @@
 					= Eph particle
 						- Optimize Points::CreateEphParticleWaterFoam for things we do not need
 
-		- See if still makes sense to continuously displace ocean surface at ship update loop
-
 		- Try displacement also against waves: replace vertical velocity with velocity against water surface
+
+		- See if still makes sense to continuously displace ocean surface at ship update loop
 
 		- Test:
 			+ Water Splashes when DoDisplaceWater is off
@@ -984,12 +984,14 @@
 
 		- @ Bombs (blasts, incl. tool)
 		- @ Tornado bottom
+			- WAS: see if can incorporate also "mist" for tornadoes
 
 		- Android Port Plan
 			- Splashes
 			- Foam
 
-		- TODO: see if can incorporate also "mist" for tornadoes
+		- Merge into Tornadoes
+
 		
 		- OLD: WAS:
 		- Option A) Ephemeral particles with own shader:
@@ -999,14 +1001,12 @@
 		- Option C) Fully "movie" (not ephemeral particles), just like explosions
 
 
-	- Run Discord poll for next:
-		- Customizable materials
-			- WAS: Longhorn materials (includes redesign of material palette, as it would become too slow)
-		- Rot redesign (includes better rusting, and organic alge growth)
-		- NPC phase II: ShipBuilder (Floorplan layer and Interior Texture layer), areas (e.g. assembly area), and behaviors (swimming, etc.)
-		- Fireworks
-
-		- https://forms.gle/PcmJ2kCqxp8UVmfX8
+	= Run Discord poll for next:
+		! Customizable materials
+		! Rot redesign (includes better rusting, and organic alge growth)
+		! NPC phase II: ShipBuilder (Floorplan layer and Interior Texture layer), areas (e.g. assembly area), and behaviors (swimming, etc.)
+		! Fireworks
+		+ https://forms.gle/PcmJ2kCqxp8UVmfX8
 
 
 

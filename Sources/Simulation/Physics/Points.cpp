@@ -2727,9 +2727,6 @@ void Points::UploadEphemeralParticles(
                 float const skewedLifetimeProgress = state.SkewedLifetimeProgress;
 
                 // Calculate scale: ~parabolic with progress
-                ////float const scale = (linearLifetimeProgress < 0.5f)
-                ////    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, linearLifetimeProgress)
-                ////    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, linearLifetimeProgress));
                 float const scale = (skewedLifetimeProgress < 0.5f)
                     ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, skewedLifetimeProgress)
                     : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, skewedLifetimeProgress));
@@ -2739,11 +2736,11 @@ void Points::UploadEphemeralParticles(
                     SmoothStep(0.0f, 0.5f, skewedLifetimeProgress)
                     - SmoothStep(0.5f, 1.0f, skewedLifetimeProgress);
 
-                // Calcualate rotation angle: starts random and rotates with constant velocity,
+                // Calculate rotation angle: starts random and rotates with constant velocity,
                 // obeying the expansion direction
                 float const angle =
                     GetRandomNormalizedUniformPersonalitySeed(pointIndex)
-                    - linearLifetimeProgress * 0.35f * 2.0f * Pi<float> * Sign(GetVelocity(pointIndex).x);
+                    - linearLifetimeProgress * 0.75f * 2.0f * Pi<float> * Sign(GetVelocity(pointIndex).x);
 
                 // Upload splash
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
