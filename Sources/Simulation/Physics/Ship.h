@@ -808,6 +808,7 @@ private:
 
     void InternalSpawnWaterFoam(
         vec2f const & position,
+        float verticalDirection,
         float strength,
         PlaneId planeId,
         float currentSimulationTime,

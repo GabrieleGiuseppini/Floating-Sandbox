@@ -2116,14 +2116,28 @@ void Points::UpdateEphemeralParticles(
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.LinearLifetimeProgress = linearLifetimeProgress;
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.SkewedLifetimeProgress = skewedLifetimeProgress;
 
-                        // Constrain onto ocean surface
+                        // Constrain onto ocean surface, simulating falling down/floating up
                         //
-                        // Note: this is not nice - we're acting directly onto the positions of particles,
+                        // Note: this is not nice - we're acting directly onto the positions of particles,strongestWaterFoam
                         // which is against the basic rules of the simulation; however, we're doing this
                         // for these specific ephemeral particles only, so we may live with it
-                        mPositionBuffer[pointIndex].y += GetCachedDepth(pointIndex);
-                        mCachedDepthBuffer[pointIndex] = 0.0f;
-                        mVelocityBuffer[pointIndex].y = 0.0f;
+
+                        // TODOTEST
+                        ////float const deltaDepth = 1.0f * (1.0f - LinearStep(0.0f, 1.0f, elapsedSimulationLifetime));
+                        ////mPositionBuffer[pointIndex].y += GetCachedDepth(pointIndex) + deltaDepth;
+                        ////mCachedDepthBuffer[pointIndex] -= deltaDepth;
+                        ////mVelocityBuffer[pointIndex].y = 0.0f;
+
+                        // TODOTEST: good but needs to enforce zero after a while
+                        ////float const newDepth = GetCachedDepth(pointIndex) * 0.95f;
+                        ////mPositionBuffer[pointIndex].y += (GetCachedDepth(pointIndex) - newDepth);
+                        ////mCachedDepthBuffer[pointIndex] = newDepth;
+                        ////mVelocityBuffer[pointIndex].y = 0.0f;
+
+                        float const newDepth = GetCachedDepth(pointIndex) * (1.0f - LinearStep(0.0f, 2.0f, elapsedSimulationLifetime));
+                        mPositionBuffer[pointIndex].y += (GetCachedDepth(pointIndex) - newDepth);
+                        mCachedDepthBuffer[pointIndex] = newDepth;
+                        mVelocityBuffer[pointIndex].y = 0.0f; // Just to be nice
                     }
 
                     break;

@@ -1440,20 +1440,24 @@ void Ship::ApplyWorldSurfaceForces(
     struct WaterSplash
     {
         vec2f Position;
+        float VerticalDirection;
         float Strength;
         PlaneId Plane;
 
         WaterSplash()
             : Position()
+            , VerticalDirection(0.0f)
             , Strength(0.0f)
             , Plane(NonePlaneId)
         { }
 
         WaterSplash(
             vec2f const & position,
+            float verticalDirection,
             float strength,
             PlaneId plane)
             : Position(position)
+            , VerticalDirection(verticalDirection)
             , Strength(strength)
             , Plane(plane)
         { }
@@ -1665,7 +1669,7 @@ void Ship::ApplyWorldSurfaceForces(
                         float const strength = (absDisplacement - MinAbsDisplacementForWaterFoam) / (MaxAbsDisplacementForWaterFoam - MinAbsDisplacementForWaterFoam);
                         if (strength > strongestWaterFoam.Strength)
                         {
-                            strongestWaterFoam = WaterSplash(thisPointPosition, strength, mPoints.GetPlaneId(thisPointIndex));
+                            strongestWaterFoam = WaterSplash(thisPointPosition, Sign(displacement), strength, mPoints.GetPlaneId(thisPointIndex));
                         }
                     }
 
@@ -1681,7 +1685,7 @@ void Ship::ApplyWorldSurfaceForces(
                         float const strength = (absDisplacement - MinAbsDisplacementForWaterSplash) / (MaxAbsDisplacementForWaterSplash - MinAbsDisplacementForWaterSplash);
                         if (strength > strongestWaterSplash.Strength)
                         {
-                            strongestWaterSplash = WaterSplash(thisPointPosition, strength, mPoints.GetPlaneId(thisPointIndex));
+                            strongestWaterSplash = WaterSplash(thisPointPosition, Sign(displacement), strength, mPoints.GetPlaneId(thisPointIndex));
                         }
                     }
                 }
@@ -1757,6 +1761,7 @@ void Ship::ApplyWorldSurfaceForces(
 
         InternalSpawnWaterFoam(
             strongestWaterFoam.Position,
+            strongestWaterFoam.VerticalDirection,
             strongestWaterFoam.Strength,
             strongestWaterFoam.Plane,
             currentSimulationTime,
@@ -1802,17 +1807,6 @@ void Ship::ApplyWorldSurfaceForces(
                 currentSimulationTime,
                 simulationParameters);
         }
-
-        //
-        // Foam
-        //
-
-        InternalSpawnWaterFoam(
-            strongestWaterSplash.Position,
-            strongestWaterSplash.Strength,
-            strongestWaterSplash.Plane,
-            currentSimulationTime,
-            simulationParameters);
     }
 }
 
@@ -4007,6 +4001,7 @@ void Ship::InternalSpawnSparklesForLightning(
 
 void Ship::InternalSpawnWaterFoam(
     vec2f const & position,
+    float verticalDirection,
     float strength,
     PlaneId planeId,
     float currentSimulationTime,
@@ -4040,7 +4035,7 @@ void Ship::InternalSpawnWaterFoam(
             * (0.5f + 0.5f * normalizedStrength);
 
         //
-        // Decide x position: spiraling around center
+        // Decide x position: spiraling around center, to spread particles horizontallydeltaDepth
         //
 
         float constexpr StepWorldWidth = 0.7f;
@@ -4050,12 +4045,14 @@ void Ship::InternalSpawnWaterFoam(
             -SimulationParameters::HalfMaxWorldWidth,
             SimulationParameters::HalfMaxWorldWidth);
 
-        vec2f const foamPosition = vec2f(positionX, position.y);
+        // Spawn at a distance from starting y (~ocean surface), to simulate falling down/floating up
+        float constexpr DeltaY = 5.0f;
+        vec2f const foamPosition = vec2f(positionX, position.y + verticalDirection * DeltaY * normalizedStrength);
 
         float const foamDepth = mParentWorld.GetOceanSurface().GetDepth(foamPosition);
 
         //
-        // Calculate scale: depends on strength (only itsm 0.0...1.0 range), and randomized
+        // Calculate scale: depends on strength (only its 0.0...1.0 range), and randomized
         //
 
         float constexpr MinMaxScale = 0.3f;
