@@ -959,6 +959,7 @@
 						+ Zero y velocity
 
 					+ Better strategy for size: low strength cannot be large (make smaller), so random offset should be smaller
+					- Lateral extremes of foam must be smaller
 
 					= Texture
 						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
@@ -970,6 +971,7 @@
 		= Try displacement also against waves: replace vertical velocity with velocity against water surface
 			+ Project impact by angle with wave
 			+ Remove log
+			- See if can lower waves when ship travels
 
 		- See if still makes sense to continuously displace ocean surface at ship update loop
 
