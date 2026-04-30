@@ -1611,19 +1611,31 @@ void Ship::ApplyWorldSurfaceForces(
 
                 if constexpr (DoDisplaceWater)
                 {
-                    // Calculate vertical velocity, clamping it to a maximum to prevent
-                    // ocean surface instabilities with extremely high velocities
-                    float const verticalVelocity = mPoints.GetVelocity(thisPointIndex).y;
-                    float const absVerticalVelocity = std::min(
-                        std::abs(verticalVelocity),
+                    // TODOTEST
+                    ////// Calculate vertical velocity, clamping it to a maximum to prevent
+                    ////// ocean surface instabilities with extremely high velocities
+                    ////float const verticalVelocity = mPoints.GetVelocity(thisPointIndex).y;
+                    ////float const absVerticalVelocity = std::min(
+                    ////    std::abs(verticalVelocity),
+                    ////    10000.0f); // Magic number
+
+
+                    // Calculate velocity component against wave, clamping it to a maximum to prevent
+                    // ocean surface instabilities with extremely high velocities.
+                    // Negative when _entering_ the wave
+                    vec2f const oceanSurfaceNormal = mParentWorld.GetOceanSurface().GetNormalAt(thisPointPosition.x); // Points up
+                    float const impactVelocity = mPoints.GetVelocity(thisPointIndex).dot(oceanSurfaceNormal);
+                    float const absImpactVelocity = std::min(
+                        std::abs(impactVelocity),
                         10000.0f); // Magic number
+
 
                     //
                     // Displacement magnitude calculation
                     //
 
-                    float const linearDisplacementMagnitude = WdmY0 + wdmLinearSlope * (absVerticalVelocity - WdmX0);
-                    float const quadraticDisplacementMagnitude = wdmQuadraticA * absVerticalVelocity * absVerticalVelocity + wdmQuadraticB * absVerticalVelocity;
+                    float const linearDisplacementMagnitude = WdmY0 + wdmLinearSlope * (absImpactVelocity - WdmX0);
+                    float const quadraticDisplacementMagnitude = wdmQuadraticA * absImpactVelocity * absImpactVelocity + wdmQuadraticB * absImpactVelocity;
 
                     //
                     // Depth attenuation: tapers down displacement the deeper the point is
@@ -1633,10 +1645,10 @@ void Ship::ApplyWorldSurfaceForces(
                     float constexpr MaxVel = 35.0f;
                     float constexpr a2 = -0.5f / (MaxVel * MaxVel);
                     float constexpr b2 = 1.0f / MaxVel;
-                    float const clampedAbsVerticalVelocity = std::min(absVerticalVelocity, MaxVel);
+                    float const clampedAbsImpactVelocity = std::min(absImpactVelocity, MaxVel);
                     float const maxDepth =
-                        (a2 * clampedAbsVerticalVelocity * clampedAbsVerticalVelocity + b2 * clampedAbsVerticalVelocity + 0.5f)
-                        * (verticalVelocity <= 0.0f ? 12.0f : 4.0f); // Keep up-push low or else bodies keep jumping up and down forever
+                        (a2 * clampedAbsImpactVelocity * clampedAbsImpactVelocity + b2 * clampedAbsImpactVelocity + 0.5f)
+                        * (impactVelocity <= 0.0f ? 12.0f : 4.0f); // Keep up-push low or else bodies keep jumping up and down forever
 
                     // Linear attenuation up to maxDepth
                     float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, thisPointDepth); // Tapers down contribution the deeper the point is
@@ -1646,11 +1658,12 @@ void Ship::ApplyWorldSurfaceForces(
                     //
 
                     float const displacement =
-                        (absVerticalVelocity < WdmX0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
+                        (absImpactVelocity < WdmX0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
                         * depthAttenuation
-                        * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
+                        * SignStep(0.0f, impactVelocity) // Displacement has same sign as impact velocity
                         * Step(0.0f, thisPointDepth) // No displacement for above-water points
-                        * 0.4f; // Magic number
+                        * 0.4f // Magic number
+                        * oceanSurfaceNormal.y; // Take the vertical component of the displacement, which happens along the normal
 
                     mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
 

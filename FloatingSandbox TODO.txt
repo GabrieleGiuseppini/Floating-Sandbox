@@ -967,7 +967,9 @@
 							- Redo after buying
 					+ Eph particle
 
-		- Try displacement also against waves: replace vertical velocity with velocity against water surface
+		= Try displacement also against waves: replace vertical velocity with velocity against water surface
+			+ Project impact by angle with wave
+			+ Remove log
 
 		- See if still makes sense to continuously displace ocean surface at ship update loop
 
@@ -984,6 +986,8 @@
 		- @ Bombs (blasts, incl. tool)
 		- @ Tornado bottom
 			- WAS: see if can incorporate also "mist" for tornadoes
+
+		- See if can add a few more eph particles
 
 		- Android Port Plan
 			- Splashes
