@@ -2074,29 +2074,6 @@ void Points::UpdateEphemeralParticles(
                         elapsedSimulationLifetime
                         / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
 
-                    float constexpr EntryPhaseMaxDuration = 0.5f;
-                    float skewedLifetimeProgress;
-                    if (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime / 2.0f > EntryPhaseMaxDuration)
-                    {
-                        if (elapsedSimulationLifetime < EntryPhaseMaxDuration)
-                        {
-                            // 0.0 ... 0.5
-                            skewedLifetimeProgress = 0.5f * elapsedSimulationLifetime / EntryPhaseMaxDuration;
-                        }
-                        else
-                        {
-                            // 0.5 ... 1.0
-                            skewedLifetimeProgress = 0.5f +
-                                (elapsedSimulationLifetime - EntryPhaseMaxDuration)
-                                / (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime - EntryPhaseMaxDuration)
-                                * 0.5f;
-                        }
-                    }
-                    else
-                    {
-                        skewedLifetimeProgress = linearLifetimeProgress;
-                    }
-
                     // Check if expired
                     if (linearLifetimeProgress >= 1.0f)
                     {
@@ -2112,6 +2089,30 @@ void Points::UpdateEphemeralParticles(
                         // Still alive
                         //
 
+                        // Calculate skewed lifetime progress
+                        float constexpr EntryPhaseMaxDuration = 0.5f;
+                        float skewedLifetimeProgress;
+                        if (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime / 2.0f > EntryPhaseMaxDuration)
+                        {
+                            if (elapsedSimulationLifetime < EntryPhaseMaxDuration)
+                            {
+                                // 0.0 ... 0.5
+                                skewedLifetimeProgress = 0.5f * elapsedSimulationLifetime / EntryPhaseMaxDuration;
+                            }
+                            else
+                            {
+                                // 0.5 ... 1.0
+                                skewedLifetimeProgress = 0.5f +
+                                    (elapsedSimulationLifetime - EntryPhaseMaxDuration)
+                                    / (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime - EntryPhaseMaxDuration)
+                                    * 0.5f;
+                            }
+                        }
+                        else
+                        {
+                            skewedLifetimeProgress = linearLifetimeProgress;
+                        }
+
                         // Update progress
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.LinearLifetimeProgress = linearLifetimeProgress;
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.SkewedLifetimeProgress = skewedLifetimeProgress;
@@ -2121,18 +2122,6 @@ void Points::UpdateEphemeralParticles(
                         // Note: this is not nice - we're acting directly onto the positions of particles,strongestWaterFoam
                         // which is against the basic rules of the simulation; however, we're doing this
                         // for these specific ephemeral particles only, so we may live with it
-
-                        // TODOTEST
-                        ////float const deltaDepth = 1.0f * (1.0f - LinearStep(0.0f, 1.0f, elapsedSimulationLifetime));
-                        ////mPositionBuffer[pointIndex].y += GetCachedDepth(pointIndex) + deltaDepth;
-                        ////mCachedDepthBuffer[pointIndex] -= deltaDepth;
-                        ////mVelocityBuffer[pointIndex].y = 0.0f;
-
-                        // TODOTEST: good but needs to enforce zero after a while
-                        ////float const newDepth = GetCachedDepth(pointIndex) * 0.95f;
-                        ////mPositionBuffer[pointIndex].y += (GetCachedDepth(pointIndex) - newDepth);
-                        ////mCachedDepthBuffer[pointIndex] = newDepth;
-                        ////mVelocityBuffer[pointIndex].y = 0.0f;
 
                         float const newDepth = GetCachedDepth(pointIndex) * (1.0f - LinearStep(0.0f, 2.0f, elapsedSimulationLifetime));
                         mPositionBuffer[pointIndex].y += (GetCachedDepth(pointIndex) - newDepth);
@@ -2741,9 +2730,12 @@ void Points::UploadEphemeralParticles(
                 float const skewedLifetimeProgress = state.SkewedLifetimeProgress;
 
                 // Calculate scale: ~parabolic with progress
-                float const scale = (skewedLifetimeProgress < 0.5f)
-                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, skewedLifetimeProgress)
-                    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, skewedLifetimeProgress));
+                ////float const scale = (skewedLifetimeProgress < 0.5f)
+                ////    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, skewedLifetimeProgress)
+                ////    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, skewedLifetimeProgress));
+                float const scale = (linearLifetimeProgress < 0.5f)
+                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, linearLifetimeProgress)
+                    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, linearLifetimeProgress));
 
                 // Calculate alpha: ~parabolic with progress
                 float const alpha =

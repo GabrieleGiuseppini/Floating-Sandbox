@@ -892,6 +892,8 @@
 					- Update cachedDepth
 					- Zero out y velocity?
 
+				- Impact direction from new ocean surface normal
+
 				- Shade texture depending on flat/depth color and texture
 					- TODO: based on blue
 
@@ -960,6 +962,7 @@
 
 					+ Better strategy for size: low strength cannot be large (make smaller), so random offset should be smaller
 					- Lateral extremes of foam must be smaller
+					- Convect with wave velocity?
 
 					= Texture
 						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
@@ -971,9 +974,10 @@
 		= Try displacement also against waves: replace vertical velocity with velocity against water surface
 			+ Project impact by angle with wave
 			+ Remove log
-			- See if can lower waves when ship travels
+			- Do we want to lower waves when ship travels?
 
-		- See if still makes sense to continuously displace ocean surface at ship update loop
+		X See if still makes sense to continuously displace ocean surface at ship update loop
+			X Yes, for "constant rate"
 
 		- Test:
 			+ Water Splashes when DoDisplaceWater is off
@@ -988,6 +992,9 @@
 		- @ Bombs (blasts, incl. tool)
 		- @ Tornado bottom
 			- WAS: see if can incorporate also "mist" for tornadoes
+
+		- Cleanup:
+			- See if foam eph particle state's SkewedLifetime is still needed
 
 		- See if can add a few more eph particles
 
