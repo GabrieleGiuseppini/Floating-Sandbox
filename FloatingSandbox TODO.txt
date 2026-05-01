@@ -964,9 +964,7 @@
 					+ Try: flatten particle (rectangle along a direction) depending on ocean surface normal
 						! Requires giving up rotation
 						+ Requires new uploader for MipMapped quad, with vec2 direction (up) and FloatSize for multipliers
-
-					- Optimize InternalSpawnFoam: move out of loop constant things
-
+					+ Optimize InternalSpawnFoam: move out of loop constant things
 					= Texture
 						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
 						+ Make it white
@@ -988,6 +986,7 @@
 
 		- Settings toggle(s):
 			- Or sensitivity(ies), 0 for none
+			- Also lifetime?
 			- SimulationParameters
 			- SettingsManager
 			- SettingsDialog
@@ -1003,10 +1002,13 @@
 			- See if foam eph particle state's MinSize is still needed (it's always zero)
 
 		- See if can add a few more eph particles
+			- Make it a runtime settings, and choose between 4K, 6K, and 8K based on calibration
 
 		- Android Port Plan
-			- Splashes
+			- Textures (splashes, foam) and enums
 			- Foam
+				- ShipRenderContext:: new uploader
+			- Max eph particles and calibration
 
 		- Merge into Tornadoes
 

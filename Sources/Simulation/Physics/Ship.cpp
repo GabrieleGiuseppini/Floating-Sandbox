@@ -4012,11 +4012,36 @@ void Ship::InternalSpawnWaterFoam(
     float currentSimulationTime,
     SimulationParameters const & simulationParameters)
 {
+    assert(position.x >= -SimulationParameters::HalfMaxWorldWidth
+        && position.x <= SimulationParameters::HalfMaxWorldWidth);
+
     // Note: values of strength can get as high as 8.0, and possibly more
     float const normalizedStrength = LinearStep(0.0f, 1.0f, strength);
 
-    assert(position.x >= -SimulationParameters::HalfMaxWorldWidth
-        && position.x <= SimulationParameters::HalfMaxWorldWidth);
+    //
+    // Calculate y
+    //
+    // Spawn at a distance from starting y (~ocean surface), to simulate falling down/floating up
+    //
+
+    float constexpr DeltaY = 3.5f;
+    float const foamPositionY = position.y + verticalDirection * DeltaY * normalizedStrength;
+
+    //
+    // Calculate base scale: depends on strength (only its 0.0...1.0 range)
+    //
+
+    float constexpr MinMaxScale = 0.3f;
+    float constexpr MaxMaxScale = 1.2f;
+    float const baseScale = (MinMaxScale + (MaxMaxScale - MinMaxScale) * normalizedStrength);
+
+    //
+    // Calculate max lifetime: depends on strength
+    //
+
+    float constexpr MinMaxLifetime = 2.5f;
+    float constexpr MaxMaxLifetime = 3.5f;
+    float const maxLifetime = MinMaxLifetime + (MaxMaxLifetime - MinMaxLifetime) * strength;
 
     size_t const nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(4, 5);
     for (size_t p = 0; p < nParticles; ++p)
@@ -4050,29 +4075,15 @@ void Ship::InternalSpawnWaterFoam(
             -SimulationParameters::HalfMaxWorldWidth,
             SimulationParameters::HalfMaxWorldWidth);
 
-        // Spawn at a distance from starting y (~ocean surface), to simulate falling down/floating up
-        float constexpr DeltaY = 3.5f;
-        vec2f const foamPosition = vec2f(positionX, position.y + verticalDirection * DeltaY * normalizedStrength);
+        vec2f const foamPosition = vec2f(positionX, foamPositionY);
 
         float const foamDepth = mParentWorld.GetOceanSurface().GetDepth(foamPosition);
 
         //
-        // Calculate scale: depends on strength (only its 0.0...1.0 range), and randomized
+        // Randomize scale
         //
 
-        float constexpr MinMaxScale = 0.3f;
-        float constexpr MaxMaxScale = 1.2f;
-        float const maxScale =
-            (MinMaxScale + (MaxMaxScale - MinMaxScale) * normalizedStrength)
-            * GameRandomEngine::GetInstance().GenerateUniformReal(0.7f, 1.1f);
-
-        //
-        // Calculate max lifetime: depends on strength
-        //
-
-        float constexpr MinMaxLifetime = 2.5f;
-        float constexpr MaxMaxLifetime = 3.5f;
-        float const maxLifetime = MinMaxLifetime + (MaxMaxLifetime - MinMaxLifetime) * strength;
+        float const maxScale = baseScale * GameRandomEngine::GetInstance().GenerateUniformReal(0.7f, 1.1f);
 
         //
         // Create foam particle
