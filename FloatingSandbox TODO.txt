@@ -961,8 +961,7 @@
 						+ Zero y velocity
 
 					+ Better strategy for size: low strength cannot be large (make smaller), so random offset should be smaller
-					- Lateral extremes of foam must be smaller
-					- Convect with wave velocity?
+					+ Lateral extremes of foam must be smaller
 
 					= Texture
 						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
@@ -994,7 +993,9 @@
 			- WAS: see if can incorporate also "mist" for tornadoes
 
 		- Cleanup:
+			- Finalize alpha of foam (@ eph particle upload)
 			- See if foam eph particle state's SkewedLifetime is still needed
+			- See if foam eph particle state's MinSize is still needed (it's always zero)
 
 		- See if can add a few more eph particles
 

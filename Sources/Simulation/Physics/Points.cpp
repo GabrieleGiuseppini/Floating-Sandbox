@@ -2730,20 +2730,17 @@ void Points::UploadEphemeralParticles(
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam;
 
                 float const linearLifetimeProgress = state.LinearLifetimeProgress;
-                float const skewedLifetimeProgress = state.SkewedLifetimeProgress;
+                //float const skewedLifetimeProgress = state.SkewedLifetimeProgress;
 
                 // Calculate scale: ~parabolic with progress
-                ////float const scale = (linearLifetimeProgress < 0.5f)
-                ////    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, linearLifetimeProgress)
-                ////    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, linearLifetimeProgress));
                 float const scale = (linearLifetimeProgress < 0.5f)
                     ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.25f, linearLifetimeProgress)
                     : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, linearLifetimeProgress));
 
                 // Calculate alpha: ~parabolic with progress
                 float const alpha =
-                    SmoothStep(0.0f, 0.5f, skewedLifetimeProgress)
-                    - SmoothStep(0.5f, 1.0f, skewedLifetimeProgress);
+                    SmoothStep(0.0f, 0.5f, linearLifetimeProgress)
+                    - SmoothStep(0.5f, 1.0f, linearLifetimeProgress);
 
                 // Calculate rotation angle: starts random and rotates with constant velocity,
                 // obeying the expansion direction
