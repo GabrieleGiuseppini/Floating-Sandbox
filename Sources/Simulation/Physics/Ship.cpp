@@ -4043,7 +4043,7 @@ void Ship::InternalSpawnWaterFoam(
         // Decide x position: spiraling around center, to spread particles horizontallydeltaDepth
         //
 
-        float constexpr StepWorldWidth = 0.7f;
+        float constexpr StepWorldWidth = 0.6f;
         float const numberOfSteps = static_cast<float>((p + 1) / 2);
         float const positionX = Clamp(
             position.x + numberOfSteps * StepWorldWidth * sign,
@@ -4051,7 +4051,7 @@ void Ship::InternalSpawnWaterFoam(
             SimulationParameters::HalfMaxWorldWidth);
 
         // Spawn at a distance from starting y (~ocean surface), to simulate falling down/floating up
-        float constexpr DeltaY = 5.0f;
+        float constexpr DeltaY = 3.5f;
         vec2f const foamPosition = vec2f(positionX, position.y + verticalDirection * DeltaY * normalizedStrength);
 
         float const foamDepth = mParentWorld.GetOceanSurface().GetDepth(foamPosition);

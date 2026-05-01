@@ -446,6 +446,7 @@ private:
             float PersonalitySeed;
             float LinearLifetimeProgress;
             float SkewedLifetimeProgress; // 0.5 at fixed duration after start
+            vec2f VerticalAxis;
 
             WaterFoamState()
                 : MinScale(0.0f)
@@ -453,6 +454,7 @@ private:
                 , PersonalitySeed(0.0f)
                 , LinearLifetimeProgress(0.0f)
                 , SkewedLifetimeProgress(0.0)
+                , VerticalAxis()
             {
             }
 
@@ -465,6 +467,7 @@ private:
                 , PersonalitySeed(personalitySeed)
                 , LinearLifetimeProgress(0.0f)
                 , SkewedLifetimeProgress(0.0)
+                , VerticalAxis()
             {
             }
         };

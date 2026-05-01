@@ -940,6 +940,100 @@ public:
             vertexBuffer);
     }
 
+    inline void UploadGenericMipMappedTextureRenderSpecification(
+        PlaneId planeId,
+        float personalitySeed,
+        GameTextureDatabases::GenericMipMappedTextureGroups textureGroup,
+        vec2f const & centerPosition,
+        vec2f const & verticalAxis,
+        FloatSize scale,
+        float alpha)
+    {
+        // Choose frame
+        size_t const frameCount = mGenericMipMappedTextureAtlasMetadata.GetFrameCount(textureGroup);
+        float frameIndexF = personalitySeed * frameCount;
+        TextureFrameIndex const frameIndex = std::min(
+            static_cast<TextureFrameIndex>(std::floor(frameIndexF)),
+            static_cast<TextureFrameIndex>(frameCount - 1));
+
+        //
+        // Populate the texture quad
+        //
+
+        TextureAtlasFrameMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase> const & frame =
+            mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups>(textureGroup, frameIndex));
+
+        vec2f const horizontalAxis = verticalAxis.to_perpendicular(); // Points left
+        vec2f const left = horizontalAxis * (-frame.FrameMetadata.AnchorCenterWorld.x) * scale.width;
+        vec2f const right = horizontalAxis * (frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x) * scale.width;
+
+        vec2f const top = verticalAxis * (frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y) * scale.height;
+        vec2f const topLeft = top + left;
+        vec2f const topRight = top + right;
+        vec2f const bottom = verticalAxis * (-frame.FrameMetadata.AnchorCenterWorld.y) * scale.height;
+        vec2f const bottomLeft = bottom + left;
+        vec2f const bottomRight = bottom + right;
+
+        float const ambientLightSensitivity =
+            frame.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
+
+        //
+        // Append vertices
+        //
+
+        size_t const planeIndex = static_cast<size_t>(planeId);
+
+        // Pre-sized
+        assert(planeIndex < mGenericMipMappedTexturePlaneVertexBuffers.size());
+
+        // Get this plane's vertex buffer
+        auto & vertexBuffer = mGenericMipMappedTexturePlaneVertexBuffers[planeIndex].vertexBuffer;
+
+        // Top-left
+        vertexBuffer.emplace_back(
+            centerPosition,
+            topLeft,
+            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
+            static_cast<float>(planeId),
+            1.0f,
+            0.0f,
+            alpha,
+            ambientLightSensitivity);
+
+        // Top-Right
+        vertexBuffer.emplace_back(
+            centerPosition,
+            topRight,
+            frame.TextureCoordinatesTopRight,
+            static_cast<float>(planeId),
+            1.0f,
+            0.0f,
+            alpha,
+            ambientLightSensitivity);
+
+        // Bottom-left
+        vertexBuffer.emplace_back(
+            centerPosition,
+            bottomLeft,
+            frame.TextureCoordinatesBottomLeft,
+            static_cast<float>(planeId),
+            1.0f,
+            0.0f,
+            alpha,
+            ambientLightSensitivity);
+
+        // Bottom-right
+        vertexBuffer.emplace_back(
+            centerPosition,
+            bottomRight,
+            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
+            static_cast<float>(planeId),
+            1.0f,
+            0.0f,
+            alpha,
+            ambientLightSensitivity);
+    }
+
     //
     // Ephemeral point elements
     //

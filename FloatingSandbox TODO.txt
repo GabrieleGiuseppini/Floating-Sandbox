@@ -962,10 +962,11 @@
 					X Try convection with waves, to avoid serpents
 					+ Try with non-whitened texture
 
-					- Optimize InternalSpawnFoam: move out of loop constant things
+					= Try: flatten particle (rectangle along a direction) depending on ocean surface normal
+						! Requires giving up rotation
+						+ Requires new uploader for MipMapped quad, with vec2 direction (up) and FloatSize for multipliers
 
-					- Try: flatten particle (rectangle along a direction) depending on ocean surface normal
-						- Requires new uploader for MipMapped quad, with vec2 direction (up) and FloatSize for multipliers
+					- Optimize InternalSpawnFoam: move out of loop constant things
 
 					= Texture
 						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 

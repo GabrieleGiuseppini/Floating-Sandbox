@@ -2122,7 +2122,7 @@ void Points::UpdateEphemeralParticles(
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.SkewedLifetimeProgress = skewedLifetimeProgress;
 
                         // Damp X velocity
-                        mVelocityBuffer[pointIndex].x *= 0.99f;
+                        mVelocityBuffer[pointIndex].x *= 0.995f;
 
                         // Constrain onto ocean surface, simulating falling down/floating up
                         //
@@ -2130,10 +2130,13 @@ void Points::UpdateEphemeralParticles(
                         // which is against the basic rules of the simulation; however, we're doing this
                         // for these specific ephemeral particles only, so we may live with it
                         float const currentDepth = GetCachedDepth(pointIndex);
-                        float const newDepth = currentDepth * (1.0f - LinearStep(0.0f, 4.0f, elapsedSimulationLifetime));
+                        float const newDepth = currentDepth * (1.0f - LinearStep(0.0f, 6.0f, elapsedSimulationLifetime));
                         mPositionBuffer[pointIndex].y += currentDepth - newDepth;
                         mCachedDepthBuffer[pointIndex] = newDepth;
                         mVelocityBuffer[pointIndex].y = 0.0f; // Just to be nice
+
+                        // Calculate vertical axis
+                        mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.VerticalAxis = mParentWorld.GetOceanSurface().GetNormalAt(mPositionBuffer[pointIndex].x);
                     }
 
                     break;
@@ -2753,29 +2756,28 @@ void Points::UploadEphemeralParticles(
                 float const LifetimePeak2 = 0.50f;
 
                 // Calculate scale: ~parabolic with progress
-                float const scale = (linearLifetimeProgress < LifetimePeak1)
+                float const baseScale = (linearLifetimeProgress < LifetimePeak1)
                     ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, LifetimePeak1, linearLifetimeProgress)
                     : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(LifetimePeak2, 1.0f, linearLifetimeProgress));
+
+                // Squash scale with progress
+                FloatSize scale(
+                    baseScale * (1.0f + linearLifetimeProgress * 0.85f),
+                    baseScale * (1.0f - linearLifetimeProgress * 0.85f));
 
                 // Calculate alpha: ~parabolic with progress
                 float const alpha =
                     SmoothStep(0.0f, LifetimePeak1, linearLifetimeProgress)
                     - SmoothStep(LifetimePeak2, 1.0f, linearLifetimeProgress);
 
-                // Calculate rotation angle: starts random and rotates with constant velocity,
-                // obeying the expansion direction
-                float const angle =
-                    GetRandomNormalizedUniformPersonalitySeed(pointIndex)
-                    - linearLifetimeProgress * 0.75f * 2.0f * Pi<float> * Sign(GetVelocity(pointIndex).x);
-
-                // Upload splash
+                // Upload foam
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                     maxPlaneId,
                     state.PersonalitySeed,
                     GameTextureDatabases::GenericMipMappedTextureGroups::WaterFoam,
                     GetPosition(pointIndex),
+                    state.VerticalAxis,
                     scale,
-                    angle,
                     //alpha * 0.85f);
                     alpha);
 
