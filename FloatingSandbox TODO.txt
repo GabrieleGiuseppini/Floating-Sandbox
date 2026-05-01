@@ -960,10 +960,9 @@
 					+ Better strategy for size: low strength cannot be large (make smaller), so random offset should be smaller
 					+ Lateral extremes of foam must be smaller
 					X Try convection with waves, to avoid serpents
+					+ Try with non-whitened texture
 
 					- Optimize InternalSpawnFoam: move out of loop constant things
-
-					- Try with non-whitened texture
 
 					- Try: flatten particle (rectangle along a direction) depending on ocean surface normal
 						- Requires new uploader for MipMapped quad, with vec2 direction (up) and FloatSize for multipliers
@@ -984,7 +983,7 @@
 		X See if still makes sense to continuously displace ocean surface at ship update loop
 			X Yes, for "constant rate"
 
-		- Test:
+		+ Test:
 			+ Water Splashes when DoDisplaceWater is off
 
 		- Settings toggle(s):

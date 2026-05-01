@@ -722,9 +722,13 @@ void Points::CreateEphemeralParticleWaterFoam(
     PlaneId planeId,
     SimulationParameters const & simulationParameters)
 {
-    // Get a free slot (or steal one)
-    auto pointIndex = FindFreeEphemeralParticle(true);
-    assert(NoneElementIndex != pointIndex);
+    // Get a free slot (if any)
+    auto pointIndex = FindFreeEphemeralParticle(false);
+    if (pointIndex == NoneElementIndex)
+    {
+        // No luck
+        return;
+    }
 
     //
     // Store attributes
