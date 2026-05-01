@@ -4111,7 +4111,7 @@ void Ship::InternalSpawnWaterSplash(
     float constexpr MaxVelocityMagnitude = 8.5f;
     float const velocityMagnitude =
         MinVelocityMagnitude
-        + (MaxVelocityMagnitude - MinVelocityMagnitude) * strength;
+        + (MaxVelocityMagnitude - MinVelocityMagnitude) * std::min(strength, 16.0f);
     vec2f const velocity = direction * velocityMagnitude;
 
     //
@@ -4119,10 +4119,10 @@ void Ship::InternalSpawnWaterSplash(
     //
 
     float constexpr MinMaxScale = 0.4f;
-    float constexpr MaxMaxScale = 1.2f;
+    float constexpr MaxMaxScale = 1.4f;
     float const maxScale =
         MinMaxScale
-        + (MaxMaxScale - MinMaxScale) * strength;
+        + (MaxMaxScale - MinMaxScale) * std::min(strength, 8.0f);
     float const initialScale = maxScale / 2.0f;
 
     //
