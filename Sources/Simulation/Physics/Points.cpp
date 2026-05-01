@@ -2125,8 +2125,9 @@ void Points::UpdateEphemeralParticles(
                         // Note: this is not nice - we're acting directly onto the positions of particles,
                         // which is against the basic rules of the simulation; however, we're doing this
                         // for these specific ephemeral particles only, so we may live with it
-                        float const newDepth = GetCachedDepth(pointIndex) * (1.0f - LinearStep(0.0f, 4.0f, elapsedSimulationLifetime));
-                        mPositionBuffer[pointIndex].y += (GetCachedDepth(pointIndex) - newDepth);
+                        float const currentDepth = GetCachedDepth(pointIndex);
+                        float const newDepth = currentDepth * (1.0f - LinearStep(0.0f, 4.0f, elapsedSimulationLifetime));
+                        mPositionBuffer[pointIndex].y += currentDepth - newDepth;
                         mCachedDepthBuffer[pointIndex] = newDepth;
                         mVelocityBuffer[pointIndex].y = 0.0f; // Just to be nice
                     }
@@ -2160,6 +2161,19 @@ void Points::UpdateEphemeralParticles(
 
                         // Update progress
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterSplash.LifetimeProgress = lifetimeProgress;
+
+                        // Constrain onto ocean surface
+                        //
+                        // Note: this is not nice - we're acting directly onto the positions of particles,
+                        // which is against the basic rules of the simulation; however, we're doing this
+                        // for these specific ephemeral particles only, so we may live with it
+                        float const currentDepth = GetCachedDepth(pointIndex);
+                        if (currentDepth > 0.0f)
+                        {
+                            float const newDepth = 0.95f * currentDepth;
+                            mPositionBuffer[pointIndex].y += currentDepth - newDepth;
+                            mCachedDepthBuffer[pointIndex] = newDepth;
+                        }
                     }
 
                     break;

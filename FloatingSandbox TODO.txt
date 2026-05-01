@@ -888,17 +888,16 @@
 					+ Try without that one
 				+ PlaneID
 				+ Multiple particles, random dir
-				- Particles still sink: constrain position by cachedDepth
-					- Update cachedDepth
-					- Zero out y velocity?
+				+ Particles still sink: constrain position by cachedDepth
+					+ Update cachedDepth
+					+ NO zero out y velocity
+
+				- Multiple particle randomness loop moves to Ship::InternalSpawnWaterSplash()
 
 				- Impact direction from new ocean surface normal
 
 				- Shade texture depending on flat/depth color and texture
 					- TODO: based on blue
-
-			- Code cleanups
-				- Multiple particle randomness loop moves to Ship::InternalSpawnWaterSplash()
 
 		= Foam:
 			= For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
@@ -959,18 +958,17 @@
 					+ Constrained onto surface, by means of cached depth
 						+ Adjust cached depth
 						+ Zero y velocity
-
 					+ Better strategy for size: low strength cannot be large (make smaller), so random offset should be smaller
 					+ Lateral extremes of foam must be smaller
+					X Try convection with waves, to avoid serpents
 
-					- Try convection with waves, to avoid serpents
-
-					- Flatten rendered shape?
+					- Try: flatten particle (rectangle along a direction) depending on ocean surface normal
+						- Requires new uploader for MipMapped quad, with vec2 direction (up) and FloatSize for multipliers
 
 					= Texture
 						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
 						+ Make it white
-						- Finalize authoring
+						- Finalize authoring, after beta results
 							- First, copy current psds as authoring files, and commit them
 							- Redo after buying
 					+ Eph particle

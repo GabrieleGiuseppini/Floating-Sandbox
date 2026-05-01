@@ -4119,7 +4119,7 @@ void Ship::InternalSpawnWaterSplash(
     //
 
     float constexpr MinMaxScale = 0.4f;
-    float constexpr MaxMaxScale = 1.4f;
+    float constexpr MaxMaxScale = 1.2f;
     float const maxScale =
         MinMaxScale
         + (MaxMaxScale - MinMaxScale) * strength;
@@ -4131,7 +4131,7 @@ void Ship::InternalSpawnWaterSplash(
 
     float const maxLifetime =
         2.0f
-        * std::max(velocityMagnitude, 10.0f) // Long persistence
+        * Clamp(velocityMagnitude, 8.0f, 40.0f) // Ensure long persistence with weak splashes, but never too long
         / SimulationParameters::GravityMagnitude;
 
     //
