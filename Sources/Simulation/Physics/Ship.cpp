@@ -1776,41 +1776,13 @@ void Ship::ApplyWorldSurfaceForces(
     {
         assert(strongestWaterSplash.Plane != NonePlaneId);
 
-        //
-        // Main splash
-        //
-
         InternalSpawnWaterSplash(
             strongestWaterSplash.Position,
-            vec2f(0.0f, 1.0f),
+            vec2f(0.0f, 1.0f), // TODOTEST
             strongestWaterSplash.Strength,
             strongestWaterSplash.Plane,
             currentSimulationTime,
             simulationParameters);
-
-        //
-        // Secondary splashes
-        //
-
-        size_t nSecondarySplashes = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(1, 2);
-        for (size_t s = 0; s < nSecondarySplashes; ++s)
-        {
-            // Decide direction
-            float const directionAngleCcw = Clamp(
-                GameRandomEngine::GetInstance().GenerateNormalReal(Pi<float> / 2.0f, Pi<float> / 3.0f),
-                Pi<float> / 2.0f - Pi<float> / 3.0f,
-                Pi<float> / 2.0f + Pi<float> / 3.0f);
-            vec2f const direction = vec2f::fromPolar(1.0f, -directionAngleCcw);
-
-            // Create splash
-            InternalSpawnWaterSplash(
-                strongestWaterSplash.Position,
-                direction,
-                strongestWaterSplash.Strength * 1.3f,
-                strongestWaterSplash.Plane,
-                currentSimulationTime,
-                simulationParameters);
-        }
     }
 }
 
@@ -4017,7 +3989,7 @@ void Ship::InternalSpawnWaterFoam(
     assert(position.x >= -SimulationParameters::HalfMaxWorldWidth
         && position.x <= SimulationParameters::HalfMaxWorldWidth);
 
-    size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(4, 5);
+    size_t const nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(4, 5);
     for (size_t p = 0; p < nParticles; ++p)
     {
         //
@@ -4112,13 +4084,12 @@ void Ship::InternalSpawnWaterSplash(
     float const velocityMagnitude =
         MinVelocityMagnitude
         + (MaxVelocityMagnitude - MinVelocityMagnitude) * std::min(strength, 16.0f);
-    vec2f const velocity = direction * velocityMagnitude;
 
     //
     // Calculate scale: depends on strength
     //
 
-    float constexpr MinMaxScale = 0.4f;
+    float constexpr MinMaxScale = 0.45f;
     float constexpr MaxMaxScale = 1.4f;
     float const maxScale =
         MinMaxScale
@@ -4131,23 +4102,49 @@ void Ship::InternalSpawnWaterSplash(
 
     float const maxLifetime =
         2.0f
-        * Clamp(velocityMagnitude, 8.0f, 40.0f) // Ensure long persistence with weak splashes, but never too long
+        * Clamp(velocityMagnitude, 8.0f, 30.0f) // Ensure long persistence with weak splashes, but never too long
         / SimulationParameters::GravityMagnitude;
 
     //
-    // Create particle
+    // Spawn all particles
     //
 
-    mPoints.CreateEphemeralParticleWaterSplash(
-        position,
-        impactDepth,
-        velocity,
-        initialScale,
-        maxScale,
-        currentSimulationTime,
-        maxLifetime,
-        planeId,
-        simulationParameters);
+    size_t const nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(2, 3);
+    for (size_t p = 0; p < nParticles; ++p)
+    {
+        //
+        // Decide direction
+        //
+
+        vec2f particleDirection;
+        if (p == 0)
+        {
+            particleDirection = direction;
+        }
+        else
+        {
+            float const directionOffsetAngleCcw = Clamp(
+                GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, Pi<float> / 3.0f),
+                -Pi<float> / 3.0f,
+                Pi<float> / 3.0f);
+            particleDirection = direction.rotate(directionOffsetAngleCcw);
+        }
+
+        //
+        // Create particle
+        //
+
+        mPoints.CreateEphemeralParticleWaterSplash(
+            position,
+            impactDepth,
+            particleDirection * velocityMagnitude,
+            initialScale,
+            maxScale,
+            currentSimulationTime,
+            maxLifetime,
+            planeId,
+            simulationParameters);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////

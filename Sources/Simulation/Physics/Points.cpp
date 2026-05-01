@@ -2802,7 +2802,7 @@ void Points::UploadEphemeralParticles(
                     GameTextureDatabases::GenericMipMappedTextureGroups::WaterSplash,
                     GetPosition(pointIndex),
                     scale,
-                    alpha * 0.5f);
+                    alpha * 0.7f);
 
                 break;
             }

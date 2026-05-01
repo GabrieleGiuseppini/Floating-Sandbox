@@ -892,8 +892,7 @@
 					+ Update cachedDepth
 					+ NO zero out y velocity
 				+ See if scale grows
-
-				- Multiple particle randomness loop moves to Ship::InternalSpawnWaterSplash()
+				+ Multiple particle randomness loop moves to Ship::InternalSpawnWaterSplash()
 
 				- Impact direction from new ocean surface normal
 
@@ -962,6 +961,8 @@
 					+ Better strategy for size: low strength cannot be large (make smaller), so random offset should be smaller
 					+ Lateral extremes of foam must be smaller
 					X Try convection with waves, to avoid serpents
+
+					- Optimize InternalSpawnFoam: move out of loop constant things
 
 					- Try: flatten particle (rectangle along a direction) depending on ocean surface normal
 						- Requires new uploader for MipMapped quad, with vec2 direction (up) and FloatSize for multipliers
