@@ -2117,6 +2117,9 @@ void Points::UpdateEphemeralParticles(
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.LinearLifetimeProgress = linearLifetimeProgress;
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.SkewedLifetimeProgress = skewedLifetimeProgress;
 
+                        // Damp X velocity
+                        mVelocityBuffer[pointIndex].x *= 0.99f;
+
                         // Constrain onto ocean surface, simulating falling down/floating up
                         //
                         // Note: this is not nice - we're acting directly onto the positions of particles,strongestWaterFoam
@@ -2730,11 +2733,11 @@ void Points::UploadEphemeralParticles(
                 float const skewedLifetimeProgress = state.SkewedLifetimeProgress;
 
                 // Calculate scale: ~parabolic with progress
-                ////float const scale = (skewedLifetimeProgress < 0.5f)
-                ////    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, skewedLifetimeProgress)
-                ////    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, skewedLifetimeProgress));
+                ////float const scale = (linearLifetimeProgress < 0.5f)
+                ////    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, linearLifetimeProgress)
+                ////    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, linearLifetimeProgress));
                 float const scale = (linearLifetimeProgress < 0.5f)
-                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, linearLifetimeProgress)
+                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.25f, linearLifetimeProgress)
                     : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, linearLifetimeProgress));
 
                 // Calculate alpha: ~parabolic with progress
