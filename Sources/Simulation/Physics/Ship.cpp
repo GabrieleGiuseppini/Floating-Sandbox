@@ -1611,15 +1611,6 @@ void Ship::ApplyWorldSurfaceForces(
 
                 if constexpr (DoDisplaceWater)
                 {
-                    // TODOTEST
-                    ////// Calculate vertical velocity, clamping it to a maximum to prevent
-                    ////// ocean surface instabilities with extremely high velocities
-                    ////float const verticalVelocity = mPoints.GetVelocity(thisPointIndex).y;
-                    ////float const absVerticalVelocity = std::min(
-                    ////    std::abs(verticalVelocity),
-                    ////    10000.0f); // Magic number
-
-
                     // Calculate velocity component against wave, clamping it to a maximum to prevent
                     // ocean surface instabilities with extremely high velocities.
                     // Negative when _entering_ the wave
@@ -1663,7 +1654,7 @@ void Ship::ApplyWorldSurfaceForces(
                         * SignStep(0.0f, impactVelocity) // Displacement has same sign as impact velocity
                         * Step(0.0f, thisPointDepth) // No displacement for above-water points
                         * 0.4f // Magic number
-                        * oceanSurfaceNormal.y; // Take the vertical component of the displacement, which happens along the normal
+                        * oceanSurfaceNormal.y; // Take the vertical component of the displacement, as it's currently calculated along the normal
 
                     mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
 
