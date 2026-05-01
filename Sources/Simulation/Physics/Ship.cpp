@@ -4060,7 +4060,7 @@ void Ship::InternalSpawnWaterFoam(
         //
 
         float constexpr MinMaxScale = 0.3f;
-        float constexpr MaxMaxScale = 1.3f;
+        float constexpr MaxMaxScale = 1.2f;
         float const maxScale =
             (MinMaxScale + (MaxMaxScale - MinMaxScale) * normalizedStrength)
             * GameRandomEngine::GetInstance().GenerateUniformReal(0.7f, 1.1f);

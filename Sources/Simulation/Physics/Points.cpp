@@ -2784,10 +2784,11 @@ void Points::UploadEphemeralParticles(
 
                 float const lifetimeProgress = state.LifetimeProgress;
 
-                // Calculate scale: ~parabolic with progress
+                // Calculate scale: grows non-linearly with progress
+                float const midScale = (state.MinScale + state.MaxScale) / 2.0f;
                 float const scale = (lifetimeProgress < 0.5f)
-                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.5f, lifetimeProgress)
-                    : state.MinScale * 2.0f + (state.MaxScale - state.MinScale * 2.0f) * (1.0f - SmoothStep(0.5f, 1.0f, lifetimeProgress));
+                    ? state.MinScale + (midScale - state.MinScale) * SmoothStep(0.0f, 0.5f, lifetimeProgress)
+                    : midScale + (state.MaxScale - midScale) * SmoothStep(0.5f, 1.0f, lifetimeProgress);
 
                 // Calculate alpha: ~parabolic with progress
                 float const alpha =
@@ -2801,7 +2802,7 @@ void Points::UploadEphemeralParticles(
                     GameTextureDatabases::GenericMipMappedTextureGroups::WaterSplash,
                     GetPosition(pointIndex),
                     scale,
-                    alpha * 0.45f);
+                    alpha * 0.5f);
 
                 break;
             }

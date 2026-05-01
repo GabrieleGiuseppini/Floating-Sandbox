@@ -891,8 +891,8 @@
 				+ Particles still sink: constrain position by cachedDepth
 					+ Update cachedDepth
 					+ NO zero out y velocity
+				+ See if scale grows
 
-				- See if scale grows
 				- Multiple particle randomness loop moves to Ship::InternalSpawnWaterSplash()
 
 				- Impact direction from new ocean surface normal
