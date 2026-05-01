@@ -1435,23 +1435,23 @@ void Ship::ApplyWorldSurfaceForces(
     float const wdmQuadraticA = (wdmLinearSlope * WdmX0 - WdmY0) / (WdmX0 * WdmX0);
     float const wdmQuadraticB = 2.0f * WdmY0 / WdmX0 - wdmLinearSlope;
 
-    // Water splashes
+    // Water foam and splashes
 
-    struct WaterSplash
+    struct WaterFoam
     {
         vec2f Position;
         float VerticalDirection;
         float Strength;
         PlaneId Plane;
 
-        WaterSplash()
+        WaterFoam()
             : Position()
             , VerticalDirection(0.0f)
             , Strength(0.0f)
             , Plane(NonePlaneId)
         { }
 
-        WaterSplash(
+        WaterFoam(
             vec2f const & position,
             float verticalDirection,
             float strength,
@@ -1463,7 +1463,36 @@ void Ship::ApplyWorldSurfaceForces(
         { }
     };
 
-    WaterSplash strongestWaterFoam;
+    WaterFoam strongestWaterFoam;
+
+    struct WaterSplash
+    {
+        vec2f Position;
+        vec2f SpawnDirection;
+        float Strength;
+        PlaneId Plane;
+
+        WaterSplash()
+            : Position()
+            , SpawnDirection()
+            , Strength(0.0f)
+            , Plane(NonePlaneId)
+        {
+        }
+
+        WaterSplash(
+            vec2f const & position,
+            vec2f const & spawnDirection,
+            float strength,
+            PlaneId plane)
+            : Position(position)
+            , SpawnDirection(spawnDirection)
+            , Strength(strength)
+            , Plane(plane)
+        {
+        }
+    };
+
     WaterSplash strongestWaterSplash;
 
     //
@@ -1673,7 +1702,7 @@ void Ship::ApplyWorldSurfaceForces(
                         float const strength = (absDisplacement - MinAbsDisplacementForWaterFoam) / (MaxAbsDisplacementForWaterFoam - MinAbsDisplacementForWaterFoam);
                         if (strength > strongestWaterFoam.Strength)
                         {
-                            strongestWaterFoam = WaterSplash(thisPointPosition, Sign(displacement), strength, mPoints.GetPlaneId(thisPointIndex));
+                            strongestWaterFoam = WaterFoam(thisPointPosition, Sign(displacement), strength, mPoints.GetPlaneId(thisPointIndex));
                         }
                     }
 
@@ -1681,7 +1710,7 @@ void Ship::ApplyWorldSurfaceForces(
                     // Water splashes
                     //
 
-                    float constexpr MinAbsDisplacementForWaterSplash = 0.475f; // Magic
+                    float constexpr MinAbsDisplacementForWaterSplash = 0.425f; // Magic
                     if (displacement < -MinAbsDisplacementForWaterSplash // Only downwards
                         && thisPointDepth < 2.0f) // Only spawn splashes on the surface
                     {
@@ -1689,7 +1718,7 @@ void Ship::ApplyWorldSurfaceForces(
                         float const strength = (absDisplacement - MinAbsDisplacementForWaterSplash) / (MaxAbsDisplacementForWaterSplash - MinAbsDisplacementForWaterSplash);
                         if (strength > strongestWaterSplash.Strength)
                         {
-                            strongestWaterSplash = WaterSplash(thisPointPosition, Sign(displacement), strength, mPoints.GetPlaneId(thisPointIndex));
+                            strongestWaterSplash = WaterSplash(thisPointPosition, oceanSurfaceNormal, strength, mPoints.GetPlaneId(thisPointIndex));
                         }
                     }
                 }
@@ -1778,7 +1807,7 @@ void Ship::ApplyWorldSurfaceForces(
 
         InternalSpawnWaterSplash(
             strongestWaterSplash.Position,
-            vec2f(0.0f, 1.0f), // TODOTEST
+            strongestWaterSplash.SpawnDirection,
             strongestWaterSplash.Strength,
             strongestWaterSplash.Plane,
             currentSimulationTime,

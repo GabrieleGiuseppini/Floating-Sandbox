@@ -893,8 +893,7 @@
 					+ NO zero out y velocity
 				+ See if scale grows
 				+ Multiple particle randomness loop moves to Ship::InternalSpawnWaterSplash()
-
-				- Impact direction from new ocean surface normal
+				+ Impact direction from ocean surface normal
 
 				- Shade texture depending on flat/depth color and texture
 					- TODO: based on blue
@@ -963,6 +962,8 @@
 					X Try convection with waves, to avoid serpents
 
 					- Optimize InternalSpawnFoam: move out of loop constant things
+
+					- Try with non-whitened texture
 
 					- Try: flatten particle (rectangle along a direction) depending on ocean surface normal
 						- Requires new uploader for MipMapped quad, with vec2 direction (up) and FloatSize for multipliers
