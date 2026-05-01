@@ -961,8 +961,7 @@
 					+ Lateral extremes of foam must be smaller
 					X Try convection with waves, to avoid serpents
 					+ Try with non-whitened texture
-
-					= Try: flatten particle (rectangle along a direction) depending on ocean surface normal
+					+ Try: flatten particle (rectangle along a direction) depending on ocean surface normal
 						! Requires giving up rotation
 						+ Requires new uploader for MipMapped quad, with vec2 direction (up) and FloatSize for multipliers
 
