@@ -904,7 +904,7 @@
 			= For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
 				+ Foam: seamless texture along x, as Generic MipMapped
 					+ Flat above, bubbly below
-				= Option 1: drawn by ocean surface detailed shader:
+				X Option 1: drawn by ocean surface detailed shader:
 					= NOTE: requires swapping order of Update in World: ship first, coean surface next - so that we smooth foam toggle before rendering
 						- Add extra update step for surface
 					= OceanSurface: new foam buffer
@@ -963,17 +963,22 @@
 					+ Better strategy for size: low strength cannot be large (make smaller), so random offset should be smaller
 					+ Lateral extremes of foam must be smaller
 
+					- Try convection with waves, to avoid serpents
+
+					- Flatten rendered shape?
+
 					= Texture
 						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
 						+ Make it white
 						- Finalize authoring
+							- First, copy current psds as authoring files, and commit them
 							- Redo after buying
 					+ Eph particle
 
-		= Try displacement also against waves: replace vertical velocity with velocity against water surface
+		+ Try displacement also against waves: replace vertical velocity with velocity against water surface
 			+ Project impact by angle with wave
 			+ Remove log
-			- Do we want to lower waves when ship travels?
+			+ Do we want to lower waves when ship travels?
 
 		X See if still makes sense to continuously displace ocean surface at ship update loop
 			X Yes, for "constant rate"

@@ -2122,11 +2122,10 @@ void Points::UpdateEphemeralParticles(
 
                         // Constrain onto ocean surface, simulating falling down/floating up
                         //
-                        // Note: this is not nice - we're acting directly onto the positions of particles,strongestWaterFoam
+                        // Note: this is not nice - we're acting directly onto the positions of particles,
                         // which is against the basic rules of the simulation; however, we're doing this
                         // for these specific ephemeral particles only, so we may live with it
-
-                        float const newDepth = GetCachedDepth(pointIndex) * (1.0f - LinearStep(0.0f, 2.0f, elapsedSimulationLifetime));
+                        float const newDepth = GetCachedDepth(pointIndex) * (1.0f - LinearStep(0.0f, 4.0f, elapsedSimulationLifetime));
                         mPositionBuffer[pointIndex].y += (GetCachedDepth(pointIndex) - newDepth);
                         mCachedDepthBuffer[pointIndex] = newDepth;
                         mVelocityBuffer[pointIndex].y = 0.0f; // Just to be nice
@@ -2732,15 +2731,18 @@ void Points::UploadEphemeralParticles(
                 float const linearLifetimeProgress = state.LinearLifetimeProgress;
                 //float const skewedLifetimeProgress = state.SkewedLifetimeProgress;
 
+                float const LifetimePeak1 = 0.25f;
+                float const LifetimePeak2 = 0.50f;
+
                 // Calculate scale: ~parabolic with progress
-                float const scale = (linearLifetimeProgress < 0.5f)
-                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, 0.25f, linearLifetimeProgress)
-                    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(0.5f, 1.0f, linearLifetimeProgress));
+                float const scale = (linearLifetimeProgress < LifetimePeak1)
+                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, LifetimePeak1, linearLifetimeProgress)
+                    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(LifetimePeak2, 1.0f, linearLifetimeProgress));
 
                 // Calculate alpha: ~parabolic with progress
                 float const alpha =
-                    SmoothStep(0.0f, 0.5f, linearLifetimeProgress)
-                    - SmoothStep(0.5f, 1.0f, linearLifetimeProgress);
+                    SmoothStep(0.0f, LifetimePeak1, linearLifetimeProgress)
+                    - SmoothStep(LifetimePeak2, 1.0f, linearLifetimeProgress);
 
                 // Calculate rotation angle: starts random and rotates with constant velocity,
                 // obeying the expansion direction

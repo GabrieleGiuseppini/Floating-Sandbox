@@ -4026,7 +4026,7 @@ void Ship::InternalSpawnWaterFoam(
     assert(position.x >= -SimulationParameters::HalfMaxWorldWidth
         && position.x <= SimulationParameters::HalfMaxWorldWidth);
 
-    size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(3, 5);
+    size_t nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(4, 5);
     for (size_t p = 0; p < nParticles; ++p)
     {
         //
@@ -4069,7 +4069,7 @@ void Ship::InternalSpawnWaterFoam(
         //
 
         float constexpr MinMaxScale = 0.3f;
-        float constexpr MaxMaxScale = 1.4f;
+        float constexpr MaxMaxScale = 1.3f;
         float const maxScale =
             (MinMaxScale + (MaxMaxScale - MinMaxScale) * normalizedStrength)
             * GameRandomEngine::GetInstance().GenerateUniformReal(0.7f, 1.1f);
