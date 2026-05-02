@@ -352,8 +352,25 @@ void GlobalRenderContext::RenderPrepareEnd()
 
 void GlobalRenderContext::ReshadeDependentOceanTextures(rgbColor const & baseColor)
 {
-    // TODOHERE: make operator
-    (void)baseColor;
+    vec3f const baseColorF = baseColor.toVec3f();
+
+    ReshadeDependentOceanTextures(
+        [&](rgbaColor const & src, ImageCoordinates const, ImageSize const &) -> rgbaColor
+        {
+            vec3f srcF = src.toVec3f();
+
+            // Calculate by how much blue dominates on the others
+            float const bg = (srcF.x + srcF.y) / 2.0f;
+            float const blueStrength = std::max(srcF.z - bg, 0.0f);
+
+            // Blend with base color based on blue's strength
+            vec3f const tgtF = Mix(
+                srcF,
+                baseColorF,
+                blueStrength);
+
+            return rgbaColor(tgtF, src.a);
+        });
 }
 
 void GlobalRenderContext::ReshadeDependentOceanTextures(RgbaImageData const & oceanTexture)

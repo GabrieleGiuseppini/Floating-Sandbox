@@ -897,13 +897,17 @@
 
 				= Shade texture depending on flat/depth color and texture
 					+ GameOpenGL: upload mipmapped texture region
-					- GlobalRenderContext::ReshadeDependentOceanTextures(color)
-							- Impl
-								- Transform: based on blue
-					+ GlobalRenderContext::ReshadeDependentOceanTextures(texture)
+					= GlobalRenderContext::ReshadeDependentOceanTextures(color)
+							= Impl
+								+ Transform: based on blue
+					= GlobalRenderContext::ReshadeDependentOceanTextures(texture)
 							+ Impl
 								+ Transform: simply apply texture sample, with source alpha
 								+ Try with scaling to whole texture
+							- Test:
+								- All mipmap levels
+								- No bleeding 
+									- Need to save to see neighbours
 					+ Calls:
 						+ WRC::ApplyOceanRenderParametersChanges:
 							+ Call WRC::ReshadeDependentOceanTextures(renderParameters)
@@ -984,7 +988,8 @@
 					= Texture
 						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
 						+ Make it white
-						- Try Kiko's
+						= Try Kiko's
+							- Ask trx bg
 						- Finalize authoring, after beta results
 							- First, copy current psds as authoring files, and commit them
 							- Redo after buying
@@ -1036,10 +1041,11 @@
 			- Textures (splashes, foam) and enums
 			- Foam
 				- ShipRenderContext:: new uploader
+			- Reshading of textures
+				- WRC, GRC: methods and members (DB and actual texture)
 			- Max eph particles and calibration
 
 		- Merge into Tornadoes
-
 		
 		- OLD: WAS:
 		- Option A) Ephemeral particles with own shader:
