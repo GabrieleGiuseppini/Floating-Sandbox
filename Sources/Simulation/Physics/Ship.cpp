@@ -1716,7 +1716,7 @@ void Ship::ApplyWorldSurfaceForces(
                     // Water splashes
                     //
 
-                    float constexpr MinAbsDisplacementForWaterSplash = 0.425f; // Magic
+                    float constexpr MinAbsDisplacementForWaterSplash = 0.4f; // Magic
                     if (displacement < -MinAbsDisplacementForWaterSplash // Only downwards
                         && thisPointDepth < 2.0f) // Only spawn splashes on the surface
                     {
@@ -4038,7 +4038,7 @@ void Ship::InternalSpawnWaterFoam(
     //
 
     float constexpr MinMaxScale = 0.3f;
-    float constexpr MaxMaxScale = 1.2f;
+    float constexpr MaxMaxScale = 1.1f;
     float const baseScale = MinMaxScale + (MaxMaxScale - MinMaxScale) * normalizedStrength;
 
     //

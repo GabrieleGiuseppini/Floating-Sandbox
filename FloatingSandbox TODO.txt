@@ -1020,7 +1020,7 @@
 			- WAS: see if can incorporate also "mist" for tornadoes
 		- @ Bubbles rising?
 
-		= Try: displacement math should consider velocity *perp* to frontier edge
+		+ Try: displacement math should consider velocity *perp* to frontier edge
 		- Try: displacement should also come from velocity in same dir as ocean surface
 			- Displace up after, displace down behind
 			- Rethink displacement: it's two components now

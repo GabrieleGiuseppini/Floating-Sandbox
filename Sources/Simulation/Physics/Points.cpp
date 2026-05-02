@@ -2122,15 +2122,17 @@ void Points::UpdateEphemeralParticles(
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.SkewedLifetimeProgress = skewedLifetimeProgress;
 
                         // Damp X velocity
-                        mVelocityBuffer[pointIndex].x *= 0.995f;
+                        mVelocityBuffer[pointIndex].x *= 0.9975f;
 
                         // Constrain onto ocean surface, simulating falling down/floating up
                         //
                         // Note: this is not nice - we're acting directly onto the positions of particles,
                         // which is against the basic rules of the simulation; however, we're doing this
-                        // for these specific ephemeral particles only, so we may live with it
+                        // for these specific ephemeral particles only, so we may live with it.
+
+                        // The older or further from 0.0, the faster it goes to 0.0
                         float const currentDepth = GetCachedDepth(pointIndex);
-                        float const newDepth = currentDepth * (1.0f - LinearStep(0.0f, 6.0f, elapsedSimulationLifetime));
+                        float const newDepth = currentDepth * (1.0f - LinearStep(0.0, 5.0f / (1.0f + std::abs(currentDepth)), elapsedSimulationLifetime));
                         mPositionBuffer[pointIndex].y += currentDepth - newDepth;
                         mCachedDepthBuffer[pointIndex] = newDepth;
                         mVelocityBuffer[pointIndex].y = 0.0f; // Just to be nice
