@@ -1259,6 +1259,7 @@ private:
         std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> const & textureSpecifications);
 
     void RecalculateClearCanvasColor(RenderParameters const & renderParameters);
+    void ReshadeDependentOceanTextures(RenderParameters const & renderParameters);
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
 
     RgbaImageData InternalMakeThumbnail(

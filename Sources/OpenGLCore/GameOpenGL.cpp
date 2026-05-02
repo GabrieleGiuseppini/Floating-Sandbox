@@ -396,7 +396,6 @@ void GameOpenGL::UploadMipmappedAtlasTexture(
     assert(baseTexture.Size.width == ceil_power_of_two(baseTexture.Size.width));
     assert(baseTexture.Size.height == ceil_power_of_two(baseTexture.Size.height));
 
-
     //
     // Upload base image
     //
@@ -468,6 +467,74 @@ void GameOpenGL::UploadMipmappedAtlasTexture(
     // Set max mipmap level
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, lastUploadedTextureLevel);
     CheckOpenGLError();
+}
+
+void GameOpenGL::UpdateMipmappedAtlasTextureRegion(
+    RgbaImageData && baseTexture,
+    ImageCoordinates targetCoordinates)
+{
+    int const maxDimension = std::max(baseTexture.Size.width, baseTexture.Size.height);
+
+    //
+    // Update base image
+    //
+
+    glTexSubImage2D(GL_TEXTURE_2D, 0, targetCoordinates.x, targetCoordinates.y, baseTexture.Size.width, baseTexture.Size.height, GL_RGBA, GL_UNSIGNED_BYTE, baseTexture.Data.get());
+    CheckOpenGLError();
+
+    //
+    // Create minified textures and update them
+    //
+
+    std::unique_ptr<rgbaColor const []> readBuffer(std::move(baseTexture.Data));
+    std::unique_ptr<rgbaColor[]> writeBuffer;
+
+    GLint lastUploadedTextureLevel = 0;
+    for (int divisor = 2; maxDimension / divisor >= 1; divisor *= 2)
+    {
+        // Calculate dimensions of new write buffer
+        int newWidth = std::max(1, baseTexture.Size.width / divisor);
+        int newHeight = std::max(1, baseTexture.Size.height / divisor);
+
+        // Allocate new write buffer
+        writeBuffer.reset(new rgbaColor[newWidth * newHeight]);
+
+        // Populate write buffer
+        rgbaColor const * rp = readBuffer.get();
+        rgbaColor * wp = writeBuffer.get();
+        for (int h = 0; h < newHeight; ++h)
+        {
+            size_t frameIndexInReadBuffer = (h * 2) * (newWidth * 2);
+            size_t frameIndexInWriteBuffer = (h) * (newWidth);
+
+            for (int w = 0; w < newWidth; ++w)
+            {
+                //
+                // Calculate and store average of the four neighboring pixels whose bottom-left corner is at (w*2, h*2)
+                //
+
+                rgbaColorAccumulation sum;
+
+                sum += rp[frameIndexInReadBuffer + w * 2];
+                sum += rp[frameIndexInReadBuffer + w * 2 + 1];
+                sum += rp[frameIndexInReadBuffer + newWidth * 2 + w * 2];
+                sum += rp[frameIndexInReadBuffer + newWidth * 2 + w * 2 + 1];
+
+                wp[frameIndexInWriteBuffer + w] = sum.toRgbaColor();
+            }
+        }
+
+        // Calculate new target coordinates
+        targetCoordinates = ImageCoordinates(targetCoordinates.x / 2, targetCoordinates.y / 2);
+
+        // Update write buffer
+        ++lastUploadedTextureLevel;
+        glTexSubImage2D(GL_TEXTURE_2D, lastUploadedTextureLevel, targetCoordinates.x, targetCoordinates.y, newWidth, newHeight, GL_RGBA, GL_UNSIGNED_BYTE, writeBuffer.get());
+        CheckOpenGLError();
+
+        // Swap buffer
+        readBuffer = std::move(writeBuffer);
+    }
 }
 
 void GameOpenGL::Flush()

@@ -17,6 +17,7 @@ GlobalRenderContext::GlobalRenderContext(
     // Textures
     , mGenericLinearTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata()
+    , mGenericMipMappedTextureDatabase()
     , mGenericMipMappedTextureAtlasOpenGLHandle()
     , mGenericMipMappedTextureAtlasMetadata()
     , mExplosionTextureAtlasOpenGLHandle()
@@ -161,11 +162,11 @@ void GlobalRenderContext::InitializeGenericTextures()
     //
 
     // Load texture database
-    auto genericMipMappedTextureDatabase = TextureDatabase<GameTextureDatabases::GenericMipMappedTextureDatabase>::Load(mAssetManager);
+    mGenericMipMappedTextureDatabase = std::make_unique<TextureDatabase<GameTextureDatabases::GenericMipMappedTextureDatabase>>(TextureDatabase<GameTextureDatabases::GenericMipMappedTextureDatabase>::Load(mAssetManager));
 
     // Create atlas
     auto genericMipMappedTextureAtlas = TextureAtlasBuilder<GameTextureDatabases::GenericMipMappedTextureDatabase>::BuildAtlas(
-        genericMipMappedTextureDatabase,
+        *mGenericMipMappedTextureDatabase,
         TextureAtlasOptions::MipMappable,
         1.0f,
         mAssetManager,
@@ -349,6 +350,26 @@ void GlobalRenderContext::RenderPrepareEnd()
     }
 }
 
+void GlobalRenderContext::ReshadeDependentOceanTextures(rgbColor const & baseColor)
+{
+    // TODOHERE: make operator
+    (void)baseColor;
+}
+
+void GlobalRenderContext::ReshadeDependentOceanTextures(RgbaImageData const & oceanTexture)
+{
+    ReshadeDependentOceanTextures(
+        [&oceanTexture](rgbaColor const & src, ImageCoordinates const coords) -> rgbaColor
+        {
+            ImageCoordinates textureCoords = ImageCoordinates(
+                coords.x % oceanTexture.Size.width,
+                coords.y % oceanTexture.Size.height);
+            rgbaColor textureSample = oceanTexture[textureCoords];
+            textureSample.a = src.a;
+            return textureSample;
+        });
+}
+
 void GlobalRenderContext::RegeneratePerlin_4_32_043_Noise()
 {
     mPerlinNoise_4_32_043_ToUpload = MakePerlinNoise(
@@ -365,6 +386,51 @@ void GlobalRenderContext::RegeneratePerlin_8_1024_073_Noise()
         8,
         1024,
         0.73f);
+}
+
+void GlobalRenderContext::ReshadeDependentOceanTextures(std::function<rgbaColor(rgbaColor const &, ImageCoordinates const &)> functor)
+{
+    assert(mGenericMipMappedTextureDatabase);
+    assert(mGenericMipMappedTextureAtlasMetadata);
+
+    // Activate texture
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::GenericMipMappedTexturesAtlasTexture>();
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mGenericMipMappedTextureAtlasOpenGLHandle);
+    CheckOpenGLError();
+
+    //
+    // Water foam
+    //
+
+    for (auto const & frameSpec : mGenericMipMappedTextureDatabase->GetGroup(GameTextureDatabases::GenericMipMappedTextureGroups::WaterFoam).GetFrameSpecifications())
+    {
+        auto frameImage = frameSpec.LoadFrame(mAssetManager);
+        ImageTools::Transform(frameImage.TextureData, functor);
+        GameOpenGL::UpdateMipmappedAtlasTextureRegion(
+            std::move(frameImage.TextureData),
+            {
+                mGenericMipMappedTextureAtlasMetadata->GetFrameMetadata(frameImage.Metadata.FrameId).FrameLeftX,
+                mGenericMipMappedTextureAtlasMetadata->GetFrameMetadata(frameImage.Metadata.FrameId).FrameBottomY
+            });
+    }
+
+    //
+    // Water splashes
+    //
+
+    for (auto const & frameSpec : mGenericMipMappedTextureDatabase->GetGroup(GameTextureDatabases::GenericMipMappedTextureGroups::WaterSplash).GetFrameSpecifications())
+    {
+        auto frameImage = frameSpec.LoadFrame(mAssetManager);
+        ImageTools::Transform(frameImage.TextureData, functor);
+        GameOpenGL::UpdateMipmappedAtlasTextureRegion(
+            std::move(frameImage.TextureData),
+            {
+                mGenericMipMappedTextureAtlasMetadata->GetFrameMetadata(frameImage.Metadata.FrameId).FrameLeftX,
+                mGenericMipMappedTextureAtlasMetadata->GetFrameMetadata(frameImage.Metadata.FrameId).FrameBottomY
+            });
+    }
 }
 
 std::unique_ptr<Buffer2D<float, struct IntegralTag>> GlobalRenderContext::MakePerlinNoise(

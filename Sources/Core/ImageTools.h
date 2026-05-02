@@ -35,6 +35,10 @@ public:
         int x,
         int y);
 
+    static void Transform(
+        RgbaImageData & imageData,
+        std::function<rgbaColor(rgbaColor const &, ImageCoordinates const &)> functor);
+
     static RgbaImageData MakeGreyscale(RgbaImageData const & imageData);
 
     static RgbaImageData MakeVerticalGradient(

@@ -253,7 +253,11 @@ public:
     // Assumes contains tiles aligned on a power-of-two grid
     static void UploadMipmappedAtlasTexture(
         RgbaImageData baseTexture,
-        int maxDimension);
+        int maxDimension); // Max dimension among all texture tiles
+
+    static void UpdateMipmappedAtlasTextureRegion(
+        RgbaImageData && baseTexture,
+        ImageCoordinates targetCoordinates);
 
     static void Flush();
 };

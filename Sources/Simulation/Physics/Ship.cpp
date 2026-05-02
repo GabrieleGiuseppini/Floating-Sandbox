@@ -1694,7 +1694,7 @@ void Ship::ApplyWorldSurfaceForces(
                     // Water foam
                     //
 
-                    float constexpr MinAbsDisplacementForWaterFoam = 0.08f; // Magic
+                    float constexpr MinAbsDisplacementForWaterFoam = 0.07f; // Magic
                     if (absDisplacement >= MinAbsDisplacementForWaterFoam // Both upwards and downwards
                         && thisPointDepth < 1.5f) // Only spawn foam on the surface
                     {

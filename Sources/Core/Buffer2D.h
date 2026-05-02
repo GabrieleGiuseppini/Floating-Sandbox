@@ -366,6 +366,19 @@ public:
             std::move(newData));
     }
 
+    template<typename TFunctor>
+    static void Transform(Buffer2D<TElement, TIntegralTag> & buffer, TFunctor const & elementOperator)
+    {
+        for (int y = 0; y < buffer.Size.height; ++y)
+        {
+            for (int x = 0; x < buffer.Size.width; ++x)
+            {
+                _IntegralCoordinates<TIntegralTag> coords(x, y);
+                buffer[coords] = elementOperator(buffer[coords], coords);
+            }
+        }
+    }
+
 private:
 
     template<bool H, bool V>

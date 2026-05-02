@@ -83,11 +83,17 @@ public:
         return mUploadedNoiseTexturesManager.GetOpenGLHandle(noiseType);
     }
 
+    void ReshadeDependentOceanTextures(rgbColor const & baseColor);
+
+    void ReshadeDependentOceanTextures(RgbaImageData const & oceanTexture);
+
     void RegeneratePerlin_4_32_043_Noise();
 
     void RegeneratePerlin_8_1024_073_Noise();
 
 private:
+
+    void ReshadeDependentOceanTextures(std::function<rgbaColor(rgbaColor const &, ImageCoordinates const &)> functor);
 
     static std::unique_ptr<Buffer2D<float, struct IntegralTag>> MakePerlinNoise(
         IntegralRectSize const & size,
@@ -113,6 +119,7 @@ private:
     GameOpenGLTexture mGenericLinearTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::GenericLinearTextureDatabase>> mGenericLinearTextureAtlasMetadata;
 
+    std::unique_ptr<TextureDatabase<GameTextureDatabases::GenericMipMappedTextureDatabase>> mGenericMipMappedTextureDatabase;
     GameOpenGLTexture mGenericMipMappedTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase>> mGenericMipMappedTextureAtlasMetadata;
 

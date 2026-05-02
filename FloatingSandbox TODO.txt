@@ -895,8 +895,27 @@
 				+ Multiple particle randomness loop moves to Ship::InternalSpawnWaterSplash()
 				+ Impact direction from ocean surface normal
 
-				- Shade texture depending on flat/depth color and texture
-					- TODO: based on blue
+				= Shade texture depending on flat/depth color and texture
+					+ GameOpenGL: upload mipmapped texture region
+					- TODO: still broken when to do it
+					- GlobalRenderContext::ReshadeDependentOceanTextures(color)
+							- Impl
+								- Transform: based on blue
+					= GlobalRenderContext::ReshadeDependentOceanTextures(texture)
+							= Impl
+								+ Transform: simply apply texture sample, with source alpha
+								- Try with scaling to whole texture
+								- Try instead with median color, using same operator as with color
+									- In fact, just calc color and call other overload
+					- Calls:
+						- WRC::ApplyOceanRenderParametersChanges:
+							- Call WRC::ReshadeDependentOceanTextures(renderParameters)
+						- WRC::ApplyOceanTextureIndexChanges:
+							- Store copy of texture in member
+							- Call WRC::ReshadeDependentOceanTextures(renderParameters)
+						- (new) WRC::ReshadeDependentOceanTextures(renderParameters):
+							- Switch on render modes and call appropriate GRC::ReshadeDependentOceanTextures(.)
+
 
 		= Foam:
 			= For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
@@ -968,6 +987,7 @@
 					= Texture
 						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
 						+ Make it white
+						- Try Kiko's
 						- Finalize authoring, after beta results
 							- First, copy current psds as authoring files, and commit them
 							- Redo after buying
@@ -993,8 +1013,19 @@
 				- Close to DisplaceWater, enablement depends on that value
 
 		- @ Bombs (blasts, incl. tool)
+			- If we end up needing to lower impact of blasts onto ephemeral particles, remember to do it for Silt Cloud as well
 		- @ Tornado bottom
 			- WAS: see if can incorporate also "mist" for tornadoes
+
+		- See if bubbles form foam when a lot come up
+		- Try: displacement math should consider velocity *perp* to frontier edge
+		- Try: displacement should also come from velocity in same dir as ocean surface
+			- Displace up after, displace down behind
+			- Rethink displacement: it's two components now
+
+		- Replace engine wake with bubbles
+			- Nuke all about wake if this goes through
+			- Add to Android plan
 
 		- Cleanup:
 			- Finalize alpha of foam (@ eph particle upload)
@@ -1030,6 +1061,8 @@
 
 
 
+	- Nuke all calls to glBindTexture(GL_TEXTURE_2D, 0) -- this just changes to default texture
+		- Also @ Android
 
 
 	+ Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer

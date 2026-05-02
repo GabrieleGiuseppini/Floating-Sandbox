@@ -2795,6 +2795,17 @@ void WorldRenderContext::ApplyOceanRenderParametersChanges(RenderParameters cons
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedForegroundUpper>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedForegroundUpper, GameShaderSets::ProgramParameterKind::OceanFlatColor>(flatColor);
+
+    // Reshade ocean-dependent textures
+
+    if (renderParameters.OceanRenderMode == OceanRenderModeType::Flat)
+    {
+        mGlobalRenderContext.ReshadeDependentOceanTextures(renderParameters.FlatOceanColor);
+    }
+    else if (renderParameters.OceanRenderMode == OceanRenderModeType::Depth)
+    {
+        mGlobalRenderContext.ReshadeDependentOceanTextures(renderParameters.DepthOceanColorStart);
+    }
 }
 
 void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters)
@@ -2813,6 +2824,10 @@ void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & 
 
         // Load texture image
         auto oceanTextureFrame = mOceanTextureFrameSpecifications[clampedOceanTextureIndex].LoadFrame(mAssetManager);
+
+        // Reshade ocean-dependent textures
+        // (now, as we still have reference to texture)
+        mGlobalRenderContext.ReshadeDependentOceanTextures(oceanTextureFrame.TextureData);
 
         // Activate texture
         mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::OceanTexture>();
@@ -2986,6 +3001,11 @@ void WorldRenderContext::RecalculateClearCanvasColor(RenderParameters const & re
 {
     vec3f const clearColor = renderParameters.FlatSkyColor.toVec3f() * renderParameters.EffectiveAmbientLightIntensity;
     glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
+}
+
+void WorldRenderContext::ReshadeDependentOceanTextures(RenderParameters const & renderParameters)
+{
+    // TODOHERE
 }
 
 void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderParameters)

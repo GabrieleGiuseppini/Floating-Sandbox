@@ -293,6 +293,13 @@ void ImageTools::Overlay(
     }
 }
 
+void ImageTools::Transform(
+    RgbaImageData & imageData,
+    std::function<rgbaColor(rgbaColor const &, ImageCoordinates const &)> functor)
+{
+    RgbaImageData::Transform(imageData, functor);
+}
+
 RgbaImageData ImageTools::MakeGreyscale(RgbaImageData const & imageData)
 {
     std::unique_ptr<rgbaColor[]> newImageData = std::make_unique<rgbaColor[]>(imageData.Size.GetLinearSize());
