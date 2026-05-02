@@ -1018,9 +1018,9 @@
 			- If we end up needing to lower impact of blasts onto ephemeral particles, remember to do it for Silt Cloud as well
 		- @ Tornado bottom
 			- WAS: see if can incorporate also "mist" for tornadoes
+		- @ Bubbles rising?
 
-		- See if bubbles form foam when a lot come up
-		- Try: displacement math should consider velocity *perp* to frontier edge
+		= Try: displacement math should consider velocity *perp* to frontier edge
 		- Try: displacement should also come from velocity in same dir as ocean surface
 			- Displace up after, displace down behind
 			- Rethink displacement: it's two components now
@@ -1028,6 +1028,7 @@
 		- Replace engine wake with bubbles
 			- Nuke all about wake if this goes through
 			- Add to Android plan
+		- See if engine's ocean surface displacement still needed
 
 		- Cleanup:
 			- Finalize alpha of foam (@ eph particle upload)

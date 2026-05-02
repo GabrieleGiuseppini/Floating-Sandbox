@@ -1573,17 +1573,21 @@ void Ship::ApplyWorldSurfaceForces(
                 //
 
                 // Normal to surface - calculated between p1 and p3; points outside
-                vec2f const surfaceNormal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
+                vec2f const edgeNormal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
 
-                // Velocity along normal - capped to the same direction as velocity, to avoid suction force
+                // Edge velocity magnitude: magnitude of the edge velocity, along
+                // the edge normal (pointing out)
+                float const edgeVelocityMagnitude = mPoints.GetVelocity(thisPointIndex).dot(edgeNormal);
+
+                // Cap it to the same direction as velocity, to avoid suction force
                 // (i.e. drag force attracting surface facing opposite of velocity)
-                float const velocityMagnitudeAlongNormal = std::max(
-                    mPoints.GetVelocity(thisPointIndex).dot(surfaceNormal),
+                float const edgeVelocityMagnitudeCapped = std::max(
+                    edgeVelocityMagnitude,
                     0.0f);
 
                 // Max drag force magnitude: m * (V dot Nn) / dt
                 float const maxDragForceMagnitude =
-                    mPoints.GetMass(thisPointIndex) * velocityMagnitudeAlongNormal
+                    mPoints.GetMass(thisPointIndex) * edgeVelocityMagnitudeCapped
                     / SimulationParameters::SimulationStepTimeDuration<float>;
 
                 // Calculate drag coefficient: air or water, with soft transition
@@ -1596,7 +1600,7 @@ void Ship::ApplyWorldSurfaceForces(
                 // Calculate magnitude of drag force (opposite sign), capped by max drag force
                 //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
                 float const dragForceMagnitude = std::min(
-                    dragCoefficient * velocityMagnitudeAlongNormal,
+                    dragCoefficient * edgeVelocityMagnitudeCapped,
                     maxDragForceMagnitude);
 
                 //
@@ -1609,7 +1613,7 @@ void Ship::ApplyWorldSurfaceForces(
                 //
 
                 float const kineticEnergy =
-                    velocityMagnitudeAlongNormal * velocityMagnitudeAlongNormal
+                    edgeVelocityMagnitudeCapped * edgeVelocityMagnitudeCapped
                     * mPoints.GetMass(thisPointIndex);
 
                 float const waterImpactForceMagnitude =
@@ -1623,7 +1627,7 @@ void Ship::ApplyWorldSurfaceForces(
 
                 mPoints.AddStaticForce(
                     thisPointIndex,
-                    -surfaceNormal * (dragForceMagnitude + waterImpactForceMagnitude));
+                    -edgeNormal * (dragForceMagnitude + waterImpactForceMagnitude));
 
                 //
                 // Water displacement
@@ -1640,15 +1644,17 @@ void Ship::ApplyWorldSurfaceForces(
 
                 if constexpr (DoDisplaceWater)
                 {
-                    // Calculate velocity component against wave, clamping it to a maximum to prevent
+                    // Calculate edge velocity vector - positive when pointing outside of edge
+                    vec2f const edgeVelocity = edgeNormal * edgeVelocityMagnitude;
+
+                    // Calculate edge velocity component against wave, clamping it to a maximum to prevent
                     // ocean surface instabilities with extremely high velocities.
                     // Negative when _entering_ the wave
                     vec2f const oceanSurfaceNormal = mParentWorld.GetOceanSurface().GetNormalAt(thisPointPosition.x); // Points up
-                    float const impactVelocity = mPoints.GetVelocity(thisPointIndex).dot(oceanSurfaceNormal);
+                    float const impactVelocity = edgeVelocity.dot(oceanSurfaceNormal); // Negative when frontal collision
                     float const absImpactVelocity = std::min(
                         std::abs(impactVelocity),
                         10000.0f); // Magic number
-
 
                     //
                     // Displacement magnitude calculation
@@ -1694,7 +1700,7 @@ void Ship::ApplyWorldSurfaceForces(
                     // Water foam
                     //
 
-                    float constexpr MinAbsDisplacementForWaterFoam = 0.07f; // Magic
+                    float constexpr MinAbsDisplacementForWaterFoam = 0.065f; // Magic
                     if (absDisplacement >= MinAbsDisplacementForWaterFoam // Both upwards and downwards
                         && thisPointDepth < 1.5f) // Only spawn foam on the surface
                     {
@@ -4033,15 +4039,15 @@ void Ship::InternalSpawnWaterFoam(
 
     float constexpr MinMaxScale = 0.3f;
     float constexpr MaxMaxScale = 1.2f;
-    float const baseScale = (MinMaxScale + (MaxMaxScale - MinMaxScale) * normalizedStrength);
+    float const baseScale = MinMaxScale + (MaxMaxScale - MinMaxScale) * normalizedStrength;
 
     //
     // Calculate max lifetime: depends on strength
     //
 
-    float constexpr MinMaxLifetime = 2.5f;
-    float constexpr MaxMaxLifetime = 3.5f;
-    float const maxLifetime = MinMaxLifetime + (MaxMaxLifetime - MinMaxLifetime) * strength;
+    float constexpr MinMaxLifetime = 3.0f;
+    float constexpr MaxMaxLifetime = 4.0f;
+    float const maxLifetime = MinMaxLifetime + (MaxMaxLifetime - MinMaxLifetime) * std::min(strength, 8.0f);
 
     size_t const nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(4, 5);
     for (size_t p = 0; p < nParticles; ++p)
