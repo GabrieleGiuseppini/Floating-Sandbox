@@ -358,14 +358,19 @@ void GlobalRenderContext::ReshadeDependentOceanTextures(rgbColor const & baseCol
 
 void GlobalRenderContext::ReshadeDependentOceanTextures(RgbaImageData const & oceanTexture)
 {
+    float const textureWidth = static_cast<float>(oceanTexture.Size.width);
+    float const textureHeight = static_cast<float>(oceanTexture.Size.height);
+
     ReshadeDependentOceanTextures(
-        [&oceanTexture](rgbaColor const & src, ImageCoordinates const coords) -> rgbaColor
+        [&](rgbaColor const & src, ImageCoordinates const coords, ImageSize const & targetSize) -> rgbaColor
         {
             ImageCoordinates textureCoords = ImageCoordinates(
-                coords.x % oceanTexture.Size.width,
-                coords.y % oceanTexture.Size.height);
+                static_cast<int>(std::floorf(static_cast<float>(coords.x) / static_cast<float>(targetSize.width) * textureWidth)),
+                static_cast<int>(std::floorf(static_cast<float>(coords.y) / static_cast<float>(targetSize.height) * textureHeight)));
+
             rgbaColor textureSample = oceanTexture[textureCoords];
             textureSample.a = src.a;
+
             return textureSample;
         });
 }
@@ -388,7 +393,7 @@ void GlobalRenderContext::RegeneratePerlin_8_1024_073_Noise()
         0.73f);
 }
 
-void GlobalRenderContext::ReshadeDependentOceanTextures(std::function<rgbaColor(rgbaColor const &, ImageCoordinates const &)> functor)
+void GlobalRenderContext::ReshadeDependentOceanTextures(std::function<rgbaColor(rgbaColor const &, ImageCoordinates const &, ImageSize const &)> functor)
 {
     assert(mGenericMipMappedTextureDatabase);
     assert(mGenericMipMappedTextureAtlasMetadata);
@@ -406,14 +411,7 @@ void GlobalRenderContext::ReshadeDependentOceanTextures(std::function<rgbaColor(
 
     for (auto const & frameSpec : mGenericMipMappedTextureDatabase->GetGroup(GameTextureDatabases::GenericMipMappedTextureGroups::WaterFoam).GetFrameSpecifications())
     {
-        auto frameImage = frameSpec.LoadFrame(mAssetManager);
-        ImageTools::Transform(frameImage.TextureData, functor);
-        GameOpenGL::UpdateMipmappedAtlasTextureRegion(
-            std::move(frameImage.TextureData),
-            {
-                mGenericMipMappedTextureAtlasMetadata->GetFrameMetadata(frameImage.Metadata.FrameId).FrameLeftX,
-                mGenericMipMappedTextureAtlasMetadata->GetFrameMetadata(frameImage.Metadata.FrameId).FrameBottomY
-            });
+        ReshadeDependentOceanTexture(frameSpec, functor);
     }
 
     //
@@ -422,15 +420,30 @@ void GlobalRenderContext::ReshadeDependentOceanTextures(std::function<rgbaColor(
 
     for (auto const & frameSpec : mGenericMipMappedTextureDatabase->GetGroup(GameTextureDatabases::GenericMipMappedTextureGroups::WaterSplash).GetFrameSpecifications())
     {
-        auto frameImage = frameSpec.LoadFrame(mAssetManager);
-        ImageTools::Transform(frameImage.TextureData, functor);
-        GameOpenGL::UpdateMipmappedAtlasTextureRegion(
-            std::move(frameImage.TextureData),
-            {
-                mGenericMipMappedTextureAtlasMetadata->GetFrameMetadata(frameImage.Metadata.FrameId).FrameLeftX,
-                mGenericMipMappedTextureAtlasMetadata->GetFrameMetadata(frameImage.Metadata.FrameId).FrameBottomY
-            });
+        ReshadeDependentOceanTexture(frameSpec, functor);
     }
+}
+
+template<typename TFrameSpecification>
+void GlobalRenderContext::ReshadeDependentOceanTexture(
+    TFrameSpecification const & dependentOceanTextureFrameSpecification,
+    std::function<rgbaColor(rgbaColor const &, ImageCoordinates const &, ImageSize const &)> functor)
+{
+    auto frameImage = dependentOceanTextureFrameSpecification.LoadFrame(mAssetManager);
+
+    ImageTools::Transform(
+        frameImage.TextureData,
+        [&functor, &dependentOceanTextureFrameSpecification](rgbaColor const & src, ImageCoordinates const coords) -> rgbaColor
+        {
+            return functor(src, coords, dependentOceanTextureFrameSpecification.Metadata.Size);
+        });
+
+    GameOpenGL::UpdateMipmappedAtlasTextureRegion(
+        std::move(frameImage.TextureData),
+        {
+            mGenericMipMappedTextureAtlasMetadata->GetFrameMetadata(frameImage.Metadata.FrameId).FrameLeftX,
+            mGenericMipMappedTextureAtlasMetadata->GetFrameMetadata(frameImage.Metadata.FrameId).FrameBottomY
+        });
 }
 
 std::unique_ptr<Buffer2D<float, struct IntegralTag>> GlobalRenderContext::MakePerlinNoise(

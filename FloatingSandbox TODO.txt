@@ -897,24 +897,21 @@
 
 				= Shade texture depending on flat/depth color and texture
 					+ GameOpenGL: upload mipmapped texture region
-					- TODO: still broken when to do it
 					- GlobalRenderContext::ReshadeDependentOceanTextures(color)
 							- Impl
 								- Transform: based on blue
-					= GlobalRenderContext::ReshadeDependentOceanTextures(texture)
-							= Impl
+					+ GlobalRenderContext::ReshadeDependentOceanTextures(texture)
+							+ Impl
 								+ Transform: simply apply texture sample, with source alpha
-								- Try with scaling to whole texture
-								- Try instead with median color, using same operator as with color
-									- In fact, just calc color and call other overload
-					- Calls:
-						- WRC::ApplyOceanRenderParametersChanges:
-							- Call WRC::ReshadeDependentOceanTextures(renderParameters)
-						- WRC::ApplyOceanTextureIndexChanges:
-							- Store copy of texture in member
-							- Call WRC::ReshadeDependentOceanTextures(renderParameters)
-						- (new) WRC::ReshadeDependentOceanTextures(renderParameters):
-							- Switch on render modes and call appropriate GRC::ReshadeDependentOceanTextures(.)
+								+ Try with scaling to whole texture
+					+ Calls:
+						+ WRC::ApplyOceanRenderParametersChanges:
+							+ Call WRC::ReshadeDependentOceanTextures(renderParameters)
+						+ WRC::ApplyOceanTextureIndexChanges:
+							+ Store copy of texture in member
+							+ Call WRC::ReshadeDependentOceanTextures(renderParameters)
+						+ (new) WRC::ReshadeDependentOceanTextures(renderParameters):
+							+ Switch on render modes and call appropriate GRC::ReshadeDependentOceanTextures(.)
 
 
 		= Foam:

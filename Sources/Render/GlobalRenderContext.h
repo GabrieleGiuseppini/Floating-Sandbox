@@ -93,7 +93,12 @@ public:
 
 private:
 
-    void ReshadeDependentOceanTextures(std::function<rgbaColor(rgbaColor const &, ImageCoordinates const &)> functor);
+    void ReshadeDependentOceanTextures(std::function<rgbaColor(rgbaColor const &, ImageCoordinates const &, ImageSize const &)> functor);
+
+    template<typename TFrameSpecification>
+    void ReshadeDependentOceanTexture(
+        TFrameSpecification const & dependentOceanTextureFrameSpecification,
+        std::function<rgbaColor(rgbaColor const &, ImageCoordinates const &, ImageSize const &)> functor);
 
     static std::unique_ptr<Buffer2D<float, struct IntegralTag>> MakePerlinNoise(
         IntegralRectSize const & size,

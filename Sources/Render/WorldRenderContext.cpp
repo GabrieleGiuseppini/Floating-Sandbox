@@ -104,6 +104,7 @@ WorldRenderContext::WorldRenderContext(
     , mHasCloudShadowsTextureBeenAllocated(false)
     , mOceanTextureFrameSpecifications()
     , mOceanTextureOpenGLHandle()
+    , mCurrentlyLoadedOceanTexture()
     , mCurrentlyLoadedOceanTextureIndex(std::numeric_limits<size_t>::max())
     , mLandBedrockTextureFrameSpecifications()
     , mLandSiltTextureFrameSpecifications()
@@ -2797,15 +2798,7 @@ void WorldRenderContext::ApplyOceanRenderParametersChanges(RenderParameters cons
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedForegroundUpper, GameShaderSets::ProgramParameterKind::OceanFlatColor>(flatColor);
 
     // Reshade ocean-dependent textures
-
-    if (renderParameters.OceanRenderMode == OceanRenderModeType::Flat)
-    {
-        mGlobalRenderContext.ReshadeDependentOceanTextures(renderParameters.FlatOceanColor);
-    }
-    else if (renderParameters.OceanRenderMode == OceanRenderModeType::Depth)
-    {
-        mGlobalRenderContext.ReshadeDependentOceanTextures(renderParameters.DepthOceanColorStart);
-    }
+    ReshadeDependentOceanTextures(renderParameters);
 }
 
 void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters)
@@ -2824,10 +2817,7 @@ void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & 
 
         // Load texture image
         auto oceanTextureFrame = mOceanTextureFrameSpecifications[clampedOceanTextureIndex].LoadFrame(mAssetManager);
-
-        // Reshade ocean-dependent textures
-        // (now, as we still have reference to texture)
-        mGlobalRenderContext.ReshadeDependentOceanTextures(oceanTextureFrame.TextureData);
+        mCurrentlyLoadedOceanTexture = std::make_unique<RgbaImageData>(std::move(oceanTextureFrame.TextureData));
 
         // Activate texture
         mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::OceanTexture>();
@@ -2842,7 +2832,7 @@ void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & 
         CheckOpenGLError();
 
         // Upload texture - mipmapped
-        GameOpenGL::UploadMipmappedTexture(std::move(oceanTextureFrame.TextureData));
+        GameOpenGL::UploadMipmappedTexture(*mCurrentlyLoadedOceanTexture);
 
         // Set repeat mode
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -2882,6 +2872,12 @@ void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & 
             1.0f / oceanTextureFrame.Metadata.WorldHeight);
 
         mCurrentlyLoadedOceanTextureIndex = renderParameters.OceanTextureIndex;
+
+        //
+        // Reshade ocean-dependent textures
+        //
+
+        ReshadeDependentOceanTextures(renderParameters);
     }
 }
 
@@ -3005,7 +3001,27 @@ void WorldRenderContext::RecalculateClearCanvasColor(RenderParameters const & re
 
 void WorldRenderContext::ReshadeDependentOceanTextures(RenderParameters const & renderParameters)
 {
-    // TODOHERE
+    switch (renderParameters.OceanRenderMode)
+    {
+        case OceanRenderModeType::Depth:
+        {
+            mGlobalRenderContext.ReshadeDependentOceanTextures(renderParameters.DepthOceanColorStart);
+            break;
+        }
+
+        case OceanRenderModeType::Flat:
+        {
+            mGlobalRenderContext.ReshadeDependentOceanTextures(renderParameters.FlatOceanColor);
+            break;
+        }
+
+        case OceanRenderModeType::Texture:
+        {
+            assert(mCurrentlyLoadedOceanTexture);
+            mGlobalRenderContext.ReshadeDependentOceanTextures(*mCurrentlyLoadedOceanTexture);
+            break;
+        }
+    }
 }
 
 void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderParameters)

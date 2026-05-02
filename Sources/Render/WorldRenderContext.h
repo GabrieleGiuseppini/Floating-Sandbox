@@ -1727,6 +1727,7 @@ private:
 
     std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> mOceanTextureFrameSpecifications;
     GameOpenGLTexture mOceanTextureOpenGLHandle;
+    std::unique_ptr<RgbaImageData> mCurrentlyLoadedOceanTexture;
     size_t mCurrentlyLoadedOceanTextureIndex;
 
     std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> mLandBedrockTextureFrameSpecifications;
