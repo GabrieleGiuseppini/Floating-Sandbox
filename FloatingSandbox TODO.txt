@@ -1021,7 +1021,36 @@
 		- @ Bubbles rising?
 
 		+ Try: displacement math should consider velocity *perp* to frontier edge
-		- Try: displacement should also come from velocity in same dir as ocean surface
+
+		= Rewrite as more grounded in physics
+			- Goals:
+				1. Impact recoil force: should be based on ocean surface normal at that point
+				2a. Impact displacement: (proportional to, and sign of) vertical component of edge "push"
+					- Independent from ocean surface normal at that point
+				2b. Straight vertical keel moving along ocean surface (ship marching ahead): must generate waves and foam
+					- If keel is oblique: see 2a., pushing up or down
+					- In other words: when push surface is full but parallel to water surface, vertical component must still be != 0
+				2c. Laminar vertical (straight vertical Titanic keel rocking on flat surface): must generate small waves and foam
+					- In other words: when push surface is zero, must still push something - provided it has velocity
+
+				- TODO: it's a 2-plane 1-direction problem
+				- Solution: vector stays on point _velocity_, not edge _normal_
+
+
+			- Impl:
+
+			- OLD:
+			- Boost when frontier edge completely vertical, but there's a velocity
+				- i.e. when edge is perpendicular to surface
+				- Beware of mesh vibration
+
+
+
+		- Decide on engine's displacement
+			- It's currently commented-out
+
+
+		X Try: displacement should also come from velocity in same dir as ocean surface
 			- Displace up after, displace down behind
 			- Rethink displacement: it's two components now
 

@@ -1176,6 +1176,12 @@ private:
     std::vector<typename ThreadPool::Task> mLightDiffusionTasks;
 
     //
+    // Debug
+    //
+
+    std::vector<std::tuple<vec2f, vec2f>> mDebugVectors;
+
+    //
     // Render members
     //
 

@@ -234,6 +234,8 @@ void Ship::Update(
 
     std::vector<ThreadPool::Task> parallelTasks;
 
+    mDebugVectors.clear();
+
     /////////////////////////////////////////////////////////////////
     // At this moment:
     //  - Particle positions are within world boundaries
@@ -1095,6 +1097,22 @@ void Ship::RenderUpload(RenderContext & renderContext)
         mId,
         renderContext);
 
+    if (!mDebugVectors.empty())
+    {
+        shipRenderContext.UploadVectorsStart(mDebugVectors.size(), vec4f(0.8f, 0.0f, 0.0f, 1.0f));
+
+        for (auto const [p, v] : mDebugVectors)
+        {
+            shipRenderContext.UploadVector(
+                p,
+                static_cast<float>(mMaxMaxPlaneId),
+                v,
+                50.0f);
+        }
+
+        shipRenderContext.UploadVectorsEnd();
+    }
+
     //
     // Upload state machines
     //
@@ -1553,6 +1571,8 @@ void Ship::ApplyWorldSurfaceForces(
                 // Get point depth (positive at greater depths, negative over-water)
                 float const thisPointDepth = newCachedPointDepths[thisPointIndex];
 
+                vec2f const thisPointVelocity = mPoints.GetVelocity(thisPointIndex);
+
                 //
                 // Drag force
                 //
@@ -1572,22 +1592,21 @@ void Ship::ApplyWorldSurfaceForces(
                 // we have to cap the force to prevent velocity overcome.
                 //
 
-                // Normal to surface - calculated between p1 and p3; points outside
+                // Normal to edge - calculated between p1 and p3; points outside
                 vec2f const edgeNormal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
 
-                // Edge velocity magnitude: magnitude of the edge velocity, along
-                // the edge normal (pointing out)
-                float const edgeVelocityMagnitude = mPoints.GetVelocity(thisPointIndex).dot(edgeNormal);
+                // Magnitude of the edge velocity along the edge normal; positive when pointing out
+                float const edgeVelocityAlongEdgeNormal = thisPointVelocity.dot(edgeNormal);
 
                 // Cap it to the same direction as velocity, to avoid suction force
                 // (i.e. drag force attracting surface facing opposite of velocity)
-                float const edgeVelocityMagnitudeCapped = std::max(
-                    edgeVelocityMagnitude,
+                float const edgeVelocityCapped = std::max(
+                    edgeVelocityAlongEdgeNormal,
                     0.0f);
 
                 // Max drag force magnitude: m * (V dot Nn) / dt
                 float const maxDragForceMagnitude =
-                    mPoints.GetMass(thisPointIndex) * edgeVelocityMagnitudeCapped
+                    mPoints.GetMass(thisPointIndex) * edgeVelocityCapped
                     / SimulationParameters::SimulationStepTimeDuration<float>;
 
                 // Calculate drag coefficient: air or water, with soft transition
@@ -1600,7 +1619,7 @@ void Ship::ApplyWorldSurfaceForces(
                 // Calculate magnitude of drag force (opposite sign), capped by max drag force
                 //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
                 float const dragForceMagnitude = std::min(
-                    dragCoefficient * edgeVelocityMagnitudeCapped,
+                    dragCoefficient * edgeVelocityCapped,
                     maxDragForceMagnitude);
 
                 //
@@ -1613,7 +1632,7 @@ void Ship::ApplyWorldSurfaceForces(
                 //
 
                 float const kineticEnergy =
-                    edgeVelocityMagnitudeCapped * edgeVelocityMagnitudeCapped
+                    edgeVelocityCapped * edgeVelocityCapped
                     * mPoints.GetMass(thisPointIndex);
 
                 float const waterImpactForceMagnitude =
@@ -1633,100 +1652,547 @@ void Ship::ApplyWorldSurfaceForces(
                 // Water displacement
                 //
                 // * The magnitude of water displacement is proportional to the square root of
-                //   the kinetic energy of the particle, thus it is proportional to the square
-                //   root of the particle mass, and linearly to the particle's velocity
+                //   the kinetic energy of the particle, thus it is *linearly* proportional to the
+                //   particle's velocity
                 //      * However, in order to generate visible waves also for very small velocities,
                 //        we want the contribution of small velocities to be more than linear wrt
                 //        the contribution of higher velocities, and so we'll be using a piecewise
                 //        function: quadratic for small velocities, and linear for higher
+                // * For a better effect (homogeneous and spawned by all materials), we ignore the
+                //   dependency on the particle's mass
                 // * The deeper the particle is, the less it contributes to displacement
                 //
 
                 if constexpr (DoDisplaceWater)
                 {
-                    // Calculate edge velocity vector - positive when pointing outside of edge
-                    vec2f const edgeVelocity = edgeNormal * edgeVelocityMagnitude;
+                    // TODOTEST
 
-                    // Calculate edge velocity component against wave, clamping it to a maximum to prevent
-                    // ocean surface instabilities with extremely high velocities.
-                    // Negative when _entering_ the wave
-                    vec2f const oceanSurfaceNormal = mParentWorld.GetOceanSurface().GetNormalAt(thisPointPosition.x); // Points up
-                    float const impactVelocity = edgeVelocity.dot(oceanSurfaceNormal); // Negative when frontal collision
-                    float const absImpactVelocity = std::min(
-                        std::abs(impactVelocity),
+
+
+                    //
+                    // Goals:
+                    // - a. Impact displacement: (proportional to, and sign of) vertical component of edge "push"
+                    //    - For simplicity: independent from ocean surface normal at that point
+                    // - b. Straight vertical keel moving along ocean surface (ship marching ahead): must generate waves and foam
+                    //    - If keel is oblique : see a., pushing up or down
+                    //    - In other words : when push surface is full but orthogonal to water surface, vertical component must
+                    //      still be != 0 - provided it has velocity
+                    // - c. Laminar vertical (straight vertical Titanic keel rocking on flat surface): must generate small waves and foam
+                    //    - In other words: when push surface is zero, must still push something - provided it has velocity
+                    //
+
+                    //
+                    // Impl:
+                    //
+                    // - An edge surface generates a "push" in the direction of the edge velocity, and with magnitude proportional
+                    //   to the surface area as seen from the edge's velocity axis
+                    //      - In other words: proportional to the velocity direction _dot_ edge's normal
+                    //      - Would be zero for a velocity in the same direction as the edge surface (laminar vertical case), but to
+                    //        meet goal c., we clamp the angle
+                    // - The actual displacement is always vertical (OceanSurface implementation constraint), and its magnitude is
+                    //   proportional to the vertical component of the push vector
+                    //      - Would be zero when push vector is perfectly horizontal, but to meet goal b., we clamp the angle
+                    //
+
+                    // TODO: if we get spurious foam at rest, clamp point velocity to ~0.5/0.6,
+                    // which seems to be the vibration speed of the mesh
+
+                    //
+                    // Push direction
+                    //
+
+                    float const edgeVelocityMagnitude = thisPointVelocity.length();
+                    vec2f const pushDir = thisPointVelocity.normalise(edgeVelocityMagnitude);
+
+                    // Push angle factor (push multiplier that takes into account the visible surface)
+                    float pushAngleSurfaceFactor = pushDir.dot(edgeNormal); // Negative when velocity towards inside
+                    // TODOHERE: if we end up not caring about sign of the factor, we can nuke the clumsy clamp and just do a max
+                    // Goal c.: don't let the angle factor become too small towards zero
+                    float constexpr MinPushAngleSurfaceFactor = 0.9f; // TODOHERE
+                    pushAngleSurfaceFactor = std::max(std::abs(pushAngleSurfaceFactor), MinPushAngleSurfaceFactor) * Sign(pushAngleSurfaceFactor);
+
+                    //
+                    // Push velocity magnitude
+                    //
+
+                    // Clamp edge velocity to prevent ocean surface instabilities with extremely high
+                    // velocities
+                    float const absEdgeVelocityMagnitudeCapped = std::min(
+                        std::abs(edgeVelocityMagnitude),
                         10000.0f); // Magic number
 
+                    // Calculate "push velocity" by considering the dimished visible portion of the edge from the velocity direction
+                    float const absPushVelocity = absEdgeVelocityMagnitudeCapped * std::abs(pushAngleSurfaceFactor);
+
                     //
-                    // Displacement magnitude calculation
+                    // Displacement magnitude
                     //
 
-                    float const linearDisplacementMagnitude = WdmY0 + wdmLinearSlope * (absImpactVelocity - WdmX0);
-                    float const quadraticDisplacementMagnitude = wdmQuadraticA * absImpactVelocity * absImpactVelocity + wdmQuadraticB * absImpactVelocity;
+                    // Transform push velocity (absolute) into a displacement magnitude (absolute)
+                    float const linearAbsDisplacementMagnitude = WdmY0 + wdmLinearSlope * (absPushVelocity - WdmX0);
+                    float const quadraticAbsDisplacementMagnitude = wdmQuadraticA * absPushVelocity * absPushVelocity + wdmQuadraticB * absPushVelocity;
 
                     //
                     // Depth attenuation: tapers down displacement the deeper the point is
                     //
 
-                    // Depth at which the point stops contributing: rises quadratically, asymptotically, and asymmetric wrt sinking or rising
-                    float constexpr MaxVel = 35.0f;
-                    float constexpr a2 = -0.5f / (MaxVel * MaxVel);
-                    float constexpr b2 = 1.0f / MaxVel;
-                    float const clampedAbsImpactVelocity = std::min(absImpactVelocity, MaxVel);
+                    // Depth at which the point stops contributing: rises with impact velocity along vertical, and asymmetric wrt sinking or rising
+                    float const absVerticalEdgeVelocityMagnitudeCapped = absEdgeVelocityMagnitudeCapped * std::abs(pushDir.y);
+                    float constexpr MaxVerticalVel = 35.0f;
                     float const maxDepth =
-                        (a2 * clampedAbsImpactVelocity * clampedAbsImpactVelocity + b2 * clampedAbsImpactVelocity + 0.5f)
-                        * (impactVelocity <= 0.0f ? 12.0f : 4.0f); // Keep up-push low or else bodies keep jumping up and down forever
+                        (0.5f + LinearStep(0.0f, MaxVerticalVel, absVerticalEdgeVelocityMagnitudeCapped) * 0.5f)
+                        * (pushDir.y <= 0.0f ? 12.0f : 4.0f); // Keep up-push low or else bodies keep jumping up and down forever
 
                     // Linear attenuation up to maxDepth
                     float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, thisPointDepth); // Tapers down contribution the deeper the point is
 
                     //
-                    // Displacement
+                    // Displacement angle: due to how we displace the ocean surface (vertically), here we calculate the
+                    // vertical component of the displacement, clamping however to ensure goal b.
+                    //
+
+                    float displacementAngleVerticalFactor = pushDir.y;
+                    // Goal b.: don't let the angle factor become too small towards zero
+                    float constexpr MinDisplacementAngleVerticalFactor = 0.9f; // We actually leave it quite large - basically all pushes are considered to be vertical!
+                    displacementAngleVerticalFactor = std::max(std::abs(displacementAngleVerticalFactor), MinDisplacementAngleVerticalFactor) * Sign(displacementAngleVerticalFactor);
+
+                    //
+                    // Final displacement
                     //
 
                     float const displacement =
-                        (absImpactVelocity < WdmX0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
+                        (absPushVelocity < WdmX0 ? quadraticAbsDisplacementMagnitude : linearAbsDisplacementMagnitude)
+                        * 0.4f // Magic magnitude adjustment
                         * depthAttenuation
-                        * SignStep(0.0f, impactVelocity) // Displacement has same sign as impact velocity
                         * Step(0.0f, thisPointDepth) // No displacement for above-water points
-                        * 0.4f // Magic number
-                        * oceanSurfaceNormal.y; // Take the vertical component of the displacement, as it's currently calculated along the normal
+                        * displacementAngleVerticalFactor; // Take vertical component, adjusting sign
+
+                    // TODOTEST
+                    if (displacement != 0.0f)
+                    {
+                        mDebugVectors.emplace_back(
+                            thisPointPosition,
+                            //edgeNormal * absDisplacement * Sign(edgeVelocityAlongEdgeNormal));
+                            vec2f(0.0f, displacement));
+                    }
 
                     mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
 
-                    float const absDisplacement = std::abs(displacement);
-                    totalWaterDisplacementMagnitude += absDisplacement;
+                    // TODOHERE
 
-                    //
-                    // Water foam
-                    //
+                    ////float const absVerticalDisplacement = std::abs(verticalDisplacement);
+                    ////totalWaterDisplacementMagnitude += absVerticalDisplacement;
 
-                    float constexpr MinAbsDisplacementForWaterFoam = 0.065f; // Magic
-                    if (absDisplacement >= MinAbsDisplacementForWaterFoam // Both upwards and downwards
-                        && thisPointDepth < 1.5f) // Only spawn foam on the surface
-                    {
-                        float constexpr MaxAbsDisplacementForWaterFoam = 1.0f; // Magic
-                        float const strength = (absDisplacement - MinAbsDisplacementForWaterFoam) / (MaxAbsDisplacementForWaterFoam - MinAbsDisplacementForWaterFoam);
-                        if (strength > strongestWaterFoam.Strength)
-                        {
-                            strongestWaterFoam = WaterFoam(thisPointPosition, Sign(displacement), strength, mPoints.GetPlaneId(thisPointIndex));
-                        }
-                    }
+                    //////
+                    ////// Water foam
+                    //////
 
-                    //
-                    // Water splashes
-                    //
+                    ////float constexpr MinAbsDisplacementForWaterFoam = 0.065f; // Magic
+                    ////if (absVerticalDisplacement >= MinAbsDisplacementForWaterFoam // Both upwards and downwards
+                    ////    && thisPointDepth < 1.5f) // Only spawn foam on the surface
+                    ////{
+                    ////    float constexpr MaxAbsDisplacementForWaterFoam = 1.0f; // Magic
+                    ////    float const strength = (absVerticalDisplacement - MinAbsDisplacementForWaterFoam) / (MaxAbsDisplacementForWaterFoam - MinAbsDisplacementForWaterFoam);
+                    ////    if (strength > strongestWaterFoam.Strength)
+                    ////    {
+                    ////        strongestWaterFoam = WaterFoam(
+                    ////            thisPointPosition,
+                    ////            Sign(edgeVelocityAlongEdgeNormal),
+                    ////            strength,
+                    ////            mPoints.GetPlaneId(thisPointIndex));
+                    ////    }
+                    ////}
 
-                    float constexpr MinAbsDisplacementForWaterSplash = 0.4f; // Magic
-                    if (displacement < -MinAbsDisplacementForWaterSplash // Only downwards
-                        && thisPointDepth < 2.0f) // Only spawn splashes on the surface
-                    {
-                        float constexpr MaxAbsDisplacementForWaterSplash = 1.0f; // Magic
-                        float const strength = (absDisplacement - MinAbsDisplacementForWaterSplash) / (MaxAbsDisplacementForWaterSplash - MinAbsDisplacementForWaterSplash);
-                        if (strength > strongestWaterSplash.Strength)
-                        {
-                            strongestWaterSplash = WaterSplash(thisPointPosition, oceanSurfaceNormal, strength, mPoints.GetPlaneId(thisPointIndex));
-                        }
-                    }
+                    //////
+                    ////// Water splashes
+                    //////
+
+                    ////float constexpr MinAbsDisplacementForWaterSplash = 0.4f; // Magic
+                    ////if (verticalDisplacement < -MinAbsDisplacementForWaterSplash // Only downwards
+                    ////    && thisPointDepth < 2.0f) // Only spawn splashes on the surface
+                    ////{
+                    ////    float constexpr MaxAbsDisplacementForWaterSplash = 1.0f; // Magic
+                    ////    float const strength = (absVerticalDisplacement - MinAbsDisplacementForWaterSplash) / (MaxAbsDisplacementForWaterSplash - MinAbsDisplacementForWaterSplash);
+                    ////    if (strength > strongestWaterSplash.Strength)
+                    ////    {
+                    ////        strongestWaterSplash = WaterSplash(
+                    ////            thisPointPosition,
+                    ////            mParentWorld.GetOceanSurface().GetNormalAt(thisPointPosition.x), // Points up
+                    ////            strength,
+                    ////            mPoints.GetPlaneId(thisPointIndex));
+                    ////    }
+                    ////}
+
+
+
+
+
+
+
+                    // TODOOLD
+
+
+
+
+
+
+
+                    //////
+                    ////// We consider the edge's velocity wrt water: edge pushing (along its normal)
+                    ////// water causes a displacement in that direction, regardless of whether the push
+                    ////// is towards the inside of the frontier or the outside
+                    //////
+
+                    ////// Calculate edge velocity vector: the velocity of the edge in absolute terms;
+                    ////// could be towards outside or the inside
+                    ////// TODOHERE: here's what broke the waves on the vertical sides of the
+                    ////// Titanic rocking on the water: this is zero now,
+                    ////// while earlier we were taking the point's vertical velocity
+                    ////vec2f const edgeVelocity = edgeNormal * edgeVelocityAlongEdgeNormal;
+
+                    //////
+                    ////// Push magnitude calculation
+                    //////
+
+                    ////// Clamp edge velocity, coming up with an absolute edge velocity (against or backing)
+                    ////float const absEdgeVelocityCapped = std::min(
+                    ////    std::abs(edgeVelocityAlongEdgeNormal),
+                    ////    10000.0f); // Magic number
+
+                    ////// Transform (capped) edge velocity into a displacement magnitude (absolute)
+                    ////float const linearAbsDisplacementMagnitude = WdmY0 + wdmLinearSlope * (absEdgeVelocityCapped - WdmX0);
+                    ////float const quadraticAbsDisplacementMagnitude = wdmQuadraticA * absEdgeVelocityCapped * absEdgeVelocityCapped + wdmQuadraticB * absEdgeVelocityCapped;
+
+                    //////
+                    ////// Depth attenuation: tapers down displacement the deeper the point is
+                    //////
+
+                    ////// Depth at which the point stops contributing: rises with impact velocity along vertical, and asymmetric wrt sinking or rising
+                    ////float const absVerticalEdgeVelocityCapped = absEdgeVelocityCapped * std::abs(edgeNormal.y);
+                    ////float constexpr MaxVerticalVel = 35.0f;
+                    ////float const maxDepth =
+                    ////    (0.5f + LinearStep(0.0f, MaxVerticalVel, absVerticalEdgeVelocityCapped) * 0.5f)
+                    ////    * (edgeVelocity.y <= 0.0f ? 12.0f : 4.0f); // Keep up-push low or else bodies keep jumping up and down forever
+
+                    ////// Linear attenuation up to maxDepth
+                    ////float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, thisPointDepth); // Tapers down contribution the deeper the point is
+
+                    //////
+                    ////// Displacement magnitude (absolute), assuming it happens along the push direction
+                    ////// (i.e. along the edge velocity)
+                    //////
+
+                    ////float const absDisplacement =
+                    ////    (absEdgeVelocityCapped < WdmX0 ? quadraticAbsDisplacementMagnitude : linearAbsDisplacementMagnitude)
+                    ////    * 0.4f // Magic magnitude adjustment
+                    ////    * depthAttenuation
+                    ////    * Step(0.0f, thisPointDepth); // No displacement for above-water points
+
+                    //////
+                    ////// Vertical displacement: projection of absDisplacement
+                    ////// along the vertical, obeying the direction of the
+                    ////// edge velocity
+                    //////
+
+                    ////float const verticalDisplacement =
+                    ////    absDisplacement
+                    ////    // TODOTEST
+                    ////    //* edgeNormal.y
+                    ////    //* Sign(edgeVelocityAlongEdgeNormal);
+                    ////    // TODOTEST
+                    ////    * Sign(edgeVelocity.y);
+
+                    ////// TODOTEST
+                    ////if (verticalDisplacement != 0.0f)
+                    ////{
+                    ////    mDebugVectors.emplace_back(
+                    ////        thisPointPosition,
+                    ////        //edgeNormal * absDisplacement * Sign(edgeVelocityAlongEdgeNormal));
+                    ////        vec2f(0.0f, verticalDisplacement));
+                    ////}
+
+                    ////mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, verticalDisplacement);
+
+                    ////float const absVerticalDisplacement = std::abs(verticalDisplacement);
+                    ////totalWaterDisplacementMagnitude += absVerticalDisplacement;
+
+                    //////
+                    ////// Water foam
+                    //////
+
+                    ////float constexpr MinAbsDisplacementForWaterFoam = 0.065f; // Magic
+                    ////if (absVerticalDisplacement >= MinAbsDisplacementForWaterFoam // Both upwards and downwards
+                    ////    && thisPointDepth < 1.5f) // Only spawn foam on the surface
+                    ////{
+                    ////    float constexpr MaxAbsDisplacementForWaterFoam = 1.0f; // Magic
+                    ////    float const strength = (absVerticalDisplacement - MinAbsDisplacementForWaterFoam) / (MaxAbsDisplacementForWaterFoam - MinAbsDisplacementForWaterFoam);
+                    ////    if (strength > strongestWaterFoam.Strength)
+                    ////    {
+                    ////        strongestWaterFoam = WaterFoam(
+                    ////            thisPointPosition,
+                    ////            Sign(edgeVelocityAlongEdgeNormal),
+                    ////            strength,
+                    ////            mPoints.GetPlaneId(thisPointIndex));
+                    ////    }
+                    ////}
+
+                    //////
+                    ////// Water splashes
+                    //////
+
+                    ////float constexpr MinAbsDisplacementForWaterSplash = 0.4f; // Magic
+                    ////if (verticalDisplacement < -MinAbsDisplacementForWaterSplash // Only downwards
+                    ////    && thisPointDepth < 2.0f) // Only spawn splashes on the surface
+                    ////{
+                    ////    float constexpr MaxAbsDisplacementForWaterSplash = 1.0f; // Magic
+                    ////    float const strength = (absVerticalDisplacement - MinAbsDisplacementForWaterSplash) / (MaxAbsDisplacementForWaterSplash - MinAbsDisplacementForWaterSplash);
+                    ////    if (strength > strongestWaterSplash.Strength)
+                    ////    {
+                    ////        strongestWaterSplash = WaterSplash(
+                    ////            thisPointPosition,
+                    ////            mParentWorld.GetOceanSurface().GetNormalAt(thisPointPosition.x), // Points up
+                    ////            strength,
+                    ////            mPoints.GetPlaneId(thisPointIndex));
+                    ////    }
+                    ////}
+
+
+
+                    ////// TODOTEST
+                    ////std::optional<std::string> pointTitle;
+                    ////if (thisPointIndex == 111)
+                    ////    pointTitle = "Front 1";
+                    ////else if (thisPointIndex == 95)
+                    ////    pointTitle = "Front 2";
+                    ////else if (thisPointIndex == 79)
+                    ////    pointTitle = "Front 3";
+                    ////else if (thisPointIndex == 63)
+                    ////    pointTitle = "Front 4";
+                    ////else if (thisPointIndex == 49)
+                    ////    pointTitle = "Back 4";
+                    ////else if (thisPointIndex == 65)
+                    ////    pointTitle = "Back 3";
+                    ////else if (thisPointIndex == 91)
+                    ////    pointTitle = "Back 2";
+                    ////else if (thisPointIndex == 97)
+                    ////    pointTitle = "Back 1";
+
+                    ////if (pointTitle)
+                    ////{
+                    ////    LogMessage(*pointTitle, ": ",
+                    ////        "pointVelocity=", mPoints.GetVelocity(thisPointIndex),
+                    ////        " edgeNormal=", edgeNormal, " edgeVelocityAlongEdgeNormal=", edgeVelocityAlongEdgeNormal, " edgeVelocity=", edgeVelocity,
+                    ////        " absEdgeVelocityCapped=", absEdgeVelocityCapped, " absVerticalEdgeVelocityCapped=", absVerticalEdgeVelocityCapped,
+                    ////        " absDisplacement=", absDisplacement, " absVerticalDisplacement=", absVerticalDisplacement);
+                    ////}
+
+
+
+
+
+                    // TODOOLD
+
+
+
+
+                    ////// Calculate edge velocity vector - positive when pointing outside of edge
+                    ////vec2f const edgeVelocity = edgeNormal * edgeVelocityAlongEdgeNormal;
+
+                    ////// Calculate edge velocity component against wave, clamping it to a maximum to prevent
+                    ////// ocean surface instabilities with extremely high velocities.
+                    ////// Negative when _entering_ the wave
+                    ////vec2f const oceanSurfaceNormal = mParentWorld.GetOceanSurface().GetNormalAt(thisPointPosition.x); // Points up
+                    ////float const impactVelocity = edgeVelocity.dot(oceanSurfaceNormal); // Negative when frontal collision
+                    ////float const absImpactVelocity = std::min(
+                    ////    std::abs(impactVelocity),
+                    ////    10000.0f); // Magic number
+
+                    //////
+                    ////// Displacement magnitude calculation
+                    //////
+
+                    ////float const linearDisplacementMagnitude = WdmY0 + wdmLinearSlope * (absImpactVelocity - WdmX0);
+                    ////float const quadraticDisplacementMagnitude = wdmQuadraticA * absImpactVelocity * absImpactVelocity + wdmQuadraticB * absImpactVelocity;
+
+                    //////
+                    ////// Depth attenuation: tapers down displacement the deeper the point is
+                    //////
+
+                    ////// Depth at which the point stops contributing: rises with impact velocity, and asymmetric wrt sinking or rising
+                    ////float constexpr MaxVel = 35.0f;
+                    ////float const maxDepth =
+                    ////    (0.5f + LinearStep(0.0f, MaxVel, absImpactVelocity) * 0.5f)
+                    ////    * (impactVelocity <= 0.0f ? 12.0f : 4.0f); // Keep up-push low or else bodies keep jumping up and down forever
+
+                    ////// Linear attenuation up to maxDepth
+                    ////float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, thisPointDepth); // Tapers down contribution the deeper the point is
+
+                    //////
+                    ////// Displacement
+                    //////
+
+                    ////float const impactDisplacement_tmp =
+                    ////    (absImpactVelocity < WdmX0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
+                    ////    * depthAttenuation
+                    ////    * SignStep(0.0f, impactVelocity) // Displacement has same sign as impact velocity
+                    ////    * Step(0.0f, thisPointDepth) // No displacement for above-water points
+                    ////    * 0.4f // Magic number
+                    ////    //* oceanSurfaceNormal.y; // Take the vertical component of the displacement, as it's currently calculated along the normal
+                    ////    ;
+
+                    ////float const impactDisplacement =
+                    ////    impactDisplacement_tmp
+                    ////    * oceanSurfaceNormal.y;
+
+                    ////// TODOTEST
+                    ////std::optional<std::string> pointTitle;
+                    ////if (thisPointIndex == 111)
+                    ////    pointTitle = "Front 1";
+                    ////else if (thisPointIndex == 95)
+                    ////    pointTitle = "Front 2";
+                    ////else if (thisPointIndex == 79)
+                    ////    pointTitle = "Front 3";
+                    ////else if (thisPointIndex == 63)
+                    ////    pointTitle = "Front 4";
+                    ////else if (thisPointIndex == 49)
+                    ////    pointTitle = "Back 4";
+                    ////else if (thisPointIndex == 65)
+                    ////    pointTitle = "Back 3";
+                    ////else if (thisPointIndex == 91)
+                    ////    pointTitle = "Back 2";
+                    ////else if (thisPointIndex == 97)
+                    ////    pointTitle = "Back 1";
+
+                    ////if (pointTitle)
+                    ////{
+                    ////    LogMessage(*pointTitle, ": ",
+                    ////        "edgeNormal=", edgeNormal, " edgeVelocity=", edgeVelocity,
+                    ////        " edgeVelocityAlongEdgeNormal=", edgeVelocityAlongEdgeNormal, " impactVelocity=", impactVelocity,
+                    ////        " impactDisplacementTmp=", impactDisplacement_tmp, " impactDisplacement=", impactDisplacement);
+                    ////}
+
+                    ////// TODOTEST: motion displacement
+
+                    ////////float const depthAttenuation2 = 1.0f - LinearStep(0.0f, 2.0f, thisPointDepth);
+
+                    ////////// TODO: broken: should go up when V goes outside of edge, so should be based off sign of edge velocity dot edge normal
+                    ////////vec2f const fooEdgeVelocity = edgeNormal * std::min(std::abs(edgeVelocityAlongEdgeNormal), 5.0f);
+                    ////////float const motionVelocity = fooEdgeVelocity.cross(oceanSurfaceNormal); // Positive when against water
+                    ////////float const pushDisplacement =
+                    ////////    motionVelocity
+                    ////////    * depthAttenuation2
+                    ////////    * Step(0.0f, thisPointDepth) // No displacement for above-water points
+                    ////////    * 0.1f; // Magic, velocity -> displacement
+
+                    ////////if (abs(motionVelocity) > 5.0f && pushDisplacement != 0.0f)
+                    ////////{
+                    ////////    LogMessage("motionVelocity=", motionVelocity, " edgeVelocityDir=", edgeVelocity.normalise(),
+                    ////////        " fooEdgeVelocityDir=", fooEdgeVelocity.normalise(),
+                    ////////        " edgeVelocityAlongEdgeNormal=", edgeVelocityAlongEdgeNormal, " pushDisplacement=", pushDisplacement);
+                    ////////}
+                    ////float const pushDisplacement = 0.0f;
+
+                    ////float const totalDisplacement = impactDisplacement + pushDisplacement;
+                    ////float const absTotalDisplacement = std::abs(totalDisplacement);
+
+                    ////mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, totalDisplacement);
+
+                    ////float const absImpactDisplacement = std::abs(impactDisplacement);
+                    ////totalWaterDisplacementMagnitude += absImpactDisplacement;
+
+                    //////
+                    ////// Water foam
+                    //////
+
+                    ////float constexpr MinAbsDisplacementForWaterFoam = 0.065f; // Magic
+                    ////if (absTotalDisplacement >= MinAbsDisplacementForWaterFoam // Both upwards and downwards
+                    ////    && thisPointDepth < 1.5f) // Only spawn foam on the surface
+                    ////{
+                    ////    float constexpr MaxAbsDisplacementForWaterFoam = 1.0f; // Magic
+                    ////    float const strength = (absTotalDisplacement - MinAbsDisplacementForWaterFoam) / (MaxAbsDisplacementForWaterFoam - MinAbsDisplacementForWaterFoam);
+                    ////    if (strength > strongestWaterFoam.Strength)
+                    ////    {
+                    ////        strongestWaterFoam = WaterFoam(thisPointPosition, Sign(totalDisplacement), strength, mPoints.GetPlaneId(thisPointIndex));
+                    ////    }
+                    ////}
+
+                    //////
+                    ////// Water splashes
+                    //////
+
+                    ////float constexpr MinAbsDisplacementForWaterSplash = 0.4f; // Magic
+                    ////if (impactDisplacement < -MinAbsDisplacementForWaterSplash // Only downwards
+                    ////    && thisPointDepth < 2.0f) // Only spawn splashes on the surface
+                    ////{
+                    ////    float constexpr MaxAbsDisplacementForWaterSplash = 1.0f; // Magic
+                    ////    float const strength = (absImpactDisplacement - MinAbsDisplacementForWaterSplash) / (MaxAbsDisplacementForWaterSplash - MinAbsDisplacementForWaterSplash);
+                    ////    if (strength > strongestWaterSplash.Strength)
+                    ////    {
+                    ////        strongestWaterSplash = WaterSplash(thisPointPosition, oceanSurfaceNormal, strength, mPoints.GetPlaneId(thisPointIndex));
+                    ////    }
+                    ////}
+
+
+
+
+                    // TODOOLD: ORIGINAL
+
+
+
+                    ////// Calculate vertical velocity, clamping it to a maximum to prevent
+                    ////// ocean surface instabilities with extremely high velocities
+                    ////float const verticalVelocity = mPoints.GetVelocity(thisPointIndex).y;
+                    ////float const absVerticalVelocity = std::min(
+                    ////    std::abs(verticalVelocity),
+                    ////    10000.0f); // Magic number
+
+                    //////
+                    ////// Displacement magnitude calculation
+                    //////
+
+                    ////float const linearDisplacementMagnitude = WdmY0 + wdmLinearSlope * (absVerticalVelocity - WdmX0);
+                    ////float const quadraticDisplacementMagnitude = wdmQuadraticA * absVerticalVelocity * absVerticalVelocity + wdmQuadraticB * absVerticalVelocity;
+
+                    //////
+                    ////// Depth attenuation: tapers down displacement the deeper the point is
+                    //////
+
+                    ////// Depth at which the point stops contributing: rises quadratically, asymptotically, and asymmetric wrt sinking or rising
+                    ////float constexpr MaxVel = 35.0f;
+                    ////float constexpr a2 = -0.5f / (MaxVel * MaxVel);
+                    ////float constexpr b2 = 1.0f / MaxVel;
+                    ////float const clampedAbsVerticalVelocity = std::min(absVerticalVelocity, MaxVel);
+                    ////float const maxDepth =
+                    ////    (a2 * clampedAbsVerticalVelocity * clampedAbsVerticalVelocity + b2 * clampedAbsVerticalVelocity + 0.5f)
+                    ////    * (verticalVelocity <= 0.0f ? 12.0f : 4.0f); // Keep up-push low or else bodies keep jumping up and down forever
+
+                    ////// Linear attenuation up to maxDepth
+                    ////float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, thisPointDepth); // Tapers down contribution the deeper the point is
+
+                    //////
+                    ////// Displacement
+                    //////
+
+                    ////float const displacement =
+                    ////    (absVerticalVelocity < WdmX0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
+                    ////    * depthAttenuation
+                    ////    * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
+                    ////    * Step(0.0f, thisPointDepth) // No displacement for above-water points
+                    ////    * 0.4f; // Magic number
+
+                    ////mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
+
+                    ////totalWaterDisplacementMagnitude += std::abs(displacement);
+
+                    ////// TODOTEST
+                    ////if (displacement != 0.0f)
+                    ////{
+                    ////    mDebugVectors.emplace_back(
+                    ////        thisPointPosition,
+                    ////        //edgeNormal * absDisplacement * Sign(edgeVelocityAlongEdgeNormal));
+                    ////        vec2f(0.0f, displacement));
+                    ////}
+
                 }
 
                 //
