@@ -1035,33 +1035,34 @@
 
 			! It's a 2-plane 1-direction problem
 			! Solution: vector stays on point _velocity_, not edge _normal_
-			= Impl
+			= Impl of goals 2
 				+ Foam and splashes
-				- FIX: Titanic goes awry
+				= FIX: Titanic goes awry
 					+ Lower boost for case b
-					- TODOHERE: but boost should depend on edge normal! Think of vertical keel in front (where it's fine to consider Velh as vertical)
+					= TODOHERE: but boost should depend on edge normal! Think of vertical keel in front (where it's fine to consider Velh as vertical)
 					  vs keel at bottom (where it's clearly parallel to surface)
-						- Multiply min by abs(pushDir.dot(edgeNormal))
-						- May be rephrased as: TODO
-				- Test
+						+ Multiply min by abs(pushDir.dot(edgeNormal))
+						+ Optimize (we have already calculated dot?)
+						- Update main comment, fit into theory
+				+ Test
 
-			- If we keep boosts high, then all pushes are vertical - revert to original code (but line-by-line)
-				- But keep comments
+				- If case c. boost stays at 0.9, try it with 1.0 and if ok, nuke it altogether
+
+			- Impl of goal 1
 
 
 
 		- Decide on engine's displacement
-			- It's currently commented-out
+			- It's currently commented-out - AND COMMITTED AS SUCH
 
 
 		X Try: displacement should also come from velocity in same dir as ocean surface
 			- Displace up after, displace down behind
 			- Rethink displacement: it's two components now
 
-		- Replace engine wake with bubbles
+		- Try: replace engine wake with bubbles
 			- Nuke all about wake if this goes through
 			- Add to Android plan
-		- See if engine's ocean surface displacement still needed
 
 		- Cleanup:
 			- Finalize alpha of foam (@ eph particle upload)

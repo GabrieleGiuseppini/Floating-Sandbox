@@ -1705,11 +1705,7 @@ void Ship::ApplyWorldSurfaceForces(
                     vec2f const pushDir = thisPointVelocity.normalise(edgeVelocityMagnitude);
 
                     // Push angle factor (push multiplier that takes into account the visible surface)
-                    float pushAngleSurfaceFactor = pushDir.dot(edgeNormal); // Negative when velocity towards inside
-                    // TODOHERE: if we end up not caring about sign of the factor, we can nuke the clumsy clamp and just do a max
-                    // Goal c.: don't let the angle factor become too small towards zero
-                    float constexpr MinPushAngleSurfaceFactor = 0.9f; // TODOHERE
-                    pushAngleSurfaceFactor = std::max(std::abs(pushAngleSurfaceFactor), MinPushAngleSurfaceFactor) * Sign(pushAngleSurfaceFactor);
+                    float const absPushAngleSurfaceFactor = std::abs(pushDir.dot(edgeNormal));
 
                     //
                     // Push velocity magnitude
@@ -1722,7 +1718,11 @@ void Ship::ApplyWorldSurfaceForces(
                         10000.0f); // Magic number
 
                     // Calculate "push velocity" by considering the dimished visible portion of the edge from the velocity direction
-                    float const absPushVelocity = absEdgeVelocityMagnitudeCapped * std::abs(pushAngleSurfaceFactor);
+                    float constexpr MinPushAngleSurfaceFactor = 0.9f; // TODOHERE
+                    float const absPushVelocity =
+                        absEdgeVelocityMagnitudeCapped
+                        // Goal c.: don't let the angle factor become too small towards zero
+                        * std::max(absPushAngleSurfaceFactor, MinPushAngleSurfaceFactor);
 
                     //
                     // Displacement magnitude
@@ -1747,18 +1747,18 @@ void Ship::ApplyWorldSurfaceForces(
                     float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, thisPointDepth); // Tapers down contribution the deeper the point is
 
                     //
-                    // Displacement angle: due to how we displace the ocean surface (vertically), here we calculate the
-                    // vertical component of the displacement, clamping however to ensure goal b.
+                    // Displacement angle: due to the fact that we displace the ocean surface vertically, here we calculate the
+                    // vertical component of the displacement, clamping it however to ensure goal b.
                     //
-
-                    float displacementAngleVerticalFactor = pushDir.y;
-                    // Goal b.: don't let the angle factor become too small towards zero
-                    // TODOHERE: but should depend on edge normal! think of vertical keel in front (where it's fine to consider Velh as vertical)
-                    // vs keel at bottom (where it's clearly parallel to surface)
-                    // TODO: writeup
-                    //float constexpr MinDisplacementAngleVerticalFactor = 0.5f;
-                    float const MinDisplacementAngleVerticalFactor = 0.5f * std::abs(pushDir.dot(edgeNormal));
-                    displacementAngleVerticalFactor = std::max(std::abs(displacementAngleVerticalFactor), MinDisplacementAngleVerticalFactor) * Sign(displacementAngleVerticalFactor);
+                    // With the clamp, we technically consider a push as vertical depending on either:
+                    //  - The verticality of the push direction itself (obviously)
+                    //  - The aligment of the push direction wrt the frontier edge , which maximizes pressure and thus
+                    //    vertical (escaping) displacement
+                    // There's those two maxima, and a minimum when both the push is parallel to the frontier edge,
+                    // and the displacement vector is fully horizontal; for example, along the underwater keel
+                    // marching ahead
+                    float const minDisplacementAngleVerticalFactor = 0.5f * absPushAngleSurfaceFactor;
+                    float const displacementAngleVerticalFactor = std::max(std::abs(pushDir.y), minDisplacementAngleVerticalFactor) * Sign(pushDir.y);
 
                     //
                     // Final displacement
