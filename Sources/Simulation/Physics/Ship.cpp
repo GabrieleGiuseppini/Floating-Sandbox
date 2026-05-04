@@ -1438,7 +1438,7 @@ void Ship::ApplyWorldSurfaceForces(
     // Water displacement constants
     //
 
-    float constexpr WdmX0 = 2.0f; // Vertical velocity at which displacement transitions from quadratic to linear
+    float constexpr WdmX0 = 1.0f; // Vertical velocity at which displacement transitions from quadratic to linear
     float constexpr WdmY0 = 0.16f; // Displacement magnitude at x0
 
     // Linear portion
@@ -1753,7 +1753,11 @@ void Ship::ApplyWorldSurfaceForces(
 
                     float displacementAngleVerticalFactor = pushDir.y;
                     // Goal b.: don't let the angle factor become too small towards zero
-                    float constexpr MinDisplacementAngleVerticalFactor = 0.9f; // We actually leave it quite large - basically all pushes are considered to be vertical!
+                    // TODOHERE: but should depend on edge normal! think of vertical keel in front (where it's fine to consider Velh as vertical)
+                    // vs keel at bottom (where it's clearly parallel to surface)
+                    // TODO: writeup
+                    //float constexpr MinDisplacementAngleVerticalFactor = 0.5f;
+                    float const MinDisplacementAngleVerticalFactor = 0.5f * std::abs(pushDir.dot(edgeNormal));
                     displacementAngleVerticalFactor = std::max(std::abs(displacementAngleVerticalFactor), MinDisplacementAngleVerticalFactor) * Sign(displacementAngleVerticalFactor);
 
                     //
@@ -1778,50 +1782,48 @@ void Ship::ApplyWorldSurfaceForces(
 
                     mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
 
-                    // TODOHERE
+                    float const absDisplacement = std::abs(displacement);
+                    totalWaterDisplacementMagnitude += absDisplacement;
 
-                    ////float const absVerticalDisplacement = std::abs(verticalDisplacement);
-                    ////totalWaterDisplacementMagnitude += absVerticalDisplacement;
+                    //
+                    // Water foam
+                    //
 
-                    //////
-                    ////// Water foam
-                    //////
+                    float constexpr MinAbsDisplacementForWaterFoam = 0.065f; // Magic
+                    if (absDisplacement >= MinAbsDisplacementForWaterFoam // Both upwards and downwards
+                        && thisPointDepth < 1.5f) // Only spawn foam on the surface
+                    {
+                        float constexpr MaxAbsDisplacementForWaterFoam = 1.0f; // Magic
+                        float const strength = (absDisplacement - MinAbsDisplacementForWaterFoam) / (MaxAbsDisplacementForWaterFoam - MinAbsDisplacementForWaterFoam);
+                        if (strength > strongestWaterFoam.Strength)
+                        {
+                            strongestWaterFoam = WaterFoam(
+                                thisPointPosition,
+                                Sign(edgeVelocityAlongEdgeNormal),
+                                strength,
+                                mPoints.GetPlaneId(thisPointIndex));
+                        }
+                    }
 
-                    ////float constexpr MinAbsDisplacementForWaterFoam = 0.065f; // Magic
-                    ////if (absVerticalDisplacement >= MinAbsDisplacementForWaterFoam // Both upwards and downwards
-                    ////    && thisPointDepth < 1.5f) // Only spawn foam on the surface
-                    ////{
-                    ////    float constexpr MaxAbsDisplacementForWaterFoam = 1.0f; // Magic
-                    ////    float const strength = (absVerticalDisplacement - MinAbsDisplacementForWaterFoam) / (MaxAbsDisplacementForWaterFoam - MinAbsDisplacementForWaterFoam);
-                    ////    if (strength > strongestWaterFoam.Strength)
-                    ////    {
-                    ////        strongestWaterFoam = WaterFoam(
-                    ////            thisPointPosition,
-                    ////            Sign(edgeVelocityAlongEdgeNormal),
-                    ////            strength,
-                    ////            mPoints.GetPlaneId(thisPointIndex));
-                    ////    }
-                    ////}
+                    //
+                    // Water splashes
+                    //
 
-                    //////
-                    ////// Water splashes
-                    //////
-
-                    ////float constexpr MinAbsDisplacementForWaterSplash = 0.4f; // Magic
-                    ////if (verticalDisplacement < -MinAbsDisplacementForWaterSplash // Only downwards
-                    ////    && thisPointDepth < 2.0f) // Only spawn splashes on the surface
-                    ////{
-                    ////    float constexpr MaxAbsDisplacementForWaterSplash = 1.0f; // Magic
-                    ////    float const strength = (absVerticalDisplacement - MinAbsDisplacementForWaterSplash) / (MaxAbsDisplacementForWaterSplash - MinAbsDisplacementForWaterSplash);
-                    ////    if (strength > strongestWaterSplash.Strength)
-                    ////    {
-                    ////        strongestWaterSplash = WaterSplash(
-                    ////            thisPointPosition,
-                    ////            mParentWorld.GetOceanSurface().GetNormalAt(thisPointPosition.x), // Points up
-                    ////            strength,
-                    ////            mPoints.GetPlaneId(thisPointIndex));
-                    ////    }
-                    ////}
+                    float constexpr MinAbsDisplacementForWaterSplash = 0.4f; // Magic
+                    if (displacement < -MinAbsDisplacementForWaterSplash // Only downwards
+                        && thisPointDepth < 2.0f) // Only spawn splashes on the surface
+                    {
+                        float constexpr MaxAbsDisplacementForWaterSplash = 1.0f; // Magic
+                        float const strength = (absDisplacement - MinAbsDisplacementForWaterSplash) / (MaxAbsDisplacementForWaterSplash - MinAbsDisplacementForWaterSplash);
+                        if (strength > strongestWaterSplash.Strength)
+                        {
+                            strongestWaterSplash = WaterSplash(
+                                thisPointPosition,
+                                mParentWorld.GetOceanSurface().GetNormalAt(thisPointPosition.x), // Points up
+                                strength,
+                                mPoints.GetPlaneId(thisPointIndex));
+                        }
+                    }
 
 
 

@@ -1033,16 +1033,20 @@
 				2c. Laminar vertical (straight vertical Titanic keel rocking on flat surface): must generate small waves and foam
 					- In other words: when push surface is zero, must still push something - provided it has velocity
 
-				- TODO: it's a 2-plane 1-direction problem
-				- Solution: vector stays on point _velocity_, not edge _normal_
+			! It's a 2-plane 1-direction problem
+			! Solution: vector stays on point _velocity_, not edge _normal_
+			= Impl
+				+ Foam and splashes
+				- FIX: Titanic goes awry
+					+ Lower boost for case b
+					- TODOHERE: but boost should depend on edge normal! Think of vertical keel in front (where it's fine to consider Velh as vertical)
+					  vs keel at bottom (where it's clearly parallel to surface)
+						- Multiply min by abs(pushDir.dot(edgeNormal))
+						- May be rephrased as: TODO
+				- Test
 
-
-			- Impl:
-
-			- OLD:
-			- Boost when frontier edge completely vertical, but there's a velocity
-				- i.e. when edge is perpendicular to surface
-				- Beware of mesh vibration
+			- If we keep boosts high, then all pushes are vertical - revert to original code (but line-by-line)
+				- But keep comments
 
 
 

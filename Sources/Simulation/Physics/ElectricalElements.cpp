@@ -2983,38 +2983,39 @@ void ElectricalElements::UpdateSinks(
                         }
                     }
 
-                    // Displace ocean surface
-                    if (simulationParameters.DoDisplaceWater)
-                    {
-                        // Offset from engine due to thrust - along the thrust direction
-                        vec2f const engineOffset =
-                            -thrustForce
-                            * SimulationParameters::SimulationStepTimeDuration<float> *SimulationParameters::SimulationStepTimeDuration<float>
-                            *0.025f;
+                    // TODOTEST
+                    ////// Displace ocean surface
+                    ////if (simulationParameters.DoDisplaceWater)
+                    ////{
+                    ////    // Offset from engine due to thrust - along the thrust direction
+                    ////    vec2f const engineOffset =
+                    ////        -thrustForce
+                    ////        * SimulationParameters::SimulationStepTimeDuration<float> *SimulationParameters::SimulationStepTimeDuration<float>
+                    ////        *0.025f;
 
-                        vec2f engineOffsetedPosition = enginePosition + engineOffset;
-                        engineOffsetedPosition = vec2f(
-                            Clamp(engineOffsetedPosition.x, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth),
-                            engineOffsetedPosition.y);
+                    ////    vec2f engineOffsetedPosition = enginePosition + engineOffset;
+                    ////    engineOffsetedPosition = vec2f(
+                    ////        Clamp(engineOffsetedPosition.x, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth),
+                    ////        engineOffsetedPosition.y);
 
-                        // New depth at offset
-                        float const offsetedEngineDepth = mParentWorld.GetOceanSurface().GetDepth(engineOffsetedPosition);
+                    ////    // New depth at offset
+                    ////    float const offsetedEngineDepth = mParentWorld.GetOceanSurface().GetDepth(engineOffsetedPosition);
 
-                        // Sine perturbation - to make sure that water displacement keeps moving,
-                        // otherwise big waves build up
-                        float const sinePerturbation = std::sinf(currentSimulationTime * 2.5f);
+                    ////    // Sine perturbation - to make sure that water displacement keeps moving,
+                    ////    // otherwise big waves build up
+                    ////    float const sinePerturbation = std::sinf(currentSimulationTime * 2.5f);
 
-                        // Displacement amount - goes to zero after a certain depth threshold
-                        float constexpr MaxDepth = 10.0f;
-                        float const displacementAmount =
-                            4.0f * absThrustMagnitude
-                            * (1.0f + sinePerturbation) / 2.0f
-                            * (1.0f - std::min(2.0f * SmoothStep(0.0f, 2.0f * MaxDepth, offsetedEngineDepth), 1.0f));
+                    ////    // Displacement amount - goes to zero after a certain depth threshold
+                    ////    float constexpr MaxDepth = 10.0f;
+                    ////    float const displacementAmount =
+                    ////        4.0f * absThrustMagnitude
+                    ////        * (1.0f + sinePerturbation) / 2.0f
+                    ////        * (1.0f - std::min(2.0f * SmoothStep(0.0f, 2.0f * MaxDepth, offsetedEngineDepth), 1.0f));
 
-                        mParentWorld.DisplaceOceanSurfaceAt(
-                            engineOffsetedPosition.x,
-                            displacementAmount);
-                    }
+                    ////    mParentWorld.DisplaceOceanSurfaceAt(
+                    ////        engineOffsetedPosition.x,
+                    ////        displacementAmount);
+                    ////}
                 }
             }
         }
