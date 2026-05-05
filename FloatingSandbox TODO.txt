@@ -1035,7 +1035,7 @@
 
 			! It's a 2-plane 1-direction problem
 			! Solution: vector stays on point _velocity_, not edge _normal_
-			= Impl of goals 2
+			+ Impl of goals 2
 				+ Foam and splashes
 				+ FIX: Titanic goes awry
 					+ Lower boost for case b
@@ -1045,11 +1045,10 @@
 						+ Optimize (we have already calculated dot?)
 				+ Test
 				+ If case c. boost stays at 0.9, try it with 1.0 and if ok, nuke it altogether
-
-				- Update main comment, fit final implementation into theory
+				+ Update main comment, fit final implementation into theory
 
 			- Impl of goal 1
-
+				- If goes through: recycle calcn' of ocean surface normal
 
 
 		- Decide on engine's displacement
