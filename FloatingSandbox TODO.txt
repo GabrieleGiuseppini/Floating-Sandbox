@@ -1013,12 +1013,29 @@
 			- SettingsManager
 			- SettingsDialog
 				- Close to DisplaceWater, enablement depends on that value
+				- Check if can label Height as Ship Sensitivity (it's only used by ship)
+					- Consider rename, unless we end up using it for non-ships
+
+		- FIX: pieces of ship generate splashes at high coords
+			- Gets worse over time
+			- Problem with cached depth?
+		+ FIX: plane of splashes when piece of ship is behind
 
 		- @ Bombs (blasts, incl. tool)
+			- @ World::OnBlast, acting on either shipId or first ship
+				- See if can normalize Ship::SpawnFoam/Splash
+					- Foam: strength is only used for lifetime, as min(strength, 8)
+					- Splash: strength is only used for velocity and scale
 			- If we end up needing to lower impact of blasts onto ephemeral particles, remember to do it for Silt Cloud as well
+			- Test:
+				- Bombs
+				- NPC bombs
+				- Tool
 		- @ Tornado bottom
 			- WAS: see if can incorporate also "mist" for tornadoes
 		- @ Bubbles rising?
+		- @ Fishes rising?
+		- @ NPC rising?
 
 		+ Try: displacement math should consider velocity *perp* to frontier edge
 
@@ -1051,8 +1068,8 @@
 				+ If goes through: recycle calcn' of ocean surface normal
 
 
-		- Decide on engine's displacement
-			- It's currently commented-out - AND COMMITTED AS SUCH
+		+ Decide on engine's displacement
+			+ It's currently commented-out - AND COMMITTED AS SUCH
 
 
 		X Try: displacement should also come from velocity in same dir as ocean surface
@@ -1062,6 +1079,9 @@
 		- Try: replace engine wake with bubbles
 			- Nuke all about wake if this goes through
 			- Add to Android plan
+
+		- Test:
+			- Wave displacement height setting
 
 		- Cleanup:
 			- Finalize alpha of foam (@ eph particle upload)

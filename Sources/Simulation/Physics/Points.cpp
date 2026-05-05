@@ -2774,7 +2774,7 @@ void Points::UploadEphemeralParticles(
 
                 // Upload foam
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
-                    maxPlaneId,
+                    GetPlaneId(pointIndex),
                     state.PersonalitySeed,
                     GameTextureDatabases::GenericMipMappedTextureGroups::WaterFoam,
                     GetPosition(pointIndex),
@@ -2805,7 +2805,7 @@ void Points::UploadEphemeralParticles(
 
                 // Upload splash
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
-                    maxPlaneId,
+                    GetPlaneId(pointIndex),
                     state.PersonalitySeed,
                     GameTextureDatabases::GenericMipMappedTextureGroups::WaterSplash,
                     GetPosition(pointIndex),

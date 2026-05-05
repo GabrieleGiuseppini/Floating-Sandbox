@@ -2983,7 +2983,8 @@ void ElectricalElements::UpdateSinks(
                         }
                     }
 
-                    // TODOTEST
+                    // Removed while working on 1.21, as it's been superseded by the reworked ship water displacement,
+                    // which generates waves on its own due to pure velocity
                     ////// Displace ocean surface
                     ////if (simulationParameters.DoDisplaceWater)
                     ////{

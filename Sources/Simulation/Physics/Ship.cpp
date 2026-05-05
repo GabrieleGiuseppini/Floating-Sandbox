@@ -1877,32 +1877,32 @@ void Ship::ApplyWorldSurfaceForces(
     if constexpr (DoDisplaceWater)
     {
         mSimulationEventHandler.OnWaterDisplaced(totalWaterDisplacementMagnitude);
-    }
 
-    if (strongestWaterFoam.Strength > 0.0f)
-    {
-        assert(strongestWaterFoam.Plane != NonePlaneId);
+        if (strongestWaterFoam.Strength > 0.0f)
+        {
+            assert(strongestWaterFoam.Plane != NonePlaneId);
 
-        InternalSpawnWaterFoam(
-            strongestWaterFoam.Position,
-            strongestWaterFoam.VerticalDirection,
-            strongestWaterFoam.Strength,
-            strongestWaterFoam.Plane,
-            currentSimulationTime,
-            simulationParameters);
-    }
+            InternalSpawnWaterFoam(
+                strongestWaterFoam.Position,
+                strongestWaterFoam.VerticalDirection,
+                strongestWaterFoam.Strength,
+                strongestWaterFoam.Plane,
+                currentSimulationTime,
+                simulationParameters);
+        }
 
-    if (strongestWaterSplash.Strength > 0.0f)
-    {
-        assert(strongestWaterSplash.Plane != NonePlaneId);
+        if (strongestWaterSplash.Strength > 0.0f)
+        {
+            assert(strongestWaterSplash.Plane != NonePlaneId);
 
-        InternalSpawnWaterSplash(
-            strongestWaterSplash.Position,
-            strongestWaterSplash.SpawnDirection,
-            strongestWaterSplash.Strength,
-            strongestWaterSplash.Plane,
-            currentSimulationTime,
-            simulationParameters);
+            InternalSpawnWaterSplash(
+                strongestWaterSplash.Position,
+                strongestWaterSplash.SpawnDirection,
+                strongestWaterSplash.Strength,
+                strongestWaterSplash.Plane,
+                currentSimulationTime,
+                simulationParameters);
+        }
     }
 }
 
