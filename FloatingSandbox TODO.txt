@@ -1023,7 +1023,7 @@
 		+ Try: displacement math should consider velocity *perp* to frontier edge
 
 		= Rewrite as more grounded in physics
-			- Goals:
+			! Goals:
 				1. Impact recoil force: should be based on ocean surface normal at that point
 				2a. Impact displacement: (proportional to, and sign of) vertical component of edge "push"
 					- Independent from ocean surface normal at that point
@@ -1037,16 +1037,16 @@
 			! Solution: vector stays on point _velocity_, not edge _normal_
 			= Impl of goals 2
 				+ Foam and splashes
-				= FIX: Titanic goes awry
+				+ FIX: Titanic goes awry
 					+ Lower boost for case b
-					= TODOHERE: but boost should depend on edge normal! Think of vertical keel in front (where it's fine to consider Velh as vertical)
+					+ FIX: but boost should depend on edge normal! Think of vertical keel in front (where it's fine to consider Velh as vertical)
 					  vs keel at bottom (where it's clearly parallel to surface)
 						+ Multiply min by abs(pushDir.dot(edgeNormal))
 						+ Optimize (we have already calculated dot?)
-						- Update main comment, fit into theory
 				+ Test
+				+ If case c. boost stays at 0.9, try it with 1.0 and if ok, nuke it altogether
 
-				- If case c. boost stays at 0.9, try it with 1.0 and if ok, nuke it altogether
+				- Update main comment, fit final implementation into theory
 
 			- Impl of goal 1
 

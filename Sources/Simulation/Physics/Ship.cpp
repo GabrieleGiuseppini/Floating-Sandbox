@@ -1435,7 +1435,7 @@ void Ship::ApplyWorldSurfaceForces(
         * (effectiveWaterDensity / SimulationParameters::WaterMass); // Denser water, denser impact
 
     //
-    // Water displacement constants
+    // Push Velocity -> Water Displacement mapping constants
     //
 
     float constexpr WdmX0 = 1.0f; // Vertical velocity at which displacement transitions from quadratic to linear
@@ -1453,7 +1453,9 @@ void Ship::ApplyWorldSurfaceForces(
     float const wdmQuadraticA = (wdmLinearSlope * WdmX0 - WdmY0) / (WdmX0 * WdmX0);
     float const wdmQuadraticB = 2.0f * WdmY0 / WdmX0 - wdmLinearSlope;
 
+    //
     // Water foam and splashes
+    //
 
     struct WaterFoam
     {
@@ -1704,9 +1706,6 @@ void Ship::ApplyWorldSurfaceForces(
                     float const edgeVelocityMagnitude = thisPointVelocity.length();
                     vec2f const pushDir = thisPointVelocity.normalise(edgeVelocityMagnitude);
 
-                    // Push angle factor (push multiplier that takes into account the visible surface)
-                    float const absPushAngleSurfaceFactor = std::abs(pushDir.dot(edgeNormal));
-
                     //
                     // Push velocity magnitude
                     //
@@ -1717,20 +1716,15 @@ void Ship::ApplyWorldSurfaceForces(
                         std::abs(edgeVelocityMagnitude),
                         10000.0f); // Magic number
 
-                    // Calculate "push velocity" by considering the dimished visible portion of the edge from the velocity direction
-                    float constexpr MinPushAngleSurfaceFactor = 0.9f; // TODOHERE
-                    float const absPushVelocity =
-                        absEdgeVelocityMagnitudeCapped
-                        // Goal c.: don't let the angle factor become too small towards zero
-                        * std::max(absPushAngleSurfaceFactor, MinPushAngleSurfaceFactor);
-
                     //
                     // Displacement magnitude
                     //
 
                     // Transform push velocity (absolute) into a displacement magnitude (absolute)
-                    float const linearAbsDisplacementMagnitude = WdmY0 + wdmLinearSlope * (absPushVelocity - WdmX0);
-                    float const quadraticAbsDisplacementMagnitude = wdmQuadraticA * absPushVelocity * absPushVelocity + wdmQuadraticB * absPushVelocity;
+                    float const linearAbsDisplacementMagnitude = WdmY0 + wdmLinearSlope * (absEdgeVelocityMagnitudeCapped - WdmX0);
+                    float const quadraticAbsDisplacementMagnitude =
+                        wdmQuadraticA * absEdgeVelocityMagnitudeCapped * absEdgeVelocityMagnitudeCapped
+                        + wdmQuadraticB * absEdgeVelocityMagnitudeCapped;
 
                     //
                     // Depth attenuation: tapers down displacement the deeper the point is
@@ -1757,7 +1751,8 @@ void Ship::ApplyWorldSurfaceForces(
                     // There's those two maxima, and a minimum when both the push is parallel to the frontier edge,
                     // and the displacement vector is fully horizontal; for example, along the underwater keel
                     // marching ahead
-                    float const minDisplacementAngleVerticalFactor = 0.5f * absPushAngleSurfaceFactor;
+                    // Push angle factor (push multiplier that takes into account the visible surface)
+                    float const minDisplacementAngleVerticalFactor = 0.5f * std::abs(pushDir.dot(edgeNormal));
                     float const displacementAngleVerticalFactor = std::max(std::abs(pushDir.y), minDisplacementAngleVerticalFactor) * Sign(pushDir.y);
 
                     //
@@ -1765,7 +1760,7 @@ void Ship::ApplyWorldSurfaceForces(
                     //
 
                     float const displacement =
-                        (absPushVelocity < WdmX0 ? quadraticAbsDisplacementMagnitude : linearAbsDisplacementMagnitude)
+                        (absEdgeVelocityMagnitudeCapped < WdmX0 ? quadraticAbsDisplacementMagnitude : linearAbsDisplacementMagnitude)
                         * 0.4f // Magic magnitude adjustment
                         * depthAttenuation
                         * Step(0.0f, thisPointDepth) // No displacement for above-water points
