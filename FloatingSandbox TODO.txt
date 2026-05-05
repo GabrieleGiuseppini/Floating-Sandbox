@@ -1022,7 +1022,7 @@
 
 		+ Try: displacement math should consider velocity *perp* to frontier edge
 
-		= Rewrite as more grounded in physics
+		+ Rewrite as more grounded in physics
 			! Goals:
 				1. Impact recoil force: should be based on ocean surface normal at that point
 				2a. Impact displacement: (proportional to, and sign of) vertical component of edge "push"
@@ -1047,8 +1047,8 @@
 				+ If case c. boost stays at 0.9, try it with 1.0 and if ok, nuke it altogether
 				+ Update main comment, fit final implementation into theory
 
-			- Impl of goal 1
-				- If goes through: recycle calcn' of ocean surface normal
+			+ Impl of goal 1
+				+ If goes through: recycle calcn' of ocean surface normal
 
 
 		- Decide on engine's displacement
@@ -1080,6 +1080,8 @@
 			- Max eph particles and calibration
 
 		- Merge into Tornadoes
+
+		- Changelist
 		
 		- OLD: WAS:
 		- Option A) Ephemeral particles with own shader:

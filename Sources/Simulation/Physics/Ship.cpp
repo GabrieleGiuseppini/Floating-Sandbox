@@ -1597,7 +1597,8 @@ void Ship::ApplyWorldSurfaceForces(
                 // Normal to edge - calculated between p1 and p3; points outside
                 vec2f const edgeNormal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
 
-                // Magnitude of the edge velocity along the edge normal; positive when pointing out
+                // Magnitude of the edge velocity along the edge normal; positive when pointing out,
+                // zero when parallel to edge
                 float const edgeVelocityAlongEdgeNormal = thisPointVelocity.dot(edgeNormal);
 
                 // Cap it to the same direction as velocity, to avoid suction force
@@ -1632,9 +1633,18 @@ void Ship::ApplyWorldSurfaceForces(
                 // particle, i.e. when this is the first frame in which the particle
                 // gets underwater.
                 //
+                // For the impact force we consider the particle's velocity projection
+                // along the normal to the ocean surface at this point
+                //
+
+                float const pointVelocityMagnitude = thisPointVelocity.length();
+                vec2f const pushDir = thisPointVelocity.normalise(pointVelocityMagnitude);
+
+                vec2f const oceanSurfaceNormal = mParentWorld.GetOceanSurface().GetNormalAt(thisPointPosition.x); // Points up
+                float const impactVelocity = edgeVelocityCapped * std::abs(pushDir.dot(oceanSurfaceNormal));
 
                 float const kineticEnergy =
-                    edgeVelocityCapped * edgeVelocityCapped
+                    impactVelocity * impactVelocity
                     * mPoints.GetMass(thisPointIndex);
 
                 float const waterImpactForceMagnitude =
@@ -1699,20 +1709,13 @@ void Ship::ApplyWorldSurfaceForces(
                     // which seems to be the vibration speed of the mesh
 
                     //
-                    // Push direction
-                    //
-
-                    float const edgeVelocityMagnitude = thisPointVelocity.length();
-                    vec2f const pushDir = thisPointVelocity.normalise(edgeVelocityMagnitude);
-
-                    //
                     // Push velocity magnitude
                     //
 
                     // Clamp edge velocity to prevent ocean surface instabilities with extremely high
                     // velocities
-                    float const absEdgeVelocityMagnitudeCapped = std::min(
-                        std::abs(edgeVelocityMagnitude),
+                    float const absPointVelocityMagnitudeCapped = std::min(
+                        std::abs(pointVelocityMagnitude),
                         10000.0f); // Magic number
 
                     //
@@ -1720,20 +1723,20 @@ void Ship::ApplyWorldSurfaceForces(
                     //
 
                     // Transform push velocity (absolute) into a displacement magnitude (absolute)
-                    float const linearAbsDisplacementMagnitude = WdmY0 + wdmLinearSlope * (absEdgeVelocityMagnitudeCapped - WdmX0);
+                    float const linearAbsDisplacementMagnitude = WdmY0 + wdmLinearSlope * (absPointVelocityMagnitudeCapped - WdmX0);
                     float const quadraticAbsDisplacementMagnitude =
-                        wdmQuadraticA * absEdgeVelocityMagnitudeCapped * absEdgeVelocityMagnitudeCapped
-                        + wdmQuadraticB * absEdgeVelocityMagnitudeCapped;
+                        wdmQuadraticA * absPointVelocityMagnitudeCapped * absPointVelocityMagnitudeCapped
+                        + wdmQuadraticB * absPointVelocityMagnitudeCapped;
 
                     //
                     // Depth attenuation: tapers down displacement the deeper the point is
                     //
 
                     // Depth at which the point stops contributing: rises with impact velocity along vertical, and asymmetric wrt sinking or rising
-                    float const absVerticalEdgeVelocityMagnitudeCapped = absEdgeVelocityMagnitudeCapped * std::abs(pushDir.y);
+                    float const absVerticalPointVelocityMagnitudeCapped = absPointVelocityMagnitudeCapped * std::abs(pushDir.y);
                     float constexpr MaxVerticalVel = 35.0f;
                     float const maxDepth =
-                        (0.5f + LinearStep(0.0f, MaxVerticalVel, absVerticalEdgeVelocityMagnitudeCapped) * 0.5f)
+                        (0.5f + LinearStep(0.0f, MaxVerticalVel, absVerticalPointVelocityMagnitudeCapped) * 0.5f)
                         * (pushDir.y <= 0.0f ? 12.0f : 4.0f); // Keep up-push low or else bodies keep jumping up and down forever
 
                     // Linear attenuation up to maxDepth
@@ -1759,7 +1762,7 @@ void Ship::ApplyWorldSurfaceForces(
                     //
 
                     float const displacement =
-                        (absEdgeVelocityMagnitudeCapped < WdmX0 ? quadraticAbsDisplacementMagnitude : linearAbsDisplacementMagnitude)
+                        (absPointVelocityMagnitudeCapped < WdmX0 ? quadraticAbsDisplacementMagnitude : linearAbsDisplacementMagnitude)
                         * 0.4f // Magic magnitude adjustment
                         * depthAttenuation
                         * Step(0.0f, thisPointDepth) // No displacement for above-water points
@@ -1804,7 +1807,7 @@ void Ship::ApplyWorldSurfaceForces(
                         {
                             strongestWaterSplash = WaterSplash(
                                 thisPointPosition,
-                                mParentWorld.GetOceanSurface().GetNormalAt(thisPointPosition.x), // Points up
+                                oceanSurfaceNormal, // Points up
                                 strength,
                                 mPoints.GetPlaneId(thisPointIndex));
                         }
