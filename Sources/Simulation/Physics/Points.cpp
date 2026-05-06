@@ -711,7 +711,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     mIsEphemeralColorBufferDirty = true;
 }
 
-void Points::CreateEphemeralParticleWaterFoam(
+ElementIndex Points::CreateEphemeralParticleWaterFoam(
     vec2f const & position,
     float depth,
     float velocityX,
@@ -727,7 +727,7 @@ void Points::CreateEphemeralParticleWaterFoam(
     if (pointIndex == NoneElementIndex)
     {
         // No luck
-        return;
+        return NoneElementIndex;
     }
 
     //
@@ -768,7 +768,7 @@ void Points::CreateEphemeralParticleWaterFoam(
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
         buoyancyVolumeFill,
         waterFoamStructuralMaterial.ThermalExpansionCoefficient);
-    mCachedDepthBuffer[pointIndex] = depth;
+    mCachedDepthBuffer[pointIndex] = depth; // Note: might be pointless if we're spawning while calculating new cached depths
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterFoamStructuralMaterial.WaterIntake;
@@ -812,9 +812,11 @@ void Points::CreateEphemeralParticleWaterFoam(
 
     mColorBuffer[pointIndex] = waterFoamStructuralMaterial.RenderColor.toVec4f();
     mIsEphemeralColorBufferDirty = true;
+
+    return pointIndex;
 }
 
-void Points::CreateEphemeralParticleWaterSplash(
+ElementIndex Points::CreateEphemeralParticleWaterSplash(
     vec2f const & position,
     float depth,
     vec2f const & velocity,
@@ -867,7 +869,7 @@ void Points::CreateEphemeralParticleWaterSplash(
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
         buoyancyVolumeFill,
         waterSplashStructuralMaterial.ThermalExpansionCoefficient);
-    mCachedDepthBuffer[pointIndex] = depth;
+    mCachedDepthBuffer[pointIndex] = depth; // Note: might be pointless if we're spawning while calculating new cached depths
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterSplashStructuralMaterial.WaterIntake;
@@ -911,6 +913,8 @@ void Points::CreateEphemeralParticleWaterSplash(
 
     mColorBuffer[pointIndex] = waterSplashStructuralMaterial.RenderColor.toVec4f();
     mIsEphemeralColorBufferDirty = true;
+
+    return pointIndex;
 }
 
 void Points::Detach(

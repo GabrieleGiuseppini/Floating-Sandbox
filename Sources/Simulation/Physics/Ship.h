@@ -592,7 +592,7 @@ private:
     void ApplyWorldSurfaceForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
-        Buffer<float> const & newCachedPointDepths,
+        Buffer<float> & newCachedPointDepths,
         float currentSimulationTime,
         SimulationParameters const & simulationParameters,
         Geometry::ShipAABBSet & externalAabbSet);
@@ -811,6 +811,7 @@ private:
         float verticalDirection,
         float strength,
         PlaneId planeId,
+        Buffer<float> & outputCachedPointDepths, // We may spawn these while calculating new cached depths
         float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
@@ -819,6 +820,7 @@ private:
         vec2f const & direction,
         float strength,
         PlaneId planeId,
+        Buffer<float> & outputCachedPointDepths, // We may spawn these while calculating new cached depths
         float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 

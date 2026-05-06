@@ -1031,7 +1031,7 @@ public:
         PlaneId planeId,
         SimulationParameters const & simulationParameters);
 
-    void CreateEphemeralParticleWaterFoam(
+    ElementIndex CreateEphemeralParticleWaterFoam(
         vec2f const & position,
         float depth,
         float velocityX,
@@ -1042,7 +1042,7 @@ public:
         PlaneId planeId,
         SimulationParameters const & simulationParameters);
 
-    void CreateEphemeralParticleWaterSplash(
+    ElementIndex CreateEphemeralParticleWaterSplash(
         vec2f const & position,
         float depth,
         vec2f const & velocity,
