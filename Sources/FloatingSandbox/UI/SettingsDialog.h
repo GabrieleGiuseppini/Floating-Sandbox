@@ -111,16 +111,11 @@ private:
     SliderControl<float> * mBasalWaveSpeedAdjustmentSlider;
     wxCheckBox * mDoDisplaceWaterCheckBox;
     SliderControl<float> * mWaterDisplacementWaveHeightAdjustmentSlider;
+    SliderControl<float> * mWaterFoamSensitivityAdjustmentSlider;
+    SliderControl<float> * mWaterFoamLifetimeAdjustmentSlider;
+    SliderControl<float> * mWaterSplashSensitivityAdjustmentSlider;
     SliderControl<float> * mWaveSmoothnessAdjustmentSlider;
-    SliderControl<std::chrono::minutes::rep> * mTsunamiRateSlider;
-    SliderControl<std::chrono::seconds::rep> * mRogueWaveRateSlider;
     SliderControl<float> * mInteractiveWaveGrowthRateAdjustmentAdjustmentSlider;
-    SliderControl<float> * mStormStrengthAdjustmentSlider;
-    wxCheckBox * mDoRainWithStormCheckBox;
-    SliderControl<float> * mRainFloodAdjustmentSlider;
-    SliderControl<float> * mLightningBlastProbabilitySlider;
-    SliderControl<std::chrono::seconds::rep> * mStormDurationSlider;
-    SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
 
     // Air and Sky
     SliderControl<float> * mAirDensityAdjustmentSlider;
@@ -158,7 +153,7 @@ private:
     SliderControl<float> * mUnderwaterPlantsDensitySlider;
     SliderControl<float> * mUnderwaterPlantSizeMultiplierSlider;
 
-    // Destructive Tools
+    // Power Tools and Phenomena
     SliderControl<float> * mDestroyRadiusSlider;
     SliderControl<float> * mBombBlastRadiusSlider;
     SliderControl<float> * mBombBlastForceAdjustmentSlider;
@@ -167,6 +162,14 @@ private:
     SliderControl<float> * mBlastToolRadiusSlider;
     SliderControl<float> * mBlastToolForceAdjustmentSlider;
     SliderControl<float> * mLaserRayHeatFlowSlider;
+    SliderControl<std::chrono::minutes::rep> * mTsunamiRateSlider;
+    SliderControl<std::chrono::seconds::rep> * mRogueWaveRateSlider;
+    SliderControl<float> * mStormStrengthAdjustmentSlider;
+    wxCheckBox * mDoRainWithStormCheckBox;
+    SliderControl<float> * mRainFloodAdjustmentSlider;
+    SliderControl<float> * mLightningBlastProbabilitySlider;
+    SliderControl<std::chrono::seconds::rep> * mStormDurationSlider;
+    SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
 
     // Other Tools
     SliderControl<float> * mFloodRadiusSlider;
@@ -285,7 +288,7 @@ private:
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateAirAndSkyPanel(wxPanel * panel);
     void PopulateLightsElectricalMarineLifePanel(wxPanel * panel);
-    void PopulateDestructiveToolsPanel(wxPanel * panel, GameAssetManager const & gameAssetManager);
+    void PopulatePowerToolsAndPhenomenaPanel(wxPanel * panel, GameAssetManager const & gameAssetManager);
     void PopulateOtherToolsPanel(wxPanel * panel, GameAssetManager const & gameAssetManager);
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel);

@@ -1027,17 +1027,21 @@
 
 			+ SettingsManager
 				+ IGameControllerSettings
-			- SettingsDialog
-				- Close to DisplaceWater, enablement depends on that value
+			+ SettingsDialog
+				+ Split Wind and Waves: move Wave Phenomena and Storms to "Power Tools and Phenomena" tab
+				+ Close to DisplaceWater, enablement depends on that value
 
 			- Test
 				- Nail down limits
 
 		- @ Bombs (blasts, incl. tool)
 			- @ World::OnBlast, acting on either shipId or first ship
-				- Use sensitivities
+				- Foam
+					- Use sensitivity & lifetime adjustment
+				- Splash
+					- Use sensitivity
 			- If we end up needing to lower impact of blasts onto ephemeral particles, remember to do it for Silt Cloud as well
-			- Test:
+			- Test (w/changing settings as well)
 				- Bombs
 				- NPC bombs
 				- Tool
@@ -1086,6 +1090,8 @@
 			- Displace up after, displace down behind
 			- Rethink displacement: it's two components now
 
+		- Try: relative velocity for all (impact, displacements)
+
 		- Try: replace engine wake with bubbles
 			- Nuke all about wake if this goes through
 			- Add to Android plan
@@ -1107,19 +1113,15 @@
 				- ShipRenderContext:: new uploader
 			- Reshading of textures
 				- WRC, GRC: methods and members (DB and actual texture)
+			- Settings
+				- Foam * 2 + Splash, where DoDisplaceWater lives
 			- Max eph particles and calibration
+
 
 		- Merge into Tornadoes
 
 		- Changelist
 		
-		- OLD: WAS:
-		- Option A) Ephemeral particles with own shader:
-			- Texture of splash
-			- Elongated with vertical velocity
-		- Option B) Same as A, but instead of one single texture, a (small) set of frames
-		- Option C) Fully "movie" (not ephemeral particles), just like explosions
-
 
 	= Run Discord poll for next:
 		! Customizable materials

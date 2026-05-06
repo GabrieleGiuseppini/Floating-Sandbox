@@ -213,15 +213,15 @@ SettingsDialog::SettingsDialog(
     }
 
     //
-    // Destructive Tools
+    // Power Tools and Phenomena
     //
 
     {
         wxPanel * panel = new wxPanel(notebook);
 
-        PopulateDestructiveToolsPanel(panel, gameAssetManager);
+        PopulatePowerToolsAndPhenomenaPanel(panel, gameAssetManager);
 
-        notebook->AddPage(panel, _("Destructive Tools"));
+        notebook->AddPage(panel, _("Power Tools and Phenomena"));
     }
 
     //
@@ -2005,190 +2005,6 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
     }
 
     //
-    // Displacement Waves
-    //
-
-    {
-        wxStaticBoxSizer * displacementWavesBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Displacement Waves"));
-
-        {
-            wxGridBagSizer * displacementWavesSizer = new wxGridBagSizer(0, 0);
-
-            // Displace Water
-            {
-                mDoDisplaceWaterCheckBox = new wxCheckBox(displacementWavesBoxSizer->GetStaticBox(), wxID_ANY, _("Displace Water"));
-                mDoDisplaceWaterCheckBox->SetToolTip(_("Enables or disables displacement of water due to interactions with physical objects."));
-                mDoDisplaceWaterCheckBox->Bind(
-                    wxEVT_COMMAND_CHECKBOX_CLICKED,
-                    [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue<bool>(GameSettings::DoDisplaceWater, event.IsChecked());
-                        OnLiveSettingsChanged();
-
-                        mWaterDisplacementWaveHeightAdjustmentSlider->Enable(mDoDisplaceWaterCheckBox->IsChecked());
-                    });
-
-                auto sizer = displacementWavesSizer->Add(
-                    mDoDisplaceWaterCheckBox,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
-                    CellBorderInner);
-
-                sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
-            }
-
-            // Water Displacement Wave Height Adjust
-            {
-                mWaterDisplacementWaveHeightAdjustmentSlider = new SliderControl<float>(
-                    displacementWavesBoxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    -1,
-                    _("Height Adjust"),
-                    _("Adjusts the magnitude of the waves caused by water displacement."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::WaterDisplacementWaveHeightAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinWaterDisplacementWaveHeightAdjustment(),
-                        mGameControllerSettingsOptions.GetMaxWaterDisplacementWaveHeightAdjustment()));
-
-                displacementWavesSizer->Add(
-                    mWaterDisplacementWaveHeightAdjustmentSlider,
-                    wxGBPosition(1, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
-                    CellBorderInner);
-            }
-
-            // Wave Smoothness Adjust
-            {
-                mWaveSmoothnessAdjustmentSlider = new SliderControl<float>(
-                    displacementWavesBoxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Smoothness Adjust"),
-                    _("Adjusts the smoothness of waves caused by water displacement."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::WaveSmoothnessAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinWaveSmoothnessAdjustment(),
-                        mGameControllerSettingsOptions.GetMaxWaveSmoothnessAdjustment()));
-
-                displacementWavesSizer->Add(
-                    mWaveSmoothnessAdjustmentSlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(2, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            displacementWavesSizer->AddGrowableRow(1);
-
-            WxHelpers::MakeAllColumnsExpandable(displacementWavesSizer);
-
-            displacementWavesBoxSizer->Add(
-                displacementWavesSizer,
-                1,
-                wxEXPAND | wxALL,
-                StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            displacementWavesBoxSizer,
-            wxGBPosition(0, 6),
-            wxGBSpan(1, 2),
-            wxEXPAND | wxALL,
-            CellBorderOuter);
-    }
-
-    //
-    // Wave Phenomena
-    //
-
-    {
-        wxStaticBoxSizer * wavePhenomenaBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Wave Phenomena"));
-
-        {
-            wxGridBagSizer * wavePhenomenaSizer = new wxGridBagSizer(0, 0);
-
-            // Tsunami Rate
-            {
-                mTsunamiRateSlider = new SliderControl<std::chrono::minutes::rep>(
-                    wavePhenomenaBoxSizer->GetStaticBox(),
-                    SliderControl<std::chrono::minutes::rep>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Tsunami Rate"),
-                    _("The expected time between two automatically-generated tsunami waves (minutes). Set to zero to disable automatic generation of tsunami waves altogether."),
-                    [this](std::chrono::minutes::rep value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::TsunamiRate, std::chrono::minutes(value));
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
-                        mGameControllerSettingsOptions.GetMinTsunamiRate().count(),
-                        mGameControllerSettingsOptions.GetMaxTsunamiRate().count()));
-
-                wavePhenomenaSizer->Add(
-                    mTsunamiRateSlider,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            // Rogue Wave Rate
-            {
-                mRogueWaveRateSlider = new SliderControl<std::chrono::seconds::rep>(
-                    wavePhenomenaBoxSizer->GetStaticBox(),
-                    SliderControl<std::chrono::seconds::rep>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Rogue Wave Rate"),
-                    _("The expected time between two automatically-generated rogue waves (seconds). Set to zero to disable automatic generation of rogue waves altogether."),
-                    [this](std::chrono::seconds::rep value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::RogueWaveRate, std::chrono::seconds(value));
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<IntegralLinearSliderCore<std::chrono::seconds::rep>>(
-                        mGameControllerSettingsOptions.GetMinRogueWaveRate().count(),
-                        mGameControllerSettingsOptions.GetMaxRogueWaveRate().count()));
-
-                wavePhenomenaSizer->Add(
-                    mRogueWaveRateSlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            WxHelpers::MakeAllColumnsExpandable(wavePhenomenaSizer);
-
-            wavePhenomenaBoxSizer->Add(
-                wavePhenomenaSizer,
-                1,
-                wxEXPAND | wxALL,
-                StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            wavePhenomenaBoxSizer,
-            wxGBPosition(1, 0),
-            wxGBSpan(1, 2),
-            wxEXPAND | wxALL,
-            CellBorderOuter);
-    }
-
-    //
     // Interactive Waves
     //
 
@@ -2237,66 +2053,42 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
         gridSizer->Add(
             interactiveWavesBoxSizer,
-            wxGBPosition(1, 2),
+            wxGBPosition(0, 6),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     //
-    // Storms
+    // Displacement Waves
     //
 
     {
-        wxStaticBoxSizer * stormsBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Storms"));
+        wxStaticBoxSizer * displacementWavesBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Displacement Waves"));
 
         {
-            wxGridBagSizer * stormsSizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * displacementWavesSizer = new wxGridBagSizer(0, 0);
 
-            // Storm Strength Adjustment
+            // Displace Water
             {
-                mStormStrengthAdjustmentSlider = new SliderControl<float>(
-                    stormsBoxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Power Adjust"),
-                    _("Adjusts the strength of storms."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::StormStrengthAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions.GetMinStormStrengthAdjustment(),
-                        1.0f,
-                        mGameControllerSettingsOptions.GetMaxStormStrengthAdjustment()));
-
-                stormsSizer->Add(
-                    mStormStrengthAdjustmentSlider,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(2, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            // Do rain with storm
-            {
-                mDoRainWithStormCheckBox = new wxCheckBox(stormsBoxSizer->GetStaticBox(), wxID_ANY, _("Spawn Rain"));
-                mDoRainWithStormCheckBox->SetToolTip(_("Enables or disables generation of rain during a storm."));
-                mDoRainWithStormCheckBox->Bind(
+                mDoDisplaceWaterCheckBox = new wxCheckBox(displacementWavesBoxSizer->GetStaticBox(), wxID_ANY, _("Displace Water"));
+                mDoDisplaceWaterCheckBox->SetToolTip(_("Enables or disables displacement of water due to interactions with physical objects."));
+                mDoDisplaceWaterCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
                     {
-                        mLiveSettings.SetValue<bool>(GameSettings::DoRainWithStorm, event.IsChecked());
+                        mLiveSettings.SetValue<bool>(GameSettings::DoDisplaceWater, event.IsChecked());
                         OnLiveSettingsChanged();
 
-                        mRainFloodAdjustmentSlider->Enable(event.IsChecked());
+                        mWaterDisplacementWaveHeightAdjustmentSlider->Enable(mDoDisplaceWaterCheckBox->IsChecked());
+                        mWaterFoamSensitivityAdjustmentSlider->Enable(mDoDisplaceWaterCheckBox->IsChecked());
+                        mWaterFoamLifetimeAdjustmentSlider->Enable(mDoDisplaceWaterCheckBox->IsChecked());
+                        mWaterSplashSensitivityAdjustmentSlider->Enable(mDoDisplaceWaterCheckBox->IsChecked());
                     });
 
-                auto sizer = stormsSizer->Add(
-                    mDoRainWithStormCheckBox,
-                    wxGBPosition(0, 1),
+                auto sizer = displacementWavesSizer->Add(
+                    mDoDisplaceWaterCheckBox,
+                    wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
                     CellBorderInner);
@@ -2304,126 +2096,153 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                 sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
             }
 
-            // Rain Flood Adjustment
+            // Water Displacement Wave Height Adjust
             {
-                mRainFloodAdjustmentSlider = new SliderControl<float>(
-                    stormsBoxSizer->GetStaticBox(),
+                mWaterDisplacementWaveHeightAdjustmentSlider = new SliderControl<float>(
+                    displacementWavesBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     -1,
-                    _("Rain Flood Adjust"),
-                    _("Adjusts the extent to which rain floods exposed areas of a ship."),
+                    _("Height Adjust"),
+                    _("Adjusts the magnitude of the waves caused by water displacement."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::RainFloodAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::WaterDisplacementWaveHeightAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinWaterDisplacementWaveHeightAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxWaterDisplacementWaveHeightAdjustment()));
+
+                displacementWavesSizer->Add(
+                    mWaterDisplacementWaveHeightAdjustmentSlider,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Water Foam Sensitivity Adjust
+            {
+                mWaterFoamSensitivityAdjustmentSlider = new SliderControl<float>(
+                    displacementWavesBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    -1,
+                    _("Foam Sensitivity"),
+                    _("Adjusts the sensitivity for creating foam on the ocean surface upon disturbances."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterFoamSensitivityAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions.GetMinRainFloodAdjustment(),
-                        10000.0f,
-                        mGameControllerSettingsOptions.GetMaxRainFloodAdjustment()));
+                        mGameControllerSettingsOptions.GetMinWaterFoamSensitivityAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxWaterFoamSensitivityAdjustment()));
 
-                stormsSizer->Add(
-                    mRainFloodAdjustmentSlider,
+                displacementWavesSizer->Add(
+                    mWaterFoamSensitivityAdjustmentSlider,
                     wxGBPosition(1, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                     CellBorderInner);
             }
 
-            // Lightning Blast Probability
+            // Water Foam Lifetime Adjust
             {
-                mLightningBlastProbabilitySlider = new SliderControl<float>(
-                    stormsBoxSizer->GetStaticBox(),
+                mWaterFoamLifetimeAdjustmentSlider = new SliderControl<float>(
+                    displacementWavesBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     -1,
-                    _("Lightning Hit Probability"),
-                    _("Adjusts the probability of a lightning hitting the ship. Set to zero to prevent altogether lightnings from hitting the ship."),
+                    _("Foam Persistence"),
+                    _("Adjusts how long foam takes to settle."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::LightningBlastProbability, value);
+                        this->mLiveSettings.SetValue(GameSettings::WaterFoamLifetimeAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        0.0f,
-                        1.0f));
+                        mGameControllerSettingsOptions.GetMinWaterFoamLifetimeAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxWaterFoamLifetimeAdjustment()));
 
-                stormsSizer->Add(
-                    mLightningBlastProbabilitySlider,
-                    wxGBPosition(0, 2),
-                    wxGBSpan(2, 1),
-                    wxEXPAND | wxALL,
+                displacementWavesSizer->Add(
+                    mWaterFoamLifetimeAdjustmentSlider,
+                    wxGBPosition(1, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                     CellBorderInner);
             }
 
-            // Storm Duration
+            // Water Splash Sensitivity Adjust
             {
-                mStormDurationSlider = new SliderControl<std::chrono::seconds::rep>(
-                    stormsBoxSizer->GetStaticBox(),
-                    SliderControl<std::chrono::seconds::rep>::DirectionType::Vertical,
+                mWaterSplashSensitivityAdjustmentSlider = new SliderControl<float>(
+                    displacementWavesBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    SliderHeight,
-                    _("Duration"),
-                    _("The duration of a storm (s)."),
-                    [this](std::chrono::seconds::rep value)
+                    -1,
+                    _("Splash Sensitivity"),
+                    _("Adjusts the sensitivity for creating splashes on the ocean surface upon disturbances."),
+                    [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::StormDuration, std::chrono::seconds(value));
+                        this->mLiveSettings.SetValue(GameSettings::WaterSplashSensitivityAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<IntegralLinearSliderCore<std::chrono::seconds::rep>>(
-                        mGameControllerSettingsOptions.GetMinStormDuration().count(),
-                        mGameControllerSettingsOptions.GetMaxStormDuration().count()));
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinWaterSplashSensitivityAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxWaterSplashSensitivityAdjustment()));
 
-                stormsSizer->Add(
-                    mStormDurationSlider,
-                    wxGBPosition(0, 3),
-                    wxGBSpan(2, 1),
-                    wxEXPAND | wxALL,
+                displacementWavesSizer->Add(
+                    mWaterSplashSensitivityAdjustmentSlider,
+                    wxGBPosition(1, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                     CellBorderInner);
             }
 
-            // Storm Rate
+            // Wave Smoothness Adjust
             {
-                mStormRateSlider = new SliderControl<std::chrono::minutes::rep>(
-                    stormsBoxSizer->GetStaticBox(),
-                    SliderControl<std::chrono::minutes::rep>::DirectionType::Vertical,
+                mWaveSmoothnessAdjustmentSlider = new SliderControl<float>(
+                    displacementWavesBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Rate"),
-                    _("The expected time between two automatically-generated storms (minutes). Set to zero to disable automatic generation of storms altogether."),
-                    [this](std::chrono::minutes::rep value)
+                    _("Smoothness Adjust"),
+                    _("Adjusts the smoothness of waves caused by water displacement."),
+                    [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::StormRate, std::chrono::minutes(value));
+                        this->mLiveSettings.SetValue(GameSettings::WaveSmoothnessAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
-                        mGameControllerSettingsOptions.GetMinStormRate().count(),
-                        mGameControllerSettingsOptions.GetMaxStormRate().count()));
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinWaveSmoothnessAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxWaveSmoothnessAdjustment()));
 
-                stormsSizer->Add(
-                    mStormRateSlider,
+                displacementWavesSizer->Add(
+                    mWaveSmoothnessAdjustmentSlider,
                     wxGBPosition(0, 4),
                     wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            stormsSizer->AddGrowableRow(1);
+            displacementWavesSizer->AddGrowableRow(1);
 
-            WxHelpers::MakeAllColumnsExpandable(stormsSizer);
+            WxHelpers::MakeAllColumnsExpandable(displacementWavesSizer);
 
-            stormsBoxSizer->Add(
-                stormsSizer,
+            displacementWavesBoxSizer->Add(
+                displacementWavesSizer,
                 1,
                 wxEXPAND | wxALL,
                 StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
-            stormsBoxSizer,
-            wxGBPosition(1, 3),
-            wxGBSpan(1, 5),
+            displacementWavesBoxSizer,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 7),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -3506,7 +3325,7 @@ void SettingsDialog::PopulateLightsElectricalMarineLifePanel(wxPanel * panel)
     panel->SetSizer(gridSizer);
 }
 
-void SettingsDialog::PopulateDestructiveToolsPanel(
+void SettingsDialog::PopulatePowerToolsAndPhenomenaPanel(
     wxPanel * panel,
     GameAssetManager const & gameAssetManager)
 {
@@ -3660,7 +3479,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 4),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -3729,8 +3548,343 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
 
         gridSizer->Add(
             boxSizer,
+            wxGBPosition(0, 5),
+            wxGBSpan(1, 3),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
+    // LaserRay
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Laser Ray"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Icons
+            {
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "laser_cannon_icon"
+                    },
+                    gameAssetManager);
+
+                sizer->Add(
+                    iconVSizer,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
+            }
+
+            // Heat Flow
+            {
+                mLaserRayHeatFlowSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Heat Flow"),
+                    _("The heat produced by the laser ray (KJ/s)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::LaserRayHeatFlow, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinLaserRayHeatFlow(),
+                        mGameControllerSettingsOptions.GetMaxLaserRayHeatFlow()));
+
+                sizer->Add(
+                    mLaserRayHeatFlowSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 8),
+            wxGBSpan(1, 3),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
+    // Storms
+    //
+
+    {
+        wxStaticBoxSizer * stormsBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Storms"));
+
+        {
+            wxGridBagSizer * stormsSizer = new wxGridBagSizer(0, 0);
+
+            // Storm Strength Adjustment
+            {
+                mStormStrengthAdjustmentSlider = new SliderControl<float>(
+                    stormsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Power Adjust"),
+                    _("Adjusts the strength of storms."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::StormStrengthAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinStormStrengthAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxStormStrengthAdjustment()));
+
+                stormsSizer->Add(
+                    mStormStrengthAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Do rain with storm
+            {
+                mDoRainWithStormCheckBox = new wxCheckBox(stormsBoxSizer->GetStaticBox(), wxID_ANY, _("Spawn Rain"));
+                mDoRainWithStormCheckBox->SetToolTip(_("Enables or disables generation of rain during a storm."));
+                mDoRainWithStormCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue<bool>(GameSettings::DoRainWithStorm, event.IsChecked());
+                        OnLiveSettingsChanged();
+
+                        mRainFloodAdjustmentSlider->Enable(event.IsChecked());
+                    });
+
+                auto sizer = stormsSizer->Add(
+                    mDoRainWithStormCheckBox,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
+                    CellBorderInner);
+
+                sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
+            }
+
+            // Rain Flood Adjustment
+            {
+                mRainFloodAdjustmentSlider = new SliderControl<float>(
+                    stormsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    -1,
+                    _("Rain Flood Adjust"),
+                    _("Adjusts the extent to which rain floods exposed areas of a ship."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RainFloodAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinRainFloodAdjustment(),
+                        10000.0f,
+                        mGameControllerSettingsOptions.GetMaxRainFloodAdjustment()));
+
+                stormsSizer->Add(
+                    mRainFloodAdjustmentSlider,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Lightning Blast Probability
+            {
+                mLightningBlastProbabilitySlider = new SliderControl<float>(
+                    stormsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    -1,
+                    _("Lightning Hit Probability"),
+                    _("Adjusts the probability of a lightning hitting the ship. Set to zero to prevent altogether lightnings from hitting the ship."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::LightningBlastProbability, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                stormsSizer->Add(
+                    mLightningBlastProbabilitySlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Storm Duration
+            {
+                mStormDurationSlider = new SliderControl<std::chrono::seconds::rep>(
+                    stormsBoxSizer->GetStaticBox(),
+                    SliderControl<std::chrono::seconds::rep>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Duration"),
+                    _("The duration of a storm (s)."),
+                    [this](std::chrono::seconds::rep value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::StormDuration, std::chrono::seconds(value));
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::seconds::rep>>(
+                        mGameControllerSettingsOptions.GetMinStormDuration().count(),
+                        mGameControllerSettingsOptions.GetMaxStormDuration().count()));
+
+                stormsSizer->Add(
+                    mStormDurationSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Storm Rate
+            {
+                mStormRateSlider = new SliderControl<std::chrono::minutes::rep>(
+                    stormsBoxSizer->GetStaticBox(),
+                    SliderControl<std::chrono::minutes::rep>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Rate"),
+                    _("The expected time between two automatically-generated storms (minutes). Set to zero to disable automatic generation of storms altogether."),
+                    [this](std::chrono::minutes::rep value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::StormRate, std::chrono::minutes(value));
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
+                        mGameControllerSettingsOptions.GetMinStormRate().count(),
+                        mGameControllerSettingsOptions.GetMaxStormRate().count()));
+
+                stormsSizer->Add(
+                    mStormRateSlider,
+                    wxGBPosition(0, 4),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            stormsSizer->AddGrowableRow(1);
+
+            WxHelpers::MakeAllColumnsExpandable(stormsSizer);
+
+            stormsBoxSizer->Add(
+                stormsSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            stormsBoxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 5),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+
+    //
+    // Wave Phenomena
+    //
+
+    {
+        wxStaticBoxSizer * wavePhenomenaBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Wave Phenomena"));
+
+        {
+            wxGridBagSizer * wavePhenomenaSizer = new wxGridBagSizer(0, 0);
+
+            // Tsunami Rate
+            {
+                mTsunamiRateSlider = new SliderControl<std::chrono::minutes::rep>(
+                    wavePhenomenaBoxSizer->GetStaticBox(),
+                    SliderControl<std::chrono::minutes::rep>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Tsunami Rate"),
+                    _("The expected time between two automatically-generated tsunami waves (minutes). Set to zero to disable automatic generation of tsunami waves altogether."),
+                    [this](std::chrono::minutes::rep value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::TsunamiRate, std::chrono::minutes(value));
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
+                        mGameControllerSettingsOptions.GetMinTsunamiRate().count(),
+                        mGameControllerSettingsOptions.GetMaxTsunamiRate().count()));
+
+                wavePhenomenaSizer->Add(
+                    mTsunamiRateSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Rogue Wave Rate
+            {
+                mRogueWaveRateSlider = new SliderControl<std::chrono::seconds::rep>(
+                    wavePhenomenaBoxSizer->GetStaticBox(),
+                    SliderControl<std::chrono::seconds::rep>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Rogue Wave Rate"),
+                    _("The expected time between two automatically-generated rogue waves (seconds). Set to zero to disable automatic generation of rogue waves altogether."),
+                    [this](std::chrono::seconds::rep value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RogueWaveRate, std::chrono::seconds(value));
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::seconds::rep>>(
+                        mGameControllerSettingsOptions.GetMinRogueWaveRate().count(),
+                        mGameControllerSettingsOptions.GetMaxRogueWaveRate().count()));
+
+                wavePhenomenaSizer->Add(
+                    mRogueWaveRateSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            WxHelpers::MakeAllColumnsExpandable(wavePhenomenaSizer);
+
+            wavePhenomenaBoxSizer->Add(
+                wavePhenomenaSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            wavePhenomenaBoxSizer,
+            wxGBPosition(1, 5),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -3825,78 +3979,8 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 1),
-            wxGBSpan(1, 2),
-            wxEXPAND | wxALL,
-            CellBorderOuter);
-    }
-
-    //
-    // LaserRay
-    //
-
-    {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Laser Ray"));
-
-        {
-            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
-
-            // Icons
-            {
-                auto * iconVSizer = MakeToolVerticalStripIcons(
-                    boxSizer->GetStaticBox(),
-                    {
-                        "laser_cannon_icon"
-                    },
-                    gameAssetManager);
-
-                sizer->Add(
-                    iconVSizer,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
-                    CellBorderInner);
-            }
-
-            // Heat Flow
-            {
-                mLaserRayHeatFlowSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Heat Flow"),
-                    _("The heat produced by the laser ray (KJ/s)."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::LaserRayHeatFlow, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinLaserRayHeatFlow(),
-                        mGameControllerSettingsOptions.GetMaxLaserRayHeatFlow()));
-
-                sizer->Add(
-                    mLaserRayHeatFlowSlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            WxHelpers::MakeAllColumnsExpandable(sizer);
-
-            boxSizer->Add(
-                sizer,
-                1,
-                wxEXPAND | wxALL,
-                StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            boxSizer,
-            wxGBPosition(1, 3),
-            wxGBSpan(1, 1),
+            wxGBPosition(1, 8),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -6706,17 +6790,14 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDoDisplaceWaterCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
     mWaterDisplacementWaveHeightAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDisplacementWaveHeightAdjustment));
     mWaterDisplacementWaveHeightAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
+    mWaterFoamSensitivityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterFoamSensitivityAdjustment));
+    mWaterFoamSensitivityAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
+    mWaterFoamLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterFoamLifetimeAdjustment));
+    mWaterFoamLifetimeAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
+    mWaterSplashSensitivityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterSplashSensitivityAdjustment));
+    mWaterSplashSensitivityAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
     mWaveSmoothnessAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaveSmoothnessAdjustment));
-    mTsunamiRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::TsunamiRate).count());
-    mRogueWaveRateSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::RogueWaveRate).count());
     mInteractiveWaveGrowthRateAdjustmentAdjustmentSlider->SetValue(1.0f / settings.GetValue<float>(GameSettings::InteractiveWaveGrowthRateAdjustment));
-    mStormStrengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StormStrengthAdjustment));
-    mDoRainWithStormCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
-    mRainFloodAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RainFloodAdjustment));
-    mRainFloodAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
-    mLightningBlastProbabilitySlider->SetValue(settings.GetValue<float>(GameSettings::LightningBlastProbability));
-    mStormDurationSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::StormDuration).count());
-    mStormRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::StormRate).count());
 
     //
     // Air and Sky
@@ -6765,7 +6846,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mUnderwaterPlantSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::UnderwaterPlantSizeMultiplier));
 
     //
-    // Destructive Tools
+    // Power Tools and Phenomena
     //
 
     mDestroyRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::DestroyRadius));
@@ -6776,6 +6857,15 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mBlastToolRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::BlastToolRadius));
     mBlastToolForceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BlastToolForceAdjustment));
     mLaserRayHeatFlowSlider->SetValue(settings.GetValue<float>(GameSettings::LaserRayHeatFlow));
+    mTsunamiRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::TsunamiRate).count());
+    mRogueWaveRateSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::RogueWaveRate).count());
+    mStormStrengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StormStrengthAdjustment));
+    mDoRainWithStormCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
+    mRainFloodAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RainFloodAdjustment));
+    mRainFloodAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
+    mLightningBlastProbabilitySlider->SetValue(settings.GetValue<float>(GameSettings::LightningBlastProbability));
+    mStormDurationSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::StormDuration).count());
+    mStormRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::StormRate).count());
 
     //
     // Other Tools
