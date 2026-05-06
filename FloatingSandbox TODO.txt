@@ -1017,7 +1017,7 @@
 			! WaterSplashSensitivityAdjustment, 0 for none
 			+ SimulationParameters
 
-			= Use
+			= Use at:
 				+ WaterDisplacementWaveHeightAdjustment: use only for water displacement -- keep out of displacement calculation
 				- WaterFoamSensitivityAdjustment -- make sure 0 is none
 				- WaterSplashSensitivityAdjustment -- make sure 0 is none
@@ -1916,6 +1916,12 @@
 ======================================================================================================================
 
 - Technical Debt:
+	- Setting deserialization with aliases, for when we change names
+		- BaseSetting had AddAlias(name) -- stores it
+		- BaseSetting deser'n tries them after main
+		- Factory::AddSetting returns Setting<TValue> &
+		- SettingsManager gets it from ADD_XX_SETTING and adds aliases to it
+
 	+ Global damp as game parameter
 	+ Ships start from 1
 	+ Do #include "foo.glsl" at ShaderManager
