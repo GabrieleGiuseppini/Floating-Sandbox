@@ -40,6 +40,9 @@ enum class GameSettings : size_t
     WaterCrazyness,
     DoDisplaceWater,
     WaterDisplacementWaveHeightAdjustment,
+    WaterFoamSensitivityAdjustment,
+    WaterFoamLifetimeAdjustment,
+    WaterSplashSensitivityAdjustment,
 
     // Ocean floor
     OceanFloorTerrain,

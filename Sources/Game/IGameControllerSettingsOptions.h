@@ -163,6 +163,15 @@ struct IGameControllerSettingsOptions
     virtual float GetMinWaterDisplacementWaveHeightAdjustment() const = 0;
     virtual float GetMaxWaterDisplacementWaveHeightAdjustment() const = 0;
 
+    virtual float GetMinWaterFoamSensitivityAdjustment() const = 0;
+    virtual float GetMaxWaterFoamSensitivityAdjustment() const = 0;
+
+    virtual float GetMinWaterFoamLifetimeAdjustment() const = 0;
+    virtual float GetMaxWaterFoamLifetimeAdjustment() const = 0;
+
+    virtual float GetMinWaterSplashSensitivityAdjustment() const = 0;
+    virtual float GetMaxWaterSplashSensitivityAdjustment() const = 0;
+
     virtual float GetMinWaveSmoothnessAdjustment() const = 0;
     virtual float GetMaxWaveSmoothnessAdjustment() const = 0;
 

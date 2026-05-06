@@ -616,6 +616,22 @@ public:
     float GetMinWaterDisplacementWaveHeightAdjustment() const override { return SimulationParameters::MinWaterDisplacementWaveHeightAdjustment; }
     float GetMaxWaterDisplacementWaveHeightAdjustment() const override { return SimulationParameters::MaxWaterDisplacementWaveHeightAdjustment; }
 
+    // TODO
+    float GetWaterFoamSensitivityAdjustment() const override { return mSimulationParameters.WaterFoamSensitivityAdjustment; }
+    void SetWaterFoamSensitivityAdjustment(float value) override { mSimulationParameters.WaterFoamSensitivityAdjustment = value; }
+    virtual float GetMinWaterFoamSensitivityAdjustment()  const override { return SimulationParameters::MinWaterFoamSensitivityAdjustment; }
+    virtual float GetMaxWaterFoamSensitivityAdjustment() const override { return SimulationParameters::MaxWaterFoamSensitivityAdjustment; }
+
+    float GetWaterFoamLifetimeAdjustment() const override { return mSimulationParameters.WaterFoamLifetimeAdjustment; };
+    void SetWaterFoamLifetimeAdjustment(float value) override { mSimulationParameters.WaterFoamLifetimeAdjustment = value; }
+    virtual float GetMinWaterFoamLifetimeAdjustment()  const override { return SimulationParameters::MinWaterFoamLifetimeAdjustment; }
+    virtual float GetMaxWaterFoamLifetimeAdjustment() const override { return SimulationParameters::MaxWaterFoamLifetimeAdjustment; }
+
+    float GetWaterSplashSensitivityAdjustment() const override { return mSimulationParameters.WaterSplashSensitivityAdjustment; };
+    void SetWaterSplashSensitivityAdjustment(float value) override { mSimulationParameters.WaterSplashSensitivityAdjustment = value; }
+    virtual float GetMinWaterSplashSensitivityAdjustment()  const override { return SimulationParameters::MinWaterSplashSensitivityAdjustment; }
+    virtual float GetMaxWaterSplashSensitivityAdjustment() const override { return SimulationParameters::MaxWaterSplashSensitivityAdjustment; }
+
     float GetWaveSmoothnessAdjustment() const override { return mSimulationParameters.WaveSmoothnessAdjustment; }
     void SetWaveSmoothnessAdjustment(float value) override { mSimulationParameters.WaveSmoothnessAdjustment = value; }
     float GetMinWaveSmoothnessAdjustment() const override { return SimulationParameters::MinWaveSmoothnessAdjustment; }

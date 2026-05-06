@@ -1011,15 +1011,27 @@
 			+ Problem with cached depth?
 		+ FIX: plane of splashes when piece of ship is behind
 
-		- Settings toggle(s):
-			- Or sensitivity(ies), 0 for none
-			- Also lifetime?
-			- SimulationParameters
-			- SettingsManager
+		= Settings:
+			! WaterFoamSensitivityAdjustment, 0 for none
+			! WaterFoamLifetimeAdjustment
+			! WaterSplashSensitivityAdjustment, 0 for none
+			+ SimulationParameters
+
+			= Use
+				+ WaterDisplacementWaveHeightAdjustment: use only for water displacement -- keep out of displacement calculation
+				- WaterFoamSensitivityAdjustment -- make sure 0 is none
+				- WaterSplashSensitivityAdjustment -- make sure 0 is none
+
+				- WaterFoamLifetimeAdjustment
+
+
+			+ SettingsManager
+				+ IGameControllerSettings
 			- SettingsDialog
 				- Close to DisplaceWater, enablement depends on that value
-				- Check if can label Height as Ship Sensitivity (it's only used by ship)
-					- Consider rename, unless we end up using it for non-ships
+
+			- Test
+				- Nail down limits
 
 		- @ Bombs (blasts, incl. tool)
 			- @ World::OnBlast, acting on either shipId or first ship

@@ -1442,9 +1442,7 @@ void Ship::ApplyWorldSurfaceForces(
     float constexpr WdmY0 = 0.16f; // Displacement magnitude at x0
 
     // Linear portion
-    float const wdmLinearSlope =
-        SimulationParameters::SimulationStepTimeDuration<float> * 6.0f // Magic number
-        * simulationParameters.WaterDisplacementWaveHeightAdjustment;
+    float const wdmLinearSlope = SimulationParameters::SimulationStepTimeDuration<float> *6.0f; // Magic number
 
     // Quadratic portion: y = ax^2 + bx, with constraints:
     //  y(0) = 0
@@ -1768,10 +1766,11 @@ void Ship::ApplyWorldSurfaceForces(
                         * Step(0.0f, thisPointDepth) // No displacement for above-water points
                         * displacementAngleVerticalFactor; // Take vertical component, adjusting sign
 
-                    mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
-
                     float const absDisplacement = std::abs(displacement);
-                    totalWaterDisplacementMagnitude += absDisplacement;
+
+                    float const oceanSurfaceDisplacement = displacement * simulationParameters.WaterDisplacementWaveHeightAdjustment;
+                    mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, oceanSurfaceDisplacement);
+                    totalWaterDisplacementMagnitude += std::abs(oceanSurfaceDisplacement);
 
                     //
                     // Water foam

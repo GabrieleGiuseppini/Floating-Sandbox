@@ -70,6 +70,9 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, WaterCrazyness);
     ADD_GC_SETTING(bool, DoDisplaceWater);
     ADD_GC_SETTING(float, WaterDisplacementWaveHeightAdjustment);
+    ADD_GC_SETTING(float, WaterFoamSensitivityAdjustment);
+    ADD_GC_SETTING(float, WaterFoamLifetimeAdjustment);
+    ADD_GC_SETTING(float, WaterSplashSensitivityAdjustment);
 
     // Ocean floor
     ADD_GC_SETTING(OceanFloorHeightMap, OceanFloorTerrain);

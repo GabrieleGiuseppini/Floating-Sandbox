@@ -372,7 +372,19 @@ struct SimulationParameters
 
     float WaterDisplacementWaveHeightAdjustment;
     static float constexpr MinWaterDisplacementWaveHeightAdjustment = 0.1f;
-    static float constexpr MaxWaterDisplacementWaveHeightAdjustment = 2.5f;
+    static float constexpr MaxWaterDisplacementWaveHeightAdjustment = 1.5f;
+
+    float WaterFoamSensitivityAdjustment; // 0 for no foam
+    static float constexpr MinWaterFoamSensitivityAdjustment = 0.1f;
+    static float constexpr MaxWaterFoamSensitivityAdjustment = 5.0f; // TODO
+
+    float WaterFoamLifetimeAdjustment;
+    static float constexpr MinWaterFoamLifetimeAdjustment = 0.1f;
+    static float constexpr MaxWaterFoamLifetimeAdjustment = 2.5f;
+
+    float WaterSplashSensitivityAdjustment; // 0 for no splashes
+    static float constexpr MinWaterSplashSensitivityAdjustment = 0.1f;
+    static float constexpr MaxWaterSplashSensitivityAdjustment = 5.0f; // TODO
 
     float WaveSmoothnessAdjustment;
     static float constexpr MinWaveSmoothnessAdjustment = 0.0f;

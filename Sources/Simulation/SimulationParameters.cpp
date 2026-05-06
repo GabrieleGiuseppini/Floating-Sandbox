@@ -66,6 +66,9 @@ SimulationParameters::SimulationParameters()
     , RogueWaveRate(32)
     , DoDisplaceWater(true)
     , WaterDisplacementWaveHeightAdjustment(1.0f)
+    , WaterFoamSensitivityAdjustment(1.0f)
+    , WaterFoamLifetimeAdjustment(1.0f)
+    , WaterSplashSensitivityAdjustment(1.0f)
     , WaveSmoothnessAdjustment(0.016f) // Was 0.203125f up to 1.19.2
     // Storm
     , StormRate(60)
