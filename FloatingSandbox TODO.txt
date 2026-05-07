@@ -1019,8 +1019,10 @@
 
 			= Use at:
 				+ WaterDisplacementWaveHeightAdjustment: use only for water displacement -- keep out of displacement calculation
-				- WaterFoamSensitivityAdjustment -- make sure 0 is none
+				+ WaterFoamSensitivityAdjustment -- make sure 0 is none
+					+ Try remove strength calc'n/linear thing
 				- WaterSplashSensitivityAdjustment -- make sure 0 is none
+					- Try remove strength calc'n/linear thing
 
 				- WaterFoamLifetimeAdjustment
 
@@ -1033,6 +1035,8 @@
 
 			- Test
 				- Nail down limits
+
+		- See if needs capping for impact force
 
 		- @ Bombs (blasts, incl. tool)
 			- @ World::OnBlast, acting on either shipId or first ship

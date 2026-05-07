@@ -1452,8 +1452,12 @@ void Ship::ApplyWorldSurfaceForces(
     float const wdmQuadraticB = 2.0f * WdmY0 / WdmX0 - wdmLinearSlope;
 
     //
-    // Water foam and splashes
+    // Water foam
     //
+
+    float const minAbsDisplacementForWaterFoam = (simulationParameters.WaterFoamSensitivityAdjustment > 0.0f)
+        ? 0.065f / simulationParameters.WaterFoamSensitivityAdjustment // Magic
+        : std::numeric_limits<float>::max();
 
     struct WaterFoam
     {
@@ -1482,6 +1486,10 @@ void Ship::ApplyWorldSurfaceForces(
     };
 
     WaterFoam strongestWaterFoam;
+
+    //
+    // Water splashes
+    //
 
     struct WaterSplash
     {
@@ -1776,12 +1784,10 @@ void Ship::ApplyWorldSurfaceForces(
                     // Water foam
                     //
 
-                    float constexpr MinAbsDisplacementForWaterFoam = 0.065f; // Magic
-                    if (absDisplacement >= MinAbsDisplacementForWaterFoam // Both upwards and downwards
+                    if (absDisplacement >= minAbsDisplacementForWaterFoam // Both upwards and downwards
                         && thisPointDepth < 1.5f) // Only spawn foam on the surface
                     {
-                        float constexpr MaxAbsDisplacementForWaterFoam = 1.0f; // Magic
-                        float const strength = (absDisplacement - MinAbsDisplacementForWaterFoam) / (MaxAbsDisplacementForWaterFoam - MinAbsDisplacementForWaterFoam);
+                        float const strength = absDisplacement - minAbsDisplacementForWaterFoam;
                         if (strength > strongestWaterFoam.Strength)
                         {
                             strongestWaterFoam = WaterFoam(
