@@ -396,7 +396,7 @@ public:
                 },
                 // C
                 LandVertex{
-                    vec2f(x1, yBedrock1 - LipThickness),
+                    vec2f(x1, std::max(yBedrock1 - LipThickness, yWorldBottom)),
                     ySilt1 - (yBedrock1 - LipThickness),
                     MaxTransitionThickness + LipThickness
                 },
@@ -408,7 +408,7 @@ public:
                 },
                 // D
                 LandVertex{
-                    vec2f(x2, yBedrock2 - LipThickness),
+                    vec2f(x2, std::max(yBedrock2 - LipThickness, yWorldBottom)),
                     ySilt2 - (yBedrock2 - LipThickness),
                     MaxTransitionThickness + LipThickness
                 },
@@ -419,7 +419,7 @@ public:
             Geometry::GenerateSegmentedLandQuad(
                 // C
                 LandVertex{
-                    vec2f(x1, yBedrock1 - LipThickness),
+                    vec2f(x1, std::max(yBedrock1 - LipThickness, yWorldBottom)),
                     ySilt1 - (yBedrock1 - LipThickness),
                     MaxTransitionThickness + LipThickness
                 },
@@ -431,7 +431,7 @@ public:
                 },
                 // D
                 LandVertex{
-                    vec2f(x2, yBedrock2 - LipThickness),
+                    vec2f(x2, std::max(yBedrock2 - LipThickness, yWorldBottom)),
                     ySilt2 - (yBedrock2 - LipThickness),
                     MaxTransitionThickness + LipThickness
                 },
