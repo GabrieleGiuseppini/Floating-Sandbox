@@ -230,14 +230,16 @@ void World::OnBlast(
         //  f(MaxDepth) = 0
         //  f(0) = MaxDisplacement
         //  f'(MaxDepth) = 0
+        //
+        // Note: it's negative (for can't remember what reason)
         float constexpr MaxDisplacement = 6.0f; // Max displacement
         float constexpr a = -MaxDisplacement / (MaxDepth * MaxDepth);
         float constexpr b = 2.0f * MaxDisplacement / MaxDepth;
         float constexpr c = -MaxDisplacement;
         float const displacement =
             (a * absExplosionDepth * absExplosionDepth + b * absExplosionDepth + c)
-            * (absExplosionDepth > MaxDepth ? 0.0f : 1.0f) // Turn off at far-away depths
-            * (explosionDepth <= 0.0f ? 1.0f : -1.0f); // Follow depth sign
+            * Step(absExplosionDepth, MaxDepth) // Turn off at far-away depths
+            * Sign(-explosionDepth); // Follow depth sign
 
         // Displace
         for (float r = 0.0f; r <= radius; r += 0.5f)
