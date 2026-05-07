@@ -1012,30 +1012,25 @@
 			+ Problem with cached depth?
 		+ FIX: plane of splashes when piece of ship is behind
 
-		= Settings:
+		+ Settings:
 			! WaterFoamSensitivityAdjustment, 0 for none
 			! WaterFoamLifetimeAdjustment
 			! WaterSplashSensitivityAdjustment, 0 for none
 			+ SimulationParameters
-
-			= Use at:
+			+ Use at:
 				+ WaterDisplacementWaveHeightAdjustment: use only for water displacement -- keep out of displacement calculation
 				+ WaterFoamSensitivityAdjustment -- make sure 0 is none
 					+ Try remove strength calc'n/linear thing
 				+ WaterSplashSensitivityAdjustment -- make sure 0 is none
 					+ Try remove strength calc'n/linear thing
-
-				- WaterFoamLifetimeAdjustment
-
-
+				+ WaterFoamLifetimeAdjustment
 			+ SettingsManager
 				+ IGameControllerSettings
 			+ SettingsDialog
 				+ Split Wind and Waves: move Wave Phenomena and Storms to "Power Tools and Phenomena" tab
 				+ Close to DisplaceWater, enablement depends on that value
-
-			- Test
-				- Nail down limits
+			+ Test
+				+ Nail down limits
 
 		- See if needs capping for impact force
 
@@ -1111,6 +1106,9 @@
 
 		- See if can add a few more eph particles
 			- Make it a runtime settings, and choose between 4K, 6K, and 8K based on calibration
+				- TODO: how to enforce it won't change during game? Make sure we never use it @ runtime, only at initialization times
+				! Note: lighting algo doesn't depend on # of eph particles!
+				- Note: ShipRenderContext needs it, but can be given it @ creation time
 
 		- Android Port Plan
 			- Textures (splashes, foam) and enums

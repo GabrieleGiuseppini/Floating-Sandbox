@@ -3190,7 +3190,7 @@ void Ship::RecalculateLightDiffusionParallelism(ThreadPool const & simulationThr
 
     mLightDiffusionTasks.clear();
 
-    ElementCount const numberOfPoints = mPoints.GetAlignedShipPointCount(); // No real reason to skip ephemerals, other than they're not expected to have light
+    ElementCount const numberOfPoints = mPoints.GetAlignedShipPointCount(); // No real reason to skip ephemerals, other than they're not expected to be lighted
 
     auto const pointShards = CalculatePointShards(
         numberOfPoints,
@@ -4143,7 +4143,9 @@ void Ship::InternalSpawnWaterFoam(
 
     float constexpr MinMaxLifetime = 3.0f;
     float constexpr MaxMaxLifetime = 4.0f;
-    float const maxLifetime = MinMaxLifetime + (MaxMaxLifetime - MinMaxLifetime) * std::min(strength, 8.0f);
+    float const maxLifetime =
+        (MinMaxLifetime + (MaxMaxLifetime - MinMaxLifetime) * std::min(strength, 8.0f))
+        * simulationParameters.WaterFoamLifetimeAdjustment;
 
     size_t const nParticles = GameRandomEngine::GetInstance().GenerateUniformInteger<size_t>(4, 5);
     for (size_t p = 0; p < nParticles; ++p)
