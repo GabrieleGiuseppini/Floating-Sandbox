@@ -869,6 +869,7 @@
 
 	- See if can improve FindFreeEphemeralParticle's perf
 		+ Thing 1: remove need for currentSimulationTime
+		- TODO: would also be nice to ensure "pri 0" particles (e.g. water splashes) are not killed when we need "pri 100" (e.g. bubles)
 		- Thing 2:
 			- A stack for free ephemeral particles (init'd with all)
 			- A TODO for ordered by time in-use ephemeral particles (remember we address it by content (i.e. point index, when we kill an eph particle))
@@ -1019,10 +1020,10 @@
 
 			= Use at:
 				+ WaterDisplacementWaveHeightAdjustment: use only for water displacement -- keep out of displacement calculation
-				= WaterFoamSensitivityAdjustment -- make sure 0 is none
+				+ WaterFoamSensitivityAdjustment -- make sure 0 is none
 					+ Try remove strength calc'n/linear thing
-				- WaterSplashSensitivityAdjustment -- make sure 0 is none
-					- Try remove strength calc'n/linear thing
+				+ WaterSplashSensitivityAdjustment -- make sure 0 is none
+					+ Try remove strength calc'n/linear thing
 
 				- WaterFoamLifetimeAdjustment
 
@@ -1142,7 +1143,7 @@
 
 	+ Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
 
-	- Try optimization:
+	- Try OpenGL/Upload optimization:
 		! Point Positions get uploaded to VBO in one go, with no interleaving, and with no local buffering
 		! Point Water, Temperature, and Decay get uploaded to VBO in one go, with no interleaving, and with no local buffering
 		! Multiple pointers in same async call

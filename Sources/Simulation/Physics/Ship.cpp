@@ -1491,6 +1491,10 @@ void Ship::ApplyWorldSurfaceForces(
     // Water splashes
     //
 
+    float const minAbsDisplacementForWaterSplash = (simulationParameters.WaterSplashSensitivityAdjustment > 0.0f)
+        ? 0.4f / simulationParameters.WaterSplashSensitivityAdjustment // Magic
+        : std::numeric_limits<float>::max();
+
     struct WaterSplash
     {
         vec2f Position;
@@ -1784,7 +1788,7 @@ void Ship::ApplyWorldSurfaceForces(
                     // Water foam
                     //
 
-                    if (absDisplacement >= minAbsDisplacementForWaterFoam // Both upwards and downwards
+                    if (absDisplacement > minAbsDisplacementForWaterFoam // Both upwards and downwards
                         && thisPointDepth < 1.5f) // Only spawn foam on the surface
                     {
                         float const strength = absDisplacement - minAbsDisplacementForWaterFoam;
@@ -1802,12 +1806,11 @@ void Ship::ApplyWorldSurfaceForces(
                     // Water splashes
                     //
 
-                    float constexpr MinAbsDisplacementForWaterSplash = 0.4f; // Magic
-                    if (displacement < -MinAbsDisplacementForWaterSplash // Only downwards
+                    if (displacement < -minAbsDisplacementForWaterSplash // Only downwards
                         && thisPointDepth < 2.0f) // Only spawn splashes on the surface
                     {
-                        float constexpr MaxAbsDisplacementForWaterSplash = 1.0f; // Magic
-                        float const strength = (absDisplacement - MinAbsDisplacementForWaterSplash) / (MaxAbsDisplacementForWaterSplash - MinAbsDisplacementForWaterSplash);
+                        float const strength = -displacement - minAbsDisplacementForWaterSplash;
+                        assert(strength > 0.0f);
                         if (strength > strongestWaterSplash.Strength)
                         {
                             strongestWaterSplash = WaterSplash(
@@ -4226,21 +4229,21 @@ void Ship::InternalSpawnWaterSplash(
     //
 
     float constexpr MinVelocityMagnitude = 5.2f;
-    float constexpr MaxVelocityMagnitude = 8.5f;
+    float constexpr MaxVelocityMagnitude = 10.7f;
     float const velocityMagnitude =
         MinVelocityMagnitude
-        + (MaxVelocityMagnitude - MinVelocityMagnitude) * std::min(strength, 16.0f);
+        + (MaxVelocityMagnitude - MinVelocityMagnitude) * std::min(strength, 9.6f);
 
     //
     // Calculate scale: depends on strength
     //
 
     float constexpr MinMaxScale = 0.45f;
-    float constexpr MaxMaxScale = 1.4f;
+    float constexpr MaxMaxScale = 2.0f;
     float const maxScale =
         MinMaxScale
-        + (MaxMaxScale - MinMaxScale) * std::min(strength, 8.0f);
-    float const initialScale = maxScale / 2.0f;
+        + (MaxMaxScale - MinMaxScale) * std::min(strength, 4.8f);
+    float const initialScale = maxScale / 4.0f; // Start already visible
 
     //
     // Calculate max lifetime: gravity is the only force acting on the splash
