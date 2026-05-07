@@ -1032,7 +1032,7 @@
 			+ Test
 				+ Nail down limits
 
-		- See if needs capping for impact force
+		+ See if needs capping for impact force
 
 		- @ Bombs (blasts, incl. tool)
 			- @ World::OnBlast, acting on either shipId or first ship

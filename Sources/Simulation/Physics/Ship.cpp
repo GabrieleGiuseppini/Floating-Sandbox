@@ -1658,7 +1658,7 @@ void Ship::ApplyWorldSurfaceForces(
                     * mPoints.GetMass(thisPointIndex);
 
                 float const waterImpactForceMagnitude =
-                    kineticEnergy
+                    std::min(kineticEnergy, 100000000.0f) // Cap it to prevent gigantous forces
                     * waterImpactForceCoefficient
                     * Step(mPoints.GetCachedDepth(thisPointIndex), 0.0f) * Step(0.0f, newCachedPointDepths[thisPointIndex]);
 
