@@ -1019,7 +1019,7 @@
 
 			= Use at:
 				+ WaterDisplacementWaveHeightAdjustment: use only for water displacement -- keep out of displacement calculation
-				+ WaterFoamSensitivityAdjustment -- make sure 0 is none
+				= WaterFoamSensitivityAdjustment -- make sure 0 is none
 					+ Try remove strength calc'n/linear thing
 				- WaterSplashSensitivityAdjustment -- make sure 0 is none
 					- Try remove strength calc'n/linear thing
@@ -1104,7 +1104,7 @@
 			- Wave displacement height setting
 
 		- Cleanup:
-			- Finalize alpha of foam (@ eph particle upload)
+			+ Finalize alpha of foam (@ eph particle upload)
 			- See if foam eph particle state's SkewedLifetime is still needed
 			- See if foam eph particle state's MinSize is still needed (it's always zero)
 

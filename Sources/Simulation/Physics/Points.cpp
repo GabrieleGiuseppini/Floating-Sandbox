@@ -2769,7 +2769,7 @@ void Points::UploadEphemeralParticles(
                 // Squash scale with progress
                 FloatSize scale(
                     baseScale * (1.0f + linearLifetimeProgress * 0.85f),
-                    baseScale * (1.0f - linearLifetimeProgress * 0.85f));
+                    baseScale * (0.85f - linearLifetimeProgress * 0.70f)); // Start squashed!
 
                 // Calculate alpha: ~parabolic with progress
                 float const alpha =
@@ -2784,7 +2784,6 @@ void Points::UploadEphemeralParticles(
                     GetPosition(pointIndex),
                     state.VerticalAxis,
                     scale,
-                    //alpha * 0.85f);
                     alpha);
 
                 break;

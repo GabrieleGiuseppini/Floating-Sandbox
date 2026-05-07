@@ -2130,7 +2130,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     SliderWidth,
                     -1,
                     _("Foam Sensitivity"),
-                    _("Adjusts the sensitivity for creating foam on the ocean surface upon disturbances."),
+                    _("Adjusts the sensitivity for creating foam on the ocean surface upon disturbances. Set to zero to disable foam altogether."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterFoamSensitivityAdjustment, value);
@@ -2183,7 +2183,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     SliderWidth,
                     -1,
                     _("Splash Sensitivity"),
-                    _("Adjusts the sensitivity for creating splashes on the ocean surface upon disturbances."),
+                    _("Adjusts the sensitivity for creating splashes on the ocean surface upon disturbances. Set to zero to disable splashes altogether."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterSplashSensitivityAdjustment, value);
