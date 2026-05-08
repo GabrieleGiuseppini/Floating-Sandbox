@@ -352,6 +352,17 @@ public:
 
     bool RestoreTriangle(ElementIndex triangleIndex);
 
+    void SpawnWaterSplash(
+        PlaneId planeId,
+        vec2f const & position,
+        float depth,
+        vec2f const & velocity,
+        float initialScale,
+        float maxScale,
+        float currentSimulationTime,
+        float maxSimulationLifetime,
+        SimulationParameters const & simulationParameters);
+
 private:
 
     // Queued interactions
@@ -745,8 +756,6 @@ private:
         SimulationParameters const & simulationParameters);
 
     void UploadStateMachines(RenderContext & renderContext);
-
-private:
 
 private:
 

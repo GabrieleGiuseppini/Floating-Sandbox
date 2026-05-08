@@ -92,6 +92,7 @@ StructuralMaterial StructuralMaterial::Create(
 
         bool const explodesOnDamage = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "explodes_on_damage", false);
         assert(!explodesOnDamage || combustionType == MaterialCombustionType::Explosion || combustionType == MaterialCombustionType::FireExtinguishingExplosion);
+        float const blastSensitivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "blast_sensitivity", 1.0f);
         float const windReceptivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "wind_receptivity");
         float const waterReactivityThreshold = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_reactivity_threshold", 0.0f);
         bool isLegacyElectrical = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_legacy_electrical", false);
@@ -148,6 +149,7 @@ StructuralMaterial StructuralMaterial::Create(
             explosiveCombustionHeatRadius,
             // Misc
             explodesOnDamage,
+            blastSensitivity,
             windReceptivity,
             waterReactivityThreshold,
             isLegacyElectrical,

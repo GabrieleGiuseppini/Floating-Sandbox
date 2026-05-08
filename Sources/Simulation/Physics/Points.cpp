@@ -2768,8 +2768,8 @@ void Points::UploadEphemeralParticles(
 
                 // Squash scale with progress
                 FloatSize scale(
-                    baseScale * (1.0f + linearLifetimeProgress * 0.85f),
-                    baseScale * (0.85f - linearLifetimeProgress * 0.70f)); // Start squashed!
+                    baseScale * (1.0f + SmoothStep(0.0f, 1.0f, linearLifetimeProgress) * 0.85f),
+                    baseScale * (0.8f - SmoothStep(0.0f, 1.0f, linearLifetimeProgress) * 0.70f)); // Start squashed!
 
                 // Calculate alpha: ~parabolic with progress
                 float const alpha =
@@ -2798,8 +2798,8 @@ void Points::UploadEphemeralParticles(
                 // Calculate scale: grows non-linearly with progress
                 float const midScale = (state.MinScale + state.MaxScale) / 2.0f;
                 float const scale = (lifetimeProgress < 0.5f)
-                    ? state.MinScale + (midScale - state.MinScale) * SmoothStep(0.0f, 0.5f, lifetimeProgress)
-                    : midScale + (state.MaxScale - midScale) * SmoothStep(0.5f, 1.0f, lifetimeProgress);
+                    ? state.MinScale + (midScale - state.MinScale) * LinearStep(0.0f, 0.5f, lifetimeProgress)
+                    : midScale + (state.MaxScale - midScale) * LinearStep(0.5f, 1.0f, lifetimeProgress);
 
                 // Calculate alpha: ~parabolic with progress
                 float const alpha =

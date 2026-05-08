@@ -154,6 +154,7 @@ public:
     // Does secondary tasks after a blast has been applied to a ship or globally
     void OnBlast(
         ShipId shipId, // None if global
+        PlaneId planeId, // None if global
         vec2f const & centerPosition,
         float blastForceMagnitude, // N
         float blastForceRadius, // m

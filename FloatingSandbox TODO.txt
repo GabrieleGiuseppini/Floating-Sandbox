@@ -1034,17 +1034,30 @@
 
 		+ See if needs capping for impact force
 
-		- @ Bombs (blasts, incl. tool)
-			- @ World::OnBlast, acting on either shipId or first ship
-				- Foam
-					- Use sensitivity & lifetime adjustment
-				- Splash
-					- Use sensitivity
-			- If we end up needing to lower impact of blasts onto ephemeral particles, remember to do it for Silt Cloud as well
-			- Test (w/changing settings as well)
-				- Bombs
-				- NPC bombs
-				- Tool
+		+ @ Bombs (blasts, incl. tool)
+			+ @ World::OnBlast, acting on either shipId or first ship
+				X Foam: not needed; ship does her own
+				+ Splash
+					+ Use sensitivity
+					+ Need to lower impact of blasts onto ephemeral particles
+						+ At Ship::ExplosionStateMachine::Update: use material's
+						+ See below for Silt Cloud!
+					+ Size must depend on depth, and be larger than 2.0
+					X FIX: above water splashes
+						! Problem is: above-water velocity is correct; it's the underwater case that's off, as surface goes up, hence
+						  splash goes up faster and that's what we see
+					+ Try with one random particle per-step
+					+ Cleanup code
+				+ Test:
+					+ PlaneID
+			+ If we end up needing to lower impact of blasts onto ephemeral particles, remember to do it for Silt Cloud as well
+				+ Test silt cloud + explosion: Android plane crashing
+			+ Test (w/changing settings as well)
+				+ Bombs
+				+ NPC bombs
+				+ Blast Tool
+					+ Use blast sensitivity of material for the physics
+					+ Nail down direction
 		- @ Tornado bottom
 			- WAS: see if can incorporate also "mist" for tornadoes
 		X @ Bubbles rising?
@@ -1052,7 +1065,6 @@
 		X @ NPC floating?
 
 		+ Try: displacement math should consider velocity *perp* to frontier edge
-
 		+ Rewrite as more grounded in physics
 			! Goals:
 				1. Impact recoil force: should be based on ocean surface normal at that point
@@ -1081,14 +1093,17 @@
 			+ Impl of goal 1
 				+ If goes through: recycle calcn' of ocean surface normal
 
-
 		+ Decide on engine's displacement
 			+ It's currently commented-out - AND COMMITTED AS SUCH
-
 
 		X Try: displacement should also come from velocity in same dir as ocean surface
 			- Displace up after, displace down behind
 			- Rethink displacement: it's two components now
+
+		- Foam improvements:
+			+ Try: peak for scale right after starting, then slowly down (Smoothstep)
+			- Top height must be for VERY small time
+			- Try: use distance traveled for squashing
 
 		- Try: relative velocity for all (impact, displacements)
 
@@ -1111,6 +1126,7 @@
 				- Note: ShipRenderContext needs it, but can be given it @ creation time
 
 		- Android Port Plan
+			- Structural materials (blast_sensitivity)
 			- Textures (splashes, foam) and enums
 			- Foam
 				- ShipRenderContext:: new uploader

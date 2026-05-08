@@ -463,7 +463,7 @@ void Ship::Update(
         simulationParameters);
 
     ///////////////////////////////////////////////////////////////////
-    // Update state machines
+    // Update state machines - may generate ephemeral particles
     ///////////////////////////////////////////////////////////////////
 
     // - Outputs:   Non-spring forces, temperature
@@ -4134,7 +4134,7 @@ void Ship::InternalSpawnWaterFoam(
     //
 
     float constexpr MinMaxScale = 0.3f;
-    float constexpr MaxMaxScale = 1.1f;
+    float constexpr MaxMaxScale = 1.0f;
     float const baseScale = MinMaxScale + (MaxMaxScale - MinMaxScale) * normalizedStrength;
 
     //
@@ -4197,7 +4197,7 @@ void Ship::InternalSpawnWaterFoam(
             foamPosition,
             foamDepth,
             velocityX,
-            0.0f,
+            0.0f, // Initial scale
             maxScale,
             currentSimulationTime,
             maxLifetime,

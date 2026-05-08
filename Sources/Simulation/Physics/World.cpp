@@ -181,6 +181,7 @@ bool World::IsUnderwater(GlobalElementId elementId) const
 
 void World::OnBlast(
     ShipId shipId, // None if global
+    PlaneId planeId, // None if global
     vec2f const & centerPosition,
     float blastForceMagnitude, // N
     float blastForceRadius, // m
@@ -205,13 +206,15 @@ void World::OnBlast(
         simulationParameters);
 
     //
-    // Blast ocean surface displacement
+    // Blast ocean surface
     //
 
     if (simulationParameters.DoDisplaceWater)
     {
+        float const oceanSurfaceY = mOceanSurface.GetHeightAt(centerPosition.x);
+
         // Explosion depth (positive when underwater)
-        float const explosionDepth = mOceanSurface.GetDepth(centerPosition);
+        float const explosionDepth = oceanSurfaceY - centerPosition.y;
         float const absExplosionDepth = std::abs(explosionDepth);
 
         // No effect when abs depth greater than this
@@ -241,7 +244,10 @@ void World::OnBlast(
             * Step(absExplosionDepth, MaxDepth) // Turn off at far-away depths
             * Sign(-explosionDepth); // Follow depth sign
 
+        //
         // Displace
+        //
+
         for (float r = 0.0f; r <= radius; r += 0.5f)
         {
             float const d = displacement * (1.0f - r / radius);
@@ -250,6 +256,78 @@ void World::OnBlast(
                 DisplaceOceanSurfaceAt(centerPosition.x - r, d);
             if (centerPosition.x + r <= SimulationParameters::HalfMaxWorldWidth)
                 DisplaceOceanSurfaceAt(centerPosition.x + r, d);
+        }
+
+        if (displacement != 0.0f && simulationParameters.WaterSplashSensitivityAdjustment > 0.0f)
+        {
+            //
+            // Water splashes
+            //
+
+            float const normalizedDisplacement = std::abs(displacement) / MaxDisplacement;
+
+            // Direction
+            vec2f direction = vec2f(
+                Clamp(
+                    GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, 0.5f),
+                    -0.65f,
+                    0.65f),
+                1.0f).normalise_approx();
+
+            if (displacement < 0.0f)
+            {
+                float constexpr Rot = Pi<float> / 4.0f;
+                if (direction.x >= 0.0f)
+                {
+                    direction.rotate(-Rot);
+                }
+                else
+                {
+                    direction.rotate(Rot);
+                }
+            }
+
+            // Velocity magnitude: depends on displacement
+            float const MinVelocityMagnitude = 9.0f;
+            float const MaxVelocityMagnitude = 14.0f;
+            float const velocityMagnitude = MinVelocityMagnitude + (MaxVelocityMagnitude - MinVelocityMagnitude) * normalizedDisplacement;
+
+            // Scale
+            float const MinMaxScale = 1.5f;
+            float const MaxMaxScale = 4.0f;
+            float const maxScale = MinMaxScale + (MaxMaxScale - MinMaxScale) * normalizedDisplacement;
+
+            // Lifetime
+            float const maxLifetime =
+                2.0f
+                * std::max(velocityMagnitude, 8.0f) // Ensure long persistence with weak splashes
+                / SimulationParameters::GravityMagnitude;
+
+            //
+            // Spawn
+            //
+
+            if (shipId == NoneShipId)
+            {
+                assert(planeId == NonePlaneId);
+                shipId = mAllShips[0]->GetId();
+                planeId = mAllShips[shipId]->GetMaxPlaneId();
+            }
+            else
+            {
+                assert(planeId != NonePlaneId);
+            }
+
+            mAllShips[shipId]->SpawnWaterSplash(
+                planeId,
+                vec2f(centerPosition.x, oceanSurfaceY),
+                0.0f, // Depth
+                direction * velocityMagnitude,
+                maxScale / 4.0f, // Initial scale
+                maxScale,
+                mCurrentSimulationTime,
+                maxLifetime,
+                simulationParameters);
         }
     }
 
@@ -625,6 +703,7 @@ void World::ApplyBlastAt(
     // Apply side-effects
     OnBlast(
         NoneShipId, // Global
+        NonePlaneId, // Global
         targetPos,
         blastForceMagnitude,
         radius,

@@ -826,7 +826,9 @@ void Ship::ApplyBlastAt(
 
             mPoints.AddStaticForce(
                 pointIndex,
-                pointRadius.normalise(pointRadiusLength) * args.ForceMagnitude / std::sqrt(std::max((pointRadiusLength * 0.4f) + 0.6f, 1.0f)));
+                pointRadius.normalise(pointRadiusLength)
+                * args.ForceMagnitude * mPoints.GetStructuralMaterial(pointIndex).BlastSensitivity
+                / std::sqrt(std::max((pointRadiusLength * 0.4f) + 0.6f, 1.0f)));
         }
     }
 }
@@ -2053,6 +2055,29 @@ bool Ship::RestoreTriangle(ElementIndex triangleIndex)
     {
         return false;
     }
+}
+
+void Ship::SpawnWaterSplash(
+    PlaneId planeId,
+    vec2f const & position,
+    float depth,
+    vec2f const & velocity,
+    float initialScale,
+    float maxScale,
+    float currentSimulationTime,
+    float maxSimulationLifetime,
+    SimulationParameters const & simulationParameters)
+{
+    mPoints.CreateEphemeralParticleWaterSplash(
+        position,
+        depth,
+        velocity,
+        initialScale,
+        maxScale,
+        currentSimulationTime,
+        maxSimulationLifetime,
+        planeId,
+        simulationParameters);
 }
 
 }
