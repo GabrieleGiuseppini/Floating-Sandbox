@@ -443,6 +443,7 @@ private:
         {
             float MinScale;
             float MaxScale;
+            float MaxVisibilityAlpha;
             float PersonalitySeed;
             float LinearLifetimeProgress;
             float SkewedLifetimeProgress; // 0.5 at fixed duration after start
@@ -451,6 +452,7 @@ private:
             WaterFoamState()
                 : MinScale(0.0f)
                 , MaxScale(0.0f)
+                , MaxVisibilityAlpha(0.0f)
                 , PersonalitySeed(0.0f)
                 , LinearLifetimeProgress(0.0f)
                 , SkewedLifetimeProgress(0.0)
@@ -461,9 +463,11 @@ private:
             WaterFoamState(
                 float minScale,
                 float maxScale,
+                float maxVisibilityAlpha,
                 float personalitySeed)
                 : MinScale(minScale)
                 , MaxScale(maxScale)
+                , MaxVisibilityAlpha(maxVisibilityAlpha)
                 , PersonalitySeed(personalitySeed)
                 , LinearLifetimeProgress(0.0f)
                 , SkewedLifetimeProgress(0.0)
@@ -476,12 +480,14 @@ private:
         {
             float MinScale;
             float MaxScale;
+            float MaxVisibilityAlpha;
             float PersonalitySeed;
             float LifetimeProgress;
 
             WaterSplashState()
                 : MinScale(0.0f)
                 , MaxScale(0.0f)
+                , MaxVisibilityAlpha(0.0f)
                 , PersonalitySeed(0.0f)
                 , LifetimeProgress(0.0f)
             {
@@ -490,9 +496,11 @@ private:
             WaterSplashState(
                 float minScale,
                 float maxScale,
+                float maxVisibilityAlpha,
                 float personalitySeed)
                 : MinScale(minScale)
                 , MaxScale(maxScale)
+                , MaxVisibilityAlpha (maxVisibilityAlpha)
                 , PersonalitySeed(personalitySeed)
                 , LifetimeProgress(0.0f)
             {
@@ -1039,6 +1047,7 @@ public:
         float maxScale,
         float currentSimulationTime,
         float maxSimulationLifetime,
+        float maxVisibilityAlpha,
         PlaneId planeId,
         SimulationParameters const & simulationParameters);
 
@@ -1050,6 +1059,7 @@ public:
         float maxScale,
         float currentSimulationTime,
         float maxSimulationLifetime,
+        float maxVisibilityAlpha,
         PlaneId planeId,
         SimulationParameters const & simulationParameters);
 

@@ -325,8 +325,9 @@ void World::OnBlast(
                 direction * velocityMagnitude,
                 maxScale / 4.0f, // Initial scale
                 maxScale,
-                mCurrentSimulationTime,
                 maxLifetime,
+                1.0f, // Alpha
+                mCurrentSimulationTime,
                 simulationParameters);
         }
     }

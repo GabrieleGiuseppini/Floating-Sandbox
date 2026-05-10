@@ -4201,6 +4201,7 @@ void Ship::InternalSpawnWaterFoam(
             maxScale,
             currentSimulationTime,
             maxLifetime,
+            1.0f, // Alpha
             planeId,
             simulationParameters);
 
@@ -4293,6 +4294,7 @@ void Ship::InternalSpawnWaterSplash(
             maxScale,
             currentSimulationTime,
             maxLifetime,
+            1.0f, // Alpha
             planeId,
             simulationParameters);
 

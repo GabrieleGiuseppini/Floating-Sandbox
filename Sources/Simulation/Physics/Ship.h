@@ -352,6 +352,18 @@ public:
 
     bool RestoreTriangle(ElementIndex triangleIndex);
 
+    void SpawnWaterFoam(
+        PlaneId planeId,
+        vec2f const & position,
+        float depth,
+        float velocityX,
+        float initialScale,
+        float maxScale,
+        float maxSimulationLifetime,
+        float visibilityAlpha,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
+
     void SpawnWaterSplash(
         PlaneId planeId,
         vec2f const & position,
@@ -359,8 +371,9 @@ public:
         vec2f const & velocity,
         float initialScale,
         float maxScale,
-        float currentSimulationTime,
         float maxSimulationLifetime,
+        float visibilityAlpha,
+        float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
 private:

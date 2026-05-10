@@ -1058,8 +1058,17 @@
 				+ Blast Tool
 					+ Use blast sensitivity of material for the physics
 					+ Nail down direction
-		- @ Tornado bottom
-			- WAS: see if can incorporate also "mist" for tornadoes
+		= @ Tornado bottom
+			+ Tornado physics: use blast sensitivity
+			+ Splash
+				+ Smaller
+				+ More upward
+				+ Incorporate alpha
+				+ Use toggle
+			= Foam
+				+ Takes alpha
+				+ Use toggle
+				- TODO: cleanup
 		X @ Bubbles rising?
 		X @ Fishes rising?
 		X @ NPC floating?

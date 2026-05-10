@@ -1224,7 +1224,7 @@ void Ship::ApplyTornado(
 
                 mPoints.AddStaticForce(
                     pointIndex,
-                    tornadoForce);
+                    tornadoForce * mPoints.GetStructuralMaterial(pointIndex).BlastSensitivity);
             }
         }
     }
@@ -2057,6 +2057,31 @@ bool Ship::RestoreTriangle(ElementIndex triangleIndex)
     }
 }
 
+void Ship::SpawnWaterFoam(
+    PlaneId planeId,
+    vec2f const & position,
+    float depth,
+    float velocityX,
+    float initialScale,
+    float maxScale,
+    float maxSimulationLifetime,
+    float visibilityAlpha,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
+{
+    mPoints.CreateEphemeralParticleWaterFoam(
+        position,
+        depth,
+        velocityX,
+        initialScale,
+        maxScale,
+        currentSimulationTime,
+        maxSimulationLifetime,
+        visibilityAlpha,
+        planeId,
+        simulationParameters);
+}
+
 void Ship::SpawnWaterSplash(
     PlaneId planeId,
     vec2f const & position,
@@ -2064,8 +2089,9 @@ void Ship::SpawnWaterSplash(
     vec2f const & velocity,
     float initialScale,
     float maxScale,
-    float currentSimulationTime,
     float maxSimulationLifetime,
+    float visibilityAlpha,
+    float currentSimulationTime,
     SimulationParameters const & simulationParameters)
 {
     mPoints.CreateEphemeralParticleWaterSplash(
@@ -2076,6 +2102,7 @@ void Ship::SpawnWaterSplash(
         maxScale,
         currentSimulationTime,
         maxSimulationLifetime,
+        visibilityAlpha,
         planeId,
         simulationParameters);
 }

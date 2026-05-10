@@ -719,6 +719,7 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
     float maxScale,
     float currentSimulationTime,
     float maxSimulationLifetime,
+    float maxVisibilityAlpha,
     PlaneId planeId,
     SimulationParameters const & simulationParameters)
 {
@@ -802,6 +803,7 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
     mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::WaterFoamState(
         initialScale,
         maxScale,
+        maxVisibilityAlpha,
         GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
@@ -824,6 +826,7 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
     float maxScale,
     float currentSimulationTime,
     float maxSimulationLifetime,
+    float maxVisibilityAlpha,
     PlaneId planeId,
     SimulationParameters const & simulationParameters)
 {
@@ -903,6 +906,7 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
     mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::WaterSplashState(
         initialScale,
         maxScale,
+        maxVisibilityAlpha,
         GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
@@ -2126,7 +2130,7 @@ void Points::UpdateEphemeralParticles(
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.SkewedLifetimeProgress = skewedLifetimeProgress;
 
                         // Damp X velocity
-                        mVelocityBuffer[pointIndex].x *= 0.9975f;
+                        mVelocityBuffer[pointIndex].x *= 0.9995f;
 
                         // Constrain onto ocean surface, simulating falling down/floating up
                         //
@@ -2784,7 +2788,7 @@ void Points::UploadEphemeralParticles(
                     GetPosition(pointIndex),
                     state.VerticalAxis,
                     scale,
-                    alpha);
+                    alpha * state.MaxVisibilityAlpha);
 
                 break;
             }
@@ -2813,7 +2817,7 @@ void Points::UploadEphemeralParticles(
                     GameTextureDatabases::GenericMipMappedTextureGroups::WaterSplash,
                     GetPosition(pointIndex),
                     scale,
-                    alpha * 0.7f);
+                    alpha * 0.7f * state.MaxVisibilityAlpha);
 
                 break;
             }
