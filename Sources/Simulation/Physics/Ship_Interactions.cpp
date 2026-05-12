@@ -2066,6 +2066,7 @@ void Ship::SpawnWaterFoam(
     float maxScale,
     float maxSimulationLifetime,
     float visibilityAlpha,
+    float visibilityHaste,
     float currentSimulationTime,
     SimulationParameters const & simulationParameters)
 {
@@ -2078,6 +2079,7 @@ void Ship::SpawnWaterFoam(
         currentSimulationTime,
         maxSimulationLifetime,
         visibilityAlpha,
+        visibilityHaste,
         planeId,
         simulationParameters);
 }

@@ -720,6 +720,7 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
     float currentSimulationTime,
     float maxSimulationLifetime,
     float maxVisibilityAlpha,
+    float visibilityHaste,
     PlaneId planeId,
     SimulationParameters const & simulationParameters)
 {
@@ -800,10 +801,12 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
     mEphemeralParticleAttributes1Buffer[pointIndex].Type = EphemeralType::WaterFoam;
     mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime = currentSimulationTime;
     mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime = maxSimulationLifetime;
+    assert(visibilityHaste > 0.0f);
     mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::WaterFoamState(
         initialScale,
         maxScale,
         maxVisibilityAlpha,
+        1.0f / visibilityHaste,
         GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
@@ -2775,9 +2778,10 @@ void Points::UploadEphemeralParticles(
                     baseScale * (1.0f + SmoothStep(0.0f, 1.0f, linearLifetimeProgress) * 0.85f),
                     baseScale * (0.8f - SmoothStep(0.0f, 1.0f, linearLifetimeProgress) * 0.70f)); // Start squashed!
 
-                // Calculate alpha: ~parabolic with progress
+                // Calculate alpha: ~parabolic with progress,
+                // but obeying visibility haste
                 float const alpha =
-                    SmoothStep(0.0f, LifetimePeak1, linearLifetimeProgress)
+                    SmoothStep(0.0f, LifetimePeak1 * state.InverseVisibilityHaste, linearLifetimeProgress)
                     - SmoothStep(LifetimePeak2, 1.0f, linearLifetimeProgress);
 
                 // Upload foam

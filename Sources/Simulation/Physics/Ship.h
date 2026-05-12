@@ -361,6 +361,7 @@ public:
         float maxScale,
         float maxSimulationLifetime,
         float visibilityAlpha,
+        float visibilityHaste,
         float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 

@@ -444,6 +444,7 @@ private:
             float MinScale;
             float MaxScale;
             float MaxVisibilityAlpha;
+            float InverseVisibilityHaste;
             float PersonalitySeed;
             float LinearLifetimeProgress;
             float SkewedLifetimeProgress; // 0.5 at fixed duration after start
@@ -453,6 +454,7 @@ private:
                 : MinScale(0.0f)
                 , MaxScale(0.0f)
                 , MaxVisibilityAlpha(0.0f)
+                , InverseVisibilityHaste(0.0f)
                 , PersonalitySeed(0.0f)
                 , LinearLifetimeProgress(0.0f)
                 , SkewedLifetimeProgress(0.0)
@@ -464,10 +466,12 @@ private:
                 float minScale,
                 float maxScale,
                 float maxVisibilityAlpha,
+                float inverseVisibilityHaste,
                 float personalitySeed)
                 : MinScale(minScale)
                 , MaxScale(maxScale)
                 , MaxVisibilityAlpha(maxVisibilityAlpha)
+                , InverseVisibilityHaste(inverseVisibilityHaste)
                 , PersonalitySeed(personalitySeed)
                 , LinearLifetimeProgress(0.0f)
                 , SkewedLifetimeProgress(0.0)
@@ -1048,6 +1052,7 @@ public:
         float currentSimulationTime,
         float maxSimulationLifetime,
         float maxVisibilityAlpha,
+        float visibilityHaste,
         PlaneId planeId,
         SimulationParameters const & simulationParameters);
 

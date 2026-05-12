@@ -1060,7 +1060,7 @@
 				+ Blast Tool
 					+ Use blast sensitivity of material for the physics
 					+ Nail down direction
-		= @ Tornado bottom
+		+ @ Tornado bottom
 			+ Tornado physics: use blast sensitivity
 			+ Splash
 				+ Smaller
@@ -1073,17 +1073,20 @@
 						+ Then alternate L and R
 							+ Replace foamAndSplashSign
 					+ Nail down dir
-			= Foam
+			+ Foam
 				+ Takes alpha
 				+ Use toggle
 				+ Randomize texture rot angle
 					+ TextureFrameMetadata has valid permutations
 					+ ShipRenderContext::Upload... chooses permutation based off personality seed
 				+ Randomize inter-particle offset, even if by a little bit
-				= Make time-based as above
-					- FIX: repeats: move randomness to time
-				- Add spawn param for "visibility haste"
-				- Cleanup
+				+ Make time-based as above
+					+ FIX: repeats
+						+ More time randomness
+						+ More frequency
+				+ Add spawn param for "visibility haste"
+					+ Replace with inverse, to avoid division
+				+ Cleanup
 		X @ Bubbles rising?
 		X @ Fishes rising?
 		X @ NPC floating?
@@ -1093,6 +1096,8 @@
 			- "FoobarSensitivity"
 			- If so: should only be sized for eph particles? Hiding switch/addition of offset via getter?
 				- Also: make eph particle state the same, can save memory
+				- Strategy:
+					- TODOHERE: these buffers only by getters?
 
 		+ Try: displacement math should consider velocity *perp* to frontier edge
 		+ Rewrite as more grounded in physics
@@ -1135,7 +1140,7 @@
 			- Top height must be for VERY small time
 			- Try: use distance traveled for squashing
 
-		- Try: relative velocity for all (impact, displacements)
+		- Try: relative velocity for surface/water ship::update() (impact, displacements)
 
 		- Try: replace engine wake with bubbles
 			- Nuke all about wake if this goes through
@@ -1147,7 +1152,6 @@
 		- Cleanup:
 			+ Finalize alpha of foam (@ eph particle upload)
 			- See if foam eph particle state's SkewedLifetime is still needed
-			- See if foam eph particle state's MinSize is still needed (it's always zero)
 
 		- See if can add a few more eph particles
 			- Make it a runtime settings, and choose between 4K, 6K, and 8K based on calibration

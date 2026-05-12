@@ -4202,6 +4202,7 @@ void Ship::InternalSpawnWaterFoam(
             currentSimulationTime,
             maxLifetime,
             1.0f, // Alpha
+            1.0f, // Neutral haste
             planeId,
             simulationParameters);
 
