@@ -994,6 +994,8 @@
 						- Finalize authoring, after beta results
 							- First, copy current psds as authoring files, and commit them
 							- Redo after buying
+								- Just two copies: second is half size, @ center
+								- Only need one texture
 					+ Eph particle
 
 		+ Try displacement also against waves: replace vertical velocity with velocity against water surface
@@ -1065,13 +1067,32 @@
 				+ More upward
 				+ Incorporate alpha
 				+ Use toggle
+				+ TOO MANY!
+					+ Lower freq
+					+ Change to time-based: fix Lifetime, N and calc next timestamp
+						+ Then alternate L and R
+							+ Replace foamAndSplashSign
+					+ Nail down dir
 			= Foam
 				+ Takes alpha
 				+ Use toggle
-				- TODO: cleanup
+				+ Randomize texture rot angle
+					+ TextureFrameMetadata has valid permutations
+					+ ShipRenderContext::Upload... chooses permutation based off personality seed
+				+ Randomize inter-particle offset, even if by a little bit
+				= Make time-based as above
+					- FIX: repeats: move randomness to time
+				- Add spawn param for "visibility haste"
+				- Cleanup
 		X @ Bubbles rising?
 		X @ Fishes rising?
 		X @ NPC floating?
+
+		- Rethink: should we replace material's blast_sensitivity with a synthetic coeff created @ CreateEphParticle time?
+			! After all it depends on role, not on material itself
+			- "FoobarSensitivity"
+			- If so: should only be sized for eph particles? Hiding switch/addition of offset via getter?
+				- Also: make eph particle state the same, can save memory
 
 		+ Try: displacement math should consider velocity *perp* to frontier edge
 		+ Rewrite as more grounded in physics

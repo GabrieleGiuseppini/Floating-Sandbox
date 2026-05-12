@@ -150,6 +150,12 @@ private:
         float StartSimulationTimestamp;
         float LastActivitySimulationTimestamp; // To detect idle
 
+        float NextWaterFoamSpawnTimestamp;
+        size_t WaterFoamSpawnCounter;
+
+        float NextWaterSplashSpawnTimestamp;
+        size_t WaterSplashSpawnCounter;
+
         Tornado(
             ElementIndex id,
             float currentX,
@@ -170,6 +176,10 @@ private:
             , CurrentRotationPhase(0.0f)
             , StartSimulationTimestamp(currentSimulationTime)
             , LastActivitySimulationTimestamp(currentSimulationTime)
+            , NextWaterFoamSpawnTimestamp(currentSimulationTime)
+            , WaterFoamSpawnCounter(0)
+            , NextWaterSplashSpawnTimestamp(currentSimulationTime)
+            , WaterSplashSpawnCounter(0)
         { }
 
         void ResetToBegin(

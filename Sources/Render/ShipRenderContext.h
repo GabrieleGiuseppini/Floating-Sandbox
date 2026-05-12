@@ -956,12 +956,17 @@ public:
             static_cast<TextureFrameIndex>(std::floor(frameIndexF)),
             static_cast<TextureFrameIndex>(frameCount - 1));
 
+        // Choose pseudo-rotation
+        TextureAtlasFrameMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase> const & frame =
+            mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups>(textureGroup, frameIndex));
+        size_t const textureCoordinatesPermutationIndex = std::min(
+            static_cast<size_t>(personalitySeed * static_cast<float>(frame.TextureCoordinatesValidPermutations.size())),
+            frame.TextureCoordinatesValidPermutations.size() - 1);
+        auto const & textureCoordinatesPermutation = frame.TextureCoordinatesValidPermutations[textureCoordinatesPermutationIndex];
+
         //
         // Populate the texture quad
         //
-
-        TextureAtlasFrameMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase> const & frame =
-            mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups>(textureGroup, frameIndex));
 
         vec2f const horizontalAxis = verticalAxis.to_perpendicular(); // Points left
         vec2f const left = horizontalAxis * (-frame.FrameMetadata.AnchorCenterWorld.x) * scale.width;
@@ -993,7 +998,7 @@ public:
         vertexBuffer.emplace_back(
             centerPosition,
             topLeft,
-            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
+            textureCoordinatesPermutation[0],
             static_cast<float>(planeId),
             1.0f,
             0.0f,
@@ -1004,7 +1009,7 @@ public:
         vertexBuffer.emplace_back(
             centerPosition,
             topRight,
-            frame.TextureCoordinatesTopRight,
+            textureCoordinatesPermutation[1],
             static_cast<float>(planeId),
             1.0f,
             0.0f,
@@ -1015,7 +1020,7 @@ public:
         vertexBuffer.emplace_back(
             centerPosition,
             bottomLeft,
-            frame.TextureCoordinatesBottomLeft,
+            textureCoordinatesPermutation[3],
             static_cast<float>(planeId),
             1.0f,
             0.0f,
@@ -1026,7 +1031,7 @@ public:
         vertexBuffer.emplace_back(
             centerPosition,
             bottomRight,
-            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
+            textureCoordinatesPermutation[2],
             static_cast<float>(planeId),
             1.0f,
             0.0f,

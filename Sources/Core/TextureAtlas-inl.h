@@ -147,6 +147,40 @@ TextureAtlasFrameMetadata<TTextureDatabase> TextureAtlasFrameMetadata<TTextureDa
 }
 
 template <typename TTextureDatabase>
+typename TextureAtlasFrameMetadata<TTextureDatabase>::TextureCoordinatesValidPermutationsType TextureAtlasFrameMetadata<TTextureDatabase>::MakeValidTextureCoordinatesPermutations(
+    vec2f textureCoordinatesBottomLeft,
+    vec2f textureCoordinatesTopRight)
+{
+    // In CW order
+    std::array<vec2f, 4> templateTextureCoordinates = {
+        // Top-left
+        vec2f(textureCoordinatesBottomLeft.x, textureCoordinatesTopRight.y),
+        // Top-right
+        textureCoordinatesTopRight,
+        // Bottom-right
+        vec2f(textureCoordinatesTopRight.x, textureCoordinatesBottomLeft.y),
+        // Bottom-left
+        textureCoordinatesBottomLeft
+    };
+
+    TextureCoordinatesValidPermutationsType perms;
+
+    for (size_t offset = 0; offset < 4; ++offset)
+    {
+        for (size_t i = 0; i < 4; ++i)
+        {
+            // Direct
+            perms[offset][i] = templateTextureCoordinates[(offset + i) % 4];
+
+            // Mirrored
+            perms[offset + 4][i] = templateTextureCoordinates[(8 - offset - i) % 4];
+        }
+    }
+
+    return perms;
+}
+
+template <typename TTextureDatabase>
 void TextureAtlasMetadata<TTextureDatabase>::Serialize(picojson::object & root) const
 {
     picojson::object size;

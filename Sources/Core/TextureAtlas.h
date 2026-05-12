@@ -16,6 +16,7 @@
 #include <picojson.h>
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <memory>
 #include <numeric>
@@ -43,11 +44,14 @@ struct TextureAtlasFrameMetadata
 {
 public:
 
+    using TextureCoordinatesValidPermutationsType = std::array<std::array<vec2f, 4>, 8>;
+
     float TextureSpaceWidth; // Width in [0.0, 1.0] space (where 1.0 is the atlas' width), exclusive of dead-center dx's
     float TextureSpaceHeight; // Height in [0.0, 1.0] space (where 1.0 is the atlas' height), exclusive of dead-center dx's
 
     vec2f TextureCoordinatesBottomLeft; // In [0.0, 1.0] space, inclusive dead-center dx
     vec2f TextureCoordinatesTopRight; // In [0.0, 1.0] space, inclusive dead-center dx
+    TextureCoordinatesValidPermutationsType TextureCoordinatesValidPermutations; // For quick pseudo-rotations, when we cannot rotate the quad
 
     int FrameLeftX; // In pixel-coordinate space
     int FrameBottomY; // In pixel-coordinate space
@@ -66,6 +70,7 @@ public:
         , TextureSpaceHeight(textureSpaceHeight)
         , TextureCoordinatesBottomLeft(textureCoordinatesBottomLeft)
         , TextureCoordinatesTopRight(textureCoordinatesTopRight)
+        , TextureCoordinatesValidPermutations(MakeValidTextureCoordinatesPermutations(textureCoordinatesBottomLeft, textureCoordinatesTopRight))
         , FrameLeftX(frameLeftX)
         , FrameBottomY(frameBottomY)
         , FrameMetadata(frameMetadata)
@@ -84,6 +89,12 @@ public:
     void Serialize(picojson::object & root) const;
 
     static TextureAtlasFrameMetadata Deserialize(picojson::object const & root);
+
+private:
+
+    static TextureCoordinatesValidPermutationsType MakeValidTextureCoordinatesPermutations(
+        vec2f textureCoordinatesBottomLeft,
+        vec2f textureCoordinatesTopRight);
 };
 
 /*
