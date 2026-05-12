@@ -161,7 +161,7 @@ void Ship::InternalUpdateExplosionStateMachine(
             mPoints.AddStaticForce(
                 pointIndex,
                 blastDir
-                    * explosionStateMachine.BlastForceMagnitude * mPoints.GetStructuralMaterial(pointIndex).BlastSensitivity
+                    * explosionStateMachine.BlastForceMagnitude * mPoints.GetFoobarSensitivity(pointIndex)
                     / std::sqrt(std::max((pointRadiusLength * 0.3f) + 0.7f, 1.0f)));
 
             // Update water velocity

@@ -827,7 +827,7 @@ void Ship::ApplyBlastAt(
             mPoints.AddStaticForce(
                 pointIndex,
                 pointRadius.normalise(pointRadiusLength)
-                * args.ForceMagnitude * mPoints.GetStructuralMaterial(pointIndex).BlastSensitivity
+                * args.ForceMagnitude * mPoints.GetFoobarSensitivity(pointIndex)
                 / std::sqrt(std::max((pointRadiusLength * 0.4f) + 0.6f, 1.0f)));
         }
     }
@@ -1224,7 +1224,7 @@ void Ship::ApplyTornado(
 
                 mPoints.AddStaticForce(
                     pointIndex,
-                    tornadoForce * mPoints.GetStructuralMaterial(pointIndex).BlastSensitivity);
+                    tornadoForce * mPoints.GetFoobarSensitivity(pointIndex));
             }
         }
     }

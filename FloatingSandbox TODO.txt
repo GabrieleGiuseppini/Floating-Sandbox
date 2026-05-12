@@ -6,7 +6,7 @@
 
 - Roadmap:
 
-	= Tornadoes:
+	+ Tornadoes:
 		! Gist
 			! Once tool is selected, user clicks down and tornado spawns there, or an existing tornado there is picked
 			! MouseMove:
@@ -354,9 +354,8 @@
 		        //vec3f(0.55f, 0.55f, 0.55f), // Cylinder
 		+ Send beta, bump up version
 		+ Don't commit until feedback
-
-		= Storm supercell above it
-			= Option 1: InteractiveBodies uploads straight to World/RenderContext
+		X Storm supercell above it
+			X Option 1: InteractiveBodies uploads straight to World/RenderContext
 				- ...which does parallax
 
 				- Buffer:
@@ -377,7 +376,7 @@
 					- With zero clouds
 					- During storm
 
-			= Option 2: new shader & betch, parallel to tornado
+			X Option 2: new shader & betch, parallel to tornado
 				= WorldRenderContext: 
 					+ New buffer & VBO, "tornadoCloud"
 					+ OrthoMatrix, & Time
@@ -427,8 +426,7 @@
 
 			- If works:
 				- Add to Android port plan: rendering of cloud
-
-		- Alternatives to cloud:
+		X Alternatives to cloud:
 			- Cluster of clouds above tornado
 				- Option 1: actual clouds, fully dark
 					- Ad-hoc upload (i.e. outside of Clouds container) as we have to calc our own NDC coords
@@ -443,12 +441,6 @@
 			- If works:
 				- Add to Android port plan: TODO
 
-		- P.S: One last thing I nearly forgot: in the current beta, when you pause and then use the Tornado slider, it'll still spawn every severity meter spawned when paused, 
-		  but only for a split second when you unpause. Not something that necessarily needs to be addressed, only if you think it's an issue that should be or not for the effort it'd take
-
-		- Tornado also as phenomenon ?
-			- Spawned by InteractiveBodies? But then it's not "interactive" bodies anymore....
-
 	+ Fix: ShaderManager: infoLog: null-terminate strings
 
 	+ See ocean glitch: bulkyness to minimum, then wavemaker waterline
@@ -458,17 +450,6 @@
 		+ Fix sin args: when 1.0-mod can be 1.0
 		+ Default smoothing: 0.016
 		+ Port to Android
-
-	- See ocean floor custom settings bug on community server
-
-	- TimCan's new sounds for PC+Mobile
-			- FS Deep Horn
-			- Industrial Horn
-			- Queen Horn
-			- Steam Whistle FS Mobile 1
-			- Super whistle
-		- PC
-		- Android
 
 	+ Fix Mia's crash
 		+ ImageTools::InternalResizeDimension_BoxFilter
@@ -483,7 +464,6 @@
 				- srcI == latSize (11352)
 		+ Port to Android
 			+ Just ImageTools.cpp/.h
-
 
 	X Look into stutter:
 		+ See if mouse moves: it does :-(
@@ -867,22 +847,13 @@
 		+ Port changes to Android
 			+ Just flat shader
 
-	- See if can improve FindFreeEphemeralParticle's perf
-		+ Thing 1: remove need for currentSimulationTime
-		- TODO: would also be nice to ensure "pri 0" particles (e.g. water splashes) are not killed when we need "pri 100" (e.g. bubles)
-		- Thing 2:
-			- A stack for free ephemeral particles (init'd with all)
-			- A TODO for ordered by time in-use ephemeral particles (remember we address it by content (i.e. point index, when we kill an eph particle))
-				- List, but with cheap allocation
-				- Epk particle i needs pointer to own node in list				
-
 	= Splashes and Foam
-		= Splashes:
+		+ Splashes:
 			! Same concept as silt dust
 			+ Textures
 			+ Eph particles
 			+ Spawning of eph particles
-			= Fine-tune:
+			+ Fine-tune:
 				+ Must not sink and must not remain underwater -- must always go to surface
 					+ Change props so it floats
 				+ Less-dense texture
@@ -896,19 +867,19 @@
 				+ Multiple particle randomness loop moves to Ship::InternalSpawnWaterSplash()
 				+ Impact direction from ocean surface normal
 
-				= Shade texture depending on flat/depth color and texture
+				+ Shade texture depending on flat/depth color and texture
 					+ GameOpenGL: upload mipmapped texture region
-					= GlobalRenderContext::ReshadeDependentOceanTextures(color)
-							= Impl
+					+ GlobalRenderContext::ReshadeDependentOceanTextures(color)
+							+ Impl
 								+ Transform: based on blue
-					= GlobalRenderContext::ReshadeDependentOceanTextures(texture)
+					+ GlobalRenderContext::ReshadeDependentOceanTextures(texture)
 							+ Impl
 								+ Transform: simply apply texture sample, with source alpha
 								+ Try with scaling to whole texture
-							- Test:
-								- All mipmap levels
-								- No bleeding 
-									- Need to save to see neighbours
+							+ Test:
+								+ All mipmap levels
+								+ No bleeding 
+									+ Need to save to see neighbours
 					+ Calls:
 						+ WRC::ApplyOceanRenderParametersChanges:
 							+ Call WRC::ReshadeDependentOceanTextures(renderParameters)
@@ -917,8 +888,6 @@
 							+ Call WRC::ReshadeDependentOceanTextures(renderParameters)
 						+ (new) WRC::ReshadeDependentOceanTextures(renderParameters):
 							+ Switch on render modes and call appropriate GRC::ReshadeDependentOceanTextures(.)
-
-
 		= Foam:
 			= For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
 				+ Foam: seamless texture along x, as Generic MipMapped
@@ -1090,15 +1059,9 @@
 		X @ Bubbles rising?
 		X @ Fishes rising?
 		X @ NPC floating?
-
-		- Rethink: should we replace material's blast_sensitivity with a synthetic coeff created @ CreateEphParticle time?
+		+ Replace material's blast_sensitivity with a synthetic coeff created @ CreateEphParticle time
 			! After all it depends on role, not on material itself
-			- "FoobarSensitivity"
-			- If so: should only be sized for eph particles? Hiding switch/addition of offset via getter?
-				- Also: make eph particle state the same, can save memory
-				- Strategy:
-					- TODOHERE: these buffers only by getters?
-
+			+ "FoobarSensitivity"
 		+ Try: displacement math should consider velocity *perp* to frontier edge
 		+ Rewrite as more grounded in physics
 			! Goals:
@@ -1127,18 +1090,11 @@
 
 			+ Impl of goal 1
 				+ If goes through: recycle calcn' of ocean surface normal
-
 		+ Decide on engine's displacement
 			+ It's currently commented-out - AND COMMITTED AS SUCH
-
 		X Try: displacement should also come from velocity in same dir as ocean surface
 			- Displace up after, displace down behind
 			- Rethink displacement: it's two components now
-
-		- Foam improvements:
-			+ Try: peak for scale right after starting, then slowly down (Smoothstep)
-			- Top height must be for VERY small time
-			- Try: use distance traveled for squashing
 
 		- Try: relative velocity for surface/water ship::update() (impact, displacements)
 
@@ -1146,21 +1102,14 @@
 			- Nuke all about wake if this goes through
 			- Add to Android plan
 
-		- Test:
-			- Wave displacement height setting
+		+ Test:
+			+ Wave displacement height setting
 
 		- Cleanup:
 			+ Finalize alpha of foam (@ eph particle upload)
 			- See if foam eph particle state's SkewedLifetime is still needed
 
-		- See if can add a few more eph particles
-			- Make it a runtime settings, and choose between 4K, 6K, and 8K based on calibration
-				- TODO: how to enforce it won't change during game? Make sure we never use it @ runtime, only at initialization times
-				! Note: lighting algo doesn't depend on # of eph particles!
-				- Note: ShipRenderContext needs it, but can be given it @ creation time
-
 		- Android Port Plan
-			- Structural materials (blast_sensitivity)
 			- Textures (splashes, foam) and enums
 			- Foam
 				- ShipRenderContext:: new uploader
@@ -1168,13 +1117,31 @@
 				- WRC, GRC: methods and members (DB and actual texture)
 			- Settings
 				- Foam * 2 + Splash, where DoDisplaceWater lives
-			- Max eph particles and calibration
 
 
 		- Merge into Tornadoes
 
 		- Changelist
-		
+
+	- Eph particle rearc: make it a runtime setting - default 8K, and choose between 4K, 8K, 16K based on calibration
+		! Note: lighting algo doesn't depend on # of eph particles!
+		! Note: ShipRenderContext needs it, but can be given it @ creation time
+		- 1. SimulationParameters
+			- Needs to only be enforced at ship load (Ship+ShipRenderContext), make sure we never use it @ runtime, only at initialization times
+		- 2. Eph particle state @ Points is sized for eph particles only
+			- Strategy: hide access thru getter, which does math offset
+			- See if Points::UpdateEphParticles better deal with "ephemeralParticleIndex", check for rename: now it means "index in eph particles"
+		- 3. See if can improve FindFreeEphemeralParticle's perf
+			+ Thing 1: remove need for currentSimulationTime
+			- TODO: would also be nice to ensure "pri 0" particles (e.g. water splashes) are not killed when we need "pri 100" (e.g. bubles)
+			- Thing 2:
+				- A stack for free ephemeral particles (init'd with all)
+				- A TODO for ordered by time in-use ephemeral particles (remember we address it by content (i.e. point index, when we kill an eph particle))
+					- List, but with cheap allocation
+					- Epk particle i needs pointer to own node in list				
+
+		- Android Port Plan
+			- Max eph particles being instanced setting, and calibration		
 
 	= Run Discord poll for next:
 		! Customizable materials
@@ -1184,12 +1151,19 @@
 		+ https://forms.gle/PcmJ2kCqxp8UVmfX8
 
 
-
 	- Nuke all calls to glBindTexture(GL_TEXTURE_2D, 0) -- this just changes to default texture
 		- Also @ Android
 
-
 	+ Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
+
+	- TimCan's new sounds for PC+Mobile
+			- FS Deep Horn
+			- Industrial Horn
+			- Queen Horn
+			- Steam Whistle FS Mobile 1
+			- Super whistle
+		- PC
+		- Android
 
 	- Try OpenGL/Upload optimization:
 		! Point Positions get uploaded to VBO in one go, with no interleaving, and with no local buffering

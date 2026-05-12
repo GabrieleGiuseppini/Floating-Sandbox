@@ -66,6 +66,7 @@ void Points::Add(
         structuralMaterial.BuoyancyVolumeFill,
         structuralMaterial.ThermalExpansionCoefficient));
     mCachedDepthBuffer.emplace_back(mParentWorld.GetOceanSurface().GetDepth(position));
+    mFoobarSensitivityBuffer.emplace_back(1.0f);
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
 
@@ -193,6 +194,7 @@ void Points::CreateEphemeralParticleAirBubble(
         airBubbleBuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
+    mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
@@ -275,6 +277,7 @@ void Points::CreateEphemeralParticleDebris(
     mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
+    mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
@@ -372,6 +375,7 @@ void Points::CreateEphemeralParticleSiltCloud(
         buoyancyVolumeFill,
         siltCloudStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
+    mFoobarSensitivityBuffer[pointIndex] = 0.05f; // Don't want 'em to fly away with explosions
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = siltCloudStructuralMaterial.WaterIntake;
@@ -499,6 +503,7 @@ void Points::InternalCreateEphemeralParticleSmoke(
         smokeStructuralMaterial.BuoyancyVolumeFill,
         smokeStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
+    mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = smokeStructuralMaterial.WaterIntake;
@@ -581,6 +586,7 @@ void Points::CreateEphemeralParticleSparkle(
     mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
+    mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
@@ -669,6 +675,7 @@ void Points::CreateEphemeralParticleWakeBubble(
         waterStructuralMaterial.BuoyancyVolumeFill,
         waterStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
+    mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterStructuralMaterial.WaterIntake;
@@ -771,6 +778,7 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
         buoyancyVolumeFill,
         waterFoamStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth; // Note: might be pointless if we're spawning while calculating new cached depths
+    mFoobarSensitivityBuffer[pointIndex] = 0.0f; // Don't want 'em to fly away with explosions
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterFoamStructuralMaterial.WaterIntake;
@@ -876,6 +884,7 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
         buoyancyVolumeFill,
         waterSplashStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth; // Note: might be pointless if we're spawning while calculating new cached depths
+    mFoobarSensitivityBuffer[pointIndex] = 0.0f; // Don't want 'em to fly away with explosions
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterSplashStructuralMaterial.WaterIntake;

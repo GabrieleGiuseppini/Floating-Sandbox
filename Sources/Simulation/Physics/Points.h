@@ -743,6 +743,7 @@ public:
         , mAirWaterInterfaceInverseWidthBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
         , mCachedDepthBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mFoobarSensitivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Pressure and water dynamics
         , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
@@ -1546,6 +1547,11 @@ public:
     void SwapCachedDepthBuffer(Buffer<float> & other)
     {
         mCachedDepthBuffer.swap(other);
+    }
+
+    float GetFoobarSensitivity(ElementIndex pointElementIndex) const
+    {
+        return mFoobarSensitivityBuffer[pointElementIndex];
     }
 
     /*
@@ -2487,6 +2493,7 @@ private:
     Buffer<float> mAirWaterInterfaceInverseWidthBuffer; // The reciprocal of the air-water interface, to control the damping we perform against buoyancy oscillations
     Buffer<BuoyancyCoefficients> mBuoyancyCoefficientsBuffer;
     Buffer<float> mCachedDepthBuffer; // Positive when underwater
+    Buffer<float> mFoobarSensitivityBuffer; // At the moment, used by eph particles only to reduce/zero effect of certain force fields on e.g. dust, foam
 
     Buffer<vec2f> mIntegrationFactorBuffer;
 

@@ -111,7 +111,6 @@ public:
 
     // Misc
     bool ExplodesOnDamage;
-    float BlastSensitivity; // To prevent mostly ephemeral particles from flying away during explosions
     float WindReceptivity;
     float WaterReactivity; // When > 0, material explodes with this quantity of water threshold
     bool IsLegacyElectrical;
@@ -191,7 +190,6 @@ public:
         float explosiveCombustionHeatRadius,
         // Misc
         bool explodesOnDamage,
-        float blastSensitivity,
         float windReceptivity,
         float waterReactivity,
         bool isLegacyElectrical,
@@ -230,7 +228,6 @@ public:
         , ExplosiveCombustionHeat(explosiveCombustionHeat)
         , ExplosiveCombustionHeatRadius(explosiveCombustionHeatRadius)
         , ExplodesOnDamage(explodesOnDamage)
-        , BlastSensitivity(blastSensitivity)
         , WindReceptivity(windReceptivity)
         , WaterReactivity(waterReactivity)
         , IsLegacyElectrical(isLegacyElectrical)
@@ -275,7 +272,6 @@ public:
         , ExplosiveCombustionHeat(0.0f)
         , ExplosiveCombustionHeatRadius(1.0f)
         , ExplodesOnDamage(false)
-        , BlastSensitivity(1.0f)
         , WindReceptivity(1.0f)
         , WaterReactivity(0.0f)
         , IsLegacyElectrical(false)
