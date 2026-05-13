@@ -1039,6 +1039,7 @@ std::vector<size_t> Ship::CalculateSpringRelaxationSpringShards(
         // Total budget for this shard
         auto const cpuInfo = simulationThreadPool.GetThreadCpuInfo(s);
         assert(cpuInfo.has_value()); // It's a simulation thread
+        assert(cpuSpeedNormalizationFactor > 0.0f);
         float const totalShardBudget = cpuInfo->Speed / cpuSpeedNormalizationFactor * remainingSpringCost;
         float remainingShardBudget = totalShardBudget;
 
@@ -1155,6 +1156,7 @@ std::vector<size_t> Ship::CalculatePointShards(
         // Total budget for this shard
         auto const cpuInfo = simulationThreadPool.GetThreadCpuInfo(s);
         assert(cpuInfo.has_value()); // It's a simulation thread
+        assert(cpuSpeedNormalizationFactor > 0.0f);
         float const totalShardBudget = cpuInfo->Speed / cpuSpeedNormalizationFactor * remainingPointCost;
 
         // Calculate points for this shard
