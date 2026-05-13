@@ -1095,19 +1095,19 @@
 		X Try: displacement should also come from velocity in same dir as ocean surface
 			- Displace up after, displace down behind
 			- Rethink displacement: it's two components now
-
-		- Try: relative velocity for surface/water ship::update() (impact, displacements)
-
-		- Try: replace engine wake with bubbles
-			- Nuke all about wake if this goes through
-			- Add to Android plan
-
+		X Try: relative velocity for surface/water ship::update() (impact, displacements)
+			X Wave velocity is too small to notice
+		X Try: replace engine wake with bubbles
+			X Nuke all about wake if this goes through
+			X Add to Android plan
 		+ Test:
 			+ Wave displacement height setting
 
-		- Cleanup:
+		+ Cleanup:
 			+ Finalize alpha of foam (@ eph particle upload)
-			- See if foam eph particle state's SkewedLifetime is still needed
+			+ See if foam eph particle state's SkewedLifetime is still needed
+
+		- Merge into Tornadoes
 
 		- Android Port Plan
 			- Textures (splashes, foam) and enums
@@ -1117,9 +1117,6 @@
 				- WRC, GRC: methods and members (DB and actual texture)
 			- Settings
 				- Foam * 2 + Splash, where DoDisplaceWater lives
-
-
-		- Merge into Tornadoes
 
 		- Changelist
 
@@ -1133,12 +1130,22 @@
 			- See if Points::UpdateEphParticles better deal with "ephemeralParticleIndex", check for rename: now it means "index in eph particles"
 		- 3. See if can improve FindFreeEphemeralParticle's perf
 			+ Thing 1: remove need for currentSimulationTime
+			- Add static measurement of time spent in FindFreeEphemeralParticle, and measure
+			- EphemeralParticleAttributes1: has:
+				- EphemeralParticleAttributes1 * FreeListPrev;
+				- EphemeralParticleAttributes1 * FreeListNext;
+				- cctor: zero
+			- Vector used as stack for free ephemeral particles (init'd with all)
+				- When we take free, we take from back
+			- TODOHERE
+			- OLD
 			- TODO: would also be nice to ensure "pri 0" particles (e.g. water splashes) are not killed when we need "pri 100" (e.g. bubles)
 			- Thing 2:
 				- A stack for free ephemeral particles (init'd with all)
 				- A TODO for ordered by time in-use ephemeral particles (remember we address it by content (i.e. point index, when we kill an eph particle))
 					- List, but with cheap allocation
 					- Epk particle i needs pointer to own node in list				
+			- Remove static measurement of time spent in FindFreeEphemeralParticle
 
 		- Android Port Plan
 			- Max eph particles being instanced setting, and calibration		

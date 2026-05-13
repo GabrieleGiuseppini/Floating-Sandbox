@@ -446,8 +446,7 @@ private:
             float MaxVisibilityAlpha;
             float InverseVisibilityHaste;
             float PersonalitySeed;
-            float LinearLifetimeProgress;
-            float SkewedLifetimeProgress; // 0.5 at fixed duration after start
+            float LifetimeProgress;
             vec2f VerticalAxis;
 
             WaterFoamState()
@@ -456,8 +455,7 @@ private:
                 , MaxVisibilityAlpha(0.0f)
                 , InverseVisibilityHaste(0.0f)
                 , PersonalitySeed(0.0f)
-                , LinearLifetimeProgress(0.0f)
-                , SkewedLifetimeProgress(0.0)
+                , LifetimeProgress(0.0f)
                 , VerticalAxis()
             {
             }
@@ -473,8 +471,7 @@ private:
                 , MaxVisibilityAlpha(maxVisibilityAlpha)
                 , InverseVisibilityHaste(inverseVisibilityHaste)
                 , PersonalitySeed(personalitySeed)
-                , LinearLifetimeProgress(0.0f)
-                , SkewedLifetimeProgress(0.0)
+                , LifetimeProgress(0.0f)
                 , VerticalAxis()
             {
             }

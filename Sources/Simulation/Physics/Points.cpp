@@ -2094,12 +2094,12 @@ void Points::UpdateEphemeralParticles(
                     auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
                     assert(mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime > 0.0f);
 
-                    float const linearLifetimeProgress =
+                    float const lifetimeProgress =
                         elapsedSimulationLifetime
                         / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
 
                     // Check if expired
-                    if (linearLifetimeProgress >= 1.0f)
+                    if (lifetimeProgress >= 1.0f)
                     {
                         //
                         /// Expired
@@ -2113,33 +2113,8 @@ void Points::UpdateEphemeralParticles(
                         // Still alive
                         //
 
-                        // Calculate skewed lifetime progress
-                        float constexpr EntryPhaseMaxDuration = 0.5f;
-                        float skewedLifetimeProgress;
-                        if (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime / 2.0f > EntryPhaseMaxDuration)
-                        {
-                            if (elapsedSimulationLifetime < EntryPhaseMaxDuration)
-                            {
-                                // 0.0 ... 0.5
-                                skewedLifetimeProgress = 0.5f * elapsedSimulationLifetime / EntryPhaseMaxDuration;
-                            }
-                            else
-                            {
-                                // 0.5 ... 1.0
-                                skewedLifetimeProgress = 0.5f +
-                                    (elapsedSimulationLifetime - EntryPhaseMaxDuration)
-                                    / (mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime - EntryPhaseMaxDuration)
-                                    * 0.5f;
-                            }
-                        }
-                        else
-                        {
-                            skewedLifetimeProgress = linearLifetimeProgress;
-                        }
-
                         // Update progress
-                        mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.LinearLifetimeProgress = linearLifetimeProgress;
-                        mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.SkewedLifetimeProgress = skewedLifetimeProgress;
+                        mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam.LifetimeProgress = lifetimeProgress;
 
                         // Damp X velocity
                         mVelocityBuffer[pointIndex].x *= 0.9997f;
@@ -2771,27 +2746,26 @@ void Points::UploadEphemeralParticles(
             {
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.WaterFoam;
 
-                float const linearLifetimeProgress = state.LinearLifetimeProgress;
-                //float const skewedLifetimeProgress = state.SkewedLifetimeProgress;
+                float const lifetimeProgress = state.LifetimeProgress;
 
                 float const LifetimePeak1 = 0.25f;
                 float const LifetimePeak2 = 0.50f;
 
                 // Calculate scale: ~parabolic with progress
-                float const baseScale = (linearLifetimeProgress < LifetimePeak1)
-                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, LifetimePeak1, linearLifetimeProgress)
-                    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(LifetimePeak2, 1.0f, linearLifetimeProgress));
+                float const baseScale = (lifetimeProgress < LifetimePeak1)
+                    ? state.MinScale + (state.MaxScale - state.MinScale) * SmoothStep(0.0f, LifetimePeak1, lifetimeProgress)
+                    : state.MinScale + (state.MaxScale - state.MinScale) * (1.0f - SmoothStep(LifetimePeak2, 1.0f, lifetimeProgress));
 
                 // Squash scale with progress
                 FloatSize scale(
-                    baseScale * (1.0f + SmoothStep(0.0f, 1.0f, linearLifetimeProgress) * 0.85f),
-                    baseScale * (0.8f - SmoothStep(0.0f, 1.0f, linearLifetimeProgress) * 0.70f)); // Start squashed!
+                    baseScale * (1.0f + SmoothStep(0.0f, 1.0f, lifetimeProgress) * 0.85f),
+                    baseScale * (0.8f - SmoothStep(0.0f, 1.0f, lifetimeProgress) * 0.70f)); // Start squashed!
 
                 // Calculate alpha: ~parabolic with progress,
                 // but obeying visibility haste
                 float const alpha =
-                    SmoothStep(0.0f, LifetimePeak1 * state.InverseVisibilityHaste, linearLifetimeProgress)
-                    - SmoothStep(LifetimePeak2, 1.0f, linearLifetimeProgress);
+                    SmoothStep(0.0f, LifetimePeak1 * state.InverseVisibilityHaste, lifetimeProgress)
+                    - SmoothStep(LifetimePeak2, 1.0f, lifetimeProgress);
 
                 // Upload foam
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
