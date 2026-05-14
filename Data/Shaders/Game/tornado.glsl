@@ -89,8 +89,6 @@ void main()
     // Noise
     
     #define VORTEX_SPEED 0.9
-    //#define SMOKE_NOISE_RESOLUTION_X 1.0
-    //#define SMOKE_NOISE_RESOLUTION_Y 2.0
     #define SMOKE_NOISE_RESOLUTION_X 0.15 * 2.
     #define SMOKE_NOISE_RESOLUTION_Y 0.2 * 8.
 
