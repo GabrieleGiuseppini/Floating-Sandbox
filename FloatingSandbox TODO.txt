@@ -888,8 +888,8 @@
 							+ Call WRC::ReshadeDependentOceanTextures(renderParameters)
 						+ (new) WRC::ReshadeDependentOceanTextures(renderParameters):
 							+ Switch on render modes and call appropriate GRC::ReshadeDependentOceanTextures(.)
-		= Foam:
-			= For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
+		+ Foam:
+			+ For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
 				+ Foam: seamless texture along x, as Generic MipMapped
 					+ Flat above, bubbly below
 				X Option 1: drawn by ocean surface detailed shader:
@@ -911,7 +911,7 @@
 									= Swap FoamBuffer<->FoamBuffer_work
 								+ Upload FoamBuffer
 					+ Uploaded with detailed ocean surface
-					= WorldRenderContext:
+					X WorldRenderContext:
 						! Only Upper shaders (IS_UPPER), both background and foreground
 						+ Set tile params in shader(s)
 						+ Vertex: new float
@@ -932,11 +932,7 @@
 							- Texture
 
 						- See if can only confine this to foreground (i.e. no background)
-							
-					- Optimize:
-						- OceanSurface::DecayFoamToggleBuffer()
-
-				= Option 2: with new eph particle, position-constrained onto surface
+				+ Option 2: with new eph particle, position-constrained onto surface
 					+ Spawn strategy:
 						+ 1: When we spawn splash (only for testing)
 						+ 2. With winner, but lower threshold
@@ -955,13 +951,13 @@
 						! Requires giving up rotation
 						+ Requires new uploader for MipMapped quad, with vec2 direction (up) and FloatSize for multipliers
 					+ Optimize InternalSpawnFoam: move out of loop constant things
-					= Texture
+					+ Texture
 						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
 						+ Make it white
 						+ Try Kiko's
 							+ Ask trx bg
 						+ Try Kiko+Splash
-						= Finalize authoring, after beta results
+						+ Finalize authoring, after beta results
 							+ Buy foam
 							+ Make foam
 								+ Purchased: transparent background, round shape
@@ -970,9 +966,7 @@
 								+ Kiko color replacement
 								+ Store in authoring
 								+ Make final png
-							- Buy another splash? https://www.istockphoto.com/nl/foto/blue-water-splash-isolated-on-white-background-gm490311803-39706194
-								- Make new Splash
-
+							X Buy another splash? https://www.istockphoto.com/nl/foto/blue-water-splash-isolated-on-white-background-gm490311803-39706194
 							+ Cleanup all build folders
 					+ Eph particle
 
@@ -1111,13 +1105,9 @@
 			X Add to Android plan
 		+ Test:
 			+ Wave displacement height setting
-
 		+ Cleanup:
 			+ Finalize alpha of foam (@ eph particle upload)
 			+ See if foam eph particle state's SkewedLifetime is still needed
-
-		- Finalize textures (*)
-
 		+ Up splash sensitivity to ~2, for sinking effect
 			+ Then bake into constant, and re-calibrate min/max
 
