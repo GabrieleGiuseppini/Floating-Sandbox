@@ -239,7 +239,7 @@ void InteractiveBodies::Update(
                 float const velocityMagnitude = 2.4f * GameRandomEngine::GetInstance().GenerateUniformReal(0.8f, 1.2f);
 
                 // Max scale
-                float const maxScale = 0.45f * GameRandomEngine::GetInstance().GenerateUniformReal(0.8f, 1.2f);
+                float const maxScale = 0.425f * GameRandomEngine::GetInstance().GenerateUniformReal(0.7f, 1.1f);
 
                 // Lifetime
                 float const maxLifetime = D0 / velocityMagnitude * simulationParameters.WaterFoamLifetimeAdjustment;
@@ -250,7 +250,7 @@ void InteractiveBodies::Update(
                     position,
                     0.0f,
                     velocityMagnitude * foamSign,
-                    maxScale * tornado.CurrentVisibilityAlpha * 0.5f, // Initial scale
+                    maxScale * tornado.CurrentVisibilityAlpha * 0.75f, // Initial scale
                     maxScale,
                     maxLifetime,
                     std::min(tornado.CurrentVisibilityAlpha * 2.0f, 1.0f), // Alpha
@@ -259,7 +259,7 @@ void InteractiveBodies::Update(
                     simulationParameters);
 
                 // Next spawn
-                float constexpr MaxFoamParticlesAlive = 100.0f;
+                float constexpr MaxFoamParticlesAlive = 150.0f;
                 tornado.NextWaterFoamSpawnTimestamp =
                     currentSimulationTime
                     + maxLifetime / MaxFoamParticlesAlive;

@@ -958,13 +958,22 @@
 					= Texture
 						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
 						+ Make it white
-						= Try Kiko's
-							- Ask trx bg
-						- Finalize authoring, after beta results
-							- First, copy current psds as authoring files, and commit them
-							- Redo after buying
-								- Just two copies: second is half size, @ center
-								- Only need one texture
+						+ Try Kiko's
+							+ Ask trx bg
+						+ Try Kiko+Splash
+						= Finalize authoring, after beta results
+							+ Buy foam
+							+ Make foam
+								+ Purchased: transparent background, round shape
+								+ 2-centered-scale
+								+ Kiko's
+								+ Kiko color replacement
+								+ Store in authoring
+								+ Make final png
+							- Buy another splash? https://www.istockphoto.com/nl/foto/blue-water-splash-isolated-on-white-background-gm490311803-39706194
+								- Make new Splash
+
+							+ Cleanup all build folders
 					+ Eph particle
 
 		+ Try displacement also against waves: replace vertical velocity with velocity against water surface
@@ -1107,6 +1116,12 @@
 			+ Finalize alpha of foam (@ eph particle upload)
 			+ See if foam eph particle state's SkewedLifetime is still needed
 
+		- Up splash sensitivity to ~2, for sinking effect
+			- Then bake into constant, and re-calibrate min/max
+		- See foam persistence max >> 2
+
+		- Finalize textures (*)
+
 		- Merge into Tornadoes
 
 		- Android Port Plan
@@ -1124,6 +1139,7 @@
 		! Note: lighting algo doesn't depend on # of eph particles!
 		! Note: ShipRenderContext needs it, but can be given it @ creation time
 		- 1. SimulationParameters
+			- First: take UPD + RND measurements before and after changing 4K -> 8K -> 16K, plus static hacky FreeEphPart measurement below
 			- Needs to only be enforced at ship load (Ship+ShipRenderContext), make sure we never use it @ runtime, only at initialization times
 		- 2. Eph particle state @ Points is sized for eph particles only
 			- Strategy: hide access thru getter, which does math offset
@@ -1131,20 +1147,25 @@
 		- 3. See if can improve FindFreeEphemeralParticle's perf
 			+ Thing 1: remove need for currentSimulationTime
 			- Add static measurement of time spent in FindFreeEphemeralParticle, and measure
+			- TODO: would also be nice to ensure "pri 0" particles (e.g. water splashes) are not killed when we need "pri 100" (e.g. smoke)
+				- But it's dangerous
+				- Two lists?
 			- EphemeralParticleAttributes1: has:
-				- EphemeralParticleAttributes1 * FreeListPrev;
-				- EphemeralParticleAttributes1 * FreeListNext;
+				- EphemeralParticleAttributes1 * ActiveListPrev;
+				- EphemeralParticleAttributes1 * ActiveListNext;
 				- cctor: zero
-			- Vector used as stack for free ephemeral particles (init'd with all)
+			- Points has EphemeralParticleAttributes1 ActiveEphemeralParticleListHead, Tail
+			- Points has FreeEphemeralParticles vector - used as stack - for free ephemeral particles
+				- Init'd with all
 				- When we take free, we take from back
-			- TODOHERE
-			- OLD
-			- TODO: would also be nice to ensure "pri 0" particles (e.g. water splashes) are not killed when we need "pri 100" (e.g. bubles)
-			- Thing 2:
-				- A stack for free ephemeral particles (init'd with all)
-				- A TODO for ordered by time in-use ephemeral particles (remember we address it by content (i.e. point index, when we kill an eph particle))
-					- List, but with cheap allocation
-					- Epk particle i needs pointer to own node in list				
+			- FindFreeEphParticle -> ParticleIndex|None
+				- If FreeEphemeralParticles ! empty: pop it, add to Active list (if prio TODO), and return it
+				- Else: if DoForce and if ActiveEphemeralParticleListHead.Next != null: extract it, add to Active list (if prio TODO), and return it
+				- Else: (all used and all high-pri, or not forcing): return None
+					- TODO: see really if prio can force no return
+			- ExpireEphParticle:
+				- 1. If in Active list (pointers != null): remove from Active list
+				- 2. Push into FreeEphemeralParticles, into back
 			- Remove static measurement of time spent in FindFreeEphemeralParticle
 
 		- Android Port Plan
