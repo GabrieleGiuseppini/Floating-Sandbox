@@ -1492,7 +1492,7 @@ void Ship::ApplyWorldSurfaceForces(
     //
 
     float const minAbsDisplacementForWaterSplash = (simulationParameters.WaterSplashSensitivityAdjustment > 0.0f)
-        ? 0.4f / simulationParameters.WaterSplashSensitivityAdjustment // Magic
+        ? 0.2f / simulationParameters.WaterSplashSensitivityAdjustment // Magic
         : std::numeric_limits<float>::max();
 
     struct WaterSplash

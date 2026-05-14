@@ -1116,11 +1116,12 @@
 			+ Finalize alpha of foam (@ eph particle upload)
 			+ See if foam eph particle state's SkewedLifetime is still needed
 
-		- Up splash sensitivity to ~2, for sinking effect
-			- Then bake into constant, and re-calibrate min/max
-		- See foam persistence max >> 2
-
 		- Finalize textures (*)
+
+		+ Up splash sensitivity to ~2, for sinking effect
+			+ Then bake into constant, and re-calibrate min/max
+
+		- Try tornado: use whole base for splashes
 
 		- Merge into Tornadoes
 
