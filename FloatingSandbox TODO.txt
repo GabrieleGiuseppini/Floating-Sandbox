@@ -847,7 +847,7 @@
 		+ Port changes to Android
 			+ Just flat shader
 
-	= Splashes and Foam
+	+ Splashes and Foam
 		+ Splashes:
 			! Same concept as silt dust
 			+ Textures
@@ -1111,19 +1111,8 @@
 		+ Up splash sensitivity to ~2, for sinking effect
 			+ Then bake into constant, and re-calibrate min/max
 		X Try tornado: use whole base for splashes
-
 		+ Merge into Tornadoes
-
-		- Android Port Plan
-			- Textures (splashes, foam) and enums
-			- Foam
-				- ShipRenderContext:: new uploader
-			- Reshading of textures
-				- WRC, GRC: methods and members (DB and actual texture)
-			- Settings
-				- Foam * 2 + Splash, where DoDisplaceWater lives
-
-		- Changelist
+		+ Changelist
 
 	- Eph particle rearc: make it a runtime setting - default 8K, and choose between 4K, 8K, 16K based on calibration
 		! Note: lighting algo doesn't depend on # of eph particles!

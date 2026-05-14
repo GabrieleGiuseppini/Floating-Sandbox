@@ -1,4 +1,5 @@
 TODO
+- Added water splashes and foam
 - Improved hydrostatic pressure simulation - less crazy behaviors at great depths
 - Improved "wild mast" issue, where masts on the ocean floor would pick up silt clouds
 - Rendering improvements:
