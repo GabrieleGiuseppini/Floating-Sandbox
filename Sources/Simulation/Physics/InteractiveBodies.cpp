@@ -273,7 +273,7 @@ void InteractiveBodies::Update(
                 float const splashSign = (tornado.WaterSplashSpawnCounter % 2) == 0 ? 1.0f : -1.0f;
 
                 // Direction: a beta around an alpha
-                float const alpha = Pi<float> / 7.0f * splashSign;
+                float const alpha = -Pi<float> / 7.0f * splashSign; // Negative as rotation is CCW and we want sign>0 to be to the right
                 float constexpr MaxBeta = Pi<float> / 20.0f;
                 float const beta = Clamp(
                     GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, MaxBeta * 2.0f),
