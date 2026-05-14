@@ -1875,6 +1875,7 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
 {
     Physics::Points points(
         static_cast<ElementIndex>(pointInfos2.size()),
+        simulationParameters.MaxEphemeralParticles, // Here we freeze it
         parentWorld,
         materialDatabase,
         simulationEventDispatcher,

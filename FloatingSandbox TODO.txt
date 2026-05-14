@@ -1114,26 +1114,37 @@
 		+ Merge into Tornadoes
 		+ Changelist
 
-	- Eph particle rearc: make it a runtime setting - default 8K, and choose between 4K, 8K, 16K based on calibration
+	= Eph particle rearc: make it a runtime setting - default 8K, and choose between 4K, 8K, 16K based on calibration
 		! Note: lighting algo doesn't depend on # of eph particles!
 		! Note: ShipRenderContext needs it, but can be given it @ creation time
-		- 1. SimulationParameters
-			- First: take UPD + RND measurements before and after changing 4K -> 8K -> 16K, plus static hacky FreeEphPart measurement below
-			- Needs to only be enforced at ship load (Ship+ShipRenderContext), make sure we never use it @ runtime, only at initialization times
+		+ 1. SimulationParameters
+			+ First: take UPD + RND measurements before and after changing 4K -> 16K, and static measurement of time spent in FindFreeEphemeralParticle, measuring w/ Titanic forcibly sunk:
+				+ Pre:
+					+ UPD=3.25-3.35-3.4 RND=3.3-3.4
+					+ 0.505264 @ 87040, 2.45879 @ 396288
+					+ Mem: 800-850
+				+ 16k:
+					+ UPD=3.8-4.0 RND=3.3-3.4
+					+ 0.5 @ 38K
+					+ Mem: 800-850
+			+ Do
+				+ Needs to only be enforced at ship load (Ship+ShipRenderContext), make sure we never use it @ runtime, only at initialization times
+			- Nail down default, and max
 		- 2. Eph particle state @ Points is sized for eph particles only
 			- Strategy: hide access thru getter, which does math offset
 			- See if Points::UpdateEphParticles better deal with "ephemeralParticleIndex", check for rename: now it means "index in eph particles"
 		- 3. See if can improve FindFreeEphemeralParticle's perf
-			+ Thing 1: remove need for currentSimulationTime
-			- Add static measurement of time spent in FindFreeEphemeralParticle, and measure
-			- TODO: would also be nice to ensure "pri 0" particles (e.g. water splashes) are not killed when we need "pri 100" (e.g. smoke)
-				- But it's dangerous
-				- Two lists?
-			- EphemeralParticleAttributes1: has:
-				- EphemeralParticleAttributes1 * ActiveListPrev;
-				- EphemeralParticleAttributes1 * ActiveListNext;
-				- cctor: zero
-			- Points has EphemeralParticleAttributes1 ActiveEphemeralParticleListHead, Tail
+			+ Thing 1: remove need for currentSimulationTime						
+			- "EphemeralParticleAttributes1" -> "EphemeralParticleMetaData", and has:
+				- EphemeralParticleIndex (const)
+				+ Type
+				- Prio
+				- EphemeralParticleMetaData * ActiveListPrev;
+				- EphemeralParticleMetaData * ActiveListNext;
+			- "EphemeralParticleAttributes2" -> "EphemeralParticleAttributes", and gets StartSimulationTime
+
+			- TODO: re-check for prio
+			- Points has EphemeralParticleMetaData ActiveLo/HiPriEphemeralParticleListHead, Tail
 			- Points has FreeEphemeralParticles vector - used as stack - for free ephemeral particles
 				- Init'd with all
 				- When we take free, we take from back
@@ -1145,7 +1156,18 @@
 			- ExpireEphParticle:
 				- 1. If in Active list (pointers != null): remove from Active list
 				- 2. Push into FreeEphemeralParticles, into back
+
+			- See if still need:
+				- EphParticleType::None
 			- Remove static measurement of time spent in FindFreeEphemeralParticle
+		- 4. Keep eph particles out of 40 iterations' loop, and just integrate once @ end
+			- Can have special task for last, doing last integration (on non-eph) followed by integration of eph
+
+		- If insanely high number of eph particles is doable, consider:
+			- Tornadoes: 
+				- Splashes along whole base
+				- More foam
+			- Lower velocity damp of foam
 
 		- Android Port Plan
 			- Max eph particles being instanced setting, and calibration		

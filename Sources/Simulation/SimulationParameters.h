@@ -253,7 +253,9 @@ struct SimulationParameters
     // Ephemeral particles
     //
 
-    static constexpr ElementCount MaxEphemeralParticles = 4096;
+    ElementCount MaxEphemeralParticles;
+    static constexpr ElementCount MinMaxEphemeralParticles = 4096;
+    static constexpr ElementCount MaxMaxEphemeralParticles = 65536; // TODO
 
     bool DoGenerateDebris;
     static constexpr unsigned int MinDebrisParticlesPerEvent = 4;

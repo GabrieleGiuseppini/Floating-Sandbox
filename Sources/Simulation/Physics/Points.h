@@ -706,11 +706,12 @@ public:
 
     Points(
         ElementCount shipPointCount,
+        ElementCount maxEphemeralParticleCount,
         World & parentWorld,
         MaterialDatabase const & materialDatabase,
         SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters)
-        : ElementContainer(make_aligned_float_element_count(shipPointCount) + SimulationParameters::MaxEphemeralParticles)
+        : ElementContainer(make_aligned_float_element_count(shipPointCount) + maxEphemeralParticleCount)
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
@@ -808,7 +809,7 @@ public:
         //////////////////////////////////
         , mRawShipPointCount(shipPointCount)
         , mAlignedShipPointCount(make_aligned_float_element_count(shipPointCount))
-        , mEphemeralPointCount(SimulationParameters::MaxEphemeralParticles)
+        , mEphemeralPointCount(maxEphemeralParticleCount)
         , mAllPointCount(mAlignedShipPointCount + mEphemeralPointCount)
         //
         , mParentWorld(parentWorld)
@@ -870,6 +871,11 @@ public:
     inline auto RawShipPointsReverse() const
     {
         return ElementIndexReverseRangeIterable(0, mRawShipPointCount);
+    }
+
+    ElementCount GetMaxEphemeralParticleCount() const
+    {
+        return mEphemeralPointCount;
     }
 
     /*

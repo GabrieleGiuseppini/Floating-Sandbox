@@ -3020,6 +3020,10 @@ void Points::CalculateCombustionDecayParameters(
 
 ElementIndex Points::FindFreeEphemeralParticle(bool doForce)
 {
+    static float TODOTotalTime = 0.0f;
+    static size_t TODOCounter = 0;
+    auto const startTime = GameChronometer::Now();
+
     //
     // Search for the firt free ephemeral particle; if a free one is not found, reuse the
     // oldest particle
@@ -3042,6 +3046,13 @@ ElementIndex Points::FindFreeEphemeralParticle(bool doForce)
             if (mFreeEphemeralParticleSearchStartIndex >= mAllPointCount)
                 mFreeEphemeralParticleSearchStartIndex = mAlignedShipPointCount;
 
+            TODOTotalTime += GameChronometer::ElapsedSeconds(GameChronometer::Now(), startTime);
+            ++TODOCounter;
+            if ((TODOCounter % 1024) == 0)
+            {
+                LogMessage("FindFreeEphemeralParticle: ", TODOTotalTime, " @ ", TODOCounter);
+            }
+
             return p;
         }
 
@@ -3063,6 +3074,13 @@ ElementIndex Points::FindFreeEphemeralParticle(bool doForce)
             // Went around
             break;
         }
+    }
+
+    TODOTotalTime += GameChronometer::ElapsedSeconds(GameChronometer::Now(), startTime);
+    ++TODOCounter;
+    if ((TODOCounter % 1024) == 0)
+    {
+        LogMessage("FindFreeEphemeralParticle: ", TODOTotalTime, " @ ", TODOCounter);
     }
 
     //

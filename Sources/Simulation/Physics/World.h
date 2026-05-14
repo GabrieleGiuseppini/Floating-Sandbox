@@ -66,8 +66,6 @@ public:
 
     size_t GetShipCount() const;
 
-    size_t GetShipPointCount(ShipId shipId) const;
-
     size_t GetAllShipSpringCount() const;
 
     size_t GetAllShipTriangleCount() const;

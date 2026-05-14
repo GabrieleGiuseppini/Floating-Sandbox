@@ -114,13 +114,6 @@ size_t World::GetShipCount() const
     return mAllShips.size();
 }
 
-size_t World::GetShipPointCount(ShipId shipId) const
-{
-    assert(shipId >= 0 && shipId < mAllShips.size());
-
-    return mAllShips[shipId]->GetPointCount();
-}
-
 size_t World::GetAllShipSpringCount() const
 {
     return std::accumulate(

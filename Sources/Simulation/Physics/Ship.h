@@ -69,7 +69,9 @@ public:
         return mMaxMaxPlaneId;
     }
 
-    size_t GetPointCount() const { return mPoints.GetElementCount(); }
+    ElementCount GetPointCount() const { return mPoints.GetElementCount(); }
+
+    ElementCount GetMaxEphemeralParticleCount() const { return mPoints.GetMaxEphemeralParticleCount(); }
 
     Points const & GetPoints() const { return mPoints; }
     Points & GetPoints() { return mPoints; }

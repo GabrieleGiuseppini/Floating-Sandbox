@@ -2211,6 +2211,8 @@ void GameController::InternalAddShip(
     ShipMetadata const & shipMetadata)
 {
     ShipId const shipId = ship->GetId();
+    ElementCount const shipPointCount = ship->GetPointCount();
+    ElementCount const shipMaxEphemeralParticleCount = ship->GetMaxEphemeralParticleCount();
 
     // Set recorder in ship (if any)
     ship->SetEventRecorder(mEventRecorder.get());
@@ -2233,8 +2235,8 @@ void GameController::InternalAddShip(
     // Add ship to rendering engine
     mRenderContext->AddShip(
         shipId,
-        mWorld->GetShipPointCount(shipId),
-        SimulationParameters::MaxEphemeralParticles,
+        shipPointCount,
+        shipMaxEphemeralParticleCount,
         SimulationParameters::MaxSpringsPerPoint,
         std::move(exteriorTextureImage),
         std::move(interiorViewImage));
