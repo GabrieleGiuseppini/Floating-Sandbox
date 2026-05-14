@@ -1112,7 +1112,7 @@
 			+ Then bake into constant, and re-calibrate min/max
 		X Try tornado: use whole base for splashes
 
-		- Merge into Tornadoes
+		+ Merge into Tornadoes
 
 		- Android Port Plan
 			- Textures (splashes, foam) and enums
