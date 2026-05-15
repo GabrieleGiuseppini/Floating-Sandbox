@@ -1117,7 +1117,7 @@
 	= Eph particle rearc: make it a runtime setting - default 8K, and choose between 4K, 8K, 16K based on calibration
 		! Note: lighting algo doesn't depend on # of eph particles!
 		! Note: ShipRenderContext needs it, but can be given it @ creation time
-		+ 1. SimulationParameters
+		= 1. SimulationParameters
 			+ First: take UPD + RND measurements before and after changing 4K -> 16K, and static measurement of time spent in FindFreeEphemeralParticle, measuring w/ Titanic forcibly sunk:
 				+ Pre:
 					+ UPD=3.25-3.35-3.4 RND=3.3-3.4
@@ -1130,38 +1130,46 @@
 			+ Do
 				+ Needs to only be enforced at ship load (Ship+ShipRenderContext), make sure we never use it @ runtime, only at initialization times
 			- Nail down default, and max
-		- 2. Eph particle state @ Points is sized for eph particles only
-			- Strategy: hide access thru getter, which does math offset
-			- See if Points::UpdateEphParticles better deal with "ephemeralParticleIndex", check for rename: now it means "index in eph particles"
-		- 3. See if can improve FindFreeEphemeralParticle's perf
+		+ 2. Eph particle state @ Points is sized for eph particles only
+			+ See if Points::UpdateEphParticles better deal with "ephemeralParticleIndex", check for rename: now it means "index in eph particles"
+		= 3. See if can improve FindFreeEphemeralParticle's perf
 			+ Thing 1: remove need for currentSimulationTime						
-			- "EphemeralParticleAttributes1" -> "EphemeralParticleMetaData", and has:
-				- EphemeralParticleIndex (const)
-				+ Type
-				- Prio
-				- EphemeralParticleMetaData * ActiveListPrev;
-				- EphemeralParticleMetaData * ActiveListNext;
-			- "EphemeralParticleAttributes2" -> "EphemeralParticleAttributes", and gets StartSimulationTime
-
-			- TODO: re-check for prio
-			- Points has EphemeralParticleMetaData ActiveLo/HiPriEphemeralParticleListHead, Tail
-			- Points has FreeEphemeralParticles vector - used as stack - for free ephemeral particles
-				- Init'd with all
+			+ "EphemeralParticleAttributes1" -> "EphemeralParticleMetaData", and has:
+				+ EphemeralParticleIndex (const)
+					+ Init @ Points cctor
+				+ Prio
+				+ EphemeralParticleMetaData * ActiveListPrev;
+				+ EphemeralParticleMetaData * ActiveListNext;
+			+ "EphemeralParticleAttributes2" -> "EphemeralParticleAttributes", and gets Type and StartSimulationTime			
+			= Points has EphemeralParticleMetaData ActiveLo/HiPriEphemeralParticleListHead, Tail
+				- TODO: rethink nature of head, tail
+			+ Points has FreeEphemeralParticles vector - used as stack - for free ephemeral particles
+				+ Init'd with all
 				- When we take free, we take from back
 			- FindFreeEphParticle -> ParticleIndex|None
-				- If FreeEphemeralParticles ! empty: pop it, add to Active list (if prio TODO), and return it
-				- Else: if DoForce and if ActiveEphemeralParticleListHead.Next != null: extract it, add to Active list (if prio TODO), and return it
-				- Else: (all used and all high-pri, or not forcing): return None
-					- TODO: see really if prio can force no return
-			- ExpireEphParticle:
-				- 1. If in Active list (pointers != null): remove from Active list
-				- 2. Push into FreeEphemeralParticles, into back
+				- If FreeEphemeralParticles ! empty: pop it, add to Active list (based on prio), set prio, and return it
+				- Else: if DoForce:
+					- for each prio: if ActiveEphemeralParticleListHead.Next != tail: extract it, add to Active list (based on prio), set prio, and return it
+				- Else: return None
+			+ ExpireEphParticle:
+				+ 1. Remove from Active list (assert it's in it)
+				+ 2. Push into FreeEphemeralParticles, into back
+				+ 3. Mark as inactive (type=none)
 
+			- Hide all methods w/eph_index, incl iterator
 			- See if still need:
-				- EphParticleType::None
-			- Remove static measurement of time spent in FindFreeEphemeralParticle
+				-
+		- Impl:
+		- Test:
+			- PinnedPoints/AirBubbles
+			- DestroyAt/AirBubbles
+
+		- Remove static measurement of time spent in FindFreeEphemeralParticle
+
 		- 4. Keep eph particles out of 40 iterations' loop, and just integrate once @ end
+			! IT'S REALLY WORTH IT!
 			- Can have special task for last, doing last integration (on non-eph) followed by integration of eph
+			- Watch out for integration factors and coeffs -- everything that depends on numMechanicalIterations
 
 		- If insanely high number of eph particles is doable, consider:
 			- Tornadoes: 

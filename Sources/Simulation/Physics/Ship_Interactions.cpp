@@ -562,7 +562,7 @@ bool Ship::DestroyAt(
             // - Non-ephemeral, attached points: detach probabilistically
             //
 
-            if (Points::EphemeralType::None == mPoints.GetEphemeralType(pointIndex)
+            if (!mPoints.IsEphemeral(pointIndex)
                 && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
             {
                 if (pointSquareDistance < squareRadius)
@@ -591,8 +591,8 @@ bool Ship::DestroyAt(
                     nearestFallbackPointRadius = pointSquareDistance;
                 }
             }
-            else if (Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex)
-                && pointSquareDistance < squareRadius)
+            else if (mPoints.IsEphemeralType(pointIndex, Points::EphemeralType::AirBubble)
+                    && pointSquareDistance < squareRadius)
             {
                 // Destroy
                 mPoints.DestroyEphemeralParticle(pointIndex);

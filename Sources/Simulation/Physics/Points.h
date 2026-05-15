@@ -26,6 +26,7 @@
 #include <Core/Vectors.h>
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <chrono>
 #include <cstring>
@@ -551,32 +552,40 @@ private:
     };
 
     /*
-     * First cluster of ephemeral particle attributes that are used
-     * always together, mostly when looking for free ephemeral
-     * particle slots.
+     * Metadata for maintenance of ephemeral particles.
      */
-    struct EphemeralParticleAttributes1
-    {
-        EphemeralType Type;
-        float StartSimulationTime;
 
-        EphemeralParticleAttributes1()
-            : Type(EphemeralType::None)
-            , StartSimulationTime(0.0f)
+    struct EphemeralParticleMetadata
+    {
+        ElementIndex const EphemeralParticleIndex; // First eph particle is 0
+        int Priority; // Pri 0 are stolen before pri 1
+
+        // Double-sided Active lists
+        EphemeralParticleMetadata * ActiveListPrev;
+        EphemeralParticleMetadata * ActiveListNext;
+
+        EphemeralParticleMetadata(ElementIndex ephemeralParticleIndex)
+            : EphemeralParticleIndex(ephemeralParticleIndex)
+            , Priority(0) // Will be set
+            , ActiveListPrev(nullptr)
+            , ActiveListNext(nullptr)
         {}
     };
 
     /*
-     * Second cluster of ephemeral particle attributes that are used
-     * (almost) always together.
+     * Ephemeral particle attributes and state.
      */
-    struct EphemeralParticleAttributes2
+    struct EphemeralParticleAttributes
     {
+        EphemeralType Type; // Not None <-> Active
         EphemeralState State;
+        float StartSimulationTime;
         float MaxSimulationLifetime;
 
-        EphemeralParticleAttributes2()
-            : State(EphemeralState::DebrisState()) // Arbitrary
+        EphemeralParticleAttributes()
+            : Type(EphemeralType::None)
+            , State(EphemeralState::DebrisState()) // Arbitrary
+            , StartSimulationTime(0.0f)
             , MaxSimulationLifetime(0.0f)
         {}
     };
@@ -775,8 +784,8 @@ public:
         // Various interactions
         , mIsElectrifiedBuffer(mBufferElementCount, shipPointCount, false)
         // Ephemeral particles
-        , mEphemeralParticleAttributes1Buffer(mBufferElementCount, shipPointCount, EphemeralParticleAttributes1())
-        , mEphemeralParticleAttributes2Buffer(mBufferElementCount, shipPointCount, EphemeralParticleAttributes2())
+        , mEphemeralParticleMetadataBuffer(maxEphemeralParticleCount) // We'll insert at cctor
+        , mEphemeralParticleAttributesBuffer(maxEphemeralParticleCount, 0, EphemeralParticleAttributes())
         // Structure
         , mConnectedSpringsBuffer(mBufferElementCount, shipPointCount, ConnectedSpringsVector())
         , mFactoryConnectedSpringsBuffer(mBufferElementCount, shipPointCount, ConnectedSpringsVector())
@@ -832,16 +841,36 @@ public:
         , mWaterReactionExplosionCandidates(mRawShipPointCount)
         , mBurningPoints()
         , mStoppedBurningPoints()
-        , mFreeEphemeralParticleSearchStartIndex(mAlignedShipPointCount)
+        , mFreeEphemeralParticles()
+        , mActiveEphemeralParticleListHeads({NoneElementIndex, NoneElementIndex })
+        , mActiveEphemeralParticleListTails({ NoneElementIndex, NoneElementIndex })
         , mAreEphemeralPointElementsDirtyForRendering(false)
 #ifdef _DEBUG
         , mDiagnostic_ArePositionsDirty(false)
 #endif
     {
-        // Add first (implicit) buffer
+        // Add first (implicit) dynamic force buffer
         mDynamicForceBuffers.emplace_back(mBufferElementCount, shipPointCount, vec2f::zero());
         mDynamicForceRawBuffers.emplace_back(reinterpret_cast<float *>(mDynamicForceBuffers[0].data()));
 
+        // Initialize ephemeral particles
+        for (ElementIndex p = 0; p < mEphemeralPointCount; ++p)
+        {
+            mEphemeralParticleMetadataBuffer.emplace_back(p);
+            mFreeEphemeralParticles.emplace_back(mEphemeralPointCount - 1 - p);
+        }
+
+        // Initialize ephemeral particle active lists
+        for (int prio = 0; prio < 2; ++prio)
+        {
+            mActiveEphemeralParticleListHeads[prio].ActiveListNext = &(mActiveEphemeralParticleListTails[prio]);
+            mActiveEphemeralParticleListTails[prio].ActiveListPrev = &(mActiveEphemeralParticleListHeads[prio]);
+
+            assert(mActiveEphemeralParticleListHeads[prio].ActiveListPrev == nullptr);
+            assert(mActiveEphemeralParticleListTails[prio].ActiveListNext == nullptr);
+        }
+
+        // Initialize calculated parameters
         CalculateCombustionDecayParameters(mCurrentCombustionSpeedAdjustment, SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>);
     }
 
@@ -883,7 +912,7 @@ public:
      */
     inline auto EphemeralPoints() const
     {
-        return ElementIndexRangeIterable(mAlignedShipPointCount, mAllPointCount);
+        return ElementIndexRangeIterable(0, mEphemeralPointCount);
     }
 
     /*
@@ -894,9 +923,12 @@ public:
     inline bool IsActive(ElementIndex pointIndex) const
     {
         return pointIndex < mRawShipPointCount
-            || EphemeralType::None != mEphemeralParticleAttributes1Buffer[pointIndex].Type;
+            || EphemeralType::None != mEphemeralParticleAttributesBuffer[PointIndexToEphemeralParticleIndex(pointIndex)].Type;
     }
 
+    /*
+     * Doesn't say anything about the particle being active or not
+     */
     inline bool IsEphemeral(ElementIndex pointIndex) const
     {
         return pointIndex >= mAlignedShipPointCount;
@@ -2001,9 +2033,15 @@ public:
     // Ephemeral Particles
     //
 
-    EphemeralType GetEphemeralType(ElementIndex pointElementIndex) const
+    /*
+     * Returns true if the particle is an ephemeral particle, active, and of the specified type
+     */
+    bool IsEphemeralType(
+        ElementIndex pointElementIndex,
+        EphemeralType ephemeralType) const
     {
-        return mEphemeralParticleAttributes1Buffer[pointElementIndex].Type;
+        return IsEphemeral(pointElementIndex)
+            && mEphemeralParticleAttributesBuffer[PointIndexToEphemeralParticleIndex(pointElementIndex)].Type == ephemeralType;
     }
 
     //
@@ -2442,18 +2480,44 @@ private:
         mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
     }
 
-    inline ElementIndex FindFreeEphemeralParticle(bool doForce);
+    inline ElementIndex PointIndexToEphemeralParticleIndex(ElementIndex pointElementIndex) const
+    {
+        assert(pointElementIndex >= mAlignedShipPointCount);
+        return mAlignedShipPointCount - mAlignedShipPointCount;
+    }
 
-    inline void ExpireEphemeralParticle(ElementIndex pointElementIndex)
+    inline ElementIndex EphemeralParticleIndexToPointIndex(ElementIndex ephemeralParticleIndex) const
+    {
+        assert(ephemeralParticleIndex < mEphemeralPointCount);
+        return mAlignedShipPointCount + ephemeralParticleIndex;
+    }
+
+    /*
+     * Returns an ephemeral particle index.
+     */
+    inline ElementIndex FindFreeEphemeralParticle(
+        int priority, // 0 (lower) or 1 (higher)
+        bool doForce);
+
+    inline void ExpireEphemeralParticle(ElementIndex ephemeralParticleIndex)
     {
         // Freeze the particle (just to prevent drifting)
-        Freeze(pointElementIndex);
+        Freeze(EphemeralParticleIndexToPointIndex(ephemeralParticleIndex));
 
-        // Hide this particle from ephemeral particles; this will prevent this particle from:
-        // - Being rendered
-        // - Being updated
-        // ...and it will allow its slot to be chosen for a new ephemeral particle
-        mEphemeralParticleAttributes1Buffer[pointElementIndex].Type = EphemeralType::None;
+        // Remove from active list
+        assert(mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext != nullptr
+            && mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev != nullptr);
+        mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev->ActiveListNext = mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext;
+        mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext->ActiveListPrev = mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev;
+        mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext = nullptr;
+        mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev = nullptr;
+
+        // Register as free
+        assert(mFreeEphemeralParticles.size() < mEphemeralPointCount);
+        mFreeEphemeralParticles.push_back(ephemeralParticleIndex);
+
+        // Reset it as inactive
+        mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::None;
     }
 
 private:
@@ -2579,9 +2643,11 @@ private:
     //
     // Ephemeral particles attributes
     //
+    // Indexed by epehemeral particle index, NOT particle index
+    //
 
-    Buffer<EphemeralParticleAttributes1> mEphemeralParticleAttributes1Buffer;
-    Buffer<EphemeralParticleAttributes2> mEphemeralParticleAttributes2Buffer;
+    Buffer<EphemeralParticleMetadata> mEphemeralParticleMetadataBuffer;
+    Buffer<EphemeralParticleAttributes> mEphemeralParticleAttributesBuffer;
 
     //
     // Structure
@@ -2692,9 +2758,13 @@ private:
     // member only to save allocations at use time
     std::vector<ElementIndex> mStoppedBurningPoints;
 
-    // The index at which to start searching for free ephemeral particles
-    // (just an optimization over restarting from zero each time)
-    ElementIndex mFreeEphemeralParticleSearchStartIndex;
+    // Ephemeral particle maintenance
+    //
+    // Stack of free particles; contains ephemeral particle indices (NOT point indices)
+    std::vector<ElementIndex> mFreeEphemeralParticles;
+    // Active lists, indexed by prio
+    std::array<EphemeralParticleMetadata, 2> mActiveEphemeralParticleListHeads;
+    std::array<EphemeralParticleMetadata, 2> mActiveEphemeralParticleListTails;
 
     // Flag remembering whether the set of ephemeral point *elements* is dirty
     // (i.e. whether there are more or less points than previously

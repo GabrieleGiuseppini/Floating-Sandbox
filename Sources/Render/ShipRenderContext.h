@@ -1045,8 +1045,7 @@ public:
 
     void UploadElementEphemeralPointsStart();
 
-    inline void UploadElementEphemeralPoint(
-        int pointIndex)
+    inline void UploadElementEphemeralPoint(int pointIndex)
     {
         mEphemeralPointElementBuffer.emplace_back(pointIndex);
     }

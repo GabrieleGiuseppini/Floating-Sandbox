@@ -94,7 +94,7 @@ public:
         {
             if (mShipPoints.IsActive(pointIndex)
                 && !mShipPoints.IsPinned(pointIndex)
-                && (!mShipPoints.IsEphemeral(pointIndex) || Points::EphemeralType::AirBubble == mShipPoints.GetEphemeralType(pointIndex)))
+                && (!mShipPoints.IsEphemeral(pointIndex) || mShipPoints.IsEphemeralType(pointIndex, Points::EphemeralType::AirBubble)))
             {
                 float squareDistance = (mShipPoints.GetPosition(pointIndex) - targetPos).squareLength();
                 if (squareDistance < squareSearchRadius)
