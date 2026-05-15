@@ -898,14 +898,6 @@ public:
     }
 
     /*
-     * Returns an iterator for the ephemeral points only.
-     */
-    inline auto EphemeralPoints() const
-    {
-        return ElementIndexRangeIterable(0, mEphemeralPointCount);
-    }
-
-    /*
      * Returns a flag indicating whether the point is active in the world.
      *
      * Active points are all non-ephemeral points and non-expired ephemeral points.
@@ -913,7 +905,7 @@ public:
     inline bool IsActive(ElementIndex pointIndex) const
     {
         return pointIndex < mRawShipPointCount
-            || EphemeralType::None != mEphemeralParticleAttributesBuffer[PointIndexToEphemeralParticleIndex(pointIndex)].Type;
+            || (IsEphemeral(pointIndex) && EphemeralType::None != mEphemeralParticleAttributesBuffer[PointIndexToEphemeralParticleIndex(pointIndex)].Type);
     }
 
     /*
@@ -2473,7 +2465,7 @@ private:
     inline ElementIndex PointIndexToEphemeralParticleIndex(ElementIndex pointElementIndex) const
     {
         assert(pointElementIndex >= mAlignedShipPointCount);
-        return mAlignedShipPointCount - mAlignedShipPointCount;
+        return pointElementIndex - mAlignedShipPointCount;
     }
 
     inline ElementIndex EphemeralParticleIndexToPointIndex(ElementIndex ephemeralParticleIndex) const
@@ -2492,6 +2484,19 @@ private:
     inline void ExpireEphemeralParticle(ElementIndex ephemeralParticleIndex);
 
     inline void UnlinkEphemeralParticleFromActiveList(ElementIndex ephemeralParticleIndex);
+
+    /*
+     * Returns an iterator for the ephemeral points only,
+     * as ephemeral particle indices.
+     */
+    inline auto EphemeralPoints() const
+    {
+        return ElementIndexRangeIterable(0, mEphemeralPointCount);
+    }
+
+#ifdef _DEBUG
+    void VerifyEphemeralParticleInvariants();
+#endif
 
 private:
 

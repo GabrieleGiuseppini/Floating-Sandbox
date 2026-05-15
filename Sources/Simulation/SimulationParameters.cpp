@@ -40,8 +40,8 @@ SimulationParameters::SimulationParameters()
     , OceanFloorSiltHardness(1.0f)
     // Ephemeral particles
     // TODOTEST
-    , MaxEphemeralParticles(4096)
-    //, MaxEphemeralParticles(16384)
+    //, MaxEphemeralParticles(4096)
+    , MaxEphemeralParticles(16384)
     , DoGenerateDebris(true)
     , SmokeMassAdjustment(1.0f)
     , SmokeEmitterSmokeEmissionDensityAdjustment(1.0f)

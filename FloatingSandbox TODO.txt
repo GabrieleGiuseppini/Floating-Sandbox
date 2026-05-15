@@ -1132,7 +1132,7 @@
 			- Nail down default, and max
 		+ 2. Eph particle state @ Points is sized for eph particles only
 			+ See if Points::UpdateEphParticles better deal with "ephemeralParticleIndex", check for rename: now it means "index in eph particles"
-		= 3. See if can improve FindFreeEphemeralParticle's perf
+		+ 3. See if can improve FindFreeEphemeralParticle's perf
 			+ Thing 1: remove need for currentSimulationTime						
 			+ "EphemeralParticleAttributes1" -> "EphemeralParticleMetaData", and has:
 				+ EphemeralParticleIndex (const)
@@ -1154,27 +1154,35 @@
 				+ 1. Remove from Active list (assert it's in it)
 				+ 2. Push into FreeEphemeralParticles, into back
 				+ 3. Mark as inactive (type=none)
+			+ Invariants in _DEBUG
+				+ Total count
+				+ Type set <-> active
+			+ Hide all methods w/eph_index, incl iterator
 
-			- Hide all methods w/eph_index, incl iterator
+		+ Test:
+			+ Hesleden, 4K
+			+ PinnedPoints/AirBubbles
+			+ DestroyAt/AirBubbles
+			+ Time+Mem, 16K - RelWithDebInfo
+				+ 0.003 @ 105K
+				+ Mem: 795
 
-		- Test:
-			- Hesleden, 4K
-			- PinnedPoints/AirBubbles
-			- DestroyAt/AirBubbles
-			- Time+Mem, 16K - RelWithDebInfo
-
-		- Remove static measurement of time spent in FindFreeEphemeralParticle
+		+ Remove static measurement of time spent in FindFreeEphemeralParticle
 
 		- 4. Keep eph particles out of 40 iterations' loop, and just integrate once @ end
 			! IT'S REALLY WORTH IT!
 			- Can have special task for last, doing last integration (on non-eph) followed by integration of eph
 			- Watch out for integration factors and coeffs -- everything that depends on numMechanicalIterations
+				- TODO: make list
 
 		- If insanely high number of eph particles is doable, consider:
 			- Tornadoes: 
 				- Splashes along whole base
 				- More foam
 			- Lower velocity damp of foam
+
+		- Test:
+			- Perf X 2with all eph particles (~all bubbles) at max eph particles
 
 		- Android Port Plan
 			- Max eph particles being instanced setting, and calibration		

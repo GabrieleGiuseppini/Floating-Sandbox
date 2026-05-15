@@ -3037,10 +3037,17 @@ ElementIndex Points::FindFreeEphemeralParticle(
     int priority, // 0 (lower) or 1 (higher)
     bool doForce)
 {
-    static float TODOTotalTime = 0.0f;
-    static size_t TODOCounter = 0;
-    auto const startTime = GameChronometer::Now();
 
+#ifdef _DEBUG
+
+    static int invariantCheckCounter = 0;
+    ++invariantCheckCounter;
+    if ((invariantCheckCounter % 499) == 0)
+    {
+        VerifyEphemeralParticleInvariants();
+    }
+
+#endif
 
     ElementIndex ephemeralParticleIndex = NoneElementIndex;
 
@@ -3060,14 +3067,6 @@ ElementIndex Points::FindFreeEphemeralParticle(
         if (!doForce)
         {
             // No luck
-
-            TODOTotalTime += GameChronometer::ElapsedSeconds(GameChronometer::Now(), startTime);
-            ++TODOCounter;
-            if ((TODOCounter % 1024) == 0)
-            {
-                LogMessage("FindFreeEphemeralParticle: ", TODOTotalTime, " @ ", TODOCounter);
-            }
-
             return NoneElementIndex;
         }
 
@@ -3112,95 +3111,7 @@ ElementIndex Points::FindFreeEphemeralParticle(
     // Set priority
     mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].Priority = priority;
 
-    TODOTotalTime += GameChronometer::ElapsedSeconds(GameChronometer::Now(), startTime);
-    ++TODOCounter;
-    if ((TODOCounter % 1024) == 0)
-    {
-        LogMessage("FindFreeEphemeralParticle: ", TODOTotalTime, " @ ", TODOCounter);
-    }
-
     return ephemeralParticleIndex;
-
-    // TODOOLD
-
-    ////
-    //// Search for the firt free ephemeral particle; if a free one is not found, reuse the
-    //// oldest particle
-    ////
-
-    //ElementIndex oldestParticle = NoneElementIndex;
-    //float oldestParticleStartSimulationTime = std::numeric_limits<float>::max();
-
-    //assert(mFreeEphemeralParticleSearchStartIndex >= mAlignedShipPointCount
-    //    && mFreeEphemeralParticleSearchStartIndex < mAllPointCount);
-
-    //for (ElementIndex p = mFreeEphemeralParticleSearchStartIndex; ; /*incremented in loop*/)
-    //{
-    //    if (EphemeralType::None == mEphemeralParticleAttributes1Buffer[p].Type)
-    //    {
-    //        // Found!
-
-    //        // Remember to start after this one next time
-    //        mFreeEphemeralParticleSearchStartIndex = p + 1;
-    //        if (mFreeEphemeralParticleSearchStartIndex >= mAllPointCount)
-    //            mFreeEphemeralParticleSearchStartIndex = mAlignedShipPointCount;
-
-    //        TODOTotalTime += GameChronometer::ElapsedSeconds(GameChronometer::Now(), startTime);
-    //        ++TODOCounter;
-    //        if ((TODOCounter % 1024) == 0)
-    //        {
-    //            LogMessage("FindFreeEphemeralParticle: ", TODOTotalTime, " @ ", TODOCounter);
-    //        }
-
-    //        return p;
-    //    }
-
-    //    // Check whether it's the oldest
-    //    auto const startSimulationTime = mEphemeralParticleAttributes1Buffer[p].StartSimulationTime;
-    //    if (startSimulationTime < oldestParticleStartSimulationTime)
-    //    {
-    //        oldestParticle = p;
-    //        oldestParticleStartSimulationTime = startSimulationTime;
-    //    }
-
-    //    // Advance
-    //    ++p;
-    //    if (p >= mAllPointCount)
-    //        p = mAlignedShipPointCount;
-
-    //    if (p == mFreeEphemeralParticleSearchStartIndex)
-    //    {
-    //        // Went around
-    //        break;
-    //    }
-    //}
-
-    //TODOTotalTime += GameChronometer::ElapsedSeconds(GameChronometer::Now(), startTime);
-    //++TODOCounter;
-    //if ((TODOCounter % 1024) == 0)
-    //{
-    //    LogMessage("FindFreeEphemeralParticle: ", TODOTotalTime, " @ ", TODOCounter);
-    //}
-
-    ////
-    //// No luck
-    ////
-
-    //if (!doForce)
-    //    return NoneElementIndex;
-
-    ////
-    //// Steal the oldest
-    ////
-
-    //assert(NoneElementIndex != oldestParticle);
-
-    //// Remember to start after this one next time
-    //mFreeEphemeralParticleSearchStartIndex = oldestParticle + 1;
-    //if (mFreeEphemeralParticleSearchStartIndex >= mAllPointCount)
-    //    mFreeEphemeralParticleSearchStartIndex = mAlignedShipPointCount;
-
-    //return oldestParticle;
 }
 
 void Points::ExpireEphemeralParticle(ElementIndex ephemeralParticleIndex)
@@ -3221,10 +3132,6 @@ void Points::ExpireEphemeralParticle(ElementIndex ephemeralParticleIndex)
 
 void Points::UnlinkEphemeralParticleFromActiveList(ElementIndex ephemeralParticleIndex)
 {
-    //// TODO: BOGUS: could be null-null if it's the only one
-    //assert(mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext != nullptr
-    //    || mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev != nullptr);
-
     if (mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext != nullptr)
     {
         // There's a follower
@@ -3257,5 +3164,42 @@ void Points::UnlinkEphemeralParticleFromActiveList(ElementIndex ephemeralParticl
     // Do it here as we need it for prev
     mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext = nullptr;
 }
+
+#ifdef _DEBUG
+void Points::VerifyEphemeralParticleInvariants()
+{
+    size_t totalParticles = 0;
+
+    for (size_t i = 0; i < mFreeEphemeralParticles.size(); ++i)
+    {
+        ++totalParticles;
+
+        assert(mEphemeralParticleMetadataBuffer[mFreeEphemeralParticles[i]].ActiveListNext == nullptr);
+        assert(mEphemeralParticleMetadataBuffer[mFreeEphemeralParticles[i]].ActiveListPrev == nullptr);
+        assert(mEphemeralParticleAttributesBuffer[mFreeEphemeralParticles[i]].Type == EphemeralType::None);
+    }
+
+    for (size_t prio = 0; prio < 2; ++prio)
+    {
+        assert((mActiveEphemeralParticleListHeads[prio] == nullptr) == (mActiveEphemeralParticleListTails[prio] == nullptr));
+
+        for (EphemeralParticleMetadata * e = mActiveEphemeralParticleListHeads[prio]; e != nullptr; e = e->ActiveListNext)
+        {
+            ++totalParticles;
+
+            assert((e->ActiveListPrev != nullptr && mActiveEphemeralParticleListHeads[prio] != e)
+                || (e->ActiveListPrev == nullptr && mActiveEphemeralParticleListHeads[prio] == e));
+
+            assert((e->ActiveListNext != nullptr && mActiveEphemeralParticleListTails[prio] != e)
+                || (e->ActiveListNext == nullptr && mActiveEphemeralParticleListTails[prio] == e));
+
+            assert(mEphemeralParticleMetadataBuffer[e->EphemeralParticleIndex].Priority == prio);
+            assert(mEphemeralParticleAttributesBuffer[e->EphemeralParticleIndex].Type != EphemeralType::None);
+        }
+    }
+
+    assert(totalParticles == mEphemeralPointCount);
+}
+#endif
 
 }
