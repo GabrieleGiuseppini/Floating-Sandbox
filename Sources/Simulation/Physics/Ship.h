@@ -680,16 +680,8 @@ private:
         ThreadManager & threadManager,
         SimulationParameters const & simulationParameters);
 
-    void RunSpringRelaxation_Hybrid_Thread_1(
-        size_t threadIndex,
-        ElementIndex startSpringIndex,
-        ElementIndex endSpringIndex,
-        ElementIndex startPointIndex,
-        ElementIndex endPointIndex,
-        size_t parallelism,
-        SimulationParameters const & simulationParameters);
-
-    void RunSpringRelaxation_Hybrid_Thread_2(
+    template<bool DoHandleCollisionsWithSeaFloor>
+    void RunSpringRelaxation_Hybrid_Thread(
         size_t threadIndex,
         ElementIndex startSpringIndex,
         ElementIndex endSpringIndex,

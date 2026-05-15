@@ -239,7 +239,7 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
         mSpringRelaxation_Hybrid_1_Tasks.emplace_back(
             [this, t, springStart, springEnd, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
             {
-                RunSpringRelaxation_Hybrid_Thread_1(
+                RunSpringRelaxation_Hybrid_Thread<false>(
                     t,
                     springStart,
                     springEnd,
@@ -252,7 +252,7 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
         mSpringRelaxation_Hybrid_2_Tasks.emplace_back(
             [this, t, springStart, springEnd, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
             {
-                RunSpringRelaxation_Hybrid_Thread_2(
+                RunSpringRelaxation_Hybrid_Thread<true>(
                     t,
                     springStart,
                     springEnd,
@@ -606,69 +606,8 @@ void Ship::RunSpringRelaxation_Hybrid(
 #endif
 }
 
-void Ship::RunSpringRelaxation_Hybrid_Thread_1(
-    size_t threadIndex,
-    ElementIndex startSpringIndex,
-    ElementIndex endSpringIndex,
-    ElementIndex startPointIndex,
-    ElementIndex endPointIndex,
-    size_t parallelism,
-    SimulationParameters const & simulationParameters)
-{
-    // Get the dynamic forces buffer dedicated to this thread
-    vec2f * restrict const dynamicForceBuffer = mPoints.GetParallelDynamicForceBuffer(threadIndex);
-
-    // Get the total count of threads participating
-    int const numberOfThreads = static_cast<int>(mSpringRelaxation_Hybrid_1_Tasks.size());
-
-    //
-    //
-    //
-
-    // - DynamicForces = 0 | others at first iteration only
-
-    //
-    // Apply spring forces
-    //
-
-    Algorithms::ApplySpringsForces(
-        mPoints,
-        mSprings,
-        startSpringIndex,
-        endSpringIndex,
-        dynamicForceBuffer);
-
-    // - DynamicForces = sf | sf + others at first iteration only
-
-    // Signal completion
-    mSpringRelaxation_Hybrid_IterationCompleted.fetch_add(1, std::memory_order_acq_rel);
-
-    //
-    // Wait for all completions
-    //
-
-    // ...in a spinlock
-    while (true)
-    {
-        if (mSpringRelaxation_Hybrid_IterationCompleted.load() == numberOfThreads)
-        {
-            break;
-        }
-    }
-
-    //
-    // Integrate dynamic and static forces,
-    // and reset dynamic forces
-    //
-
-    IntegrateAndResetDynamicForces(
-        startPointIndex,
-        endPointIndex,
-        parallelism,
-        simulationParameters);
-}
-
-void Ship::RunSpringRelaxation_Hybrid_Thread_2(
+template<bool DoHandleCollisionsWithSeaFloor>
+void Ship::RunSpringRelaxation_Hybrid_Thread(
     size_t threadIndex,
     ElementIndex startSpringIndex,
     ElementIndex endSpringIndex,
@@ -729,14 +668,17 @@ void Ship::RunSpringRelaxation_Hybrid_Thread_2(
         parallelism,
         simulationParameters);
 
-    // Handle collisions with sea floor
-    //  - Changes position and velocity
+    if constexpr (DoHandleCollisionsWithSeaFloor)
+    {
+        // Handle collisions with sea floor
+        //  - Changes position and velocity
 
-    HandleCollisionsWithSeaFloor(
-        startPointIndex,
-        endPointIndex,
-        threadIndex,
-        simulationParameters);
+        HandleCollisionsWithSeaFloor(
+            startPointIndex,
+            endPointIndex,
+            threadIndex,
+            simulationParameters);
+    }
 }
 
 void Ship::IntegrateAndResetDynamicForces(
