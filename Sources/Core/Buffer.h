@@ -130,6 +130,24 @@ public:
         }
     }
 
+    TElement const & back() const
+    {
+        assert(mCurrentPopulatedSize > 0);
+        return mBuffer[mCurrentPopulatedSize - 1];
+    }
+
+    TElement & back()
+    {
+        assert(mCurrentPopulatedSize > 0);
+        return mBuffer[mCurrentPopulatedSize - 1];
+    }
+
+    void pop_back()
+    {
+        assert(mCurrentPopulatedSize > 0);
+        --mCurrentPopulatedSize;
+    }
+
     /*
      * Appends undefined data for the specified amount of data, advances by that much,
      * and returns the pointer to the append position, which should be used right away.

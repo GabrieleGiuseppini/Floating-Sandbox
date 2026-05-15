@@ -3041,31 +3041,25 @@ ElementIndex Points::FindFreeEphemeralParticle(
     static size_t TODOCounter = 0;
     auto const startTime = GameChronometer::Now();
 
-    // TODOHERE
 
-    // TODOOLD
+    ElementIndex ephemeralParticleIndex = NoneElementIndex;
 
-    //
-    // Search for the firt free ephemeral particle; if a free one is not found, reuse the
-    // oldest particle
-    //
-
-    ElementIndex oldestParticle = NoneElementIndex;
-    float oldestParticleStartSimulationTime = std::numeric_limits<float>::max();
-
-    assert(mFreeEphemeralParticleSearchStartIndex >= mAlignedShipPointCount
-        && mFreeEphemeralParticleSearchStartIndex < mAllPointCount);
-
-    for (ElementIndex p = mFreeEphemeralParticleSearchStartIndex; ; /*incremented in loop*/)
+    // Check if we have a free particle handy
+    if (!mFreeEphemeralParticles.empty())
     {
-        if (EphemeralType::None == mEphemeralParticleAttributes1Buffer[p].Type)
-        {
-            // Found!
+        // Take from back
+        ephemeralParticleIndex = mFreeEphemeralParticles.back();
+        mFreeEphemeralParticles.pop_back();
+    }
+    else
+    {
+        // There are active ephemeral particles
+        assert(mActiveEphemeralParticleListHeads[0] != nullptr || mActiveEphemeralParticleListHeads[1] != nullptr);
+        assert(mActiveEphemeralParticleListTails[0] != nullptr || mActiveEphemeralParticleListTails[1] != nullptr);
 
-            // Remember to start after this one next time
-            mFreeEphemeralParticleSearchStartIndex = p + 1;
-            if (mFreeEphemeralParticleSearchStartIndex >= mAllPointCount)
-                mFreeEphemeralParticleSearchStartIndex = mAlignedShipPointCount;
+        if (!doForce)
+        {
+            // No luck
 
             TODOTotalTime += GameChronometer::ElapsedSeconds(GameChronometer::Now(), startTime);
             ++TODOCounter;
@@ -3074,28 +3068,49 @@ ElementIndex Points::FindFreeEphemeralParticle(
                 LogMessage("FindFreeEphemeralParticle: ", TODOTotalTime, " @ ", TODOCounter);
             }
 
-            return p;
+            return NoneElementIndex;
         }
 
-        // Check whether it's the oldest
-        auto const startSimulationTime = mEphemeralParticleAttributes1Buffer[p].StartSimulationTime;
-        if (startSimulationTime < oldestParticleStartSimulationTime)
+        // Steal a particle
+        for (int prio = 0; prio < 2; ++prio)
         {
-            oldestParticle = p;
-            oldestParticleStartSimulationTime = startSimulationTime;
-        }
+            if (mActiveEphemeralParticleListHeads[prio] != nullptr)
+            {
+                // Steal this
+                ephemeralParticleIndex = mActiveEphemeralParticleListHeads[prio]->EphemeralParticleIndex;
 
-        // Advance
-        ++p;
-        if (p >= mAllPointCount)
-            p = mAlignedShipPointCount;
+                // Remove from current place in list
+                UnlinkEphemeralParticleFromActiveList(ephemeralParticleIndex);
 
-        if (p == mFreeEphemeralParticleSearchStartIndex)
-        {
-            // Went around
-            break;
+                break;
+            }
         }
     }
+
+    assert(ephemeralParticleIndex != NoneElementIndex);
+
+    assert(mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext == nullptr);
+    assert(mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev == nullptr);
+
+    // Add to the back of the active list
+    if (mActiveEphemeralParticleListHeads[priority] == nullptr)
+    {
+        // First one
+        mActiveEphemeralParticleListHeads[priority] = &(mEphemeralParticleMetadataBuffer[ephemeralParticleIndex]);
+        assert(mActiveEphemeralParticleListTails[priority] == nullptr);
+    }
+    else
+    {
+        // Last one of existing list
+        assert(mActiveEphemeralParticleListTails[priority] != nullptr);
+        assert(mActiveEphemeralParticleListTails[priority]->ActiveListNext == nullptr);
+        mActiveEphemeralParticleListTails[priority]->ActiveListNext = &(mEphemeralParticleMetadataBuffer[ephemeralParticleIndex]);
+        mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev = mActiveEphemeralParticleListTails[priority];
+    }
+    mActiveEphemeralParticleListTails[priority] = &(mEphemeralParticleMetadataBuffer[ephemeralParticleIndex]);
+
+    // Set priority
+    mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].Priority = priority;
 
     TODOTotalTime += GameChronometer::ElapsedSeconds(GameChronometer::Now(), startTime);
     ++TODOCounter;
@@ -3104,25 +3119,143 @@ ElementIndex Points::FindFreeEphemeralParticle(
         LogMessage("FindFreeEphemeralParticle: ", TODOTotalTime, " @ ", TODOCounter);
     }
 
-    //
-    // No luck
-    //
+    return ephemeralParticleIndex;
 
-    if (!doForce)
-        return NoneElementIndex;
+    // TODOOLD
 
-    //
-    // Steal the oldest
-    //
+    ////
+    //// Search for the firt free ephemeral particle; if a free one is not found, reuse the
+    //// oldest particle
+    ////
 
-    assert(NoneElementIndex != oldestParticle);
+    //ElementIndex oldestParticle = NoneElementIndex;
+    //float oldestParticleStartSimulationTime = std::numeric_limits<float>::max();
 
-    // Remember to start after this one next time
-    mFreeEphemeralParticleSearchStartIndex = oldestParticle + 1;
-    if (mFreeEphemeralParticleSearchStartIndex >= mAllPointCount)
-        mFreeEphemeralParticleSearchStartIndex = mAlignedShipPointCount;
+    //assert(mFreeEphemeralParticleSearchStartIndex >= mAlignedShipPointCount
+    //    && mFreeEphemeralParticleSearchStartIndex < mAllPointCount);
 
-    return oldestParticle;
+    //for (ElementIndex p = mFreeEphemeralParticleSearchStartIndex; ; /*incremented in loop*/)
+    //{
+    //    if (EphemeralType::None == mEphemeralParticleAttributes1Buffer[p].Type)
+    //    {
+    //        // Found!
+
+    //        // Remember to start after this one next time
+    //        mFreeEphemeralParticleSearchStartIndex = p + 1;
+    //        if (mFreeEphemeralParticleSearchStartIndex >= mAllPointCount)
+    //            mFreeEphemeralParticleSearchStartIndex = mAlignedShipPointCount;
+
+    //        TODOTotalTime += GameChronometer::ElapsedSeconds(GameChronometer::Now(), startTime);
+    //        ++TODOCounter;
+    //        if ((TODOCounter % 1024) == 0)
+    //        {
+    //            LogMessage("FindFreeEphemeralParticle: ", TODOTotalTime, " @ ", TODOCounter);
+    //        }
+
+    //        return p;
+    //    }
+
+    //    // Check whether it's the oldest
+    //    auto const startSimulationTime = mEphemeralParticleAttributes1Buffer[p].StartSimulationTime;
+    //    if (startSimulationTime < oldestParticleStartSimulationTime)
+    //    {
+    //        oldestParticle = p;
+    //        oldestParticleStartSimulationTime = startSimulationTime;
+    //    }
+
+    //    // Advance
+    //    ++p;
+    //    if (p >= mAllPointCount)
+    //        p = mAlignedShipPointCount;
+
+    //    if (p == mFreeEphemeralParticleSearchStartIndex)
+    //    {
+    //        // Went around
+    //        break;
+    //    }
+    //}
+
+    //TODOTotalTime += GameChronometer::ElapsedSeconds(GameChronometer::Now(), startTime);
+    //++TODOCounter;
+    //if ((TODOCounter % 1024) == 0)
+    //{
+    //    LogMessage("FindFreeEphemeralParticle: ", TODOTotalTime, " @ ", TODOCounter);
+    //}
+
+    ////
+    //// No luck
+    ////
+
+    //if (!doForce)
+    //    return NoneElementIndex;
+
+    ////
+    //// Steal the oldest
+    ////
+
+    //assert(NoneElementIndex != oldestParticle);
+
+    //// Remember to start after this one next time
+    //mFreeEphemeralParticleSearchStartIndex = oldestParticle + 1;
+    //if (mFreeEphemeralParticleSearchStartIndex >= mAllPointCount)
+    //    mFreeEphemeralParticleSearchStartIndex = mAlignedShipPointCount;
+
+    //return oldestParticle;
+}
+
+void Points::ExpireEphemeralParticle(ElementIndex ephemeralParticleIndex)
+{
+    // Freeze the particle (just to prevent drifting)
+    Freeze(EphemeralParticleIndexToPointIndex(ephemeralParticleIndex));
+
+    // Remove from active list
+    UnlinkEphemeralParticleFromActiveList(ephemeralParticleIndex);
+
+    // Register as free
+    assert(mFreeEphemeralParticles.size() < mEphemeralPointCount);
+    mFreeEphemeralParticles.emplace_back(ephemeralParticleIndex);
+
+    // Reset it as inactive
+    mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::None;
+}
+
+void Points::UnlinkEphemeralParticleFromActiveList(ElementIndex ephemeralParticleIndex)
+{
+    //// TODO: BOGUS: could be null-null if it's the only one
+    //assert(mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext != nullptr
+    //    || mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev != nullptr);
+
+    if (mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext != nullptr)
+    {
+        // There's a follower
+
+        mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext->ActiveListPrev = mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev;
+    }
+    else
+    {
+        // It's the last one - retract tail
+
+        assert(mActiveEphemeralParticleListTails[mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].Priority] == &(mEphemeralParticleMetadataBuffer[ephemeralParticleIndex]));
+        mActiveEphemeralParticleListTails[mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].Priority] = mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev;
+    }
+
+    if (mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev != nullptr)
+    {
+        // There's a preceding
+
+        mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev->ActiveListNext = mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext;
+        mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev = nullptr;
+    }
+    else
+    {
+        // It's the first one - advance head
+
+        assert(mActiveEphemeralParticleListHeads[mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].Priority] == &(mEphemeralParticleMetadataBuffer[ephemeralParticleIndex]));
+        mActiveEphemeralParticleListHeads[mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].Priority] = mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext;
+    }
+
+    // Do it here as we need it for prev
+    mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext = nullptr;
 }
 
 }

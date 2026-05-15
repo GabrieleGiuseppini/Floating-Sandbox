@@ -165,6 +165,12 @@ public:
         return *new(&(mBuffer[index])) TElement(std::forward<TArgs>(args)...);
     }
 
+    void pop_back()
+    {
+        assert(mSize > 0);
+        --mSize;
+    }
+
     void copy_from(BoundedVector<TElement> const & source, size_t sourceOffset, size_t targetOffset, size_t size)
     {
         assert(sourceOffset + size <= source.mAllocatedSize);

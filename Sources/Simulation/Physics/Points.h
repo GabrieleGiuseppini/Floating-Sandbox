@@ -561,8 +561,8 @@ private:
         int Priority; // Pri 0 are stolen before pri 1
 
         // Double-sided Active lists
-        EphemeralParticleMetadata * ActiveListPrev;
-        EphemeralParticleMetadata * ActiveListNext;
+        EphemeralParticleMetadata * ActiveListPrev; // Null when first
+        EphemeralParticleMetadata * ActiveListNext; // Null when last
 
         EphemeralParticleMetadata(ElementIndex ephemeralParticleIndex)
             : EphemeralParticleIndex(ephemeralParticleIndex)
@@ -841,9 +841,9 @@ public:
         , mWaterReactionExplosionCandidates(mRawShipPointCount)
         , mBurningPoints()
         , mStoppedBurningPoints()
-        , mFreeEphemeralParticles()
-        , mActiveEphemeralParticleListHeads({NoneElementIndex, NoneElementIndex })
-        , mActiveEphemeralParticleListTails({ NoneElementIndex, NoneElementIndex })
+        , mFreeEphemeralParticles(mEphemeralPointCount)
+        , mActiveEphemeralParticleListHeads({ nullptr, nullptr })
+        , mActiveEphemeralParticleListTails({ nullptr, nullptr })
         , mAreEphemeralPointElementsDirtyForRendering(false)
 #ifdef _DEBUG
         , mDiagnostic_ArePositionsDirty(false)
@@ -858,16 +858,6 @@ public:
         {
             mEphemeralParticleMetadataBuffer.emplace_back(p);
             mFreeEphemeralParticles.emplace_back(mEphemeralPointCount - 1 - p);
-        }
-
-        // Initialize ephemeral particle active lists
-        for (int prio = 0; prio < 2; ++prio)
-        {
-            mActiveEphemeralParticleListHeads[prio].ActiveListNext = &(mActiveEphemeralParticleListTails[prio]);
-            mActiveEphemeralParticleListTails[prio].ActiveListPrev = &(mActiveEphemeralParticleListHeads[prio]);
-
-            assert(mActiveEphemeralParticleListHeads[prio].ActiveListPrev == nullptr);
-            assert(mActiveEphemeralParticleListTails[prio].ActiveListNext == nullptr);
         }
 
         // Initialize calculated parameters
@@ -2499,26 +2489,9 @@ private:
         int priority, // 0 (lower) or 1 (higher)
         bool doForce);
 
-    inline void ExpireEphemeralParticle(ElementIndex ephemeralParticleIndex)
-    {
-        // Freeze the particle (just to prevent drifting)
-        Freeze(EphemeralParticleIndexToPointIndex(ephemeralParticleIndex));
+    inline void ExpireEphemeralParticle(ElementIndex ephemeralParticleIndex);
 
-        // Remove from active list
-        assert(mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext != nullptr
-            && mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev != nullptr);
-        mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev->ActiveListNext = mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext;
-        mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext->ActiveListPrev = mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev;
-        mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListNext = nullptr;
-        mEphemeralParticleMetadataBuffer[ephemeralParticleIndex].ActiveListPrev = nullptr;
-
-        // Register as free
-        assert(mFreeEphemeralParticles.size() < mEphemeralPointCount);
-        mFreeEphemeralParticles.push_back(ephemeralParticleIndex);
-
-        // Reset it as inactive
-        mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::None;
-    }
+    inline void UnlinkEphemeralParticleFromActiveList(ElementIndex ephemeralParticleIndex);
 
 private:
 
@@ -2761,10 +2734,10 @@ private:
     // Ephemeral particle maintenance
     //
     // Stack of free particles; contains ephemeral particle indices (NOT point indices)
-    std::vector<ElementIndex> mFreeEphemeralParticles;
+    BoundedVector<ElementIndex> mFreeEphemeralParticles;
     // Active lists, indexed by prio
-    std::array<EphemeralParticleMetadata, 2> mActiveEphemeralParticleListHeads;
-    std::array<EphemeralParticleMetadata, 2> mActiveEphemeralParticleListTails;
+    std::array<EphemeralParticleMetadata *, 2> mActiveEphemeralParticleListHeads;
+    std::array<EphemeralParticleMetadata *, 2> mActiveEphemeralParticleListTails;
 
     // Flag remembering whether the set of ephemeral point *elements* is dirty
     // (i.e. whether there are more or less points than previously

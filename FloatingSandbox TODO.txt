@@ -1141,28 +1141,27 @@
 				+ EphemeralParticleMetaData * ActiveListPrev;
 				+ EphemeralParticleMetaData * ActiveListNext;
 			+ "EphemeralParticleAttributes2" -> "EphemeralParticleAttributes", and gets Type and StartSimulationTime			
-			= Points has EphemeralParticleMetaData ActiveLo/HiPriEphemeralParticleListHead, Tail
-				- TODO: rethink nature of head, tail
+			+ Points has EphemeralParticleMetaData * ActiveLo/HiPriEphemeralParticleListHead, Tail
 			+ Points has FreeEphemeralParticles vector - used as stack - for free ephemeral particles
 				+ Init'd with all
-				- When we take free, we take from back
-			- FindFreeEphParticle -> ParticleIndex|None
-				- If FreeEphemeralParticles ! empty: pop it, add to Active list (based on prio), set prio, and return it
-				- Else: if DoForce:
-					- for each prio: if ActiveEphemeralParticleListHead.Next != tail: extract it, add to Active list (based on prio), set prio, and return it
-				- Else: return None
+				+ When we take free, we take from back
+			+ FindFreeEphParticle -> ParticleIndex|None
+				+ If FreeEphemeralParticles ! empty: pop it, add to Active list (based on prio), set prio, and return it
+				+ Else: if DoForce:
+					+ for each prio: if ActiveEphemeralParticleListHead.Next != nullptr: extract it, add to Active list (based on prio), set prio, and return it
+				+ Else: return None
 			+ ExpireEphParticle:
 				+ 1. Remove from Active list (assert it's in it)
 				+ 2. Push into FreeEphemeralParticles, into back
 				+ 3. Mark as inactive (type=none)
 
 			- Hide all methods w/eph_index, incl iterator
-			- See if still need:
-				-
-		- Impl:
+
 		- Test:
+			- Hesleden, 4K
 			- PinnedPoints/AirBubbles
 			- DestroyAt/AirBubbles
+			- Time+Mem, 16K - RelWithDebInfo
 
 		- Remove static measurement of time spent in FindFreeEphemeralParticle
 
