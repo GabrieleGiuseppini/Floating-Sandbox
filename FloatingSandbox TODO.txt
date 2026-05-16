@@ -1206,14 +1206,14 @@
 				+ StepByStep
 			+ Revert to original parallel mode (Hybrid)
 
-		- If insanely high number of eph particles is doable, consider:
+		= If insanely high number of eph particles is doable, consider:
 			- Tornadoes: 
 				- Splashes along whole base
 				- More foam
-			- Lower velocity damp of foam
+			+ Lower velocity damp of foam
 
 		- Test:
-			- Perf X 2 with all eph particles (~all bubbles) at 16k eph particles
+			- Perf X 2 (UPD, RND) with all eph particles (~all bubbles) at 16k eph particles
 
 		- Android Port Plan
 			- Max eph particles being instanced setting, and calibration		

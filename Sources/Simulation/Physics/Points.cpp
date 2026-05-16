@@ -2141,9 +2141,6 @@ void Points::UpdateEphemeralParticles(
                         // Update progress
                         mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].State.WaterFoam.LifetimeProgress = lifetimeProgress;
 
-                        // Damp X velocity
-                        mVelocityBuffer[pointIndex].x *= 0.9997f;
-
                         // Constrain onto ocean surface, simulating falling down/floating up
                         //
                         // Note: this is not nice - we're acting directly onto the positions of particles,
