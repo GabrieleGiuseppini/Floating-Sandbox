@@ -1169,10 +1169,10 @@
 
 		+ Remove static measurement of time spent in FindFreeEphemeralParticle
 
-		= 4. Keep eph particles out of 40 iterations' loop, and just integrate once @ end
+		+ 4. Keep eph particles out of 40 iterations' loop, and just integrate once @ end
 			! IT'S REALLY WORTH IT!
 			! Watch out for integration factors and coeffs -- everything that depends on numMechanicalIterations
-			= Can have special task for last, doing last integration (on non-eph) followed by integration of eph
+			+ Can have special task for last, doing last integration (on non-eph) followed by integration of eph
 				+ Hybrid
 					+ Check: IntegrateAndResetDynamicForces
 						+ dt
@@ -1199,12 +1199,12 @@
 							+ Post: 40-43 (21-22)
 						+ World boundaries (in Debug)
 				+ Full
-				- StepByStep			
-			= Test:
+				+ StepByStep			
+			+ Test:
 				+ Hybrid
 				+ Full
-				- StepByStep
-			- Revert to original parallel mode (Hybrid)
+				+ StepByStep
+			+ Revert to original parallel mode (Hybrid)
 
 		- If insanely high number of eph particles is doable, consider:
 			- Tornadoes: 

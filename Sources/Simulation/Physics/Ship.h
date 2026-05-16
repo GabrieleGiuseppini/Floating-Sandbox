@@ -1144,6 +1144,7 @@ private:
     std::vector<typename ThreadPool::Task> mSpringRelaxation_StepByStep_SpringForcesTasks;
     std::vector<typename ThreadPool::Task> mSpringRelaxation_StepByStep_IntegrationTasks;
     std::vector<typename ThreadPool::Task> mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks;
+    std::vector<typename ThreadPool::Task> mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionAndEphemeralTasks;
 
     // Hybrid mode
 

@@ -137,18 +137,24 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
     mSpringRelaxation_StepByStep_SpringForcesTasks.clear();
     mSpringRelaxation_StepByStep_IntegrationTasks.clear();
     mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks.clear();
+    mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionAndEphemeralTasks.clear();
 
     auto const springShards = CalculateSpringRelaxationSpringShards(
         mSprings.GetElementCount(),
         mSprings.GetPerfectSquareCount(),
         simulationThreadPool);
 
-    auto const pointShards = CalculatePointShards(
-        mPoints.GetBufferElementCount(),
+    auto const shipPointShards = CalculatePointShards(
+        mPoints.GetAlignedShipPointCount(),
+        simulationThreadPool);
+
+    auto const ephemeralPointShards = CalculatePointShards(
+        mPoints.GetMaxEphemeralParticleCount(),
         simulationThreadPool);
 
     ElementIndex springStart = 0;
-    ElementIndex pointStart = 0;
+    ElementIndex shipPointStart = 0;
+    ElementIndex ephemeralPointStart = mPoints.GetAlignedShipPointCount();
     for (size_t t = 0; t < simulationParallelism; ++t)
     {
         ElementIndex const springEnd = springStart + static_cast<ElementCount>(springShards[t]);
@@ -169,42 +175,80 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
 
         springStart = springEnd;
 
-        ElementIndex const pointEnd = pointStart + static_cast<ElementCount>(pointShards[t]);
-        assert(pointEnd <= mPoints.GetBufferElementCount());
+        ElementIndex const shipPointEnd = shipPointStart + static_cast<ElementCount>(shipPointShards[t]);
+        assert(shipPointEnd <= mPoints.GetAlignedShipPointCount());
 
-        assert(((pointEnd - pointStart) % vectorization_float_count<ElementCount>) == 0);
+        assert(((shipPointEnd - shipPointStart) % vectorization_float_count<ElementCount>) == 0);
 
         // Note: we store a reference to SimulationParameters in the lambda; this is only safe
         // if SimulationParameters is never re-created
 
         mSpringRelaxation_StepByStep_IntegrationTasks.emplace_back(
-            [this, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
+            [this, shipPointStart, shipPointEnd, simulationParallelism, &simulationParameters]()
             {
                 IntegrateAndResetDynamicForces(
-                    pointStart,
-                    pointEnd,
+                    shipPointStart,
+                    shipPointEnd,
                     simulationParallelism,
                     mSpringRelaxationCoefficients);
             });
 
         mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks.emplace_back(
-            [this, pointStart, pointEnd, t, simulationParallelism, &simulationParameters]()
+            [this, shipPointStart, shipPointEnd, t, simulationParallelism, &simulationParameters]()
             {
                 IntegrateAndResetDynamicForces(
-                    pointStart,
-                    pointEnd,
+                    shipPointStart,
+                    shipPointEnd,
                     simulationParallelism,
                     mSpringRelaxationCoefficients);
 
                 HandleCollisionsWithSeaFloor(
-                    pointStart,
-                    pointEnd,
+                    shipPointStart,
+                    shipPointEnd,
                     t,
                     mSpringRelaxationCoefficients,
                     simulationParameters);
             });
 
-        pointStart = pointEnd;
+        ElementIndex const ephemeralPointEnd = ephemeralPointStart + static_cast<ElementCount>(ephemeralPointShards[t]);
+        assert(ephemeralPointEnd <= mPoints.GetBufferElementCount());
+
+        mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionAndEphemeralTasks.emplace_back(
+            [this, shipPointStart, shipPointEnd, ephemeralPointStart, ephemeralPointEnd, t, simulationParallelism, &simulationParameters]()
+            {
+                // Ship
+
+                IntegrateAndResetDynamicForces(
+                    shipPointStart,
+                    shipPointEnd,
+                    simulationParallelism,
+                    mSpringRelaxationCoefficients);
+
+                HandleCollisionsWithSeaFloor(
+                    shipPointStart,
+                    shipPointEnd,
+                    t,
+                    mSpringRelaxationCoefficients,
+                    simulationParameters);
+
+                // Ephemeral
+
+                IntegrateAndResetDynamicForces(
+                    ephemeralPointStart,
+                    ephemeralPointEnd,
+                    simulationParallelism,
+                    mSpringRelaxationCoefficients_EphemeralParticles);
+
+                HandleCollisionsWithSeaFloor(
+                    ephemeralPointStart,
+                    ephemeralPointEnd,
+                    t,
+                    mSpringRelaxationCoefficients_EphemeralParticles,
+                    simulationParameters);
+            });
+
+        shipPointStart = shipPointEnd;
+        ephemeralPointStart = ephemeralPointEnd;
     }
 }
 
@@ -602,7 +646,7 @@ void Ship::RunSpringRelaxation_StepByStep(
 {
     auto & threadPool = threadManager.GetSimulationThreadPool();
 
-    int const numMechanicalDynamicsIterations = simulationParameters.NumMechanicalDynamicsIterations<int>();
+    int const numMechanicalDynamicsIterations = GetSafeNumMechanicalDynamicsIterations(simulationParameters);
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
         // - DynamicForces = 0 | others at first iteration only
@@ -623,13 +667,28 @@ void Ship::RunSpringRelaxation_StepByStep(
         {
             assert((iter % SeaFloorCollisionPeriod) == SeaFloorCollisionPeriod - 1);
 
-            // Integrate dynamic and static forces,
-            // and reset dynamic forces
+            if (iter < numMechanicalDynamicsIterations - 1)
+            {
+                // Integrate dynamic and static forces,
+                // and reset dynamic forces
 
-            // Handle collisions with sea floor
-            //  - Changes position and velocity
+                // Handle collisions with sea floor
+                //  - Changes position and velocity
 
-            threadPool.Run(mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks);
+                threadPool.Run(mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks);
+            }
+            else
+            {
+                // Integrate dynamic and static forces,
+                // and reset dynamic forces
+
+                // Handle collisions with sea floor
+                //  - Changes position and velocity
+
+                // Run ephemeral particles
+
+                threadPool.Run(mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionAndEphemeralTasks);
+            }
         }
 
         // - DynamicForces = 0
