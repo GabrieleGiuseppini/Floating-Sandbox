@@ -51,7 +51,7 @@ void Points::Add(
     mDecayBuffer.emplace_back(1.0f);
     mAdditionalWeaknessBuffer.emplace_back(1.0f);
     mPinningCoefficientBuffer.emplace_back(1.0f);
-    mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f));
+    mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f));
     mOceanFloorBedrockCollisionFactorsBuffer.emplace_back(CalculateOceanFloorBedrockCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
@@ -176,7 +176,7 @@ void Points::CreateEphemeralParticleAirBubble(
     assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
     //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
-    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
@@ -271,7 +271,16 @@ void Points::CreateEphemeralParticleDebris(
     assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
     //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
-    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
+    mOceanFloorBedrockCollisionFactorsBuffer[pointIndex]= CalculateOceanFloorBedrockCollisionFactors(
+        mCurrentElasticityAdjustment,
+        mCurrentStaticFrictionAdjustment,
+        mCurrentKineticFrictionAdjustment,
+        mCurrentOceanFloorBedrockElasticityCoefficient,
+        mCurrentOceanFloorBedrockFrictionCoefficient,
+        structuralMaterial.ElasticityCoefficient,
+        structuralMaterial.StaticFrictionCoefficient,
+        structuralMaterial.KineticFrictionCoefficient);
     mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
@@ -359,7 +368,7 @@ void Points::CreateEphemeralParticleSiltCloud(
     assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
     //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
-    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
@@ -488,7 +497,7 @@ void Points::InternalCreateEphemeralParticleSmoke(
     assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
     //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
-    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
@@ -583,7 +592,16 @@ void Points::CreateEphemeralParticleSparkle(
     assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
     //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
-    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
+    mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
+        mCurrentElasticityAdjustment,
+        mCurrentStaticFrictionAdjustment,
+        mCurrentKineticFrictionAdjustment,
+        mCurrentOceanFloorBedrockElasticityCoefficient,
+        mCurrentOceanFloorBedrockFrictionCoefficient,
+        structuralMaterial.ElasticityCoefficient,
+        structuralMaterial.StaticFrictionCoefficient,
+        structuralMaterial.KineticFrictionCoefficient);
     mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
@@ -662,7 +680,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
     //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
-    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
@@ -763,7 +781,7 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
     assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
     //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
-    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
@@ -870,7 +888,7 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
     assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
     //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
-    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
@@ -1063,7 +1081,7 @@ void Points::UpdateForSimulationParameters(SimulationParameters const & simulati
         for (ElementIndex i : *this)
         {
             mIntegrationFactorTimeCoefficientBuffer[i] = CalculateIntegrationFactorTimeCoefficient(
-                numMechanicalDynamicsIterations,
+                i,
                 mPinningCoefficientBuffer[i]);
         }
 

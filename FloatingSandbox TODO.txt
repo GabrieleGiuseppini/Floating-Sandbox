@@ -1171,14 +1171,32 @@
 
 		= 4. Keep eph particles out of 40 iterations' loop, and just integrate once @ end
 			! IT'S REALLY WORTH IT!
+			! Watch out for integration factors and coeffs -- everything that depends on numMechanicalIterations
 			= Can have special task for last, doing last integration (on non-eph) followed by integration of eph
 				= Hybrid
+					+ Check: IntegrateAndResetDynamicForces
+						+ dt
+							+ IntegrateAndResetDynamicForces: take dt
+						+ Points::IntegrationFactorBuffer
+					+ Check: HandleCollisionsWithSeaFloor
+						+ dt
+							+ HandleCollisionsWithSeaFloor: take dt
+					+ Check: mSpringRelaxationCoefficients.IntegrationVelocityFactor
+					+ Comment @ Points::CalculateIntegrationFactorTimeCoefficient
+					+ Find all places where we use NumMechanical
+
+					- Do PR and commit
+					- See if can incorporate in last task, so we do one less thread.run
+						- Need to guarantee numMechIterations is even, either @ source or locally
+
+					- Test:
+						- Impact with silt (friction) and bedrock
+						- Does silting really depend on num mechanical iterations?
+						- Change num mech iters, #threads
 				- Full
-				- StepByStep
-			- Watch out for integration factors and coeffs -- everything that depends on numMechanicalIterations
-				- TODO: make list
-			- Test:
-				- Hybrid
+				- StepByStep			
+			= Test:
+				= Hybrid
 				- Full
 				- StepByStep
 
@@ -1189,7 +1207,7 @@
 			- Lower velocity damp of foam
 
 		- Test:
-			- Perf X 2with all eph particles (~all bubbles) at max eph particles
+			- Perf X 2 with all eph particles (~all bubbles) at max eph particles
 
 		- Android Port Plan
 			- Max eph particles being instanced setting, and calibration		

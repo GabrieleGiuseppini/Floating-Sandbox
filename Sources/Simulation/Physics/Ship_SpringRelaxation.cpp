@@ -173,7 +173,7 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
                     pointStart,
                     pointEnd,
                     simulationParallelism,
-                    simulationParameters);
+                    mSpringRelaxationCoefficients);
             });
 
         mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks.emplace_back(
@@ -183,12 +183,13 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
                     pointStart,
                     pointEnd,
                     simulationParallelism,
-                    simulationParameters);
+                    mSpringRelaxationCoefficients);
 
                 HandleCollisionsWithSeaFloor(
                     pointStart,
                     pointEnd,
                     t,
+                    mSpringRelaxationCoefficients,
                     simulationParameters);
             });
 
@@ -216,59 +217,84 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
 
     mSpringRelaxation_Hybrid_1_Tasks.clear();
     mSpringRelaxation_Hybrid_2_Tasks.clear();
+    mSpringRelaxation_Hybrid_EphemeralParticle_Tasks.clear();
 
     auto const springShards = CalculateSpringRelaxationSpringShards(
         mSprings.GetElementCount(),
         mSprings.GetPerfectSquareCount(),
         simulationThreadPool);
 
-    auto const pointShards = CalculatePointShards(
-        mPoints.GetBufferElementCount(),
+    auto const shipPointShards = CalculatePointShards(
+        mPoints.GetAlignedShipPointCount(),
+        simulationThreadPool);
+
+    auto const ephemeralPointShards = CalculatePointShards(
+        mPoints.GetMaxEphemeralParticleCount(),
         simulationThreadPool);
 
     ElementIndex springStart = 0;
-    ElementIndex pointStart = 0;
+    ElementIndex shipPointStart = 0;
+    ElementIndex ephemeralPointStart = mPoints.GetAlignedShipPointCount();
     for (size_t t = 0; t < simulationParallelism; ++t)
     {
         ElementIndex const springEnd = springStart + static_cast<ElementCount>(springShards[t]);
         assert(springEnd <= mSprings.GetElementCount());
 
-        ElementIndex const pointEnd = pointStart + static_cast<ElementCount>(pointShards[t]);
-        assert(pointEnd <= mPoints.GetBufferElementCount());
+        ElementIndex const shipPointEnd = shipPointStart + static_cast<ElementCount>(shipPointShards[t]);
+        assert(shipPointEnd <= mPoints.GetAlignedShipPointCount());
 
         mSpringRelaxation_Hybrid_1_Tasks.emplace_back(
-            [this, t, springStart, springEnd, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
+            [this, t, springStart, springEnd, shipPointStart, shipPointEnd, simulationParallelism, &simulationParameters]()
             {
                 RunSpringRelaxation_Hybrid_Thread<false>(
                     t,
                     springStart,
                     springEnd,
-                    pointStart,
-                    pointEnd,
+                    shipPointStart,
+                    shipPointEnd,
                     simulationParallelism,
                     simulationParameters);
             });
 
         mSpringRelaxation_Hybrid_2_Tasks.emplace_back(
-            [this, t, springStart, springEnd, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
+            [this, t, springStart, springEnd, shipPointStart, shipPointEnd, simulationParallelism, &simulationParameters]()
             {
                 RunSpringRelaxation_Hybrid_Thread<true>(
                     t,
                     springStart,
                     springEnd,
-                    pointStart,
-                    pointEnd,
+                    shipPointStart,
+                    shipPointEnd,
+                    simulationParallelism,
+                    simulationParameters);
+            });
+
+        ElementIndex const ephemeralPointEnd = ephemeralPointStart + static_cast<ElementCount>(ephemeralPointShards[t]);
+        assert(ephemeralPointEnd <= mPoints.GetBufferElementCount());
+
+        mSpringRelaxation_Hybrid_EphemeralParticle_Tasks.emplace_back(
+            [this, t, ephemeralPointStart, ephemeralPointEnd, simulationParallelism, &simulationParameters]()
+            {
+                RunSpringRelaxation_Hybrid_EphemeralParticle_Thread(
+                    t,
+                    ephemeralPointStart,
+                    ephemeralPointEnd,
                     simulationParallelism,
                     simulationParameters);
             });
 
         springStart = springEnd;
-        pointStart = pointEnd;
+        shipPointStart = shipPointEnd;
+        ephemeralPointStart = ephemeralPointEnd;
     }
 }
 
-void Ship::CalculateSpringRelaxationCoefficients(SimulationParameters const & simulationParameters)
+Ship::SpringRelaxationCoefficients Ship::CalculateSpringRelaxationCoefficients(
+    float numMechanicalDynamicsIterations,
+    SimulationParameters const & simulationParameters)
 {
+    SpringRelaxationCoefficients coeffs;
+
     // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
     //
     // Considering that:
@@ -285,11 +311,11 @@ void Ship::CalculateSpringRelaxationCoefficients(SimulationParameters const & si
     // this value.
     //
 
-    float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>();
+    coeffs.Dt = SimulationParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
 
     float const globalDamping = 1.0f -
         pow((1.0f - SimulationParameters::GlobalDamping),
-            12.0f / simulationParameters.NumMechanicalDynamicsIterations<float>());
+            12.0f / numMechanicalDynamicsIterations);
 
     // Incorporate adjustment
     float const globalDampingCoefficient = 1.0f -
@@ -304,16 +330,18 @@ void Ship::CalculateSpringRelaxationCoefficients(SimulationParameters const & si
 
     // Pre-divide damp coefficient by dt to provide the scalar factor which, when multiplied with a displacement,
     // provides the final, damped velocity
-    mSpringRelaxationCoefficients.IntegrationVelocityFactor  = globalDampingCoefficient / dt;
+    coeffs.IntegrationVelocityFactor  = globalDampingCoefficient / coeffs.Dt;
 
     //
     // Silt hardness
     //
 
     float constexpr MinDepthHardnessReference = 0.05f; // Dictates magnitude of discontinuity when entering silt for the first time; reference at 40 iterations/frame
-    mSpringRelaxationCoefficients.MinSiltDepthHardness = 1.0f - std::powf(1.0f - MinDepthHardnessReference, 40.0f / simulationParameters.NumMechanicalDynamicsIterations<float>());
+    coeffs.MinSiltDepthHardness = 1.0f - std::powf(1.0f - MinDepthHardnessReference, 40.0f / numMechanicalDynamicsIterations);
     float constexpr MaxDepthHardnessReference = 0.2f; // At max depth; reference at 40 iterations/frame
-    mSpringRelaxationCoefficients.MaxSiltDepthHardness = 1.0f - std::powf(1.0f - MaxDepthHardnessReference, 40.0f / simulationParameters.NumMechanicalDynamicsIterations<float>());
+    coeffs.MaxSiltDepthHardness = 1.0f - std::powf(1.0f - MaxDepthHardnessReference, 40.0f / numMechanicalDynamicsIterations);
+
+    return coeffs;
 }
 
 void Ship::RunSpringRelaxation(
@@ -324,7 +352,8 @@ void Ship::RunSpringRelaxation(
     // Recalculate all coefficients, and prepare silt impacts
     //
 
-    CalculateSpringRelaxationCoefficients(simulationParameters);
+    mSpringRelaxationCoefficients = CalculateSpringRelaxationCoefficients(simulationParameters.NumMechanicalDynamicsIterations<float>(), simulationParameters);
+    mSpringRelaxationCoefficients_EphemeralParticles = CalculateSpringRelaxationCoefficients(1.0f, simulationParameters);
 
     for (auto & threadSiltImpact : mPerThreadSiltImpacts)
     {
@@ -477,7 +506,7 @@ void Ship::RunSpringRelaxation_FullSpeed_Thread(
             startPointIndex,
             endPointIndex,
             parallelism,
-            simulationParameters);
+            mSpringRelaxationCoefficients);
 
         if ((iter % SeaFloorCollisionPeriod) == SeaFloorCollisionPeriod - 1)
         {
@@ -488,6 +517,7 @@ void Ship::RunSpringRelaxation_FullSpeed_Thread(
                 startPointIndex,
                 endPointIndex,
                 threadIndex,
+                mSpringRelaxationCoefficients,
                 simulationParameters);
         }
 
@@ -597,6 +627,9 @@ void Ship::RunSpringRelaxation_Hybrid(
         }
     }
 
+    // Run ephemeral particles now
+    threadPool.Run(mSpringRelaxation_Hybrid_EphemeralParticle_Tasks);
+
 #ifdef _DEBUG
     //
     // We have dirtied positions
@@ -666,7 +699,7 @@ void Ship::RunSpringRelaxation_Hybrid_Thread(
         startPointIndex,
         endPointIndex,
         parallelism,
-        simulationParameters);
+        mSpringRelaxationCoefficients);
 
     if constexpr (DoHandleCollisionsWithSeaFloor)
     {
@@ -677,18 +710,46 @@ void Ship::RunSpringRelaxation_Hybrid_Thread(
             startPointIndex,
             endPointIndex,
             threadIndex,
+            mSpringRelaxationCoefficients,
             simulationParameters);
     }
+}
+
+void Ship::RunSpringRelaxation_Hybrid_EphemeralParticle_Thread(
+    size_t threadIndex,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    size_t parallelism,
+    SimulationParameters const & simulationParameters)
+{
+    //
+    // Integrate dynamic and static forces,
+    // and reset dynamic forces
+    //
+
+    IntegrateAndResetDynamicForces(
+        startPointIndex,
+        endPointIndex,
+        parallelism,
+        mSpringRelaxationCoefficients_EphemeralParticles);
+
+    // Handle collisions with sea floor
+    //  - Changes position and velocity
+
+    HandleCollisionsWithSeaFloor(
+        startPointIndex,
+        endPointIndex,
+        threadIndex,
+        mSpringRelaxationCoefficients_EphemeralParticles,
+        simulationParameters);
 }
 
 void Ship::IntegrateAndResetDynamicForces(
     ElementIndex startPointIndex,
     ElementIndex endPointIndex,
     size_t parallelism,
-    SimulationParameters const & simulationParameters)
+    SpringRelaxationCoefficients const & coefficients)
 {
-    float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>();
-
     switch (parallelism)
     {
         case 1:
@@ -698,8 +759,8 @@ void Ship::IntegrateAndResetDynamicForces(
                 startPointIndex,
                 endPointIndex,
                 mPoints.GetDynamicForceBuffersAsFloat(),
-                dt,
-                mSpringRelaxationCoefficients.IntegrationVelocityFactor);
+                coefficients.Dt,
+                coefficients.IntegrationVelocityFactor);
 
             break;
         }
@@ -711,8 +772,8 @@ void Ship::IntegrateAndResetDynamicForces(
                 startPointIndex,
                 endPointIndex,
                 mPoints.GetDynamicForceBuffersAsFloat(),
-                dt,
-                mSpringRelaxationCoefficients.IntegrationVelocityFactor);
+                coefficients.Dt,
+                coefficients.IntegrationVelocityFactor);
 
             break;
         }
@@ -724,8 +785,8 @@ void Ship::IntegrateAndResetDynamicForces(
                 startPointIndex,
                 endPointIndex,
                 mPoints.GetDynamicForceBuffersAsFloat(),
-                dt,
-                mSpringRelaxationCoefficients.IntegrationVelocityFactor);
+                coefficients.Dt,
+                coefficients.IntegrationVelocityFactor);
 
             break;
         }
@@ -737,8 +798,8 @@ void Ship::IntegrateAndResetDynamicForces(
                 startPointIndex,
                 endPointIndex,
                 mPoints.GetDynamicForceBuffersAsFloat(),
-                dt,
-                mSpringRelaxationCoefficients.IntegrationVelocityFactor);
+                coefficients.Dt,
+                coefficients.IntegrationVelocityFactor);
 
             break;
         }
@@ -751,8 +812,8 @@ void Ship::IntegrateAndResetDynamicForces(
                 startPointIndex,
                 endPointIndex,
                 mPoints.GetDynamicForceBuffersAsFloat(),
-                dt,
-                mSpringRelaxationCoefficients.IntegrationVelocityFactor);
+                coefficients.Dt,
+                coefficients.IntegrationVelocityFactor);
 
             break;
         }
@@ -763,12 +824,11 @@ void Ship::HandleCollisionsWithSeaFloor(
     ElementIndex startPointIndex,
     ElementIndex endPointIndex,
     size_t threadIndex,
+    SpringRelaxationCoefficients const & coefficients,
     SimulationParameters const & simulationParameters)
 {
-    float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>();
-
-    float const siltDepthHardnessCoeff1 = mSpringRelaxationCoefficients.MinSiltDepthHardness;
-    float const siltDepthHardnessCoeff2 = mSpringRelaxationCoefficients.MaxSiltDepthHardness - mSpringRelaxationCoefficients.MinSiltDepthHardness;
+    float const siltDepthHardnessCoeff1 = coefficients.MinSiltDepthHardness;
+    float const siltDepthHardnessCoeff2 = coefficients.MaxSiltDepthHardness - coefficients.MinSiltDepthHardness;
     float const siltDustCloudEnergyThreshold =
         simulationParameters.SiltDustCloudEnergyThreshold
         * 1.0f / std::max(simulationParameters.SiltDustCloudSensitivity, 0.000001f)
@@ -843,7 +903,7 @@ void Ship::HandleCollisionsWithSeaFloor(
                     // Move point back along its velocity direction (i.e. towards where it was in the previous step,
                     // which is guaranteed to be more towards the outside), but not too much - or else springs
                     // might start oscillating between the point burrowing down and then bouncing up
-                    vec2f deltaPosition = pointVelocity * dt;
+                    vec2f deltaPosition = pointVelocity * coefficients.Dt;
                     float const deltaPositionLength = deltaPosition.length();
                     deltaPosition = deltaPosition.normalise_approx(deltaPositionLength) * std::min(deltaPositionLength, 0.01f); // Magic number, empirical
                     mPoints.SetPosition(

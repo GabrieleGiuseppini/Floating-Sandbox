@@ -655,7 +655,11 @@ private:
         ThreadPool const & simulationThreadPool,
         SimulationParameters const & simulationParameters);
 
-    void CalculateSpringRelaxationCoefficients(SimulationParameters const & simulationParameters);
+    struct SpringRelaxationCoefficients;
+
+    static SpringRelaxationCoefficients CalculateSpringRelaxationCoefficients(
+        float numMechanicalDynamicsIterations,
+        SimulationParameters const & simulationParameters);
 
     void RunSpringRelaxation(
         ThreadManager & threadManager,
@@ -690,16 +694,24 @@ private:
         size_t parallelism,
         SimulationParameters const & simulationParameters);
 
-    inline void IntegrateAndResetDynamicForces(
+    void RunSpringRelaxation_Hybrid_EphemeralParticle_Thread(
+        size_t threadIndex,
         ElementIndex startPointIndex,
         ElementIndex endPointIndex,
         size_t parallelism,
         SimulationParameters const & simulationParameters);
 
+    inline void IntegrateAndResetDynamicForces(
+        ElementIndex startPointIndex,
+        ElementIndex endPointIndex,
+        size_t parallelism,
+        SpringRelaxationCoefficients const & coefficients);
+
     inline void HandleCollisionsWithSeaFloor(
         ElementIndex startPointIndex,
         ElementIndex endPointIndex,
         size_t threadIndex,
+        SpringRelaxationCoefficients const & coefficients,
         SimulationParameters const & simulationParameters);
 
     static std::vector<size_t> CalculateSpringRelaxationSpringShards(
@@ -1131,6 +1143,7 @@ private:
     // The spring relaxation tasks
     std::vector<typename ThreadPool::Task> mSpringRelaxation_Hybrid_1_Tasks;
     std::vector<typename ThreadPool::Task> mSpringRelaxation_Hybrid_2_Tasks;
+    std::vector<typename ThreadPool::Task> mSpringRelaxation_Hybrid_EphemeralParticle_Tasks;
 
     // The signals for completions for threads to synchronize with each other
     std::atomic<int> mSpringRelaxation_Hybrid_IterationCompleted;
@@ -1142,10 +1155,14 @@ private:
 
     struct SpringRelaxationCoefficients
     {
+        float Dt;
         float IntegrationVelocityFactor;
         float MinSiltDepthHardness;
         float MaxSiltDepthHardness;
-    } mSpringRelaxationCoefficients;
+    };
+
+    SpringRelaxationCoefficients mSpringRelaxationCoefficients;
+    SpringRelaxationCoefficients mSpringRelaxationCoefficients_EphemeralParticles;
 
     // The max silt impacts encountered by each thread during all of the iterations.
     // The kinetic energy in this storage is a placeholder; it will be transformed

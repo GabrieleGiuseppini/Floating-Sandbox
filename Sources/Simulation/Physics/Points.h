@@ -874,6 +874,14 @@ public:
         return ElementIndexRangeIterable(0, mRawShipPointCount);
     }
 
+    /*
+     * Returns a reverse iterator for the (unaligned) ship (i.e. non-ephemeral) points only.
+     */
+    inline auto RawShipPointsReverse() const
+    {
+        return ElementIndexReverseRangeIterable(0, mRawShipPointCount);
+    }
+
     ElementCount GetRawShipPointCount() const
     {
         return mRawShipPointCount;
@@ -882,14 +890,6 @@ public:
     ElementCount GetAlignedShipPointCount() const
     {
         return mAlignedShipPointCount;
-    }
-
-    /*
-     * Returns a reverse iterator for the (unaligned) ship (i.e. non-ephemeral) points only.
-     */
-    inline auto RawShipPointsReverse() const
-    {
-        return ElementIndexReverseRangeIterable(0, mRawShipPointCount);
     }
 
     ElementCount GetMaxEphemeralParticleCount() const
@@ -1600,7 +1600,7 @@ public:
         float receptivity)
     {
         mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
-            mCurrentNumMechanicalDynamicsIterations,
+            pointElementIndex,
             mPinningCoefficientBuffer[pointElementIndex] * receptivity);
     }
 
@@ -1613,7 +1613,7 @@ public:
 
         // Recalc integration factor time coefficient, freezing point
         mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
-            mCurrentNumMechanicalDynamicsIterations,
+            pointElementIndex,
             mPinningCoefficientBuffer[pointElementIndex]);
 
         // Also zero-out velocity, wiping all traces of this point moving
@@ -1628,7 +1628,7 @@ public:
 
         // Re-populate its integration factor time coefficient, thawing point
         mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
-            mCurrentNumMechanicalDynamicsIterations,
+            pointElementIndex,
             mPinningCoefficientBuffer[pointElementIndex]);
     }
 
@@ -2399,10 +2399,13 @@ private:
         float combustionSpeedAdjustment,
         float dt);
 
-    static inline float CalculateIntegrationFactorTimeCoefficient(
-        float numMechanicalDynamicsIterations,
-        float isPinnedCoefficient)
+    inline float CalculateIntegrationFactorTimeCoefficient(
+        ElementIndex pointIndex,
+        float isPinnedCoefficient) const
     {
+        // Since ephemeral particles are integrated with their own, single step ,
+        // they have a different integration factor time coefficient
+        float const numMechanicalDynamicsIterations = IsEphemeral(pointIndex) ? 1.0f : mCurrentNumMechanicalDynamicsIterations;
         return SimulationParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
             * SimulationParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
             * isPinnedCoefficient;
