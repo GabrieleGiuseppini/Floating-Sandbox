@@ -1184,15 +1184,16 @@
 					+ Check: mSpringRelaxationCoefficients.IntegrationVelocityFactor
 					+ Comment @ Points::CalculateIntegrationFactorTimeCoefficient
 					+ Find all places where we use NumMechanical
-
-					- Do PR and commit
-					- See if can incorporate in last task, so we do one less thread.run
-						- Need to guarantee numMechIterations is even, either @ source or locally
+					+ Do PR and commit
+					+ See if can incorporate in last task, so we do one less thread.run
+						+ Need to guarantee numMechIterations is even, either @ source or locally
 
 					- Test:
-						- Impact with silt (friction) and bedrock
+						+ Impact with silt (friction) and bedrock
 						- Does silting really depend on num mechanical iterations?
-						- Change num mech iters, #threads
+						+ Change num mech iters, and #threads
+						- Hesleden perf (pre and post)
+						- World boundaries (in Debug)
 				- Full
 				- StepByStep			
 			= Test:
@@ -1207,7 +1208,7 @@
 			- Lower velocity damp of foam
 
 		- Test:
-			- Perf X 2 with all eph particles (~all bubbles) at max eph particles
+			- Perf X 2 with all eph particles (~all bubbles) at 16k eph particles
 
 		- Android Port Plan
 			- Max eph particles being instanced setting, and calibration		

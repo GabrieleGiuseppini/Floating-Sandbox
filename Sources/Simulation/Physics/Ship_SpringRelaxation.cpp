@@ -217,7 +217,7 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
 
     mSpringRelaxation_Hybrid_1_Tasks.clear();
     mSpringRelaxation_Hybrid_2_Tasks.clear();
-    mSpringRelaxation_Hybrid_EphemeralParticle_Tasks.clear();
+    mSpringRelaxation_Hybrid_Last_Tasks.clear();
 
     auto const springShards = CalculateSpringRelaxationSpringShards(
         mSprings.GetElementCount(),
@@ -272,9 +272,18 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
         ElementIndex const ephemeralPointEnd = ephemeralPointStart + static_cast<ElementCount>(ephemeralPointShards[t]);
         assert(ephemeralPointEnd <= mPoints.GetBufferElementCount());
 
-        mSpringRelaxation_Hybrid_EphemeralParticle_Tasks.emplace_back(
-            [this, t, ephemeralPointStart, ephemeralPointEnd, simulationParallelism, &simulationParameters]()
+        mSpringRelaxation_Hybrid_Last_Tasks.emplace_back(
+            [this, t, springStart, springEnd, shipPointStart, shipPointEnd, ephemeralPointStart, ephemeralPointEnd, simulationParallelism, &simulationParameters]()
             {
+                RunSpringRelaxation_Hybrid_Thread<true>(
+                    t,
+                    springStart,
+                    springEnd,
+                    shipPointStart,
+                    shipPointEnd,
+                    simulationParallelism,
+                    simulationParameters);
+
                 RunSpringRelaxation_Hybrid_EphemeralParticle_Thread(
                     t,
                     ephemeralPointStart,
@@ -326,7 +335,7 @@ Ship::SpringRelaxationCoefficients Ship::CalculateSpringRelaxationCoefficients(
             (simulationParameters.GlobalDampingAdjustment - 1.0f) * (simulationParameters.GlobalDampingAdjustment - 1.0f)
             / ((simulationParameters.MaxGlobalDampingAdjustment - 1.0f) * (simulationParameters.MaxGlobalDampingAdjustment - 1.0f))
             * (1.0f - globalDamping)
-            );
+        );
 
     // Pre-divide damp coefficient by dt to provide the scalar factor which, when multiplied with a displacement,
     // provides the final, damped velocity
@@ -450,9 +459,6 @@ void Ship::RunSpringRelaxation_FullSpeed_Thread(
     // I really think this is a work of art
     //
 
-    // We run the sea floor collision detection every these many iterations of the spring relaxation loop
-    int constexpr SeaFloorCollisionPeriod = 2;
-
     // Get the dynamic forces buffer dedicated to this thread
     vec2f * restrict const dynamicForceBuffer = mPoints.GetParallelDynamicForceBuffer(threadIndex);
 
@@ -545,9 +551,6 @@ void Ship::RunSpringRelaxation_StepByStep(
     ThreadManager & threadManager,
     SimulationParameters const & simulationParameters)
 {
-    // We run the sea floor collision detection every these many iterations of the spring relaxation loop
-    int constexpr SeaFloorCollisionPeriod = 2;
-
     auto & threadPool = threadManager.GetSimulationThreadPool();
 
     int const numMechanicalDynamicsIterations = simulationParameters.NumMechanicalDynamicsIterations<int>();
@@ -596,13 +599,12 @@ void Ship::RunSpringRelaxation_Hybrid(
     ThreadManager & threadManager,
     SimulationParameters const & simulationParameters)
 {
-    // We run the sea floor collision detection every these many iterations of the spring relaxation loop
-    int constexpr SeaFloorCollisionPeriod = 2;
-
     auto & threadPool = threadManager.GetSimulationThreadPool();
 
-    int const numMechanicalDynamicsIterations = simulationParameters.NumMechanicalDynamicsIterations<int>();
-    for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
+    int const numMechanicalDynamicsIterations = GetSafeNumMechanicalDynamicsIterations(simulationParameters);
+
+    // First N-1 steps
+    for (int iter = 0; iter < numMechanicalDynamicsIterations - 1; ++iter)
     {
         mSpringRelaxation_Hybrid_IterationCompleted = 0;
 
@@ -627,8 +629,19 @@ void Ship::RunSpringRelaxation_Hybrid(
         }
     }
 
-    // Run ephemeral particles now
-    threadPool.Run(mSpringRelaxation_Hybrid_EphemeralParticle_Tasks);
+    // Last step
+
+    mSpringRelaxation_Hybrid_IterationCompleted = 0;
+
+    // Integrate dynamic and static forces,
+    // and reset dynamic forces
+
+    // Handle collisions with sea floor
+    //  - Changes position and velocity
+
+    // Run for ephemeral particles
+
+    threadPool.Run(mSpringRelaxation_Hybrid_Last_Tasks);
 
 #ifdef _DEBUG
     //
@@ -644,8 +657,8 @@ void Ship::RunSpringRelaxation_Hybrid_Thread(
     size_t threadIndex,
     ElementIndex startSpringIndex,
     ElementIndex endSpringIndex,
-    ElementIndex startPointIndex,
-    ElementIndex endPointIndex,
+    ElementIndex startShipPointIndex,
+    ElementIndex endShipPointIndex,
     size_t parallelism,
     SimulationParameters const & simulationParameters)
 {
@@ -696,8 +709,8 @@ void Ship::RunSpringRelaxation_Hybrid_Thread(
     //
 
     IntegrateAndResetDynamicForces(
-        startPointIndex,
-        endPointIndex,
+        startShipPointIndex,
+        endShipPointIndex,
         parallelism,
         mSpringRelaxationCoefficients);
 
@@ -707,8 +720,8 @@ void Ship::RunSpringRelaxation_Hybrid_Thread(
         //  - Changes position and velocity
 
         HandleCollisionsWithSeaFloor(
-            startPointIndex,
-            endPointIndex,
+            startShipPointIndex,
+            endShipPointIndex,
             threadIndex,
             mSpringRelaxationCoefficients,
             simulationParameters);
@@ -717,8 +730,8 @@ void Ship::RunSpringRelaxation_Hybrid_Thread(
 
 void Ship::RunSpringRelaxation_Hybrid_EphemeralParticle_Thread(
     size_t threadIndex,
-    ElementIndex startPointIndex,
-    ElementIndex endPointIndex,
+    ElementIndex startEphemeralPointIndex,
+    ElementIndex endEphemeralPointIndex,
     size_t parallelism,
     SimulationParameters const & simulationParameters)
 {
@@ -728,8 +741,8 @@ void Ship::RunSpringRelaxation_Hybrid_EphemeralParticle_Thread(
     //
 
     IntegrateAndResetDynamicForces(
-        startPointIndex,
-        endPointIndex,
+        startEphemeralPointIndex,
+        endEphemeralPointIndex,
         parallelism,
         mSpringRelaxationCoefficients_EphemeralParticles);
 
@@ -737,8 +750,8 @@ void Ship::RunSpringRelaxation_Hybrid_EphemeralParticle_Thread(
     //  - Changes position and velocity
 
     HandleCollisionsWithSeaFloor(
-        startPointIndex,
-        endPointIndex,
+        startEphemeralPointIndex,
+        endEphemeralPointIndex,
         threadIndex,
         mSpringRelaxationCoefficients_EphemeralParticles,
         simulationParameters);
@@ -1203,6 +1216,14 @@ std::vector<size_t> Ship::CalculatePointShards(
     }
 
     return pointShards;
+}
+
+int Ship::GetSafeNumMechanicalDynamicsIterations(SimulationParameters const & simulationParameters)
+{
+    int const numMechanicalDynamicsIterations = simulationParameters.NumMechanicalDynamicsIterations<int>();
+    return std::max(
+        numMechanicalDynamicsIterations + SeaFloorCollisionPeriod - 1 - (numMechanicalDynamicsIterations + SeaFloorCollisionPeriod - 1) % SeaFloorCollisionPeriod,
+        SeaFloorCollisionPeriod);
 }
 
 }

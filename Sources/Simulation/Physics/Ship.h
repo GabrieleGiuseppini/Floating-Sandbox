@@ -689,15 +689,15 @@ private:
         size_t threadIndex,
         ElementIndex startSpringIndex,
         ElementIndex endSpringIndex,
-        ElementIndex startPointIndex,
-        ElementIndex endPointIndex,
+        ElementIndex startShipPointIndex,
+        ElementIndex endShipPointIndex,
         size_t parallelism,
         SimulationParameters const & simulationParameters);
 
     void RunSpringRelaxation_Hybrid_EphemeralParticle_Thread(
         size_t threadIndex,
-        ElementIndex startPointIndex,
-        ElementIndex endPointIndex,
+        ElementIndex startEphemeralPointIndex,
+        ElementIndex endEphemeralPointIndex,
         size_t parallelism,
         SimulationParameters const & simulationParameters);
 
@@ -722,6 +722,8 @@ private:
     static std::vector<size_t> CalculatePointShards(
         size_t totalPoints,
         ThreadPool const & simulationThreadPool);
+
+    static inline int GetSafeNumMechanicalDynamicsIterations(SimulationParameters const & simulationParameters);
 
     //
     //
@@ -1122,6 +1124,9 @@ private:
     // Spring relaxation
     //
 
+    // We run the sea floor collision detection every these many iterations of the spring relaxation loop
+    static int constexpr SeaFloorCollisionPeriod = 2;
+
     // FullSpeed mode
 
     // The spring relaxation tasks
@@ -1143,7 +1148,7 @@ private:
     // The spring relaxation tasks
     std::vector<typename ThreadPool::Task> mSpringRelaxation_Hybrid_1_Tasks;
     std::vector<typename ThreadPool::Task> mSpringRelaxation_Hybrid_2_Tasks;
-    std::vector<typename ThreadPool::Task> mSpringRelaxation_Hybrid_EphemeralParticle_Tasks;
+    std::vector<typename ThreadPool::Task> mSpringRelaxation_Hybrid_Last_Tasks;
 
     // The signals for completions for threads to synchronize with each other
     std::atomic<int> mSpringRelaxation_Hybrid_IterationCompleted;
