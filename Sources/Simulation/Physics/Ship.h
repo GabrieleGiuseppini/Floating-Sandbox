@@ -671,8 +671,10 @@ private:
         size_t threadIndex,
         ElementIndex startSpringIndex,
         ElementIndex endSpringIndex,
-        ElementIndex startPointIndex,
-        ElementIndex endPointIndex,
+        ElementIndex startShipPointIndex,
+        ElementIndex endShipPointIndex,
+        ElementIndex startEphemeralPointIndex,
+        ElementIndex endEphemeralPointIndex,
         size_t parallelism,
         SimulationParameters const & simulationParameters);
 

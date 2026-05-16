@@ -152,7 +152,9 @@ SimulationParameters::SimulationParameters()
     , IsUltraViolentMode(false)
     , MoveToolInertia(3.0f)
     // Computation
-    , SpringRelaxationParallelComputationMode(SpringRelaxationParallelComputationModeType::Hybrid)
+    // TODOTEST
+    //, SpringRelaxationParallelComputationMode(SpringRelaxationParallelComputationModeType::Hybrid)
+    , SpringRelaxationParallelComputationMode(SpringRelaxationParallelComputationModeType::FullSpeed)
     , IsLightingEnabled(true)
 {
 }

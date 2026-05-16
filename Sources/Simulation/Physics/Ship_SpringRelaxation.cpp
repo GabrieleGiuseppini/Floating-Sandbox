@@ -73,35 +73,46 @@ void Ship::RecalculateSpringRelaxationParallelism_FullSpeed(
         mSprings.GetPerfectSquareCount(),
         simulationThreadPool);
 
-    auto const pointShards = CalculatePointShards(
-        mPoints.GetBufferElementCount(),
+    auto const shipPointShards = CalculatePointShards(
+        mPoints.GetAlignedShipPointCount(),
+        simulationThreadPool);
+
+    auto const ephemeralPointShards = CalculatePointShards(
+        mPoints.GetMaxEphemeralParticleCount(),
         simulationThreadPool);
 
     ElementIndex springStart = 0;
-    ElementIndex pointStart = 0;
+    ElementIndex shipPointStart = 0;
+    ElementIndex ephemeralPointStart = mPoints.GetAlignedShipPointCount();
     for (size_t t = 0; t < simulationParallelism; ++t)
     {
         ElementIndex const springEnd = springStart + static_cast<ElementCount>(springShards[t]);
         assert(springEnd <= mSprings.GetElementCount());
 
-        ElementIndex const pointEnd = pointStart + static_cast<ElementCount>(pointShards[t]);
-        assert(pointEnd <= mPoints.GetBufferElementCount());
+        ElementIndex const shipPointEnd = shipPointStart + static_cast<ElementCount>(shipPointShards[t]);
+        assert(shipPointEnd <= mPoints.GetAlignedShipPointCount());
+
+        ElementIndex const ephemeralPointEnd = ephemeralPointStart + static_cast<ElementCount>(ephemeralPointShards[t]);
+        assert(ephemeralPointEnd <= mPoints.GetBufferElementCount());
 
         mSpringRelaxation_FullSpeed_Tasks.emplace_back(
-            [this, t, springStart, springEnd, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
+            [this, t, springStart, springEnd, shipPointStart, shipPointEnd, ephemeralPointStart, ephemeralPointEnd, simulationParallelism, &simulationParameters]()
             {
                 RunSpringRelaxation_FullSpeed_Thread(
                     t,
                     springStart,
                     springEnd,
-                    pointStart,
-                    pointEnd,
+                    shipPointStart,
+                    shipPointEnd,
+                    ephemeralPointStart,
+                    ephemeralPointEnd,
                     simulationParallelism,
                     simulationParameters);
             });
 
         springStart = springEnd;
-        pointStart = pointEnd;
+        shipPointStart = shipPointEnd;
+        ephemeralPointStart = ephemeralPointEnd;
     }
 }
 
@@ -447,8 +458,10 @@ void Ship::RunSpringRelaxation_FullSpeed_Thread(
     size_t threadIndex,
     ElementIndex startSpringIndex,
     ElementIndex endSpringIndex,
-    ElementIndex startPointIndex,
-    ElementIndex endPointIndex,
+    ElementIndex startShipPointIndex,
+    ElementIndex endShipPointIndex,
+    ElementIndex startEphemeralPointIndex,
+    ElementIndex endEphemeralPointIndex,
     size_t parallelism,
     SimulationParameters const & simulationParameters)
 {
@@ -469,7 +482,7 @@ void Ship::RunSpringRelaxation_FullSpeed_Thread(
     // Loop for all mechanical dynamics iterations
     //
 
-    int const numMechanicalDynamicsIterations = simulationParameters.NumMechanicalDynamicsIterations<int>();
+    int const numMechanicalDynamicsIterations = GetSafeNumMechanicalDynamicsIterations(simulationParameters);
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
         // - DynamicForces = 0 | others at first iteration only
@@ -509,8 +522,8 @@ void Ship::RunSpringRelaxation_FullSpeed_Thread(
         //
 
         IntegrateAndResetDynamicForces(
-            startPointIndex,
-            endPointIndex,
+            startShipPointIndex,
+            endShipPointIndex,
             parallelism,
             mSpringRelaxationCoefficients);
 
@@ -520,8 +533,8 @@ void Ship::RunSpringRelaxation_FullSpeed_Thread(
             //  - Changes position and velocity
 
             HandleCollisionsWithSeaFloor(
-                startPointIndex,
-                endPointIndex,
+                startShipPointIndex,
+                endShipPointIndex,
                 threadIndex,
                 mSpringRelaxationCoefficients,
                 simulationParameters);
@@ -529,19 +542,55 @@ void Ship::RunSpringRelaxation_FullSpeed_Thread(
 
         // - DynamicForces = 0
 
-        // Signal completion
-        mSpringRelaxation_FullSpeed_IntegrationsCompleted.fetch_add(1, std::memory_order_acq_rel);
-
-        //
-        // Wait for all completions
-        //
-
-        // ...in a spinlock
-        while (true)
+        if (iter == numMechanicalDynamicsIterations - 1)
         {
-            if (mSpringRelaxation_FullSpeed_IntegrationsCompleted.load() == (iter + 1) * numberOfThreads)
+            //
+            // Last: ephemeral particles
+            //
+
+            //
+            // Integrate dynamic and static forces,
+            // and reset dynamic forces
+            //
+
+            IntegrateAndResetDynamicForces(
+                startEphemeralPointIndex,
+                endEphemeralPointIndex,
+                parallelism,
+                mSpringRelaxationCoefficients_EphemeralParticles);
+
+            // Handle collisions with sea floor
+            //  - Changes position and velocity
+
+            HandleCollisionsWithSeaFloor(
+                startEphemeralPointIndex,
+                endEphemeralPointIndex,
+                threadIndex,
+                mSpringRelaxationCoefficients_EphemeralParticles,
+                simulationParameters);
+
+            // No need to wait
+        }
+        else
+        {
+            //
+            // Sync for next iteration
+            //
+
+            // Signal completion
+            mSpringRelaxation_FullSpeed_IntegrationsCompleted.fetch_add(1, std::memory_order_acq_rel);
+
+            //
+            // Wait for all completions
+            //
+
+            // ...in a spinlock
+            while (true)
             {
-                break;
+                if (mSpringRelaxation_FullSpeed_IntegrationsCompleted.load() == (iter + 1) * numberOfThreads)
+                {
+                    break;
+                }
             }
         }
     }

@@ -1198,12 +1198,13 @@
 							+ Pre: 40-43 (22-23)
 							+ Post: 40-43 (21-22)
 						+ World boundaries (in Debug)
-				- Full
+				+ Full
 				- StepByStep			
 			= Test:
 				+ Hybrid
-				- Full
+				+ Full
 				- StepByStep
+			- Revert to original parallel mode (Hybrid)
 
 		- If insanely high number of eph particles is doable, consider:
 			- Tornadoes: 
