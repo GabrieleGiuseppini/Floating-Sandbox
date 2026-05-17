@@ -361,7 +361,7 @@ void GlobalRenderContext::ReshadeDependentOceanTextures(rgbColor const & baseCol
 
             // Calculate by how much blue dominates on the others
             float const bg = (srcF.x + srcF.y) / 2.0f;
-            float const blueStrength = std::max(srcF.z - bg, 0.0f);
+            float const blueStrength = std::sqrtf(std::max(srcF.z - bg, 0.0f));
 
             // Blend with base color based on blue's strength
             vec3f const tgtF = Mix(
