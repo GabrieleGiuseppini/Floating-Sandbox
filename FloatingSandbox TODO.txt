@@ -1114,7 +1114,7 @@
 		+ Merge into Tornadoes
 		+ Changelist
 
-	= Eph particle rearc: make it a runtime setting - default 8K, and choose between 4K, 8K, 16K based on calibration
+	+ Eph particle rearc: make it a runtime setting - default 8K, and choose between 4K, 8K, 16K based on calibration
 		! Note: lighting algo doesn't depend on # of eph particles!
 		! Note: ShipRenderContext needs it, but can be given it @ creation time
 		+ 1. SimulationParameters
@@ -1220,23 +1220,25 @@
 				- UPD=3.5, RND=4.3-4.5
 		+ Finish up (*)
 
-		- Merge
+		+ Merge
 
-		- Android Port Plan
-			- Max eph particles being instanced setting, and calibration		
+		+ Android Port Plan
+			+ Max eph particles being instanced setting, and calibration		
 
-	= Run Discord poll for next:
+	+ Run Discord poll for next:
 		! Customizable materials
 		! Rot redesign (includes better rusting, and organic alge growth)
 		! NPC phase II: ShipBuilder (Floorplan layer and Interior Texture layer), areas (e.g. assembly area), and behaviors (swimming, etc.)
 		! Fireworks
 		+ https://forms.gle/PcmJ2kCqxp8UVmfX8
 
-
-	- Nuke all calls to glBindTexture(GL_TEXTURE_2D, 0) -- this just changes to default texture
-		- Also @ Android
+	+ Nuke all calls to glBindTexture(GL_TEXTURE_2D, 0) -- this just changes to default texture
 
 	+ Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
+
+	- We upload all particles' <position, light, water>, even for eph particles
+		! Which we'd only need for Debris (which we upload as elements)
+		! We've already addressed this well for Decay, etc. - but here we have the Debris problem
 
 	- TimCan's new sounds for PC+Mobile
 			- FS Deep Horn

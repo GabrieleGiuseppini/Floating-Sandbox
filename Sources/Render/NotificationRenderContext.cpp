@@ -98,8 +98,6 @@ NotificationRenderContext::NotificationRenderContext(
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontSet.Atlas.Size.width, fontSet.Atlas.Size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontSet.Atlas.Data.get());
     CheckOpenGLError();
 
-    glBindTexture(GL_TEXTURE_2D, 0);
-
     //
     // Initialize text notifications
     //

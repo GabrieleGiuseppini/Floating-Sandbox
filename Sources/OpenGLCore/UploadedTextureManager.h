@@ -58,9 +58,6 @@ public:
         {
             throw GameException("Error uploading texture onto GPU");
         }
-
-        // Unbind texture
-        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     inline void BindTexture(TFrameEnum frameIndex) const

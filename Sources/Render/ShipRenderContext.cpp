@@ -672,9 +672,6 @@ ShipRenderContext::ShipRenderContext(
         // Upload texture data
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
         CheckOpenGLError();
-
-        // Unbind texture
-        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
 
@@ -2628,9 +2625,6 @@ void ShipRenderContext::ApplyShipViewModeChanges(RenderParameters const & render
     mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescence>();
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
     mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
-
-    // Unbind texture
-    glBindTexture(GL_TEXTURE_2D, 0);
 
     mShipViewModeType = renderParameters.ShipViewMode;
 }
