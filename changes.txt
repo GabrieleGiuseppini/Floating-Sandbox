@@ -1,5 +1,6 @@
-TODO
+1.21.0
 - Added water splashes and foam
+- Quadrupled the number of ephemeral particles and optimized their integration workflow, achieving zero net CPU cost (!) and allowing for far more ephemerals (bubble, smoke, dust clouds, splashes, etc.)
 - Improved hydrostatic pressure simulation - less crazy behaviors at great depths
 - Improved "wild mast" issue, where masts on the ocean floor would pick up silt clouds
 - Rendering improvements:
