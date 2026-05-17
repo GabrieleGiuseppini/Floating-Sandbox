@@ -4193,7 +4193,7 @@ void Ship::InternalSpawnWaterFoam(
         // Create foam particle
         //
 
-        auto const ephemeralParticlePointIndex = mPoints.CreateEphemeralParticleWaterFoam(
+        auto const foamPointIndex = mPoints.CreateEphemeralParticleWaterFoam(
             foamPosition,
             foamDepth,
             velocityX,
@@ -4206,10 +4206,10 @@ void Ship::InternalSpawnWaterFoam(
             planeId,
             simulationParameters);
 
-        if (ephemeralParticlePointIndex != NoneElementIndex)
+        if (foamPointIndex != NoneElementIndex)
         {
             // Store cached depth for it, as we might be calculating cached depths at this moment
-            outputCachedPointDepths[ephemeralParticlePointIndex] = foamDepth;
+            outputCachedPointDepths[foamPointIndex] = foamDepth;
         }
     }
 }
@@ -4287,7 +4287,7 @@ void Ship::InternalSpawnWaterSplash(
         // Create particle
         //
 
-        auto const ephemeralParticlePointIndex = mPoints.CreateEphemeralParticleWaterSplash(
+        auto const splashPointIndex = mPoints.CreateEphemeralParticleWaterSplash(
             position,
             impactDepth,
             particleDirection * velocityMagnitude,
@@ -4299,11 +4299,9 @@ void Ship::InternalSpawnWaterSplash(
             planeId,
             simulationParameters);
 
-        if (ephemeralParticlePointIndex != NoneElementIndex)
-        {
-            // Store cached depth for it, as we might be calculating cached depths at this moment
-            outputCachedPointDepths[ephemeralParticlePointIndex] = impactDepth;
-        }
+        // Store cached depth for it, as we might be calculating cached depths at this moment
+        assert(splashPointIndex != NoneElementIndex);
+        outputCachedPointDepths[splashPointIndex] = impactDepth;
     }
 }
 
