@@ -1236,9 +1236,15 @@
 
 	+ Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
 
+	- Test on old Dell
+	
 	- We upload all particles' <position, light, water>, even for eph particles
 		! Which we'd only need for Debris (which we upload as elements)
 		! We've already addressed this well for Decay, etc. - but here we have the Debris problem
+		- Option 1:
+			- We never upload eph particles (just RawShipPoints)
+			- Eph particle debris gets own batch (buffer, etc), we upload <position, light, water> to it, and render with same shader
+				- After all it's points
 
 	- TimCan's new sounds for PC+Mobile
 			- FS Deep Horn
@@ -2888,6 +2894,11 @@
 
 	- Ripple: "basically you click and hold somewhere on the ship, and when you let go, it sends a ripple into the ship, weak points might tear,
 	  or start getting damaged, etc."
+
+	- Waterspouts
+		- As inverted Tornadoes
+		- Rendering:
+			- "Could we possibly recycle the smokey textures and make them white to make them look like bubbles and visible currents?"
 
 
 - Game Interactions and Controls:
