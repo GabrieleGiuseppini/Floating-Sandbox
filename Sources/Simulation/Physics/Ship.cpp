@@ -1078,7 +1078,6 @@ void Ship::RenderUpload(RenderContext & renderContext)
 
     mPoints.UploadEphemeralParticles(
         mId,
-        mMaxMaxPlaneId, // To allow particles to stick to max plane
         renderContext);
 
     //
@@ -3951,7 +3950,7 @@ void Ship::InternalSpawnSiltCloud(
     float const velocityMagnitude =
         MinVelocityMagnitude
         + (MaxVelocityMagnitude - MinVelocityMagnitude) * kineticEnergyFactor;
-    vec2f const velocity = -siltImpact.Velocity.normalise_approx() * velocityMagnitude;
+    vec2f const velocity = -mPoints.GetVelocity(siltImpact.PointIndex).normalise_approx() * velocityMagnitude;
 
     //
     // Calculate scale: depends on kinetic energy
@@ -4017,7 +4016,7 @@ void Ship::InternalSpawnSiltCloud(
         currentSimulationTime,
         maxLifetime,
         buoyancyVolumeFill,
-        mMaxMaxPlaneId,
+        mPoints.GetPlaneId(siltImpact.PointIndex),
         simulationParameters);
 }
 

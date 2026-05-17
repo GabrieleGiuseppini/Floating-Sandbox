@@ -1236,15 +1236,18 @@
 
 	+ Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
 
-	- Test on old Dell
+	+ Test on old Dell
+		+ Now: 27,4-28 -- 29.3 w/out foam
+		! It's all rendering impact
 	
 	- We upload all particles' <position, light, water>, even for eph particles
 		! Which we'd only need for Debris (which we upload as elements)
 		! We've already addressed this well for Decay, etc. - but here we have the Debris problem
 		- Option 1:
-			- We never upload eph particles (just RawShipPoints)
+			- We never upload any eph particles (just RawShipPoints)
 			- Eph particle debris gets own batch (buffer, etc), we upload <position, light, water> to it, and render with same shader
 				- After all it's points
+				- Requires keeping track of count, for Start() call
 
 	- TimCan's new sounds for PC+Mobile
 			- FS Deep Horn

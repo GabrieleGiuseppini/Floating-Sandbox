@@ -1099,7 +1099,7 @@ void Ship::HandleCollisionsWithSeaFloor(
                     maxSiltImpact.value = EnergeticSiltImpact(
                         kineticEnergyVelocityComponent,
                         vec2f(clampedX, siltY),
-                        pointVelocity);
+                        pointIndex);
                 }
             }
         }

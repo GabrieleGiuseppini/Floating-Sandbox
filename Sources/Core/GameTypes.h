@@ -1357,22 +1357,22 @@ enum class SpringRelaxationParallelComputationModeType
 struct EnergeticSiltImpact
 {
     float KineticEnergy; // J
-    vec2f Position;
-    vec2f Velocity;
+    vec2f Position; // Clamped
+    ElementIndex PointIndex;
 
     EnergeticSiltImpact()
         : KineticEnergy(0.0f)
         , Position(vec2f::zero())
-        , Velocity(vec2f::zero())
+        , PointIndex(NoneElementIndex)
     { }
 
     EnergeticSiltImpact(
         float kineticEnergy,
         vec2f const & position,
-        vec2f const & velocity)
+        ElementIndex pointIndex)
         : KineticEnergy(kineticEnergy)
         , Position(position)
-        , Velocity(velocity)
+        , PointIndex(pointIndex)
     {
     }
 };

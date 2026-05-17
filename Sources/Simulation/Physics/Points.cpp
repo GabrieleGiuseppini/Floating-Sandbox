@@ -2582,7 +2582,6 @@ void Points::UploadVectors(
 
 void Points::UploadEphemeralParticles(
     ShipId shipId,
-    PlaneId maxPlaneId,
     RenderContext & renderContext) const
 {
     //
@@ -2655,7 +2654,7 @@ void Points::UploadEphemeralParticles(
 
                     // Upload cloud
                     shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
-                        maxPlaneId,
+                        GetPlaneId(pointIndex),
                         state.PersonalitySeed,
                         GameTextureDatabases::GenericMipMappedTextureGroups::SiltCloud,
                         GetPosition(pointIndex),
