@@ -1117,7 +1117,7 @@
 	= Eph particle rearc: make it a runtime setting - default 8K, and choose between 4K, 8K, 16K based on calibration
 		! Note: lighting algo doesn't depend on # of eph particles!
 		! Note: ShipRenderContext needs it, but can be given it @ creation time
-		= 1. SimulationParameters
+		+ 1. SimulationParameters
 			+ First: take UPD + RND measurements before and after changing 4K -> 16K, and static measurement of time spent in FindFreeEphemeralParticle, measuring w/ Titanic forcibly sunk:
 				+ Pre:
 					+ UPD=3.25-3.35-3.4 RND=3.3-3.4
@@ -1129,7 +1129,7 @@
 					+ Mem: 800-850
 			+ Do
 				+ Needs to only be enforced at ship load (Ship+ShipRenderContext), make sure we never use it @ runtime, only at initialization times
-			- Nail down default, and max
+			+ Nail down default, and max
 		+ 2. Eph particle state @ Points is sized for eph particles only
 			+ See if Points::UpdateEphParticles better deal with "ephemeralParticleIndex", check for rename: now it means "index in eph particles"
 		+ 3. See if can improve FindFreeEphemeralParticle's perf
@@ -1215,11 +1215,12 @@
 
 		+ Better flat-color colorization of water textures
 		+ See if can lower height of splashes @ impact
+		+ Test:
+			+ Perf X 2 (UPD, RND) with all eph particles (~all bubbles) at 16k eph particles
+				- UPD=3.5, RND=4.3-4.5
+		+ Finish up (*)
 
-		- Test:
-			- Perf X 2 (UPD, RND) with all eph particles (~all bubbles) at 16k eph particles
-
-		- Finish up (*)
+		- Merge
 
 		- Android Port Plan
 			- Max eph particles being instanced setting, and calibration		
