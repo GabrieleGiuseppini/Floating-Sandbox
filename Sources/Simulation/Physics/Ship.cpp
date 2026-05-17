@@ -4233,7 +4233,7 @@ void Ship::InternalSpawnWaterSplash(
     //
 
     float constexpr MinVelocityMagnitude = 5.2f;
-    float constexpr MaxVelocityMagnitude = 10.7f;
+    float constexpr MaxVelocityMagnitude = 9.0f;
     float const velocityMagnitude =
         MinVelocityMagnitude
         + (MaxVelocityMagnitude - MinVelocityMagnitude) * std::min(strength, 9.6f);

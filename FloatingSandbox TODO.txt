@@ -1214,8 +1214,7 @@
 			+ Lower velocity damp of foam
 
 		+ Better flat-color colorization of water textures
-
-		- See if can lower height of splashes @ impact
+		+ See if can lower height of splashes @ impact
 
 		- Test:
 			- Perf X 2 (UPD, RND) with all eph particles (~all bubbles) at 16k eph particles
