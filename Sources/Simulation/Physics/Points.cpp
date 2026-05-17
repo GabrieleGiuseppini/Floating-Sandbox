@@ -2788,7 +2788,7 @@ void Points::UploadEphemeralParticles(
                     // Squash scale with progress
                     FloatSize scale(
                         baseScale * (1.0f + SmoothStep(0.0f, 1.0f, lifetimeProgress) * 0.85f),
-                        baseScale * (0.8f - SmoothStep(0.0f, 1.0f, lifetimeProgress) * 0.70f)); // Start squashed!
+                        baseScale * (0.6f - SmoothStep(0.0f, 1.0f, lifetimeProgress) * 0.50f)); // Start squashed!
 
                     // Calculate alpha: ~parabolic with progress,
                     // but obeying visibility haste

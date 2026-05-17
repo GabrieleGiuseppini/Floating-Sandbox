@@ -4133,8 +4133,8 @@ void Ship::InternalSpawnWaterFoam(
     // Calculate base scale: depends on strength (only its 0.0...1.0 range)
     //
 
-    float constexpr MinMaxScale = 0.3f;
-    float constexpr MaxMaxScale = 1.0f;
+    float constexpr MinMaxScale = 0.5f;
+    float constexpr MaxMaxScale = 1.2f;
     float const baseScale = MinMaxScale + (MaxMaxScale - MinMaxScale) * normalizedStrength;
 
     //

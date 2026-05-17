@@ -1206,14 +1206,21 @@
 				+ StepByStep
 			+ Revert to original parallel mode (Hybrid)
 
-		= If insanely high number of eph particles is doable, consider:
-			- Tornadoes: 
-				- Splashes along whole base
-				- More foam
+		+ If insanely high number of eph particles is doable, consider:
+			+ Tornadoes: 
+				+ Splashes along whole base
+				+ More foam
+				+ Foam along whole base
 			+ Lower velocity damp of foam
+
+		+ Better flat-color colorization of water textures
+
+		- See if can lower height of splashes @ impact
 
 		- Test:
 			- Perf X 2 (UPD, RND) with all eph particles (~all bubbles) at 16k eph particles
+
+		- Finish up (*)
 
 		- Android Port Plan
 			- Max eph particles being instanced setting, and calibration		

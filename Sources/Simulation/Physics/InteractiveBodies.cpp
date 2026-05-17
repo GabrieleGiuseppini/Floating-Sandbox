@@ -233,16 +233,16 @@ void InteractiveBodies::Update(
                 float const foamSign = (tornado.WaterFoamSpawnCounter % 2) == 0 ? 1.0f : -1.0f;
 
                 // Max distance
-                float constexpr D0 = 20.0f;
+                float const d0 = 20.0f * (1.0f + widthFractions[2] * 2.0f);
 
                 // Velocity
                 float const velocityMagnitude = 2.4f * GameRandomEngine::GetInstance().GenerateUniformReal(0.8f, 1.2f);
 
                 // Max scale
-                float const maxScale = 0.425f * GameRandomEngine::GetInstance().GenerateUniformReal(0.7f, 1.1f);
+                float const maxScale = 0.5f * GameRandomEngine::GetInstance().GenerateUniformReal(0.7f, 1.1f);
 
                 // Lifetime
-                float const maxLifetime = D0 / velocityMagnitude * simulationParameters.WaterFoamLifetimeAdjustment;
+                float const maxLifetime = d0 / velocityMagnitude * simulationParameters.WaterFoamLifetimeAdjustment;
 
                 // Spawn
                 ships[0]->SpawnWaterFoam(
@@ -259,10 +259,9 @@ void InteractiveBodies::Update(
                     simulationParameters);
 
                 // Next spawn
-                float constexpr MaxFoamParticlesAlive = 150.0f;
-                tornado.NextWaterFoamSpawnTimestamp =
-                    currentSimulationTime
-                    + maxLifetime / MaxFoamParticlesAlive;
+                float constexpr MaxFoamParticlesAlive = 200.0f;
+                float const density = 1.0f + widthFractions[2] * 2.0f;
+                tornado.NextWaterFoamSpawnTimestamp = currentSimulationTime + maxLifetime / (MaxFoamParticlesAlive * density);
                 ++tornado.WaterFoamSpawnCounter;
             }
 
@@ -271,6 +270,16 @@ void InteractiveBodies::Update(
                 && currentSimulationTime > tornado.NextWaterSplashSpawnTimestamp)
             {
                 float const splashSign = (tornado.WaterSplashSpawnCounter % 2) == 0 ? 1.0f : -1.0f;
+
+                // Radius
+                float const radius =
+                    size.width / 2.0f * widthFractions[2]
+                    * 0.85f; // A bit smaller
+
+                // Position X: random around center, on sign's side
+                float const positionX =
+                    position.x
+                    + splashSign * GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, radius);
 
                 // Direction: a beta around an alpha
                 float const alpha = -Pi<float> / 7.0f * splashSign; // Negative as rotation is CCW and we want sign>0 to be to the right
@@ -285,7 +294,7 @@ void InteractiveBodies::Update(
                 float constexpr VelocityMagnitude = 11.0f;
 
                 // Max scale
-                float constexpr MaxScale = 0.9f;
+                float const maxScale = 0.9f * (1.0f + widthFractions[2] / 2.0f);
 
                 // Lifetime
                 float constexpr MaxLifetime = 1.4f; // Less that "gravitational", i.e. 2 * V / G
@@ -293,19 +302,20 @@ void InteractiveBodies::Update(
                 // Spawn
                 ships[0]->SpawnWaterSplash(
                     ships[0]->GetMaxPlaneId(),
-                    position,
+                    vec2f(positionX, position.y),
                     0.0f, // Depth
                     direction * VelocityMagnitude,
-                    MaxScale / 4.0f, // Initial scale
-                    MaxScale,
+                    maxScale / 4.0f, // Initial scale
+                    maxScale,
                     MaxLifetime,
-                    tornado.CurrentVisibilityAlpha,
+                    std::min(tornado.CurrentVisibilityAlpha * 2.0f, 1.0f), // Alpha
                     currentSimulationTime,
                     simulationParameters);
 
                 // Next spawn
                 float constexpr MaxSplashParticlesAlive = 12.0f;
-                tornado.NextWaterSplashSpawnTimestamp = currentSimulationTime + MaxLifetime / MaxSplashParticlesAlive;
+                float const density = 1.0f + radius * 2.0f;
+                tornado.NextWaterSplashSpawnTimestamp = currentSimulationTime + MaxLifetime / (MaxSplashParticlesAlive * density);
                 ++tornado.WaterSplashSpawnCounter;
             }
 
