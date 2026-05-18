@@ -822,6 +822,8 @@ private:
         float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
+    struct EnergeticSiltImpact;
+
     void InternalSpawnSiltCloud(
         EnergeticSiltImpact const & siltImpact,
         float currentSimulationTime,
@@ -1116,6 +1118,31 @@ private:
     std::uint64_t mAirBubblesCreatedCount;
 
     // All of the silt impacts produced during the whole spring relaxation step
+
+    struct EnergeticSiltImpact
+    {
+        float KineticEnergy; // J
+        vec2f Position; // Clamped
+        ElementIndex PointIndex;
+
+        EnergeticSiltImpact()
+            : KineticEnergy(0.0f)
+            , Position(vec2f::zero())
+            , PointIndex(NoneElementIndex)
+        {
+        }
+
+        EnergeticSiltImpact(
+            float kineticEnergy,
+            vec2f const & position,
+            ElementIndex pointIndex)
+            : KineticEnergy(kineticEnergy)
+            , Position(position)
+            , PointIndex(pointIndex)
+        {
+        }
+    };
+
     std::vector<EnergeticSiltImpact> mSiltImpacts;
 
     // The last thread pool simulation parallelism we've seen; used to

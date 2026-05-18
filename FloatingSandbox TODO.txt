@@ -1240,6 +1240,12 @@
 		+ Now: 27,4-28 -- 29.3 w/out foam
 		! It's all rendering impact
 	
+	- Aanpak slow rendering on Dell
+		- Do water foam 256x256, also on PC
+		- Try on Dell
+			- Manual replacement
+		- Try on Dell: linear instead of mipmapped
+
 	- We upload all particles' <position, light, water>, even for eph particles
 		! Which we'd only need for Debris (which we upload as elements)
 		! We've already addressed this well for Decay, etc. - but here we have the Debris problem
