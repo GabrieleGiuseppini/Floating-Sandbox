@@ -1240,9 +1240,9 @@
 		+ Now: 27,4-28 -- 29.3 w/out foam
 		! It's all rendering impact
 	
-	- Aanpak slow rendering on Dell
-		- Do water foam 256x256, also on PC
-		- Try on Dell
+	= Aanpak slow rendering on Dell
+		+ Do water foam 256x256, also on PC
+		- Try it on Dell
 			- Manual replacement
 		- Try on Dell: linear instead of mipmapped
 
@@ -1253,7 +1253,27 @@
 			- We never upload any eph particles (just RawShipPoints)
 			- Eph particle debris gets own batch (buffer, etc), we upload <position, light, water> to it, and render with same shader
 				- After all it's points
-				- Requires keeping track of count, for Start() call
+				- Requires keeping track of count @ Points, for Start() call
+			- Impl:
+				- Points: 
+					- Keep track of EphemeralPoint count
+					- Test
+					- Nuke mAreEphemeralPointElementsDirtyForRendering (only used for Debris)
+					- Upload<wherever we do it now>:
+						- if EphemeralPoint count > 0:
+							- Start, Upload, End
+				- ShipRenderContext:
+					- TODO: vertex: can re-use existing? Needs position, light (,water if really allows us to reuse existing), plane/depth
+					- New VAO, VBO
+					- New buffer of vertices // Not sticky
+					- UploadStart: zap it
+					- UploadEphemeralPointsStart(count): dimension it
+					- UploadEphemeralPoint(position, light, ...)
+					- RenderPrepare, RenderDraw
+						- Only when non empty
+						- Implement these
+						- Call these
+
 
 	- TimCan's new sounds for PC+Mobile
 			- FS Deep Horn
