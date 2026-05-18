@@ -11,6 +11,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iomanip>
+#include <sstream>
 
 #if FS_IS_OS_WINDOWS()
 #define WIN32_LEAN_AND_MEAN
@@ -28,6 +30,26 @@ size_t ThreadManager::GetNumberOfProcessors()
         static_cast<size_t>(std::thread::hardware_concurrency()));
 }
 
+namespace {
+
+    std::string CpuResourcesToString(std::vector<ThreadManager::CpuInfo> const & cpuResources)
+    {
+        std::stringstream ss;
+        ss << std::fixed << std::setprecision(2);
+        for (size_t i = 0; i < cpuResources.size(); ++i)
+        {
+            ss << cpuResources[i].CpuId << ":" << cpuResources[i].Speed;
+            if (i < cpuResources.size() - 1)
+            {
+                ss << ", ";
+            }
+        }
+
+        return ss.str();
+    }
+
+}
+
 ThreadManager::ThreadManager(
     bool isRenderingMultithreaded,
     size_t simulationParallelism,
@@ -43,7 +65,7 @@ ThreadManager::ThreadManager(
 
     LogMessage("ThreadManager: isRenderingMultithreaded=", (mIsRenderingMultithreaded ? "YES" : "NO"),
         " simulationParallelism=", simulationParallelism,
-        " cpuResources=[", mCpuResources.size(), "]",
+        " cpuResources=[", CpuResourcesToString(mCpuResources), "]",
         " maxSimulationParallelism=", mMaxSimulationParallelism);
 
     // Set parallelism
