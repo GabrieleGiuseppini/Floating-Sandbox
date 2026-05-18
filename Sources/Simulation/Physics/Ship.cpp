@@ -1100,7 +1100,7 @@ void Ship::RenderUpload(RenderContext & renderContext)
     {
         shipRenderContext.UploadVectorsStart(mDebugVectors.size(), vec4f(0.8f, 0.0f, 0.0f, 1.0f));
 
-        for (auto const [p, v] : mDebugVectors)
+        for (auto const & [p, v] : mDebugVectors)
         {
             shipRenderContext.UploadVector(
                 p,

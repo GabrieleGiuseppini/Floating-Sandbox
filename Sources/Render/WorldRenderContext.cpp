@@ -1257,7 +1257,6 @@ void WorldRenderContext::UploadTornadoesStart()
 
     mTornadoVertexBuffer.clear();
     mIsTornadoVertexBufferDirty = true;
-
 }
 
 void WorldRenderContext::UploadTornadoesEnd()

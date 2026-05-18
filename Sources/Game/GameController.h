@@ -616,7 +616,6 @@ public:
     float GetMinWaterDisplacementWaveHeightAdjustment() const override { return SimulationParameters::MinWaterDisplacementWaveHeightAdjustment; }
     float GetMaxWaterDisplacementWaveHeightAdjustment() const override { return SimulationParameters::MaxWaterDisplacementWaveHeightAdjustment; }
 
-    // TODO
     float GetWaterFoamSensitivityAdjustment() const override { return mSimulationParameters.WaterFoamSensitivityAdjustment; }
     void SetWaterFoamSensitivityAdjustment(float value) override { mSimulationParameters.WaterFoamSensitivityAdjustment = value; }
     virtual float GetMinWaterFoamSensitivityAdjustment()  const override { return SimulationParameters::MinWaterFoamSensitivityAdjustment; }
