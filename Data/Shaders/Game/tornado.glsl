@@ -83,7 +83,7 @@ void main()
     
     float isUpper = step(0.5, contortedVertexSpaceCoords.y);
     float width = 
-        (vertexBottomWidthFraction + (vertexMiddleWidthFraction - vertexBottomWidthFraction) * contortedVertexSpaceCoords.y * 2.0f) * (1.0 - isUpper)
+        (vertexBottomWidthFraction + (vertexMiddleWidthFraction - vertexBottomWidthFraction) * contortedVertexSpaceCoords.y * 2.0) * (1.0 - isUpper)
         + (vertexMiddleWidthFraction + (vertexTopWidthFraction - vertexMiddleWidthFraction) * (contortedVertexSpaceCoords.y - 0.5) * 2.0) * isUpper;
     
     // Noise

@@ -184,7 +184,7 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
         // if SimulationParameters is never re-created
 
         mSpringRelaxation_StepByStep_IntegrationTasks.emplace_back(
-            [this, shipPointStart, shipPointEnd, simulationParallelism, &simulationParameters]()
+            [this, shipPointStart, shipPointEnd, simulationParallelism]()
             {
                 IntegrateAndResetDynamicForces(
                     shipPointStart,

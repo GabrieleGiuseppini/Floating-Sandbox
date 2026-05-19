@@ -22,9 +22,7 @@ class InteractiveBodies final
 {
 public:
 
-    InteractiveBodies(
-        World & parentWorld,
-        SimulationEventDispatcher & simulationEventDispatcher);
+    explicit InteractiveBodies(SimulationEventDispatcher & simulationEventDispatcher);
 
     void Update(
         std::vector<std::unique_ptr<Ship>> const & ships,
@@ -83,7 +81,6 @@ public:
 
 private:
 
-    World & mParentWorld;
     SimulationEventDispatcher & mSimulationEventHandler;
 
     template<typename T>

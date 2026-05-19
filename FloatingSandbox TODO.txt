@@ -1246,6 +1246,8 @@
 			- Manual replacement
 		- Try on Dell: linear instead of mipmapped
 
+	- Be satisfied with upward velocity of splashes
+
 	- We upload all particles' <position, light, water>, even for eph particles
 		! Which we'd only need for Debris (which we upload as elements)
 		! We've already addressed this well for Decay, etc. - but here we have the Debris problem
@@ -1273,6 +1275,11 @@
 						- Only when non empty
 						- Implement these
 						- Call these
+		- Option 2:
+			- New shader altogether, drawing distorted tidbits of ship's texture
+			- Can also have angular velocity
+			- Could use existing triangles shader? If so, rotation needs to be applied @ Upload time
+
 		- Port to Android
 
 

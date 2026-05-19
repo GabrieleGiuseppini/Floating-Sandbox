@@ -13,11 +13,8 @@
 
 namespace Physics {
 
-InteractiveBodies::InteractiveBodies(
-    World & parentWorld,
-    SimulationEventDispatcher & simulationEventDispatcher)
-    : mParentWorld(parentWorld)
-    , mSimulationEventHandler(simulationEventDispatcher)
+InteractiveBodies::InteractiveBodies(SimulationEventDispatcher & simulationEventDispatcher)
+    : mSimulationEventHandler(simulationEventDispatcher)
     , mAntiGravityFields()
     , mAreAntiGravityFieldsDirtyForRendering(true) // Force first upload
     , mTornadoes()
