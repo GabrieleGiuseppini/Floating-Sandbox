@@ -298,15 +298,6 @@ void GlobalRenderContext::ProcessParameterChanges(RenderParameters const & rende
         mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::GenericMipMappedTexturesNdc, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
             renderParameters.EffectiveAmbientLightIntensity);
     }
-
-    if (renderParameters.IsSkyDirty)
-    {
-        vec3f const effectiveMoonlightColor = renderParameters.EffectiveMoonlightColor.toVec3f();
-
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::GenericMipMappedTexturesNdc>();
-        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::GenericMipMappedTexturesNdc, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
-            effectiveMoonlightColor);
-    }
 }
 
 void GlobalRenderContext::RenderPrepareStart()
