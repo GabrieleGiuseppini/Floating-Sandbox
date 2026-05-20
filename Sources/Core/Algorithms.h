@@ -1093,8 +1093,8 @@ inline void IntegrateAndResetDynamicForces_NeonVectorized(
     float dt,
     float velocityFactor) noexcept
 {
-    // This implementation is for 4-float times 4 elements vectorization
-    static_assert(vectorization_float_count<int> >= 4 * 4);
+    // This implementation is for 4-float vectorization
+    static_assert(vectorization_float_count<int> >= 4);
     assert(is_aligned_to_float_element_count(endPointIndex - startPointIndex));
 
     float * restrict const positionBuffer = points.GetPositionBufferAsFloat();
@@ -1104,29 +1104,20 @@ inline void IntegrateAndResetDynamicForces_NeonVectorized(
 
     float * const restrict * restrict const dynamicForceBufferOfBuffers = dynamicForceBuffers;
 
-    float32x4x4_t zero_4_4;
-    for (int e = 0; e < 4; ++e)
-    {
-        zero_4_4.val[e] = vdupq_n_f32(0.0f);
-    }
+    float32x4_t zero_4 = vdupq_n_f32(0.0f);
     float32x4_t const dt_4 = vdupq_n_f32(dt);
     float32x4_t const velocityFactor_4 = vdupq_n_f32(velocityFactor);
 
-    for (size_t i = startPointIndex * 2; i < endPointIndex * 2; i += 4 * 4) // Two components per vector, 4 vectors at a time
+    for (size_t i = startPointIndex * 2; i < endPointIndex * 2; i += 4) // Two components per vector, 4 vectors at a time
     {
         // Add spring forces
 
-        float32x4x4_t springForce = zero_4_4;
+        float32x4_t springForce = zero_4;
         for (size_t b = 0; b < nBuffers; ++b)
         {
-            float32x4x4_t dynamicForces = vld4q_f32(dynamicForceBufferOfBuffers[b] + i);
-
-            for (int e = 0; e < 4; ++e)
-            {
-                springForce.val[e] = vaddq_f32(
-                    springForce.val[e],
-                    dynamicForces.val[e]);
-            }
+            springForce = vaddq_f32(
+                springForce,
+                vld1q_f32(dynamicForceBufferOfBuffers[b] + i));
         }
 
         // Calculate deltaPos =
@@ -1137,34 +1128,31 @@ inline void IntegrateAndResetDynamicForces_NeonVectorized(
         //      position[i] += deltaPos;
         //      velocity[i] = deltaPos * velocityFactor;
 
-        float32x4x4_t velocity = vld4q_f32(velocityBuffer + i);
-        float32x4x4_t staticForce = vld4q_f32(staticForceBuffer + i);
-        float32x4x4_t integrationFactor = vld4q_f32(integrationFactorBuffer + i);
-        float32x4x4_t position = vld4q_f32(positionBuffer + i);
+        float32x4_t velocity = vld1q_f32(velocityBuffer + i);
+        float32x4_t staticForce = vld1q_f32(staticForceBuffer + i);
+        float32x4_t integrationFactor = vld1q_f32(integrationFactorBuffer + i);
+        float32x4_t position = vld1q_f32(positionBuffer + i);
 
-        for (int e = 0; e < 4; ++e)
-        {
-            float32x4_t const deltaPos = vaddq_f32(
-                vmulq_f32(
-                    velocity.val[e],
-                    dt_4),
-                vmulq_f32(
-                    vaddq_f32(
-                        springForce.val[e],
-                        staticForce.val[e]),
-                    integrationFactor.val[e]));
+        float32x4_t const deltaPos = vaddq_f32(
+            vmulq_f32(
+                velocity,
+                dt_4),
+            vmulq_f32(
+                vaddq_f32(
+                    springForce,
+                    staticForce),
+                integrationFactor));
 
-            position.val[e] = vaddq_f32(position.val[e], deltaPos);
-            velocity.val[e] = vmulq_f32(deltaPos, velocityFactor_4);
-        }
+        position = vaddq_f32(position, deltaPos);
+        velocity = vmulq_f32(deltaPos, velocityFactor_4);
 
-        vst4q_f32(positionBuffer + i, position);
-        vst4q_f32(velocityBuffer + i, velocity);
+        vst1q_f32(positionBuffer + i, position);
+        vst1q_f32(velocityBuffer + i, velocity);
 
         // Zero out spring forces now that we've integrated them
         for (size_t b = 0; b < nBuffers; ++b)
         {
-            vst4q_f32(dynamicForceBufferOfBuffers[b] + i, zero_4_4);
+            vst1q_f32(dynamicForceBufferOfBuffers[b] + i, zero_4);
         }
     }
 }
