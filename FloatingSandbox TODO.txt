@@ -1245,40 +1245,90 @@
 		- Try it on Dell
 			- Manual replacement
 		- Try on Dell: linear instead of mipmapped
+			+ Doesn't help on Intel UHD (new Dell, integrated)
 
 	- Be satisfied with upward velocity of splashes
 
-	- We upload all particles' <position, light, water>, even for eph particles
+	= We upload all particles' <position, light, water>, even for eph particles
 		! Which we'd only need for Debris (which we upload as elements)
 		! We've already addressed this well for Decay, etc. - but here we have the Debris problem
-		- Option 1:
+		- Gist:
 			- We never upload any eph particles (just RawShipPoints)
-			- Eph particle debris gets own batch (buffer, etc), we upload <position, light, water> to it, and render with same shader
-				- After all it's points
-				- Requires keeping track of count @ Points, for Start() call
-			- Impl:
-				- Points: 
-					- Keep track of EphemeralPoint count
-					- Test
-					- Nuke mAreEphemeralPointElementsDirtyForRendering (only used for Debris)
-					- Upload<wherever we do it now>:
-						- if EphemeralPoint count > 0:
-							- Start, Upload, End
-				- ShipRenderContext:
-					- TODO: vertex: can re-use existing? Needs position, light (,water if really allows us to reuse existing), plane/depth
-					- New VAO, VBO
-					- New buffer of vertices // Not sticky
-					- UploadStart: zap it
-					- UploadEphemeralPointsStart(count): dimension it
-					- UploadEphemeralPoint(position, light, ...)
-					- RenderPrepare, RenderDraw
-						- Only when non empty
-						- Implement these
-						- Call these
-		- Option 2:
-			- New shader altogether, drawing distorted tidbits of ship's texture
-			- Can also have angular velocity
-			- Could use existing triangles shader? If so, rotation needs to be applied @ Upload time
+			- Eph particle debris gets own batch (buffer, etc), we upload <position, light, water> to it, and render with ship_element shader
+				- Requires keeping track of count of debris particle @ Points, for Start() call
+		= Impl base:
+			= Prelim:
+				= Get rid of uploading and accounting for all points - we never upload any eph particles (just RawShipPoints)
+					- Rename mPointCount to mShipPointCount, "aligned count"
+					+ Pass right one @ ShipRenderContext creation
+					- See all references to mPointCount: check each caller to ensure they comply
+				- Nuke these:
+					- mEphemeralPointElementBuffer
+				- No debris calls
+				- Test and commit
+
+			- TODO: alpha problem: if no solution, skip directly to shading as matte quads
+
+			- Points: 
+				- Keep track of debris particle count
+				- Test
+				- Nuke mAreEphemeralPointElementsDirtyForRendering (only used for Debris)
+				- Add RotationPhase and OriginPointIndex to debris state
+				- Upload<wherever we do it now>:
+					- if debris particle count > 0:
+						- Start, Upload, End
+			- ShipRenderContext:
+				- New vertex, matching (with comment) layout expected by ship_element.glslinc, but only for groups 1 and 2
+				- New VAO, VBO, with mAllocatedSize
+				- New buffer of vertices // Not sticky
+					- std::vector, reserved @ cctor
+				- Global start upload: clears buffer
+				- Start: only called when have some; nop
+				- RenderPrepare/Draw: iff not empty: upload+draw
+
+					- TODOOLD
+					- TODO: makes sense to have it as std::vector, instead of BoundedVector?
+						- If so, interface:
+							- Option 1: non-sticky
+								- Start: always called; clears
+								- RenderPrepare/Draw: iff not empty: upload+draw
+							- Option 2: sticky
+								- Start: only called when dirty; clears
+								- RenderPrepare/Draw: iff not empty: upload+draw
+							- Option 3: non-sticky <-- THIS ONE
+								- Global start upload: clears
+								- Start: only called when have some; nop
+								- RenderPrepare/Draw: iff not empty: upload+draw
+					- Init: with maxEphemeralParticles
+						- After all it replaces memory 
+					- Let it be dynamic -- reset_full?
+				- UploadStart: zap it
+				- UploadDebrisStart(count): dimension it
+
+				- UploadDebris(position, texture coords, ..., ..angle)						
+					- For now do simple quad, size fixed, and rotate
+						- Size is kept in sync with point size
+					- Use precalc'd worldToShipTextureCoordsSpace, calc'd (and init'd) at ApplyViewModelChanges
+						- ShipSize (new from cctor -> const member) -> World
+				- RenderPrepare, RenderDraw
+					- TODO: OR: done inline with ship?
+					- Only when non empty
+					- Implement these
+						- Always use ship_triangles_texture shader, no matter what
+							- HEAT_RENDER_MODE is 0
+							- STRESS_RENDER_MODE is 0
+					- Call these
+
+				- If we don't like it, transform to points:
+					- UploadDebris(.): replace texture coords with color (incl. alpha)
+						- Also @ vertex struct, and its description
+					- Shader: just use Ship's Matte shader
+
+					
+		
+		- Think of how to distort debris quads
+
+		- If we undo this: make sure the GlobalRenderContext::ProcessParameterChanges change for useless MoonlightColor still goes through
 
 		- Port to Android
 
