@@ -41,7 +41,7 @@ TextureEraserTool<TLayerType>::TextureEraserTool(
     : Tool(
         toolType,
         controller)
-    , mOriginalLayerClone(mController.GetModelController().CloneExistingLayer<TLayerType>())
+    , mOriginalLayerClone(mController.GetModelController().template CloneExistingLayer<TLayerType>())
     , mTempVisualizationDirtyTextureRegion()
     , mEngagementData()
     , mIsShiftDown(false)
@@ -356,7 +356,7 @@ void TextureEraserTool<TLayerType>::EndEngagement()
     assert(!mTempVisualizationDirtyTextureRegion);
 
     // Re-take original layer clone
-    mOriginalLayerClone = mController.GetModelController().CloneExistingLayer<TLayerType>();
+    mOriginalLayerClone = mController.GetModelController().template CloneExistingLayer<TLayerType>();
 }
 
 template<LayerType TLayerType>
