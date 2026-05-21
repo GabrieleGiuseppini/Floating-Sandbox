@@ -1283,35 +1283,16 @@
 				- New buffer of vertices // Not sticky
 					- std::vector, reserved @ cctor
 				- Global start upload: clears buffer
-				- Start: only called when have some; nop
-				- RenderPrepare/Draw: iff not empty: upload+draw
-
-					- TODOOLD
-					- TODO: makes sense to have it as std::vector, instead of BoundedVector?
-						- If so, interface:
-							- Option 1: non-sticky
-								- Start: always called; clears
-								- RenderPrepare/Draw: iff not empty: upload+draw
-							- Option 2: sticky
-								- Start: only called when dirty; clears
-								- RenderPrepare/Draw: iff not empty: upload+draw
-							- Option 3: non-sticky <-- THIS ONE
-								- Global start upload: clears
-								- Start: only called when have some; nop
-								- RenderPrepare/Draw: iff not empty: upload+draw
-					- Init: with maxEphemeralParticles
-						- After all it replaces memory 
-					- Let it be dynamic -- reset_full?
-				- UploadStart: zap it
-				- UploadDebrisStart(count): dimension it
+					- No need for UploadStart()
 
 				- UploadDebris(position, texture coords, ..., ..angle)						
+					- Called by Points::UploadEphemeralParticles; no need for start
 					- For now do simple quad, size fixed, and rotate
 						- Size is kept in sync with point size
 					- Use precalc'd worldToShipTextureCoordsSpace, calc'd (and init'd) at ApplyViewModelChanges
 						- ShipSize (new from cctor -> const member) -> World
 				- RenderPrepare, RenderDraw
-					- TODO: OR: done inline with ship?
+					- Inline with ship
 					- Only when non empty
 					- Implement these
 						- Always use ship_triangles_texture shader, no matter what
