@@ -2285,7 +2285,7 @@ void Points::UploadAttributes(
             shipId,
             mColorBuffer.data(),
             0,
-            mRawShipPointCount);
+            mAlignedShipPointCount);
 
         mIsColorBufferDirty = false;
     }
@@ -2306,7 +2306,7 @@ void Points::UploadAttributes(
         shipRenderContext.UploadPointMutableAttributesPlaneId(
             mPlaneIdFloatBuffer.data(),
             0,
-            mRawShipPointCount);
+            mAlignedShipPointCount);
 
         mIsPlaneIdBufferDirty = false;
     }
@@ -2316,7 +2316,7 @@ void Points::UploadAttributes(
         shipRenderContext.UploadPointMutableAttributesDecay(
             mDecayBuffer.data(),
             0,
-            mRawShipPointCount);
+            mAlignedShipPointCount);
 
         mIsDecayBufferDirty = false;
     }
@@ -2327,7 +2327,7 @@ void Points::UploadAttributes(
             shipId,
             mTemperatureBuffer.data(),
             0,
-            mRawShipPointCount);
+            mAlignedShipPointCount);
     }
 
     if (renderContext.GetStressRenderMode() != StressRenderModeType::None)
@@ -2336,7 +2336,7 @@ void Points::UploadAttributes(
             shipId,
             mStressBuffer.data(),
             0,
-            mRawShipPointCount);
+            mAlignedShipPointCount);
     }
 
     if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::InternalPressure)
@@ -2345,7 +2345,7 @@ void Points::UploadAttributes(
             shipId,
             mInternalPressureBuffer.data(),
             0,
-            mRawShipPointCount);
+            mAlignedShipPointCount);
     }
     else if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::Strength)
     {
@@ -2353,7 +2353,7 @@ void Points::UploadAttributes(
             shipId,
             mFactoryStrengthBuffer.data(), // In theory we should incorporate AdditionalWeakness
             0,
-            mRawShipPointCount);
+            mAlignedShipPointCount);
     }
 
     shipRenderContext.UploadPointMutableAttributesEnd();

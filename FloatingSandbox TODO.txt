@@ -1262,13 +1262,11 @@
 					+ Rename mPointCount to mShipPointCount, "aligned count"
 					+ Pass right one @ ShipRenderContext creation
 					+ See all references to mPointCount: check each caller to ensure they comply
-						+ Points: nuke all "partial" and indicators, all do raw
+						+ Points: nuke all "partial" and indicators, all do aligned (not only raw, so that we do not leave uninit'd mem)
 				+ Nuke these:
 					+ ShipRenderContext::mEphemeralPointElementBuffer
 				+ No debris calls
 				+ Test and commit
-
-			- Upload ShipRenderContext buffers using Aligned point count -- to not leave uninit'd mem
 
 			- TODO: alpha problem: if no solution found in head, skip directly to shading as matte quads
 
