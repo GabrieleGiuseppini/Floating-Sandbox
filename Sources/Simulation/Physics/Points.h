@@ -795,8 +795,7 @@ public:
         , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneConnectedComponentId)
         , mPlaneIdBuffer(mBufferElementCount, shipPointCount, NonePlaneId)
         , mPlaneIdFloatBuffer(mBufferElementCount, shipPointCount, 0.0)
-        , mIsPlaneIdBufferNonEphemeralDirty(true)
-        , mIsPlaneIdBufferEphemeralDirty(true)
+        , mIsPlaneIdBufferDirty(true)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, SequenceNumber())
         // Repair
         , mRepairStateBuffer(mBufferElementCount, shipPointCount, RepairState())
@@ -809,8 +808,7 @@ public:
         , mRandomNormalizedUniformFloatBuffer(mBufferElementCount, shipPointCount, [](size_t){ return GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(); })
         // Immutable render attributes
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
-        , mIsWholeColorBufferDirty(true)
-        , mIsEphemeralColorBufferDirty(true)
+        , mIsColorBufferDirty(true)
         , mTextureCoordinatesBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mIsTextureCoordinatesBufferDirty(true)
         //////////////////////////////////
@@ -825,7 +823,6 @@ public:
         , mMaterialDatabase(materialDatabase)
         , mSimulationEventHandler(simulationEventDispatcher)
         , mShipPhysicsHandler(nullptr)
-        , mHaveWholeBuffersBeenUploadedOnce(false)
         , mCurrentNumMechanicalDynamicsIterations(simulationParameters.NumMechanicalDynamicsIterations<float>())
         , mCurrentElasticityAdjustment(simulationParameters.ElasticityAdjustment)
         , mCurrentStaticFrictionAdjustment(simulationParameters.StaticFrictionAdjustment)
@@ -844,7 +841,6 @@ public:
         , mFreeEphemeralParticles(mEphemeralPointCount)
         , mActiveEphemeralParticleListHeads({ nullptr, nullptr })
         , mActiveEphemeralParticleListTails({ nullptr, nullptr })
-        , mAreEphemeralPointElementsDirtyForRendering(false)
 #ifdef _DEBUG
         , mDiagnostic_ArePositionsDirty(false)
 #endif
@@ -2192,9 +2188,9 @@ public:
         mPlaneIdFloatBuffer[pointElementIndex] = planeIdFloat;
     }
 
-    void MarkPlaneIdBufferNonEphemeralAsDirty()
+    void MarkPlaneIdBufferAsDirty()
     {
-        mIsPlaneIdBufferNonEphemeralDirty = true;
+        mIsPlaneIdBufferDirty = true;
     }
 
     SequenceNumber GetCurrentConnectivityVisitSequenceNumber(ElementIndex pointElementIndex) const
@@ -2347,7 +2343,7 @@ public:
     // Mostly for debugging
     void MarkColorBufferAsDirty()
     {
-        mIsWholeColorBufferDirty = true;
+        mIsColorBufferDirty = true;
     }
 
     //
@@ -2645,8 +2641,7 @@ private:
     Buffer<ConnectedComponentId> mConnectedComponentIdBuffer;
     Buffer<PlaneId> mPlaneIdBuffer;
     Buffer<float> mPlaneIdFloatBuffer;
-    bool mutable mIsPlaneIdBufferNonEphemeralDirty;
-    bool mutable mIsPlaneIdBufferEphemeralDirty;
+    bool mutable mIsPlaneIdBufferDirty; // Whether or not non-ephemeral portion of buffer is dirty since last render upload
     Buffer<SequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
 
     //
@@ -2679,8 +2674,7 @@ private:
     //
 
     Buffer<vec4f> mColorBuffer;
-    bool mutable mIsWholeColorBufferDirty;  // Whether or not whole buffer is dirty since last render upload
-    bool mutable mIsEphemeralColorBufferDirty; // Whether or not ephemeral portion of buffer is dirty since last render upload
+    bool mutable mIsColorBufferDirty;  // Whether or not non-ephemeral portion of buffer is dirty since last render upload
     Buffer<vec2f> mTextureCoordinatesBuffer;
     bool mutable mIsTextureCoordinatesBufferDirty; // Whether or not is dirty since last render upload
 
@@ -2702,11 +2696,6 @@ private:
     MaterialDatabase const & mMaterialDatabase;
     SimulationEventDispatcher & mSimulationEventHandler;
     IShipPhysicsHandler * mShipPhysicsHandler;
-
-    // Flag remembering whether or not we've uploaded *entire*
-    // (as opposed to just non-ephemeral portion) buffers at
-    // least once
-    bool mutable mHaveWholeBuffersBeenUploadedOnce;
 
     // The game parameter values that we are current with; changes
     // in the values of these parameters will trigger a re-calculation
@@ -2745,13 +2734,6 @@ private:
     // Active lists, indexed by prio
     std::array<EphemeralParticleMetadata *, 2> mActiveEphemeralParticleListHeads;
     std::array<EphemeralParticleMetadata *, 2> mActiveEphemeralParticleListTails;
-
-    // Flag remembering whether the set of ephemeral point *elements* is dirty
-    // (i.e. whether there are more or less points than previously
-    // reported to the rendering engine); only tracks dirtyness
-    // of ephemeral types that are uploaded as ephemeral point *elements*
-    // (thus no AirBubbles nor Sparkles, which are both uploaded specially)
-    bool mutable mAreEphemeralPointElementsDirtyForRendering;
 
     // Calculated constants for combustion decay
     float mCombustionDecayAlphaFunctionA;

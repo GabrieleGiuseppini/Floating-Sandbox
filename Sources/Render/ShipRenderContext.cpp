@@ -14,8 +14,8 @@
 
 ShipRenderContext::ShipRenderContext(
     ShipId shipId,
-    size_t pointCount,
     size_t shipCount,
+    size_t shipPointCount,
     size_t maxEphemeralParticles,
     size_t maxSpringsPerPoint,
     RgbaImageData exteriorViewImage,
@@ -31,8 +31,8 @@ ShipRenderContext::ShipRenderContext(
     , mIsMultisamplingSupported(isMultisamplingSupported)
     //
     , mShipId(shipId)
-    , mPointCount(pointCount)
     , mShipCount(shipCount)
+    , mShipPointCount(shipPointCount)
     , mMaxMaxPlaneId(0)
     , mIsViewModelDirty(false)
     // Buffers
@@ -115,7 +115,6 @@ ShipRenderContext::ShipRenderContext(
     , mPointToPointArrowVBOAllocatedVertexSize(0u)
     // Element (index) buffers
     , mPointElementBuffer()
-    , mEphemeralPointElementBuffer()
     , mSpringElementBuffer()
     , mRopeElementBuffer()
     , mTriangleElementBuffer()
@@ -123,7 +122,6 @@ ShipRenderContext::ShipRenderContext(
     , mElementVBO()
     , mElementVBOAllocatedIndexSize(0u)
     , mPointElementVBOStartIndex(0)
-    , mEphemeralPointElementVBOStartIndex(0)
     , mSpringElementVBOStartIndex(0)
     , mRopeElementVBOStartIndex(0)
     , mTriangleElementVBOStartIndex(0)
@@ -179,37 +177,33 @@ ShipRenderContext::ShipRenderContext(
 
     mPointAttributeGroup1VBO = vbos[0];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup1VBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_STREAM_DRAW);
-    mPointAttributeGroup1Buffer.reset(pointCount);
-    std::fill(
-        mPointAttributeGroup1Buffer.data(),
-        mPointAttributeGroup1Buffer.data() + pointCount,
-        vec4f::zero());
+    glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(vec4f), nullptr, GL_STREAM_DRAW);
+    mPointAttributeGroup1Buffer.reset_full(shipPointCount);
 
     mPointAttributeGroup2VBO = vbos[1];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup2VBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_STREAM_DRAW);
-    mPointAttributeGroup2Buffer.reset_full(pointCount);
+    glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(vec4f), nullptr, GL_STREAM_DRAW);
+    mPointAttributeGroup2Buffer.reset_full(shipPointCount);
 
     mPointColorVBO = vbos[2];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(vec4f), nullptr, GL_STATIC_DRAW);
 
     mPointTemperatureVBO = vbos[3];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
     mPointStressVBO = vbos[4];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointStressVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
     mPointAuxiliaryDataVBO = vbos[5];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAuxiliaryDataVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
     mPointFrontierColorVBO = vbos[6];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(ColorWithProgress), nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(ColorWithProgress), nullptr, GL_STATIC_DRAW);
 
     mStressedSpringElementVBO = vbos[7];
     mStressedSpringElementBuffer.reserve(1024); // Arbitrary
@@ -250,10 +244,9 @@ ShipRenderContext::ShipRenderContext(
     glGenBuffers(1, &tmpGLuint);
     mElementVBO = tmpGLuint;
 
-    mPointElementBuffer.reserve(pointCount);
-    mEphemeralPointElementBuffer.reset(maxEphemeralParticles);
-    mSpringElementBuffer.reserve(pointCount * maxSpringsPerPoint);
-    mRopeElementBuffer.reserve(pointCount); // Arbitrary
+    mPointElementBuffer.reserve(shipPointCount);
+    mSpringElementBuffer.reserve(shipPointCount * maxSpringsPerPoint);
+    mRopeElementBuffer.reserve(512); // Arbitrary
     // Nothing for mTriangleElementBuffer, will resize as needed
 
     //
@@ -781,7 +774,7 @@ void ShipRenderContext::UploadPointImmutableAttributes(vec2f const * textureCoor
     // Interleave texture coordinates into AttributeGroup1 buffer
     vec4f * restrict pDst = mPointAttributeGroup1Buffer.data();
     vec2f const * restrict pSrc = textureCoordinates;
-    for (size_t i = 0; i < mPointCount; ++i)
+    for (size_t i = 0; i < mShipPointCount; ++i)
     {
         pDst[i].z = pSrc[i].x;
         pDst[i].w = pSrc[i].y;
@@ -807,7 +800,7 @@ void ShipRenderContext::UploadPointMutableAttributes(
     float const * const restrict pSrc3 = water;
     vec4f * restrict const pDst1 = mPointAttributeGroup1Buffer.data();
     vec4f * restrict const pDst2 = mPointAttributeGroup2Buffer.data();
-    for (size_t i = 0; i < mPointCount; ++i)
+    for (size_t i = 0; i < mShipPointCount; ++i)
     {
         pDst1[i].x = pSrc1[i].x;
         pDst1[i].y = pSrc1[i].y;
@@ -826,7 +819,7 @@ void ShipRenderContext::UploadPointMutableAttributesPlaneId(
     // be uploaded at any time
 
     // Interleave plane ID into AttributeGroup2 buffer
-    assert(startDst + count <= mPointCount);
+    assert(startDst + count <= mShipPointCount);
     vec4f * restrict pDst = &(mPointAttributeGroup2Buffer.data()[startDst]);
     float const * restrict pSrc = planeId;
     for (size_t i = 0; i < count; ++i)
@@ -842,7 +835,7 @@ void ShipRenderContext::UploadPointMutableAttributesDecay(
     // be uploaded at any time
 
     // Interleave decay into AttributeGroup2 buffer
-    assert(startDst + count <= mPointCount);
+    assert(startDst + count <= mShipPointCount);
     vec4f * restrict pDst = &(mPointAttributeGroup2Buffer.data()[startDst]);
     float const * restrict pSrc = decay;
     for (size_t i = 0; i < count; ++i)
@@ -867,7 +860,7 @@ void ShipRenderContext::UploadPointColors(
     // Upload color range
     //
 
-    assert(startDst + count <= mPointCount);
+    assert(startDst + count <= mShipPointCount);
 
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
 
@@ -888,7 +881,7 @@ void ShipRenderContext::UploadPointTemperature(
     // Upload temperature range
     //
 
-    assert(startDst + count <= mPointCount);
+    assert(startDst + count <= mShipPointCount);
 
     glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
 
@@ -909,7 +902,7 @@ void ShipRenderContext::UploadPointStress(
     // Upload stress range
     //
 
-    assert(startDst + count <= mPointCount);
+    assert(startDst + count <= mShipPointCount);
 
     glBindBuffer(GL_ARRAY_BUFFER, *mPointStressVBO);
 
@@ -946,7 +939,7 @@ void ShipRenderContext::UploadPointFrontierColors(ColorWithProgress const * colo
 
     glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
 
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(ColorWithProgress), colors);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mShipPointCount * sizeof(ColorWithProgress), colors);
     CheckOpenGLError();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1087,21 +1080,6 @@ void ShipRenderContext::UploadJetEngineFlamesStart()
 }
 
 void ShipRenderContext::UploadJetEngineFlamesEnd()
-{
-    // Nop
-}
-
-void ShipRenderContext::UploadElementEphemeralPointsStart()
-{
-    // Client wants to upload a new set of ephemeral point elements
-
-    // Empty buffer
-    mEphemeralPointElementBuffer.clear();
-
-    mAreElementBuffersDirty = true;
-}
-
-void ShipRenderContext::UploadElementEphemeralPointsEnd()
 {
     // Nop
 }
@@ -1253,7 +1231,7 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
 
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup1VBO);
 
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec4f), mPointAttributeGroup1Buffer.data());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mShipPointCount * sizeof(vec4f), mPointAttributeGroup1Buffer.data());
     CheckOpenGLError();
 
     //
@@ -1262,7 +1240,7 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
 
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup2VBO);
 
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec4f), mPointAttributeGroup2Buffer.data());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mShipPointCount * sizeof(vec4f), mPointAttributeGroup2Buffer.data());
     CheckOpenGLError();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1283,8 +1261,7 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
         mRopeElementVBOStartIndex = mTriangleElementVBOStartIndex + mTriangleElementBuffer.size() * sizeof(TriangleElement);
         mSpringElementVBOStartIndex = mRopeElementVBOStartIndex + mRopeElementBuffer.size() * sizeof(LineElement);
         mPointElementVBOStartIndex = mSpringElementVBOStartIndex + mSpringElementBuffer.size() * sizeof(LineElement);
-        mEphemeralPointElementVBOStartIndex = mPointElementVBOStartIndex + mPointElementBuffer.size() * sizeof(PointElement);
-        size_t requiredIndexSize = mEphemeralPointElementVBOStartIndex + mEphemeralPointElementBuffer.size() * sizeof(PointElement);
+        size_t const requiredIndexSize = mPointElementVBOStartIndex + mPointElementBuffer.size() * sizeof(PointElement);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mElementVBO);
 
@@ -1324,13 +1301,6 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
             mPointElementVBOStartIndex,
             mPointElementBuffer.size() * sizeof(PointElement),
             mPointElementBuffer.data());
-
-        // Upload ephemeral points
-        glBufferSubData(
-            GL_ELEMENT_ARRAY_BUFFER,
-            mEphemeralPointElementVBOStartIndex,
-            mEphemeralPointElementBuffer.size() * sizeof(PointElement),
-            mEphemeralPointElementBuffer.data());
 
         CheckOpenGLError();
 
@@ -1729,30 +1699,26 @@ void ShipRenderContext::RenderDraw(
         }
 
         //
-        // Draw points (orphaned/all non-ephemerals, and ephemerals)
+        // Draw points (orphaned/all)
         //
 
-        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Points
+        if ((renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Points
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
+            && !mPointElementBuffer.empty())
         {
-            size_t const totalPoints = mPointElementBuffer.size() + mEphemeralPointElementBuffer.size();
+            mShaderManager.ActivateProgram(mShipPointsProgram);
 
-            if (totalPoints > 0)
-            {
-                mShaderManager.ActivateProgram(mShipPointsProgram);
+            glPointSize(mPointSize);
 
-                glPointSize(mPointSize);
+            glDrawElements(
+                GL_POINTS,
+                static_cast<GLsizei>(mPointElementBuffer.size()),
+                GL_UNSIGNED_INT,
+                (GLvoid *)mPointElementVBOStartIndex);
 
-                glDrawElements(
-                    GL_POINTS,
-                    static_cast<GLsizei>(totalPoints),
-                    GL_UNSIGNED_INT,
-                    (GLvoid *)mPointElementVBOStartIndex);
-
-                // Update stats
-                renderStats.LastRenderedShipPoints += totalPoints;
-            }
+            // Update stats
+            renderStats.LastRenderedShipPoints += mPointElementBuffer.size();
         }
 
         // We are done with the ship VAO

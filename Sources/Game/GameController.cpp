@@ -2211,7 +2211,7 @@ void GameController::InternalAddShip(
     ShipMetadata const & shipMetadata)
 {
     ShipId const shipId = ship->GetId();
-    ElementCount const shipPointCount = ship->GetPointCount();
+    ElementCount const shipPointCount = ship->GetAlignedShipPointCount();
     ElementCount const shipMaxEphemeralParticleCount = ship->GetMaxEphemeralParticleCount();
 
     // Set recorder in ship (if any)

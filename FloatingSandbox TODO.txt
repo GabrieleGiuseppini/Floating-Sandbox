@@ -1257,22 +1257,28 @@
 			- Eph particle debris gets own batch (buffer, etc), we upload <position, light, water> to it, and render with ship_element shader
 				- Requires keeping track of count of debris particle @ Points, for Start() call
 		= Impl base:
-			= Prelim:
-				= Get rid of uploading and accounting for all points - we never upload any eph particles (just RawShipPoints)
-					- Rename mPointCount to mShipPointCount, "aligned count"
+			+ Prelim:
+				+ Get rid of uploading and accounting for all points - we never upload any eph particles (just RawShipPoints)
+					+ Rename mPointCount to mShipPointCount, "aligned count"
 					+ Pass right one @ ShipRenderContext creation
-					- See all references to mPointCount: check each caller to ensure they comply
-				- Nuke these:
-					- mEphemeralPointElementBuffer
-				- No debris calls
-				- Test and commit
+					+ See all references to mPointCount: check each caller to ensure they comply
+						+ Points: nuke all "partial" and indicators, all do raw
+				+ Nuke these:
+					+ ShipRenderContext::mEphemeralPointElementBuffer
+				+ No debris calls
+				+ Test and commit
 
-			- TODO: alpha problem: if no solution, skip directly to shading as matte quads
+			- Upload ShipRenderContext buffers using Aligned point count -- to not leave uninit'd mem
+
+			- TODO: alpha problem: if no solution found in head, skip directly to shading as matte quads
 
 			- Points: 
 				- Keep track of debris particle count
 				- Test
-				- Nuke mAreEphemeralPointElementsDirtyForRendering (only used for Debris)
+				+ Nuke mAreEphemeralPointElementsDirtyForRendering (only used for Debris)
+				+ Nuke mIsPlaneIdBufferEphemeralDirty (only used for Debris)
+				+ Nuke mIsEphemeralColorBufferDirty
+				- Nuke setting of colors @ Points::CreateEphemeralParticleXYZ()
 				- Add RotationPhase and OriginPointIndex to debris state
 				- Upload<wherever we do it now>:
 					- if debris particle count > 0:

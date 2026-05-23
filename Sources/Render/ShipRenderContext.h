@@ -44,8 +44,8 @@ public:
 
     ShipRenderContext(
         ShipId shipId,
-        size_t pointCount,
         size_t shipCount,
+        size_t shipPointCount, // Ship-only count (aligned)
         size_t maxEphemeralParticles,
         size_t maxSpringsPerPoint,
         RgbaImageData exteriorViewImage,
@@ -1040,19 +1040,6 @@ public:
     }
 
     //
-    // Ephemeral point elements
-    //
-
-    void UploadElementEphemeralPointsStart();
-
-    inline void UploadElementEphemeralPoint(int pointIndex)
-    {
-        mEphemeralPointElementBuffer.emplace_back(pointIndex);
-    }
-
-    void UploadElementEphemeralPointsEnd();
-
-    //
     // Highlights
     //
     // Highlights don't have a start/end as there are multiple
@@ -1519,9 +1506,9 @@ private:
 private:
 
     ShipId const mShipId;
-    size_t const mPointCount;
-
     size_t mShipCount;
+    size_t const mShipPointCount; // Ship-only particles, aligned
+
     PlaneId mMaxMaxPlaneId; // Make plane ID ever
     bool mIsViewModelDirty;
 
@@ -1898,7 +1885,6 @@ private:
     //
 
     std::vector<PointElement> mPointElementBuffer;
-    BoundedVector<PointElement> mEphemeralPointElementBuffer; // We have a global maximum
     std::vector<LineElement> mSpringElementBuffer;
     std::vector<LineElement> mRopeElementBuffer;
     BoundedVector<TriangleElement> mTriangleElementBuffer; // We know in advance how many will be uploaded
@@ -1909,7 +1895,6 @@ private:
     // Indices at which these elements begin in the VBO; populated
     // when we upload element indices to the VBO
     size_t mPointElementVBOStartIndex;
-    size_t mEphemeralPointElementVBOStartIndex;
     size_t mSpringElementVBOStartIndex;
     size_t mRopeElementVBOStartIndex;
     size_t mTriangleElementVBOStartIndex;

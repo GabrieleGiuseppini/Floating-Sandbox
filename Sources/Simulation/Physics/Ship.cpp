@@ -3752,8 +3752,8 @@ void Ship::RunConnectivityVisit()
     mPoints.MarkColorBufferAsDirty();
 #endif
 
-    // Remember non-ephemeral portion of plane IDs is dirty
-    mPoints.MarkPlaneIdBufferNonEphemeralAsDirty();
+    // Remember plane IDs are dirty
+    mPoints.MarkPlaneIdBufferAsDirty();
 
     //
     // Re-order burning points, as their plane IDs might have changed
