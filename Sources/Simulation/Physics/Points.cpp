@@ -2542,7 +2542,7 @@ void Points::UploadEphemeralParticles(
                         scaleMin + (scaleMax - scaleMin) * SmoothStep(0.0f, 2.0f, state.SimulationLifetime);
 
                     shipRenderContext.UploadAirBubble(
-                        GetPlaneId(pointIndex),
+                        mPlaneIdFloatBuffer[pointIndex],
                         GetPosition(pointIndex),
                         scale,
                         std::min(0.6f, state.CurrentDeltaY), // Alpha

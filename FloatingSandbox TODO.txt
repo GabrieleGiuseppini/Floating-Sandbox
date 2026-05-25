@@ -1338,9 +1338,14 @@
 			+ Post UPL RND: 0.10-0.12 3.6-3.7
 
 		+ Round-ish particles
-		- Optimize AirBubble upload
-			- Pre (16K air bubbles): UPL=0.45-0.48
-			- Precalc a lot
+		= Optimize AirBubble upload
+			! Pre (16K air bubbles): UPL=0.45-0.48
+			+ Precalc a lot:
+				! mGenericMipMappedTextureAirBubbleVertexBuffer: pre-populate with fixed vals
+				+ Buffer is still cleared, but Upload uses emplace_back_ghost to populate dynamic vals
+				+ Use float planeId directly
+			+ Post: 0.33-0.36
+			- If ok: add to Android plan
 
 		- Send beta
 

@@ -844,20 +844,21 @@ public:
     //
 
     inline void UploadAirBubble(
-        PlaneId planeId,
+        float fPlaneId,
         vec2f const & position,
         float scale,
         float alpha,
         float angle)
     {
-        StoreGenericMipMappedTextureRenderSpecification(
-            planeId,
-            TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups>(GameTextureDatabases::GenericMipMappedTextureGroups::AirBubble, 0),
-            position,
-            scale,
-            angle,
-            alpha,
-            mGenericMipMappedTextureAirBubbleVertexBuffer);
+        for (int v = 0; v < 4; ++v)
+        {
+            auto & vertex = mGenericMipMappedTextureAirBubbleVertexBuffer.emplace_back_ghost();
+            vertex.centerPosition = position;
+            vertex.planeId = fPlaneId;
+            vertex.scale = scale;
+            vertex.angle = angle;
+            vertex.alpha = alpha;
+        }
     }
 
     inline void UploadGenericMipMappedTextureRenderSpecification(

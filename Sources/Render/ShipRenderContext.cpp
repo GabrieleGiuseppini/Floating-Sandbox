@@ -583,10 +583,65 @@ ShipRenderContext::ShipRenderContext(
         glBindVertexArray(0);
 
         //
-        // Initialize buffers
+        // Initialize buffer
         //
 
+        auto const airBubbleFrameId = TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups>(GameTextureDatabases::GenericMipMappedTextureGroups::AirBubble, 0);
+
+        TextureAtlasFrameMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase> const & frame =
+            mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(airBubbleFrameId);
+
+        float const leftX = -frame.FrameMetadata.AnchorCenterWorld.x;
+        float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x;
+        float const topY = frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y;
+        float const bottomY = -frame.FrameMetadata.AnchorCenterWorld.y;
+
+        float const ambientLightSensitivity =
+            frame.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
+
         mGenericMipMappedTextureAirBubbleVertexBuffer.reset(maxEphemeralParticles * 4);
+        for (size_t q = 0; q < maxEphemeralParticles; ++q)
+        {
+            mGenericMipMappedTextureAirBubbleVertexBuffer.emplace_back(
+                vec2f::zero(), // To be populated @ Upload
+                vec2f(leftX, topY),
+                vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
+                0.0f, // To be populated @ Upload
+                0.0f, // To be populated @ Upload
+                0.0f, // To be populated @ Upload
+                0.0f, // To be populated @ Upload
+                ambientLightSensitivity);
+
+            mGenericMipMappedTextureAirBubbleVertexBuffer.emplace_back(
+                vec2f::zero(), // To be populated @ Upload
+                vec2f(rightX, topY),
+                frame.TextureCoordinatesTopRight,
+                0.0f, // To be populated @ Upload
+                0.0f, // To be populated @ Upload
+                0.0f, // To be populated @ Upload
+                0.0f, // To be populated @ Upload
+                ambientLightSensitivity);
+
+            mGenericMipMappedTextureAirBubbleVertexBuffer.emplace_back(
+                vec2f::zero(), // To be populated @ Upload
+                vec2f(leftX, bottomY),
+                frame.TextureCoordinatesBottomLeft,
+                0.0f, // To be populated @ Upload
+                0.0f, // To be populated @ Upload
+                0.0f, // To be populated @ Upload
+                0.0f, // To be populated @ Upload
+                ambientLightSensitivity);
+
+            mGenericMipMappedTextureAirBubbleVertexBuffer.emplace_back(
+                vec2f::zero(), // To be populated @ Upload
+                vec2f(rightX, bottomY),
+                vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
+                0.0f, // To be populated @ Upload
+                0.0f, // To be populated @ Upload
+                0.0f, // To be populated @ Upload
+                0.0f, // To be populated @ Upload
+                ambientLightSensitivity);
+        }
     }
 
 
@@ -783,7 +838,7 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
     {
         // Air bubbles
 
-        mGenericMipMappedTextureAirBubbleVertexBuffer.clear();
+        mGenericMipMappedTextureAirBubbleVertexBuffer.clear(); // Assuming it's kept populated
 
         // Generic mip-mapped
 
