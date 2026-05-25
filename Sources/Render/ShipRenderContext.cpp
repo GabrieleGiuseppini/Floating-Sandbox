@@ -585,6 +585,8 @@ ShipRenderContext::ShipRenderContext(
         //
         // Initialize buffer
         //
+        // Prepopulate invariants for each possible quad
+        //
 
         auto const airBubbleFrameId = TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups>(GameTextureDatabases::GenericMipMappedTextureGroups::AirBubble, 0);
 
@@ -843,7 +845,7 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
         // Generic mip-mapped
 
         size_t const newSize = static_cast<size_t>(maxMaxPlaneId) + 1u;
-        assert(mGenericMipMappedTexturePlaneVertexBuffers.size() <= newSize);
+        assert(mGenericMipMappedTexturePlaneVertexBuffers.size() <= newSize); // maxMaxPlaneId only grows
 
         size_t const clearCount = mGenericMipMappedTexturePlaneVertexBuffers.size();
         for (size_t i = 0; i < clearCount; ++i)
