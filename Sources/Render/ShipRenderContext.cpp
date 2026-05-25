@@ -241,7 +241,7 @@ ShipRenderContext::ShipRenderContext(
 
     mCenterVBO = vbos[21];
 
-    mPointToPointArrowVBO = vbos[222];
+    mPointToPointArrowVBO = vbos[22];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
