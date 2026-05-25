@@ -1252,11 +1252,10 @@
 	= We upload all particles' <position, light, water>, even for eph particles
 		! Which we'd only need for Debris (which we upload as elements)
 		! We've already addressed this well for Decay, etc. - but here we have the Debris problem
-		- Gist:
-			- We never upload any eph particles (just RawShipPoints)
-			- Eph particle debris gets own batch (buffer, etc), we upload <position, light, water> to it, and render with ship_element shader
-				- Requires keeping track of count of debris particle @ Points, for Start() call
-		= Impl base:
+		! Gist:
+			! We never upload any eph particles (just RawShipPoints)
+			! Eph particle debris gets own batch (buffer, etc), we upload <position, light, water> to it, and render with ship_element shader
+		+ Impl base:
 			+ Prelim:
 				+ Get rid of uploading and accounting for all points - we never upload any eph particles (just RawShipPoints)
 					+ Rename mPointCount to mShipPointCount, "aligned count"
@@ -1268,54 +1267,87 @@
 				+ No debris calls
 				+ Test and commit
 
-			- TODO: alpha problem: if no solution found in head, skip directly to shading as matte quads
+			+ TODO: alpha problem: if no solution found in head, skip directly to shading as matte quads
 
-			- Points: 
-				- Keep track of debris particle count
-				- Test
+			+ Points: 
 				+ Nuke mAreEphemeralPointElementsDirtyForRendering (only used for Debris)
 				+ Nuke mIsPlaneIdBufferEphemeralDirty (only used for Debris)
 				+ Nuke mIsEphemeralColorBufferDirty
-				- Nuke setting of colors @ Points::CreateEphemeralParticleXYZ()
-				- Add RotationPhase and OriginPointIndex to debris state
-				- Upload<wherever we do it now>:
-					- if debris particle count > 0:
-						- Start, Upload, End
-			- ShipRenderContext:
-				- New vertex, matching (with comment) layout expected by ship_element.glslinc, but only for groups 1 and 2
-				- New VAO, VBO, with mAllocatedSize
-				- New buffer of vertices // Not sticky
-					- std::vector, reserved @ cctor
-				- Global start upload: clears buffer
-					- No need for UploadStart()
-
-				- UploadDebris(position, texture coords, ..., ..angle)						
-					- Called by Points::UploadEphemeralParticles; no need for start
-					- For now do simple quad, size fixed, and rotate
+				+ Add RotationPhase and OriginPointIndex to debris state
+				+ Upload
+			X ShipRenderContext:
+				+ New vertex, matching (with comment) layout expected by ship_element.glslinc, but only for groups 1 and 2
+				+ New VAO, VBO, with mAllocatedSize
+				+ New buffer of vertices // Not sticky
+					+ std::vector, reserved @ cctor
+				+ Global start upload: clears buffer
+					+ No need for UploadStart()
+				X UploadDebris(position, texture coords, ..., ..angle)						
+					+ Called by Points::UploadEphemeralParticles; no need for start
+					= For now do simple quad, size fixed, and rotate
 						- Size is kept in sync with point size
-					- Use precalc'd worldToShipTextureCoordsSpace, calc'd (and init'd) at ApplyViewModelChanges
+					- Use precalc'd worldToShipTextureCoordsSpace factor, calc'd (and init'd) at ApplyViewModelChanges
 						- ShipSize (new from cctor -> const member) -> World
-				- RenderPrepare, RenderDraw
-					- Inline with ship
-					- Only when non empty
-					- Implement these
-						- Always use ship_triangles_texture shader, no matter what
-							- HEAT_RENDER_MODE is 0
-							- STRESS_RENDER_MODE is 0
-					- Call these
+				+ RenderPrepare
+				X RenderDraw
+					+ Inline with ship
+					+ Only when non empty
+					+ Implement these
+						+ Always use ship_triangles_texture shader, no matter what
+							+ HEAT_RENDER_MODE is 0
+							+ STRESS_RENDER_MODE is 0
+					X TODO: how do we draw debris with various other (debug) render modes?
+						- Needs to be fixed as we are currently inoking ship_strength, ship_decay, etc. shaders without having those vertex arrays in vbo
+						- ALSO: we don't use "render modifiers" with other eph's (strength, stress, etc.), so why should we care?							
+		+ Re-impl as GL_POINTS:
+			+ 0: Cleanup debris state (undo?)
+			+ 1. Debris created with OriginalPointIndex, copies all needed quantities into eph particle index
+				+ Water
+				+ PlaneId
+			+ 2. Vertex: cover all shaders
+				+ 
+					in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
+					in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
+					#if HEAT_RENDER_MODE != 0
+					in float inShipPointTemperature; // Temperature
+					#endif
+					#if STRESS_RENDER_MODE != 0
+					in float inShipPointStress; // Stress
+					#endif
+					#ifdef WITH_MATTE_COLOR -- ALWAYS
+					in vec4 inShipPointColor;
+					#endif
+				+ Describe, off of struct
+			+ 3. Upload:
+				+ All quantities
+			+ 4. Draw
+				+ As points, using mShipPointProgram
 
-				- If we don't like it, transform to points:
-					- UploadDebris(.): replace texture coords with color (incl. alpha)
-						- Also @ vertex struct, and its description
-					- Shader: just use Ship's Matte shader
-
-					
-		
-		- Think of how to distort debris quads
+		- Final cleanups:
+			- Can we actually use existing buffer for ALL eph particles' personality seeds?
+				- Writing to it @ Spawn time, NOT reusing it (or else not too random)
+			- Nuke setting of colors @ Points::CreateEphemeralParticleXYZ()
+				- EXCEPT FOR DEBRIS!
+				- Make sure that no ephemeral particle upload uses color
 
 		- If we undo this: make sure the GlobalRenderContext::ProcessParameterChanges change for useless MoonlightColor still goes through
 
 		- Port to Android
+			+ Effective Moonlight color: added to plan
+			- ShipRenderContext:
+				- We never upload any eph particles (just RawShipPoints)
+					- Rename mPointCount to mShipPointCount, "aligned count"
+					- Pass right one @ ShipRenderContext creation
+				- Nuke old EphemeralPointElement machinery
+					- Methods
+					- ShipRenderContext::mEphemeralPointElementBuffer
+					- ...
+				- Add new vertex, VAO, VBO, buffer
+				- New UploadDebris(.)
+				- VAO descriptions
+				- Global start upload: clears buffer
+				- RenderPrepare
+				- RenderDraw
 
 
 	- TimCan's new sounds for PC+Mobile

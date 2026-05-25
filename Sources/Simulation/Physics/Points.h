@@ -960,11 +960,10 @@ public:
         vec2f const & position,
         vec2f const & velocity,
         float depth,
-        float water,
         StructuralMaterial const & structuralMaterial,
+        ElementIndex originalPointIndex,
         float currentSimulationTime,
-        float maxSimulationLifetime,
-        PlaneId planeId);
+        float maxSimulationLifetime);
 
     void CreateEphemeralParticleSiltCloud(
         vec2f const & position,
@@ -2330,6 +2329,12 @@ public:
     // Immutable attributes
     //
 
+    vec4f const & GetColor(ElementIndex pointElementIndex) const
+    {
+        return mColorBuffer[pointElementIndex];
+    }
+
+    // Only used for debugging
     vec4f & GetColor(ElementIndex pointElementIndex)
     {
         return mColorBuffer[pointElementIndex];

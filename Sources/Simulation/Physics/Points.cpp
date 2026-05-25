@@ -239,11 +239,10 @@ void Points::CreateEphemeralParticleDebris(
     vec2f const & position,
     vec2f const & velocity,
     float depth,
-    float water,
     StructuralMaterial const & structuralMaterial,
+    ElementIndex originalPointIndex,
     float currentSimulationTime,
-    float maxSimulationLifetime,
-    PlaneId planeId)
+    float maxSimulationLifetime)
 {
     // Get a free slot (or steal one)
     auto const ephemeralParticleIndex = FindFreeEphemeralParticle(0, true);
@@ -264,7 +263,7 @@ void Points::CreateEphemeralParticleDebris(
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
-    assert(mDecayBuffer[pointIndex] == 1.0f);
+    assert(mDecayBuffer[pointIndex] == 1.0f); // Even though we want to replicate as much as possible of original point, we won't replicate quantities that dirty future re-uses
     //mDecayBuffer[pointIndex] = 1.0f;
     assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
     //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
@@ -288,11 +287,11 @@ void Points::CreateEphemeralParticleDebris(
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
-    mWaterBuffer[pointIndex] = water;
+    mWaterBuffer[pointIndex] = mWaterBuffer[originalPointIndex];
     assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
-    mTemperatureBuffer[pointIndex] = SimulationParameters::Temperature0;
+    mTemperatureBuffer[pointIndex] = mTemperatureBuffer[originalPointIndex];
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / structuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
@@ -302,10 +301,10 @@ void Points::CreateEphemeralParticleDebris(
 
     //mWaterReactionStateBuffer.emplace_back(0.0f);
 
-    assert(mLightBuffer[pointIndex] == 0.0f);
+    assert(mLightBuffer[pointIndex] == 0.0f); // Even though we want to replicate as much as possible of original point, we won't replicate quantities that dirty future re-uses
     //mLightBuffer[pointIndex] = 0.0f;
 
-    mMaterialWindReceptivityBuffer[pointIndex] = 3.0f; // Debris is susceptible to wind
+    mMaterialWindReceptivityBuffer[pointIndex] = structuralMaterial.WindReceptivity;
 
     assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
     //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
@@ -317,8 +316,8 @@ void Points::CreateEphemeralParticleDebris(
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
-    mPlaneIdBuffer[pointIndex] = planeId;
-    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
+    mPlaneIdBuffer[pointIndex] = mPlaneIdBuffer[originalPointIndex];
+    mPlaneIdFloatBuffer[pointIndex] = mPlaneIdFloatBuffer[originalPointIndex];
 
     mColorBuffer[pointIndex] = structuralMaterial.RenderColor.toVec4f();
 }
@@ -1950,14 +1949,10 @@ void Points::UpdateEphemeralParticles(
                     else
                     {
                         // Update alpha based off remaining time
-
-                        float alpha = std::max(
+                        float const alpha = std::max(
                             1.0f - elapsedSimulationLifetime / maxSimulationLifetime,
                             0.0f);
-
                         mColorBuffer[pointIndex].w = alpha;
-
-                        // No need to mark as dirty, we never upload eph portion in bulk
                     }
 
                     break;
@@ -2554,12 +2549,15 @@ void Points::UploadEphemeralParticles(
 
                 case EphemeralType::Debris:
                 {
-                    // TODOHERE
-                    //// Don't upload point unless there's been a change
-                    //if (mAreEphemeralPointElementsDirtyForRendering)
-                    //{
-                    //    shipRenderContext.UploadElementEphemeralPoint(pointIndex);
-                    //}
+                    shipRenderContext.UploadDebris(
+                        GetPlaneId(pointIndex),
+                        GetPosition(pointIndex),
+                        GetColor(pointIndex),
+                        GetLight(pointIndex),
+                        GetWater(pointIndex),
+                        GetDecay(pointIndex),
+                        GetTemperature(pointIndex),
+                        GetStress(pointIndex));
 
                     break;
                 }

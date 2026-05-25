@@ -3898,8 +3898,6 @@ void Ship::InternalSpawnDebris(
 
         auto const pointPosition = mPoints.GetPosition(sourcePointElementIndex);
         auto const pointDepth = mParentWorld.GetOceanSurface().GetDepth(pointPosition);
-        auto const pointWater = mPoints.GetWater(sourcePointElementIndex);
-        auto const pointPlaneId = mPoints.GetPlaneId(sourcePointElementIndex);
 
         for (unsigned int d = 0; d < debrisParticleCount; ++d)
         {
@@ -3917,11 +3915,10 @@ void Ship::InternalSpawnDebris(
                 pointPosition,
                 velocity,
                 pointDepth,
-                pointWater,
                 debrisStructuralMaterial,
+                sourcePointElementIndex,
                 currentSimulationTime,
-                maxLifetime,
-                pointPlaneId);
+                maxLifetime);
         }
     }
 }

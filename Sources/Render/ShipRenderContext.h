@@ -219,6 +219,31 @@ public:
     void UploadElementFrontierEdgesEnd();
 
     //
+    // Debris
+    //
+
+    inline void UploadDebris(
+        PlaneId planeId,
+        vec2f const & position,
+        vec4f const & color,
+        float light,
+        float water,
+        float decay,
+        float temperature,
+        float stress)
+    {
+        mDebrisVertexBuffer.emplace_back(
+            position,
+            light,
+            water,
+            static_cast<float>(planeId),
+            decay,
+            temperature,
+            stress,
+            color);
+    }
+
+    //
     // NPCs
     //
 
@@ -1547,6 +1572,41 @@ private:
         int pointIndex3;
     };
 
+    struct DebrisVertex
+    {
+        // Note: replicating layout of point shaders
+        vec2f vertexPosition;
+        vec2f textureCoordinates;
+        float light;
+        float water;
+        float planeId;
+        float decay;
+        float temperature;
+        float stress;
+        vec4f color;
+
+        DebrisVertex(
+            vec2f _vertexPosition,
+            float _light,
+            float _water,
+            float _planeId,
+            float _decay,
+            float _temperature,
+            float _stress,
+            vec4f const & _color)
+            : vertexPosition(_vertexPosition)
+            , textureCoordinates(vec2f::zero())
+            , light(_light)
+            , water(_water)
+            , planeId(_planeId)
+            , decay(_decay)
+            , temperature(_temperature)
+            , stress(_stress)
+            , color(_color)
+        {
+        }
+    };
+
     struct NpcAttributesVertex
     {
         NpcStaticAttributes staticAttributes;
@@ -1817,6 +1877,10 @@ private:
     GameOpenGLVBO mFrontierEdgeElementVBO;
     size_t mFrontierEdgeElementVBOAllocatedElementSize;
 
+    std::vector<DebrisVertex> mDebrisVertexBuffer;
+    GameOpenGLVBO mDebrisVBO;
+    size_t mDebrisVBOAllocatedVertexSize;
+
     BoundedVector<Quad> mNpcPositionBuffer; // 4 vertices
     GameOpenGLVBO mNpcPositionVBO;
     size_t mNpcPositionVBOAllocatedVertexSize;
@@ -1904,6 +1968,7 @@ private:
     //
 
     GameOpenGLVAO mShipVAO;
+    GameOpenGLVAO mDebrisVAO;
     GameOpenGLVAO mNpcTextureAndQuadFlatVAO;
     GameOpenGLVAO mNpcQuadWithRolesVAO;
     GameOpenGLVAO mElectricSparkVAO;

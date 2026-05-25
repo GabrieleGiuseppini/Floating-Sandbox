@@ -55,6 +55,10 @@ ShipRenderContext::ShipRenderContext(
     , mFrontierEdgeElementVBO()
     , mFrontierEdgeElementVBOAllocatedElementSize(0u)
     //
+    , mDebrisVertexBuffer()
+    , mDebrisVBO()
+    , mDebrisVBOAllocatedVertexSize(0u)
+    //
     , mNpcPositionBuffer()
     , mNpcPositionVBO()
     , mNpcPositionVBOAllocatedVertexSize(0)
@@ -127,6 +131,7 @@ ShipRenderContext::ShipRenderContext(
     , mTriangleElementVBOStartIndex(0)
     // VAOs
     , mShipVAO()
+    , mDebrisVAO()
     , mNpcTextureAndQuadFlatVAO()
     , mNpcQuadWithRolesVAO()
     , mElectricSparkVAO()
@@ -171,8 +176,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[22];
-    glGenBuffers(22, vbos);
+    GLuint vbos[23];
+    glGenBuffers(23, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -210,30 +215,33 @@ ShipRenderContext::ShipRenderContext(
 
     mFrontierEdgeElementVBO = vbos[8];
 
-    mNpcPositionVBO = vbos[9];
-    mNpcAttributesVertexVBO = vbos[10];
-    mNpcQuadRoleVertexVBO = vbos[11];
+    mDebrisVBO = vbos[9];
+    mDebrisVertexBuffer.reserve(1024); // Arbitrary
 
-    mElectricSparkVBO = vbos[12];
+    mNpcPositionVBO = vbos[10];
+    mNpcAttributesVertexVBO = vbos[11];
+    mNpcQuadRoleVertexVBO = vbos[12];
 
-    mFlameVBO = vbos[13];
+    mElectricSparkVBO = vbos[13];
 
-    mJetEngineFlameVBO = vbos[14];
+    mFlameVBO = vbos[14];
 
-    mExplosionVBO = vbos[15];
+    mJetEngineFlameVBO = vbos[15];
 
-    mSparkleVBO = vbos[16];
+    mExplosionVBO = vbos[16];
+
+    mSparkleVBO = vbos[17];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
-    mGenericMipMappedTextureVBO = vbos[17];
+    mGenericMipMappedTextureVBO = vbos[18];
 
-    mHighlightVBO = vbos[18];
+    mHighlightVBO = vbos[19];
 
-    mVectorArrowVBO = vbos[19];
+    mVectorArrowVBO = vbos[20];
 
-    mCenterVBO = vbos[20];
+    mCenterVBO = vbos[21];
 
-    mPointToPointArrowVBO = vbos[21];
+    mPointToPointArrowVBO = vbos[222];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -308,6 +316,49 @@ ShipRenderContext::ShipRenderContext(
         // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
         ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
         ////CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
+    // Initialize Debris VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mDebrisVAO = tmpGLuint;
+
+        glBindVertexArray(*mDebrisVAO);
+        CheckOpenGLError();
+
+        //
+        // Describe vertex attributes
+        //
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mDebrisVBO);
+        static_assert(sizeof(DebrisVertex) == (8 + 2 + 4) * sizeof(float));
+
+        // Groups 1 and 2
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAttributeGroup1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAttributeGroup1), 4, GL_FLOAT, GL_FALSE, sizeof(DebrisVertex), (void*)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAttributeGroup2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(DebrisVertex), (void*)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        // Temperature
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointTemperature));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointTemperature), 1, GL_FLOAT, GL_FALSE, sizeof(DebrisVertex), (void*)(8 * sizeof(float)));
+        CheckOpenGLError();
+
+        // Stress
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointStress));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointStress), 1, GL_FLOAT, GL_FALSE, sizeof(DebrisVertex), (void*)((8 + 1) * sizeof(float)));
+        CheckOpenGLError();
+
+        // Color
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointColor));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(DebrisVertex), (void*)((8 + 2) * sizeof(float)));
+        CheckOpenGLError();
 
         glBindVertexArray(0);
     }
@@ -705,10 +756,12 @@ ShipRenderContext::~ShipRenderContext()
 void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
 {
     //
-    // Reset explosions, sparkles, air bubbles, generic textures, highlights,
+    // Reset debris, explosions, sparkles, air bubbles, generic textures, highlights,
     // vector arrows;
     // they are all uploaded as needed
     //
+
+    mDebrisVertexBuffer.clear();
 
     {
         size_t const newSize = static_cast<size_t>(maxMaxPlaneId) + 1u;
@@ -1310,6 +1363,32 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
     }
 
     //
+    // Upload debris
+    //
+
+    if (!mDebrisVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mDebrisVBO);
+
+        if (mDebrisVertexBuffer.size() > mDebrisVBOAllocatedVertexSize)
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, mDebrisVertexBuffer.size() * sizeof(DebrisVertex), mDebrisVertexBuffer.data(), GL_STREAM_DRAW);
+            CheckOpenGLError();
+
+            mDebrisVBOAllocatedVertexSize = mDebrisVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mDebrisVertexBuffer.size() * sizeof(DebrisVertex), mDebrisVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    //
     // Prepare flames
     //
 
@@ -1722,6 +1801,26 @@ void ShipRenderContext::RenderDraw(
         }
 
         // We are done with the ship VAO
+        glBindVertexArray(0);
+    }
+
+    //
+    // Draw debris (as points)
+    //
+
+    if (!mDebrisVertexBuffer.empty())
+    {
+        glBindVertexArray(*mDebrisVAO);
+
+        mShaderManager.ActivateProgram(mShipPointsProgram);
+
+        glPointSize(mPointSize);
+
+        glDrawArrays(
+            GL_POINTS,
+            0,
+            static_cast<GLsizei>(mDebrisVertexBuffer.size()));
+
         glBindVertexArray(0);
     }
 
