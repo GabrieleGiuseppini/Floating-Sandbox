@@ -408,13 +408,14 @@ void Points::CreateEphemeralParticleSiltCloud(
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].MaxSimulationLifetime = maxSimulationLifetime;
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].State = EphemeralState::SiltCloudState(
         initialScale,
-        maxScale,
-        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
+        maxScale);
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
+
+    mRandomNormalizedUniformFloatBuffer[pointIndex] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
     mColorBuffer[pointIndex] = siltCloudStructuralMaterial.RenderColor.toVec4f();
 }
@@ -536,13 +537,14 @@ void Points::InternalCreateEphemeralParticleSmoke(
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].State = EphemeralState::SmokeState(
         smokeKind,
         position,
-        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(),
         maxTotalSquareDistanceTraveled);
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
+
+    mRandomNormalizedUniformFloatBuffer[pointIndex] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
     mColorBuffer[pointIndex] = smokeStructuralMaterial.RenderColor.toVec4f();
 }
@@ -817,13 +819,14 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
         initialScale,
         maxScale,
         maxVisibilityAlpha,
-        1.0f / visibilityHaste,
-        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
+        1.0f / visibilityHaste);
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
+
+    mRandomNormalizedUniformFloatBuffer[pointIndex] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
     mColorBuffer[pointIndex] = waterFoamStructuralMaterial.RenderColor.toVec4f();
 
@@ -920,13 +923,14 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].State = EphemeralState::WaterSplashState(
         initialScale,
         maxScale,
-        maxVisibilityAlpha,
-        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
+        maxVisibilityAlpha);
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
+
+    mRandomNormalizedUniformFloatBuffer[pointIndex] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
     mColorBuffer[pointIndex] = waterSplashStructuralMaterial.RenderColor.toVec4f();
 
@@ -2582,7 +2586,7 @@ void Points::UploadEphemeralParticles(
                     // Upload cloud
                     shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                         GetPlaneId(pointIndex),
-                        state.PersonalitySeed,
+                        GetRandomNormalizedUniformPersonalitySeed(pointIndex),
                         GameTextureDatabases::GenericMipMappedTextureGroups::SiltCloud,
                         GetPosition(pointIndex),
                         scale,
@@ -2662,7 +2666,7 @@ void Points::UploadEphemeralParticles(
                     // Upload smoke
                     shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                         GetPlaneId(pointIndex),
-                        state.PersonalitySeed,
+                        GetRandomNormalizedUniformPersonalitySeed(pointIndex),
                         textureGroup,
                         GetPosition(pointIndex),
                         scale,
@@ -2725,7 +2729,7 @@ void Points::UploadEphemeralParticles(
                     // Upload foam
                     shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                         GetPlaneId(pointIndex),
-                        state.PersonalitySeed,
+                        GetRandomNormalizedUniformPersonalitySeed(pointIndex),
                         GameTextureDatabases::GenericMipMappedTextureGroups::WaterFoam,
                         GetPosition(pointIndex),
                         state.VerticalAxis,
@@ -2755,7 +2759,7 @@ void Points::UploadEphemeralParticles(
                     // Upload splash
                     shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                         GetPlaneId(pointIndex),
-                        state.PersonalitySeed,
+                        GetRandomNormalizedUniformPersonalitySeed(pointIndex),
                         GameTextureDatabases::GenericMipMappedTextureGroups::WaterSplash,
                         GetPosition(pointIndex),
                         scale,

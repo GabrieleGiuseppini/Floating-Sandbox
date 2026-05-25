@@ -1323,9 +1323,13 @@
 			+ 4. Draw
 				+ As points, using mShipPointProgram
 
-		- Final cleanups:
-			- Can we actually use existing buffer for ALL eph particles' personality seeds?
-				- Writing to it @ Spawn time, NOT reusing it (or else not too random)
+		= Final cleanups:
+			+ Can we actually use existing buffer for ALL eph particles' personality seeds?
+				+ Writing to it @ Spawn time, NOT reusing it (or else not too random)
+				+ SiltCloud
+				+ Smoke
+				+ WaterFoam
+				+ WaterSplash
 			- Nuke setting of colors @ Points::CreateEphemeralParticleXYZ()
 				- EXCEPT FOR DEBRIS!
 				- Make sure that no ephemeral particle upload uses color

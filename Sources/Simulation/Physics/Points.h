@@ -355,24 +355,20 @@ private:
         {
             float MinScale;
             float MaxScale;
-            float PersonalitySeed;
             float LifetimeProgress;
 
             SiltCloudState()
                 : MinScale(0.0f)
                 , MaxScale(0.0f)
-                , PersonalitySeed(0.0f)
                 , LifetimeProgress(0.0f)
             {
             }
 
             SiltCloudState(
                 float minScale,
-                float maxScale,
-                float personalitySeed)
+                float maxScale)
                 : MinScale(minScale)
                 , MaxScale(maxScale)
-                , PersonalitySeed(personalitySeed)
                 , LifetimeProgress(0.0f)
             {
             }
@@ -388,7 +384,6 @@ private:
             };
 
             SmokeKindType SmokeKind;
-            float PersonalitySeed;
 
             float LifetimeProgress;
             float ElapsedSimulationTime;
@@ -399,7 +394,6 @@ private:
 
             SmokeState()
                 : SmokeKind(SmokeKindType::CombustionSmoke) // Arbitrary
-                , PersonalitySeed(0.0f)
                 , LifetimeProgress(0.0f)
                 , ElapsedSimulationTime(0.0f)
                 , PreviousPosition(vec2f::zero())
@@ -410,10 +404,8 @@ private:
             SmokeState(
                 SmokeKindType smokeKind,
                 vec2f const & startPosition,
-                float personalitySeed,
                 float maxTotalSquareDistanceTraveled)
                 : SmokeKind(smokeKind)
-                , PersonalitySeed(personalitySeed)
                 , LifetimeProgress(0.0f)
                 , ElapsedSimulationTime(0.0f)
                 , PreviousPosition(startPosition)
@@ -446,7 +438,6 @@ private:
             float MaxScale;
             float MaxVisibilityAlpha;
             float InverseVisibilityHaste;
-            float PersonalitySeed;
             float LifetimeProgress;
             vec2f VerticalAxis;
 
@@ -455,7 +446,6 @@ private:
                 , MaxScale(0.0f)
                 , MaxVisibilityAlpha(0.0f)
                 , InverseVisibilityHaste(0.0f)
-                , PersonalitySeed(0.0f)
                 , LifetimeProgress(0.0f)
                 , VerticalAxis()
             {
@@ -465,13 +455,11 @@ private:
                 float minScale,
                 float maxScale,
                 float maxVisibilityAlpha,
-                float inverseVisibilityHaste,
-                float personalitySeed)
+                float inverseVisibilityHaste)
                 : MinScale(minScale)
                 , MaxScale(maxScale)
                 , MaxVisibilityAlpha(maxVisibilityAlpha)
                 , InverseVisibilityHaste(inverseVisibilityHaste)
-                , PersonalitySeed(personalitySeed)
                 , LifetimeProgress(0.0f)
                 , VerticalAxis()
             {
@@ -483,14 +471,12 @@ private:
             float MinScale;
             float MaxScale;
             float MaxVisibilityAlpha;
-            float PersonalitySeed;
             float LifetimeProgress;
 
             WaterSplashState()
                 : MinScale(0.0f)
                 , MaxScale(0.0f)
                 , MaxVisibilityAlpha(0.0f)
-                , PersonalitySeed(0.0f)
                 , LifetimeProgress(0.0f)
             {
             }
@@ -498,12 +484,10 @@ private:
             WaterSplashState(
                 float minScale,
                 float maxScale,
-                float maxVisibilityAlpha,
-                float personalitySeed)
+                float maxVisibilityAlpha)
                 : MinScale(minScale)
                 , MaxScale(maxScale)
                 , MaxVisibilityAlpha (maxVisibilityAlpha)
-                , PersonalitySeed(personalitySeed)
                 , LifetimeProgress(0.0f)
             {
             }
