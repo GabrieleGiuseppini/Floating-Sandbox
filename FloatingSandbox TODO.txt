@@ -1322,19 +1322,22 @@
 				+ All quantities
 			+ 4. Draw
 				+ As points, using mShipPointProgram
-
-		= Final cleanups:
+		+ Final cleanups:
 			+ Can we actually use existing buffer for ALL eph particles' personality seeds?
 				+ Writing to it @ Spawn time, NOT reusing it (or else not too random)
 				+ SiltCloud
 				+ Smoke
 				+ WaterFoam
 				+ WaterSplash
-			- Nuke setting of colors @ Points::CreateEphemeralParticleXYZ()
-				- EXCEPT FOR DEBRIS!
-				- Make sure that no ephemeral particle upload uses color
+			+ Nuke setting of colors @ Points::CreateEphemeralParticleXYZ()
+				+ EXCEPT FOR DEBRIS!
+				+ Make sure that no ephemeral particle upload uses color
 
-		- If we undo this: make sure the GlobalRenderContext::ProcessParameterChanges change for useless MoonlightColor still goes through
+		= Verify perf
+			+ Pre UPL RND: 0.17-0.21 3.6-3.7
+			- Post UPL RND: 
+
+		- Send beta
 
 		- Port to Android
 			+ Effective Moonlight color: added to plan

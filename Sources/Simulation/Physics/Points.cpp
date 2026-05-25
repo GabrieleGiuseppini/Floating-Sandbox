@@ -232,7 +232,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
 
-    mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor.toVec4f();
+    //mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor.toVec4f();
 }
 
 void Points::CreateEphemeralParticleDebris(
@@ -417,7 +417,7 @@ void Points::CreateEphemeralParticleSiltCloud(
 
     mRandomNormalizedUniformFloatBuffer[pointIndex] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
-    mColorBuffer[pointIndex] = siltCloudStructuralMaterial.RenderColor.toVec4f();
+    //mColorBuffer[pointIndex] = siltCloudStructuralMaterial.RenderColor.toVec4f();
 }
 
 void Points::InternalCreateEphemeralParticleSmoke(
@@ -546,7 +546,7 @@ void Points::InternalCreateEphemeralParticleSmoke(
 
     mRandomNormalizedUniformFloatBuffer[pointIndex] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
-    mColorBuffer[pointIndex] = smokeStructuralMaterial.RenderColor.toVec4f();
+    //mColorBuffer[pointIndex] = smokeStructuralMaterial.RenderColor.toVec4f();
 }
 
 void Points::CreateEphemeralParticleSparkle(
@@ -722,7 +722,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
 
-    mColorBuffer[pointIndex] = waterStructuralMaterial.RenderColor.toVec4f();
+    //mColorBuffer[pointIndex] = waterStructuralMaterial.RenderColor.toVec4f();
 }
 
 ElementIndex Points::CreateEphemeralParticleWaterFoam(
@@ -828,7 +828,7 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
 
     mRandomNormalizedUniformFloatBuffer[pointIndex] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
-    mColorBuffer[pointIndex] = waterFoamStructuralMaterial.RenderColor.toVec4f();
+    //mColorBuffer[pointIndex] = waterFoamStructuralMaterial.RenderColor.toVec4f();
 
     return pointIndex;
 }
@@ -932,7 +932,7 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
 
     mRandomNormalizedUniformFloatBuffer[pointIndex] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
-    mColorBuffer[pointIndex] = waterSplashStructuralMaterial.RenderColor.toVec4f();
+    //mColorBuffer[pointIndex] = waterSplashStructuralMaterial.RenderColor.toVec4f();
 
     return pointIndex;
 }

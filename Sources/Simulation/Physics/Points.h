@@ -2329,7 +2329,7 @@ public:
         return mTextureCoordinatesBuffer[pointElementIndex];
     }
 
-    // Mostly for debugging
+    // For debugging
     void MarkColorBufferAsDirty()
     {
         mIsColorBufferDirty = true;
@@ -2662,7 +2662,7 @@ private:
     // Immutable render attributes
     //
 
-    Buffer<vec4f> mColorBuffer;
+    Buffer<vec4f> mColorBuffer; // Only non-ephemeral portion used directly; ephemerals would populate but use individual values
     bool mutable mIsColorBufferDirty;  // Whether or not non-ephemeral portion of buffer is dirty since last render upload
     Buffer<vec2f> mTextureCoordinatesBuffer;
     bool mutable mIsTextureCoordinatesBufferDirty; // Whether or not is dirty since last render upload
