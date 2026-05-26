@@ -1347,10 +1347,12 @@
 			+ Post: 0.33-0.36
 			+ If ok: add to Android plan
 
-		- Send beta
+		+ Send beta
 
 		- Merge into master
 			- With PR, for Android!
+
+		- Changelist?
 
 		- Port to Android
 			+ Effective Moonlight color: added to plan
@@ -1384,7 +1386,19 @@
 		- PC
 		- Android
 
-	- Try OpenGL/Upload optimization:
+	- Try OpenGL/Upload optimizations:
+		- 1: Ship attributes:
+			- TextureCoords pre-calcd once and for all, own VBO
+				- But still, updated _later_ than init'n
+			- Other 4 loaded at all times (incl Decay): interleaved into mapped buf - own VBO
+			- Last one loaded sparingly (plane): own VBO
+			- One call for uploading all three VBOs
+
+			- Redo debris vertex accordingly; structure and description
+				- Remember: all debris shaders have IS_MATTE_COLOR, hence no need for texture coords
+
+
+		- 2:
 		! Point Positions get uploaded to VBO in one go, with no interleaving, and with no local buffering
 		! Point Water, Temperature, and Decay get uploaded to VBO in one go, with no interleaving, and with no local buffering
 		! Multiple pointers in same async call
