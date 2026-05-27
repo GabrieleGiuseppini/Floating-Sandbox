@@ -2267,12 +2267,12 @@ void Points::UploadAttributes(
     ShipId shipId,
     RenderContext & renderContext) const
 {
-    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
-
     // Upload immutable attributes, if we haven't uploaded them yet
     if (mIsTextureCoordinatesBufferDirty)
     {
-        shipRenderContext.UploadPointImmutableAttributes(mTextureCoordinatesBuffer.data());
+        renderContext.UploadShipPointTextureCoordinatesAsync(
+            shipId,
+            mTextureCoordinatesBuffer.data());
 
         mIsTextureCoordinatesBufferDirty = false;
     }
@@ -2291,33 +2291,24 @@ void Points::UploadAttributes(
     // Upload mutable attributes
     //
 
-    shipRenderContext.UploadPointMutableAttributesStart();
-
-    shipRenderContext.UploadPointMutableAttributes(
-        mPositionBuffer.data(),
-        mLightBuffer.data(),
-        mWaterBuffer.data());
-
+    std::optional<float const *> planeIdBuffer;
     if (mIsPlaneIdBufferDirty)
     {
-        shipRenderContext.UploadPointMutableAttributesPlaneId(mPlaneIdFloatBuffer.data());
+        planeIdBuffer = mPlaneIdFloatBuffer.data();
 
         mIsPlaneIdBufferDirty = false;
     }
 
-    if (mIsDecayBufferDirty)
-    {
-        shipRenderContext.UploadPointMutableAttributesDecay(mDecayBuffer.data());
+    renderContext.UploadShipPointMutableAttributesAsync(
+        shipId,
+        mPositionBuffer.data(),
+        mLightBuffer.data(),
+        mWaterBuffer.data(),
+        mTemperatureBuffer.data(),
+        mDecayBuffer.data(),
+        planeIdBuffer);
 
-        mIsDecayBufferDirty = false;
-    }
-
-    if (renderContext.GetHeatRenderMode() != HeatRenderModeType::None)
-    {
-        renderContext.UploadShipPointTemperatureAsync(
-            shipId,
-            mTemperatureBuffer.data());
-    }
+    mIsDecayBufferDirty = false; // TODO: see if still useful after all
 
     if (renderContext.GetStressRenderMode() != StressRenderModeType::None)
     {
@@ -2338,8 +2329,6 @@ void Points::UploadAttributes(
             shipId,
             mFactoryStrengthBuffer.data()); // In theory we should incorporate AdditionalWeakness
     }
-
-    shipRenderContext.UploadPointMutableAttributesEnd();
 }
 
 void Points::UploadNonEphemeralPointElements(

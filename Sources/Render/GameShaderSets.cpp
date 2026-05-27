@@ -751,14 +751,16 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
     else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))
         return VertexAttributeKind::WorldBorder;
     // Ship
-    else if (Utils::CaseInsensitiveEquals(str, "ShipPointAttributeGroup1"))
-        return VertexAttributeKind::ShipPointAttributeGroup1;
-    else if (Utils::CaseInsensitiveEquals(str, "ShipPointAttributeGroup2"))
-        return VertexAttributeKind::ShipPointAttributeGroup2;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointPosition"))
+        return VertexAttributeKind::ShipPointPosition;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointTextureCoordinates"))
+        return VertexAttributeKind::ShipPointTextureCoordinates;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointAttributeGroup"))
+        return VertexAttributeKind::ShipPointAttributeGroup;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
         return VertexAttributeKind::ShipPointColor;
-    else if (Utils::CaseInsensitiveEquals(str, "ShipPointTemperature"))
-        return VertexAttributeKind::ShipPointTemperature;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointPlaneId"))
+        return VertexAttributeKind::ShipPointPlaneId;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointStress"))
         return VertexAttributeKind::ShipPointStress;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointAuxiliaryData"))

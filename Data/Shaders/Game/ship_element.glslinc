@@ -4,11 +4,12 @@
 #define out varying
 
 // Inputs
-in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
-in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
-#if HEAT_RENDER_MODE != 0
-in float inShipPointTemperature; // Temperature
+in vec2 inShipPointPosition;
+#ifndef WITH_MATTE_COLOR
+in vec2 inShipPointTextureCoordinates;
 #endif
+in vec4 inShipPointAttributeGroup; // Light, Water, Temperature, Decay
+in float inShipPointPlaneId;
 #if STRESS_RENDER_MODE != 0
 in float inShipPointStress; // Stress
 #endif
@@ -18,14 +19,11 @@ in vec4 inShipPointColor;
 
 // Outputs
 out float vertexWorldY;
-out vec3 vertexAttributes; // Light, Water, Decay
+out vec4 vertexAttributes; // Light, Water, Temperature, Decay
 #ifndef WITH_MATTE_COLOR
 out vec2 vertexTextureCoords;
 #else
 out vec4 vertexCol;
-#endif
-#if HEAT_RENDER_MODE != 0
-out float vertexTemperature;
 #endif
 #if STRESS_RENDER_MODE != 0
 out float vertexStress;
@@ -36,25 +34,21 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {      
-    vertexWorldY = inShipPointAttributeGroup1.y;
+    vertexWorldY = inShipPointPosition.y;
 
-    vertexAttributes = inShipPointAttributeGroup2.xyw;
+    vertexAttributes = inShipPointAttributeGroup;
 
 #ifndef WITH_MATTE_COLOR
-    vertexTextureCoords = inShipPointAttributeGroup1.zw;
+    vertexTextureCoords = inShipPointTextureCoordinates;
 #else
     vertexCol = inShipPointColor;
-#endif
-
-#if HEAT_RENDER_MODE != 0
-    vertexTemperature = inShipPointTemperature;
 #endif
 
 #if STRESS_RENDER_MODE != 0
     vertexStress = inShipPointStress;
 #endif
 
-    gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition, inShipPointPlaneId, 1.0);
 }
 
 ###FRAGMENT-120
@@ -71,14 +65,11 @@ void main()
 
 // Inputs from previous shader
 in float vertexWorldY;
-in vec3 vertexAttributes; // Light, Water, Decay
+in vec4 vertexAttributes; // Light, Water, Temperature, Decay
 #ifndef  WITH_MATTE_COLOR
 in vec2 vertexTextureCoords;
 #else
 in vec4 vertexCol;
-#endif
-#if HEAT_RENDER_MODE != 0
-in float vertexTemperature;
 #endif
 #if STRESS_RENDER_MODE != 0
 in float vertexStress;
@@ -126,7 +117,7 @@ void main()
     // Apply decay
     float originalLightness = dot(vec3(1.0/3.0), vertexCol.xyz);
     vec3 decayColor = mix(vec3(ROT_GREEN_COLOR), vec3(ROT_BROWN_COLOR), originalLightness);
-    vec3 fragColour = mix(decayColor, vertexCol.xyz, vertexAttributes.z);
+    vec3 fragColour = mix(decayColor, vertexCol.xyz, vertexAttributes.w);
 
     // Apply point water
 #ifdef FOR_LINES
@@ -176,7 +167,7 @@ void main()
     // Heat Overlay
 
     // Get heat color
-    vec3 heatColor = get_heat_color(vertexTemperature, paramHeatShift);
+    vec3 heatColor = get_heat_color(vertexAttributes.z, paramHeatShift);
 
     // Overwrite fragment color with heat color
     vec3 fragColour = heatColor;
@@ -185,7 +176,7 @@ void main()
     // Incandescence
 
     // Get heat color
-    vec3 heatColor = get_heat_color(vertexTemperature, paramHeatShift);
+    vec3 heatColor = get_heat_color(vertexAttributes.z, paramHeatShift);
 
     // Screen-blend fragment color with heat color
     vec3 one = vec3(1.0);

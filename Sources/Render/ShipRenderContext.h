@@ -87,24 +87,18 @@ public:
     // Points
     //
 
-    void UploadPointImmutableAttributes(vec2f const * textureCoordinates);
+    void UploadPointTextureCoordinates(vec2f const * textureCoordinates);
 
-    void UploadPointMutableAttributesStart();
-
+    // Invoked on render thread
     void UploadPointMutableAttributes(
         vec2f const * position,
         float const * light,
-        float const * water);
-
-    void UploadPointMutableAttributesPlaneId(float const * planeId);
-
-    void UploadPointMutableAttributesDecay(float const * decay);
-
-    void UploadPointMutableAttributesEnd();
+        float const * water,
+        float const * temperature,
+        float const * decay,
+        std::optional<float const *> planeId);
 
     void UploadPointColors(vec4f const * color);
-
-    void UploadPointTemperature(float const * temperature);
 
     void UploadPointStress(float const * stress);
 
@@ -218,9 +212,9 @@ public:
             position,
             light,
             water,
-            static_cast<float>(planeId),
-            decay,
             temperature,
+            decay,
+            static_cast<float>(planeId),
             stress,
             color);
     }
@@ -1559,12 +1553,11 @@ private:
     {
         // Note: replicating layout of point shaders
         vec2f vertexPosition;
-        vec2f textureCoordinates;
         float light;
         float water;
-        float planeId;
-        float decay;
         float temperature;
+        float decay;
+        float planeId;
         float stress;
         vec4f color;
 
@@ -1572,18 +1565,17 @@ private:
             vec2f _vertexPosition,
             float _light,
             float _water,
-            float _planeId,
-            float _decay,
             float _temperature,
+            float _decay,
+            float _planeId,
             float _stress,
             vec4f const & _color)
             : vertexPosition(_vertexPosition)
-            , textureCoordinates(vec2f::zero())
             , light(_light)
             , water(_water)
-            , planeId(_planeId)
-            , decay(_decay)
             , temperature(_temperature)
+            , decay(_decay)
+            , planeId(_planeId)
             , stress(_stress)
             , color(_color)
         {
@@ -1835,20 +1827,13 @@ private:
     // Buffers
     //
 
-    BoundedVector<vec4f> mPointAttributeGroup1Buffer; // Position, TextureCoordinates
-    GameOpenGLVBO mPointAttributeGroup1VBO;
-
-    BoundedVector<vec4f> mPointAttributeGroup2Buffer; // Light, Water, PlaneId, Decay
-    GameOpenGLVBO mPointAttributeGroup2VBO;
-
+    GameOpenGLVBO mPointPositionVBO;
+    GameOpenGLVBO mPointTextureCoordinatesVBO;
+    GameOpenGLVBO mPointAttributeGroupVBO;
     GameOpenGLVBO mPointColorVBO;
-
-    GameOpenGLVBO mPointTemperatureVBO;
-
+    GameOpenGLVBO mPointPlaneIdVBO;
     GameOpenGLVBO mPointStressVBO;
-
     GameOpenGLVBO mPointAuxiliaryDataVBO;
-
     GameOpenGLVBO mPointFrontierColorVBO;
 
     std::vector<LineElement> mStressedSpringElementBuffer;

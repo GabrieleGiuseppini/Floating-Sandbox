@@ -4,8 +4,10 @@
 #define out varying
 
 // Inputs
-in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
-in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
+in vec2 inShipPointPosition;
+in vec2 inShipPointTextureCoordinates;
+in vec4 inShipPointAttributeGroup; // Light, Water, Temperature, Decay
+in float inShipPointPlaneId;
 
 // Outputs        
 out float vertexDecay;
@@ -16,10 +18,10 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {            
-    vertexDecay = inShipPointAttributeGroup2.w;
-    vertexTextureCoords = inShipPointAttributeGroup1.zw;
+    vertexDecay = inShipPointAttributeGroup.w;
+    vertexTextureCoords = inShipPointTextureCoordinates;
 
-    gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition, inShipPointPlaneId, 1.0);
 }
 
 ###FRAGMENT-120

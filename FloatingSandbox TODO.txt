@@ -1343,65 +1343,73 @@
 		+ Merge into master
 			+ With PR, for Android!
 
-	- Try OpenGL/Upload optimizations:
+	= Try OpenGL/Upload optimizations:
 		+ Create branch
 		+ 0: Get baseline measurements w/Hesleden
-			- FPS:40-45 UPL:0.20 RND:4.38
+			+ FPS:40-45 UPL:0.20 RND:4.38
 		+ 1: Simplify ShipRenderContext::UploadPointMutableAttributesPlaneId et al: no startDst, count; just pointer, and SRC uses mShipPointCount
-		- 2: Ship attributes:
-			- TextureCoords pre-calcd once and for all, own VBO
-				- But still, updated _later_ than init'n
-			- Other 4 loaded at all times (incl Decay): interleaved into mapped buf - own VBO
-			- Last one loaded sparingly (plane): own VBO
-			- One call for uploading all three VBOs
+		+ 2: Ship attributes:
+			+ Split group1 into position, textureCoordinates; rename group2 as "group"
+				+ ShaderSets
+				+ Code
+					+ Members & code
+					+ Uploads
+				+ Shaders
+			+ TextureCoords pre-calcd once and for all, own VBO
+				+ But still, updated _later_ than init'n
+			+ Other 4 loaded at all times (Light, Water, Temperature, Decay): interleaved into mapped buf - own VBO
+			+ Last one loaded sparingly (plane): own VBO
+			+ One call for uploading all three VBOs
+			+ Nuke unneeded ShipRenderContext buffers
+			+ Redo debris vertex accordingly; structure and description
+				+ Remember: all debris shaders have IS_MATTE_COLOR, hence no need for texture coords
+			+ Test:
+				+ All variants
+					+ Heat mode
+					+ Stress mode
+				+ Debris
+					+ Stress 
+					+ InternalPressure
+					+ Strength
+				+ Internal pressure
+				+ Strength
+				+ Stressed springs
+				+ Frontiers
 
-			- Redo debris vertex accordingly; structure and description
-				- Remember: all debris shaders have IS_MATTE_COLOR, hence no need for texture coords
+			+ Perf:
+				+ FPS:42-45 UPL:0.07-0.08 RND:4.3-4.5
+
+			+ Cheack interleaving code assembly:
+				= x86: bunch of move's
 
 		- 3:
 			! Point Positions get uploaded to VBO in one go, with no interleaving, and with no local buffering
 			! Point Water, Temperature, and Decay get uploaded to VBO in one go, with no interleaving, and with no local buffering
 			! Multiple pointers in same async call
-			- Check impact of ShipRenderContext::UploadMutableAttributes first
+			+ Check impact of ShipRenderContext::UploadMutableAttributes first
+				+ 0.15% (0.13% excl. opengl calls)
+			- Try SSE
+			- If not: below?
 			- Points collects Water, Temperature, Decay in same buffer (w/padding)
-			- Phase 1: separate VBOs, we'll tail them in phase 2
-				- ShipRenderContext:
-					- Restructure vertex buffers:
-						- Old: (3 VBO uploads all the time)
-							- AttributeGroup1 is Position, TextureCoordinates
-							- AttributeGroup2 is Light, Water, PlaneId, Decay
-							- Temperature
-						- New: (3 VBO uploads all the time)					
-							- Position
-							- Light
-							- AttributeGroup2 becomes AttributeGroup1 and is Water, Decay, Temperature
-							- PlaneId (uploaded sparingly)
-							- TextureCoordinates (uploaded sparingly)
-
-					- Upload:
-						- Async
-						- Takes Position, Light, and AttributeGroup1 from Points (template arg)
-							- static_assert for size to match vertex buffer
-						- Uploads the three of them, async
-
-					- Shaders
-
-					- Note: temperature gets _always_ uploaded now, even when not needed - so check shaders
-
-				- Test perf (both dells):
-					- Before
-					- After
-
+			+ Phase 1: separate VBOs, we'll tail them in phase 2
 			- Phase 2:
 				- The 3 VBOs are one single VBO, one after the other
 
 				- Test perf (both dells):
 					- After
 
-		- Even if doesn't work, test on Android - it could be faster there
-			- But port point 1. anyway
+		- Decide what to do with Points::mIsDecayBufferDirty
+			- There's a TODO there
 
-		- Old dell
+		- Test perf on old dell
+
+		+ Changelist
+
+		- Port to Android, with merging PR
+			- Check interleaving code assembly
+
+		- Merge
+
 
 	= Aanpak slow rendering on Dell
 		+ Do water foam 256x256, also on PC
