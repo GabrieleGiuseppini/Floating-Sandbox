@@ -920,35 +920,27 @@ void ShipRenderContext::UploadPointMutableAttributes(
     }
 }
 
-void ShipRenderContext::UploadPointMutableAttributesPlaneId(
-    float const * planeId,
-    size_t startDst,
-    size_t count)
+void ShipRenderContext::UploadPointMutableAttributesPlaneId(float const * planeId)
 {
     // Uploaded sparingly, but we treat them as if they could
     // be uploaded at any time
 
     // Interleave plane ID into AttributeGroup2 buffer
-    assert(startDst + count <= mShipPointCount);
-    vec4f * restrict pDst = &(mPointAttributeGroup2Buffer.data()[startDst]);
+    vec4f * restrict pDst = mPointAttributeGroup2Buffer.data();
     float const * restrict pSrc = planeId;
-    for (size_t i = 0; i < count; ++i)
+    for (size_t i = 0; i < mShipPointCount; ++i)
         pDst[i].z = pSrc[i];
 }
 
-void ShipRenderContext::UploadPointMutableAttributesDecay(
-    float const * decay,
-    size_t startDst,
-    size_t count)
+void ShipRenderContext::UploadPointMutableAttributesDecay(float const * decay)
 {
     // Uploaded sparingly, but we treat them as if they could
     // be uploaded at any time
 
     // Interleave decay into AttributeGroup2 buffer
-    assert(startDst + count <= mShipPointCount);
-    vec4f * restrict pDst = &(mPointAttributeGroup2Buffer.data()[startDst]);
+    vec4f * restrict pDst = mPointAttributeGroup2Buffer.data();
     float const * restrict pSrc = decay;
-    for (size_t i = 0; i < count; ++i)
+    for (size_t i = 0; i < mShipPointCount; ++i)
         pDst[i].w = pSrc[i];
 }
 
@@ -957,10 +949,7 @@ void ShipRenderContext::UploadPointMutableAttributesEnd()
     // Nop
 }
 
-void ShipRenderContext::UploadPointColors(
-    vec4f const * color,
-    size_t startDst,
-    size_t count)
+void ShipRenderContext::UploadPointColors(vec4f const * color)
 {
     // Uploaded sparingly
 
@@ -970,20 +959,15 @@ void ShipRenderContext::UploadPointColors(
     // Upload color range
     //
 
-    assert(startDst + count <= mShipPointCount);
-
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
 
-    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(vec4f), count * sizeof(vec4f), color);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mShipPointCount * sizeof(vec4f), color);
     CheckOpenGLError();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void ShipRenderContext::UploadPointTemperature(
-    float const * temperature,
-    size_t startDst,
-    size_t count)
+void ShipRenderContext::UploadPointTemperature(float const * temperature)
 {
     // We've been invoked on the render thread
 
@@ -991,20 +975,15 @@ void ShipRenderContext::UploadPointTemperature(
     // Upload temperature range
     //
 
-    assert(startDst + count <= mShipPointCount);
-
     glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
 
-    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(float), count * sizeof(float), temperature);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mShipPointCount * sizeof(float), temperature);
     CheckOpenGLError();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void ShipRenderContext::UploadPointStress(
-    float const * stress,
-    size_t startDst,
-    size_t count)
+void ShipRenderContext::UploadPointStress(float const * stress)
 {
     // We've been invoked on the render thread
 
@@ -1012,20 +991,15 @@ void ShipRenderContext::UploadPointStress(
     // Upload stress range
     //
 
-    assert(startDst + count <= mShipPointCount);
-
     glBindBuffer(GL_ARRAY_BUFFER, *mPointStressVBO);
 
-    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(float), count * sizeof(float), stress);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mShipPointCount * sizeof(float), stress);
     CheckOpenGLError();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void ShipRenderContext::UploadPointAuxiliaryData(
-    float const * auxiliaryData,
-    size_t startDst,
-    size_t count)
+void ShipRenderContext::UploadPointAuxiliaryData(float const * auxiliaryData)
 {
     // We've been invoked on the render thread
 
@@ -1035,7 +1009,7 @@ void ShipRenderContext::UploadPointAuxiliaryData(
 
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAuxiliaryDataVBO);
 
-    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(float), count * sizeof(float), auxiliaryData);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mShipPointCount * sizeof(float), auxiliaryData);
     CheckOpenGLError();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);

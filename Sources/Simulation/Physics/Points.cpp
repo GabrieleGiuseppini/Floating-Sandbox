@@ -2282,9 +2282,7 @@ void Points::UploadAttributes(
     {
         renderContext.UploadShipPointColorsAsync(
             shipId,
-            mColorBuffer.data(),
-            0,
-            mAlignedShipPointCount);
+            mColorBuffer.data());
 
         mIsColorBufferDirty = false;
     }
@@ -2302,20 +2300,14 @@ void Points::UploadAttributes(
 
     if (mIsPlaneIdBufferDirty)
     {
-        shipRenderContext.UploadPointMutableAttributesPlaneId(
-            mPlaneIdFloatBuffer.data(),
-            0,
-            mAlignedShipPointCount);
+        shipRenderContext.UploadPointMutableAttributesPlaneId(mPlaneIdFloatBuffer.data());
 
         mIsPlaneIdBufferDirty = false;
     }
 
     if (mIsDecayBufferDirty)
     {
-        shipRenderContext.UploadPointMutableAttributesDecay(
-            mDecayBuffer.data(),
-            0,
-            mAlignedShipPointCount);
+        shipRenderContext.UploadPointMutableAttributesDecay(mDecayBuffer.data());
 
         mIsDecayBufferDirty = false;
     }
@@ -2324,35 +2316,27 @@ void Points::UploadAttributes(
     {
         renderContext.UploadShipPointTemperatureAsync(
             shipId,
-            mTemperatureBuffer.data(),
-            0,
-            mAlignedShipPointCount);
+            mTemperatureBuffer.data());
     }
 
     if (renderContext.GetStressRenderMode() != StressRenderModeType::None)
     {
         renderContext.UploadShipPointStressAsync(
             shipId,
-            mStressBuffer.data(),
-            0,
-            mAlignedShipPointCount);
+            mStressBuffer.data());
     }
 
     if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::InternalPressure)
     {
         renderContext.UploadShipPointAuxiliaryDataAsync(
             shipId,
-            mInternalPressureBuffer.data(),
-            0,
-            mAlignedShipPointCount);
+            mInternalPressureBuffer.data());
     }
     else if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::Strength)
     {
         renderContext.UploadShipPointAuxiliaryDataAsync(
             shipId,
-            mFactoryStrengthBuffer.data(), // In theory we should incorporate AdditionalWeakness
-            0,
-            mAlignedShipPointCount);
+            mFactoryStrengthBuffer.data()); // In theory we should incorporate AdditionalWeakness
     }
 
     shipRenderContext.UploadPointMutableAttributesEnd();

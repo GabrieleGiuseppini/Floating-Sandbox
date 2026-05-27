@@ -96,37 +96,19 @@ public:
         float const * light,
         float const * water);
 
-    void UploadPointMutableAttributesPlaneId(
-        float const * planeId,
-        size_t startDst,
-        size_t count);
+    void UploadPointMutableAttributesPlaneId(float const * planeId);
 
-    void UploadPointMutableAttributesDecay(
-        float const * decay,
-        size_t startDst,
-        size_t count);
+    void UploadPointMutableAttributesDecay(float const * decay);
 
     void UploadPointMutableAttributesEnd();
 
-    void UploadPointColors(
-        vec4f const * color,
-        size_t startDst,
-        size_t count);
+    void UploadPointColors(vec4f const * color);
 
-    void UploadPointTemperature(
-        float const * temperature,
-        size_t startDst,
-        size_t count);
+    void UploadPointTemperature(float const * temperature);
 
-    void UploadPointStress(
-        float const * stress,
-        size_t startDst,
-        size_t count);
+    void UploadPointStress(float const * stress);
 
-    void UploadPointAuxiliaryData(
-        float const * auxiliaryData,
-        size_t startDst,
-        size_t count);
+    void UploadPointAuxiliaryData(float const * auxiliaryData);
 
     void UploadPointFrontierColors(ColorWithProgress const * colors);
 

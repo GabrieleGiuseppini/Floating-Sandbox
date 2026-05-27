@@ -1344,10 +1344,10 @@
 			+ With PR, for Android!
 
 	- Try OpenGL/Upload optimizations:
-		- Create branch
-		- 0: Get baseline measurements w/Hesleden
-		- 1: Simplify ShipRenderContext::UploadPointMutableAttributesPlaneId et al: no startDst, count; just pointer, and SRC uses mShipPointCount
-			- Port to Android
+		+ Create branch
+		+ 0: Get baseline measurements w/Hesleden
+			- FPS:40-45 UPL:0.20 RND:4.38
+		+ 1: Simplify ShipRenderContext::UploadPointMutableAttributesPlaneId et al: no startDst, count; just pointer, and SRC uses mShipPointCount
 		- 2: Ship attributes:
 			- TextureCoords pre-calcd once and for all, own VBO
 				- But still, updated _later_ than init'n
@@ -1357,7 +1357,6 @@
 
 			- Redo debris vertex accordingly; structure and description
 				- Remember: all debris shaders have IS_MATTE_COLOR, hence no need for texture coords
-
 
 		- 3:
 			! Point Positions get uploaded to VBO in one go, with no interleaving, and with no local buffering
@@ -1400,6 +1399,7 @@
 					- After
 
 		- Even if doesn't work, test on Android - it could be faster there
+			- But port point 1. anyway
 
 		- Old dell
 
