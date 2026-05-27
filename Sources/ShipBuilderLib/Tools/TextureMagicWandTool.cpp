@@ -49,7 +49,7 @@ void TextureMagicWandTool<TLayerType>::OnLeftMouseDown()
     {
         // Take clone of current layer
         auto layerDirtyStateClone = mController.GetModelController().GetDirtyState();
-        auto layerClone = mController.GetModelController().CloneExistingLayer<TLayerType>();
+        auto layerClone = mController.GetModelController().template CloneExistingLayer<TLayerType>();
 
         // Do edit
 
