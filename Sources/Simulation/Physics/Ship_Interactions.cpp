@@ -1571,12 +1571,6 @@ bool Ship::ScrubThrough(
         }
     }
 
-    if (hasScrubbed)
-    {
-        // Make sure the decay buffer gets uploaded again
-        mPoints.MarkDecayBufferAsDirty();
-    }
-
     return hasScrubbed;
 }
 
@@ -1628,12 +1622,6 @@ bool Ship::RotThrough(
         }
     }
 
-    if (hasRotted)
-    {
-        // Make sure the decay buffer gets uploaded again
-        mPoints.MarkDecayBufferAsDirty();
-    }
-
     return hasRotted;
 }
 
@@ -1674,7 +1662,6 @@ void Ship::ApplyThanosSnap(
         : 1.0f;
 
     // Visit all points (excluding ephemerals, there's nothing to detach there)
-    bool atLeastOneDetached = false;
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
         auto const x = mPoints.GetPosition(pointIndex).x;
@@ -1704,16 +1691,8 @@ void Ship::ApplyThanosSnap(
 
                 // Set decay to min, so that debris gets darkened
                 mPoints.SetDecay(pointIndex, 0.0f);
-
-                atLeastOneDetached = true;
             }
         }
-    }
-
-    if (atLeastOneDetached)
-    {
-        // We've changed the decay buffer, need to upload it next then!
-        mPoints.MarkDecayBufferAsDirty();
     }
 }
 

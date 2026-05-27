@@ -3539,9 +3539,6 @@ void Ship::RotPoints(
         // Decay
         mPoints.SetDecay(p, mPoints.GetDecay(p) * alpha);
     }
-
-    // Remember that the decay buffer is dirty
-    mPoints.MarkDecayBufferAsDirty();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

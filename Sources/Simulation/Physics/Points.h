@@ -726,7 +726,6 @@ public:
         , mFactoryStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mStressBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
-        , mIsDecayBufferDirty(true)
         , mAdditionalWeaknessBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mPinningCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -1456,11 +1455,6 @@ public:
         float value)
     {
         mDecayBuffer[pointElementIndex] = value;
-    }
-
-    void MarkDecayBufferAsDirty()
-    {
-        mIsDecayBufferDirty = true;
     }
 
     float GetAdditionalWeakness(ElementIndex pointElementIndex) const
@@ -2516,7 +2510,6 @@ private:
     Buffer<float> mFactoryStrengthBuffer; // Immutable
     Buffer<float> mStressBuffer; // -1.0 -> 1.0, only calculated (at springs) if rendering it
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
-    bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mAdditionalWeaknessBuffer;
     Buffer<float> mPinningCoefficientBuffer; // 1.0: not pinned; 0.0f: pinned
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen

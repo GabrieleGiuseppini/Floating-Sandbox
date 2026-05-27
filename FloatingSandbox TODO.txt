@@ -1382,24 +1382,11 @@
 			+ Cheack interleaving code assembly:
 				= x86: bunch of move's
 
-		- 3:
-			! Point Positions get uploaded to VBO in one go, with no interleaving, and with no local buffering
-			! Point Water, Temperature, and Decay get uploaded to VBO in one go, with no interleaving, and with no local buffering
-			! Multiple pointers in same async call
-			+ Check impact of ShipRenderContext::UploadMutableAttributes first
-				+ 0.15% (0.13% excl. opengl calls)
-			- Try SSE
-			- If not: below?
-			- Points collects Water, Temperature, Decay in same buffer (w/padding)
-			+ Phase 1: separate VBOs, we'll tail them in phase 2
-			- Phase 2:
-				- The 3 VBOs are one single VBO, one after the other
+		+ Check impact of ShipRenderContext::UploadMutableAttributes first
+			+ 0.15% (0.13% excl. opengl calls)
 
-				- Test perf (both dells):
-					- After
-
-		- Decide what to do with Points::mIsDecayBufferDirty
-			- There's a TODO there
+		+ Decide what to do with Points::mIsDecayBufferDirty
+			+ There's a TODO there
 
 		- Test perf on old dell
 
@@ -1407,6 +1394,7 @@
 
 		- Port to Android, with merging PR
 			- Check interleaving code assembly
+				- Try NEON
 
 		- Merge
 

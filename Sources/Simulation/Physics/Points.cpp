@@ -2308,8 +2308,6 @@ void Points::UploadAttributes(
         mDecayBuffer.data(),
         planeIdBuffer);
 
-    mIsDecayBufferDirty = false; // TODO: see if still useful after all
-
     if (renderContext.GetStressRenderMode() != StressRenderModeType::None)
     {
         renderContext.UploadShipPointStressAsync(
