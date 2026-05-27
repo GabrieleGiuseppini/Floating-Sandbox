@@ -231,21 +231,18 @@ void Points::CreateEphemeralParticleAirBubble(
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
-    mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor.toVec4f();
-    mIsEphemeralColorBufferDirty = true;
+    //mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor.toVec4f();
 }
 
 void Points::CreateEphemeralParticleDebris(
     vec2f const & position,
     vec2f const & velocity,
     float depth,
-    float water,
     StructuralMaterial const & structuralMaterial,
+    ElementIndex originalPointIndex,
     float currentSimulationTime,
-    float maxSimulationLifetime,
-    PlaneId planeId)
+    float maxSimulationLifetime)
 {
     // Get a free slot (or steal one)
     auto const ephemeralParticleIndex = FindFreeEphemeralParticle(0, true);
@@ -266,7 +263,7 @@ void Points::CreateEphemeralParticleDebris(
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
-    assert(mDecayBuffer[pointIndex] == 1.0f);
+    assert(mDecayBuffer[pointIndex] == 1.0f); // Even though we want to replicate as much as possible of original point, we won't replicate quantities that dirty future re-uses
     //mDecayBuffer[pointIndex] = 1.0f;
     assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
     //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
@@ -290,11 +287,11 @@ void Points::CreateEphemeralParticleDebris(
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
-    mWaterBuffer[pointIndex] = water;
+    mWaterBuffer[pointIndex] = mWaterBuffer[originalPointIndex];
     assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
-    mTemperatureBuffer[pointIndex] = SimulationParameters::Temperature0;
+    mTemperatureBuffer[pointIndex] = mTemperatureBuffer[originalPointIndex];
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / structuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
@@ -304,10 +301,10 @@ void Points::CreateEphemeralParticleDebris(
 
     //mWaterReactionStateBuffer.emplace_back(0.0f);
 
-    assert(mLightBuffer[pointIndex] == 0.0f);
+    assert(mLightBuffer[pointIndex] == 0.0f); // Even though we want to replicate as much as possible of original point, we won't replicate quantities that dirty future re-uses
     //mLightBuffer[pointIndex] = 0.0f;
 
-    mMaterialWindReceptivityBuffer[pointIndex] = 3.0f; // Debris is susceptible to wind
+    mMaterialWindReceptivityBuffer[pointIndex] = structuralMaterial.WindReceptivity;
 
     assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
     //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
@@ -319,15 +316,10 @@ void Points::CreateEphemeralParticleDebris(
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
-    mPlaneIdBuffer[pointIndex] = planeId;
-    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
-    mIsPlaneIdBufferEphemeralDirty = true;
+    mPlaneIdBuffer[pointIndex] = mPlaneIdBuffer[originalPointIndex];
+    mPlaneIdFloatBuffer[pointIndex] = mPlaneIdFloatBuffer[originalPointIndex];
 
     mColorBuffer[pointIndex] = structuralMaterial.RenderColor.toVec4f();
-    mIsEphemeralColorBufferDirty = true;
-
-    // Remember that ephemeral point elements are dirty now
-    mAreEphemeralPointElementsDirtyForRendering = true;
 }
 
 void Points::CreateEphemeralParticleSiltCloud(
@@ -416,17 +408,16 @@ void Points::CreateEphemeralParticleSiltCloud(
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].MaxSimulationLifetime = maxSimulationLifetime;
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].State = EphemeralState::SiltCloudState(
         initialScale,
-        maxScale,
-        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
+        maxScale);
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
-    mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = siltCloudStructuralMaterial.RenderColor.toVec4f();
-    mIsEphemeralColorBufferDirty = true;
+    mRandomNormalizedUniformFloatBuffer[pointIndex] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
+
+    //mColorBuffer[pointIndex] = siltCloudStructuralMaterial.RenderColor.toVec4f();
 }
 
 void Points::InternalCreateEphemeralParticleSmoke(
@@ -546,17 +537,16 @@ void Points::InternalCreateEphemeralParticleSmoke(
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].State = EphemeralState::SmokeState(
         smokeKind,
         position,
-        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(),
         maxTotalSquareDistanceTraveled);
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
-    mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = smokeStructuralMaterial.RenderColor.toVec4f();
-    mIsEphemeralColorBufferDirty = true;
+    mRandomNormalizedUniformFloatBuffer[pointIndex] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
+
+    //mColorBuffer[pointIndex] = smokeStructuralMaterial.RenderColor.toVec4f();
 }
 
 void Points::CreateEphemeralParticleSparkle(
@@ -642,7 +632,6 @@ void Points::CreateEphemeralParticleSparkle(
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
-    mIsPlaneIdBufferEphemeralDirty = true;
 }
 
 void Points::CreateEphemeralParticleWakeBubble(
@@ -732,10 +721,8 @@ void Points::CreateEphemeralParticleWakeBubble(
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
-    mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = waterStructuralMaterial.RenderColor.toVec4f();
-    mIsEphemeralColorBufferDirty = true;
+    //mColorBuffer[pointIndex] = waterStructuralMaterial.RenderColor.toVec4f();
 }
 
 ElementIndex Points::CreateEphemeralParticleWaterFoam(
@@ -832,17 +819,16 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
         initialScale,
         maxScale,
         maxVisibilityAlpha,
-        1.0f / visibilityHaste,
-        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
+        1.0f / visibilityHaste);
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
-    mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = waterFoamStructuralMaterial.RenderColor.toVec4f();
-    mIsEphemeralColorBufferDirty = true;
+    mRandomNormalizedUniformFloatBuffer[pointIndex] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
+
+    //mColorBuffer[pointIndex] = waterFoamStructuralMaterial.RenderColor.toVec4f();
 
     return pointIndex;
 }
@@ -937,17 +923,16 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].State = EphemeralState::WaterSplashState(
         initialScale,
         maxScale,
-        maxVisibilityAlpha,
-        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
+        maxVisibilityAlpha);
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
-    mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = waterSplashStructuralMaterial.RenderColor.toVec4f();
-    mIsEphemeralColorBufferDirty = true;
+    mRandomNormalizedUniformFloatBuffer[pointIndex] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
+
+    //mColorBuffer[pointIndex] = waterSplashStructuralMaterial.RenderColor.toVec4f();
 
     return pointIndex;
 }
@@ -1964,20 +1949,14 @@ void Points::UpdateEphemeralParticles(
                     if (elapsedSimulationLifetime >= maxSimulationLifetime)
                     {
                         ExpireEphemeralParticle(ephemeralParticleIndex);
-
-                        // Remember that ephemeral point elements are now dirty
-                        mAreEphemeralPointElementsDirtyForRendering = true;
                     }
                     else
                     {
                         // Update alpha based off remaining time
-
-                        float alpha = std::max(
+                        float const alpha = std::max(
                             1.0f - elapsedSimulationLifetime / maxSimulationLifetime,
                             0.0f);
-
                         mColorBuffer[pointIndex].w = alpha;
-                        mIsEphemeralColorBufferDirty = true;
                     }
 
                     break;
@@ -2281,7 +2260,7 @@ void Points::ColorPointForDebugging(
     rgbaColor const & color)
 {
     mColorBuffer[pointIndex] = color.toVec4f();
-    mIsWholeColorBufferDirty = true;
+    mIsColorBufferDirty = true;
 }
 
 void Points::UploadAttributes(
@@ -2299,27 +2278,15 @@ void Points::UploadAttributes(
     }
 
     // Upload colors, if dirty
-    if (mIsWholeColorBufferDirty)
+    if (mIsColorBufferDirty)
     {
         renderContext.UploadShipPointColorsAsync(
             shipId,
             mColorBuffer.data(),
             0,
-            mAllPointCount);
+            mAlignedShipPointCount);
 
-        mIsWholeColorBufferDirty = false;
-        mIsEphemeralColorBufferDirty = false;
-    }
-    else if (mIsEphemeralColorBufferDirty)
-    {
-        // Only upload ephemeral particle portion
-        renderContext.UploadShipPointColorsAsync(
-            shipId,
-            &(mColorBuffer.data()[mAlignedShipPointCount]),
-            mAlignedShipPointCount,
-            mEphemeralPointCount);
-
-        mIsEphemeralColorBufferDirty = false;
+        mIsColorBufferDirty = false;
     }
 
     //
@@ -2333,55 +2300,22 @@ void Points::UploadAttributes(
         mLightBuffer.data(),
         mWaterBuffer.data());
 
-    if (mIsPlaneIdBufferNonEphemeralDirty)
+    if (mIsPlaneIdBufferDirty)
     {
-        if (mIsPlaneIdBufferEphemeralDirty)
-        {
-            // Whole
-
-            shipRenderContext.UploadPointMutableAttributesPlaneId(
-                mPlaneIdFloatBuffer.data(),
-                0,
-                mAllPointCount);
-
-            mIsPlaneIdBufferEphemeralDirty = false;
-        }
-        else
-        {
-            // Just non-ephemeral portion
-
-            shipRenderContext.UploadPointMutableAttributesPlaneId(
-                mPlaneIdFloatBuffer.data(),
-                0,
-                mRawShipPointCount);
-        }
-
-        mIsPlaneIdBufferNonEphemeralDirty = false;
-    }
-    else if (mIsPlaneIdBufferEphemeralDirty)
-    {
-        // Just ephemeral portion
-
         shipRenderContext.UploadPointMutableAttributesPlaneId(
-            &(mPlaneIdFloatBuffer.data()[mAlignedShipPointCount]),
-            mAlignedShipPointCount,
-            mEphemeralPointCount);
+            mPlaneIdFloatBuffer.data(),
+            0,
+            mAlignedShipPointCount);
 
-        mIsPlaneIdBufferEphemeralDirty = false;
+        mIsPlaneIdBufferDirty = false;
     }
-
-    // The following attributes never change for ephemeral particles,
-    // hence after the first upload for reasonable defaults, we only
-    // need to upload them for the ship's (structural == raw) points,
-    // not for the ephemeral ones
-    size_t const partialPointCount = mHaveWholeBuffersBeenUploadedOnce ? mRawShipPointCount : mAllPointCount;
 
     if (mIsDecayBufferDirty)
     {
         shipRenderContext.UploadPointMutableAttributesDecay(
             mDecayBuffer.data(),
             0,
-            partialPointCount);
+            mAlignedShipPointCount);
 
         mIsDecayBufferDirty = false;
     }
@@ -2392,7 +2326,7 @@ void Points::UploadAttributes(
             shipId,
             mTemperatureBuffer.data(),
             0,
-            partialPointCount);
+            mAlignedShipPointCount);
     }
 
     if (renderContext.GetStressRenderMode() != StressRenderModeType::None)
@@ -2401,7 +2335,7 @@ void Points::UploadAttributes(
             shipId,
             mStressBuffer.data(),
             0,
-            partialPointCount);
+            mAlignedShipPointCount);
     }
 
     if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::InternalPressure)
@@ -2410,7 +2344,7 @@ void Points::UploadAttributes(
             shipId,
             mInternalPressureBuffer.data(),
             0,
-            partialPointCount);
+            mAlignedShipPointCount);
     }
     else if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::Strength)
     {
@@ -2418,12 +2352,10 @@ void Points::UploadAttributes(
             shipId,
             mFactoryStrengthBuffer.data(), // In theory we should incorporate AdditionalWeakness
             0,
-            partialPointCount);
+            mAlignedShipPointCount);
     }
 
     shipRenderContext.UploadPointMutableAttributesEnd();
-
-    mHaveWholeBuffersBeenUploadedOnce = true;
 }
 
 void Points::UploadNonEphemeralPointElements(
@@ -2590,11 +2522,6 @@ void Points::UploadEphemeralParticles(
 
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
-    if (mAreEphemeralPointElementsDirtyForRendering)
-    {
-        shipRenderContext.UploadElementEphemeralPointsStart();
-    }
-
     for (ElementIndex ephemeralParticleIndex : this->EphemeralPoints())
     {
         auto const ephemeralType = mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type;
@@ -2615,22 +2542,26 @@ void Points::UploadEphemeralParticles(
                         scaleMin + (scaleMax - scaleMin) * SmoothStep(0.0f, 2.0f, state.SimulationLifetime);
 
                     shipRenderContext.UploadAirBubble(
-                        GetPlaneId(pointIndex),
+                        mPlaneIdFloatBuffer[pointIndex],
                         GetPosition(pointIndex),
                         scale,
                         std::min(0.6f, state.CurrentDeltaY), // Alpha
-                        state.SimulationLifetime * Pi<float> *2.0f); // Angle
+                        state.SimulationLifetime * Pi<float> * 2.0f); // Angle
 
                     break;
                 }
 
                 case EphemeralType::Debris:
                 {
-                    // Don't upload point unless there's been a change
-                    if (mAreEphemeralPointElementsDirtyForRendering)
-                    {
-                        shipRenderContext.UploadElementEphemeralPoint(pointIndex);
-                    }
+                    shipRenderContext.UploadDebris(
+                        GetPlaneId(pointIndex),
+                        GetPosition(pointIndex),
+                        GetColor(pointIndex),
+                        GetLight(pointIndex),
+                        GetWater(pointIndex),
+                        GetDecay(pointIndex),
+                        GetTemperature(pointIndex),
+                        GetStress(pointIndex));
 
                     break;
                 }
@@ -2655,7 +2586,7 @@ void Points::UploadEphemeralParticles(
                     // Upload cloud
                     shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                         GetPlaneId(pointIndex),
-                        state.PersonalitySeed,
+                        GetRandomNormalizedUniformPersonalitySeed(pointIndex),
                         GameTextureDatabases::GenericMipMappedTextureGroups::SiltCloud,
                         GetPosition(pointIndex),
                         scale,
@@ -2735,7 +2666,7 @@ void Points::UploadEphemeralParticles(
                     // Upload smoke
                     shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                         GetPlaneId(pointIndex),
-                        state.PersonalitySeed,
+                        GetRandomNormalizedUniformPersonalitySeed(pointIndex),
                         textureGroup,
                         GetPosition(pointIndex),
                         scale,
@@ -2798,7 +2729,7 @@ void Points::UploadEphemeralParticles(
                     // Upload foam
                     shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                         GetPlaneId(pointIndex),
-                        state.PersonalitySeed,
+                        GetRandomNormalizedUniformPersonalitySeed(pointIndex),
                         GameTextureDatabases::GenericMipMappedTextureGroups::WaterFoam,
                         GetPosition(pointIndex),
                         state.VerticalAxis,
@@ -2828,7 +2759,7 @@ void Points::UploadEphemeralParticles(
                     // Upload splash
                     shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                         GetPlaneId(pointIndex),
-                        state.PersonalitySeed,
+                        GetRandomNormalizedUniformPersonalitySeed(pointIndex),
                         GameTextureDatabases::GenericMipMappedTextureGroups::WaterSplash,
                         GetPosition(pointIndex),
                         scale,
@@ -2844,14 +2775,6 @@ void Points::UploadEphemeralParticles(
                 }
             }
         }
-    }
-
-    if (mAreEphemeralPointElementsDirtyForRendering)
-    {
-        shipRenderContext.UploadElementEphemeralPointsEnd();
-
-        // Not dirty anymore
-        mAreEphemeralPointElementsDirtyForRendering = false;
     }
 }
 

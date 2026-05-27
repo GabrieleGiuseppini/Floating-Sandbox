@@ -837,7 +837,7 @@ public:
 
     void AddShip(
         ShipId shipId,
-        size_t pointCount,
+        size_t shipPointCount, // Ship-only points
         size_t maxEphemeralParticles,
         size_t maxSpringsPerPoint,
         RgbaImageData exteriorTextureImage,

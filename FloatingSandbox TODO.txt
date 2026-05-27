@@ -1245,42 +1245,136 @@
 		- Try it on Dell
 			- Manual replacement
 		- Try on Dell: linear instead of mipmapped
+			+ Doesn't help on Intel UHD (new Dell, integrated)
 
 	- Be satisfied with upward velocity of splashes
 
-	- We upload all particles' <position, light, water>, even for eph particles
+	= We upload all particles' <position, light, water>, even for eph particles
 		! Which we'd only need for Debris (which we upload as elements)
 		! We've already addressed this well for Decay, etc. - but here we have the Debris problem
-		- Option 1:
-			- We never upload any eph particles (just RawShipPoints)
-			- Eph particle debris gets own batch (buffer, etc), we upload <position, light, water> to it, and render with same shader
-				- After all it's points
-				- Requires keeping track of count @ Points, for Start() call
-			- Impl:
-				- Points: 
-					- Keep track of EphemeralPoint count
-					- Test
-					- Nuke mAreEphemeralPointElementsDirtyForRendering (only used for Debris)
-					- Upload<wherever we do it now>:
-						- if EphemeralPoint count > 0:
-							- Start, Upload, End
-				- ShipRenderContext:
-					- TODO: vertex: can re-use existing? Needs position, light (,water if really allows us to reuse existing), plane/depth
-					- New VAO, VBO
-					- New buffer of vertices // Not sticky
-					- UploadStart: zap it
-					- UploadEphemeralPointsStart(count): dimension it
-					- UploadEphemeralPoint(position, light, ...)
-					- RenderPrepare, RenderDraw
-						- Only when non empty
-						- Implement these
-						- Call these
-		- Option 2:
-			- New shader altogether, drawing distorted tidbits of ship's texture
-			- Can also have angular velocity
-			- Could use existing triangles shader? If so, rotation needs to be applied @ Upload time
+		! Gist:
+			! We never upload any eph particles (just RawShipPoints)
+			! Eph particle debris gets own batch (buffer, etc), we upload <position, light, water> to it, and render with ship_element shader
+		+ Impl base:
+			+ Prelim:
+				+ Get rid of uploading and accounting for all points - we never upload any eph particles (just RawShipPoints)
+					+ Rename mPointCount to mShipPointCount, "aligned count"
+					+ Pass right one @ ShipRenderContext creation
+					+ See all references to mPointCount: check each caller to ensure they comply
+						+ Points: nuke all "partial" and indicators, all do aligned (not only raw, so that we do not leave uninit'd mem)
+				+ Nuke these:
+					+ ShipRenderContext::mEphemeralPointElementBuffer
+				+ No debris calls
+				+ Test and commit
+
+			+ TODO: alpha problem: if no solution found in head, skip directly to shading as matte quads
+
+			+ Points: 
+				+ Nuke mAreEphemeralPointElementsDirtyForRendering (only used for Debris)
+				+ Nuke mIsPlaneIdBufferEphemeralDirty (only used for Debris)
+				+ Nuke mIsEphemeralColorBufferDirty
+				+ Add RotationPhase and OriginPointIndex to debris state
+				+ Upload
+			X ShipRenderContext:
+				+ New vertex, matching (with comment) layout expected by ship_element.glslinc, but only for groups 1 and 2
+				+ New VAO, VBO, with mAllocatedSize
+				+ New buffer of vertices // Not sticky
+					+ std::vector, reserved @ cctor
+				+ Global start upload: clears buffer
+					+ No need for UploadStart()
+				X UploadDebris(position, texture coords, ..., ..angle)						
+					+ Called by Points::UploadEphemeralParticles; no need for start
+					= For now do simple quad, size fixed, and rotate
+						- Size is kept in sync with point size
+					- Use precalc'd worldToShipTextureCoordsSpace factor, calc'd (and init'd) at ApplyViewModelChanges
+						- ShipSize (new from cctor -> const member) -> World
+				+ RenderPrepare
+				X RenderDraw
+					+ Inline with ship
+					+ Only when non empty
+					+ Implement these
+						+ Always use ship_triangles_texture shader, no matter what
+							+ HEAT_RENDER_MODE is 0
+							+ STRESS_RENDER_MODE is 0
+					X TODO: how do we draw debris with various other (debug) render modes?
+						- Needs to be fixed as we are currently inoking ship_strength, ship_decay, etc. shaders without having those vertex arrays in vbo
+						- ALSO: we don't use "render modifiers" with other eph's (strength, stress, etc.), so why should we care?							
+		+ Re-impl as GL_POINTS:
+			+ 0: Cleanup debris state (undo?)
+			+ 1. Debris created with OriginalPointIndex, copies all needed quantities into eph particle index
+				+ Water
+				+ PlaneId
+			+ 2. Vertex: cover all shaders
+				+ 
+					in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
+					in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
+					#if HEAT_RENDER_MODE != 0
+					in float inShipPointTemperature; // Temperature
+					#endif
+					#if STRESS_RENDER_MODE != 0
+					in float inShipPointStress; // Stress
+					#endif
+					#ifdef WITH_MATTE_COLOR -- ALWAYS
+					in vec4 inShipPointColor;
+					#endif
+				+ Describe, off of struct
+			+ 3. Upload:
+				+ All quantities
+			+ 4. Draw
+				+ As points, using mShipPointProgram
+		+ Final cleanups:
+			+ Can we actually use existing buffer for ALL eph particles' personality seeds?
+				+ Writing to it @ Spawn time, NOT reusing it (or else not too random)
+				+ SiltCloud
+				+ Smoke
+				+ WaterFoam
+				+ WaterSplash
+			+ Nuke setting of colors @ Points::CreateEphemeralParticleXYZ()
+				+ EXCEPT FOR DEBRIS!
+				+ Make sure that no ephemeral particle upload uses color
+
+		+ Verify perf
+			+ Pre UPL RND: 0.17-0.21 3.6-3.7
+			+ Post UPL RND: 0.10-0.12 3.6-3.7
+
+		+ Round-ish particles
+		+ Optimize AirBubble upload
+			! Pre (16K air bubbles): UPL=0.45-0.48
+			+ Precalc a lot:
+				! mGenericMipMappedTextureAirBubbleVertexBuffer: pre-populate with fixed vals
+				+ Buffer is still cleared, but Upload uses emplace_back_ghost to populate dynamic vals
+				+ Use float planeId directly
+			+ Post: 0.33-0.36
+			+ If ok: add to Android plan
+
+		+ Send beta
+
+		- Merge into master
+			- With PR, for Android!
+
+		- Changelist?
 
 		- Port to Android
+			+ Effective Moonlight color: added to plan
+			- ShipRenderContext:
+				- We never upload any eph particles (just RawShipPoints)
+					- Rename mPointCount to mShipPointCount, "aligned count"
+					- Pass right one @ ShipRenderContext creation
+				- Nuke old EphemeralPointElement machinery
+					- Methods
+					- ShipRenderContext::mEphemeralPointElementBuffer
+					- ...
+				- Add new vertex, VAO, VBO, buffer
+				- New UploadDebris(.)
+				- VAO descriptions
+				- Global start upload: clears buffer
+				- RenderPrepare
+				- RenderDraw
+
+				- AirBubble optimization
+					- Pre-population @ VAO creation
+					- Comment at: mGenericMipMappedTextureAirBubbleVertexBuffer.clear(); // Assuming it's kept populated
+					- UploadAirBubble, including fPlaneId
 
 
 	- TimCan's new sounds for PC+Mobile
@@ -1292,7 +1386,19 @@
 		- PC
 		- Android
 
-	- Try OpenGL/Upload optimization:
+	- Try OpenGL/Upload optimizations:
+		- 1: Ship attributes:
+			- TextureCoords pre-calcd once and for all, own VBO
+				- But still, updated _later_ than init'n
+			- Other 4 loaded at all times (incl Decay): interleaved into mapped buf - own VBO
+			- Last one loaded sparingly (plane): own VBO
+			- One call for uploading all three VBOs
+
+			- Redo debris vertex accordingly; structure and description
+				- Remember: all debris shaders have IS_MATTE_COLOR, hence no need for texture coords
+
+
+		- 2:
 		! Point Positions get uploaded to VBO in one go, with no interleaving, and with no local buffering
 		! Point Water, Temperature, and Decay get uploaded to VBO in one go, with no interleaving, and with no local buffering
 		! Multiple pointers in same async call

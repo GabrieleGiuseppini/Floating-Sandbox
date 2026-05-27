@@ -71,6 +71,8 @@ public:
 
     ElementCount GetPointCount() const { return mPoints.GetElementCount(); }
 
+    ElementCount GetAlignedShipPointCount() const { return mPoints.GetAlignedShipPointCount(); }
+
     ElementCount GetMaxEphemeralParticleCount() const { return mPoints.GetMaxEphemeralParticleCount(); }
 
     Points const & GetPoints() const { return mPoints; }

@@ -337,7 +337,7 @@ void RenderContext::ValidateShipTexture(RgbaImageData const & texture) const
 
 void RenderContext::AddShip(
     ShipId shipId,
-    size_t pointCount,
+    size_t shipPointCount,
     size_t maxEphemeralParticles,
     size_t maxSpringsPerPoint,
     RgbaImageData exteriorTextureImage,
@@ -371,8 +371,8 @@ void RenderContext::AddShip(
             mInnerContext->ships.emplace_back(
                 new ShipRenderContext(
                     shipId,
-                    pointCount,
                     newShipCount,
+                    shipPointCount,
                     maxEphemeralParticles,
                     maxSpringsPerPoint,
                     std::move(exteriorTextureImage),

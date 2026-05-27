@@ -44,8 +44,8 @@ public:
 
     ShipRenderContext(
         ShipId shipId,
-        size_t pointCount,
         size_t shipCount,
+        size_t shipPointCount, // Ship-only count (aligned)
         size_t maxEphemeralParticles,
         size_t maxSpringsPerPoint,
         RgbaImageData exteriorViewImage,
@@ -217,6 +217,31 @@ public:
     }
 
     void UploadElementFrontierEdgesEnd();
+
+    //
+    // Debris
+    //
+
+    inline void UploadDebris(
+        PlaneId planeId,
+        vec2f const & position,
+        vec4f const & color,
+        float light,
+        float water,
+        float decay,
+        float temperature,
+        float stress)
+    {
+        mDebrisVertexBuffer.emplace_back(
+            position,
+            light,
+            water,
+            static_cast<float>(planeId),
+            decay,
+            temperature,
+            stress,
+            color);
+    }
 
     //
     // NPCs
@@ -819,20 +844,21 @@ public:
     //
 
     inline void UploadAirBubble(
-        PlaneId planeId,
+        float fPlaneId,
         vec2f const & position,
         float scale,
         float alpha,
         float angle)
     {
-        StoreGenericMipMappedTextureRenderSpecification(
-            planeId,
-            TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups>(GameTextureDatabases::GenericMipMappedTextureGroups::AirBubble, 0),
-            position,
-            scale,
-            angle,
-            alpha,
-            mGenericMipMappedTextureAirBubbleVertexBuffer);
+        for (int v = 0; v < 4; ++v)
+        {
+            auto & vertex = mGenericMipMappedTextureAirBubbleVertexBuffer.emplace_back_ghost();
+            vertex.centerPosition = position;
+            vertex.planeId = fPlaneId;
+            vertex.scale = scale;
+            vertex.angle = angle;
+            vertex.alpha = alpha;
+        }
     }
 
     inline void UploadGenericMipMappedTextureRenderSpecification(
@@ -1038,19 +1064,6 @@ public:
             alpha,
             ambientLightSensitivity);
     }
-
-    //
-    // Ephemeral point elements
-    //
-
-    void UploadElementEphemeralPointsStart();
-
-    inline void UploadElementEphemeralPoint(int pointIndex)
-    {
-        mEphemeralPointElementBuffer.emplace_back(pointIndex);
-    }
-
-    void UploadElementEphemeralPointsEnd();
 
     //
     // Highlights
@@ -1519,9 +1532,9 @@ private:
 private:
 
     ShipId const mShipId;
-    size_t const mPointCount;
-
     size_t mShipCount;
+    size_t const mShipPointCount; // Ship-only particles, aligned
+
     PlaneId mMaxMaxPlaneId; // Make plane ID ever
     bool mIsViewModelDirty;
 
@@ -1558,6 +1571,41 @@ private:
         int pointIndex1;
         int pointIndex2;
         int pointIndex3;
+    };
+
+    struct DebrisVertex
+    {
+        // Note: replicating layout of point shaders
+        vec2f vertexPosition;
+        vec2f textureCoordinates;
+        float light;
+        float water;
+        float planeId;
+        float decay;
+        float temperature;
+        float stress;
+        vec4f color;
+
+        DebrisVertex(
+            vec2f _vertexPosition,
+            float _light,
+            float _water,
+            float _planeId,
+            float _decay,
+            float _temperature,
+            float _stress,
+            vec4f const & _color)
+            : vertexPosition(_vertexPosition)
+            , textureCoordinates(vec2f::zero())
+            , light(_light)
+            , water(_water)
+            , planeId(_planeId)
+            , decay(_decay)
+            , temperature(_temperature)
+            , stress(_stress)
+            , color(_color)
+        {
+        }
     };
 
     struct NpcAttributesVertex
@@ -1830,6 +1878,10 @@ private:
     GameOpenGLVBO mFrontierEdgeElementVBO;
     size_t mFrontierEdgeElementVBOAllocatedElementSize;
 
+    std::vector<DebrisVertex> mDebrisVertexBuffer;
+    GameOpenGLVBO mDebrisVBO;
+    size_t mDebrisVBOAllocatedVertexSize;
+
     BoundedVector<Quad> mNpcPositionBuffer; // 4 vertices
     GameOpenGLVBO mNpcPositionVBO;
     size_t mNpcPositionVBOAllocatedVertexSize;
@@ -1898,7 +1950,6 @@ private:
     //
 
     std::vector<PointElement> mPointElementBuffer;
-    BoundedVector<PointElement> mEphemeralPointElementBuffer; // We have a global maximum
     std::vector<LineElement> mSpringElementBuffer;
     std::vector<LineElement> mRopeElementBuffer;
     BoundedVector<TriangleElement> mTriangleElementBuffer; // We know in advance how many will be uploaded
@@ -1909,7 +1960,6 @@ private:
     // Indices at which these elements begin in the VBO; populated
     // when we upload element indices to the VBO
     size_t mPointElementVBOStartIndex;
-    size_t mEphemeralPointElementVBOStartIndex;
     size_t mSpringElementVBOStartIndex;
     size_t mRopeElementVBOStartIndex;
     size_t mTriangleElementVBOStartIndex;
@@ -1919,6 +1969,7 @@ private:
     //
 
     GameOpenGLVAO mShipVAO;
+    GameOpenGLVAO mDebrisVAO;
     GameOpenGLVAO mNpcTextureAndQuadFlatVAO;
     GameOpenGLVAO mNpcQuadWithRolesVAO;
     GameOpenGLVAO mElectricSparkVAO;
