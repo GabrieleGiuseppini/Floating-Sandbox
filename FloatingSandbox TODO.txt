@@ -1240,16 +1240,7 @@
 		+ Now: 27,4-28 -- 29.3 w/out foam
 		! It's all rendering impact
 	
-	= Aanpak slow rendering on Dell
-		+ Do water foam 256x256, also on PC
-		- Try it on Dell
-			- Manual replacement
-		- Try on Dell: linear instead of mipmapped
-			+ Doesn't help on Intel UHD (new Dell, integrated)
-
-	- Be satisfied with upward velocity of splashes
-
-	= We upload all particles' <position, light, water>, even for eph particles
+	+ We upload all particles' <position, light, water>, even for eph particles
 		! Which we'd only need for Debris (which we upload as elements)
 		! We've already addressed this well for Decay, etc. - but here we have the Debris problem
 		! Gist:
@@ -1349,45 +1340,15 @@
 
 		+ Send beta
 
-		- Merge into master
-			- With PR, for Android!
-
-		- Changelist?
-
-		- Port to Android
-			+ Effective Moonlight color: added to plan
-			- ShipRenderContext:
-				- We never upload any eph particles (just RawShipPoints)
-					- Rename mPointCount to mShipPointCount, "aligned count"
-					- Pass right one @ ShipRenderContext creation
-				- Nuke old EphemeralPointElement machinery
-					- Methods
-					- ShipRenderContext::mEphemeralPointElementBuffer
-					- ...
-				- Add new vertex, VAO, VBO, buffer
-				- New UploadDebris(.)
-				- VAO descriptions
-				- Global start upload: clears buffer
-				- RenderPrepare
-				- RenderDraw
-
-				- AirBubble optimization
-					- Pre-population @ VAO creation
-					- Comment at: mGenericMipMappedTextureAirBubbleVertexBuffer.clear(); // Assuming it's kept populated
-					- UploadAirBubble, including fPlaneId
-
-
-	- TimCan's new sounds for PC+Mobile
-			- FS Deep Horn
-			- Industrial Horn
-			- Queen Horn
-			- Steam Whistle FS Mobile 1
-			- Super whistle
-		- PC
-		- Android
+		+ Merge into master
+			+ With PR, for Android!
 
 	- Try OpenGL/Upload optimizations:
-		- 1: Ship attributes:
+		- Create branch
+		- 0: Get baseline measurements w/Hesleden
+		- 1: Simplify ShipRenderContext::UploadPointMutableAttributesPlaneId et al: no startDst, count; just pointer, and SRC uses mShipPointCount
+			- Port to Android
+		- 2: Ship attributes:
 			- TextureCoords pre-calcd once and for all, own VBO
 				- But still, updated _later_ than init'n
 			- Other 4 loaded at all times (incl Decay): interleaved into mapped buf - own VBO
@@ -1398,46 +1359,67 @@
 				- Remember: all debris shaders have IS_MATTE_COLOR, hence no need for texture coords
 
 
-		- 2:
-		! Point Positions get uploaded to VBO in one go, with no interleaving, and with no local buffering
-		! Point Water, Temperature, and Decay get uploaded to VBO in one go, with no interleaving, and with no local buffering
-		! Multiple pointers in same async call
-		- Points collects Water, Temperature, Decay in same buffer (w/padding)
-		- Phase 1: separate VBOs, we'll tail them in phase 2
-			- ShipRenderContext:
-				- Restructure vertex buffers:
-					- Old: (3 VBO uploads all the time)
-						- AttributeGroup1 is Position, TextureCoordinates
-						- AttributeGroup2 is Light, Water, PlaneId, Decay
-						- Temperature
-					- New: (3 VBO uploads all the time)					
-						- Position
-						- Light
-						- AttributeGroup2 becomes AttributeGroup1 and is Water, Decay, Temperature
-						- PlaneId (uploaded sparingly)
-						- TextureCoordinates (uploaded sparingly)
+		- 3:
+			! Point Positions get uploaded to VBO in one go, with no interleaving, and with no local buffering
+			! Point Water, Temperature, and Decay get uploaded to VBO in one go, with no interleaving, and with no local buffering
+			! Multiple pointers in same async call
+			- Check impact of ShipRenderContext::UploadMutableAttributes first
+			- Points collects Water, Temperature, Decay in same buffer (w/padding)
+			- Phase 1: separate VBOs, we'll tail them in phase 2
+				- ShipRenderContext:
+					- Restructure vertex buffers:
+						- Old: (3 VBO uploads all the time)
+							- AttributeGroup1 is Position, TextureCoordinates
+							- AttributeGroup2 is Light, Water, PlaneId, Decay
+							- Temperature
+						- New: (3 VBO uploads all the time)					
+							- Position
+							- Light
+							- AttributeGroup2 becomes AttributeGroup1 and is Water, Decay, Temperature
+							- PlaneId (uploaded sparingly)
+							- TextureCoordinates (uploaded sparingly)
 
-				- Upload:
-					- Async
-					- Takes Position, Light, and AttributeGroup1 from Points (template arg)
-						- static_assert for size to match vertex buffer
-					- Uploads the three of them, async
+					- Upload:
+						- Async
+						- Takes Position, Light, and AttributeGroup1 from Points (template arg)
+							- static_assert for size to match vertex buffer
+						- Uploads the three of them, async
 
-				- Shaders
+					- Shaders
 
-				- Note: temperature gets _always_ uploaded now, even when not needed - so check shaders
+					- Note: temperature gets _always_ uploaded now, even when not needed - so check shaders
 
-			- Test perf (both dells):
-				- Before
-				- After
+				- Test perf (both dells):
+					- Before
+					- After
 
-		- Phase 2:
-			- The 3 VBOs are one single VBO, one after the other
+			- Phase 2:
+				- The 3 VBOs are one single VBO, one after the other
 
-			- Test perf (both dells):
-				- After
+				- Test perf (both dells):
+					- After
 
 		- Even if doesn't work, test on Android - it could be faster there
+
+		- Old dell
+
+	= Aanpak slow rendering on Dell
+		+ Do water foam 256x256, also on PC
+		- Try it on Dell
+			- Manual replacement
+		- Try on Dell: linear instead of mipmapped
+			+ Doesn't help on Intel UHD (new Dell, integrated)
+
+	- Be satisfied with upward velocity of splashes
+
+	- TimCan's new sounds for PC+Mobile
+			- FS Deep Horn
+			- Industrial Horn
+			- Queen Horn
+			- Steam Whistle FS Mobile 1
+			- Super whistle
+		- PC
+		- Android
 
 	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
 		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al

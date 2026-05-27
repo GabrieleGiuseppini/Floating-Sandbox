@@ -801,7 +801,6 @@ public:
         , mRawShipPointCount(shipPointCount)
         , mAlignedShipPointCount(make_aligned_float_element_count(shipPointCount))
         , mEphemeralPointCount(maxEphemeralParticleCount)
-        , mAllPointCount(mAlignedShipPointCount + mEphemeralPointCount)
         //
         , mParentWorld(parentWorld)
         , mMaterialDatabase(materialDatabase)
@@ -2677,9 +2676,6 @@ private:
 
     // Count of ephemeral points
     ElementCount const mEphemeralPointCount;
-
-    // Count of all points (sum of two above, including ship point padding, but not aligned)
-    ElementCount const mAllPointCount;
 
     World & mParentWorld;
     MaterialDatabase const & mMaterialDatabase;

@@ -246,10 +246,10 @@ void main()
 #endif
 
 #ifdef FOR_POINTS
+    float d = length(gl_PointCoord - vec2(0.5)) * 2.0;
     if (paramShipParticleRenderMode != 0.0)
     {
         // Make it a round particle
-        float d = length(gl_PointCoord - vec2(0.5)) * 2.0;
         gl_FragColor.a *= 1.0 - smoothstep(0.90, 1.0, d);
 
         // Add glare
@@ -260,7 +260,6 @@ void main()
     else
     {
         // Make it a round-ish particle
-        float d = length(gl_PointCoord - vec2(0.5)) * 2.0;
         gl_FragColor.a *= 1.0 - smoothstep(1.1, 1.2, d);
     }
 #endif
