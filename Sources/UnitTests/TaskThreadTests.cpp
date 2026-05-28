@@ -2,11 +2,13 @@
 
 #include <thread>
 
+#include "TestingUtils.h"
+
 #include "gtest/gtest.h"
 
 TEST(TaskThreadTests, Synchronous)
 {
-    ThreadManager threadManager{ false, 16, [](ThreadManager::ThreadTaskKind, std::string const &, size_t) {} };
+    ThreadManager threadManager(false, 16, MakeCpuInfos(16), [](ThreadManager::ThreadTaskKind, std::optional<size_t>, size_t, std::string const &) {});
     TaskThread t(ThreadManager::ThreadTaskKind::MainAndSimulation, "Test thread", 0, true, threadManager);
 
     bool isDone = false;
@@ -23,7 +25,7 @@ TEST(TaskThreadTests, Synchronous)
 
 TEST(TaskThreadTests, Asynchronous)
 {
-    ThreadManager threadManager{ false, 16, [](ThreadManager::ThreadTaskKind, std::string const &, size_t) {} };
+    ThreadManager threadManager(false, 16, MakeCpuInfos(16), [](ThreadManager::ThreadTaskKind, std::optional<size_t>, size_t, std::string const &) {});
     TaskThread t(ThreadManager::ThreadTaskKind::MainAndSimulation, "Test thread", 0, true, threadManager);
 
     bool isDone = false;
@@ -43,7 +45,7 @@ TEST(TaskThreadTests, Asynchronous)
 
 TEST(TaskThreadTests, RunSynchronously)
 {
-    ThreadManager threadManager{ false, 16, [](ThreadManager::ThreadTaskKind, std::string const &, size_t) {} };
+    ThreadManager threadManager(false, 16, MakeCpuInfos(16), [](ThreadManager::ThreadTaskKind, std::optional<size_t>, size_t, std::string const &) {});
     TaskThread t(ThreadManager::ThreadTaskKind::MainAndSimulation, "Test thread", 0, true, threadManager);
 
     bool isDone = false;
@@ -58,7 +60,7 @@ TEST(TaskThreadTests, RunSynchronously)
 
 TEST(TaskThreadTests, QueueSynchronizationPoint)
 {
-    ThreadManager threadManager{ false, 16, [](ThreadManager::ThreadTaskKind, std::string const &, size_t) {} };
+    ThreadManager threadManager(false, 16, MakeCpuInfos(16), [](ThreadManager::ThreadTaskKind, std::optional<size_t>, size_t, std::string const &) {});
     TaskThread t(ThreadManager::ThreadTaskKind::MainAndSimulation, "Test thread", 0, true, threadManager);
 
     bool isDone = false;

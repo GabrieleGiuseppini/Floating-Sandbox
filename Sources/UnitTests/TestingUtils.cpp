@@ -183,3 +183,12 @@ ElectricalMaterial MakeTestElectricalMaterial(std::string name, rgbColor colorKe
         rgbColor::zero(),
         isInstanced);
 }
+
+std::vector<ThreadManager::CpuInfo> MakeCpuInfos(size_t parallelism)
+{
+    std::vector<ThreadManager::CpuInfo> cpuInfos;
+    for (size_t p = 0; p < parallelism; ++p)
+        cpuInfos.emplace_back(p, 1.0f);
+
+    return cpuInfos;
+}
