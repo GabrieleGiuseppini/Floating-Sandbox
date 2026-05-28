@@ -180,7 +180,7 @@ void Ship::RepairAt(
     //
 
     // Reset dynamic forces
-    mPoints.ResetDynamicForces();
+    mPoints.ResetDynamicForces0();
 
     // Reset grace period
     mRepairGracePeriodMultiplier = 0.0f;

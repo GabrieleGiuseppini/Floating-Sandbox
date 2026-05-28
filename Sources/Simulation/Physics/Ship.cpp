@@ -1283,7 +1283,7 @@ void Ship::ApplyWorldParticleForces(
     // 1. Various world forces
     //
 
-    for (auto pointIndex : mPoints.BufferElements())
+    for (auto pointIndex : mPoints)
     {
         auto const & pointPosition = mPoints.GetPosition(pointIndex);
 
@@ -1363,7 +1363,7 @@ void Ship::ApplyWorldParticleForces(
     auto const & radialWindField = mParentWorld.GetCurrentRadialWindField();
     if (radialWindField.has_value())
     {
-        for (auto pointIndex : mPoints.BufferElements())
+        for (auto pointIndex : mPoints)
         {
             // Only above-water points
             if (newCachedPointDepthsBuffer[pointIndex] <= 0.0f)
@@ -1925,8 +1925,8 @@ void Ship::ApplyStaticPressureForces(
     //
 
     assert(std::all_of(
-        mPoints.GetDynamicForceBufferAsVec2(),
-        mPoints.GetDynamicForceBufferAsVec2() + mPoints.GetElementCount(),
+        mPoints.GetDynamicForceBuffer0AsVec2(),
+        mPoints.GetDynamicForceBuffer0AsVec2() + mPoints.GetAlignedShipPointCount(),
         [](vec2f const & v)
         {
             return v == vec2f::zero();
@@ -2389,7 +2389,7 @@ void Ship::ApplyStaticPressureForces(
     size_t const particleCount = mStaticPressureBuffer.GetCurrentPopulatedSize();
     for (size_t hpi = 0; hpi < particleCount; ++hpi)
     {
-        mPoints.AddDynamicForce(
+        mPoints.AddDynamicForce0(
             mStaticPressureBuffer[hpi].PointIndex,
             mStaticPressureBuffer[hpi].ForceVector * forceMultiplier);
     }

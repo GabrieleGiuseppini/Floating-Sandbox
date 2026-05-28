@@ -612,6 +612,123 @@ TEST(AlgorithmsTests, CalculateSpringVectors_NeonVectorized)
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Integrate
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+size_t constexpr IntegrateInputSize = 4 + 16 + 8;
+
+struct IntegratePoints
+{
+    float * GetPositionBufferAsFloat()
+    {
+        return reinterpret_cast<float *>(positionBuffer);
+    }
+
+    float * GetVelocityBufferAsFloat()
+    {
+        return reinterpret_cast<float *>(velocityBuffer);
+    }
+
+    float const * GetStaticForceBufferAsFloat() const
+    {
+        return reinterpret_cast<float const *>(staticForceBuffer);
+    }
+
+    float const * GetIntegrationFactorBufferAsFloat() const
+    {
+        return reinterpret_cast<float const *>(integrationFactorBuffer);
+    }
+
+    aligned_to_vword vec2f positionBuffer[IntegrateInputSize];
+    aligned_to_vword vec2f velocityBuffer[IntegrateInputSize];
+    aligned_to_vword vec2f staticForceBuffer[IntegrateInputSize];
+    aligned_to_vword vec2f integrationFactorBuffer[IntegrateInputSize];
+};
+
+template<typename Algorithm>
+void RunIntegrateTest_2(Algorithm algorithm)
+{
+    //
+    // Populate
+    //
+
+    IntegratePoints points;
+
+    for (size_t i = 0; i < IntegrateInputSize; ++i)
+    {
+        auto const fi = static_cast<float>(i);
+
+        points.positionBuffer[i] = vec2f(10.0f + fi, 20.0f + fi);
+        points.velocityBuffer[i] = vec2f(100.0f + fi, 200.0f + fi);
+        points.staticForceBuffer[i] = vec2f(1000.0f + fi, 2000.0f + fi);
+        points.integrationFactorBuffer[i] = vec2f(1.0f + fi, 2.0f + fi);
+    }
+
+    //
+    // Run test
+    //
+
+    float const dt = 1.0f / 64.0f;
+    float const velocityFactor = 0.9f;
+
+    algorithm(
+        points,
+        4, // Start
+        20, // End
+        dt,
+        velocityFactor);
+
+    //
+    // Verify
+    //
+
+    for (size_t i = 0; i < IntegrateInputSize; ++i)
+    {
+        auto const fi = static_cast<float>(i);
+
+        if (i < 4 || i >= 20)
+        {
+            EXPECT_FLOAT_EQ(points.positionBuffer[i].x, 10.0f + fi);
+            EXPECT_FLOAT_EQ(points.positionBuffer[i].y, 20.0f + fi);
+
+            EXPECT_FLOAT_EQ(points.velocityBuffer[i].x, 100.0f + fi);
+            EXPECT_FLOAT_EQ(points.velocityBuffer[i].y, 200.0f + fi);
+        }
+        else
+        {
+            vec2f const deltaPos =
+                vec2f(100.0f + fi, 200.0f + fi) * dt
+                + points.staticForceBuffer[i] * points.integrationFactorBuffer[i];
+
+            EXPECT_FLOAT_EQ(points.positionBuffer[i].x, 10.0f + fi + deltaPos.x);
+            EXPECT_FLOAT_EQ(points.positionBuffer[i].y, 20.0f + fi + deltaPos.y);
+
+            EXPECT_FLOAT_EQ(points.velocityBuffer[i].x, deltaPos.x * velocityFactor);
+            EXPECT_FLOAT_EQ(points.velocityBuffer[i].y, deltaPos.y * velocityFactor);
+        }
+    }
+}
+
+TEST(AlgorithmsTests, RunIntegrateTest_2_Naive)
+{
+    RunIntegrateTest_2(Algorithms::Integrate_Naive<IntegratePoints>);
+}
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+TEST(AlgorithmsTests, RunIntegrateTest_2_SSEVectorized)
+{
+    RunIntegrateTest_2(Algorithms::Integrate_SSEVectorized<IntegratePoints>);
+}
+#endif
+
+#if FS_IS_ARM_NEON()
+TEST(AlgorithmsTests, RunIntegrateTest_2_NeonVectorized)
+{
+    RunIntegrateTest_2(Algorithms::Integrate_NeonVectorized<IntegratePoints>);
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 // IntegrateAndResetDynamicForces
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 

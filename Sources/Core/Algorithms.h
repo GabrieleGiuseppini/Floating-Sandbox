@@ -953,6 +953,174 @@ inline void CalculateSpringVectors(
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Integrate
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename TPoints>
+inline void Integrate_Naive(
+    TPoints & points,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    float dt,
+    float velocityFactor) noexcept
+{
+    //
+    // This loop is compiled with packed SSE instructions on MSVC 2022,
+    // integrating two points at each iteration
+    //
+    // We loop by floats
+    //
+
+    // Take the four buffers that we need as restrict pointers, so that the compiler
+    // can better see it should parallelize this loop as much as possible
+
+    float * restrict const positionBuffer = points.GetPositionBufferAsFloat() + startPointIndex * 2;
+    float * restrict const velocityBuffer = points.GetVelocityBufferAsFloat() + startPointIndex * 2;
+    float const * const restrict staticForceBuffer = points.GetStaticForceBufferAsFloat() + startPointIndex * 2;
+    float const * const restrict integrationFactorBuffer = points.GetIntegrationFactorBufferAsFloat() + startPointIndex * 2;
+
+    size_t const count = (endPointIndex - startPointIndex) * 2;
+    for (size_t i = 0; i < count; ++i)
+    {
+        //
+        // Verlet integration (fourth order, with velocity being first order)
+        //
+
+        float const deltaPos =
+            velocityBuffer[i] * dt
+            + staticForceBuffer[i] * integrationFactorBuffer[i];
+
+        positionBuffer[i] += deltaPos;
+        velocityBuffer[i] = deltaPos * velocityFactor;
+    }
+}
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+template<typename TPoints>
+inline void Integrate_SSEVectorized(
+    TPoints & points,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    float dt,
+    float velocityFactor) noexcept
+{
+    // This implementation is for 4-float SSE
+    static_assert(vectorization_float_count<int> >= 4);
+
+    assert(((endPointIndex - startPointIndex) % 2) == 0);
+
+    float * restrict const positionBuffer = points.GetPositionBufferAsFloat();
+    float * restrict const velocityBuffer = points.GetVelocityBufferAsFloat();
+    float const * const restrict staticForceBuffer = points.GetStaticForceBufferAsFloat();
+    float const * const restrict integrationFactorBuffer = points.GetIntegrationFactorBufferAsFloat();
+
+    __m128 const dt_4 = _mm_load1_ps(&dt);
+    __m128 const velocityFactor_4 = _mm_load1_ps(&velocityFactor);
+
+    for (size_t i = startPointIndex * 2; i < endPointIndex * 2; i += 4) // Two components per vector
+    {
+        // vec2f const deltaPos =
+        //    velocityBuffer[i] * dt
+        //    + externalForceBuffer[i] * integrationFactorBuffer[i];
+        __m128 const deltaPos_2 =
+            _mm_add_ps(
+                _mm_mul_ps(
+                    _mm_load_ps(velocityBuffer + i),
+                    dt_4),
+                _mm_mul_ps(
+                    _mm_load_ps(staticForceBuffer + i),
+                    _mm_load_ps(integrationFactorBuffer + i)));
+
+        // positionBuffer[i] += deltaPos;
+        __m128 pos_2 = _mm_load_ps(positionBuffer + i);
+        pos_2 = _mm_add_ps(pos_2, deltaPos_2);
+        _mm_store_ps(positionBuffer + i, pos_2);
+
+        // velocityBuffer[i] = deltaPos * velocityFactor;
+        __m128 const vel_2 =
+            _mm_mul_ps(
+                deltaPos_2,
+                velocityFactor_4);
+        _mm_store_ps(velocityBuffer + i, vel_2);
+    }
+}
+#endif
+
+#if FS_IS_ARM_NEON() // Implies ARM anyways
+template<typename TPoints>
+inline void Integrate_NeonVectorized(
+    TPoints & points,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    float dt,
+    float velocityFactor) noexcept
+{
+    // This implementation is for 4-float vectorization
+    static_assert(vectorization_float_count<int> >= 4);
+    assert(is_aligned_to_float_element_count(endPointIndex - startPointIndex));
+
+    float * restrict const positionBuffer = points.GetPositionBufferAsFloat();
+    float * restrict const velocityBuffer = points.GetVelocityBufferAsFloat();
+    float const * const restrict staticForceBuffer = points.GetStaticForceBufferAsFloat();
+    float const * const restrict integrationFactorBuffer = points.GetIntegrationFactorBufferAsFloat();
+
+    float32x4_t const dt_4 = vdupq_n_f32(dt);
+    float32x4_t const velocityFactor_4 = vdupq_n_f32(velocityFactor);
+
+    for (size_t i = startPointIndex * 2; i < endPointIndex * 2; i += 4) // Two components per vector, 4 vectors at a time
+    {
+        // Calculate deltaPos =
+        //         velocity[i] * dt
+        //         + staticForce[i] * integrationFactor[i];
+
+        // Update positions and velocities:
+        //      position[i] += deltaPos;
+        //      velocity[i] = deltaPos * velocityFactor;
+
+        float32x4_t velocity = vld1q_f32(velocityBuffer + i);
+        float32x4_t staticForce = vld1q_f32(staticForceBuffer + i);
+        float32x4_t integrationFactor = vld1q_f32(integrationFactorBuffer + i);
+        float32x4_t position = vld1q_f32(positionBuffer + i);
+
+        float32x4_t const deltaPos = vaddq_f32(
+            vmulq_f32(
+                velocity,
+                dt_4),
+            vmulq_f32(
+                staticForce,
+                integrationFactor));
+
+        position = vaddq_f32(position, deltaPos);
+        velocity = vmulq_f32(deltaPos, velocityFactor_4);
+
+        vst1q_f32(positionBuffer + i, position);
+        vst1q_f32(velocityBuffer + i, velocity);
+    }
+}
+#endif
+
+/*
+ * Integrates forces.
+ */
+
+template<typename TPoints>
+inline void Integrate(
+    TPoints & points,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    float dt,
+    float velocityFactor) noexcept
+{
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+    Integrate_SSEVectorized<TPoints>(points, startPointIndex, endPointIndex, dt, velocityFactor);
+#elif FS_IS_ARM_NEON()
+    Integrate_NeonVectorized<TPoints>(points, startPointIndex, endPointIndex, dt, velocityFactor);
+#else
+    Integrate_Naive<TPoints>(points, startPointIndex, endPointIndex, dt, velocityFactor);
+#endif
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 // IntegrateAndResetDynamicForces
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
