@@ -572,7 +572,7 @@ ShipRenderContext::ShipRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
-        static_assert(sizeof(GenericTextureVertex) == (4 + 4 + 3) * sizeof(float));
+        static_assert(sizeof(GenericTextureVertex) == (4 + 4 + 3 + 1) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipGenericMipMappedTexture1));
         glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipGenericMipMappedTexture1), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)0);
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipGenericMipMappedTexture2));

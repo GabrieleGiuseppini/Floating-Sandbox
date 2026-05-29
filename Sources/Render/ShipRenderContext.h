@@ -1737,6 +1737,8 @@ private:
         float alpha;
         float ambientLightSensitivity;
 
+        float _pad;
+
         GenericTextureVertex(
             vec2f _centerPosition,
             vec2f _vertexOffset,
