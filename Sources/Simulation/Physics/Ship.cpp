@@ -370,23 +370,12 @@ void Ship::Update(
 #endif
 
     ///////////////////////////////////////////////////////////////////
-    // Reset static forces, now that we have integrated them
-    ///////////////////////////////////////////////////////////////////
-
-    mPoints.ResetStaticForces();
-
-    ///////////////////////////////////////////////////////////////////
-    // Apply interaction forces that have been queued before this
-    // step
-    ///////////////////////////////////////////////////////////////////
-
-    ApplyQueuedInteractionForces(simulationParameters);
-
-    ///////////////////////////////////////////////////////////////////
     // Apply world forces
     //
+    // Re-initializes static forces, now that they have been integrated.
+    //
     // Also calculates cached depths, and updates frontiers' AABBs and
-    // geometric centers - hence needs to come _after _ UpdateForStrains()
+    // geometric centers - hence needs to come _after _ UpdateForStrains().
     ///////////////////////////////////////////////////////////////////
 
 #ifdef FS_PROFILE_SHIP_UPDATE
@@ -405,6 +394,14 @@ void Ship::Update(
 #endif
 
     // Cached depths are valid from now on --------------------------->
+
+    ///////////////////////////////////////////////////////////////////
+    // Apply interaction forces that have been queued before this
+    // step
+    ///////////////////////////////////////////////////////////////////
+
+    ApplyQueuedInteractionForces(simulationParameters);
+
 
     ///////////////////////////////////////////////////////////////////
     // Rot points
@@ -1353,7 +1350,7 @@ void Ship::ApplyWorldParticleForces(
             * mPoints.GetMaterialWindReceptivity(pointIndex)
             * (1.0f - uwCoefficient); // Only above-water (modulated)
 
-        staticForcesBuffer[pointIndex] += staticForce;
+        staticForcesBuffer[pointIndex] = staticForce; // Here we _initialize_ static forces
     }
 
     //

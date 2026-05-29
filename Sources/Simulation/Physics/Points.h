@@ -1361,11 +1361,6 @@ public:
         mStaticForceBuffer[pointElementIndex] += force;
     }
 
-    void ResetStaticForces()
-    {
-        mStaticForceBuffer.fill(vec2f::zero());
-    }
-
     // Mass
 
     float GetAugmentedMaterialMass(ElementIndex pointElementIndex) const
