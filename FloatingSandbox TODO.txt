@@ -1388,13 +1388,12 @@
 		+ Decide what to do with Points::mIsDecayBufferDirty
 			+ There's a TODO there
 
-		= Test perf on old dell
+		+ Test perf on old dell
 			+ Pre: FPS: 27.0 27.8-28.8-29.5 UPL: 0.9-1.0 RND: 15.9-16.3 -- BUT ALSO 17.-18
-			= Post: FPS: 28.6 UPL: 0.5x RND: 17.4-17.6 19.0
-
-			= Main difference with more eph particles is now:
-				= Ship::ApplyWorldParticleForces: loop for particles (2.51% vs 1.13% @ 4K)
-					- Vectorize?
+			+ Post: FPS: 28.6 UPL: 0.5x RND: 17.4-17.6 19.0
+			+ Main difference with more eph particles is now:
+				+ Ship::ApplyWorldParticleForces: loop for particles (2.51% vs 1.13% @ 4K)
+					X Vectorize?
 						- Problem: cached depth; do a pass first just for that?
 							X See if there's a step before it that we may piggyback
 					+ Reorg to kill ResetStaticForces:
@@ -1447,16 +1446,18 @@
 		- Merge
 
 
-	= Aanpak slow rendering on Dell
+	+ Aanpak slow rendering on Dell
 		+ Do water foam 256x256, also on PC
 		X Try on Dell: linear instead of mipmapped
 			+ Doesn't help on Intel UHD (new Dell, integrated)
 			X Neither on old Dell
-		= Try with 4K particles
-			- TODOHERE: repeat all of this if we do anything of the above "remaining eph particle" optimizations
-			- TODOHERE: redo following measurement, compare multiple times w/16k: FPS: 28.9-30.6 UPL: 0.2 RND: 17.8-18.02
-			- If much better: adjust @ calibration
-				- Get score from old Dell, use threshold really close
+		+ Try with 4K particles
+			+ Final perf (after work above):
+				+ 16K: FPS=27.9-28.8-29.2-29.6 UPD=16.1-16.6 UPL=0.4-0.5 RND=17.9-18.2
+				+  4K: FPS=29.1-30.3 UPD=15.2-15.7 UPL=0.20 RND=17.7-18.2
+			+ Too many air bubbles for render! Adjust @ calibration
+				+ Get gfx score from old Dell, use threshold really close: score=0.02
+				X No setting
 
 	- Fix foam with angley waves: is it because it becomes too wide?
 	- Be satisfied with upward velocity of splashes
