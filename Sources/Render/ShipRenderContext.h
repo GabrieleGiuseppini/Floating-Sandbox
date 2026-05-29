@@ -990,18 +990,18 @@ public:
 
         size_t const planeIndex = static_cast<size_t>(planeId);
 
-        // Pre-sized
-        assert(planeIndex < mGenericMipMappedTexturePlaneVertexBuffers.size());
-
         // Get this plane's vertex buffer
+        assert(planeIndex < mGenericMipMappedTexturePlaneVertexBuffers.size()); // Pre-sized
         auto & vertexBuffer = mGenericMipMappedTexturePlaneVertexBuffers[planeIndex].vertexBuffer;
+
+        float const fPlaneId = static_cast<float>(planeId);
 
         // Top-left
         vertexBuffer.emplace_back(
             centerPosition,
             topLeft,
             textureCoordinatesPermutation[0],
-            static_cast<float>(planeId),
+            fPlaneId,
             1.0f,
             0.0f,
             alpha,
@@ -1012,7 +1012,7 @@ public:
             centerPosition,
             topRight,
             textureCoordinatesPermutation[1],
-            static_cast<float>(planeId),
+            fPlaneId,
             1.0f,
             0.0f,
             alpha,
@@ -1023,7 +1023,7 @@ public:
             centerPosition,
             bottomLeft,
             textureCoordinatesPermutation[3],
-            static_cast<float>(planeId),
+            fPlaneId,
             1.0f,
             0.0f,
             alpha,
@@ -1034,7 +1034,7 @@ public:
             centerPosition,
             bottomRight,
             textureCoordinatesPermutation[2],
-            static_cast<float>(planeId),
+            fPlaneId,
             1.0f,
             0.0f,
             alpha,
