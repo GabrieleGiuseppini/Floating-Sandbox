@@ -925,21 +925,74 @@ public:
     {
         size_t const planeIndex = static_cast<size_t>(planeId);
 
-        // Pre-sized
-        assert(planeIndex < mGenericMipMappedTexturePlaneVertexBuffers.size());
-
         // Get this plane's vertex buffer
-        auto & vertexBuffer = mGenericMipMappedTexturePlaneVertexBuffers[planeIndex].vertexBuffer;
+        assert(planeIndex < mGenericMipMappedTexturePlaneQuadBuffers.size()); // Pre-sized
+        auto & quadBuffer = mGenericMipMappedTexturePlaneQuadBuffers[planeIndex].quadBuffer;
 
+        //
         // Populate the texture quad
-        StoreGenericMipMappedTextureRenderSpecification(
-            planeId,
-            textureFrameId,
+        //
+
+        TextureAtlasFrameMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase> const & frame =
+            mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
+
+        float const leftX = -frame.FrameMetadata.AnchorCenterWorld.x;
+        float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x;
+        float const topY = frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y;
+        float const bottomY = -frame.FrameMetadata.AnchorCenterWorld.y;
+
+        float const ambientLightSensitivity =
+            frame.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
+
+        float const fPlaneId = static_cast<float>(planeId);
+
+        // Append vertices
+
+        auto & quad = quadBuffer.emplace_back();
+
+        // Top-left
+        quad.topLeft = GenericTextureVertex(
             position,
+            vec2f(leftX, topY),
+            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
+            fPlaneId,
             scale,
-            angleCw,
+            -angleCw,
             alpha,
-            vertexBuffer);
+            ambientLightSensitivity);
+
+        // Top-Right
+        quad.topRight = GenericTextureVertex(
+            position,
+            vec2f(rightX, topY),
+            frame.TextureCoordinatesTopRight,
+            fPlaneId,
+            scale,
+            -angleCw,
+            alpha,
+            ambientLightSensitivity);
+
+        // Bottom-left
+        quad.bottomLeft = GenericTextureVertex(
+            position,
+            vec2f(leftX, bottomY),
+            frame.TextureCoordinatesBottomLeft,
+            fPlaneId,
+            scale,
+            -angleCw,
+            alpha,
+            ambientLightSensitivity);
+
+        // Bottom-right
+        quad.bottomRight = GenericTextureVertex(
+            position,
+            vec2f(rightX, bottomY),
+            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
+            fPlaneId,
+            scale,
+            -angleCw,
+            alpha,
+            ambientLightSensitivity);
     }
 
     inline void UploadGenericMipMappedTextureRenderSpecification(
@@ -953,51 +1006,49 @@ public:
     {
         // Choose frame
         size_t const frameCount = mGenericMipMappedTextureAtlasMetadata.GetFrameCount(textureGroup);
-        float frameIndexF = personalitySeed * frameCount;
         TextureFrameIndex const frameIndex = std::min(
-            static_cast<TextureFrameIndex>(std::floor(frameIndexF)),
+            static_cast<TextureFrameIndex>(personalitySeed * static_cast<float>(frameCount)),
             static_cast<TextureFrameIndex>(frameCount - 1));
 
         // Choose pseudo-rotation
         TextureAtlasFrameMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase> const & frame =
             mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups>(textureGroup, frameIndex));
+        size_t const permutationsCount = frame.TextureCoordinatesValidPermutations.size();
         size_t const textureCoordinatesPermutationIndex = std::min(
-            static_cast<size_t>(personalitySeed * static_cast<float>(frame.TextureCoordinatesValidPermutations.size())),
-            frame.TextureCoordinatesValidPermutations.size() - 1);
+            static_cast<size_t>(personalitySeed * static_cast<float>(permutationsCount)),
+            permutationsCount - 1);
         auto const & textureCoordinatesPermutation = frame.TextureCoordinatesValidPermutations[textureCoordinatesPermutationIndex];
 
         //
         // Populate the texture quad
         //
 
-        vec2f const horizontalAxis = verticalAxis.to_perpendicular(); // Points left
-        vec2f const left = horizontalAxis * (-frame.FrameMetadata.AnchorCenterWorld.x) * scale.width;
-        vec2f const right = horizontalAxis * (frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x) * scale.width;
+        vec2f const horizontalAxisScaled = verticalAxis.to_perpendicular() * scale.width; // Points left
+        vec2f const left = horizontalAxisScaled * (-frame.FrameMetadata.AnchorCenterWorld.x);
+        vec2f const right = horizontalAxisScaled * (frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x);
 
-        vec2f const top = verticalAxis * (frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y) * scale.height;
+        vec2f const verticalAxisScaled = verticalAxis * scale.height;
+        vec2f const top = verticalAxisScaled * (frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y);
         vec2f const topLeft = top + left;
         vec2f const topRight = top + right;
-        vec2f const bottom = verticalAxis * (-frame.FrameMetadata.AnchorCenterWorld.y) * scale.height;
+        vec2f const bottom = verticalAxisScaled * (-frame.FrameMetadata.AnchorCenterWorld.y);
         vec2f const bottomLeft = bottom + left;
         vec2f const bottomRight = bottom + right;
 
         float const ambientLightSensitivity =
             frame.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
 
-        //
         // Append vertices
-        //
 
+        // Get this plane's quad buffer
         size_t const planeIndex = static_cast<size_t>(planeId);
-
-        // Get this plane's vertex buffer
-        assert(planeIndex < mGenericMipMappedTexturePlaneVertexBuffers.size()); // Pre-sized
-        auto & vertexBuffer = mGenericMipMappedTexturePlaneVertexBuffers[planeIndex].vertexBuffer;
+        assert(planeIndex < mGenericMipMappedTexturePlaneQuadBuffers.size()); // Pre-sized
+        auto & quad = mGenericMipMappedTexturePlaneQuadBuffers[planeIndex].quadBuffer.emplace_back();
 
         float const fPlaneId = static_cast<float>(planeId);
 
         // Top-left
-        vertexBuffer.emplace_back(
+        quad.topLeft = GenericTextureVertex(
             centerPosition,
             topLeft,
             textureCoordinatesPermutation[0],
@@ -1008,7 +1059,7 @@ public:
             ambientLightSensitivity);
 
         // Top-Right
-        vertexBuffer.emplace_back(
+        quad.topRight = GenericTextureVertex(
             centerPosition,
             topRight,
             textureCoordinatesPermutation[1],
@@ -1019,7 +1070,7 @@ public:
             ambientLightSensitivity);
 
         // Bottom-left
-        vertexBuffer.emplace_back(
+        quad.bottomLeft = GenericTextureVertex(
             centerPosition,
             bottomLeft,
             textureCoordinatesPermutation[3],
@@ -1030,7 +1081,7 @@ public:
             ambientLightSensitivity);
 
         // Bottom-right
-        vertexBuffer.emplace_back(
+        quad.bottomRight = GenericTextureVertex(
             centerPosition,
             bottomRight,
             textureCoordinatesPermutation[2],
@@ -1372,78 +1423,6 @@ private:
             vec2f(1.0f, 0.0f));
     }
 
-    template<typename TVertexBuffer>
-    inline void StoreGenericMipMappedTextureRenderSpecification(
-        PlaneId planeId,
-        TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups> const & textureFrameId,
-        vec2f const & position,
-        float scale,
-        float angleCw,
-        float alpha,
-        TVertexBuffer & vertexBuffer)
-    {
-        //
-        // Populate the texture quad
-        //
-
-        TextureAtlasFrameMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase> const & frame =
-            mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
-
-        float const leftX = -frame.FrameMetadata.AnchorCenterWorld.x;
-        float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x;
-        float const topY = frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y;
-        float const bottomY = -frame.FrameMetadata.AnchorCenterWorld.y;
-
-        float const ambientLightSensitivity =
-            frame.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
-
-        // Append vertices
-
-        // Top-left
-        vertexBuffer.emplace_back(
-            position,
-            vec2f(leftX, topY),
-            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
-            static_cast<float>(planeId),
-            scale,
-            -angleCw,
-            alpha,
-            ambientLightSensitivity);
-
-        // Top-Right
-        vertexBuffer.emplace_back(
-            position,
-            vec2f(rightX, topY),
-            frame.TextureCoordinatesTopRight,
-            static_cast<float>(planeId),
-            scale,
-            -angleCw,
-            alpha,
-            ambientLightSensitivity);
-
-        // Bottom-left
-        vertexBuffer.emplace_back(
-            position,
-            vec2f(leftX, bottomY),
-            frame.TextureCoordinatesBottomLeft,
-            static_cast<float>(planeId),
-            scale,
-            -angleCw,
-            alpha,
-            ambientLightSensitivity);
-
-        // Bottom-right
-        vertexBuffer.emplace_back(
-            position,
-            vec2f(rightX, bottomY),
-            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
-            static_cast<float>(planeId),
-            scale,
-            -angleCw,
-            alpha,
-            ambientLightSensitivity);
-    }
-
 private:
 
     void RenderPrepareNpcs(RenderParameters const & renderParameters);
@@ -1737,7 +1716,8 @@ private:
         float alpha;
         float ambientLightSensitivity;
 
-        float _pad;
+        GenericTextureVertex() // Remove overhead when creating room
+        { }
 
         GenericTextureVertex(
             vec2f _centerPosition,
@@ -1757,6 +1737,18 @@ private:
             , alpha(_alpha)
             , ambientLightSensitivity(_ambientLightSensitivity)
         {}
+    };
+
+    // Trick to lower the number of vector re-allocation checks
+    struct GenericTextureQuad
+    {
+        GenericTextureVertex topLeft;
+        GenericTextureVertex topRight;
+        GenericTextureVertex bottomLeft;
+        GenericTextureVertex bottomRight;
+
+        GenericTextureQuad() // Remove overhead when creating room
+        { }
     };
 
     struct HighlightVertex
@@ -1822,7 +1814,7 @@ private:
 
     struct GenericTexturePlaneData
     {
-        std::vector<GenericTextureVertex> vertexBuffer;
+        std::vector<GenericTextureQuad> quadBuffer;
     };
 
     //
@@ -1887,7 +1879,7 @@ private:
     size_t mSparkleVBOAllocatedVertexSize;
 
     BoundedVector<GenericTextureVertex> mGenericMipMappedTextureAirBubbleVertexBuffer; // Specifically for air bubbles; mixed planes
-    std::vector<GenericTexturePlaneData> mGenericMipMappedTexturePlaneVertexBuffers; // For all other generic textures; separate buffers per-plane
+    std::vector<GenericTexturePlaneData> mGenericMipMappedTexturePlaneQuadBuffers; // For all other generic textures; separate buffers per-plane
     size_t mGenericMipMappedTextureTotalVertexCount; // Calculated at RenderPrepare and cached for convenience
     GameOpenGLVBO mGenericMipMappedTextureVBO;
     size_t mGenericMipMappedTextureVBOAllocatedVertexSize;

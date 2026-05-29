@@ -1390,15 +1390,26 @@
 
 		= Test perf on old dell
 			+ Pre: FPS: 27.0 27.8-28.8-29.5 UPL: 0.9-1.0 RND: 15.9-16.3 -- BUT ALSO 17.-18
-			+ Post: FPS: 28.6 UPL: 0.5x RND: 17.4-17.6 19.0
+			= Post: FPS: 28.6 UPL: 0.5x RND: 17.4-17.6 19.0
 
 			= Main difference with more eph particles is now:
 				- Ship::ApplyWorldParticleForces: loop for particles (2.51% vs 1.13% @ 4K)
 					- Vectorize?
-				- Points::UploadEphParticles (0.82%, 0.27% of which due to foam/splashes vs 0.58%, 0.34% @ 4K)
-					- Going all the time through 16K particles: best if through two lists?
-					- VerticalAxis stuff
-						- Make sure we don't rotate _and_ choose a random texture coords rotation, as that doesn't make sense
+						- Problem: cached depth; do a pass first just for that?
+							X See if there's a step before it that we may piggyback
+				+ Points::UploadEphParticles (0.82%, 0.27% of which due to foam/splashes vs 0.58%, 0.34% @ 4K)
+					X Going all the time through 16K particles: best if through two lists?
+						! No, as that pejorates worst case - i.e. all eph particles alive
+					+ VerticalAxis stuff
+						+ Make sure we don't rotate _and_ choose a random texture coords rotation, as that doesn't make sense
+					X See quad population function
+						X No, it's for center-based quad; ours is not
+					X Try padding generic texture vertex struct
+					+ Think of avoiding std::vector stuff
+						+ Just emplace Quad, instead of four Vertex
+						+ Perf profiler: 0.76%, 0.38% for foam
+						+ Assembly
+						+ Commit
 				+ Ship::Integration (0.4% per-thread vs 0.16% @ 4K)
 					+ Confirm dynamic force buffers play no role w/eph particles: no springs, no hydrostatic forces
 					+ Rearch Points
@@ -1410,14 +1421,14 @@
 						+ SSE, NEON
 						+ Unit tests
 					+ Call new algorithm for ephemeral step at SpringRelaxation, X 3
-					+ Tests:
+					= Tests:
 						+ Pressure forces
 						+ MoveBy, RotateBy X 2
 						+ Repair at depth
-						+ Simulation Threads #
+						= Simulation Threads #
 							+ Less tasks than thread - 1 particle
-						+ Perf: 0.25%
-
+							- Quick changes
+						+ Perf: 0.25% (main thread) 0.66% (thread pool threads)
 
 		+ Try CheckOpenGLError optimization
 			+ Check assembly

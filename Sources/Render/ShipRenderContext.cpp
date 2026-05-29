@@ -92,7 +92,7 @@ ShipRenderContext::ShipRenderContext(
     , mSparkleVBOAllocatedVertexSize(0u)
     //
     , mGenericMipMappedTextureAirBubbleVertexBuffer()
-    , mGenericMipMappedTexturePlaneVertexBuffers()
+    , mGenericMipMappedTexturePlaneQuadBuffers()
     , mGenericMipMappedTextureTotalVertexCount(0u)
     , mGenericMipMappedTextureVBO()
     , mGenericMipMappedTextureVBOAllocatedVertexSize(0u)
@@ -572,7 +572,7 @@ ShipRenderContext::ShipRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
-        static_assert(sizeof(GenericTextureVertex) == (4 + 4 + 3 + 1) * sizeof(float));
+        static_assert(sizeof(GenericTextureVertex) == (4 + 4 + 3) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipGenericMipMappedTexture1));
         glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipGenericMipMappedTexture1), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)0);
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipGenericMipMappedTexture2));
@@ -854,16 +854,16 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
         // Generic mip-mapped
 
         size_t const newSize = static_cast<size_t>(maxMaxPlaneId) + 1u;
-        assert(mGenericMipMappedTexturePlaneVertexBuffers.size() <= newSize); // maxMaxPlaneId only grows
+        assert(mGenericMipMappedTexturePlaneQuadBuffers.size() <= newSize); // maxMaxPlaneId only grows
 
-        size_t const clearCount = mGenericMipMappedTexturePlaneVertexBuffers.size();
+        size_t const clearCount = mGenericMipMappedTexturePlaneQuadBuffers.size();
         for (size_t i = 0; i < clearCount; ++i)
         {
-            mGenericMipMappedTexturePlaneVertexBuffers[i].vertexBuffer.clear();
+            mGenericMipMappedTexturePlaneQuadBuffers[i].quadBuffer.clear();
         }
 
-        if (newSize != mGenericMipMappedTexturePlaneVertexBuffers.size())
-            mGenericMipMappedTexturePlaneVertexBuffers.resize(newSize);
+        if (newSize != mGenericMipMappedTexturePlaneQuadBuffers.size())
+            mGenericMipMappedTexturePlaneQuadBuffers.resize(newSize);
     }
 
     for (size_t i = 0; i <= static_cast<size_t>(HighlightModeType::_Last); ++i)
@@ -2215,19 +2215,20 @@ void ShipRenderContext::RenderPrepareGenericMipMappedTextures(RenderParameters c
     //
 
     size_t const nonAirBubblesTotalVertexCount = std::accumulate(
-        mGenericMipMappedTexturePlaneVertexBuffers.cbegin(),
-        mGenericMipMappedTexturePlaneVertexBuffers.cend(),
+        mGenericMipMappedTexturePlaneQuadBuffers.cbegin(),
+        mGenericMipMappedTexturePlaneQuadBuffers.cend(),
         size_t(0),
         [](size_t const total, auto const & vec)
         {
-            return total + vec.vertexBuffer.size();
-        });
+            return total + vec.quadBuffer.size();
+        }) * 4;
 
     assert((mGenericMipMappedTextureAirBubbleVertexBuffer.size() % 4) == 0);
     assert((nonAirBubblesTotalVertexCount % 4) == 0);
 
     mGenericMipMappedTextureTotalVertexCount = mGenericMipMappedTextureAirBubbleVertexBuffer.size() + nonAirBubblesTotalVertexCount;
 
+    // Ensure we have enough indices to draw these as indexed
     assert((mGenericMipMappedTextureTotalVertexCount % 4) == 0);
     mGlobalRenderContext.GetElementIndices().EnsureSize(mGenericMipMappedTextureTotalVertexCount / 4);
 
@@ -2257,12 +2258,12 @@ void ShipRenderContext::RenderPrepareGenericMipMappedTextures(RenderParameters c
         }
 
         // Upload all planes of other textures
-        for (auto const & plane : mGenericMipMappedTexturePlaneVertexBuffers)
+        for (auto const & plane : mGenericMipMappedTexturePlaneQuadBuffers)
         {
-            if (!plane.vertexBuffer.empty())
+            if (!plane.quadBuffer.empty())
             {
-                size_t const byteCopySize = plane.vertexBuffer.size() * sizeof(GenericTextureVertex);
-                std::memcpy(mappedBuffer, plane.vertexBuffer.data(), byteCopySize);
+                size_t const byteCopySize = plane.quadBuffer.size() * sizeof(GenericTextureQuad);
+                std::memcpy(mappedBuffer, plane.quadBuffer.data(), byteCopySize);
                 mappedBuffer += byteCopySize;
             }
         }
