@@ -1343,7 +1343,7 @@
 		+ Merge into master
 			+ With PR, for Android!
 
-	= Try OpenGL/Upload optimizations:
+	+ Try OpenGL/Upload optimizations:
 		+ Create branch
 		+ 0: Get baseline measurements w/Hesleden
 			+ FPS:40-45 UPL:0.20 RND:4.38
@@ -1438,13 +1438,8 @@
 
 		+ Changelist
 
-		- Port to Android, with merging PR
-			- Write and run unit tests for new integration function with NEON
-			- Check ShipRenderContext::UploadMutableAttributes interleaving code assembly
-				- Try NEON
-
-		- Merge
-
+		+ Port to Android, with merging PR
+		+ Merge PR
 
 	+ Aanpak slow rendering on Dell
 		+ Do water foam 256x256, also on PC

@@ -7,6 +7,7 @@
 
 #include "GameOpenGL.h"
 
+#include <Core/GameExceptions.h>
 #include <Core/IAssetManager.h>
 #include <Core/ProgressCallback.h>
 #include <Core/Vectors.h>

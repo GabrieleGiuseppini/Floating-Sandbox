@@ -1255,7 +1255,7 @@ public:
             });
     }
 
-    // Upload is Asynchronous - buffer2 may not be used until the
+    // Upload is Asynchronous - buffers may not be used until the
     // next UpdateStart
     inline void UploadShipPointMutableAttributesAsync(
         ShipId shipId,

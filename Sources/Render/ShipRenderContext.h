@@ -87,6 +87,7 @@ public:
     // Points
     //
 
+    // Invoked on render thread
     void UploadPointTextureCoordinates(vec2f const * textureCoordinates);
 
     // Invoked on render thread
@@ -98,12 +99,16 @@ public:
         float const * decay,
         std::optional<float const *> planeId);
 
+    // Invoked on render thread
     void UploadPointColors(vec4f const * color);
 
+    // Invoked on render thread
     void UploadPointStress(float const * stress);
 
+    // Invoked on render thread
     void UploadPointAuxiliaryData(float const * auxiliaryData);
 
+    // Invoked on render thread
     void UploadPointFrontierColors(ColorWithProgress const * colors);
 
     //
