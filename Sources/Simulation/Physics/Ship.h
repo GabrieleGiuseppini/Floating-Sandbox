@@ -702,13 +702,17 @@ private:
         size_t threadIndex,
         ElementIndex startEphemeralPointIndex,
         ElementIndex endEphemeralPointIndex,
-        size_t parallelism,
         SimulationParameters const & simulationParameters);
 
     inline void IntegrateAndResetDynamicForces(
         ElementIndex startPointIndex,
         ElementIndex endPointIndex,
         size_t parallelism,
+        SpringRelaxationCoefficients const & coefficients);
+
+    inline void Integrate(
+        ElementIndex startPointIndex,
+        ElementIndex endPointIndex,
         SpringRelaxationCoefficients const & coefficients);
 
     inline void HandleCollisionsWithSeaFloor(

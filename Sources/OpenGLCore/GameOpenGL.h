@@ -262,46 +262,51 @@ public:
     static void Flush();
 };
 
+inline void _ThrowOpenGLException(GLenum errorCode, char const * file, int line)
+{
+    std::string errorCodeString;
+    switch (errorCode)
+    {
+        case GL_INVALID_ENUM:
+        {
+            errorCodeString = "INVALID_ENUM";
+            break;
+        }
+
+        case GL_INVALID_VALUE:
+        {
+            errorCodeString = "INVALID_VALUE";
+            break;
+        }
+
+        case GL_INVALID_OPERATION:
+        {
+            errorCodeString = "INVALID_OPERATION";
+            break;
+        }
+
+        case GL_OUT_OF_MEMORY:
+        {
+            errorCodeString = "OUT_OF_MEMORY";
+            break;
+        }
+
+        default:
+        {
+            errorCodeString = "Other (" + std::to_string(errorCode) + ")";
+            break;
+        }
+    }
+
+    throw GameException("OpenGL Error \"" + errorCodeString + "\" at file " + std::string(file) + ", line " + std::to_string(line));
+}
+
 inline void _CheckOpenGLError(char const * file, int line)
 {
     GLenum const errorCode = glGetError();
     if (errorCode != GL_NO_ERROR)
     {
-        std::string errorCodeString;
-        switch (errorCode)
-        {
-            case GL_INVALID_ENUM:
-            {
-                errorCodeString = "INVALID_ENUM";
-                break;
-            }
-
-            case GL_INVALID_VALUE:
-            {
-                errorCodeString = "INVALID_VALUE";
-                break;
-            }
-
-            case GL_INVALID_OPERATION:
-            {
-                errorCodeString = "INVALID_OPERATION";
-                break;
-            }
-
-            case GL_OUT_OF_MEMORY:
-            {
-                errorCodeString = "OUT_OF_MEMORY";
-                break;
-            }
-
-            default:
-            {
-                errorCodeString = "Other (" + std::to_string(errorCode) + ")";
-                break;
-            }
-        }
-
-        throw GameException("OpenGL Error \"" + errorCodeString + "\" at file " + std::string(file) + ", line " + std::to_string(line));
+        _ThrowOpenGLException(errorCode, file, line);
     }
 }
 

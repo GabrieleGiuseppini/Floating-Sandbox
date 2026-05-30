@@ -1241,11 +1241,9 @@ public:
 
     // Upload is Asynchronous - buffer may not be used until the
     // next UpdateStart
-    inline void UploadShipPointColorsAsync(
+    inline void UploadShipPointTextureCoordinatesAsync(
         ShipId shipId,
-        vec4f const * color,
-        size_t startDst,
-        size_t count)
+        vec2f const * textureCoordinates)
     {
         assert(shipId >= 0 && shipId < mInnerContext->ships.size());
 
@@ -1253,20 +1251,42 @@ public:
         mRenderThread.QueueTask(
             [=]()
             {
-                mInnerContext->ships[shipId]->UploadPointColors(
-                    color,
-                    startDst,
-                    count);
+                mInnerContext->ships[shipId]->UploadPointTextureCoordinates(textureCoordinates);
+            });
+    }
+
+    // Upload is Asynchronous - buffer2 may not be used until the
+    // next UpdateStart
+    inline void UploadShipPointMutableAttributesAsync(
+        ShipId shipId,
+        vec2f const * position,
+        float const * light,
+        float const * water,
+        float const * temperature,
+        float const * decay,
+        std::optional<float const *> planeId)
+    {
+        assert(shipId >= 0 && shipId < mInnerContext->ships.size());
+
+        // Run upload asynchronously
+        mRenderThread.QueueTask(
+            [=]()
+            {
+                mInnerContext->ships[shipId]->UploadPointMutableAttributes(
+                    position,
+                    light,
+                    water,
+                    temperature,
+                    decay,
+                    planeId);
             });
     }
 
     // Upload is Asynchronous - buffer may not be used until the
     // next UpdateStart
-    inline void UploadShipPointTemperatureAsync(
+    inline void UploadShipPointColorsAsync(
         ShipId shipId,
-        float const * temperature,
-        size_t startDst,
-        size_t count)
+        vec4f const * color)
     {
         assert(shipId >= 0 && shipId < mInnerContext->ships.size());
 
@@ -1274,10 +1294,7 @@ public:
         mRenderThread.QueueTask(
             [=]()
             {
-                mInnerContext->ships[shipId]->UploadPointTemperature(
-                    temperature,
-                    startDst,
-                    count);
+                mInnerContext->ships[shipId]->UploadPointColors(color);
             });
     }
 
@@ -1285,9 +1302,7 @@ public:
     // next UpdateStart
     inline void UploadShipPointStressAsync(
         ShipId shipId,
-        float const * stress,
-        size_t startDst,
-        size_t count)
+        float const * stress)
     {
         assert(shipId >= 0 && shipId < mInnerContext->ships.size());
 
@@ -1295,10 +1310,7 @@ public:
         mRenderThread.QueueTask(
             [=]()
             {
-                mInnerContext->ships[shipId]->UploadPointStress(
-                    stress,
-                    startDst,
-                    count);
+                mInnerContext->ships[shipId]->UploadPointStress(stress);
             });
     }
 
@@ -1306,9 +1318,7 @@ public:
     // next UpdateStart
     inline void UploadShipPointAuxiliaryDataAsync(
         ShipId shipId,
-        float const * auxiliaryData,
-        size_t startDst,
-        size_t count)
+        float const * auxiliaryData)
     {
         assert(shipId >= 0 && shipId < mInnerContext->ships.size());
 
@@ -1316,10 +1326,7 @@ public:
         mRenderThread.QueueTask(
             [=]()
             {
-                mInnerContext->ships[shipId]->UploadPointAuxiliaryData(
-                    auxiliaryData,
-                    startDst,
-                    count);
+                mInnerContext->ships[shipId]->UploadPointAuxiliaryData(auxiliaryData);
             });
     }
 

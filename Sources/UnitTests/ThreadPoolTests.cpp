@@ -4,7 +4,10 @@
 #include <functional>
 #include <vector>
 
+#include "TestingUtils.h"
+
 #include "gtest/gtest.h"
+
 
 class ThreadPoolTests_OneRuns : public testing::TestWithParam<size_t>
 {
@@ -14,7 +17,7 @@ public:
 
 protected:
 
-    ThreadManager mThreadManager{ false, 16, [](ThreadManager::ThreadTaskKind, std::string const &, size_t) {} };
+    ThreadManager mThreadManager{ false, 16, MakeCpuInfos(16), [](ThreadManager::ThreadTaskKind, std::optional<size_t>, size_t, std::string const &) {}};
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -57,7 +60,7 @@ public:
 
 protected:
 
-    ThreadManager mThreadManager{ false, 16, [](ThreadManager::ThreadTaskKind, std::string const &, size_t) {} };
+    ThreadManager mThreadManager{ false, 16, MakeCpuInfos(16), [](ThreadManager::ThreadTaskKind, std::optional<size_t>, size_t, std::string const &) {} };
 };
 
 INSTANTIATE_TEST_SUITE_P(

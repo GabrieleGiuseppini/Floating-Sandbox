@@ -108,7 +108,8 @@ void Ship::MoveBy(
 
             // Zero-out already-existing forces
             mPoints.SetStaticForce(p, vec2f::zero());
-            mPoints.SetDynamicForce(p, vec2f::zero());
+            if (!mPoints.IsEphemeral(p))
+                mPoints.SetDynamicForce0(p, vec2f::zero());
         }
     }
 
@@ -129,9 +130,9 @@ void Ship::MoveBy(
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
     vec2f * const restrict waterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
-    vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
+    vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBuffer0AsVec2();
 
-    for (auto const p : mPoints.BufferElements())
+    for (auto const p : mPoints)
     {
         positionBuffer[p] += moveOffset;
         velocityBuffer[p] = actualInertialVelocity;
@@ -139,7 +140,8 @@ void Ship::MoveBy(
 
         // Zero-out already-existing forces
         staticForceBuffer[p] = vec2f::zero();
-        dynamicForceBuffer[p] = vec2f::zero();
+        if (!mPoints.IsEphemeral(p))
+            dynamicForceBuffer[p] = vec2f::zero();
     }
 
     TrimForWorldBounds(simulationParameters);
@@ -180,7 +182,8 @@ void Ship::RotateBy(
 
             // Zero-out already-existing forces
             mPoints.SetStaticForce(p, vec2f::zero());
-            mPoints.SetDynamicForce(p, vec2f::zero());
+            if (!mPoints.IsEphemeral(p))
+                mPoints.SetDynamicForce0(p, vec2f::zero());
         }
     }
 
@@ -207,9 +210,9 @@ void Ship::RotateBy(
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
     vec2f * const restrict waterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
-    vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
+    vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBuffer0AsVec2();
 
-    for (auto const p : mPoints.BufferElements())
+    for (auto const p : mPoints)
     {
         vec2f const centeredPos = positionBuffer[p] - center;
         vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
@@ -221,7 +224,8 @@ void Ship::RotateBy(
 
         // Zero-out already-existing forces
         staticForceBuffer[p] = vec2f::zero();
-        dynamicForceBuffer[p] = vec2f::zero();
+        if (!mPoints.IsEphemeral(p))
+            dynamicForceBuffer[p] = vec2f::zero();
     }
 
     TrimForWorldBounds(simulationParameters);
@@ -247,7 +251,7 @@ void Ship::MoveGrippedBy(
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
     vec2f * const restrict waterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
-    vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
+    vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBuffer0AsVec2();
     float const * const restrict isPinnedBuffer = mPoints.GetIsPinnedBufferAsFloat();
 
     for (auto const p : mPoints.RawShipPoints())
@@ -326,7 +330,7 @@ void Ship::RotateGrippedBy(
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
     vec2f * const restrict waterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
-    vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
+    vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBuffer0AsVec2();
     float const * const restrict isPinnedBuffer = mPoints.GetIsPinnedBufferAsFloat();
 
     for (auto const p : mPoints.RawShipPoints())
@@ -1571,12 +1575,6 @@ bool Ship::ScrubThrough(
         }
     }
 
-    if (hasScrubbed)
-    {
-        // Make sure the decay buffer gets uploaded again
-        mPoints.MarkDecayBufferAsDirty();
-    }
-
     return hasScrubbed;
 }
 
@@ -1628,12 +1626,6 @@ bool Ship::RotThrough(
         }
     }
 
-    if (hasRotted)
-    {
-        // Make sure the decay buffer gets uploaded again
-        mPoints.MarkDecayBufferAsDirty();
-    }
-
     return hasRotted;
 }
 
@@ -1674,7 +1666,6 @@ void Ship::ApplyThanosSnap(
         : 1.0f;
 
     // Visit all points (excluding ephemerals, there's nothing to detach there)
-    bool atLeastOneDetached = false;
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
         auto const x = mPoints.GetPosition(pointIndex).x;
@@ -1704,16 +1695,8 @@ void Ship::ApplyThanosSnap(
 
                 // Set decay to min, so that debris gets darkened
                 mPoints.SetDecay(pointIndex, 0.0f);
-
-                atLeastOneDetached = true;
             }
         }
-    }
-
-    if (atLeastOneDetached)
-    {
-        // We've changed the decay buffer, need to upload it next then!
-        mPoints.MarkDecayBufferAsDirty();
     }
 }
 

@@ -23,6 +23,16 @@ void Ship::RecalculateSpringRelaxationParallelism(
     ThreadPool const & simulationThreadPool,
     SimulationParameters const & simulationParameters)
 {
+    //
+    // Prepare dynamic force buffers
+    //
+
+    mPoints.SetDynamicForceParallelism(simulationThreadPool.GetParallelism());
+
+    //
+    // Prepare tasks
+    //
+
     switch (simulationParameters.SpringRelaxationParallelComputationMode)
     {
         case SpringRelaxationParallelComputationModeType::FullSpeed:
@@ -55,12 +65,6 @@ void Ship::RecalculateSpringRelaxationParallelism_FullSpeed(
     auto const simulationParallelism = simulationThreadPool.GetParallelism();
 
     LogMessage("Ship::RecalculateSpringRelaxationParallelism_FullSpeed: simulationParallelism=", simulationParallelism);
-
-    //
-    // Prepare dynamic force buffers
-    //
-
-    mPoints.SetDynamicForceParallelism(simulationParallelism);
 
     //
     // Prepare tasks
@@ -123,12 +127,6 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
     auto const simulationParallelism = simulationThreadPool.GetParallelism();
 
     LogMessage("Ship::RecalculateSpringRelaxationParallelism_StepByStep: simulationParallelism=", simulationParallelism);
-
-    //
-    // Prepare dynamic force buffers
-    //
-
-    mPoints.SetDynamicForceParallelism(simulationParallelism);
 
     //
     // Prepare tasks
@@ -233,10 +231,9 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
 
                 // Ephemeral
 
-                IntegrateAndResetDynamicForces(
+                Integrate(
                     ephemeralPointStart,
                     ephemeralPointEnd,
-                    simulationParallelism,
                     mSpringRelaxationCoefficients_EphemeralParticles);
 
                 HandleCollisionsWithSeaFloor(
@@ -259,12 +256,6 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
     auto const simulationParallelism = simulationThreadPool.GetParallelism();
 
     LogMessage("Ship::RecalculateSpringRelaxationParallelism_Hybrid: simulationParallelism=", simulationParallelism);
-
-    //
-    // Prepare dynamic force buffers
-    //
-
-    mPoints.SetDynamicForceParallelism(simulationParallelism);
 
     //
     // Prepare tasks
@@ -343,7 +334,6 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
                     t,
                     ephemeralPointStart,
                     ephemeralPointEnd,
-                    simulationParallelism,
                     simulationParameters);
             });
 
@@ -593,14 +583,12 @@ void Ship::RunSpringRelaxation_FullSpeed_Thread(
             //
 
             //
-            // Integrate dynamic and static forces,
-            // and reset dynamic forces
+            // Integrate static forces
             //
 
-            IntegrateAndResetDynamicForces(
+            Integrate(
                 startEphemeralPointIndex,
                 endEphemeralPointIndex,
-                parallelism,
                 mSpringRelaxationCoefficients_EphemeralParticles);
 
             // Handle collisions with sea floor
@@ -840,18 +828,15 @@ void Ship::RunSpringRelaxation_Hybrid_EphemeralParticle_Thread(
     size_t threadIndex,
     ElementIndex startEphemeralPointIndex,
     ElementIndex endEphemeralPointIndex,
-    size_t parallelism,
     SimulationParameters const & simulationParameters)
 {
     //
-    // Integrate dynamic and static forces,
-    // and reset dynamic forces
+    // Integrate static forces
     //
 
-    IntegrateAndResetDynamicForces(
+    Integrate(
         startEphemeralPointIndex,
         endEphemeralPointIndex,
-        parallelism,
         mSpringRelaxationCoefficients_EphemeralParticles);
 
     // Handle collisions with sea floor
@@ -863,6 +848,19 @@ void Ship::RunSpringRelaxation_Hybrid_EphemeralParticle_Thread(
         threadIndex,
         mSpringRelaxationCoefficients_EphemeralParticles,
         simulationParameters);
+}
+
+void Ship::Integrate(
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    SpringRelaxationCoefficients const & coefficients)
+{
+    Algorithms::Integrate<Points>(
+        mPoints,
+        startPointIndex,
+        endPointIndex,
+        coefficients.Dt,
+        coefficients.IntegrationVelocityFactor);
 }
 
 void Ship::IntegrateAndResetDynamicForces(

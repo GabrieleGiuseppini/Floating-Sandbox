@@ -38,9 +38,6 @@ void Points::Add(
     mPositionBuffer.emplace_back(position);
     mFactoryPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
-    // First buffer implicitly
-    assert(mDynamicForceBuffers.size() >= 1);
-    mDynamicForceBuffers[0].emplace_back(vec2f::zero());
     mStaticForceBuffer.emplace_back(vec2f::zero());
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
     mTransientAdditionalMassBuffer.emplace_back(0.0f);
@@ -165,7 +162,6 @@ void Points::CreateEphemeralParticleAirBubble(
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
-    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in dynamic forces (springs + surface pressure)
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
@@ -257,7 +253,6 @@ void Points::CreateEphemeralParticleDebris(
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
@@ -349,7 +344,6 @@ void Points::CreateEphemeralParticleSiltCloud(
     mMaterialsBuffer[pointIndex] = Materials(&siltCloudStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = siltCloudStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
@@ -477,7 +471,6 @@ void Points::InternalCreateEphemeralParticleSmoke(
     mMaterialsBuffer[pointIndex] = Materials(&smokeStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f(0.0f, 0.2f); // Some magic upward velocity to start with, so plume doesn't stick out from underneath
-    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = smokeStructuralMaterial.GetMass() * massMultiplier;
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
@@ -571,7 +564,6 @@ void Points::CreateEphemeralParticleSparkle(
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
@@ -658,7 +650,6 @@ void Points::CreateEphemeralParticleWakeBubble(
     mMaterialsBuffer[pointIndex] = Materials(&waterStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
@@ -757,7 +748,6 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
     mMaterialsBuffer[pointIndex] = Materials(&waterFoamStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f(velocityX, 0.0f);
-    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = mass;
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
@@ -863,7 +853,6 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
     mMaterialsBuffer[pointIndex] = Materials(&waterSplashStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = mass;
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
@@ -2267,12 +2256,12 @@ void Points::UploadAttributes(
     ShipId shipId,
     RenderContext & renderContext) const
 {
-    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
-
     // Upload immutable attributes, if we haven't uploaded them yet
     if (mIsTextureCoordinatesBufferDirty)
     {
-        shipRenderContext.UploadPointImmutableAttributes(mTextureCoordinatesBuffer.data());
+        renderContext.UploadShipPointTextureCoordinatesAsync(
+            shipId,
+            mTextureCoordinatesBuffer.data());
 
         mIsTextureCoordinatesBufferDirty = false;
     }
@@ -2282,9 +2271,7 @@ void Points::UploadAttributes(
     {
         renderContext.UploadShipPointColorsAsync(
             shipId,
-            mColorBuffer.data(),
-            0,
-            mAlignedShipPointCount);
+            mColorBuffer.data());
 
         mIsColorBufferDirty = false;
     }
@@ -2293,69 +2280,42 @@ void Points::UploadAttributes(
     // Upload mutable attributes
     //
 
-    shipRenderContext.UploadPointMutableAttributesStart();
-
-    shipRenderContext.UploadPointMutableAttributes(
-        mPositionBuffer.data(),
-        mLightBuffer.data(),
-        mWaterBuffer.data());
-
+    std::optional<float const *> planeIdBuffer;
     if (mIsPlaneIdBufferDirty)
     {
-        shipRenderContext.UploadPointMutableAttributesPlaneId(
-            mPlaneIdFloatBuffer.data(),
-            0,
-            mAlignedShipPointCount);
+        planeIdBuffer = mPlaneIdFloatBuffer.data();
 
         mIsPlaneIdBufferDirty = false;
     }
 
-    if (mIsDecayBufferDirty)
-    {
-        shipRenderContext.UploadPointMutableAttributesDecay(
-            mDecayBuffer.data(),
-            0,
-            mAlignedShipPointCount);
-
-        mIsDecayBufferDirty = false;
-    }
-
-    if (renderContext.GetHeatRenderMode() != HeatRenderModeType::None)
-    {
-        renderContext.UploadShipPointTemperatureAsync(
-            shipId,
-            mTemperatureBuffer.data(),
-            0,
-            mAlignedShipPointCount);
-    }
+    renderContext.UploadShipPointMutableAttributesAsync(
+        shipId,
+        mPositionBuffer.data(),
+        mLightBuffer.data(),
+        mWaterBuffer.data(),
+        mTemperatureBuffer.data(),
+        mDecayBuffer.data(),
+        planeIdBuffer);
 
     if (renderContext.GetStressRenderMode() != StressRenderModeType::None)
     {
         renderContext.UploadShipPointStressAsync(
             shipId,
-            mStressBuffer.data(),
-            0,
-            mAlignedShipPointCount);
+            mStressBuffer.data());
     }
 
     if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::InternalPressure)
     {
         renderContext.UploadShipPointAuxiliaryDataAsync(
             shipId,
-            mInternalPressureBuffer.data(),
-            0,
-            mAlignedShipPointCount);
+            mInternalPressureBuffer.data());
     }
     else if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::Strength)
     {
         renderContext.UploadShipPointAuxiliaryDataAsync(
             shipId,
-            mFactoryStrengthBuffer.data(), // In theory we should incorporate AdditionalWeakness
-            0,
-            mAlignedShipPointCount);
+            mFactoryStrengthBuffer.data()); // In theory we should incorporate AdditionalWeakness
     }
-
-    shipRenderContext.UploadPointMutableAttributesEnd();
 }
 
 void Points::UploadNonEphemeralPointElements(
@@ -2495,17 +2455,20 @@ void Points::UploadVectors(
             lengthAdjustment);
     }
 
-    for (auto const p : this->EphemeralPoints())
+    if (renderContext.GetVectorFieldRenderMode() != VectorFieldRenderModeType::PointDynamicForce)
     {
-        if (mEphemeralParticleAttributesBuffer[p].Type != EphemeralType::None)
+        for (auto const p : this->EphemeralPoints())
         {
-            auto const pointIndex = EphemeralParticleIndexToPointIndex(p);
+            if (mEphemeralParticleAttributesBuffer[p].Type != EphemeralType::None)
+            {
+                auto const pointIndex = EphemeralParticleIndexToPointIndex(p);
 
-            shipRenderContext.UploadVector(
-                GetPosition(pointIndex),
-                mPlaneIdFloatBuffer[pointIndex],
-                vectorBuffer[pointIndex],
-                lengthAdjustment);
+                shipRenderContext.UploadVector(
+                    GetPosition(pointIndex),
+                    mPlaneIdFloatBuffer[pointIndex],
+                    vectorBuffer[pointIndex],
+                    lengthAdjustment);
+            }
         }
     }
 

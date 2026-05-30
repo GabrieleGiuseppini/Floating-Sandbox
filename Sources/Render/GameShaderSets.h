@@ -261,13 +261,14 @@ enum class VertexAttributeKind : std::uint32_t
     // Ship
     //
 
-    ShipPointAttributeGroup1 = 0,   // Position, TextureCoordinates
-    ShipPointAttributeGroup2 = 1,   // Light, Water, PlaneId, Decay
-    ShipPointColor = 2,
-    ShipPointTemperature = 3,
-    ShipPointStress = 4,
-    ShipPointAuxiliaryData = 5,
-    ShipPointFrontierColor = 6,
+    ShipPointPosition = 0,
+    ShipPointTextureCoordinates = 1,
+    ShipPointAttributeGroup = 2,   // Light, Water, Temperature, Decay
+    ShipPointColor = 3,
+    ShipPointPlaneId = 4,
+    ShipPointStress = 5,
+    ShipPointAuxiliaryData = 6,
+    ShipPointFrontierColor = 7,
 
     NpcAttributeGroup1 = 0,
     NpcAttributeGroup2 = 1,

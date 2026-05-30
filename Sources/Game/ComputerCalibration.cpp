@@ -80,6 +80,7 @@ void ComputerCalibrator::TuneGame(
     {
         // These all require GPU
 
+        simulationParameters.MaxEphemeralParticles = 4096;
         simulationParameters.UnderwaterPlantsDensity = 64.0f;
         simulationParameters.DoEmitSmokeWithFire = false;
 
@@ -95,6 +96,8 @@ void ComputerCalibrator::TuneGame(
         // These require huge vertex attribute uploads, hence best when rendering is multi-threaded
         renderContext.SetHeatRenderMode(HeatRenderModeType::None);
     }
+
+    LogMessage("  MaxBurningParticlesPerShip=", simulationParameters.MaxBurningParticlesPerShip, " MaxEphemeralParticles=", simulationParameters.MaxEphemeralParticles);
 }
 
 float ComputerCalibrator::RunComputation()

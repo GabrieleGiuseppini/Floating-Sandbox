@@ -726,7 +726,6 @@ public:
         , mFactoryStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mStressBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
-        , mIsDecayBufferDirty(true)
         , mAdditionalWeaknessBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mPinningCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -828,8 +827,8 @@ public:
         , mDiagnostic_ArePositionsDirty(false)
 #endif
     {
-        // Add first (implicit) dynamic force buffer
-        mDynamicForceBuffers.emplace_back(mBufferElementCount, shipPointCount, vec2f::zero());
+        // Add first (implicit, aka "zero") dynamic force buffer
+        mDynamicForceBuffers.emplace_back(mAlignedShipPointCount, vec2f::zero());
         mDynamicForceRawBuffers.emplace_back(reinterpret_cast<float *>(mDynamicForceBuffers[0].data()));
 
         // Initialize ephemeral particles
@@ -1264,23 +1263,11 @@ public:
         mVelocityBuffer[pointElementIndex] = velocity;
     }
 
-    vec2f const & GetDynamicForce(ElementIndex pointElementIndex) const noexcept
-    {
-        // First buffer implicitly
-        assert(mDynamicForceBuffers.size() >= 1);
-        return mDynamicForceBuffers[0][pointElementIndex];
-    }
+    // Dynamic forces: only taken into account at first integration sub-step;
+    // for non-ephemeral particles only
 
-    float * GetDynamicForceBufferAsFloat()
+    vec2f * GetDynamicForceBuffer0AsVec2()
     {
-        // First buffer implicitly
-        assert(mDynamicForceBuffers.size() >= 1);
-        return reinterpret_cast<float *>(mDynamicForceBuffers[0].data());
-    }
-
-    vec2f * GetDynamicForceBufferAsVec2()
-    {
-        // First buffer implicitly
         assert(mDynamicForceBuffers.size() >= 1);
         return mDynamicForceBuffers[0].data();
     }
@@ -1296,32 +1283,26 @@ public:
         return mDynamicForceRawBuffers.data();
     }
 
-    vec2f * const * GetDynamicForceBuffersAsVec2()
-    {
-        return reinterpret_cast<vec2f * const *>(mDynamicForceRawBuffers.data());
-    }
-
-    void SetDynamicForce(
+    void SetDynamicForce0(
         ElementIndex pointElementIndex,
         vec2f const & force) noexcept
     {
-        // First buffer implicitly
         assert(mDynamicForceBuffers.size() >= 1);
+        assert(!IsEphemeral(pointElementIndex));
         mDynamicForceBuffers[0][pointElementIndex] = force;
     }
 
-    void AddDynamicForce(
+    void AddDynamicForce0(
         ElementIndex pointElementIndex,
         vec2f const & force) noexcept
     {
-        // First buffer implicitly
         assert(mDynamicForceBuffers.size() >= 1);
+        assert(!IsEphemeral(pointElementIndex));
         mDynamicForceBuffers[0][pointElementIndex] += force;
     }
 
-    void ResetDynamicForces()
+    void ResetDynamicForces0()
     {
-        // First buffer implicitly
         assert(mDynamicForceBuffers.size() >= 1);
         mDynamicForceBuffers[0].fill(vec2f::zero());
     }
@@ -1343,11 +1324,13 @@ public:
         {
             for (size_t b = mDynamicForceBuffers.size(); b < parallelism; ++b)
             {
-                mDynamicForceBuffers.emplace_back(mBufferElementCount, vec2f::zero());
+                mDynamicForceBuffers.emplace_back(mAlignedShipPointCount, vec2f::zero());
                 mDynamicForceRawBuffers.emplace_back(reinterpret_cast<float *>(mDynamicForceBuffers.back().data()));
             }
         }
     }
+
+    // Static forces
 
     vec2f const & GetStaticForce(ElementIndex pointElementIndex) const noexcept
     {
@@ -1378,10 +1361,7 @@ public:
         mStaticForceBuffer[pointElementIndex] += force;
     }
 
-    void ResetStaticForces()
-    {
-        mStaticForceBuffer.fill(vec2f::zero());
-    }
+    // Mass
 
     float GetAugmentedMaterialMass(ElementIndex pointElementIndex) const
     {
@@ -1456,11 +1436,6 @@ public:
         float value)
     {
         mDecayBuffer[pointElementIndex] = value;
-    }
-
-    void MarkDecayBufferAsDirty()
-    {
-        mIsDecayBufferDirty = true;
     }
 
     float GetAdditionalWeakness(ElementIndex pointElementIndex) const
@@ -2506,7 +2481,7 @@ private:
     Buffer<vec2f> mPositionBuffer;
     Buffer<vec2f> mFactoryPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
-    std::vector<Buffer<vec2f>> mDynamicForceBuffers; // Forces that vary across the multiple mechanical iterations (i.e. spring, hydrostatic surface pressure) for each thread; always at least one
+    std::vector<Buffer<vec2f>> mDynamicForceBuffers; // Forces that vary across the multiple mechanical iterations (i.e. spring, hydrostatic surface pressure) for each thread; always at least one. For non-ephemeral particles only
     std::vector<float *> mDynamicForceRawBuffers;
     Buffer<vec2f> mStaticForceBuffer; // Forces that never change across the multiple mechanical iterations (all other forces)
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
@@ -2516,7 +2491,6 @@ private:
     Buffer<float> mFactoryStrengthBuffer; // Immutable
     Buffer<float> mStressBuffer; // -1.0 -> 1.0, only calculated (at springs) if rendering it
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
-    bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mAdditionalWeaknessBuffer;
     Buffer<float> mPinningCoefficientBuffer; // 1.0: not pinned; 0.0f: pinned
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen

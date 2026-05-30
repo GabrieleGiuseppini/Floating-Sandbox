@@ -1,6 +1,7 @@
 #include <Core/IAssetManager.h>
 #include <Core/ImageData.h>
 #include <Core/MemoryStreams.h>
+#include <Core/ThreadManager.h>
 
 #include <Simulation/Materials.h>
 
@@ -324,3 +325,5 @@ float DivideByTwo(float value);
 
 StructuralMaterial MakeTestStructuralMaterial(std::string name, rgbColor colorKey);
 ElectricalMaterial MakeTestElectricalMaterial(std::string name, rgbColor colorKey, bool isInstanced = false);
+
+std::vector<ThreadManager::CpuInfo> MakeCpuInfos(size_t parallelism);

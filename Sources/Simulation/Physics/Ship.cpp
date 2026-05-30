@@ -370,23 +370,12 @@ void Ship::Update(
 #endif
 
     ///////////////////////////////////////////////////////////////////
-    // Reset static forces, now that we have integrated them
-    ///////////////////////////////////////////////////////////////////
-
-    mPoints.ResetStaticForces();
-
-    ///////////////////////////////////////////////////////////////////
-    // Apply interaction forces that have been queued before this
-    // step
-    ///////////////////////////////////////////////////////////////////
-
-    ApplyQueuedInteractionForces(simulationParameters);
-
-    ///////////////////////////////////////////////////////////////////
     // Apply world forces
     //
+    // Re-initializes static forces, now that they have been integrated.
+    //
     // Also calculates cached depths, and updates frontiers' AABBs and
-    // geometric centers - hence needs to come _after _ UpdateForStrains()
+    // geometric centers - hence needs to come _after _ UpdateForStrains().
     ///////////////////////////////////////////////////////////////////
 
 #ifdef FS_PROFILE_SHIP_UPDATE
@@ -405,6 +394,14 @@ void Ship::Update(
 #endif
 
     // Cached depths are valid from now on --------------------------->
+
+    ///////////////////////////////////////////////////////////////////
+    // Apply interaction forces that have been queued before this
+    // step
+    ///////////////////////////////////////////////////////////////////
+
+    ApplyQueuedInteractionForces(simulationParameters);
+
 
     ///////////////////////////////////////////////////////////////////
     // Rot points
@@ -1283,7 +1280,7 @@ void Ship::ApplyWorldParticleForces(
     // 1. Various world forces
     //
 
-    for (auto pointIndex : mPoints.BufferElements())
+    for (auto pointIndex : mPoints)
     {
         auto const & pointPosition = mPoints.GetPosition(pointIndex);
 
@@ -1353,7 +1350,7 @@ void Ship::ApplyWorldParticleForces(
             * mPoints.GetMaterialWindReceptivity(pointIndex)
             * (1.0f - uwCoefficient); // Only above-water (modulated)
 
-        staticForcesBuffer[pointIndex] += staticForce;
+        staticForcesBuffer[pointIndex] = staticForce; // Here we _initialize_ static forces
     }
 
     //
@@ -1363,7 +1360,7 @@ void Ship::ApplyWorldParticleForces(
     auto const & radialWindField = mParentWorld.GetCurrentRadialWindField();
     if (radialWindField.has_value())
     {
-        for (auto pointIndex : mPoints.BufferElements())
+        for (auto pointIndex : mPoints)
         {
             // Only above-water points
             if (newCachedPointDepthsBuffer[pointIndex] <= 0.0f)
@@ -1925,8 +1922,8 @@ void Ship::ApplyStaticPressureForces(
     //
 
     assert(std::all_of(
-        mPoints.GetDynamicForceBufferAsVec2(),
-        mPoints.GetDynamicForceBufferAsVec2() + mPoints.GetElementCount(),
+        mPoints.GetDynamicForceBuffer0AsVec2(),
+        mPoints.GetDynamicForceBuffer0AsVec2() + mPoints.GetAlignedShipPointCount(),
         [](vec2f const & v)
         {
             return v == vec2f::zero();
@@ -2389,7 +2386,7 @@ void Ship::ApplyStaticPressureForces(
     size_t const particleCount = mStaticPressureBuffer.GetCurrentPopulatedSize();
     for (size_t hpi = 0; hpi < particleCount; ++hpi)
     {
-        mPoints.AddDynamicForce(
+        mPoints.AddDynamicForce0(
             mStaticPressureBuffer[hpi].PointIndex,
             mStaticPressureBuffer[hpi].ForceVector * forceMultiplier);
     }
@@ -3539,9 +3536,6 @@ void Ship::RotPoints(
         // Decay
         mPoints.SetDecay(p, mPoints.GetDecay(p) * alpha);
     }
-
-    // Remember that the decay buffer is dirty
-    mPoints.MarkDecayBufferAsDirty();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

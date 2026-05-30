@@ -1343,73 +1343,123 @@
 		+ Merge into master
 			+ With PR, for Android!
 
-	- Try OpenGL/Upload optimizations:
-		- Create branch
-		- 0: Get baseline measurements w/Hesleden
-		- 1: Simplify ShipRenderContext::UploadPointMutableAttributesPlaneId et al: no startDst, count; just pointer, and SRC uses mShipPointCount
-			- Port to Android
-		- 2: Ship attributes:
-			- TextureCoords pre-calcd once and for all, own VBO
-				- But still, updated _later_ than init'n
-			- Other 4 loaded at all times (incl Decay): interleaved into mapped buf - own VBO
-			- Last one loaded sparingly (plane): own VBO
-			- One call for uploading all three VBOs
+	= Try OpenGL/Upload optimizations:
+		+ Create branch
+		+ 0: Get baseline measurements w/Hesleden
+			+ FPS:40-45 UPL:0.20 RND:4.38
+		+ 1: Simplify ShipRenderContext::UploadPointMutableAttributesPlaneId et al: no startDst, count; just pointer, and SRC uses mShipPointCount
+		+ 2: Ship attributes:
+			+ Split group1 into position, textureCoordinates; rename group2 as "group"
+				+ ShaderSets
+				+ Code
+					+ Members & code
+					+ Uploads
+				+ Shaders
+			+ TextureCoords pre-calcd once and for all, own VBO
+				+ But still, updated _later_ than init'n
+			+ Other 4 loaded at all times (Light, Water, Temperature, Decay): interleaved into mapped buf - own VBO
+			+ Last one loaded sparingly (plane): own VBO
+			+ One call for uploading all three VBOs
+			+ Nuke unneeded ShipRenderContext buffers
+			+ Redo debris vertex accordingly; structure and description
+				+ Remember: all debris shaders have IS_MATTE_COLOR, hence no need for texture coords
+			+ Test:
+				+ All variants
+					+ Heat mode
+					+ Stress mode
+				+ Debris
+					+ Stress 
+					+ InternalPressure
+					+ Strength
+				+ Internal pressure
+				+ Strength
+				+ Stressed springs
+				+ Frontiers
 
-			- Redo debris vertex accordingly; structure and description
-				- Remember: all debris shaders have IS_MATTE_COLOR, hence no need for texture coords
+			+ Perf:
+				+ FPS:42-45 UPL:0.07-0.08 RND:4.3-4.5
+
+			+ Check interleaving code assembly:
+				+ x86: bunch of move's
+
+		+ Check impact of ShipRenderContext::UploadMutableAttributes first
+			+ 0.15% (0.13% excl. opengl calls)
+
+		+ Decide what to do with Points::mIsDecayBufferDirty
+			+ There's a TODO there
+
+		+ Test perf on old dell
+			+ Pre: FPS: 27.0 27.8-28.8-29.5 UPL: 0.9-1.0 RND: 15.9-16.3 -- BUT ALSO 17.-18
+			+ Post: FPS: 28.6 UPL: 0.5x RND: 17.4-17.6 19.0
+			+ Main difference with more eph particles is now:
+				+ Ship::ApplyWorldParticleForces: loop for particles (2.51% vs 1.13% @ 4K)
+					X Vectorize?
+						- Problem: cached depth; do a pass first just for that?
+							X See if there's a step before it that we may piggyback
+					+ Reorg to kill ResetStaticForces:
+						+ 1. ApplyWorldForces -- uses SetStaticForce
+						+ 2. ApplyQueuedInteractionForces
+							+ Verified it only adds
+				+ Points::UploadEphParticles (0.82%, 0.27% of which due to foam/splashes vs 0.58%, 0.34% @ 4K)
+					X Going all the time through 16K particles: best if through two lists?
+						! No, as that pejorates worst case - i.e. all eph particles alive
+					+ VerticalAxis stuff
+						+ Make sure we don't rotate _and_ choose a random texture coords rotation, as that doesn't make sense
+					X See quad population function
+						X No, it's for center-based quad; ours is not
+					X Try padding generic texture vertex struct
+					+ Think of avoiding std::vector stuff
+						+ Just emplace Quad, instead of four Vertex
+						+ Perf profiler: 0.76%, 0.38% for foam
+						+ Assembly
+						+ Commit
+				+ Ship::Integration (0.4% per-thread vs 0.16% @ 4K)
+					+ Confirm dynamic force buffers play no role w/eph particles: no springs, no hydrostatic forces
+					+ Rearch Points
+						+ Throw away unused methods
+						+ Ensure dynamic force buffers are sized for AlignedShipCount only
+							+ But then, all uses need to not touch it for non-ephemeral
+					+ Re-verify all users of dynamic force buffers
+					+ Do new Algorithm - "Integrate(...)"
+						+ SSE, NEON
+						+ Unit tests
+					+ Call new algorithm for ephemeral step at SpringRelaxation, X 3
+					+ Tests:
+						+ Pressure forces
+						+ MoveBy, RotateBy X 2
+						+ Repair at depth
+						+ Simulation Threads #
+							+ Less tasks than thread - 1 particle
+							+ Quick changes
+						+ Perf: 0.25% (main thread) 0.66% (thread pool threads)
+
+		+ Try CheckOpenGLError optimization
+			+ Check assembly
+
+		+ Changelist
+
+		- Port to Android, with merging PR
+			- Write and run unit tests for new integration function with NEON
+			- Check ShipRenderContext::UploadMutableAttributes interleaving code assembly
+				- Try NEON
+
+		- Merge
 
 
-		- 3:
-			! Point Positions get uploaded to VBO in one go, with no interleaving, and with no local buffering
-			! Point Water, Temperature, and Decay get uploaded to VBO in one go, with no interleaving, and with no local buffering
-			! Multiple pointers in same async call
-			- Check impact of ShipRenderContext::UploadMutableAttributes first
-			- Points collects Water, Temperature, Decay in same buffer (w/padding)
-			- Phase 1: separate VBOs, we'll tail them in phase 2
-				- ShipRenderContext:
-					- Restructure vertex buffers:
-						- Old: (3 VBO uploads all the time)
-							- AttributeGroup1 is Position, TextureCoordinates
-							- AttributeGroup2 is Light, Water, PlaneId, Decay
-							- Temperature
-						- New: (3 VBO uploads all the time)					
-							- Position
-							- Light
-							- AttributeGroup2 becomes AttributeGroup1 and is Water, Decay, Temperature
-							- PlaneId (uploaded sparingly)
-							- TextureCoordinates (uploaded sparingly)
-
-					- Upload:
-						- Async
-						- Takes Position, Light, and AttributeGroup1 from Points (template arg)
-							- static_assert for size to match vertex buffer
-						- Uploads the three of them, async
-
-					- Shaders
-
-					- Note: temperature gets _always_ uploaded now, even when not needed - so check shaders
-
-				- Test perf (both dells):
-					- Before
-					- After
-
-			- Phase 2:
-				- The 3 VBOs are one single VBO, one after the other
-
-				- Test perf (both dells):
-					- After
-
-		- Even if doesn't work, test on Android - it could be faster there
-
-		- Old dell
-
-	= Aanpak slow rendering on Dell
+	+ Aanpak slow rendering on Dell
 		+ Do water foam 256x256, also on PC
-		- Try it on Dell
-			- Manual replacement
-		- Try on Dell: linear instead of mipmapped
+		X Try on Dell: linear instead of mipmapped
 			+ Doesn't help on Intel UHD (new Dell, integrated)
+			X Neither on old Dell
+		+ Try with 4K particles
+			+ Final perf (after work above):
+				+ 16K: FPS=27.9-28.8-29.2-29.6 UPD=16.1-16.6 UPL=0.4-0.5 RND=17.9-18.2
+				+  4K: FPS=29.1-30.3 UPD=15.2-15.7 UPL=0.20 RND=17.7-18.2
+			+ Too many air bubbles for render! Adjust @ calibration
+				+ Get gfx score from old Dell, use threshold really close: score=0.02
+				X No setting
 
+	- Fix foam with angley waves: is it because it becomes too wide?
 	- Be satisfied with upward velocity of splashes
 
 	- TimCan's new sounds for PC+Mobile

@@ -51,11 +51,6 @@ public:
         return element_index_range_iterator(mElementCount);
     }
 
-    inline ElementIndexRangeIterable BufferElements() const noexcept
-    {
-        return ElementIndexRangeIterable(0u, mBufferElementCount);
-    }
-
 protected:
 
     ElementContainer(ElementCount elementCount)

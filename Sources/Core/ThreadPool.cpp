@@ -134,7 +134,7 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
     //
 
     // Assign tasks to threads
-    size_t const tasksAssignedToThreads = std::min(tasks.size() - 1, mThreads.size());
+    size_t const tasksAssignedToThreads = std::min(tasks.size() - 1, mThreads.size() - 1);
     {
         std::unique_lock const lock{ mLock };
 
