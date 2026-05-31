@@ -2516,7 +2516,7 @@ public:
             //  - @ BottomY : S=1.0 H=1.0
             //
 
-            int const sliderHeight = mToolManager.GetCanvasSize().height / 5.0f;
+            int const sliderHeight = mToolManager.GetCanvasSize().height / 5;
             float constexpr MinDeltaY = 20.0f; // Pixels; zero-center
             int constexpr ScreenMargin = 30;
 
