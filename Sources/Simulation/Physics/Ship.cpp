@@ -4245,7 +4245,7 @@ void Ship::InternalSpawnWaterSplash(
 
     float const maxLifetime =
         2.0f
-        * Clamp(velocityMagnitude, 8.0f, 30.0f) // Ensure long persistence with weak splashes, but never too long
+        * Clamp(velocityMagnitude, 10.0f, 15.0f) // Ensure long persistence with weak splashes, but never too long
         / SimulationParameters::GravityMagnitude;
 
     //
@@ -4280,7 +4280,9 @@ void Ship::InternalSpawnWaterSplash(
         auto const splashPointIndex = mPoints.CreateEphemeralParticleWaterSplash(
             position,
             impactDepth,
+            // TODOTEST
             particleDirection * velocityMagnitude,
+            //particleDirection * velocityMagnitude * (1.0f - std::fabsf(particleDirection.y)),
             initialScale,
             maxScale,
             currentSimulationTime,

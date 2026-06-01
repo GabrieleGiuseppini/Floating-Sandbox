@@ -1459,6 +1459,19 @@
 		+ Then, re-generate proj and verify gone
 
 	- Be satisfied with upward velocity of splashes
+		- Try: consider displacement for position of splash, to limit empty room
+		- TODOOLD
+		- Limit vertical upwards vel
+			- Kill: dir=0.97-0.99 v=5.88 s=0.18
+			- Don't kill wake: dir=0.4-0.9 v=6.33684 s=0.299168
+
+		- TODOOLD
+		- Fix: redo sampling
+			- 0.0850853 -> 5.52332 OK
+			- 0.16142 -> 5.8134 NOT OK
+			- 0.34367 -> 6.50595 NOT OK
+
+
 	- Fix foam with angley waves: is it because it becomes too wide?
 
 	- Do lift material
