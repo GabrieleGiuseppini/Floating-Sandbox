@@ -1454,9 +1454,12 @@
 				+ Get gfx score from old Dell, use threshold really close: score=0.02
 				X No setting
 
-	- ASAN build
-	- Fix foam with angley waves: is it because it becomes too wide?
+	+ ASAN build
+		+ Do
+		+ Then, re-generate proj and verify gone
+
 	- Be satisfied with upward velocity of splashes
+	- Fix foam with angley waves: is it because it becomes too wide?
 
 	- Do lift material
 		- @ frontier force application, as a _static_ force

@@ -171,6 +171,9 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_CRT_SECURE_NO_WARNINGS")
 
+	# Enable for ASAN
+	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fsanitize=address /D_DISABLE_STRING_ANNOTATION")
+
 	# Make sure the CRT is statically linked, and that we use W4 instead of W3
 	foreach(flag_var
 		CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
