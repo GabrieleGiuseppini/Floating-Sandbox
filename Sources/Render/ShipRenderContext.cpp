@@ -150,7 +150,6 @@ ShipRenderContext::ShipRenderContext(
     // Textures
     , mExteriorViewImage(std::move(exteriorViewImage))
     , mInteriorViewImage(std::move(interiorViewImage))
-    , mShipViewModeType(ShipViewModeType::Exterior) // Will be recalculated
     , mShipTextureOpenGLHandle()
     , mStressedSpringTextureOpenGLHandle()
     , mExplosionTextureAtlasMetadata(globalRenderContext.GetExplosionTextureAtlasMetadata())
@@ -2662,8 +2661,6 @@ void ShipRenderContext::ApplyShipViewModeChanges(RenderParameters const & render
     mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescence>();
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
     mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
-
-    mShipViewModeType = renderParameters.ShipViewMode;
 }
 
 void ShipRenderContext::ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters)

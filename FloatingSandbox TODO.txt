@@ -1454,8 +1454,15 @@
 				+ Get gfx score from old Dell, use threshold really close: score=0.02
 				X No setting
 
+	- ASAN build
 	- Fix foam with angley waves: is it because it becomes too wide?
 	- Be satisfied with upward velocity of splashes
+
+	- Do lift material
+		- @ frontier force application, as a _static_ force
+		- StructuralMaterial::lift_coefficient, default 0.0
+			- Make "aerodynamic XYZ" material; XYZ depends on frontier of current plane in Android, plus evt'lly aluminium
+	- Do water solubile material - see Discord
 
 	- TimCan's new sounds for PC+Mobile
 			- FS Deep Horn
@@ -1616,8 +1623,6 @@
 			- Same subsystem as water (now renamed "Internal Fluids"), own buffers
 			- UpdateWaterMomenta: double calculations in existing loops
 				- Only difference: horizontal propagation is subject to "friction"
-
-	- Option to have larger world size
 
 	- New tool: Punch (was: wrecking ball tool)
 		- Spec:

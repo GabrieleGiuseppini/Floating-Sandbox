@@ -236,12 +236,10 @@ void ThreadPool::ThreadLoop(
         // Run the task
         //
 
-        // TODOTEST
         //LogMessage("Running thread-assigned task ", threadTaskIndex - 1);
 
         RunTask(*task);
 
-        // TODOTEST
         //LogMessage("Completed thread-assigned task ", threadTaskIndex - 1);
 
         //
