@@ -4223,7 +4223,7 @@ void Ship::InternalSpawnWaterSplash(
     //
 
     float constexpr MinVelocityMagnitude = 5.2f;
-    float constexpr MaxVelocityMagnitude = 9.0f;
+    float constexpr MaxVelocityMagnitude = 6.0f;
     float const velocityMagnitude =
         MinVelocityMagnitude
         + (MaxVelocityMagnitude - MinVelocityMagnitude) * std::min(strength, 9.6f);
@@ -4280,9 +4280,7 @@ void Ship::InternalSpawnWaterSplash(
         auto const splashPointIndex = mPoints.CreateEphemeralParticleWaterSplash(
             position,
             impactDepth,
-            // TODOTEST
             particleDirection * velocityMagnitude,
-            //particleDirection * velocityMagnitude * (1.0f - std::fabsf(particleDirection.y)),
             initialScale,
             maxScale,
             currentSimulationTime,
