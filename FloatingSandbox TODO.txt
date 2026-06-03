@@ -1468,9 +1468,19 @@
 	- Fix foam with angley waves: is it because it becomes too wide?
 
 	- Do lift material
-		- @ frontier force application, as a _static_ force
+		! @ frontier force application, as a _static_ force
 		- StructuralMaterial::lift_coefficient, default 0.0
-			- Make "aerodynamic XYZ" material; XYZ depends on frontier of current plane in Android, plus evt'lly aluminium
+			- Make "Iron Hull Aerodynamic" and "Aluminium Hull Aerodynamic" materials, lift_coefficient=1.2
+				- Use scripts for variants
+		- Material.cpp
+		- Setting for adjustment
+			- SimParams
+			- GameController
+		- Ship::ApplySurfaceForces
+
+		- Test:
+			- ShipBuilder palette title sizes
+			
 	- Do water solubile material - see Discord
 
 	- TimCan's new sounds for PC+Mobile

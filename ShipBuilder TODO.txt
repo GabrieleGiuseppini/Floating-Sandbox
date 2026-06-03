@@ -42,8 +42,11 @@
 				- json Ser/Deser
 				- Equality and hash
 			- Only populated for variants; values of material are already variants though, so this is only for Serialization (see below)
-		- IsLastInGroup: only set for last (or only) of a series of render color options
+		- IsLastInGroup: only set for last (or only) of a series of render color options (remember that json is deserialized, we lose the color array)
 			- Not for variants
+			- TODO: really needed? Only real alternative is knowing # of alternatives - OR palette coords
+				- Or we just need a way to identify a whole group coming from one single json material; this is the one that gets variant-ed anyway
+					- ~"Group lead ordinal"
 		- static uq_ptr<StructuralMaterial> MaterialDB::MakeStructuralMaterialVariant(color_key const & parentColorKey, VariantOverridesType const &)
 			- Clones all, then overrides, and then stores VariantOverridesType
 				- ColorKey is the same from the base (parent)
@@ -57,7 +60,7 @@
 			- Custom ones and control to add appear for each base material, last in the series (after LastInGroup)
 				- Their palette coordinates - with the exclusion of ordinal - dictate where
 				- Ordinal is basically made up with logic here, laying out both custom sets
-			- Edit, Remove are small buttons on custom ones (which also helps distinguish them)
+			- Edit, Remove are small buttons on custom ones (which also helps distinguish them from "standard" materials)
 			- A custom material is cloned from the base material, and contains StructuralMaterial::VariantOverridesType overrides
 			- Removal: if material is in use, pops up dialog
 			- If it's from ship only (i.e. not from custom set), there's button to import
@@ -80,6 +83,7 @@
 				- Stores (parent) color_key and content of VariantOverridesType
 				- Assigned local indices for new Buffer to address (see below)
 			- Buffer: color_key + local index in MaterialPalette
+				- TODO: index=-1 for standard materials? Do we waste all this space?
 		- Deserialize() returns CustomStructuralMaterials (vector<uq_ptr<StructuralMaterial>>) in ShipDefinition, just for lifetime extension
 		- If no custom materials are present, ships should be loadable by older FS versions; only if custom materials are present, the load should fail with "newer version" error
 			- So file format version should be conditional on presence of custom materials
