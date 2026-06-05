@@ -1841,20 +1841,21 @@ void Ship::ApplyWorldSurfaceForces(
                 // TODOTEST
                 // TODOTEST2: we damp twice!
                 //float const angleDamper = SmoothStep(0.0f, 1.0f, std::fabsf(pushDir.dot(edgeDir)));
-                //float const angleDamper = 1.0f;
-                float const angleDamper = pushDir.dot(edgeDir);
-                //float const edgeVelocityAlongEdgeCapped = std::min(std::fabsf(edgeVelocityAlongEdge), 30.0f);
-                float const velocityMagnitudeCapped = std::min(pointVelocityMagnitude, 30.0f);
+                float const angleDamper = 1.0f;
+                //float const angleDamper = pushDir.dot(edgeDir);
+                float const edgeVelocityAlongEdgeCapped = std::min(std::fabsf(edgeVelocityAlongEdge), 30.0f);
+                //float const velocityMagnitudeCapped = std::min(pointVelocityMagnitude, 30.0f);
 
                 (void)edgeVelocityAlongEdge;
+                (void)angleDamper;
 
                 float const liftForce =
                     mPoints.GetStructuralMaterial(thisPointIndex).LiftCoefficient
                     * Mix(effectiveAirDensity, effectiveWaterDensity, uwCoefficient)
                     // TODOTEST
                     //* edgeVelocityAlongEdge * edgeVelocityAlongEdge
-                    //* edgeVelocityAlongEdgeCapped * edgeVelocityAlongEdgeCapped
-                    * velocityMagnitudeCapped * angleDamper * velocityMagnitudeCapped * angleDamper
+                    * edgeVelocityAlongEdgeCapped * edgeVelocityAlongEdgeCapped
+                    //* velocityMagnitudeCapped * angleDamper * velocityMagnitudeCapped * angleDamper
                     / 2.0f
                     * simulationParameters.LiftForceAdjustment
                     // TODOTEST
