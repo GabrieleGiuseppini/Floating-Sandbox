@@ -35,7 +35,7 @@ int constexpr VerticalSeparatorSize = 20;
 int constexpr NumericEditBoxWidth = 100;
 
 float constexpr MaxOffsetX = 500.0f;
-float constexpr MaxOffsetY = 750.0f;
+float constexpr MaxOffsetY = 500.0f;
 
 ShipPropertiesEditDialog::ShipPropertiesEditDialog(
     wxWindow * parent,

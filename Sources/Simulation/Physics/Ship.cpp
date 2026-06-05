@@ -1839,30 +1839,16 @@ void Ship::ApplyWorldSurfaceForces(
                 //
 
                 // TODOTEST
-                // TODOTEST2: we damp twice!
-                //float const angleDamper = SmoothStep(0.0f, 1.0f, std::fabsf(pushDir.dot(edgeDir)));
-                float const angleDamper = 1.0f;
-                //float const angleDamper = pushDir.dot(edgeDir);
                 float const edgeVelocityAlongEdgeCapped = std::min(std::fabsf(edgeVelocityAlongEdge), 30.0f);
-                //float const velocityMagnitudeCapped = std::min(pointVelocityMagnitude, 30.0f);
-
-                (void)edgeVelocityAlongEdge;
-                (void)angleDamper;
 
                 float const liftForce =
                     mPoints.GetStructuralMaterial(thisPointIndex).LiftCoefficient
                     * Mix(effectiveAirDensity, effectiveWaterDensity, uwCoefficient)
-                    // TODOTEST
-                    //* edgeVelocityAlongEdge * edgeVelocityAlongEdge
                     * edgeVelocityAlongEdgeCapped * edgeVelocityAlongEdgeCapped
-                    //* velocityMagnitudeCapped * angleDamper * velocityMagnitudeCapped * angleDamper
                     / 2.0f
                     * simulationParameters.LiftForceAdjustment
                     // TODOTEST
-                    * 100.0f * simulationParameters.ThermalConductivityAdjustment
-                    // TODOTEST
-                    //* angleDamper;
-                    ;
+                    * 100.0f * simulationParameters.ThermalConductivityAdjustment;
 
                 // Add force, towards the interior - we assume lift materials are placed on the bottom surface if we want an upward lift
                 mPoints.AddStaticForce(

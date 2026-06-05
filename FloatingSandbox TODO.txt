@@ -1464,7 +1464,7 @@
 			+ Yet, limit vel a bit
 		+ Test bombs
 
-	- Do lift material
+	= Do lift material
 		! @ frontier force application, as a _static_ force
 		+ StructuralMaterial::lift_coefficient, default 0.0
 			+ Make "Iron Hull Aerodynamic" and "Aluminium Hull Aerodynamic" materials, lift_coefficient=1.2
@@ -1478,15 +1478,15 @@
 		= Fine-tune
 			+ Add tiny 45deg lift material @ tail
 			+ Add thrust engines @ tail for up/down help
+			= Test in release
 			- Find balance: max speed vs. multiplier
 				- Max speed: make sure doesn't explode 
 			- Conclusion:
+				! For correct physics: we need at least 66 m/s, speed here is 16
 				- Takes off from reset: multiplier (thermal): 4
 					- @ height > 500
-
-		- For correct physics: we need at least 66 m/s, speed here is 16
-
-		- SettingsDialog
+				
+		- SettingsDialog?
 
 		- Test:
 			+ ShipBuilder palette title sizes
@@ -1495,7 +1495,7 @@
 			- Android's plane
 				+ Make double-backup first
 				- ...
-				- Nuke double-backup			
+				- Take backup and nuke double-backup		
 
 		- Port plane & code & materials to Android
 		- Merge into master
