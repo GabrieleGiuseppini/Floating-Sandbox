@@ -17,6 +17,7 @@ SimulationParameters::SimulationParameters()
     , KineticFrictionAdjustment(1.0f)
     , RotAcceler8r(1.0f)
     , StaticPressureForceAdjustment(1.0f)
+    , LiftForceAdjustment(1.0f)
     // Air
     , AirDensityAdjustment(1.0f)
     , AirFrictionDragAdjustment(1.0f)

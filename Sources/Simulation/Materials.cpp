@@ -45,6 +45,7 @@ StructuralMaterial StructuralMaterial::Create(
         float const elasticityCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "elasticity_coefficient", 0.5f);
         float const kineticFrictionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "friction_kinetic_coefficient", 0.25f);
         float const staticFrictionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "friction_static_coefficient", 0.25f);
+        float const liftCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "lift_coefficient", 0.0f);
 
         std::optional<MaterialUniqueType> uniqueType;
         {
@@ -126,6 +127,7 @@ StructuralMaterial StructuralMaterial::Create(
             elasticityCoefficient,
             kineticFrictionCoefficient,
             staticFrictionCoefficient,
+            liftCoefficient,
             uniqueType,
             materialSound,
             materialTextureName,

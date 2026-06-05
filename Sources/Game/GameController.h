@@ -474,6 +474,11 @@ public:
     float GetMinStaticPressureForceAdjustment() const override { return SimulationParameters::MinStaticPressureForceAdjustment; }
     float GetMaxStaticPressureForceAdjustment() const override { return SimulationParameters::MaxStaticPressureForceAdjustment; }
 
+    float GetLiftForceAdjustment() const override { return mSimulationParameters.LiftForceAdjustment; }
+    void SetLiftForceAdjustment(float value) override { mSimulationParameters.LiftForceAdjustment = value; }
+    float GetMinLiftForceAdjustment() const override { return SimulationParameters::MinLiftForceAdjustment; }
+    float GetMaxLiftForceAdjustment() const override { return SimulationParameters::MaxLiftForceAdjustment; }
+
     float GetTimeOfDay() const override { return mTimeOfDay; }
     void SetTimeOfDay(float value) override;
 

@@ -60,6 +60,9 @@ struct IGameControllerSettings
     virtual float GetStaticPressureForceAdjustment() const = 0;
     virtual void SetStaticPressureForceAdjustment(float value) = 0;
 
+    virtual float GetLiftForceAdjustment() const = 0;
+    virtual void SetLiftForceAdjustment(float value) = 0;
+
     virtual float GetTimeOfDay() const = 0;
     virtual void SetTimeOfDay(float value) = 0;
 

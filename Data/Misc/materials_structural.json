@@ -255,6 +255,49 @@
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
+                "#494959",
+                "#8D2709",
+                "#E4E856",
+                "#897B09",
+                "#4F9409",
+                "#09837F",
+                "#244B6A",
+                "#8F1989",
+                "#B16809",
+                "#1A2A1A"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1783.15,
+            "is_hull": true,
+            "lift_coefficient": 1.0,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 7950
+            },
+            "melting_temperature": 1588.15,
+            "name": "Iron Hull Aerodynamic",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Iron Hull Aerodynamic",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.055,
+            "texture_name": "metal_riveted_1_small",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
                 "#A0A0A0",
                 "#A71000",
                 "#D9CE30",
@@ -3275,7 +3318,6 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
-
         {
             "buoyancy_volume_fill": 1.0,
             "color_key": "#9a9b9c",
@@ -3305,7 +3347,7 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
-	{
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": "#2a2b2c",
             "combustion_type": "Combustion",
@@ -3334,7 +3376,6 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.005
         },
-
         {
             "buoyancy_volume_fill": 0.006,
             "color_key": "#F5CB42",
@@ -3365,14 +3406,6 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
-
-
-
-
-
-
-
-
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
@@ -3770,7 +3803,7 @@
                 "#050180",
                 "#6d0191",
                 "#ed8728",
-		"#717371",
+                "#717371",
                 "#260200"
             ],
             "combustion_type": "Combustion",
@@ -3813,7 +3846,7 @@
                 "#090B34",
                 "#480153",
                 "#6A2801",
-		"#747779"
+                "#747779"
             ],
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.5,
@@ -3896,7 +3929,7 @@
                 "#090A33",
                 "#480052",
                 "#6A2700",
-		"#747678"
+                "#747678"
             ],
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.5,
@@ -3938,7 +3971,7 @@
                 "#0d055c",
                 "#541853",
                 "#944b13",
-		"#717472",
+                "#717472",
                 "#241616"
             ],
             "combustion_type": "Combustion",
@@ -4404,7 +4437,7 @@
                         "name": "Ropes",
                         "sub_categories": [
                             "Ropes",
-			    "Tense Ropes",
+                            "Tense Ropes",
                             "Strong Ropes",
                             "Tense Strong Ropes"
                         ]
@@ -4450,7 +4483,8 @@
                             "Solid Iron I-Beam",
                             "Light Iron I-Beam",
                             "Low-Grade Iron",
-                            "Double-Bottom Iron"
+                            "Double-Bottom Iron",
+                            "Iron Hull Aerodynamic"
                         ]
                     },
                     {

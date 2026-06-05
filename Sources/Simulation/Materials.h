@@ -82,6 +82,7 @@ public:
     float ElasticityCoefficient;
     float KineticFrictionCoefficient;
     float StaticFrictionCoefficient;
+    float LiftCoefficient;
 
     std::optional<MaterialUniqueType> UniqueType;
 
@@ -167,6 +168,7 @@ public:
         float elasticityCoefficient,
         float kineticFrictionCoefficient,
         float staticFrictionCoefficient,
+        float liftCoefficient,
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
         std::optional<std::string> materialTextureName,
@@ -208,6 +210,7 @@ public:
         , ElasticityCoefficient(elasticityCoefficient)
         , KineticFrictionCoefficient(kineticFrictionCoefficient)
         , StaticFrictionCoefficient(staticFrictionCoefficient)
+        , LiftCoefficient(liftCoefficient)
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
         , MaterialTextureName(materialTextureName)
@@ -252,6 +255,7 @@ public:
         , ElasticityCoefficient(1.0f)
         , KineticFrictionCoefficient(1.0f)
         , StaticFrictionCoefficient(1.0f)
+        , LiftCoefficient(0.0f)
         , UniqueType(std::nullopt)
         , MaterialSound(std::nullopt)
         , MaterialTextureName(std::nullopt)

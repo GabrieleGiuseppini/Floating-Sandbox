@@ -55,6 +55,9 @@ struct IGameControllerSettingsOptions
     virtual float GetMinStaticPressureForceAdjustment() const = 0;
     virtual float GetMaxStaticPressureForceAdjustment() const = 0;
 
+    virtual float GetMinLiftForceAdjustment() const = 0;
+    virtual float GetMaxLiftForceAdjustment() const = 0;
+
     // Air
 
     virtual float GetMinAirDensityAdjustment() const = 0;

@@ -1464,24 +1464,45 @@
 			+ Yet, limit vel a bit
 		+ Test bombs
 
-
-	- Fix foam with angley waves: is it because it becomes too wide?
-
 	- Do lift material
 		! @ frontier force application, as a _static_ force
-		- StructuralMaterial::lift_coefficient, default 0.0
-			- Make "Iron Hull Aerodynamic" and "Aluminium Hull Aerodynamic" materials, lift_coefficient=1.2
-				- Use scripts for variants
-		- Material.cpp
-		- Setting for adjustment
-			- SimParams
-			- GameController
-		- Ship::ApplySurfaceForces
+		+ StructuralMaterial::lift_coefficient, default 0.0
+			+ Make "Iron Hull Aerodynamic" and "Aluminium Hull Aerodynamic" materials, lift_coefficient=1.2
+				+ Use scripts for variants
+		+ Material.cpp
+		+ Setting for adjustment
+			+ SimParams
+			+ GameController
+		+ Ship::ApplySurfaceForces
+
+		= Fine-tune
+			+ Add tiny 45deg lift material @ tail
+			+ Add thrust engines @ tail for up/down help
+
+			- Conclusion:
+				- Takes off from reset: multiplier (thermal): 4
+					- @ height > 500
+
+		- For correct physics: we need at least 66 m/s, speed here is 16
+
+		- SettingsDialog
 
 		- Test:
-			- ShipBuilder palette title sizes
+			+ ShipBuilder palette title sizes
+			- Underwater
+				- Might be too much; if so, just take air density
+			- Android's plane
+				+ Make double-backup first
+				- ...
+				- Nuke double-backup			
+
+		- Port plane & code & materials to Android
+		- Merge into master
+		- changelist
 			
 	- Do water solubile material - see Discord
+
+	- Fix foam with angley waves: is it because it becomes too wide?
 
 	- TimCan's new sounds for PC+Mobile
 			- FS Deep Horn

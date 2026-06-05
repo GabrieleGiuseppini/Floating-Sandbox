@@ -142,6 +142,10 @@ struct SimulationParameters
     static float constexpr MinStaticPressureForceAdjustment = 0.0f;
     static float constexpr MaxStaticPressureForceAdjustment = 20.0f;
 
+    float LiftForceAdjustment;
+    static float constexpr MinLiftForceAdjustment = 0.0f;
+    static float constexpr MaxLiftForceAdjustment = 20.0f;
+
     // Air
 
     float AirDensityAdjustment;

@@ -1533,7 +1533,7 @@ void Ship::ApplyWorldSurfaceForces(
 
         auto & frontier = mFrontiers.GetFrontier(frontierId);
 
-        // We only apply velocity drag and displace water for *external* frontiers,
+        // We only apply velocity drag and lift, and displace water for *external* frontiers,
         // not for internal ones
         if (frontier.Type == FrontierType::External)
         {
@@ -1558,9 +1558,9 @@ void Ship::ApplyWorldSurfaceForces(
             size_t visitedPoints = 0;
 #endif
 
-            ElementIndex const visitStartEdgeIndex = thisFrontierEdge.NextEdgeIndex;
+            ElementIndex const edgeVisitStartEdgeIndex = thisFrontierEdge.NextEdgeIndex;
 
-            for (ElementIndex nextEdgeIndex = visitStartEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+            for (ElementIndex nextEdgeIndex = edgeVisitStartEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
             {
 
 #ifdef _DEBUG
@@ -1579,7 +1579,25 @@ void Ship::ApplyWorldSurfaceForces(
                 // Get point depth (positive at greater depths, negative over-water)
                 float const thisPointDepth = newCachedPointDepths[thisPointIndex];
 
+                // UW coefficient: 0.0 if point in air, 1.0 if under water, smooth in-between
+                float const uwCoefficient = Clamp(thisPointDepth, 0.0f, 1.0f);
+
+                // Get point velocity
                 vec2f const thisPointVelocity = mPoints.GetVelocity(thisPointIndex);
+
+                // Edge direction - calculated between p1 and p3
+                vec2f const edgeDir = (nextPointPosition - previousPointPosition).normalise();
+
+                // Magnitude of the edge velocity along the edge; positive when following
+                // frontier's CW order, zero when perpendicular to edge
+                float const edgeVelocityAlongEdge = thisPointVelocity.dot(edgeDir);
+
+                // Normal to edge - calculated between p1 and p3; points outside
+                vec2f const edgeNormal = edgeDir.to_perpendicular();
+
+                // Magnitude of the edge velocity along the edge normal; positive when pointing out,
+                // zero when parallel to edge
+                float const edgeVelocityAlongEdgeNormal = thisPointVelocity.dot(edgeNormal);
 
                 //
                 // Drag force
@@ -1600,13 +1618,6 @@ void Ship::ApplyWorldSurfaceForces(
                 // we have to cap the force to prevent velocity overcome.
                 //
 
-                // Normal to edge - calculated between p1 and p3; points outside
-                vec2f const edgeNormal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
-
-                // Magnitude of the edge velocity along the edge normal; positive when pointing out,
-                // zero when parallel to edge
-                float const edgeVelocityAlongEdgeNormal = thisPointVelocity.dot(edgeNormal);
-
                 // Cap it to the same direction as velocity, to avoid suction force
                 // (i.e. drag force attracting surface facing opposite of velocity)
                 float const edgeVelocityCapped = std::max(
@@ -1623,7 +1634,7 @@ void Ship::ApplyWorldSurfaceForces(
                 float const dragCoefficient = Mix(
                     airPressureDragCoefficient,
                     waterPressureDragCoefficient,
-                    Clamp(thisPointDepth, 0.0f, 1.0f));
+                    uwCoefficient);
 
                 // Calculate magnitude of drag force (opposite sign), capped by max drag force
                 //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
@@ -1819,11 +1830,50 @@ void Ship::ApplyWorldSurfaceForces(
                 }
 
                 //
+                // Lift: Cl * rho * V^2 * A / 2
+                //
+                //  - Cl: from material
+                //  - Rho: from water/air
+                //  - V: point velocity along edge, absolute (we pretend a double-profile wing, otherwise airplanes cannot fly in both flip directions)
+                //  - A: 1 square meter
+                //
+
+                // TODOTEST
+                // TODOTEST2: we damp twice!
+                //float const angleDamper = SmoothStep(0.0f, 1.0f, std::fabsf(pushDir.dot(edgeDir)));
+                //float const angleDamper = 1.0f;
+                float const angleDamper = pushDir.dot(edgeDir);
+                //float const edgeVelocityAlongEdgeCapped = std::min(std::fabsf(edgeVelocityAlongEdge), 30.0f);
+                float const velocityMagnitudeCapped = std::min(pointVelocityMagnitude, 30.0f);
+
+                (void)edgeVelocityAlongEdge;
+
+                float const liftForce =
+                    mPoints.GetStructuralMaterial(thisPointIndex).LiftCoefficient
+                    * Mix(effectiveAirDensity, effectiveWaterDensity, uwCoefficient)
+                    // TODOTEST
+                    //* edgeVelocityAlongEdge * edgeVelocityAlongEdge
+                    //* edgeVelocityAlongEdgeCapped * edgeVelocityAlongEdgeCapped
+                    * velocityMagnitudeCapped * angleDamper * velocityMagnitudeCapped * angleDamper
+                    / 2.0f
+                    * simulationParameters.LiftForceAdjustment
+                    // TODOTEST
+                    * 100.0f * simulationParameters.ThermalConductivityAdjustment
+                    // TODOTEST
+                    //* angleDamper;
+                    ;
+
+                // Add force, towards the interior - we assume lift materials are placed on the bottom surface if we want an upward lift
+                mPoints.AddStaticForce(
+                    thisPointIndex,
+                    -edgeNormal * liftForce);
+
+                //
                 // Advance edge in the frontier visit
                 //
 
                 nextEdgeIndex = nextFrontierEdge.NextEdgeIndex;
-                if (nextEdgeIndex == visitStartEdgeIndex)
+                if (nextEdgeIndex == edgeVisitStartEdgeIndex)
                     break;
 
                 previousPointPosition = thisPointPosition;
