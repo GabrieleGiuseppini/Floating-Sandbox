@@ -1494,7 +1494,7 @@
 		+ Test on Android
 		+ changelist
 
-	- Rot rework + "water soluble" material:
+	= Rot rework + "water soluble" material:
 		! Spec:
 			! Quantities:
 				! Burnt:
@@ -1508,17 +1508,22 @@
 					- From: LFLoop
 					- Phys effect: weakens
 					- Renders (red)
-				! Algae (encrusting):
+				! AlgaeGrowth (encrusting):
 					- From: LFLoop
 					- Renders (green)
 		- Impl:
 			- StructuralMaterial:
 				- New water_solubity, default 0.0
+			- structural_materials.json:
+				- TODO: all must rot
 					- Check all uses of rust_receptivity in json, replace those for solubility (e.g. Cardboard) with water_solubity
 			- Points:
 				- Members:
 					- AdditionalWeakness => Weakness
-					- Decay: not a float but 3-fold struct: Burnt, Rust, Algae -- superimposable with vec3f
+						- Getters/Setters
+					- Decay: not a float but 3-fold struct: Burnt, Rust, AlgaeGrowth -- union superimpose with vec3f
+						! Start with 1, decay towards 0
+						- Getters/Setters
 					- AlgaePattern: float
 				- Code:
 					- cctor: takes algae pattern
@@ -1531,9 +1536,13 @@
 				- Add to Burnt buffer
 			- Tornadoes:
 				- Add to Weakness
+			- SimulationParameters:
+				- AlgaeGrowthAcceler8r
+				- GameController
 			- LFLoop:
 				- Rust:
 					- Driven by material's rust_receptivity
+					- Speed: RotAcceler8r
 					- Amount:
 						- Water => + f(personality seed)
 						- Damaged => ++
@@ -1543,15 +1552,18 @@
 								- So rotting spreads from damaged points
 					- Add to Weakness
 					- Add to Rust buffer
-				- Algae:
+				- AlgaeGrowth:
+					- Speed: AlgaeGrowthAcceler8r
 					- Amount:
 						- Underwater => + f(perlin)
 						- Neighbors (with their perlin, probably already taken into account?)
-					- Add to Algae buffer
+					- Add to AlgaeGrowth buffer
 				- Solubility:
 					- Driven by material's water_solubility
+					- Speed: RotAcceler8r
 					- Amount:
-						- Water, and TODO: underwater?
+						- Water => +
+						- Underwater => +
 					- Add to Weakness
 
 			- Repair: lower weakness + 3
@@ -1559,20 +1571,34 @@
 			- Scrub tool: lower weakness + 3
 			- Rot tool: rust only
 
-			- ShipRenderContext: 
-				- Decay buffer becomes vec3f, "AttributeGroup2" (and rename old as "AttributeGroup1")
-					- Uploads
-					- VBO
+			- ShipRenderContext:
+				! AttributeGroup1 (old AttributeGroup): Light, water, temperature
+				! AttributeGroup2: Burnt, Rust, AlgaeGrowth
+				- ShaderSets attributes
+				- VAO
+				- Uploads
 			- Shaders:
-				- Decay buffer becomes vec3f, "AttributeGroup2" (and rename old as "AttributeGroup1")
-				- Burnt over Rust over Algae
+				- AttributeGroup1, AttributeGroup2
+				- Color: Burnt over Rust over AlgaeGrowth
+
+			- SettingsDialog:
+				- AlgaeGrowthAcceler8r, @ TODO
+
+		- Do "water soluble metal" material
 
 		- Test:
 			- Cardboard: solves
+			- Water Soluble Metal: solves
 			- Tornadoes: weaken
-			
-		- Do "water soluble metal" material
 
+		- changelist
+
+		- Merge into master
+
+		- Android port:
+			- TODOHERE
+			- changelist
+			
 	- TODOOLD
 	- Rot rework:
 		- 1. Current decay serves for rot (rust) + burn, like now; only two changes:
