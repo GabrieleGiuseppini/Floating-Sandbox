@@ -1464,7 +1464,7 @@
 			+ Yet, limit vel a bit
 		+ Test bombs
 
-	= Do lift material
+	+ Do lift material
 		! @ frontier force application, as a _static_ force
 		+ StructuralMaterial::lift_coefficient, default 0.0
 			+ Make "Iron Hull Aerodynamic" and "Aluminium Hull Aerodynamic" materials, lift_coefficient=1.2
@@ -1489,11 +1489,117 @@
 				+ Make double-backup first
 				+ ...
 				+ Take backup and nuke double-backup		
-		- Port plane & code & materials to Android
-		- Merge into master
-		- changelist
+		+ Port plane & code & materials to Android
+		+ Merge into master
+		+ Test on Android
+		+ changelist
+
+	- Rot rework + "water soluble" material:
+		! Spec:
+			! Quantities:
+				! Burnt:
+					- From: combustion
+					- Phys effect: weakens
+					- Renders (brown)
+				! Weakness:
+					- From: tornadoes, ...
+					- Phys effect: weakens
+				! Rust:
+					- From: LFLoop
+					- Phys effect: weakens
+					- Renders (red)
+				! Algae (encrusting):
+					- From: LFLoop
+					- Renders (green)
+		- Impl:
+			- StructuralMaterial:
+				- New water_solubity, default 0.0
+					- Check all uses of rust_receptivity in json, replace those for solubility (e.g. Cardboard) with water_solubity
+			- Points:
+				- Members:
+					- AdditionalWeakness => Weakness
+					- Decay: not a float but 3-fold struct: Burnt, Rust, Algae -- superimposable with vec3f
+					- AlgaePattern: float
+				- Code:
+					- cctor: takes algae pattern
+			- Spring strength uses Weakness only
+			- ShipFactory:
+				- TODO: provides algae pattern w/perlin
+
+			- Combustion:
+				- Add to Weakness
+				- Add to Burnt buffer
+			- Tornadoes:
+				- Add to Weakness
+			- LFLoop:
+				- Rust:
+					- Driven by material's rust_receptivity
+					- Amount:
+						- Water => + f(personality seed)
+						- Damaged => ++
+						[- Leaking + water => +++]
+						- Neighbors
+							- The amount of rust at a point depends on avg of neighbors
+								- So rotting spreads from damaged points
+					- Add to Weakness
+					- Add to Rust buffer
+				- Algae:
+					- Amount:
+						- Underwater => + f(perlin)
+						- Neighbors (with their perlin, probably already taken into account?)
+					- Add to Algae buffer
+				- Solubility:
+					- Driven by material's water_solubility
+					- Amount:
+						- Water, and TODO: underwater?
+					- Add to Weakness
+
+			- Repair: lower weakness + 3
+			- Restore: weakness + 3
+			- Scrub tool: lower weakness + 3
+			- Rot tool: rust only
+
+			- ShipRenderContext: 
+				- Decay buffer becomes vec3f, "AttributeGroup2" (and rename old as "AttributeGroup1")
+					- Uploads
+					- VBO
+			- Shaders:
+				- Decay buffer becomes vec3f, "AttributeGroup2" (and rename old as "AttributeGroup1")
+				- Burnt over Rust over Algae
+
+		- Test:
+			- Cardboard: solves
+			- Tornadoes: weaken
 			
-	- Do water solubile material - see Discord
+		- Do "water soluble metal" material
+
+	- TODOOLD
+	- Rot rework:
+		- 1. Current decay serves for rot (rust) + burn, like now; only two changes:
+			- Color: rust->black (i.e. no green)
+			- Different propagation:
+				- Damaged points get more rust
+				- The strength of rust at a point depends on avg of neighbors
+					- So rotting spreads from damaged points
+				- Randomize more at each point
+					- Can use point's personality seed
+		- 2. New quantity for "water-rotting", with flag/acceler8r
+			- Perlin-based quantity, "factory" and immutable, at Points
+				- Created @ factory time
+			- At RotPoints, also converge underwater points' "water-rotting" quantity to Perlin
+				- The strength of water rotting at a point depends on avg of neighbors
+					- So rotting spreads from "more perlin" points
+			- Shader: green
+		- 3. Scrub also clears "water-rotting" quantity
+	- Do "water soluble metal" material
+		- When flooded
+		- ...and another one one under waterline?
+
+
+
+
+
+
 
 	- Fix foam with angley waves: is it because it becomes too wide?
 
@@ -1520,24 +1626,6 @@
 		- Update with .pot (from silt/black smoke release)
 		- Send again for new strings
 		- Release
-
-	- Rot rework:
-		- 1. Current decay serves for rot (rust) + burn, like now; only two changes:
-			- Color: rust->black (i.e. no green)
-			- Different propagation:
-				- Damaged points get more rust
-				- The strength of rust at a point depends on avg of neighbors
-					- So rotting spreads from damaged points
-				- Randomize more at each point
-		- 2. New quantity for "water-rotting", with flag/acceler8r
-			- Perlin-based quantity, "factory" and immutable, at Points
-				- Created @ factory time
-			- At RotPoints, also converge underwater points' "water-rotting" quantity to Perlin
-				- The strength of water rotting at a point depends on avg of neighbors
-					- So rotting spreads from "more perlin" points
-			- Shader: green
-		- 3. Scrub also clears "water-rotting" quantity
-
 
 	- Try Android font
 
