@@ -1478,20 +1478,17 @@
 		= Fine-tune
 			+ Add tiny 45deg lift material @ tail
 			+ Add thrust engines @ tail for up/down help
-			= Test in release
-			- Find balance: max speed vs. multiplier
-				- Max speed: make sure doesn't explode 
-			- Conclusion:
+			+ Test in release
+			= Conclusion:
 				! For correct physics: we need at least 66 m/s, speed here is 16
-				- Takes off from reset: multiplier (thermal): 4
-					- @ height > 500
+				+ Takes off from reset: multiplier (thermal): 4
+				+ Underwater is too much; just use air density
+				- See assembly to see if we need precalc'd factor
 				
 		- SettingsDialog?
 
 		- Test:
 			+ ShipBuilder palette title sizes
-			- Underwater
-				- Might be too much; if so, just take air density
 			- Android's plane
 				+ Make double-backup first
 				- ...

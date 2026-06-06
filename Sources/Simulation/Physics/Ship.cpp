@@ -1833,22 +1833,24 @@ void Ship::ApplyWorldSurfaceForces(
                 // Lift: Cl * rho * V^2 * A / 2
                 //
                 //  - Cl: from material
-                //  - Rho: from water/air
+                //  - Rho: from water/air (though we only use air density, as underwater lift would be massive)
                 //  - V: point velocity along edge, absolute (we pretend a double-profile wing, otherwise airplanes cannot fly in both flip directions)
-                //  - A: 1 square meter
+                //  - A: 400 square meter (calculated empirically)
                 //
 
-                // TODOTEST
+                // Cap velocity as a proxy to cap lift force, avoiding massive forces that
+                // would makes structures explode when reached suddenly
                 float const edgeVelocityAlongEdgeCapped = std::min(std::fabsf(edgeVelocityAlongEdge), 30.0f);
+
+                float constexpr WingSurface = 400.0f;
 
                 float const liftForce =
                     mPoints.GetStructuralMaterial(thisPointIndex).LiftCoefficient
-                    * Mix(effectiveAirDensity, effectiveWaterDensity, uwCoefficient)
+                    * effectiveAirDensity
                     * edgeVelocityAlongEdgeCapped * edgeVelocityAlongEdgeCapped
+                    * WingSurface
                     / 2.0f
-                    * simulationParameters.LiftForceAdjustment
-                    // TODOTEST
-                    * 100.0f * simulationParameters.ThermalConductivityAdjustment;
+                    * simulationParameters.LiftForceAdjustment;
 
                 // Add force, towards the interior - we assume lift materials are placed on the bottom surface if we want an upward lift
                 mPoints.AddStaticForce(
