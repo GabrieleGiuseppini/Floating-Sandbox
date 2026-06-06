@@ -1522,6 +1522,23 @@ void Ship::ApplyWorldSurfaceForces(
     WaterSplash strongestWaterSplash;
 
     //
+    // Lift: Cl * rho * V^2 * A / 2
+    //
+    //  - Cl: from material
+    //  - Rho: from water/air (though we only use air density, as underwater lift would be massive)
+    //  - V: point velocity along edge, absolute (we pretend a double-profile wing, otherwise airplanes cannot fly in both flip directions)
+    //  - A: 400 square meter (calculated empirically)
+    //
+
+    float constexpr WingSurface = 400.0f;
+
+    float const liftForceFactor_Rho_A_Half_Adj =
+        effectiveAirDensity
+        * WingSurface
+        / 2.0f
+        * simulationParameters.LiftForceAdjustment;
+
+    //
     // Visit all frontiers
     //
 
@@ -1830,27 +1847,17 @@ void Ship::ApplyWorldSurfaceForces(
                 }
 
                 //
-                // Lift: Cl * rho * V^2 * A / 2
-                //
-                //  - Cl: from material
-                //  - Rho: from water/air (though we only use air density, as underwater lift would be massive)
-                //  - V: point velocity along edge, absolute (we pretend a double-profile wing, otherwise airplanes cannot fly in both flip directions)
-                //  - A: 400 square meter (calculated empirically)
+                // Lift: Cl * V^2 * (Rho * A / 2)
                 //
 
-                // Cap velocity as a proxy to cap lift force, avoiding massive forces that
-                // would makes structures explode when reached suddenly
-                float const edgeVelocityAlongEdgeCapped = std::min(std::fabsf(edgeVelocityAlongEdge), 30.0f);
-
-                float constexpr WingSurface = 400.0f;
+                // Cap velocity as a proxy to cap lift force, to avoid massive lift forces that
+                // would makes structures explode when velocity is reached suddenly
+                float const edgeVelocityAlongEdgeSquareCapped = std::min(edgeVelocityAlongEdge * edgeVelocityAlongEdge, 30.0f * 30.0f);
 
                 float const liftForce =
                     mPoints.GetStructuralMaterial(thisPointIndex).LiftCoefficient
-                    * effectiveAirDensity
-                    * edgeVelocityAlongEdgeCapped * edgeVelocityAlongEdgeCapped
-                    * WingSurface
-                    / 2.0f
-                    * simulationParameters.LiftForceAdjustment;
+                    * edgeVelocityAlongEdgeSquareCapped
+                    * liftForceFactor_Rho_A_Half_Adj;
 
                 // Add force, towards the interior - we assume lift materials are placed on the bottom surface if we want an upward lift
                 mPoints.AddStaticForce(
