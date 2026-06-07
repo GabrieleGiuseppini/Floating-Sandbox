@@ -1612,22 +1612,25 @@
 			= Rot tool: rot
 				- No rust? No Algae?
 
-			- ShipRenderContext:
+			+ ShipRenderContext:
 				! AttributeGroup VBO becomes 6-way: Light, Water, Temperature, Rot, Rust, AlgaeGrowth
-				- ShaderSets attributes
-				- Vertex struct (just for convenience, comment on not being used directly)
-				- Ship VAO
-				- Ship Uploads
-					- TODO: can rethink union/vec3? Should we break it in three buffers?
-				- Debris
+				+ ShaderSets attributes
+				+ Vertex struct (just for convenience, comment on not being used directly)
+				+ Ship VAO
+				+ Ship Uploads
+				+ Debris VAO
 			- Shaders:
 				- AttributeGroup vertex buffer changes
 					- All shaders
+					- Debris
 				- Color: Burnt over Rust over AlgaeGrowth
 
 			- SettingsDialog:
 				- AlgaeGrowthAcceler8r, @ TODO
 				- RustAcceler8r, @ TODO
+
+		- Decide:
+			- TODO: Want to turn back Points::Rot buffer from vec3f to struct, or even three buffers?
 
 		- Do "water soluble metal" material
 
