@@ -727,6 +727,9 @@ public:
         SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters)
         : ElementContainer(make_aligned_float_element_count(shipPointCount) + maxEphemeralParticleCount)
+        , mRawShipPointCount(shipPointCount)
+        , mAlignedShipPointCount(make_aligned_float_element_count(shipPointCount))
+        , mEphemeralPointCount(maxEphemeralParticleCount)
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
@@ -818,10 +821,6 @@ public:
         //////////////////////////////////
         // Container
         //////////////////////////////////
-        , mRawShipPointCount(shipPointCount)
-        , mAlignedShipPointCount(make_aligned_float_element_count(shipPointCount))
-        , mEphemeralPointCount(maxEphemeralParticleCount)
-        //
         , mParentWorld(parentWorld)
         , mMaterialDatabase(materialDatabase)
         , mSimulationEventHandler(simulationEventDispatcher)
@@ -2506,6 +2505,13 @@ private:
 
 private:
 
+    // Count of ship points; these are followed by ephemeral points
+    ElementCount const mRawShipPointCount;
+    ElementCount const mAlignedShipPointCount;
+
+    // Count of ephemeral points
+    ElementCount const mEphemeralPointCount;
+
     //////////////////////////////////////////////////////////
     // Buffers
     //////////////////////////////////////////////////////////
@@ -2683,13 +2689,6 @@ private:
     //////////////////////////////////////////////////////////
     // Container
     //////////////////////////////////////////////////////////
-
-    // Count of ship points; these are followed by ephemeral points
-    ElementCount const mRawShipPointCount;
-    ElementCount const mAlignedShipPointCount;
-
-    // Count of ephemeral points
-    ElementCount const mEphemeralPointCount;
 
     World & mParentWorld;
     MaterialDatabase const & mMaterialDatabase;

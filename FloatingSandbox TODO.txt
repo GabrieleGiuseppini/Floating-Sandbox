@@ -1619,11 +1619,18 @@
 				+ Ship VAO
 				+ Ship Uploads
 				+ Debris VAO
-			- Shaders:
-				- AttributeGroup vertex buffer changes
-					- All shaders
-					- Debris
-				- Color: Burnt over Rust over AlgaeGrowth
+			= Shaders:
+				+ AttributeGroup vertex buffer changes
+					+ All shaders
+					+ Debris
+				+ Color: Rust over AlgaeGrowth over Rot
+
+				+ Color constants
+					+ Search all uses
+
+				= ship_decay
+					- Finalize color of rot
+				+ ship_element
 
 			- SettingsDialog:
 				- AlgaeGrowthAcceler8r, @ TODO
@@ -1635,6 +1642,9 @@
 		- Do "water soluble metal" material
 
 		- Test:
+			- StressedSprings shader - no regressions
+			- InternalPressure shader - no regressions
+			- Strength shader - no regressions
 			- Debris
 			- GenericTextures
 

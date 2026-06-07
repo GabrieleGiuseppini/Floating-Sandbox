@@ -188,7 +188,7 @@ ShipRenderContext::ShipRenderContext(
 
     mPointAttributeGroupVBO = vbos[2];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroupVBO);
-    glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(vec4f), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(PointAttributeGroupVertex), nullptr, GL_STREAM_DRAW);
 
     mPointColorVBO = vbos[3];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
