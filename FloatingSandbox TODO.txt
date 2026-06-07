@@ -1497,10 +1497,10 @@
 	= Rot rework + "water soluble" material:
 		! Spec:
 			! Quantities:
-				! Burnt:
-					- From: combustion
+				! Rot:
+					- From: combustion, LFLoop (water+underwater) - so all materials weaken
 					- Phys effect: weakens
-					- Renders (brown)
+					- Renders (dark brown)
 				! Weakness:
 					- From: tornadoes, ...
 					- Phys effect: weakens
@@ -1511,39 +1511,76 @@
 				! AlgaeGrowth (encrusting):
 					- From: LFLoop
 					- Renders (green)
-		- Impl:
-			- StructuralMaterial:
-				- New water_solubity, default 0.0
-			- structural_materials.json:
-				- TODO: all must rot
-					- Check all uses of rust_receptivity in json, replace those for solubility (e.g. Cardboard) with water_solubity
-			- Points:
-				- Members:
-					- AdditionalWeakness => Weakness
-						- Getters/Setters
-					- Decay: not a float but 3-fold struct: Burnt, Rust, AlgaeGrowth -- union superimpose with vec3f
+			! New Water Solubility material property; doesn't affect rendering, just acts on weakness
+		= Impl:
+			+ StructuralMaterial:
+				+ New rot_receptivity, default is 1.0 (same as current rust_receptivity)
+				+ rust_receptivity default is 0.0
+				+ New water_solubility, default is 0.0
+					+ Solubility doesn't affect rendering; just acts on weakness
+			+ structural_materials.json:
+				! All materials' defaults:
+					! rot_receptivity 1.0 
+					! rust_receptivity 0.0
+					! water_solubility 0.0
+				+ Metals:
+					+ rust_receptivity=old rust_receptivity/1.0
+						+ Steels: 0.5
+				+ Wood:
+					+ Nothing
+				+ Cardboard:
+					+ water_solubility=old rust_receptivity
+					+ no rust_receptivity
+				+ Stainless:
+					+ rot_receptivity=old rust_receptivity
+					+ no rust_receptivity (nuke "rust_receptivity": 0,)
+				+ Concrete, etc.:
+					+ rot_receptivity=old rust_receptivity
+					+ no rust_receptivity
+			+ Points:
+				+ Members:
+					+ AdditionalWeakness => Weakness
+						+ Getters/Setters
+					+ Decay: not a float but 3-fold struct: Rot, Rust, AlgaeGrowth -- union of struct superimposed with vec3f
 						! Start with 1, decay towards 0
-						- Getters/Setters
-					- AlgaePattern: float
-				- Code:
-					- cctor: takes algae pattern
-			- Spring strength uses Weakness only
+						+ Getters/Setters
+					+ AlgaeGrowthPattern: float
+				+ Code:
+					+ cctor: takes algae pattern
+			+ Spring strength uses Weakness only
 			- ShipFactory:
 				- TODO: provides algae pattern w/perlin
 
-			- Combustion:
-				- Add to Weakness
-				- Add to Burnt buffer
-			- Tornadoes:
-				- Add to Weakness
-			- SimulationParameters:
-				- AlgaeGrowthAcceler8r
-				- GameController
-			- LFLoop:
+			+ Combustion:
+				+ Add to Weakness
+				+ Add to Rot buffer
+			+ Tornadoes:
+				+ Add to Weakness
+			+ SimulationParameters:
+				+ AlgaeGrowthAcceler8r
+				+ RustAcceler8r
+				+ GameController
+			= LFLoop:
+				- Important: don't add multiple weaknesses, do min among all
+					- Just calc min alpha and use that for weakness
+				= Decay:
+					+ Driven by material's rot_receptivity
+					+ Speed: RotAcceler8r
+					+ Amount:
+						+ Like now
+					- Add to Weakness
+					+ Add to Rot buffer
 				- Rust:
 					- Driven by material's rust_receptivity
-					- Speed: RotAcceler8r
+					- Speed: RustAcceler8r
 					- Amount:
+						- Leaking => +++ f(personality seed)
+							- TODO: see what happens when *hull* is damaged: can we tell it is? If so use that so also hull gets rust
+						- Neighbors
+							- The amount of rust at a point depends on avg of neighbors
+								- So rotting spreads from damaged points
+
+						- TODOOLD:
 						- Water => + f(personality seed)
 						- Damaged => ++
 						[- Leaking + water => +++]
@@ -1566,30 +1603,45 @@
 						- Underwater => +
 					- Add to Weakness
 
-			- Repair: lower weakness + 3
-			- Restore: weakness + 3
-			- Scrub tool: lower weakness + 3
-			- Rot tool: rust only
+				- Optimize:
+					- Precalcd' coeffs & update @ SimParams changes
+						- Members of Ship
+
+			+ Repair: lower weakness
+			+ Scrub tool: lower weakness + 3
+			= Rot tool: rot
+				- No rust? No Algae?
 
 			- ShipRenderContext:
-				! AttributeGroup1 (old AttributeGroup): Light, water, temperature
-				! AttributeGroup2: Burnt, Rust, AlgaeGrowth
+				! AttributeGroup VBO becomes 6-way: Light, Water, Temperature, Rot, Rust, AlgaeGrowth
 				- ShaderSets attributes
-				- VAO
-				- Uploads
+				- Vertex struct (just for convenience, comment on not being used directly)
+				- Ship VAO
+				- Ship Uploads
+					- TODO: can rethink union/vec3? Should we break it in three buffers?
+				- Debris
 			- Shaders:
-				- AttributeGroup1, AttributeGroup2
+				- AttributeGroup vertex buffer changes
+					- All shaders
 				- Color: Burnt over Rust over AlgaeGrowth
 
 			- SettingsDialog:
 				- AlgaeGrowthAcceler8r, @ TODO
+				- RustAcceler8r, @ TODO
 
 		- Do "water soluble metal" material
 
 		- Test:
-			- Cardboard: solves
-			- Water Soluble Metal: solves
+			- Debris
+			- GenericTextures
+
+			- Cardboard: rots (& doesn't rust )
+			- Lego doesn't rot nor rust nor dissolves
+			- Water Soluble Metal: dissolves
 			- Tornadoes: weaken
+			- Repair
+				- Note: doesn't clean anymore; it just repairs weakness
+					- Test repairing heavily rotten structure
 
 		- changelist
 

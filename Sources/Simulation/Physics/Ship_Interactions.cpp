@@ -1151,15 +1151,16 @@ void Ship::ApplyTornado(
 
                     // Delta-weakness to reach our target
                     float constexpr TargetWeakness = 0.12f;
-                    float const deltaWeakness = (TargetWeakness - mPoints.GetAdditionalWeakness(pointIndex)) * 0.1f; // Reach slowly
+                    float const currentWeakness = mPoints.GetWeakness(pointIndex);
+                    float const deltaWeakness = (TargetWeakness - currentWeakness) * 0.1f; // Reach slowly
 
                     // How much we weaken depends on the strength of the point, so we may weaken "structurally", not homogeneuosly
                     // float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.27f, mPoints.GetFactoryStrength(pointIndex)); // This was a totally different way, opposite (weakening the weak)
                     float const weakeningStrength = LinearStep(0.01f, 0.07f, mPoints.GetFactoryStrength(pointIndex));
 
-                    mPoints.SetAdditionalWeakness(
+                    mPoints.SetWeakness(
                         pointIndex,
-                        mPoints.GetAdditionalWeakness(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth * args.StrengthMultiplier);
+                        currentWeakness + deltaWeakness * weakeningStrength * tornadoDepth * args.StrengthMultiplier);
 
                     //
                     // Heat
@@ -1563,12 +1564,25 @@ bool Ship::ScrubThrough(
             //
 
             float const distance = std::sqrt(squarePointDistance);
+            float strength = 0.5f * (radius - distance) / radius;
 
-            float const newDecay =
-                mPoints.GetDecay(pointIndex)
-                + 0.5f * (1.0f - mPoints.GetDecay(pointIndex)) * (radius - distance) / radius;
+            // x' = x + (1-x)*s == x(1-s) + s
 
-            mPoints.SetDecay(pointIndex, newDecay);
+            mPoints.SetRot(
+                pointIndex,
+                mPoints.GetRot(pointIndex) * (1.0f - strength) + strength);
+
+            mPoints.SetRust(
+                pointIndex,
+                mPoints.GetRust(pointIndex) * (1.0f - strength) + strength);
+
+            mPoints.SetAlgaeGrowth(
+                pointIndex,
+                mPoints.GetAlgaeGrowth(pointIndex) * (1.0f - strength) + strength);
+
+            mPoints.SetWeakness(
+                pointIndex,
+                mPoints.GetWeakness(pointIndex) * (1.0f - strength) + strength);
 
             // Remember at least one point has been scrubbed
             hasScrubbed |= true;
@@ -1615,11 +1629,11 @@ bool Ship::RotThrough(
                 ? 0.0175f
                 : 0.010f;
 
-            float const newDecay =
-                mPoints.GetDecay(pointIndex)
+            float const newRot =
+                mPoints.GetRot(pointIndex)
                 * (1.0f - decayCoeff * decayCoeffMultiplier * (radius - distance) / radius);
 
-            mPoints.SetDecay(pointIndex, newDecay);
+            mPoints.SetRot(pointIndex, newRot);
 
             // Remember at least one point has been rotted
             hasRotted |= true;
@@ -1693,8 +1707,8 @@ void Ship::ApplyThanosSnap(
                     currentSimulationTime,
                     simulationParameters);
 
-                // Set decay to min, so that debris gets darkened
-                mPoints.SetDecay(pointIndex, 0.0f);
+                // Set rot to min, so that debris gets darkened
+                mPoints.SetRot(pointIndex, 0.0f);
             }
         }
     }

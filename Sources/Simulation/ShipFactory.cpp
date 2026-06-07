@@ -1916,6 +1916,7 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
             pointInfo.IsLeaking,
             pointInfo.RenderColor,
             pointInfo.TextureCoordinates,
+            1.0f, // TODOHERE: AlgaeGrowthPattern
             GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
 
         //

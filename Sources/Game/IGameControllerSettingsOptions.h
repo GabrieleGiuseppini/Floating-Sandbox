@@ -58,6 +58,12 @@ struct IGameControllerSettingsOptions
     virtual float GetMinLiftForceAdjustment() const = 0;
     virtual float GetMaxLiftForceAdjustment() const = 0;
 
+    virtual float GetMinRustAcceler8r() const = 0;
+    virtual float GetMaxRustAcceler8r() const = 0;
+
+    virtual float GetMinAlgaeGrowthAcceler8r() const = 0;
+    virtual float GetMaxAlgaeGrowthAcceler8r() const = 0;
+
     // Air
 
     virtual float GetMinAirDensityAdjustment() const = 0;

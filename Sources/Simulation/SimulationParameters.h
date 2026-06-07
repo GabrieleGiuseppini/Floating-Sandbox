@@ -146,6 +146,14 @@ struct SimulationParameters
     static float constexpr MinLiftForceAdjustment = 0.0f;
     static float constexpr MaxLiftForceAdjustment = 20.0f;
 
+    float RustAcceler8r;
+    static float constexpr MinRustAcceler8r = 0.0f;
+    static float constexpr MaxRustAcceler8r = 1000.0f;
+
+    float AlgaeGrowthAcceler8r;
+    static float constexpr MinAlgaeGrowthAcceler8r = 0.0f;
+    static float constexpr MaxAlgaeGrowthAcceler8r = 1000.0f;
+
     // Air
 
     float AirDensityAdjustment;
@@ -457,8 +465,8 @@ struct SimulationParameters
     static float constexpr SmotheringWaterLowWatermark = 0.05f;
     static float constexpr SmotheringWaterHighWatermark = 0.1f;
 
-    static float constexpr SmotheringDecayLowWatermark = 0.0005f;
-    static float constexpr SmotheringDecayHighWatermark = 0.05f;
+    static float constexpr SmotheringRotLowWatermark = 0.0005f;
+    static float constexpr SmotheringRotHighWatermark = 0.05f;
 
     unsigned int MaxBurningParticlesPerShip;
     static unsigned int constexpr MaxMaxBurningParticlesPerShip = 1000;

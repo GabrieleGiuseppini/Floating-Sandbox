@@ -479,6 +479,16 @@ public:
     float GetMinLiftForceAdjustment() const override { return SimulationParameters::MinLiftForceAdjustment; }
     float GetMaxLiftForceAdjustment() const override { return SimulationParameters::MaxLiftForceAdjustment; }
 
+    float GetRustAcceler8r() const override { return mSimulationParameters.RustAcceler8r; }
+    void SetRustAcceler8r(float value) override { mSimulationParameters.RustAcceler8r = value; }
+    float GetMinRustAcceler8r() const override { return SimulationParameters::MinRustAcceler8r; }
+    float GetMaxRustAcceler8r() const override { return SimulationParameters::MaxRustAcceler8r; }
+
+    float GetAlgaeGrowthAcceler8r() const override { return mSimulationParameters.AlgaeGrowthAcceler8r; }
+    void SetAlgaeGrowthAcceler8r(float value) override { mSimulationParameters.AlgaeGrowthAcceler8r = value; }
+    float GetMinAlgaeGrowthAcceler8r() const override { return SimulationParameters::MinAlgaeGrowthAcceler8r; }
+    float GetMaxAlgaeGrowthAcceler8r() const override { return SimulationParameters::MaxAlgaeGrowthAcceler8r; }
+
     float GetTimeOfDay() const override { return mTimeOfDay; }
     void SetTimeOfDay(float value) override;
 

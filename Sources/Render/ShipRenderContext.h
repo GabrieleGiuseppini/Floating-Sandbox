@@ -96,7 +96,7 @@ public:
         float const * light,
         float const * water,
         float const * temperature,
-        float const * decay,
+        vec3f const * rot,
         std::optional<float const *> planeId);
 
     // Invoked on render thread
@@ -209,7 +209,6 @@ public:
         vec4f const & color,
         float light,
         float water,
-        float decay,
         float temperature,
         float stress)
     {
@@ -218,7 +217,7 @@ public:
             light,
             water,
             temperature,
-            decay,
+            1.0f,
             static_cast<float>(planeId),
             stress,
             color);
@@ -1828,7 +1827,7 @@ private:
 
     GameOpenGLVBO mPointPositionVBO;
     GameOpenGLVBO mPointTextureCoordinatesVBO;
-    GameOpenGLVBO mPointAttributeGroupVBO;
+    GameOpenGLVBO mPointAttributeGroupVBO; // Light, water, temperature, decay
     GameOpenGLVBO mPointColorVBO;
     GameOpenGLVBO mPointPlaneIdVBO;
     GameOpenGLVBO mPointStressVBO;

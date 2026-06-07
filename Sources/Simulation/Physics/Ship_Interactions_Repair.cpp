@@ -148,7 +148,7 @@ void Ship::RepairAt(
                 }
 
                 // Recalculate this spring's coefficients, now that we have changed its rest length
-                mSprings.UpdateForRestLength(
+                mSprings.UpdateForRestLengthAndWeakness(
                     cs.SpringIndex,
                     mPoints);
             }
@@ -166,11 +166,11 @@ void Ship::RepairAt(
         }
 
         // d) (Partially) restore (in-radius) points' weakness
-        float const currentWeakness = mPoints.GetAdditionalWeakness(pointIndex);
+        float const currentWeakness = mPoints.GetWeakness(pointIndex);
         float newWeakness = currentWeakness + (1.0f - currentWeakness) / 2.0f;
         if (std::fabsf(1.0f - newWeakness) < 0.001f)
             newWeakness = 1.0f;
-        mPoints.SetAdditionalWeakness(
+        mPoints.SetWeakness(
             pointIndex,
             newWeakness);
     }
@@ -851,16 +851,10 @@ bool Ship::RepairFromAttractor(
                         attracteePointIndex,
                         sumVelocity / static_cast<float>(mPoints.GetConnectedSprings(attracteePointIndex).ConnectedSprings.size()));
 
-                    // Halve the decay of both endpoints, to prevent newly-repaired
-                    // rotten particles from crumbling again
-                    float const attractorDecay = mPoints.GetDecay(attractorPointIndex);
-                    mPoints.SetDecay(
-                        attractorPointIndex,
-                        attractorDecay + (1.0f - attractorDecay) / 2.0f);
-                    float const attracteeDecay = mPoints.GetDecay(attracteePointIndex);
-                    mPoints.SetDecay(
-                        attracteePointIndex,
-                        attracteeDecay + (1.0f - attracteeDecay) / 2.0f);
+                    // Zero the weakness of both endpoints, to prevent newly-repaired spring
+                    // from crumbling again
+                    mPoints.SetWeakness(attractorPointIndex, 1.0f);
+                    mPoints.SetWeakness(attracteePointIndex, 1.0f);
 
                     // Restore the spring's rest length to its factory value
                     mSprings.SetRestLength(
@@ -872,8 +866,8 @@ bool Ship::RepairFromAttractor(
                     AttemptPointRestore(attracteePointIndex, currentSimulationTime);
 
                     // Recalculate the spring's coefficients, since we have changed the
-                    // spring's rest length
-                    mSprings.UpdateForRestLength(
+                    // spring's rest length and the endpoints' weaknesses
+                    mSprings.UpdateForRestLengthAndWeakness(
                         fcs.SpringIndex,
                         mPoints);
 

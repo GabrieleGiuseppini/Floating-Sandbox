@@ -63,6 +63,12 @@ struct IGameControllerSettings
     virtual float GetLiftForceAdjustment() const = 0;
     virtual void SetLiftForceAdjustment(float value) = 0;
 
+    virtual float GetRustAcceler8r() const = 0;
+    virtual void SetRustAcceler8r(float value) = 0;
+
+    virtual float GetAlgaeGrowthAcceler8r() const = 0;
+    virtual void SetAlgaeGrowthAcceler8r(float value) = 0;
+
     virtual float GetTimeOfDay() const = 0;
     virtual void SetTimeOfDay(float value) = 0;
 

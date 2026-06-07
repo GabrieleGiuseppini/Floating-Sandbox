@@ -216,7 +216,7 @@ public:
             points);
     }
 
-    void UpdateForRestLength(
+    void UpdateForRestLengthAndWeakness(
         ElementIndex springElementIndex,
         Points const & points)
     {

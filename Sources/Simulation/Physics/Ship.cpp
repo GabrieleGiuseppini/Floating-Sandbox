@@ -3506,28 +3506,23 @@ void Ship::RotPoints(
     float /*currentSimulationTime*/,
     SimulationParameters const & simulationParameters)
 {
-    if (simulationParameters.RotAcceler8r == 0.0f)
-    {
-        // Disable rotting altogether
-        return;
-    }
-
     //
     // Rotting is done with a recursive equation:
     //  decay(0) = 1.0
-    //  decay(n) = A * decay(n-1), with 0 < A < 1
+    //  decay(n) = a * decay(n-1), with 0 < a < 1
     //
-    // A (alpha): the smaller the alpha, the faster we rot.
+    // a (alpha): the smaller the alpha, the faster we rot.
     //
     // This converges to:
-    //  decay(n) = A^n
+    //  decay(n) = a^n
     //
-    // We want full decay (decay=1e-10) after Nf steps:
-    //  ZeroDecay = Af ^ Nf
+    // If at time N we want decay=Dn: a = Dn ^ (1/N)
     //
 
+    // TODOHERE
+
     //
-    // We want to calculate alpha(x) as 1 - beta*x, with x depending on the particle's state:
+    // We want to calculate alpha as 1 - beta*x, with x depending on the particle's state:
     //      underwater not flooded: x_uw
     //      not underwater flooded: x_fl == 1.0 (so that we can use particle's water, clamped)
     //      underwater and flooded: x_uw_fl
@@ -3573,14 +3568,15 @@ void Ship::RotPoints(
         // Adjust with leaking: if leaking and subject to rusting, then rusts faster
         x += mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak * x * x_uw;
 
-        // Adjust with material's rust receptivity
-        x *= mPoints.GetMaterialRustReceptivity(p);
+        // Adjust with material's rot receptivity
+        x *= mPoints.GetStructuralMaterial(p).RotReceptivity;
 
         // Calculate alpha
         float const alpha = std::max(1.0f - beta * x, 0.0f);
 
         // Decay
-        mPoints.SetDecay(p, mPoints.GetDecay(p) * alpha);
+        mPoints.SetRot(p, mPoints.GetRot(p) * alpha);
+        mPoints.SetWeakness(p, mPoints.GetWeakness(p) * alpha);
     }
 }
 
@@ -5070,6 +5066,8 @@ void Ship::HandleElectricSpark(
     float currentSimulationTime,
     SimulationParameters const & simulationParameters)
 {
+    assert(!mPoints.IsEphemeral(pointElementIndex));
+
     //
     // Electrification
     //
@@ -5104,9 +5102,9 @@ void Ship::HandleElectricSpark(
         (simulationParameters.IsUltraViolentMode ? 0.99f : 0.9995f)
         + (1.0f - strength) * 0.0003f;
 
-    mPoints.SetDecay(
+    mPoints.SetRot(
         pointElementIndex,
-        mPoints.GetDecay(pointElementIndex) * rotCoefficient);
+        mPoints.GetRot(pointElementIndex) * rotCoefficient);
 
     //
     // Electrical elements

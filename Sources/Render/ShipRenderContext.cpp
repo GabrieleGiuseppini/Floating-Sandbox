@@ -900,7 +900,7 @@ void ShipRenderContext::UploadPointMutableAttributes(
     float const * light,
     float const * water,
     float const * temperature,
-    float const * decay,
+    vec3f const * rot,
     std::optional<float const *> planeId)
 {
     // Uploaded at each cycle

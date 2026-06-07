@@ -96,7 +96,9 @@ public:
     float WaterIntake;
     float WaterDiffusionSpeed;
     float WaterRetention;
-    float RustReceptivity;
+    float RotReceptivity; // Strength decay and browning when underwater|flooded
+    float RustReceptivity; // Rust when flooded
+    float WaterSolubility; // Strength decay when underwater|flooded (no rendering)
 
     // Heat
     float IgnitionTemperature; // K
@@ -178,7 +180,9 @@ public:
         float waterIntake,
         float waterDiffusionSpeed,
         float waterRetention,
+        float rotReceptivity,
         float rustReceptivity,
+        float waterSolubility,
         // Heat
         float ignitionTemperature,
         float meltingTemperature,
@@ -219,7 +223,9 @@ public:
         , WaterIntake(waterIntake)
         , WaterDiffusionSpeed(waterDiffusionSpeed)
         , WaterRetention(waterRetention)
+        , RotReceptivity(rotReceptivity)
         , RustReceptivity(rustReceptivity)
+        , WaterSolubility(waterSolubility)
         , IgnitionTemperature(ignitionTemperature)
         , MeltingTemperature(meltingTemperature)
         , ThermalConductivity(thermalConductivity)
@@ -264,7 +270,9 @@ public:
         , WaterIntake(1.0f)
         , WaterDiffusionSpeed(1.0f)
         , WaterRetention(1.0f)
-        , RustReceptivity(1.0f)
+        , RotReceptivity(1.0f)
+        , RustReceptivity(0.0f)
+        , WaterSolubility(0.0f)
         , IgnitionTemperature(200.0f)
         , MeltingTemperature(200.0f)
         , ThermalConductivity(1.0f)

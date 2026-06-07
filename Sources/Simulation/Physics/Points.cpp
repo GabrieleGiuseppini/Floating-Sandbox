@@ -27,6 +27,7 @@ void Points::Add(
     bool isStructurallyLeaking,
     rgbaColor const & color,
     vec2f const & textureCoordinates,
+    float algaeGrowthPattern,
     float randomNormalizedUniformFloat)
 {
     ElementIndex const pointIndex = static_cast<ElementIndex>(mIsDamagedBuffer.GetCurrentPopulatedSize());
@@ -45,8 +46,6 @@ void Points::Add(
     mMaterialBuoyancyVolumeFillBuffer.emplace_back(structuralMaterial.BuoyancyVolumeFill);
     mFactoryStrengthBuffer.emplace_back(strength);
     mStressBuffer.emplace_back(0.0f);
-    mDecayBuffer.emplace_back(1.0f);
-    mAdditionalWeaknessBuffer.emplace_back(1.0f);
     mPinningCoefficientBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f));
     mOceanFloorBedrockCollisionFactorsBuffer.emplace_back(CalculateOceanFloorBedrockCollisionFactors(
@@ -102,9 +101,6 @@ void Points::Add(
     // Wind dynamics
     mMaterialWindReceptivityBuffer.emplace_back(structuralMaterial.WindReceptivity);
 
-    // Rust dynamics
-    mMaterialRustReceptivityBuffer.emplace_back(structuralMaterial.RustReceptivity);
-
     // Structure
     mConnectedSpringsBuffer.emplace_back();
     mFactoryConnectedSpringsBuffer.emplace_back();
@@ -129,6 +125,7 @@ void Points::Add(
     // Immutable render attributes
     mColorBuffer.emplace_back(color.toVec4f());
     mTextureCoordinatesBuffer.emplace_back(textureCoordinates);
+    mAlgaeGrowthPatternBuffer.emplace_back(algaeGrowthPattern);
 }
 
 void Points::CreateEphemeralParticleAirBubble(
@@ -167,10 +164,6 @@ void Points::CreateEphemeralParticleAirBubble(
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airBubbleBuoyancyVolumeFill;
-    assert(mDecayBuffer[pointIndex] == 1.0f);
-    //mDecayBuffer[pointIndex] = 1.0f;
-    assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
-    //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
@@ -211,9 +204,6 @@ void Points::CreateEphemeralParticleAirBubble(
     //mLightBuffer[pointIndex] = 0.0f;
 
     mMaterialWindReceptivityBuffer[pointIndex] = 0.0f; // Air bubbles (underwater) do not care about wind
-
-    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
-    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::AirBubble;
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].StartSimulationTime = currentSimulationTime;
@@ -258,10 +248,6 @@ void Points::CreateEphemeralParticleDebris(
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
-    assert(mDecayBuffer[pointIndex] == 1.0f); // Even though we want to replicate as much as possible of original point, we won't replicate quantities that dirty future re-uses
-    //mDecayBuffer[pointIndex] = 1.0f;
-    assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
-    //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex]= CalculateOceanFloorBedrockCollisionFactors(
@@ -300,9 +286,6 @@ void Points::CreateEphemeralParticleDebris(
     //mLightBuffer[pointIndex] = 0.0f;
 
     mMaterialWindReceptivityBuffer[pointIndex] = structuralMaterial.WindReceptivity;
-
-    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
-    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::Debris;
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].StartSimulationTime = currentSimulationTime;
@@ -349,10 +332,6 @@ void Points::CreateEphemeralParticleSiltCloud(
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = siltCloudStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = buoyancyVolumeFill; // Calculated to achieve desired lifetime
-    assert(mDecayBuffer[pointIndex] == 1.0f);
-    //mDecayBuffer[pointIndex] = 1.0f;
-    assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
-    //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
@@ -393,9 +372,6 @@ void Points::CreateEphemeralParticleSiltCloud(
     //mLightBuffer[pointIndex] = 0.0f;
 
     mMaterialWindReceptivityBuffer[pointIndex] = 0.2f; // Silt clouds care about wind
-
-    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
-    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::SiltCloud;
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].StartSimulationTime = currentSimulationTime;
@@ -476,10 +452,6 @@ void Points::InternalCreateEphemeralParticleSmoke(
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = smokeStructuralMaterial.GetMass() * massMultiplier;
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = smokeStructuralMaterial.BuoyancyVolumeFill;
-    assert(mDecayBuffer[pointIndex] == 1.0f);
-    //mDecayBuffer[pointIndex] = 1.0f;
-    assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
-    //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
@@ -520,9 +492,6 @@ void Points::InternalCreateEphemeralParticleSmoke(
     //mLightBuffer[pointIndex] = 0.0f;
 
     mMaterialWindReceptivityBuffer[pointIndex] = 0.2f; // Smoke cares about wind
-
-    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
-    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::Smoke;
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].StartSimulationTime = currentSimulationTime;
@@ -569,10 +538,6 @@ void Points::CreateEphemeralParticleSparkle(
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
-    assert(mDecayBuffer[pointIndex] == 1.0f);
-    //mDecayBuffer[pointIndex] = 1.0f;
-    assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
-    //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
@@ -611,9 +576,6 @@ void Points::CreateEphemeralParticleSparkle(
     //mLightBuffer[pointIndex] = 0.0f;
 
     mMaterialWindReceptivityBuffer[pointIndex] = 20.0f; // Sparkles are susceptible to wind
-
-    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
-    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::Sparkle;
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].StartSimulationTime = currentSimulationTime;
@@ -655,10 +617,6 @@ void Points::CreateEphemeralParticleWakeBubble(
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = waterStructuralMaterial.BuoyancyVolumeFill;
-    assert(mDecayBuffer[pointIndex] == 1.0f);
-    //mDecayBuffer[pointIndex] = 1.0f;
-    assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
-    //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
@@ -699,9 +657,6 @@ void Points::CreateEphemeralParticleWakeBubble(
     //mLightBuffer[pointIndex] = 0.0f;
 
     mMaterialWindReceptivityBuffer[pointIndex] = 0.0f; // Wake bubbles (underwater) do not care about wind
-
-    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
-    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::WakeBubble;
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].StartSimulationTime = currentSimulationTime;
@@ -753,10 +708,6 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = mass;
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = buoyancyVolumeFill;
-    assert(mDecayBuffer[pointIndex] == 1.0f);
-    //mDecayBuffer[pointIndex] = 1.0f;
-    assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
-    //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
@@ -797,9 +748,6 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
     //mLightBuffer[pointIndex] = 0.0f;
 
     mMaterialWindReceptivityBuffer[pointIndex] = waterFoamStructuralMaterial.WindReceptivity;
-
-    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
-    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::WaterFoam;
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].StartSimulationTime = currentSimulationTime;
@@ -858,10 +806,6 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = mass;
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = buoyancyVolumeFill;
-    assert(mDecayBuffer[pointIndex] == 1.0f);
-    //mDecayBuffer[pointIndex] = 1.0f;
-    assert(mAdditionalWeaknessBuffer[pointIndex] == 1.0f);
-    //mAdditionalWeaknessBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
     mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
@@ -902,9 +846,6 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
     //mLightBuffer[pointIndex] = 0.0f;
 
     mMaterialWindReceptivityBuffer[pointIndex] = waterSplashStructuralMaterial.WindReceptivity;
-
-    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
-    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::WaterSplash;
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].StartSimulationTime = currentSimulationTime;
@@ -1180,7 +1121,7 @@ void Points::UpdateCombustionLowFrequency(
             // we'll eventually smother them later
             if (GetTemperature(pointIndex) >= effectiveIgnitionTemperature + SimulationParameters::IgnitionTemperatureHighWatermark
                 && GetWater(pointIndex) < SimulationParameters::SmotheringWaterLowWatermark
-                && GetDecay(pointIndex) > SimulationParameters::SmotheringDecayHighWatermark)
+                && GetRot(pointIndex) > SimulationParameters::SmotheringRotHighWatermark)
             {
                 auto const combustionType = mMaterialCombustionTypeBuffer[pointIndex];
 
@@ -1216,7 +1157,7 @@ void Points::UpdateCombustionLowFrequency(
                 mMaterialIgnitionTemperatureBuffer[pointIndex] * simulationParameters.IgnitionTemperatureAdjustment;
 
             if (GetTemperature(pointIndex) <= (effectiveIgnitionTemperature + SimulationParameters::IgnitionTemperatureLowWatermark)
-                || GetDecay(pointIndex) < SimulationParameters::SmotheringDecayLowWatermark)
+                || GetRot(pointIndex) < SimulationParameters::SmotheringRotLowWatermark)
             {
                 //
                 // Transition to Extinguishing - by consumption
@@ -1256,7 +1197,8 @@ void Points::UpdateCombustionLowFrequency(
                 assert(decayAlpha <= 1.0f); // We can't allow decay to grow
 
                 // Decay point
-                mDecayBuffer[pointIndex] *= decayAlpha;
+                mWeaknessBuffer[pointIndex] *= decayAlpha;
+                mRotBuffer[pointIndex].Rot.Rot *= decayAlpha;
 
                 //
                 // 2. Decay neighbors
@@ -1264,7 +1206,8 @@ void Points::UpdateCombustionLowFrequency(
 
                 for (auto const s : GetConnectedSprings(pointIndex).ConnectedSprings)
                 {
-                    mDecayBuffer[s.OtherEndpointIndex] *= decayAlpha;
+                    mWeaknessBuffer[s.OtherEndpointIndex] *= decayAlpha;
+                    mRotBuffer[s.OtherEndpointIndex].Rot.Rot *= decayAlpha;
                 }
             }
         }
@@ -1551,6 +1494,8 @@ void Points::UpdateCombustionHighFrequency(
 
     for (auto const pointIndex : mBurningPoints)
     {
+        assert(!IsEphemeral(pointIndex));
+
         vec2f const & pointPosition = GetPosition(pointIndex);
 
         CombustionState & pointCombustionState = mCombustionStateBuffer[pointIndex];
@@ -1602,12 +1547,12 @@ void Points::UpdateCombustionHighFrequency(
                     (0.9f + 1.0f * (1.0f - springDir.dot(SimulationParameters::GravityDir)));
                 // No normalization: when using normalization flame does not propagate along rope
 
-                // Add heat to the neighbor, diminishing with the neighbor's decay
+                // Add heat to the neighbor, diminishing with the neighbor's rot
                 mTemperatureBuffer[otherEndpointIndex] +=
                     effectiveCombustionHeat
                     * dirAlpha
                     * mMaterialHeatCapacityReciprocalBuffer[otherEndpointIndex]
-                    * mDecayBuffer[otherEndpointIndex];
+                    * mRotBuffer[otherEndpointIndex].Rot.Rot;
             }
         }
 
@@ -2240,7 +2185,7 @@ void Points::Query(ElementIndex pointElementIndex) const
 {
     LogMessage("PointIndex: ", pointElementIndex, (nullptr != mMaterialsBuffer[pointElementIndex].Structural) ? (" (" + mMaterialsBuffer[pointElementIndex].Structural->Name) + ")" : "");
     LogMessage("P=", mPositionBuffer[pointElementIndex].toString(), " V=", mVelocityBuffer[pointElementIndex].toString());
-    LogMessage("M=", mMassBuffer[pointElementIndex], " IPs=", mInternalPressureBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Decay=", mDecayBuffer[pointElementIndex], " Wk=", mAdditionalWeaknessBuffer[pointElementIndex]);
+    LogMessage("M=", mMassBuffer[pointElementIndex], " IPs=", mInternalPressureBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Wk=", mWeaknessBuffer[pointElementIndex]);
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex], " ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
 
@@ -2294,7 +2239,7 @@ void Points::UploadAttributes(
         mLightBuffer.data(),
         mWaterBuffer.data(),
         mTemperatureBuffer.data(),
-        mDecayBuffer.data(),
+        reinterpret_cast<vec3f const *>(mRotBuffer.data()),
         planeIdBuffer);
 
     if (renderContext.GetStressRenderMode() != StressRenderModeType::None)
@@ -2522,7 +2467,6 @@ void Points::UploadEphemeralParticles(
                         GetColor(pointIndex),
                         GetLight(pointIndex),
                         GetWater(pointIndex),
-                        GetDecay(pointIndex),
                         GetTemperature(pointIndex),
                         GetStress(pointIndex));
 
@@ -2839,10 +2783,9 @@ void Points::InternalDoDamage(
     mShipPhysicsHandler->HandlePointDamaged(pointElementIndex);
 
     // Explode, if we're suppposed to
-    if (GetStructuralMaterial(pointElementIndex).ExplodesOnDamage)
+    auto const & material = GetStructuralMaterial(pointElementIndex);
+    if (material.ExplodesOnDamage)
     {
-        auto const & material = GetStructuralMaterial(pointElementIndex);
-
         float const blastForce =
             material.ExplosiveCombustionForce
             * 1000.0f; // KN -> N

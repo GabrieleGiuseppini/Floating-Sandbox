@@ -1263,7 +1263,7 @@ public:
         float const * light,
         float const * water,
         float const * temperature,
-        float const * decay,
+        vec3f const * rot,
         std::optional<float const *> planeId)
     {
         assert(shipId >= 0 && shipId < mInnerContext->ships.size());
@@ -1277,7 +1277,7 @@ public:
                     light,
                     water,
                     temperature,
-                    decay,
+                    rot,
                     planeId);
             });
     }
