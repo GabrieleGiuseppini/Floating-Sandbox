@@ -53,6 +53,8 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, StaticFrictionAdjustment);
     ADD_GC_SETTING(float, KineticFrictionAdjustment);
     ADD_GC_SETTING(float, RotAcceler8r);
+    ADD_GC_SETTING(float, RustAcceler8r);
+    ADD_GC_SETTING(float, AlgaeGrowthAcceler8r);
     ADD_GC_SETTING(float, StaticPressureForceAdjustment);
 
     // Air

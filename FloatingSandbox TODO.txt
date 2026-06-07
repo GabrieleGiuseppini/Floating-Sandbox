@@ -1632,9 +1632,9 @@
 					- Finalize color of rot
 				+ ship_element
 
-			- SettingsDialog:
-				- AlgaeGrowthAcceler8r, @ TODO
-				- RustAcceler8r, @ TODO
+			+ SettingsDialog:
+				+ AlgaeGrowthAcceler8r
+				+ RustAcceler8r
 
 		- Decide:
 			- TODO: Want to turn back Points::Rot buffer from vec3f to struct, or even three buffers?
@@ -1661,7 +1661,9 @@
 		- Merge into master
 
 		- Android port:
-			- TODOHERE
+			- ShipRenderContext/VBO changes
+			- Shader coloring changes
+			- New settings
 			- changelist
 			
 	- TODOOLD

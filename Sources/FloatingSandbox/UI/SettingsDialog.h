@@ -89,6 +89,8 @@ private:
     SliderControl<float> * mWaterDiffusionSpeedSlider;
     SliderControl<float> * mWaterTemperatureSlider;
     SliderControl<float> * mRotAcceler8rSlider;
+    SliderControl<float> * mRustAcceler8rSlider;
+    SliderControl<float> * mAlgaeGrowthAcceler8rSlider;
 
     // Ocean
     SliderControl<float> * mOceanDepthSlider;

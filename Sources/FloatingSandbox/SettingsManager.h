@@ -23,6 +23,8 @@ enum class GameSettings : size_t
     StaticFrictionAdjustment,
     KineticFrictionAdjustment,
     RotAcceler8r,
+    RustAcceler8r,
+    AlgaeGrowthAcceler8r,
     StaticPressureForceAdjustment,
 
     // Air

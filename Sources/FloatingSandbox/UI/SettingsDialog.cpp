@@ -1209,7 +1209,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
         gridSizer->Add(
             waterBoxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 4),
+            wxGBSpan(1, 6),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -1357,6 +1357,60 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Rust Accelerator
+            {
+                mRustAcceler8rSlider = new SliderControl<float>(
+                    rottingBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Rust Acceler8r"),
+                    _("Adjusts the speed with which materials rust when exposed to sea water. Set to zero to disable rusting altogether."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RustAcceler8r, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinRustAcceler8r(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxRustAcceler8r()));
+
+                rottingSizer->Add(
+                    mRustAcceler8rSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Algae Growth Accelerator
+            {
+                mAlgaeGrowthAcceler8rSlider = new SliderControl<float>(
+                    rottingBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Algae Growth Acceler8r"),
+                    _("Adjusts the speed with which algae grow over structures when these are exposed to sea water. Set to zero to disable algae growth altogether."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AlgaeGrowthAcceler8r, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinAlgaeGrowthAcceler8r(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxAlgaeGrowthAcceler8r()));
+
+                rottingSizer->Add(
+                    mAlgaeGrowthAcceler8rSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             WxHelpers::MakeAllColumnsExpandable(rottingSizer);
 
             rottingBoxSizer->Add(
@@ -1369,7 +1423,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
         gridSizer->Add(
             rottingBoxSizer,
             wxGBPosition(1, 3),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -6760,6 +6814,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
     mWaterTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::WaterTemperature));
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
+    mRustAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RustAcceler8r));
+    mAlgaeGrowthAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::AlgaeGrowthAcceler8r));
 
     //
     // Ocean
