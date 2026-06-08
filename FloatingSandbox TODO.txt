@@ -1580,7 +1580,7 @@
 							+ Damage single particles
 					+ Driven by material's rust_receptivity
 					+ Speed: RustAcceler8r
-					= Amount:
+					+ Amount:
 
 						+ Damaged: +++
 							+ alpha = 1 - beta_damaged * damaged
@@ -1590,30 +1590,14 @@
 								! https://www.toolfk.com/online-plotter-frame#W3sidHlwZSI6MCwiZXEiOiIwLjk5OTczXngiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjAsImVxIjoiMC45OTg3MDFeeCIsImNvbG9yIjoiI0ZGMDUwNSJ9LHsidHlwZSI6MCwiZXEiOiIoKDAuOTk5NzMrMC45OTg3MDEpLzIpXngiLCJjb2xvciI6IiMwNUYwMjAifSx7InR5cGUiOjEwMDAsIndpbmRvdyI6WyItNDE2LjkwOTk5OTk5OTk5ODk0IiwiNjA4OS41OSIsIi0zLjUiLCI0LjUiXX1d
 							+ The alpha used for beta_damage is Mix(low_alpha, high_alpha, water);
 
-						- Neighbors:
-							- alpha = 1 - beta_spread * neighbors_rust_amount * mass/whatever_for_structure__more_if_hull
+						+ Neighbors:
+							+ mass_multiplier = 0.5 + 0.5 * LinearStep(0.0, 1000.0)
+							+ beta = beta_high * avg_n_rust * mass_multiplier
 
-						- Final:
-							- Rust' = rust * (1 - (beta_damaged * damaged + beta_spread * neighbors_rust_amount * mass/whatever_for_structure) * mat.rust_receptibity)
-
-						- TODOOLD2
-
-						- Leaking => +++ f(water, personality seed)
-						- Damaged => ++ f(water, personality seed)
-
-						- Neighbors
-							- The amount of rust at a point depends on avg of neighbors
-								- So rotting spreads from damaged points
-
-						- TODOOLD:
-						- Water => + f(personality seed)
-						- Damaged => ++
-						[- Leaking + water => +++]
-						- Neighbors
-							- The amount of rust at a point depends on avg of neighbors
-								- So rotting spreads from damaged points
+						+ Final:
+							+ Rust' = rust * (1 - (beta_damaged * damaged + beta_spread * neighbors_rust_amount * mass/whatever_for_structure) * mat.rust_receptibity)
 					- Add to Weakness
-					- Add to Rust buffer
+					+ Add to Rust buffer
 				- AlgaeGrowth:
 					- Speed: AlgaeGrowthAcceler8r
 					- Amount:

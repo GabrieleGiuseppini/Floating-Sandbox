@@ -136,7 +136,7 @@ struct SimulationParameters
 
     float RotAcceler8r;
     static float constexpr MinRotAcceler8r = 0.0f;
-    static float constexpr MaxRotAcceler8r = 1000.0f;
+    static float constexpr MaxRotAcceler8r = 500.0f;
 
     float StaticPressureForceAdjustment;
     static float constexpr MinStaticPressureForceAdjustment = 0.0f;
@@ -148,11 +148,11 @@ struct SimulationParameters
 
     float RustAcceler8r;
     static float constexpr MinRustAcceler8r = 0.0f;
-    static float constexpr MaxRustAcceler8r = 1000.0f;
+    static float constexpr MaxRustAcceler8r = 500.0f;
 
     float AlgaeGrowthAcceler8r;
     static float constexpr MinAlgaeGrowthAcceler8r = 0.0f;
-    static float constexpr MaxAlgaeGrowthAcceler8r = 1000.0f;
+    static float constexpr MaxAlgaeGrowthAcceler8r = 500.0f;
 
     // Air
 

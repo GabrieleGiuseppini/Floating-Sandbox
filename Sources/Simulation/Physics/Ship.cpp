@@ -3589,7 +3589,7 @@ void Ship::RotPoints(
             (mPoints.IsCachedUnderwater(p) ? x_uw : 0.0f) // x_uw
             + water; // x_fl
 
-        // Adjust with leaking: if leaking and subject to rusting, then rusts faster
+        // Adjust with leaking: if leaking and subject to rotting, then rots faster
         x += mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak * x * x_uw;
 
         // Adjust with material's rot receptivity
@@ -3607,14 +3607,30 @@ void Ship::RotPoints(
         //
 
         // 1) Rust if damaged; more so if has water
+
         float const betaDamage = (1.0f - Mix(a_low_rust, a_high_rust, water)) * mPoints.GetIsDamaged(p);
 
-        // 2) Rust by neighbors
-        // TODOHERE
+        // 2) Rust by neighbors, imprinting pattern via mass
+
+        float avgNeighborsRust = 0.0f;
+        auto nCs = mPoints.GetConnectedSprings(p).ConnectedSprings.size();
+        if (nCs > 0)
+        {
+            for (auto const & cs : mPoints.GetConnectedSprings(p).ConnectedSprings)
+            {
+                avgNeighborsRust += 1.0f - mPoints.GetRust(cs.OtherEndpointIndex);
+            }
+
+            avgNeighborsRust /= static_cast<float>(nCs);
+        }
+
+        float constexpr MinMassMultiplier = 0.25f;
+        float const massMultiplier = MinMassMultiplier + (1.0f - MinMassMultiplier) * std::min(mPoints.GetMass(p) / 700.0f, 1.0f);
+        float const betaNeighbors = a_high_rust * avgNeighborsRust * massMultiplier * mPoints.GetRandomNormalizedUniformPersonalitySeed(p);
 
         float const newRust =
             mPoints.GetRust(p)
-            * (1.0f - (betaDamage) * mPoints.GetStructuralMaterial(p).RustReceptivity);
+            * (1.0f - (betaDamage + betaNeighbors) * mPoints.GetStructuralMaterial(p).RustReceptivity);
 
         mPoints.SetRust(p, newRust);
     }
