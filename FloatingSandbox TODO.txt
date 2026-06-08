@@ -1575,6 +1575,13 @@
 						- Ship::HandleTriangleDestroy: Points::DisconnectTriangle (just connectivity)
 							- See what would happen if these points would be marked as damaged
 						- Then see if Leaking/Damaged in plan below makes any sense
+
+						= 1) Mark point as damaged when we remove a triangle, by point Points::DisconnectTriangle itself
+						- 2) Do it instead from HandleTriangleDestroy
+
+						- Test:
+							- Repair
+							- Damage single particles
 					- Driven by material's rust_receptivity
 					- Speed: RustAcceler8r
 					- Amount:

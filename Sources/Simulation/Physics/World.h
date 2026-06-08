@@ -520,7 +520,9 @@ public:
         vec2f const & corner1,
         vec2f const & corner2);
 
-    bool DestroyTriangle(GlobalElementId triangleId);
+    bool DestroyTriangle(
+        GlobalElementId triangleId,
+        SimulationParameters const & simulationParameters);
 
     bool RestoreTriangle(GlobalElementId triangleId);
 

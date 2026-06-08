@@ -32,7 +32,7 @@ void Points::Add(
 {
     ElementIndex const pointIndex = static_cast<ElementIndex>(mIsDamagedBuffer.GetCurrentPopulatedSize());
 
-    mIsDamagedBuffer.emplace_back(false);
+    mIsDamagedBuffer.emplace_back(0.0f);
     mMaterialsBuffer.emplace_back(&structuralMaterial, electricalMaterial);
     mIsRopeBuffer.emplace_back(isRope);
 
@@ -155,7 +155,7 @@ void Points::CreateEphemeralParticleAirBubble(
     // after all, bubbles encounter a lot of drag...
     float const airBubbleBuoyancyVolumeFill = 0.002f * buoyancyVolumeFillAdjustment;
 
-    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
@@ -239,7 +239,7 @@ void Points::CreateEphemeralParticleDebris(
     // Store attributes
     //
 
-    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
@@ -323,7 +323,7 @@ void Points::CreateEphemeralParticleSiltCloud(
 
     StructuralMaterial const & siltCloudStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SiltCloud);
 
-    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&siltCloudStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
@@ -443,7 +443,7 @@ void Points::InternalCreateEphemeralParticleSmoke(
         ? mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SmokeHeavy)
         : mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SmokeLight);
 
-    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&smokeStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f(0.0f, 0.2f); // Some magic upward velocity to start with, so plume doesn't stick out from underneath
@@ -529,7 +529,7 @@ void Points::CreateEphemeralParticleSparkle(
     // Store attributes
     //
 
-    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
@@ -608,7 +608,7 @@ void Points::CreateEphemeralParticleWakeBubble(
 
     StructuralMaterial const & waterStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Water);
 
-    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&waterStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
@@ -699,7 +699,7 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
     float const mass = waterFoamStructuralMaterial.GetMass();
     float const buoyancyVolumeFill = 1.0f; // Must float
 
-    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&waterFoamStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f(velocityX, 0.0f);
@@ -797,7 +797,7 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
     float const mass = waterSplashStructuralMaterial.GetMass() * 0.2f;
     float const buoyancyVolumeFill = 1.0f; // Must float
 
-    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&waterSplashStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
@@ -893,7 +893,7 @@ void Points::Detach(
     }
 
     // Check if it's the first time we get damaged
-    if (!mIsDamagedBuffer[pointElementIndex])
+    if (mIsDamagedBuffer[pointElementIndex] == 0.0f)
     {
         // Note: we only get here if there were not springs, given that
         // PhysicsHandler::HandlePointDetach() will have ultimately damaged the point if there was a spring
@@ -902,7 +902,7 @@ void Points::Detach(
         InternalDoDamage(pointElementIndex, currentSimulationTime, simulationParameters);
 
         // Flag ourselves as damaged
-        mIsDamagedBuffer[pointElementIndex] = true;
+        mIsDamagedBuffer[pointElementIndex] = 1.0f;
     }
 }
 
@@ -913,7 +913,7 @@ void Points::Restore(
     assert(IsDamaged(pointElementIndex));
 
     // Clear the damaged flag
-    mIsDamagedBuffer[pointElementIndex] = false;
+    mIsDamagedBuffer[pointElementIndex] = 0.0f;
 
     // Restore factory-time structural IsLeaking
     mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak =

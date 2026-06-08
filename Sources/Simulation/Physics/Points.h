@@ -733,7 +733,7 @@ public:
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
-        , mIsDamagedBuffer(mBufferElementCount, shipPointCount, false)
+        , mIsDamagedBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Materials
         , mMaterialsBuffer(mBufferElementCount, shipPointCount, Materials(nullptr, nullptr))
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
@@ -1167,12 +1167,17 @@ public:
 
     //
     // IsDamaged (i.e. whether it has been irrevocable modified, such as detached or
-    // set to leaking)
+    // set to leaking, spring or triangle lost)
     //
 
-    bool IsDamaged(ElementIndex springElementIndex) const
+    bool IsDamaged(ElementIndex pointElementIndex) const
     {
-        return mIsDamagedBuffer[springElementIndex];
+        return GetIsDamaged(pointElementIndex) != 0.0f;
+    }
+
+    float GetIsDamaged(ElementIndex pointElementIndex) const
+    {
+        return mIsDamagedBuffer[pointElementIndex];
     }
 
     //
@@ -1829,13 +1834,13 @@ public:
         }
 
         // Check if it's the first time we get damaged
-        if (!mIsDamagedBuffer[pointElementIndex])
+        if (mIsDamagedBuffer[pointElementIndex] == 0.0f)
         {
             // Do damage (invoke handler, explode)
             InternalDoDamage(pointElementIndex, currentSimulationTime, simulationParameters);
 
             // Flag ourselves as damaged
-            mIsDamagedBuffer[pointElementIndex] = true;
+            mIsDamagedBuffer[pointElementIndex] = 1.0f;
         }
     }
 
@@ -2115,16 +2120,23 @@ public:
         mConnectedTrianglesBuffer[pointElementIndex].ConnectTriangle(
             triangleElementIndex,
             isAtOwner);
+
+        // Restore will be invoked later
     }
 
     void DisconnectTriangle(
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex,
-        bool isAtOwner)
+        bool isAtOwner,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters)
     {
         mConnectedTrianglesBuffer[pointElementIndex].DisconnectTriangle(
             triangleElementIndex,
             isAtOwner);
+
+        // Mark as damaged
+        Damage(pointElementIndex, currentSimulationTime, simulationParameters);
     }
 
     size_t GetConnectedOwnedTrianglesCount(ElementIndex pointElementIndex) const
@@ -2517,9 +2529,9 @@ private:
     //////////////////////////////////////////////////////////
 
     // Damage: true when the point has been irrevocably modified
-    // (such as detached or set to leaking); only a Restore will
+    // (such as detached or set to leaking, spring or triangle lost); only a Restore will
     // make things right again
-    Buffer<bool> mIsDamagedBuffer;
+    Buffer<float> mIsDamagedBuffer;
 
     // Materials
     Buffer<Materials> mMaterialsBuffer;

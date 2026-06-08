@@ -1909,7 +1909,9 @@ void GameController::SetEngineControllerState(
 bool GameController::DestroyTriangle(GlobalElementId triangleId)
 {
     assert(!!mWorld);
-    return mWorld->DestroyTriangle(triangleId);
+    return mWorld->DestroyTriangle(
+        triangleId,
+        mSimulationParameters);
 }
 
 bool GameController::RestoreTriangle(GlobalElementId triangleId)

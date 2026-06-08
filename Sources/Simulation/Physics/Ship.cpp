@@ -3579,7 +3579,7 @@ void Ship::RotPoints(
         mPoints.SetWeakness(p, mPoints.GetWeakness(p) * alpha);
 
         // TODOTEST
-        mPoints.SetRust(p, mPoints.IsDamaged(p) ? 0.0f : 1.0f);
+        mPoints.SetRust(p, 1.0f - mPoints.GetIsDamaged(p));
     }
 }
 
@@ -3819,7 +3819,10 @@ void Ship::SetAndPropagateResultantPointHullness(
     }
 }
 
-void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
+void Ship::DestroyConnectedTriangles(
+    ElementIndex pointElementIndex,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
 {
     //
     // Destroy all triangles connected to the point
@@ -3831,7 +3834,7 @@ void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
     while (!connectedTriangles.empty())
     {
         assert(!mTriangles.IsDeleted(connectedTriangles.back()));
-        mTriangles.Destroy(connectedTriangles.back());
+        mTriangles.Destroy(connectedTriangles.back(), currentSimulationTime, simulationParameters);
     }
 
     assert(mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles.empty());
@@ -3839,7 +3842,9 @@ void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
 
 void Ship::DestroyConnectedTriangles(
     ElementIndex pointAElementIndex,
-    ElementIndex pointBElementIndex)
+    ElementIndex pointBElementIndex,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
 {
     //
     // Destroy the triangles that have an edge among the two points
@@ -3859,7 +3864,7 @@ void Ship::DestroyConnectedTriangles(
                 || mTriangles.GetPointCIndex(triangleIndex) == pointBElementIndex)
             {
                 // Erase it
-                mTriangles.Destroy(triangleIndex);
+                mTriangles.Destroy(triangleIndex, currentSimulationTime, simulationParameters);
             }
 
             if (t == 0)
@@ -4518,13 +4523,13 @@ void Ship::HandleSpringDestroy(
     if (destroyAllTriangles)
     {
         // We destroy all triangles connected to each endpoint
-        DestroyConnectedTriangles(pointAIndex);
-        DestroyConnectedTriangles(pointBIndex);
+        DestroyConnectedTriangles(pointAIndex, currentSimulationTime, simulationParameters);
+        DestroyConnectedTriangles(pointBIndex, currentSimulationTime, simulationParameters);
     }
     else
     {
         // We destroy only triangles connected to both endpoints
-        DestroyConnectedTriangles(pointAIndex, pointBIndex);
+        DestroyConnectedTriangles(pointAIndex, pointBIndex, currentSimulationTime, simulationParameters);
     }
 
 
@@ -4651,7 +4656,10 @@ void Ship::HandleSpringRestore(
     }
 }
 
-void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
+void Ship::HandleTriangleDestroy(
+    ElementIndex triangleElementIndex,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
 {
     //
     // Remove triangle from other elements
@@ -4670,9 +4678,9 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
     }
 
     // Disconnect triangle from its endpoints
-    mPoints.DisconnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
-    mPoints.DisconnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
-    mPoints.DisconnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+    mPoints.DisconnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true, currentSimulationTime, simulationParameters); // Owner
+    mPoints.DisconnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false, currentSimulationTime, simulationParameters); // Not owner
+    mPoints.DisconnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false, currentSimulationTime, simulationParameters); // Not owner
 
     //
     // Maintain frontier

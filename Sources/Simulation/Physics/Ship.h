@@ -352,7 +352,10 @@ public:
         float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
-    bool DestroyTriangle(ElementIndex triangleIndex);
+    bool DestroyTriangle(
+        ElementIndex triangleIndex,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
 
     bool RestoreTriangle(ElementIndex triangleIndex);
 
@@ -803,11 +806,16 @@ private:
         ElementIndex pointElementIndex,
         bool isHull);
 
-    void DestroyConnectedTriangles(ElementIndex pointElementIndex);
+    void DestroyConnectedTriangles(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
 
     void DestroyConnectedTriangles(
         ElementIndex pointAElementIndex,
-        ElementIndex pointBElementIndex);
+        ElementIndex pointBElementIndex,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
 
     void AttemptPointRestore(
         ElementIndex pointElementIndex,
@@ -921,7 +929,10 @@ public:
         ElementIndex springElementIndex,
         SimulationParameters const & simulationParameters) override;
 
-    void HandleTriangleDestroy(ElementIndex triangleElementIndex) override;
+    void HandleTriangleDestroy(
+        ElementIndex triangleElementIndex,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters) override;
 
     void HandleTriangleRestore(ElementIndex triangleElementIndex) override;
 

@@ -1602,12 +1602,14 @@ void World::HighlightNpcsInRect(
     mNpcs->HighlightNpcsInRect(corner1, corner2);
 }
 
-bool World::DestroyTriangle(GlobalElementId triangleId)
+bool World::DestroyTriangle(
+    GlobalElementId triangleId,
+    SimulationParameters const & simulationParameters)
 {
     auto const shipId = triangleId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
 
-    return mAllShips[shipId]->DestroyTriangle(triangleId.GetLocalObjectId());
+    return mAllShips[shipId]->DestroyTriangle(triangleId.GetLocalObjectId(), mCurrentSimulationTime, simulationParameters);
 }
 
 bool World::RestoreTriangle(GlobalElementId triangleId)

@@ -118,7 +118,10 @@ struct IShipPhysicsHandler
      * The handler is not re-entrant: destroying other triangles from it is not supported
      * and leads to undefined behavior.
      */
-    virtual void HandleTriangleDestroy(ElementIndex triangleElementIndex) = 0;
+    virtual void HandleTriangleDestroy(
+        ElementIndex triangleElementIndex,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters) = 0;
 
     /*
      * Invoked whenever a triangle is restored.

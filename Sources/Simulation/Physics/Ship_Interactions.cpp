@@ -2026,12 +2026,15 @@ void Ship::SpawnAirBubble(
         simulationParameters);
 }
 
-bool Ship::DestroyTriangle(ElementIndex triangleIndex)
+bool Ship::DestroyTriangle(
+    ElementIndex triangleIndex,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
 {
     if (triangleIndex < mTriangles.GetElementCount()
         && !mTriangles.IsDeleted(triangleIndex))
     {
-        mTriangles.Destroy(triangleIndex);
+        mTriangles.Destroy(triangleIndex, currentSimulationTime, simulationParameters);
         return true;
     }
     else
