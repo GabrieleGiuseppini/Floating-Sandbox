@@ -3518,6 +3518,10 @@ void Ship::RotPoints(
     //
     // If at time N we want decay=Dn: a = Dn ^ (1/N)
     //
+    // However, we use beta = 1 - alpha, so that our decay can take
+    // the form: decay(n) = (1-beta*enabler) * decay(n-1), allowing
+    // enabler to turn off decay when it's zero
+    //
 
     // TODOHERE
 
@@ -3554,6 +3558,20 @@ void Ship::RotPoints(
     float const x_uw = (1.0f - a_uw) / (a_uw - a_uw_fl);
     float const beta = (1.0f - a_uw) / x_uw;
 
+    //
+    // Rust
+    //
+
+    float constexpr NsRust = 10.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+
+    float const a_low_rust = simulationParameters.RustAcceler8r != 0.0f
+        ? powf(0.75f, simulationParameters.RustAcceler8r / NsRust)
+        : 1.0f;
+
+    float const a_high_rust = simulationParameters.RustAcceler8r != 0.0f
+        ? powf(0.25f, simulationParameters.RustAcceler8r / NsRust)
+        : 1.0f;
+
     // Process all non-ephemeral points in this partition - no real reason
     // to exclude ephemerals, other than they're not expected to rot
     ElementCount const partitionSize = (mPoints.GetRawShipPointCount() / partitionCount) + ((mPoints.GetRawShipPointCount() % partitionCount) ? 1 : 0);
@@ -3561,9 +3579,15 @@ void Ship::RotPoints(
     ElementCount const endPointIndex = std::min(startPointIndex + partitionSize, mPoints.GetRawShipPointCount());
     for (ElementIndex p = startPointIndex; p < endPointIndex; ++p)
     {
+        float const water = std::min(mPoints.GetWater(p), 1.0f);
+
+        //
+        // Rot
+        //
+
         float x =
             (mPoints.IsCachedUnderwater(p) ? x_uw : 0.0f) // x_uw
-            + std::min(mPoints.GetWater(p), 1.0f); // x_fl
+            + water; // x_fl
 
         // Adjust with leaking: if leaking and subject to rusting, then rusts faster
         x += mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak * x * x_uw;
@@ -3578,8 +3602,21 @@ void Ship::RotPoints(
         mPoints.SetRot(p, mPoints.GetRot(p) * alpha);
         mPoints.SetWeakness(p, mPoints.GetWeakness(p) * alpha);
 
-        // TODOTEST
-        mPoints.SetRust(p, 1.0f - mPoints.GetIsDamaged(p));
+        //
+        // Rust
+        //
+
+        // 1) Rust if damaged; more so if has water
+        float const betaDamage = (1.0f - Mix(a_low_rust, a_high_rust, water)) * mPoints.GetIsDamaged(p);
+
+        // 2) Rust by neighbors
+        // TODOHERE
+
+        float const newRust =
+            mPoints.GetRust(p)
+            * (1.0f - (betaDamage) * mPoints.GetStructuralMaterial(p).RustReceptivity);
+
+        mPoints.SetRust(p, newRust);
     }
 }
 
@@ -4677,10 +4714,13 @@ void Ship::HandleTriangleDestroy(
         mSprings.RemoveCoveringTriangle(coveredSpringIndex);
     }
 
-    // Disconnect triangle from its endpoints
-    mPoints.DisconnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true, currentSimulationTime, simulationParameters); // Owner
-    mPoints.DisconnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false, currentSimulationTime, simulationParameters); // Not owner
-    mPoints.DisconnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false, currentSimulationTime, simulationParameters); // Not owner
+    // Disconnect triangle from its endpoints, and marking the points as damaged
+    mPoints.DisconnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
+    mPoints.Damage(mTriangles.GetPointAIndex(triangleElementIndex), currentSimulationTime, simulationParameters);
+    mPoints.DisconnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+    mPoints.Damage(mTriangles.GetPointBIndex(triangleElementIndex), currentSimulationTime, simulationParameters);
+    mPoints.DisconnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+    mPoints.Damage(mTriangles.GetPointCIndex(triangleElementIndex), currentSimulationTime, simulationParameters);
 
     //
     // Maintain frontier

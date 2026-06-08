@@ -2127,16 +2127,11 @@ public:
     void DisconnectTriangle(
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex,
-        bool isAtOwner,
-        float currentSimulationTime,
-        SimulationParameters const & simulationParameters)
+        bool isAtOwner)
     {
         mConnectedTrianglesBuffer[pointElementIndex].DisconnectTriangle(
             triangleElementIndex,
             isAtOwner);
-
-        // Mark as damaged
-        Damage(pointElementIndex, currentSimulationTime, simulationParameters);
     }
 
     size_t GetConnectedOwnedTrianglesCount(ElementIndex pointElementIndex) const

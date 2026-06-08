@@ -1560,6 +1560,7 @@
 				+ AlgaeGrowthAcceler8r
 				+ RustAcceler8r
 				+ GameController
+
 			= LFLoop:
 				- Important: don't add multiple weaknesses, do min among all
 					- Just calc min alpha and use that for weakness
@@ -1570,33 +1571,30 @@
 						+ Like now
 					- Add to Weakness
 					+ Add to Rot buffer
-				- Rust:
-					- TODOHERE: should be for any point that is now exposed (i.e. which has lost at least one triangle)
-						- Ship::HandleTriangleDestroy: Points::DisconnectTriangle (just connectivity)
-							- See what would happen if these points would be marked as damaged
-						- Then see if Leaking/Damaged in plan below makes any sense
+				= Rust:
+					+ Should be for any point that is now exposed (i.e. which has lost at least one triangle)
+						+ 1) Mark point as damaged when we remove a triangle, by point Points::DisconnectTriangle itself
+						+ 2) Do it instead from HandleTriangleDestroy
+						+ Test:
+							+ Repair
+							+ Damage single particles
+					+ Driven by material's rust_receptivity
+					+ Speed: RustAcceler8r
+					= Amount:
 
-						= 1) Mark point as damaged when we remove a triangle, by point Points::DisconnectTriangle itself
-						- 2) Do it instead from HandleTriangleDestroy
-
-						- Test:
-							- Repair
-							- Damage single particles
-					- Driven by material's rust_receptivity
-					- Speed: RustAcceler8r
-					- Amount:
-
-						- Leaking: +++
-							- alpha = 1 - beta_leaking * leaking
-						- Damaged: +++
-							- alpha = 1 - beta_damaged * damaged
-						- In both of the above: beta gets higher if there's water in it
+						+ Damaged: +++
+							+ alpha = 1 - beta_damaged * damaged
+						+ Beta gets higher if there's water in it
+							! Can combine alpha's for various periods:
+								! a_low_rust=0.99973 a_high_rust=0.998701
+								! https://www.toolfk.com/online-plotter-frame#W3sidHlwZSI6MCwiZXEiOiIwLjk5OTczXngiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjAsImVxIjoiMC45OTg3MDFeeCIsImNvbG9yIjoiI0ZGMDUwNSJ9LHsidHlwZSI6MCwiZXEiOiIoKDAuOTk5NzMrMC45OTg3MDEpLzIpXngiLCJjb2xvciI6IiMwNUYwMjAifSx7InR5cGUiOjEwMDAsIndpbmRvdyI6WyItNDE2LjkwOTk5OTk5OTk5ODk0IiwiNjA4OS41OSIsIi0zLjUiLCI0LjUiXX1d
+							+ The alpha used for beta_damage is Mix(low_alpha, high_alpha, water);
 
 						- Neighbors:
-							- alpha = 1 - beta_spread * neighbors_rust_amount * mass/whatever_for_structure
+							- alpha = 1 - beta_spread * neighbors_rust_amount * mass/whatever_for_structure__more_if_hull
 
 						- Final:
-							- Rust' = rust * (1 - (beta_leaking * leaking + beta_damaged * damaged + beta_spread * neighbors_rust_amount * mass/whatever_for_structure) * mat.rust_receptibity)
+							- Rust' = rust * (1 - (beta_damaged * damaged + beta_spread * neighbors_rust_amount * mass/whatever_for_structure) * mat.rust_receptibity)
 
 						- TODOOLD2
 
@@ -1631,6 +1629,7 @@
 					- Add to Weakness
 
 				- Optimize:
+					- Ship::RotPoints
 					- Precalcd' coeffs & update @ SimParams changes
 						- Members of Ship
 
