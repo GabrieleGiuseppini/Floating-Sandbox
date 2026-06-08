@@ -3577,6 +3577,9 @@ void Ship::RotPoints(
         // Decay
         mPoints.SetRot(p, mPoints.GetRot(p) * alpha);
         mPoints.SetWeakness(p, mPoints.GetWeakness(p) * alpha);
+
+        // TODOTEST
+        mPoints.SetRust(p, mPoints.IsDamaged(p) ? 0.0f : 1.0f);
     }
 }
 

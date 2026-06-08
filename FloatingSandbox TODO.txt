@@ -1571,11 +1571,31 @@
 					- Add to Weakness
 					+ Add to Rot buffer
 				- Rust:
+					- TODOHERE: should be for any point that is now exposed (i.e. which has lost at least one triangle)
+						- Ship::HandleTriangleDestroy: Points::DisconnectTriangle (just connectivity)
+							- See what would happen if these points would be marked as damaged
+						- Then see if Leaking/Damaged in plan below makes any sense
 					- Driven by material's rust_receptivity
 					- Speed: RustAcceler8r
 					- Amount:
-						- Leaking => +++ f(personality seed)
-							- TODO: see what happens when *hull* is damaged: can we tell it is? If so use that so also hull gets rust
+
+						- Leaking: +++
+							- alpha = 1 - beta_leaking * leaking
+						- Damaged: +++
+							- alpha = 1 - beta_damaged * damaged
+						- In both of the above: beta gets higher if there's water in it
+
+						- Neighbors:
+							- alpha = 1 - beta_spread * neighbors_rust_amount * mass/whatever_for_structure
+
+						- Final:
+							- Rust' = rust * (1 - (beta_leaking * leaking + beta_damaged * damaged + beta_spread * neighbors_rust_amount * mass/whatever_for_structure) * mat.rust_receptibity)
+
+						- TODOOLD2
+
+						- Leaking => +++ f(water, personality seed)
+						- Damaged => ++ f(water, personality seed)
+
 						- Neighbors
 							- The amount of rust at a point depends on avg of neighbors
 								- So rotting spreads from damaged points

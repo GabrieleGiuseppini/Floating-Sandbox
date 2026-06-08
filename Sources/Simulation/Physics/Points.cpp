@@ -895,8 +895,8 @@ void Points::Detach(
     // Check if it's the first time we get damaged
     if (!mIsDamagedBuffer[pointElementIndex])
     {
-        // Note: it's unclear in 2025 which codepaths would lead here, given that
-        // PhysicsHandler::HandlePointDetach() will have ultimately damaged the point
+        // Note: we only get here if there were not springs, given that
+        // PhysicsHandler::HandlePointDetach() will have ultimately damaged the point if there was a spring
 
         // Do damage
         InternalDoDamage(pointElementIndex, currentSimulationTime, simulationParameters);

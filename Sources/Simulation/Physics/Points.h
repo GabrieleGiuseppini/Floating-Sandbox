@@ -1831,7 +1831,7 @@ public:
         // Check if it's the first time we get damaged
         if (!mIsDamagedBuffer[pointElementIndex])
         {
-            // Do damage
+            // Do damage (invoke handler, explode)
             InternalDoDamage(pointElementIndex, currentSimulationTime, simulationParameters);
 
             // Flag ourselves as damaged
