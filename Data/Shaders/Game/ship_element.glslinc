@@ -122,12 +122,9 @@ void main()
     // Apply decay:
     //  Rust > AlgaeGrowth > Rot
 
-    float originalLightness = dot(vec3(1.0/3.0), vertexCol.xyz);
-    // TODOTEST
-//    vec3 decayColor = mix(vec3(ROT_COLOR), vec3(ROT_BROWN_COLOR), originalLightness);
     vec3 fragColour = mix(vec3(ROT_COLOR), vertexCol.xyz, vertexAttributes1.w);
-    fragColour = mix(vec3(RUST_COLOR), fragColour, vertexAttributes2.x);
     fragColour = mix(vec3(ALGAE_GROWTH_COLOR), fragColour, vertexAttributes2.y);
+    fragColour = mix(vec3(RUST_COLOR), fragColour, vertexAttributes2.x);    
 
     // Apply point water
 #ifdef FOR_LINES

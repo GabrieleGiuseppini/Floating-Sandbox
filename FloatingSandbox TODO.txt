@@ -1604,8 +1604,7 @@
 						- Boost rust if underwater
 
 					- Add to Weakness
-						- Option 1: min alpha/max beta
-						- Option 2: min (rot, rust) value of point
+						- Min alpha/max beta
 
 					+ Add to Rust buffer
 
@@ -1618,9 +1617,7 @@
 					+ Fix: spread is too fast, as it grows
 						+ alpha=>beta
 
-				- Adjust rust color base
-				- TODO: shader: use luminance?
-					- Otherwise clear TODOTEST in ship_element shader
+				+ Adjust rust color base
 
 				- Repair: clean rot+rust, as that would be inconsistent with weakness
 					- Copy from old code, but likely is same place as weakness restore now

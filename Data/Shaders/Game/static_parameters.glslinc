@@ -6,7 +6,7 @@
 
 
 #define ROT_COLOR 0.26, 0.16, 0.0
-#define RUST_COLOR 183./255., 65./255., 14./255.
+#define RUST_COLOR 163./255., 58./255., 12./255.
 #define ALGAE_GROWTH_COLOR 0.015, 0.207, 0.011
 
 #define NOISE_2_WIDTH 256
