@@ -3562,10 +3562,11 @@ void Ship::RotPoints(
     // Rust
     //
 
-    float constexpr NsRust = 10.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+    // 5 minutes to reach hi/low rust
+    float constexpr NsRust = 5.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
     float const a_low_rust = simulationParameters.RustAcceler8r != 0.0f
-        ? powf(0.75f, simulationParameters.RustAcceler8r / NsRust)
+        ? powf(0.50f, simulationParameters.RustAcceler8r / NsRust)
         : 1.0f;
 
     float const a_high_rust = simulationParameters.RustAcceler8r != 0.0f
@@ -3607,15 +3608,11 @@ void Ship::RotPoints(
         // Rust
         //
 
-        // Min rust value (i.e. maximum rust) depends on damage: if not damaged,
-        // our asymptote is not zero but slightly higher
-        float const minRust = 0.2f * (1.0f - isDamaged);
-
         // 1) Rust if damaged; more so if has water
 
         float const betaDamage = (1.0f - Mix(a_low_rust, a_high_rust, water)) * isDamaged;
 
-        // 2) Rust by neighbors, imprinting pattern via mass
+        // 2) Rust by neighbors, imprinting pattern via mass, and randomizing
 
         float avgNeighborsRust = 0.0f;
         auto nCs = mPoints.GetConnectedSprings(p).ConnectedSprings.size();
@@ -3629,14 +3626,16 @@ void Ship::RotPoints(
             avgNeighborsRust /= static_cast<float>(nCs);
         }
 
-        float constexpr MinMassMultiplier = 0.25f;
+        float constexpr MinMassMultiplier = 0.75f;
         float const massMultiplier = MinMassMultiplier + (1.0f - MinMassMultiplier) * std::min(mPoints.GetMass(p) / 700.0f, 1.0f);
-        float const betaNeighbors = a_high_rust * avgNeighborsRust * massMultiplier * mPoints.GetRandomNormalizedUniformPersonalitySeed(p);
+        float const betaNeighbors =
+            (1.0f - a_high_rust)  // b_high
+            * avgNeighborsRust
+            * massMultiplier * mPoints.GetRandomNormalizedUniformPersonalitySeed(p);
 
-        // TODOTEST
-        //float const newRust =
-        //    mPoints.GetRust(p)
-        //    * (1.0f - (betaDamage + betaNeighbors) * mPoints.GetStructuralMaterial(p).RustReceptivity);
+        // Min rust value (i.e. maximum rust) depends on damage: if not damaged,
+        // our rust asymptote is not zero but slightly higher
+        float const minRust = 0.2f * (1.0f - isDamaged);
 
         float const newRust =
             mPoints.GetRust(p)
