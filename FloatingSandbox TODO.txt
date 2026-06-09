@@ -1596,6 +1596,10 @@
 
 						+ Final:
 							+ Rust' = rust * (1 - (beta_damaged * damaged + beta_spread * neighbors_rust_amount * mass/whatever_for_structure) * mat.rust_receptibity)
+
+						- Try with bottom rust of neighbors = 0.2 instead of 0.0
+							- Bottom = f(damaged): 0 or 0.2
+
 					- Add to Weakness
 					+ Add to Rust buffer
 				- AlgaeGrowth:

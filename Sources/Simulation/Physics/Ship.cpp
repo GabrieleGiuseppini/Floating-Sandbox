@@ -3589,8 +3589,8 @@ void Ship::RotPoints(
             (mPoints.IsCachedUnderwater(p) ? x_uw : 0.0f) // x_uw
             + water; // x_fl
 
-        // Adjust with leaking: if leaking and subject to rotting, then rots faster
-        x += mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak * x * x_uw;
+        // Adjust with damage: if damaged and subject to rotting, then rots faster
+        x += mPoints.GetIsDamaged(p) * x * x_uw;
 
         // Adjust with material's rot receptivity
         x *= mPoints.GetStructuralMaterial(p).RotReceptivity;
