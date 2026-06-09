@@ -3580,6 +3580,7 @@ void Ship::RotPoints(
     for (ElementIndex p = startPointIndex; p < endPointIndex; ++p)
     {
         float const water = std::min(mPoints.GetWater(p), 1.0f);
+        float const isDamaged = mPoints.GetIsDamaged(p);
 
         //
         // Rot
@@ -3590,7 +3591,7 @@ void Ship::RotPoints(
             + water; // x_fl
 
         // Adjust with damage: if damaged and subject to rotting, then rots faster
-        x += mPoints.GetIsDamaged(p) * x * x_uw;
+        x += isDamaged * x * x_uw;
 
         // Adjust with material's rot receptivity
         x *= mPoints.GetStructuralMaterial(p).RotReceptivity;
@@ -3606,9 +3607,13 @@ void Ship::RotPoints(
         // Rust
         //
 
+        // Min rust value (i.e. maximum rust) depends on damage: if not damaged,
+        // our asymptote is not zero but slightly higher
+        float const minRust = 0.2f * (1.0f - isDamaged);
+
         // 1) Rust if damaged; more so if has water
 
-        float const betaDamage = (1.0f - Mix(a_low_rust, a_high_rust, water)) * mPoints.GetIsDamaged(p);
+        float const betaDamage = (1.0f - Mix(a_low_rust, a_high_rust, water)) * isDamaged;
 
         // 2) Rust by neighbors, imprinting pattern via mass
 
@@ -3628,9 +3633,14 @@ void Ship::RotPoints(
         float const massMultiplier = MinMassMultiplier + (1.0f - MinMassMultiplier) * std::min(mPoints.GetMass(p) / 700.0f, 1.0f);
         float const betaNeighbors = a_high_rust * avgNeighborsRust * massMultiplier * mPoints.GetRandomNormalizedUniformPersonalitySeed(p);
 
+        // TODOTEST
+        //float const newRust =
+        //    mPoints.GetRust(p)
+        //    * (1.0f - (betaDamage + betaNeighbors) * mPoints.GetStructuralMaterial(p).RustReceptivity);
+
         float const newRust =
             mPoints.GetRust(p)
-            * (1.0f - (betaDamage + betaNeighbors) * mPoints.GetStructuralMaterial(p).RustReceptivity);
+            + (minRust - mPoints.GetRust(p)) * (betaDamage + betaNeighbors) * mPoints.GetStructuralMaterial(p).RustReceptivity;
 
         mPoints.SetRust(p, newRust);
     }

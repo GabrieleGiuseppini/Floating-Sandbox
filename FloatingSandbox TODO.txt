@@ -1597,11 +1597,23 @@
 						+ Final:
 							+ Rust' = rust * (1 - (beta_damaged * damaged + beta_spread * neighbors_rust_amount * mass/whatever_for_structure) * mat.rust_receptibity)
 
-						- Try with bottom rust of neighbors = 0.2 instead of 0.0
-							- Bottom = f(damaged): 0 or 0.2
+						= Try with bottom rust of neighbors = 0.2 instead of 0.0
+							+ Bottom = f(damaged): 0 or 0.2
+							- If too slow: forget target, use max(0.2, newRust)
 
 					- Add to Weakness
+						- Option 1: min alpha/max beta
+						- Option 2: min (rot, rust) value of point
+
 					+ Add to Rust buffer
+
+				- Nail down time for decay
+					- Now: nSec / (SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod))
+					- Test in RelWithDebInfo
+
+				- Repair: clean rot+rust, as that would be inconsistent with weakness
+					- Copy from old code, but likely is same place as weakness restore now
+
 				- AlgaeGrowth:
 					- Speed: AlgaeGrowthAcceler8r
 					- Amount:
