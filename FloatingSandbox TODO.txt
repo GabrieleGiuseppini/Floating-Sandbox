@@ -1637,14 +1637,22 @@
 
 				- Optimize:
 					- Ship::RotPoints
+						- Do we really need massMultiplier?
 					- Precalcd' coeffs & update @ SimParams changes
 						- Members of Ship
 
-			= Repair
-				- Lower weakness
-				- Clean rot+rust, as that would be inconsistent with weakness
-					- Copy from old code, but likely is same place as weakness restore now
+			+ Repair
+				+ Lower weakness
+				+ Clean rot+rust, as that would be inconsistent with weakness
+					+ Copy from old code, but likely is same place as weakness restore now
 			+ Scrub tool: lower weakness + 3
+
+			- Rename Rot->Decay
+				- Points buffer
+				- ShipRenderContext?
+				- Tool
+				- Android
+
 			= Rot tool: rot
 				- No rust? No Algae? Or tool just does rust instead of rot?
 
