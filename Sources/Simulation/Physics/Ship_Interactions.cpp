@@ -1598,6 +1598,13 @@ bool Ship::RustThrough(
     float radius,
     SimulationParameters const & simulationParameters)
 {
+    //
+    // Multiple throngs, along perpendicular to segment
+    //
+
+    float constexpr ThrongRadius = 1.2f;
+    float constexpr ThrongDistance = 3.5f;
+
     float const rustCoeffMultiplier = simulationParameters.IsUltraViolentMode
         ? 2.5f
         : 1.0f;
@@ -1608,36 +1615,39 @@ bool Ship::RustThrough(
 
     float const squareRadius = radius * radius;
 
-    // Visit all points (excluding ephemerals, they don't rust and
-    // thus we don't need to rust them!)
+    // Visit all points (excluding ephemerals, they don't rust and thus we don't need to rust them!)
     bool hasRusted = false;
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
         auto const & pointPosition = mPoints.GetPosition(pointIndex);
 
-        if (float const squarePointDistance = Geometry::Segment::SquareDistanceToPoint(startPos, endPos, pointPosition);
+        if (float const squarePointDistance = Geometry::Segment::SquareDistanceToPointUncapped(startPos, endPos, pointPosition);
             squarePointDistance <= squareRadius)
         {
             //
-            // Rust this point, with magnitude dependent from distance,
+            // Rust this point, with magnitude dependent from distance from closest throng center,
             // and more pronounced when the point is underwater or has water
             //
 
-            float const distanceCoeff = (radius - std::sqrt(squarePointDistance)) / radius;
+            float const d = std::sqrt(squarePointDistance);
+            float const a = std::fmodf(d, ThrongDistance); // 0 at left center, ThrongDistance at right center
 
+            // Strengths of two centers as function of distance from the center
+            float const s1 = 1.0f - std::min(1.0f, a / ThrongRadius); // Left center
+            float const s2 = 1.0f - std::min(1.0f, (ThrongDistance - a) / ThrongRadius); // Right center
+
+            // Combine
+            float const distanceCoeff = std::max(s1, s2);
+
+            // Incorporate underwaterness/waterness
             float const rustCoeff = (mParentWorld.GetOceanSurface().IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
-                ? 0.0175f
-                : 0.010f;
+                ? 0.175f
+                : 0.1f;
 
-            float const newRust =
-                mPoints.GetRust(pointIndex)
-                * (1.0f - rustCoeff * rustCoeffMultiplier * distanceCoeff);
-            mPoints.SetRust(pointIndex, newRust);
-
-            float const newWeakness =
-                mPoints.GetWeakness(pointIndex)
-                * (1.0f - rustCoeff * rustCoeffMultiplier * distanceCoeff);
-            mPoints.SetWeakness(pointIndex, newWeakness);
+            // Rust and weaken
+            float const alpha = (1.0f - rustCoeff * rustCoeffMultiplier * distanceCoeff);
+            mPoints.SetRust(pointIndex, mPoints.GetRust(pointIndex) * alpha);
+            mPoints.SetWeakness(pointIndex, mPoints.GetWeakness(pointIndex) * alpha);
 
             // Remember at least one point has been rusted
             hasRusted |= true;

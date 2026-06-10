@@ -1647,7 +1647,7 @@
 					+ Copy from old code, but likely is same place as weakness restore now
 			+ Scrub tool: lower weakness + 3
 
-			= Rot tool: rust
+			+ Rot tool: rust
 				+ Rename first: Rot->Decay
 					+ Points buffer
 					+ Settings (GameController)
@@ -1655,8 +1655,7 @@
 					+ SettingsDialog
 					+ Android plan
 				+ Test radius setting works
-
-				- With multiple throngs along perp to direction
+				+ With multiple throngs along perp to direction
 			+ Do we still need decay render mode?
 				+ If we remove it: add to Android plan
 
