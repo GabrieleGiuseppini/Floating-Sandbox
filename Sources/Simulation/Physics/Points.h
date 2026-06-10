@@ -207,23 +207,23 @@ public:
     };
 
     /*
-     * Rot dynamics
+     * Decay dynamics
      */
 
 #pragma pack(push, 1)
-    union RotBufferType
+    union DecayBufferType
     {
-        struct RotType
+        struct DecayType
         {
             float Rot; // 1.0 -> 0.0 (completely rotten) -- from Combustion and Decay (water+underwater)
             float Rust; // 1.0 -> 0.0 (completely rusted)
             float AlgaeGrowth; // 1.0 -> 0.0 (completely overgrown)
-        } Rot;
+        } Decay;
 
         vec3f _vec;
 
-        RotBufferType()
-            : Rot({1.0f, 1.0f, 1.0f})
+        DecayBufferType()
+            : Decay({1.0f, 1.0f, 1.0f})
         { }
     };
 #pragma pack(pop)
@@ -750,7 +750,7 @@ public:
         , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mFactoryStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mStressBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mRotBuffer(mAlignedShipPointCount, 0, RotBufferType())
+        , mDecayBuffer(mAlignedShipPointCount, 0, DecayBufferType())
         , mWeaknessBuffer(mAlignedShipPointCount, 0, 1.0f)
         , mPinningCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -1455,7 +1455,7 @@ public:
     float GetRot(ElementIndex pointElementIndex) const
     {
         assert(!IsEphemeral(pointElementIndex));
-        return mRotBuffer[pointElementIndex].Rot.Rot;
+        return mDecayBuffer[pointElementIndex].Decay.Rot;
     }
 
     void SetRot(
@@ -1463,13 +1463,13 @@ public:
         float value)
     {
         assert(!IsEphemeral(pointElementIndex));
-        mRotBuffer[pointElementIndex].Rot.Rot = value;
+        mDecayBuffer[pointElementIndex].Decay.Rot = value;
     }
 
     float GetRust(ElementIndex pointElementIndex) const
     {
         assert(!IsEphemeral(pointElementIndex));
-        return mRotBuffer[pointElementIndex].Rot.Rust;
+        return mDecayBuffer[pointElementIndex].Decay.Rust;
     }
 
     void SetRust(
@@ -1477,13 +1477,13 @@ public:
         float value)
     {
         assert(!IsEphemeral(pointElementIndex));
-        mRotBuffer[pointElementIndex].Rot.Rust = value;
+        mDecayBuffer[pointElementIndex].Decay.Rust = value;
     }
 
     float GetAlgaeGrowth(ElementIndex pointElementIndex) const
     {
         assert(!IsEphemeral(pointElementIndex));
-        return mRotBuffer[pointElementIndex].Rot.AlgaeGrowth;
+        return mDecayBuffer[pointElementIndex].Decay.AlgaeGrowth;
     }
 
     void SetAlgaeGrowth(
@@ -1491,7 +1491,7 @@ public:
         float value)
     {
         assert(!IsEphemeral(pointElementIndex));
-        mRotBuffer[pointElementIndex].Rot.AlgaeGrowth = value;
+        mDecayBuffer[pointElementIndex].Decay.AlgaeGrowth = value;
     }
 
     float GetWeakness(ElementIndex pointElementIndex) const
@@ -2548,7 +2548,7 @@ private:
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;
     Buffer<float> mFactoryStrengthBuffer; // Immutable
     Buffer<float> mStressBuffer; // -1.0 -> 1.0, only calculated (at springs) if rendering it
-    Buffer<RotBufferType> mRotBuffer; // Only for non-ephemeral
+    Buffer<DecayBufferType> mDecayBuffer; // Only for non-ephemeral
     Buffer<float> mWeaknessBuffer; // 1.0=default strength, 0.0=no strength; only for non-ephemeral
     Buffer<float> mPinningCoefficientBuffer; // 1.0: not pinned; 0.0f: pinned
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen

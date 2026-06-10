@@ -130,7 +130,7 @@ enum class GameSettings : size_t
     InjectPressureQuantity,
     BlastToolRadius,
     BlastToolForceAdjustment,
-    ScrubRotToolRadius,
+    ScrubRustToolRadius,
     WindMakerToolWindSpeed,
     UltraViolentMode,
     DoGenerateDebris,

@@ -285,7 +285,7 @@ public:
     void ApplyInteractiveWaveAt(DisplayLogicalCoordinates const & screenCoordinates, int screenRadius) override;
     std::optional<bool> AdjustOceanFloorTo(vec2f const & startWorldPosition, vec2f const & endWorldPosition) override;
     bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
-    bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
+    bool RustThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
     void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates, bool isSparseMode) override;
     void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
     void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
@@ -941,10 +941,10 @@ public:
     float GetMinBlastToolForceAdjustment() const override { return SimulationParameters::MinBlastToolForceAdjustment; }
     float GetMaxBlastToolForceAdjustment() const override { return SimulationParameters::MaxBlastToolForceAdjustment; }
 
-    float GetScrubRotToolRadius() const override { return mSimulationParameters.ScrubRotToolRadius; }
-    void SetScrubRotToolRadius(float value) override { mSimulationParameters.ScrubRotToolRadius = value; }
-    float GetMinScrubRotToolRadius() const override { return SimulationParameters::MinScrubRotToolRadius; }
-    float GetMaxScrubRotToolRadius() const override { return SimulationParameters::MaxScrubRotToolRadius; }
+    float GetScrubRustToolRadius() const override { return mSimulationParameters.ScrubRustToolRadius; }
+    void SetScrubRustToolRadius(float value) override { mSimulationParameters.ScrubRustToolRadius = value; }
+    float GetMinScrubRustToolRadius() const override { return SimulationParameters::MinScrubRustToolRadius; }
+    float GetMaxScrubRustToolRadius() const override { return SimulationParameters::MaxScrubRustToolRadius; }
 
     float GetWindMakerToolWindSpeed() const override { return mSimulationParameters.WindMakerToolWindSpeed; }
     void SetWindMakerToolWindSpeed(float value) override { mSimulationParameters.WindMakerToolWindSpeed = value; }

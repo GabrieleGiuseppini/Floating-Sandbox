@@ -1647,13 +1647,18 @@
 					+ Copy from old code, but likely is same place as weakness restore now
 			+ Scrub tool: lower weakness + 3
 
-			- Rot tool: rust
-				- Rename first: Rot->Decay
-					- Points buffer
-					- Tool
-					- Android
+			= Rot tool: rust
+				+ Rename first: Rot->Decay
+					+ Points buffer
+					+ Settings (GameController)
+					+ Tool
+					+ SettingsDialog
+					+ Android plan
+				+ Test radius setting works
 
-				- With direction
+				- With multiple throngs along perp to direction
+			- Do we still need decay render mode?
+				- If we remove it: add to Android plan
 
 
 			+ ShipRenderContext:
@@ -1663,9 +1668,6 @@
 				+ Ship VAO
 				+ Ship Uploads
 				+ Debris VAO
-
-			- Do we still need decay render mode?
-				- If we remove it: add to Android plan
 
 			= Shaders:
 				+ AttributeGroup vertex buffer changes
@@ -1719,6 +1721,7 @@
 			- ShipRenderContext/VBO changes
 			- Shader coloring changes
 			- New settings
+			- ScrubRot tool name change @ tool (cosmetic) and settings (mandated)
 			- changelist
 			
 	- TODOOLD

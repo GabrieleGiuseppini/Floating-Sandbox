@@ -1190,26 +1190,26 @@ bool World::ScrubThrough(
     return anyHasScrubbed;
 }
 
-bool World::RotThrough(
+bool World::RustThrough(
     vec2f const & startPos,
     vec2f const & endPos,
     float radius,
     SimulationParameters const & simulationParameters)
 {
-    // Rot all ships
-    bool anyHasRotted = false;
+    // Rust all ships
+    bool anyHasRusted = false;
     for (auto & ship : mAllShips)
     {
-        bool const hasRotted = ship->RotThrough(
+        bool const hasRusted = ship->RustThrough(
             startPos,
             endPos,
             radius,
             simulationParameters);
 
-        anyHasRotted |= hasRotted;
+        anyHasRusted |= hasRusted;
     }
 
-    return anyHasRotted;
+    return anyHasRusted;
 }
 
 void World::ApplyThanosSnap(

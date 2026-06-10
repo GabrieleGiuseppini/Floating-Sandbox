@@ -1190,15 +1190,15 @@ void Points::UpdateCombustionLowFrequency(
 
                 auto const pointMass = mMaterialsBuffer[pointIndex].Structural->GetMass();
 
-                float const decayAlpha =
+                float const rotAlpha =
                     (mCombustionDecayAlphaFunctionA * pointMass + mCombustionDecayAlphaFunctionB) * pointMass
                     + mCombustionDecayAlphaFunctionC;
 
-                assert(decayAlpha <= 1.0f); // We can't allow decay to grow
+                assert(rotAlpha <= 1.0f); // We can't allow rot to grow
 
-                // Decay point
-                mWeaknessBuffer[pointIndex] *= decayAlpha;
-                mRotBuffer[pointIndex].Rot.Rot *= decayAlpha;
+                // Rot point
+                mWeaknessBuffer[pointIndex] *= rotAlpha;
+                mDecayBuffer[pointIndex].Decay.Rot *= rotAlpha;
 
                 //
                 // 2. Decay neighbors
@@ -1206,8 +1206,8 @@ void Points::UpdateCombustionLowFrequency(
 
                 for (auto const s : GetConnectedSprings(pointIndex).ConnectedSprings)
                 {
-                    mWeaknessBuffer[s.OtherEndpointIndex] *= decayAlpha;
-                    mRotBuffer[s.OtherEndpointIndex].Rot.Rot *= decayAlpha;
+                    mWeaknessBuffer[s.OtherEndpointIndex] *= rotAlpha;
+                    mDecayBuffer[s.OtherEndpointIndex].Decay.Rot *= rotAlpha;
                 }
             }
         }
@@ -1547,12 +1547,12 @@ void Points::UpdateCombustionHighFrequency(
                     (0.9f + 1.0f * (1.0f - springDir.dot(SimulationParameters::GravityDir)));
                 // No normalization: when using normalization flame does not propagate along rope
 
-                // Add heat to the neighbor, diminishing with the neighbor's rot
+                // Add heat to the neighbor, diminishing with the neighbor's decay
                 mTemperatureBuffer[otherEndpointIndex] +=
                     effectiveCombustionHeat
                     * dirAlpha
                     * mMaterialHeatCapacityReciprocalBuffer[otherEndpointIndex]
-                    * mRotBuffer[otherEndpointIndex].Rot.Rot;
+                    * mDecayBuffer[otherEndpointIndex].Decay.Rot;
             }
         }
 
@@ -2186,7 +2186,7 @@ void Points::Query(ElementIndex pointElementIndex) const
     LogMessage("PointIndex: ", pointElementIndex, (nullptr != mMaterialsBuffer[pointElementIndex].Structural) ? (" (" + mMaterialsBuffer[pointElementIndex].Structural->Name) + ")" : "");
     LogMessage("P=", mPositionBuffer[pointElementIndex].toString(), " V=", mVelocityBuffer[pointElementIndex].toString());
     LogMessage("M=", mMassBuffer[pointElementIndex], " IPs=", mInternalPressureBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex],
-               " Wk=", IsEphemeral(pointElementIndex) ? 1.0f : mWeaknessBuffer[pointElementIndex], " Rust=", IsEphemeral(pointElementIndex) ? 0.0f : mRotBuffer[pointElementIndex].Rot.Rust);
+               " Wk=", IsEphemeral(pointElementIndex) ? 1.0f : mWeaknessBuffer[pointElementIndex], " Rust=", IsEphemeral(pointElementIndex) ? 0.0f : mDecayBuffer[pointElementIndex].Decay.Rust);
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex], " ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
 
@@ -2240,7 +2240,7 @@ void Points::UploadAttributes(
         mLightBuffer.data(),
         mWaterBuffer.data(),
         mTemperatureBuffer.data(),
-        reinterpret_cast<vec3f const *>(mRotBuffer.data()),
+        reinterpret_cast<vec3f const *>(mDecayBuffer.data()),
         planeIdBuffer);
 
     if (renderContext.GetStressRenderMode() != StressRenderModeType::None)

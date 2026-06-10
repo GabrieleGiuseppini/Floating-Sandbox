@@ -1592,13 +1592,13 @@ bool Ship::ScrubThrough(
     return hasScrubbed;
 }
 
-bool Ship::RotThrough(
+bool Ship::RustThrough(
     vec2f const & startPos,
     vec2f const & endPos,
     float radius,
     SimulationParameters const & simulationParameters)
 {
-    float const decayCoeffMultiplier = simulationParameters.IsUltraViolentMode
+    float const rustCoeffMultiplier = simulationParameters.IsUltraViolentMode
         ? 2.5f
         : 1.0f;
 
@@ -1608,9 +1608,9 @@ bool Ship::RotThrough(
 
     float const squareRadius = radius * radius;
 
-    // Visit all points (excluding ephemerals, they don't rot and
-    // thus we don't need to rot them!)
-    bool hasRotted = false;
+    // Visit all points (excluding ephemerals, they don't rust and
+    // thus we don't need to rust them!)
+    bool hasRusted = false;
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
         auto const & pointPosition = mPoints.GetPosition(pointIndex);
@@ -1619,28 +1619,32 @@ bool Ship::RotThrough(
             squarePointDistance <= squareRadius)
         {
             //
-            // Rot this point, with magnitude dependent from distance,
+            // Rust this point, with magnitude dependent from distance,
             // and more pronounced when the point is underwater or has water
             //
 
-            float const distance = std::sqrt(squarePointDistance);
+            float const distanceCoeff = (radius - std::sqrt(squarePointDistance)) / radius;
 
-            float const decayCoeff = (mParentWorld.GetOceanSurface().IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
+            float const rustCoeff = (mParentWorld.GetOceanSurface().IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
                 ? 0.0175f
                 : 0.010f;
 
-            float const newRot =
-                mPoints.GetRot(pointIndex)
-                * (1.0f - decayCoeff * decayCoeffMultiplier * (radius - distance) / radius);
+            float const newRust =
+                mPoints.GetRust(pointIndex)
+                * (1.0f - rustCoeff * rustCoeffMultiplier * distanceCoeff);
+            mPoints.SetRust(pointIndex, newRust);
 
-            mPoints.SetRot(pointIndex, newRot);
+            float const newWeakness =
+                mPoints.GetWeakness(pointIndex)
+                * (1.0f - rustCoeff * rustCoeffMultiplier * distanceCoeff);
+            mPoints.SetWeakness(pointIndex, newWeakness);
 
-            // Remember at least one point has been rotted
-            hasRotted |= true;
+            // Remember at least one point has been rusted
+            hasRusted |= true;
         }
     }
 
-    return hasRotted;
+    return hasRusted;
 }
 
 void Ship::ApplyThanosSnap(

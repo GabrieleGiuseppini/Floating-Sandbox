@@ -302,7 +302,7 @@ public:
         vec2f const & endPos,
         float radius);
 
-    bool RotThrough(
+    bool RustThrough(
         vec2f const & startPos,
         vec2f const & endPos,
         float radius,

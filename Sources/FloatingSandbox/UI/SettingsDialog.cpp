@@ -4413,11 +4413,11 @@ void SettingsDialog::PopulateOtherToolsPanel(
     }
 
     //
-    // Scrub/Rot Tool
+    // Scrub/Rust Tool
     //
 
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Scrub/Rot Tool"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Scrub/Rust Tool"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
@@ -4440,26 +4440,26 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            // Scrub/Rot Radius
+            // Scrub/Rust Radius
             {
-                mScrubRotRadiusSlider = new SliderControl<float>(
+                mScrubRustRadiusSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Radius"),
-                    _("How wide an area is affected by the scrub/rot tool (m)."),
+                    _("How wide an area is affected by the scrub/rust tool (m)."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::ScrubRotToolRadius, value);
+                        this->mLiveSettings.SetValue(GameSettings::ScrubRustToolRadius, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinScrubRotToolRadius(),
-                        mGameControllerSettingsOptions.GetMaxScrubRotToolRadius()));
+                        mGameControllerSettingsOptions.GetMinScrubRustToolRadius(),
+                        mGameControllerSettingsOptions.GetMaxScrubRustToolRadius()));
 
                 sizer->Add(
-                    mScrubRotRadiusSlider,
+                    mScrubRustRadiusSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -6934,7 +6934,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mInjectPressureQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::InjectPressureQuantity));
     mRepairRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::RepairRadius));
     mRepairSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RepairSpeedAdjustment));
-    mScrubRotRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::ScrubRotToolRadius));
+    mScrubRustRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::ScrubRustToolRadius));
     mWindMakerWindSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WindMakerToolWindSpeed));
     mDoApplyPhysicsToolsToShipsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoApplyPhysicsToolsToShips));
     mDoApplyPhysicsToolsToNpcsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs));

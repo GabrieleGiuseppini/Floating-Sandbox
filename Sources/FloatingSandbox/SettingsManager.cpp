@@ -160,7 +160,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, InjectPressureQuantity);
     ADD_GC_SETTING(float, BlastToolRadius);
     ADD_GC_SETTING(float, BlastToolForceAdjustment);
-    ADD_GC_SETTING(float, ScrubRotToolRadius);
+    ADD_GC_SETTING(float, ScrubRustToolRadius);
     ADD_GC_SETTING(float, WindMakerToolWindSpeed);
     ADD_GC_SETTING(bool, UltraViolentMode);
     ADD_GC_SETTING(bool, DoGenerateDebris);

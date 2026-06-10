@@ -181,7 +181,7 @@ private:
     SliderControl<float> * mInjectPressureQuantitySlider;
     SliderControl<float> * mRepairRadiusSlider;
     SliderControl<float> * mRepairSpeedAdjustmentSlider;
-    SliderControl<float> * mScrubRotRadiusSlider;
+    SliderControl<float> * mScrubRustRadiusSlider;
     SliderControl<float> * mWindMakerWindSpeedSlider;
     wxCheckBox * mDoApplyPhysicsToolsToShipsCheckBox;
     wxCheckBox * mDoApplyPhysicsToolsToNpcsCheckBox;

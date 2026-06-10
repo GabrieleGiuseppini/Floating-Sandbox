@@ -2978,7 +2978,7 @@ public:
                 bool hasStriked;
                 if (inputState.IsShiftKeyDown)
                 {
-                    hasStriked = mGameController.RotThrough(
+                    hasStriked = mGameController.RustThrough(
                         *mPreviousMousePos,
                         inputState.MousePosition);
                 }
