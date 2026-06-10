@@ -3545,18 +3545,18 @@ void Ship::RotPoints(
     //      x_uw = (1-a_uw)/(a_uw - a_uw_fl)
     //
 
-    float constexpr Ns = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+    float constexpr NsRot = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
-    float const a_uw = simulationParameters.RotAcceler8r != 0.0f
-        ? powf(0.75f, simulationParameters.RotAcceler8r / Ns) // a_uw = 0.75 ^ (1/Ns)
+    float const a_uw_rot = simulationParameters.RotAcceler8r != 0.0f
+        ? powf(0.75f, simulationParameters.RotAcceler8r / NsRot) // a_uw = 0.75 ^ (1/Ns)
         : 1.0f;
 
-    float const a_uw_fl = simulationParameters.RotAcceler8r != 0.0f
-        ? powf(0.25f, simulationParameters.RotAcceler8r / Ns) // a_uw = 0.25 ^ (1/Ns)
+    float const a_uw_fl_rot = simulationParameters.RotAcceler8r != 0.0f
+        ? powf(0.25f, simulationParameters.RotAcceler8r / NsRot) // a_uw = 0.25 ^ (1/Ns)
         : 1.0f;
 
-    float const x_uw = (1.0f - a_uw) / (a_uw - a_uw_fl);
-    float const beta = (1.0f - a_uw) / x_uw;
+    float const x_uw_rot = (1.0f - a_uw_rot) / (a_uw_rot - a_uw_fl_rot);
+    float const beta_rot = (1.0f - a_uw_rot) / x_uw_rot;
 
     //
     // Rust
@@ -3574,7 +3574,7 @@ void Ship::RotPoints(
         : 1.0f;
 
     float const a_higher_rust = simulationParameters.RustAcceler8r != 0.0f
-        ? powf(0.1f, simulationParameters.RustAcceler8r / NsRust)
+        ? powf(0.05f, simulationParameters.RustAcceler8r / NsRust)
         : 1.0f;
 
     // Process all non-ephemeral points in this partition - no real reason
@@ -3588,26 +3588,28 @@ void Ship::RotPoints(
         float const isUnderwater = mPoints.IsCachedUnderwater(p) ? 1.0f : 0.0f;
         float const isDamaged = mPoints.GetIsDamaged(p);
 
+        float alphaWeakness = 1.0f;
+
         //
         // Rot
         //
 
-        float x =
-            isUnderwater * x_uw // x_uw
+        float x_rot =
+            isUnderwater * x_uw_rot // x_uw
             + water; // x_fl
 
         // Adjust with damage: if damaged and subject to rotting, then rots faster
-        x += isDamaged * x * x_uw;
+        x_rot += isDamaged * x_rot * x_uw_rot;
 
         // Adjust with material's rot receptivity
-        x *= mPoints.GetStructuralMaterial(p).RotReceptivity;
+        x_rot *= mPoints.GetStructuralMaterial(p).RotReceptivity;
 
         // Calculate alpha
-        float const alpha = std::max(1.0f - beta * x, 0.0f);
+        float const alpha_rot = std::max(1.0f - beta_rot * x_rot, 0.0f);
 
-        // Decay
-        mPoints.SetRot(p, mPoints.GetRot(p) * alpha);
-        mPoints.SetWeakness(p, mPoints.GetWeakness(p) * alpha);
+        // Rot
+        mPoints.SetRot(p, mPoints.GetRot(p) * alpha_rot);
+        alphaWeakness = std::min(alphaWeakness, alpha_rot);
 
         //
         // Rust
@@ -3615,7 +3617,7 @@ void Ship::RotPoints(
 
         // 1) Rust if damaged; more so if has water
 
-        float const betaDamage = (1.0f - Mix(a_low_rust, a_high_rust, water)) * isDamaged;
+        float const betaRustDamage = (1.0f - Mix(a_low_rust, a_high_rust, water)) * isDamaged;
 
         // 2) Rust by neighbors, imprinting pattern via mass, and randomizing
 
@@ -3635,7 +3637,7 @@ void Ship::RotPoints(
         float constexpr MinMassMultiplier = 0.75f;
         float const massMultiplier = MinMassMultiplier + (1.0f - MinMassMultiplier) * std::min(mPoints.GetMass(p) / 700.0f, 1.0f);
 
-        float const betaNeighbors =
+        float const betaRustNeighbors =
             Mix(1.0f - a_high_rust, 1.0f - a_higher_rust, isUnderwater) // Rusts faster underwater
             * avgNeighborsRust
             * massMultiplier * mPoints.GetRandomNormalizedUniformPersonalitySeed(p);
@@ -3646,11 +3648,22 @@ void Ship::RotPoints(
         // our rust asymptote is not zero but slightly higher
         float const minRust = 0.2f * (1.0f - isDamaged);
 
+        float const betaRust = (betaRustDamage + betaRustNeighbors) * mPoints.GetStructuralMaterial(p).RustReceptivity;
+
         float const newRust =
             mPoints.GetRust(p)
-            + (minRust - mPoints.GetRust(p)) * (betaDamage + betaNeighbors) * mPoints.GetStructuralMaterial(p).RustReceptivity;
+            + (minRust - mPoints.GetRust(p)) * betaRust;
 
+        // Rust
         mPoints.SetRust(p, newRust);
+        alphaWeakness = std::min(alphaWeakness, 1.0f - betaRust * 0.6f);
+
+
+        //
+        // Weakness
+        //
+
+        mPoints.SetWeakness(p, mPoints.GetWeakness(p) * alphaWeakness);
     }
 }
 

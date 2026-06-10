@@ -1562,16 +1562,16 @@
 				+ GameController
 
 			= LFLoop:
-				- Important: don't add multiple weaknesses, do min among all
-					- Just calc min alpha and use that for weakness
-				= Decay:
+				+ Important: don't add multiple weaknesses, do min among all
+					+ Just calc min alpha and use that for weakness
+				+ Rot:
 					+ Driven by material's rot_receptivity
 					+ Speed: RotAcceler8r
 					+ Amount:
 						+ Like now
-					- Add to Weakness
+					+ Add to Weakness
 					+ Add to Rot buffer
-				= Rust:
+				+ Rust:
 					+ Should be for any point that is now exposed (i.e. which has lost at least one triangle)
 						+ 1) Mark point as damaged when we remove a triangle, by point Points::DisconnectTriangle itself
 						+ 2) Do it instead from HandleTriangleDestroy
@@ -1580,15 +1580,14 @@
 							+ Damage single particles
 					+ Driven by material's rust_receptivity
 					+ Speed: RustAcceler8r
-					= Amount:
-
+					+ Amount:
 						+ Damaged: +++
 							+ alpha = 1 - beta_damaged * damaged
-						+ Beta gets higher if there's water in it
-							! Can combine alpha's for various periods:
-								! a_low_rust=0.99973 a_high_rust=0.998701
-								! https://www.toolfk.com/online-plotter-frame#W3sidHlwZSI6MCwiZXEiOiIwLjk5OTczXngiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjAsImVxIjoiMC45OTg3MDFeeCIsImNvbG9yIjoiI0ZGMDUwNSJ9LHsidHlwZSI6MCwiZXEiOiIoKDAuOTk5NzMrMC45OTg3MDEpLzIpXngiLCJjb2xvciI6IiMwNUYwMjAifSx7InR5cGUiOjEwMDAsIndpbmRvdyI6WyItNDE2LjkwOTk5OTk5OTk5ODk0IiwiNjA4OS41OSIsIi0zLjUiLCI0LjUiXX1d
-							+ The alpha used for beta_damage is Mix(low_alpha, high_alpha, water);
+							+ Beta gets higher if there's water in it
+								! Can combine alpha's for various periods:
+									! a_low_rust=0.99973 a_high_rust=0.998701
+									! https://www.toolfk.com/online-plotter-frame#W3sidHlwZSI6MCwiZXEiOiIwLjk5OTczXngiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjAsImVxIjoiMC45OTg3MDFeeCIsImNvbG9yIjoiI0ZGMDUwNSJ9LHsidHlwZSI6MCwiZXEiOiIoKDAuOTk5NzMrMC45OTg3MDEpLzIpXngiLCJjb2xvciI6IiMwNUYwMjAifSx7InR5cGUiOjEwMDAsIndpbmRvdyI6WyItNDE2LjkwOTk5OTk5OTk5ODk0IiwiNjA4OS41OSIsIi0zLjUiLCI0LjUiXX1d
+								+ The alpha used for beta_damage is Mix(low_alpha, high_alpha, water);
 
 						+ Neighbors:
 							+ mass_multiplier = 0.5 + 0.5 * LinearStep(0.0, 1000.0)
@@ -1603,8 +1602,8 @@
 
 						+ Boost rust if underwater
 
-					- Add to Weakness
-						- Min alpha/max beta
+					+ Add to Weakness
+						+ Min alpha/max beta
 
 					+ Add to Rust buffer
 
@@ -1619,9 +1618,7 @@
 
 				+ Adjust rust color base
 
-				- Repair: clean rot+rust, as that would be inconsistent with weakness
-					- Copy from old code, but likely is same place as weakness restore now
-					- TODO: should we set weakness to min(rot, rust)?
+				+ SettingsDialog: "Rot" static => "Decay"
 
 				- AlgaeGrowth:
 					- Speed: AlgaeGrowthAcceler8r
@@ -1629,6 +1626,7 @@
 						- Underwater => + f(perlin)
 						- Neighbors (with their perlin, probably already taken into account?)
 					- Add to AlgaeGrowth buffer
+
 				- Solubility:
 					- Driven by material's water_solubility
 					- Speed: RotAcceler8r
@@ -1642,10 +1640,13 @@
 					- Precalcd' coeffs & update @ SimParams changes
 						- Members of Ship
 
-			+ Repair: lower weakness
+			= Repair
+				- Lower weakness
+				- Clean rot+rust, as that would be inconsistent with weakness
+					- Copy from old code, but likely is same place as weakness restore now
 			+ Scrub tool: lower weakness + 3
 			= Rot tool: rot
-				- No rust? No Algae?
+				- No rust? No Algae? Or tool just does rust instead of rot?
 
 			+ ShipRenderContext:
 				! AttributeGroup VBO becomes 6-way: Light, Water, Temperature, Rot, Rust, AlgaeGrowth
@@ -1654,6 +1655,10 @@
 				+ Ship VAO
 				+ Ship Uploads
 				+ Debris VAO
+
+			- Do we still need decay render mode?
+				- If we remove it: add to Android plan
+
 			= Shaders:
 				+ AttributeGroup vertex buffer changes
 					+ All shaders
@@ -1663,16 +1668,22 @@
 				+ Color constants
 					+ Search all uses
 
-				= ship_decay
+				+ ship_decay
 					- Finalize color of rot
 				+ ship_element
+
+				- Try rust _over_ water (@ship_element)
+
+				- Try multi-channel texture for rust and algae
+					- Do test first with dummy texture for perf impact
+						- New Dell
+						- Old Dell
+					- Find rust texture
+					- Find algae texture
 
 			+ SettingsDialog:
 				+ AlgaeGrowthAcceler8r
 				+ RustAcceler8r
-
-		- Decide:
-			- TODO: Want to turn back Points::Rot buffer from vec3f to struct, or even three buffers?
 
 		- Do "water soluble metal" material
 
@@ -1694,6 +1705,7 @@
 		- changelist
 
 		- Merge into master
+			- With PR for Android
 
 		- Android port:
 			- ShipRenderContext/VBO changes

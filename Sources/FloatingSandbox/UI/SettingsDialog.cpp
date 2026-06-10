@@ -1321,19 +1321,19 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
     }
 
     //
-    // Rotting
+    // Decay
     //
 
     {
-        wxStaticBoxSizer * rottingBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Rotting"));
+        wxStaticBoxSizer * decayBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Decay"));
 
         {
-            wxGridBagSizer * rottingSizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * decaySizer = new wxGridBagSizer(0, 0);
 
             // Rot Accelerator
             {
                 mRotAcceler8rSlider = new SliderControl<float>(
-                    rottingBoxSizer->GetStaticBox(),
+                    decayBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
@@ -1349,7 +1349,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                         1.0f,
                         mGameControllerSettingsOptions.GetMaxRotAcceler8r()));
 
-                rottingSizer->Add(
+                decaySizer->Add(
                     mRotAcceler8rSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
@@ -1360,7 +1360,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
             // Rust Accelerator
             {
                 mRustAcceler8rSlider = new SliderControl<float>(
-                    rottingBoxSizer->GetStaticBox(),
+                    decayBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
@@ -1376,7 +1376,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                         1.0f,
                         mGameControllerSettingsOptions.GetMaxRustAcceler8r()));
 
-                rottingSizer->Add(
+                decaySizer->Add(
                     mRustAcceler8rSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
@@ -1387,7 +1387,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
             // Algae Growth Accelerator
             {
                 mAlgaeGrowthAcceler8rSlider = new SliderControl<float>(
-                    rottingBoxSizer->GetStaticBox(),
+                    decayBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
@@ -1403,7 +1403,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                         1.0f,
                         mGameControllerSettingsOptions.GetMaxAlgaeGrowthAcceler8r()));
 
-                rottingSizer->Add(
+                decaySizer->Add(
                     mAlgaeGrowthAcceler8rSlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
@@ -1411,17 +1411,17 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(rottingSizer);
+            WxHelpers::MakeAllColumnsExpandable(decaySizer);
 
-            rottingBoxSizer->Add(
-                rottingSizer,
+            decayBoxSizer->Add(
+                decaySizer,
                 1,
                 wxEXPAND | wxALL,
                 StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
-            rottingBoxSizer,
+            decayBoxSizer,
             wxGBPosition(1, 3),
             wxGBSpan(1, 3),
             wxEXPAND | wxALL,
