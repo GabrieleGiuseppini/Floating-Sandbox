@@ -1647,14 +1647,14 @@
 					+ Copy from old code, but likely is same place as weakness restore now
 			+ Scrub tool: lower weakness + 3
 
-			- Rename Rot->Decay
-				- Points buffer
-				- ShipRenderContext?
-				- Tool
-				- Android
+			- Rot tool: rust
+				- Rename first: Rot->Decay
+					- Points buffer
+					- Tool
+					- Android
 
-			= Rot tool: rot
-				- No rust? No Algae? Or tool just does rust instead of rot?
+				- With direction
+
 
 			+ ShipRenderContext:
 				! AttributeGroup VBO becomes 6-way: Light, Water, Temperature, Rot, Rust, AlgaeGrowth
