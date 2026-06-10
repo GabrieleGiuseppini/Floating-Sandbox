@@ -1601,7 +1601,7 @@
 							+ Bottom = f(damaged): 0 or 0.2
 							X If too slow: forget target, use max(0.2, newRust)
 
-						- Boost rust if underwater
+						+ Boost rust if underwater
 
 					- Add to Weakness
 						- Min alpha/max beta

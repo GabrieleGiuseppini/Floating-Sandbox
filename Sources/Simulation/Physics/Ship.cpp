@@ -3573,6 +3573,10 @@ void Ship::RotPoints(
         ? powf(0.25f, simulationParameters.RustAcceler8r / NsRust)
         : 1.0f;
 
+    float const a_higher_rust = simulationParameters.RustAcceler8r != 0.0f
+        ? powf(0.1f, simulationParameters.RustAcceler8r / NsRust)
+        : 1.0f;
+
     // Process all non-ephemeral points in this partition - no real reason
     // to exclude ephemerals, other than they're not expected to rot
     ElementCount const partitionSize = (mPoints.GetRawShipPointCount() / partitionCount) + ((mPoints.GetRawShipPointCount() % partitionCount) ? 1 : 0);
@@ -3581,6 +3585,7 @@ void Ship::RotPoints(
     for (ElementIndex p = startPointIndex; p < endPointIndex; ++p)
     {
         float const water = std::min(mPoints.GetWater(p), 1.0f);
+        float const isUnderwater = mPoints.IsCachedUnderwater(p) ? 1.0f : 0.0f;
         float const isDamaged = mPoints.GetIsDamaged(p);
 
         //
@@ -3588,7 +3593,7 @@ void Ship::RotPoints(
         //
 
         float x =
-            (mPoints.IsCachedUnderwater(p) ? x_uw : 0.0f) // x_uw
+            isUnderwater * x_uw // x_uw
             + water; // x_fl
 
         // Adjust with damage: if damaged and subject to rotting, then rots faster
@@ -3626,12 +3631,16 @@ void Ship::RotPoints(
             avgNeighborsRust /= static_cast<float>(nCs);
         }
 
+        // Mass
         float constexpr MinMassMultiplier = 0.75f;
         float const massMultiplier = MinMassMultiplier + (1.0f - MinMassMultiplier) * std::min(mPoints.GetMass(p) / 700.0f, 1.0f);
+
         float const betaNeighbors =
-            (1.0f - a_high_rust)  // b_high
+            Mix(1.0f - a_high_rust, 1.0f - a_higher_rust, isUnderwater) // Rusts faster underwater
             * avgNeighborsRust
             * massMultiplier * mPoints.GetRandomNormalizedUniformPersonalitySeed(p);
+
+        // Combine
 
         // Min rust value (i.e. maximum rust) depends on damage: if not damaged,
         // our rust asymptote is not zero but slightly higher
