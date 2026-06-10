@@ -153,8 +153,6 @@ ProgramKind ShaderNameToProgramKind(std::string const & str)
         return ProgramKind::ShipSpringsColorIncandescence;
     else if (lstr == "ship_springs_color_incandescence_stress")
         return ProgramKind::ShipSpringsColorIncandescenceStress;
-    else if (lstr == "ship_springs_decay")
-        return ProgramKind::ShipSpringsDecay;
     else if (lstr == "ship_springs_internal_pressure")
         return ProgramKind::ShipSpringsInternalPressure;
     else if (lstr == "ship_springs_strength")
@@ -185,8 +183,6 @@ ProgramKind ShaderNameToProgramKind(std::string const & str)
         return ProgramKind::ShipTrianglesColorIncandescence;
     else if (lstr == "ship_triangles_color_incandescence_stress")
         return ProgramKind::ShipTrianglesColorIncandescenceStress;
-    else if (lstr == "ship_triangles_decay")
-        return ProgramKind::ShipTrianglesDecay;
     else if (lstr == "ship_triangles_internal_pressure")
         return ProgramKind::ShipTrianglesInternalPressure;
     else if (lstr == "ship_triangles_strength")
@@ -365,8 +361,6 @@ std::string ProgramKindToStr(ProgramKind program)
             return "ShipSpringsColorIncandescence";
         case ProgramKind::ShipSpringsColorIncandescenceStress:
             return "ShipSpringsColorIncandescenceStress";
-        case ProgramKind::ShipSpringsDecay:
-            return "ShipSpringsDecay";
         case ProgramKind::ShipSpringsInternalPressure:
             return "ShipSpringsInternalPressure";
         case ProgramKind::ShipSpringsStrength:
@@ -397,8 +391,6 @@ std::string ProgramKindToStr(ProgramKind program)
             return "ShipTrianglesColorIncandescence";
         case ProgramKind::ShipTrianglesColorIncandescenceStress:
             return "ShipTrianglesColorIncandescenceStress";
-        case ProgramKind::ShipTrianglesDecay:
-            return "ShipTrianglesDecay";
         case ProgramKind::ShipTrianglesInternalPressure:
             return "ShipTrianglesInternalPressure";
         case ProgramKind::ShipTrianglesStrength:

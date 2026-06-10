@@ -14,6 +14,7 @@
 #include <Core/Streams.h>
 #include <Core/Utils.h>
 
+#include <cassert>
 #include <regex>
 
  ////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,6 +28,11 @@ GameAssetManager::GameAssetManager(std::string const && argv0)
 	, mTextureRoot(mDataRoot / "Textures")
     , mShaderRoot(mDataRoot / "Shaders")
 {
+    assert(std::filesystem::exists(mGameRoot));
+    assert(std::filesystem::exists(mDataRoot));
+    assert(std::filesystem::exists(mResourcesRoot));
+    assert(std::filesystem::exists(mTextureRoot));
+    assert(std::filesystem::exists(mShaderRoot));
 }
 
 GameAssetManager::GameAssetManager(std::filesystem::path const & textureRoot)

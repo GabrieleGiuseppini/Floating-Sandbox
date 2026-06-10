@@ -1657,8 +1657,8 @@
 				+ Test radius setting works
 
 				- With multiple throngs along perp to direction
-			- Do we still need decay render mode?
-				- If we remove it: add to Android plan
+			+ Do we still need decay render mode?
+				+ If we remove it: add to Android plan
 
 
 			+ ShipRenderContext:
@@ -1722,6 +1722,7 @@
 			- Shader coloring changes
 			- New settings
 			- ScrubRot tool name change @ tool (cosmetic) and settings (mandated)
+			- Removal of ship_decay shaders
 			- changelist
 			
 	- TODOOLD
