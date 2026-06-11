@@ -1604,6 +1604,7 @@
 
 					+ Add to Weakness
 						+ Min alpha/max beta
+						+ Does it become weak too soon? Want rust to expand more before it weakens
 
 					+ Add to Rust buffer
 
@@ -1681,18 +1682,42 @@
 					- Finalize color of rot
 				+ ship_element
 
-				- Try rust _over_ water (@ship_element)
-
-				- Try multi-channel texture for rust and algae
-					- Do test first with dummy texture for perf impact
+				= Try multi-channel texture for rust and algae
+					= Do test first with dummy texture for perf impact
 						- New Dell
-						- Old Dell
-					- Find rust texture
-					- Find algae texture
+						= Old Dell: 18.2-18.6-19.2 => 
+					- If ok:
+						- Piggyback on NoiseTexture
+							- TODO: only needed if too many texture units; otherwise, useless
+							- See first if we access g,b of Fine and Gross noises
+								- Should not, they're greyscale
+							- "Noise" -> "NoiseAndShipEnhancements"
+								- ShaderSets
+								- Shaders
+							- TODOHERE		
+							
+						- Make DB, same World coords (though we'll only use first)
+						- Param for Ship shaders: ShipEnhancementsTextureSpaceMagnificationFactor (vec2)
+							- Calc'd by ShipRenderContext @ init, based on ship's world size and GlobalRenderContext::TODO:GetOrCalc?
+							- SetInAllShaders
+						- Watchout: what to do with non-textured shaders? Currently we don't set params
+							- Make sure we use matte color
+						- Watchout: init'n of RenderContext, calling initialize-this-texture at wrong place
+
+						- Find rust texture
+						- Find algae texture
+
+						- Port to Android
+				= Otherwise, use texture's lightness as pattern
+
+				- Try rust _over_ water (@ship_element)
 
 			+ SettingsDialog:
 				+ AlgaeGrowthAcceler8r
 				+ RustAcceler8r
+
+		- Finish rename Rot->Decay:
+			- Ship::RotPoints, & period names
 
 		- Do "water soluble metal" material
 
@@ -1710,6 +1735,8 @@
 			- Repair
 				- Note: doesn't clean anymore; it just repairs weakness
 					- Test repairing heavily rotten structure
+
+		- Finish comments @ Ship::DecayPoints
 
 		- changelist
 

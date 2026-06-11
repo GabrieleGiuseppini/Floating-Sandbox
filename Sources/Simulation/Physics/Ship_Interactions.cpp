@@ -1645,9 +1645,9 @@ bool Ship::RustThrough(
                 : 0.1f;
 
             // Rust and weaken
-            float const alpha = (1.0f - rustCoeff * rustCoeffMultiplier * distanceCoeff);
-            mPoints.SetRust(pointIndex, mPoints.GetRust(pointIndex) * alpha);
-            mPoints.SetWeakness(pointIndex, mPoints.GetWeakness(pointIndex) * alpha);
+            float const beta = rustCoeff * rustCoeffMultiplier * distanceCoeff;
+            mPoints.SetRust(pointIndex, mPoints.GetRust(pointIndex) * (1.0f - beta));
+            mPoints.SetWeakness(pointIndex, mPoints.GetWeakness(pointIndex) * (1.0f - beta * 0.4f));
 
             // Remember at least one point has been rusted
             hasRusted |= true;

@@ -3563,7 +3563,7 @@ void Ship::RotPoints(
     //
 
     // 5 minutes to reach hi/low rust
-    float constexpr NsRust = 5.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+    float constexpr NsRust = 1.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
     float const a_low_rust = simulationParameters.RustAcceler8r != 0.0f
         ? powf(0.50f, simulationParameters.RustAcceler8r / NsRust)
@@ -3574,7 +3574,7 @@ void Ship::RotPoints(
         : 1.0f;
 
     float const a_higher_rust = simulationParameters.RustAcceler8r != 0.0f
-        ? powf(0.05f, simulationParameters.RustAcceler8r / NsRust)
+        ? powf(0.01f, simulationParameters.RustAcceler8r / NsRust)
         : 1.0f;
 
     // Process all non-ephemeral points in this partition - no real reason
@@ -3656,7 +3656,7 @@ void Ship::RotPoints(
 
         // Rust
         mPoints.SetRust(p, newRust);
-        alphaWeakness = std::min(alphaWeakness, 1.0f - betaRust * 0.6f);
+        alphaWeakness = std::min(alphaWeakness, 1.0f - betaRust * 0.1f);
 
 
         //
