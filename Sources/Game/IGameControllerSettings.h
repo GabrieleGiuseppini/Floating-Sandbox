@@ -66,6 +66,9 @@ struct IGameControllerSettings
     virtual float GetRustAcceler8r() const = 0;
     virtual void SetRustAcceler8r(float value) = 0;
 
+    virtual float GetRustWeaknessAdjustment() const = 0;
+    virtual void SetRustWeaknessAdjustment(float value) = 0;
+
     virtual float GetAlgaeGrowthAcceler8r() const = 0;
     virtual void SetAlgaeGrowthAcceler8r(float value) = 0;
 

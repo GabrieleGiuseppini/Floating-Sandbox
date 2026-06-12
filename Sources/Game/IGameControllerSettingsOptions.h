@@ -61,6 +61,9 @@ struct IGameControllerSettingsOptions
     virtual float GetMinRustAcceler8r() const = 0;
     virtual float GetMaxRustAcceler8r() const = 0;
 
+    virtual float GetMinRustWeaknessAdjustment() const = 0;
+    virtual float GetMaxRustWeaknessAdjustment() const = 0;
+
     virtual float GetMinAlgaeGrowthAcceler8r() const = 0;
     virtual float GetMaxAlgaeGrowthAcceler8r() const = 0;
 

@@ -3577,8 +3577,17 @@ void Ship::RotPoints(
         ? powf(0.01f, simulationParameters.RustAcceler8r / NsRust)
         : 1.0f;
 
+    // Adj = 0 => 0.0
+    // Adj = 1 => Base
+    // Adj = Max => 1.0
+    static_assert(SimulationParameters::MaxRustWeaknessAdjustment > 1.0f);
+    float constexpr BaseRustWeakness = 0.1f;
+    float const rustWeaknessFactor = (simulationParameters.RustWeaknessAdjustment <= 1.0f)
+        ? BaseRustWeakness * simulationParameters.RustWeaknessAdjustment
+        : BaseRustWeakness + (1.0f - BaseRustWeakness) * (simulationParameters.RustWeaknessAdjustment - 1.0f) / (SimulationParameters::MaxRustWeaknessAdjustment - 1.0f);
+
     // Process all non-ephemeral points in this partition - no real reason
-    // to exclude ephemerals, other than they're not expected to rot
+    // to exclude ephemerals, other than they're not expected to decay
     ElementCount const partitionSize = (mPoints.GetRawShipPointCount() / partitionCount) + ((mPoints.GetRawShipPointCount() % partitionCount) ? 1 : 0);
     ElementCount const startPointIndex = partition * partitionSize;
     ElementCount const endPointIndex = std::min(startPointIndex + partitionSize, mPoints.GetRawShipPointCount());
@@ -3656,7 +3665,7 @@ void Ship::RotPoints(
 
         // Rust
         mPoints.SetRust(p, newRust);
-        alphaWeakness = std::min(alphaWeakness, 1.0f - betaRust * 0.1f);
+        alphaWeakness = std::min(alphaWeakness, 1.0f - betaRust * rustWeaknessFactor);
 
 
         //

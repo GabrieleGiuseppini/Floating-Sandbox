@@ -484,6 +484,11 @@ public:
     float GetMinRustAcceler8r() const override { return SimulationParameters::MinRustAcceler8r; }
     float GetMaxRustAcceler8r() const override { return SimulationParameters::MaxRustAcceler8r; }
 
+    float GetRustWeaknessAdjustment() const override { return mSimulationParameters.RustWeaknessAdjustment; }
+    void SetRustWeaknessAdjustment(float value) override { mSimulationParameters.RustWeaknessAdjustment = value; }
+    float GetMinRustWeaknessAdjustment() const override { return SimulationParameters::MinRustWeaknessAdjustment; }
+    float GetMaxRustWeaknessAdjustment() const override { return SimulationParameters::MaxRustWeaknessAdjustment; }
+
     float GetAlgaeGrowthAcceler8r() const override { return mSimulationParameters.AlgaeGrowthAcceler8r; }
     void SetAlgaeGrowthAcceler8r(float value) override { mSimulationParameters.AlgaeGrowthAcceler8r = value; }
     float GetMinAlgaeGrowthAcceler8r() const override { return SimulationParameters::MinAlgaeGrowthAcceler8r; }

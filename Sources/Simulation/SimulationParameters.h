@@ -150,6 +150,10 @@ struct SimulationParameters
     static float constexpr MinRustAcceler8r = 0.0f;
     static float constexpr MaxRustAcceler8r = 500.0f;
 
+    float RustWeaknessAdjustment;
+    static float constexpr MinRustWeaknessAdjustment = 0.0f;
+    static float constexpr MaxRustWeaknessAdjustment = 5.0f;
+
     float AlgaeGrowthAcceler8r;
     static float constexpr MinAlgaeGrowthAcceler8r = 0.0f;
     static float constexpr MaxAlgaeGrowthAcceler8r = 500.0f;

@@ -19,6 +19,7 @@ SimulationParameters::SimulationParameters()
     , StaticPressureForceAdjustment(1.0f)
     , LiftForceAdjustment(1.0f)
     , RustAcceler8r(1.0f)
+    , RustWeaknessAdjustment(1.0f)
     , AlgaeGrowthAcceler8r(1.0f)
     // Air
     , AirDensityAdjustment(1.0f)

@@ -1209,7 +1209,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
         gridSizer->Add(
             waterBoxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 6),
+            wxGBSpan(1, 7),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -1384,6 +1384,33 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Rust Weakness Adjustment
+            {
+                mRustWeaknessAdjustmentSlider = new SliderControl<float>(
+                    decayBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Rust Decay Adjust"),
+                    _("Adjusts the speed with which structures weaken when rusted. Set to zero to prevent rust from weakening structures altogether."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RustWeaknessAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinRustWeaknessAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxRustWeaknessAdjustment()));
+
+                decaySizer->Add(
+                    mRustWeaknessAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             // Algae Growth Accelerator
             {
                 mAlgaeGrowthAcceler8rSlider = new SliderControl<float>(
@@ -1405,7 +1432,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
 
                 decaySizer->Add(
                     mAlgaeGrowthAcceler8rSlider,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -1423,7 +1450,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
         gridSizer->Add(
             decayBoxSizer,
             wxGBPosition(1, 3),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -6810,6 +6837,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mWaterTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::WaterTemperature));
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
     mRustAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RustAcceler8r));
+    mRustWeaknessAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RustWeaknessAdjustment));
     mAlgaeGrowthAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::AlgaeGrowthAcceler8r));
 
     //

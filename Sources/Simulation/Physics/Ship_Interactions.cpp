@@ -1609,6 +1609,15 @@ bool Ship::RustThrough(
         ? 2.5f
         : 1.0f;
 
+    // Adj = 0 => 0.0
+    // Adj = 1 => Base
+    // Adj = Max => 1.0
+    static_assert(SimulationParameters::MaxRustWeaknessAdjustment > 1.0f);
+    float constexpr BaseRustWeakness = 0.4f;
+    float const rustWeaknessFactor = (simulationParameters.RustWeaknessAdjustment <= 1.0f)
+        ? BaseRustWeakness * simulationParameters.RustWeaknessAdjustment
+        : BaseRustWeakness + (1.0f - BaseRustWeakness) * (simulationParameters.RustWeaknessAdjustment - 1.0f) / (SimulationParameters::MaxRustWeaknessAdjustment - 1.0f);
+
     //
     // Find all points in the radius of the segment
     //
@@ -1647,7 +1656,7 @@ bool Ship::RustThrough(
             // Rust and weaken
             float const beta = rustCoeff * rustCoeffMultiplier * distanceCoeff;
             mPoints.SetRust(pointIndex, mPoints.GetRust(pointIndex) * (1.0f - beta));
-            mPoints.SetWeakness(pointIndex, mPoints.GetWeakness(pointIndex) * (1.0f - beta * 0.4f));
+            mPoints.SetWeakness(pointIndex, mPoints.GetWeakness(pointIndex) * (1.0f - beta * rustWeaknessFactor));
 
             // Remember at least one point has been rusted
             hasRusted |= true;
