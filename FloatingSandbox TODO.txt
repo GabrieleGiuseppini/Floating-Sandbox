@@ -1548,8 +1548,10 @@
 				+ Code:
 					+ cctor: takes algae pattern
 			+ Spring strength uses Weakness only
-			- ShipFactory:
-				- TODO: provides algae pattern w/perlin
+			= ShipFactory:
+				= Provide algae pattern w/perlin
+					+ 6, 10, 0.10
+					- Fix, expectation is that sizes are multiples of grid sizes
 
 			+ Combustion:
 				+ Add to Weakness
@@ -1613,9 +1615,19 @@
 						+ Test:
 							+ Scrub tool
 							+ Plain
-					- Target rust depends on mass - and mass only used here
-					- Find sweet weakness spot, at RustAccel=40 damaged breaks a lot and expands
-					- Resuscitate try w/weakness=rust?
+
+					- Rearc:
+						- DecayPoints:
+							- Calc new theo rust separately for damage and spread
+								- Spread: use mass and personality seed for variation
+							- Final rust is min of (cur rust, theo damage, theo spread)
+							- Final weakness is min of (cur weakness, rot, rust * coeff, solubility)
+						- Scrub/Rust tool:
+							- Calc new theo rust, use mass for variation
+							- Final rust is min of (cur rust, theo)
+							- Final weakness is min of (cur weakness, rust * coeff)
+
+					- Test timings
 
 				+ Nail down time for decay
 					! Now: nSec / (SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod))
@@ -1643,7 +1655,7 @@
 					- Amount:
 						- Water => +
 						- Underwater => +
-					- Add to Weakness
+					- Contribute to Weakness: update min
 
 				- Optimize:
 					- Ship::RotPoints
