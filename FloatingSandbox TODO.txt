@@ -1673,7 +1673,6 @@
 			+ Do we still need decay render mode?
 				+ If we remove it: add to Android plan
 
-
 			+ ShipRenderContext:
 				! AttributeGroup VBO becomes 6-way: Light, Water, Temperature, Rot, Rust, AlgaeGrowth
 				+ ShaderSets attributes
@@ -1732,8 +1731,8 @@
 				+ AlgaeGrowthAcceler8r
 				+ RustAcceler8r
 
-		- Finish rename Rot->Decay:
-			- Ship::RotPoints, & period names
+		+ Finish rename Rot->Decay:
+			+ Ship::RotPoints, & period names
 
 		+ Do "water soluble metal" material
 
@@ -1744,15 +1743,13 @@
 			- Debris
 			- GenericTextures
 
-			- Cardboard: rots (& doesn't rust )
+			- Cardboard: rots (& doesn't rust)
 			- Lego doesn't rot nor rust nor dissolves
 			- Water Soluble Metal: dissolves
 			- Tornadoes: weaken
 			- Repair
 				- Note: doesn't clean anymore; it just repairs weakness
 					- Test repairing heavily rotten structure
-
-		- Finish comments @ Ship::DecayPoints
 
 		- changelist
 

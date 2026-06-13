@@ -34,25 +34,25 @@
 //
 // We have the following:
 // CombustionStateMachineSlow x 4
-// RotPoints x 4
+// DecayPoints x 4
 // SpringDecayAndTemperature x 4
 // UpdateSinking x 1
 
 static int constexpr CombustionStateMachineSlowStep1 = 2;
 static int constexpr SpringDecayAndTemperatureStep1 = 5;
-static int constexpr RotPointsStep1 = 8;
+static int constexpr DecayPointsStep1 = 8;
 static int constexpr CombustionStateMachineSlowStep2 = 11;
 static int constexpr SpringDecayAndTemperatureStep2 = 14;
-static int constexpr RotPointsStep2 = 17;
+static int constexpr DecayPointsStep2 = 17;
 static int constexpr UpdateSinkingStep = 18;
 static int constexpr CombustionStateMachineSlowStep3 = 20;
 static int constexpr SpringDecayAndTemperatureStep3 = 23;
-static int constexpr RotPointsStep3 = 26;
+static int constexpr DecayPointsStep3 = 26;
 static int constexpr CombustionStateMachineSlowStep4 = 29;
 static int constexpr SpringDecayAndTemperatureStep4 = 32;
-static int constexpr RotPointsStep4 = 35;
+static int constexpr DecayPointsStep4 = 35;
 
-static_assert(RotPointsStep4 < SimulationParameters::ParticleUpdateLowFrequencyPeriod);
+static_assert(DecayPointsStep4 < SimulationParameters::ParticleUpdateLowFrequencyPeriod);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -404,7 +404,7 @@ void Ship::Update(
 
 
     ///////////////////////////////////////////////////////////////////
-    // Rot points
+    // Decay points
     ///////////////////////////////////////////////////////////////////
 
 #ifdef FS_PROFILE_SHIP_UPDATE
@@ -414,37 +414,37 @@ void Ship::Update(
     // - Inputs: Position, Water, IsLeaking
     // - Output: Decay
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep1, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(DecayPointsStep1, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
-        RotPoints(
+        DecayPoints(
             0, 4,
             currentSimulationTime,
             simulationParameters);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep2, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(DecayPointsStep2, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
-        RotPoints(
+        DecayPoints(
             1, 4,
             currentSimulationTime,
             simulationParameters);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep3, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(DecayPointsStep3, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
-        RotPoints(
+        DecayPoints(
             2, 4,
             currentSimulationTime,
             simulationParameters);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep4, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(DecayPointsStep4, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
-        RotPoints(
+        DecayPoints(
             3, 4,
             currentSimulationTime,
             simulationParameters);
     }
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const elapsedRotPoints = GameChronometer::Now() - startTimestamp1;
+    auto const elapsedDecayPoints = GameChronometer::Now() - startTimestamp1;
 #endif
 
     /////////////////////////////////////////////////////////////////
@@ -820,7 +820,7 @@ void Ship::Update(
 
     static std::chrono::microseconds springRelaxationTotal{0};
     static std::chrono::microseconds updateForStressTotal{0};
-    static std::chrono::microseconds rotPointsTotal{0};
+    static std::chrono::microseconds decayPointsTotal{0};
     static std::chrono::microseconds worldForcesTotal{0};
     static std::chrono::microseconds waterDynamicsTotal{0};
     static std::chrono::microseconds parallel1Total{0};
@@ -837,7 +837,7 @@ void Ship::Update(
 
     springRelaxationTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedSpringRelaxation);
     updateForStressTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedUpdateForStress);
-    rotPointsTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedRotPoints);
+    decayPointsTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedDecayPoints);
     worldForcesTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedWorldForces);
     waterDynamicsTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedWaterDynamics);
     parallel1Total += std::chrono::duration_cast<std::chrono::microseconds>(elapsedParallel1);
@@ -856,7 +856,7 @@ void Ship::Update(
     {
         LogMessage("*** Ship update: springRelax=", springRelaxationTotal.count() / profilingFrameCounter / 1000.0f,
                    " updateForStress=", updateForStressTotal.count() / profilingFrameCounter / 1000.0f,
-                   " rotPoints=", rotPointsTotal.count() / profilingFrameCounter / 1000.0f,
+                   " decayPoints=", decayPointsTotal.count() / profilingFrameCounter / 1000.0f,
                    " worldForces=", worldForcesTotal.count() / profilingFrameCounter / 1000.0f,
                    " waterDynamics=", waterDynamicsTotal.count() / profilingFrameCounter / 1000.0f,
                    " parallel1=", parallel1Total.count() / profilingFrameCounter / 1000.0f,
@@ -872,7 +872,7 @@ void Ship::Update(
 
         springRelaxationTotal = std::chrono::microseconds(0);
         updateForStressTotal = std::chrono::microseconds(0);
-        rotPointsTotal = std::chrono::microseconds(0);
+        decayPointsTotal = std::chrono::microseconds(0);
         worldForcesTotal = std::chrono::microseconds(0);
         waterDynamicsTotal = std::chrono::microseconds(0);
         parallel1Total = std::chrono::microseconds(0);
@@ -3500,18 +3500,18 @@ void Ship::PropagateHeat(
 // Misc
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::RotPoints(
+void Ship::DecayPoints(
     ElementIndex partition,
     ElementIndex partitionCount,
     float /*currentSimulationTime*/,
     SimulationParameters const & simulationParameters)
 {
     //
-    // Rotting is done with a recursive equation:
+    // Decaying is done with a recursive equation:
     //  decay(0) = 1.0
     //  decay(n) = a * decay(n-1), with 0 < a < 1
     //
-    // a (alpha): the smaller the alpha, the faster we rot.
+    // a (alpha): the smaller the alpha, the faster we decay.
     //
     // This converges to:
     //  decay(n) = a^n
@@ -3523,17 +3523,19 @@ void Ship::RotPoints(
     // enabler to turn off decay when it's zero
     //
 
-    // TODOHERE
+    //
+    // Rot
+    //
 
     //
     // We want to calculate alpha as 1 - beta*x, with x depending on the particle's state:
     //      underwater not flooded: x_uw
     //      not underwater flooded: x_fl == 1.0 (so that we can use particle's water, clamped)
-    //      underwater and flooded: x_uw_fl
+    //      underwater and flooded: x_uw_fl == x_uw + x_fl
     //
     // Constraints: after 20 minutes (Ns rot steps) we want the following decays:
-    //      underwater not flooded: a_uw ^ Ns = 0.75 (little rusting)
-    //      underwater and flooded: a_uw_fl ^ Ns = 0.25 (severe rusting)
+    //      underwater not flooded: a_uw ^ Ns = 0.75 (little rotting)
+    //      underwater and flooded: a_uw_fl ^ Ns = 0.25 (severe rotting)
     //
     // Which leads to the following formulation for the constraints:
     //      alpha(x_uw) = a_uw (~= 0.99981643)
@@ -3541,8 +3543,8 @@ void Ship::RotPoints(
     //      alpha(0) = 1.0
     //
     // After some kung-fu we obtain:
-    //      beta = (1-alpha(x_uw)) / x_uw
-    //      x_uw = (1-a_uw)/(a_uw - a_uw_fl)
+    //      beta = (1-a_uw) / x_uw
+    //      x_uw = (1-a_uw) / (a_uw - a_uw_fl)
     //
 
     float constexpr NsRot = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
@@ -3552,7 +3554,7 @@ void Ship::RotPoints(
         : 1.0f;
 
     float const a_uw_fl_rot = simulationParameters.RotAcceler8r != 0.0f
-        ? powf(0.25f, simulationParameters.RotAcceler8r / NsRot) // a_uw = 0.25 ^ (1/Ns)
+        ? powf(0.25f, simulationParameters.RotAcceler8r / NsRot) // a_uw_fl = 0.25 ^ (1/Ns)
         : 1.0f;
 
     float const x_uw_rot = (1.0f - a_uw_rot) / (a_uw_rot - a_uw_fl_rot);

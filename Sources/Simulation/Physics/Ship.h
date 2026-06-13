@@ -778,7 +778,7 @@ private:
 
     // Misc
 
-    void RotPoints(
+    void DecayPoints(
         ElementIndex partition,
         ElementIndex partitionCount,
         float currentSimulationTime,
