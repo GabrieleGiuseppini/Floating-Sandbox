@@ -126,7 +126,7 @@ void main()
 
     vec3 fragColour = mix(vec3(ROT_COLOR), vertexCol.xyz, vertexAttributes1.w);
     fragColour = mix(vec3(ALGAE_GROWTH_COLOR), fragColour, vertexAttributes2.y);
-    fragColour = mix(vec3(RUST_COLOR * (1.0 - (1.0 - originalLuminosity) * 0.15), fragColour, vertexAttributes2.x);
+    fragColour = mix(vec3(RUST_COLOR) * (1.0 - (1.0 - originalLuminosity) * 0.4), fragColour, vertexAttributes2.x);
 
     // Apply point water
 #ifdef FOR_LINES
