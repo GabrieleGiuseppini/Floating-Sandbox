@@ -3569,11 +3569,11 @@ void Ship::RotPoints(
         ? std::max(powf(0.50f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
         : 1.0f;
 
-    float const a_high_rust = simulationParameters.RustAcceler8r != 0.0f
+    float const a_medium_rust = simulationParameters.RustAcceler8r != 0.0f
         ? std::max(powf(0.25f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
         : 1.0f;
 
-    float const a_higher_rust = simulationParameters.RustAcceler8r != 0.0f
+    float const a_high_rust = simulationParameters.RustAcceler8r != 0.0f
         ? std::max(powf(0.01f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
         : 1.0f;
 
@@ -3581,7 +3581,7 @@ void Ship::RotPoints(
     // Adj = 1 => Base
     // Adj = Max => 1.0
     static_assert(SimulationParameters::MaxRustWeaknessAdjustment > 1.0f);
-    float constexpr BaseRustWeakness = 0.1f;
+    float constexpr BaseRustWeakness = 0.025f;
     float const rustWeaknessFactor = (simulationParameters.RustWeaknessAdjustment <= 1.0f)
         ? BaseRustWeakness * simulationParameters.RustWeaknessAdjustment
         : BaseRustWeakness + (1.0f - BaseRustWeakness) * (simulationParameters.RustWeaknessAdjustment - 1.0f) / (SimulationParameters::MaxRustWeaknessAdjustment - 1.0f);
@@ -3597,6 +3597,7 @@ void Ship::RotPoints(
         float const isUnderwater = mPoints.IsCachedUnderwater(p) ? 1.0f : 0.0f;
         float const isDamaged = mPoints.GetIsDamaged(p);
 
+        // The alpha we'll use for the weakness, resultant of all the weakening decay processes
         float alphaWeakness = 1.0f;
 
         //
@@ -3626,7 +3627,7 @@ void Ship::RotPoints(
 
         // 1) Rust if damaged; more so if has water
 
-        float const betaRustDamage = (1.0f - Mix(a_low_rust, a_high_rust, water)) * isDamaged;
+        float const betaRustDamage = (1.0f - Mix(a_low_rust, a_medium_rust, water)) * isDamaged;
 
         // 2) Rust by neighbors, imprinting pattern via mass, and randomizing
 
@@ -3643,7 +3644,7 @@ void Ship::RotPoints(
         }
 
         float const betaRustNeighbors =
-            Mix(1.0f - a_high_rust, 1.0f - a_higher_rust, isUnderwater) // Rusts faster underwater
+            (1.0f - Mix(a_medium_rust, a_high_rust, isUnderwater)) // Rusts faster underwater
             * avgNeighborsRust
             * (1.0f - 0.982f * mPoints.GetRandomNormalizedUniformPersonalitySeed(p));
 

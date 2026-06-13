@@ -1550,7 +1550,7 @@
 			+ Spring strength uses Weakness only
 			= ShipFactory:
 				= Provide algae pattern w/perlin
-					+ 6, 10, 0.10
+					+ 6, 6, 0.1 == 64 cells = size/16
 					- Fix, expectation is that sizes are multiples of grid sizes
 						- Translate parms - from 1024x1024 - to ship size
 
@@ -1574,7 +1574,7 @@
 						+ Like now
 					+ Add to Weakness
 					+ Add to Rot buffer
-				= Rust:
+				+ Rust:
 					+ Should be for any point that is now exposed (i.e. which has lost at least one triangle)
 						+ 1) Mark point as damaged when we remove a triangle, by point Points::DisconnectTriangle itself
 						+ 2) Do it instead from HandleTriangleDestroy
@@ -1622,7 +1622,7 @@
 					+ FIX: decay explodes oscillating with accel=500
 						+ Due to alpha's becoming 0.001, sum of beta's then is > 1
 
-					= Test timings
+					+ Test timings
 
 				+ Nail down time for decay
 					! Now: nSec / (SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod))
