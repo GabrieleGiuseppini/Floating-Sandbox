@@ -13,7 +13,7 @@
 Buffer2D<float, struct IntegralTag> Noise::CreateRepeatableFractal2DPerlinNoise(
 	IntegralRectSize const & size,
 	int firstGridDensity, // Number of cells
-	int lastGridDensity, // Number of cells
+	int lastGridDensity, // Number of cells; expected to be a (positive or negative) power-of-two of firstGridDensity
 	float persistence)
 {
 	//

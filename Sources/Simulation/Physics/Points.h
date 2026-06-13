@@ -2354,6 +2354,12 @@ public:
         return mTextureCoordinatesBuffer[pointElementIndex];
     }
 
+    float GetAlgaeGrowthPattern(ElementIndex pointElementIndex) const
+    {
+        assert(!IsEphemeral(pointElementIndex));
+        return mAlgaeGrowthPatternBuffer[pointElementIndex];
+    }
+
     // For debugging
     void MarkColorBufferAsDirty()
     {

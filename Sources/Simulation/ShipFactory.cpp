@@ -12,6 +12,7 @@
 #include <Core/GameDebug.h>
 #include <Core/GameMath.h>
 #include <Core/ImageTools.h>
+#include <Core/Noise.h>
 #include <Core/Log.h>
 
 #include <algorithm>
@@ -1873,6 +1874,23 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
     SimulationParameters const & simulationParameters,
     ShipPhysicsData const & physicsData)
 {
+    //
+    // Prepare algae growth pattern
+    //
+
+    // 4-point wide cells over a 256-wide pattern
+    int constexpr AlgaeGrowthPatternSize = 256;
+    int constexpr AlgaeGrowthPatternCellSize = 4;
+    auto const algaeGrowthPattern = Noise::CreateRepeatableFractal2DPerlinNoise(
+        IntegralRectSize(AlgaeGrowthPatternSize, AlgaeGrowthPatternSize),
+        AlgaeGrowthPatternSize / AlgaeGrowthPatternCellSize,
+        AlgaeGrowthPatternSize / AlgaeGrowthPatternCellSize,
+        0.10f);
+
+    //
+    // Create points
+    //
+
     Physics::Points points(
         static_cast<ElementIndex>(pointInfos2.size()),
         simulationParameters.MaxEphemeralParticles, // Here we freeze it
@@ -1901,6 +1919,24 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
         }
 
         //
+        // Sample algae growth pattern
+        //
+
+        float algaeGrowthPatternSample;
+        if (pointInfo.DefinitionCoordinates.has_value())
+        {
+            IntegralCoordinates const algaeGrowthPatternSampleCoords(
+                pointInfo.DefinitionCoordinates->x % AlgaeGrowthPatternSize,
+                pointInfo.DefinitionCoordinates->y % AlgaeGrowthPatternSize);
+
+            algaeGrowthPatternSample = std::fabsf(algaeGrowthPattern[algaeGrowthPatternSampleCoords]);
+        }
+        else
+        {
+            algaeGrowthPatternSample = 1.0f;
+        }
+
+        //
         // Create point
         //
 
@@ -1916,7 +1952,7 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
             pointInfo.IsLeaking,
             pointInfo.RenderColor,
             pointInfo.TextureCoordinates,
-            1.0f, // TODOHERE: AlgaeGrowthPattern
+            algaeGrowthPatternSample,
             GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
 
         //

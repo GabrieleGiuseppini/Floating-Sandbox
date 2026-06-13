@@ -112,7 +112,7 @@ void main()
 
     // Discard transparent pixels, so that ropes (which are drawn temporally after
     // this shader but Z-ally behind) are not occluded by transparent triangles
-    if (vertexCol.w < 0.2)
+    if (vertexCol.a < 0.2)
         discard;
 #endif
 
@@ -122,10 +122,10 @@ void main()
     // Apply decay:
     //  Rust > AlgaeGrowth > Rot
 
-    float originalLuminosity = dot(vec3(0.299, 0.587, 0.114), vertexCol.xyz);
+    float originalLuminosity = dot(vec3(0.299, 0.587, 0.114), vertexCol.rgb);
 
-    vec3 fragColour = mix(vec3(ROT_COLOR), vertexCol.xyz, vertexAttributes1.w);
-    fragColour = mix(vec3(ALGAE_GROWTH_COLOR), fragColour, vertexAttributes2.y);
+    vec3 fragColour = mix(vec3(ROT_COLOR), vertexCol.rgb, vertexAttributes1.w);
+    fragColour = mix(vec3(ALGAE_GROWTH_COLOR), fragColour, sqrt(vertexAttributes2.y));
     fragColour = mix(vec3(RUST_COLOR) * (1.0 - (1.0 - originalLuminosity) * 0.4), fragColour, vertexAttributes2.x);
 
     // Apply point water

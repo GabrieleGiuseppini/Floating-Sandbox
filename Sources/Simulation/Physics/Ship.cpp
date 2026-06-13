@@ -3562,8 +3562,8 @@ void Ship::RotPoints(
     // Rust
     //
 
-    // 5 minutes to reach hi/low rust
-    float constexpr NsRust = 1.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+    // 1.5 minutes to reach hi/low rust
+    float constexpr NsRust = 1.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
     float const a_low_rust = simulationParameters.RustAcceler8r != 0.0f
         ? std::max(powf(0.50f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
@@ -3586,8 +3586,21 @@ void Ship::RotPoints(
         ? BaseRustWeakness * simulationParameters.RustWeaknessAdjustment
         : BaseRustWeakness + (1.0f - BaseRustWeakness) * (simulationParameters.RustWeaknessAdjustment - 1.0f) / (SimulationParameters::MaxRustWeaknessAdjustment - 1.0f);
 
+    //
+    // Algae growth
+    //
+
+    float constexpr NsAlgaeGrowth = 30.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+
+    float const a_algeGrowth = simulationParameters.AlgaeGrowthAcceler8r != 0.0f
+        ? powf(0.25f, simulationParameters.AlgaeGrowthAcceler8r / NsAlgaeGrowth)
+        : 1.0f;
+
+    //
     // Process all non-ephemeral points in this partition - no real reason
     // to exclude ephemerals, other than they're not expected to decay
+    //
+
     ElementCount const partitionSize = (mPoints.GetRawShipPointCount() / partitionCount) + ((mPoints.GetRawShipPointCount() % partitionCount) ? 1 : 0);
     ElementCount const startPointIndex = partition * partitionSize;
     ElementCount const endPointIndex = std::min(startPointIndex + partitionSize, mPoints.GetRawShipPointCount());
@@ -3655,6 +3668,18 @@ void Ship::RotPoints(
         // Rust
         mPoints.SetRust(p, mPoints.GetRust(p) * (1.0f - betaRust));
         alphaWeakness = std::min(alphaWeakness, 1.0f - betaRust * rustWeaknessFactor);
+
+        //
+        // Algae growth
+        //
+
+        // Growth if underwater
+
+        float const betaAlgaeGrowthUnderwater = (1.0f - a_algeGrowth) * isUnderwater;
+
+        // Grow
+        float const currentAlgaeGrowth = mPoints.GetAlgaeGrowth(p);
+        mPoints.SetAlgaeGrowth(p, currentAlgaeGrowth + (mPoints.GetAlgaeGrowthPattern(p) - currentAlgaeGrowth) * betaAlgaeGrowthUnderwater);
 
         //
         // Weakness

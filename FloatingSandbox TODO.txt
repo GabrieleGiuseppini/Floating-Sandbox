@@ -1548,11 +1548,9 @@
 				+ Code:
 					+ cctor: takes algae pattern
 			+ Spring strength uses Weakness only
-			= ShipFactory:
-				= Provide algae pattern w/perlin
+			+ ShipFactory:
+				+ Provide algae pattern w/perlin
 					+ 6, 6, 0.1 == 64 cells = size/16
-					- Fix, expectation is that sizes are multiples of grid sizes
-						- Translate parms - from 1024x1024 - to ship size
 
 			+ Combustion:
 				+ Add to Weakness
@@ -1637,12 +1635,12 @@
 
 				+ SettingsDialog: "Rot" static => "Decay"
 
-				- AlgaeGrowth:
-					- Speed: AlgaeGrowthAcceler8r
-					- Amount:
-						- Underwater => + f(perlin)
-						- Neighbors (with their perlin, probably already taken into account?)
-					- Add to AlgaeGrowth buffer
+				+ AlgaeGrowth:
+					+ Speed: AlgaeGrowthAcceler8r
+					+ Amount:
+						+ Underwater => +
+					+ Add to AlgaeGrowth buffer
+						+ Asymptote is Perlin
 
 				- Solubility:
 					- Driven by material's water_solubility
