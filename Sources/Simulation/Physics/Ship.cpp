@@ -3597,6 +3597,16 @@ void Ship::RotPoints(
         : 1.0f;
 
     //
+    // Water solubility
+    //
+
+    float constexpr NsWaterSolubility = 2.5f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+
+    float const a_waterSolubility = simulationParameters.RotAcceler8r != 0.0f
+        ? powf(0.1f, simulationParameters.RotAcceler8r / NsWaterSolubility)
+        : 1.0f;
+
+    //
     // Process all non-ephemeral points in this partition - no real reason
     // to exclude ephemerals, other than they're not expected to decay
     //
@@ -3609,6 +3619,7 @@ void Ship::RotPoints(
         float const water = std::min(mPoints.GetWater(p), 1.0f);
         float const isUnderwater = mPoints.IsCachedUnderwater(p) ? 1.0f : 0.0f;
         float const isDamaged = mPoints.GetIsDamaged(p);
+        auto const & structuralMaterial = mPoints.GetStructuralMaterial(p);
 
         // The alpha we'll use for the weakness, resultant of all the weakening decay processes
         float alphaWeakness = 1.0f;
@@ -3625,7 +3636,7 @@ void Ship::RotPoints(
         x_rot += isDamaged * x_rot * x_uw_rot;
 
         // Adjust with material's rot receptivity
-        x_rot *= mPoints.GetStructuralMaterial(p).RotReceptivity;
+        x_rot *= structuralMaterial.RotReceptivity;
 
         // Calculate alpha
         float const alpha_rot = std::max(1.0f - beta_rot * x_rot, 0.0f);
@@ -3659,11 +3670,11 @@ void Ship::RotPoints(
         float const betaRustNeighbors =
             (1.0f - Mix(a_medium_rust, a_high_rust, isUnderwater)) // Rusts faster underwater
             * avgNeighborsRust
-            * (1.0f - 0.982f * mPoints.GetRandomNormalizedUniformPersonalitySeed(p));
+            * (1.0f - 0.982f * mPoints.GetRandomNormalizedUniformPersonalitySeed(p)); // Allow zero's to rust
 
         // Combine
 
-        float const betaRust = (betaRustDamage + betaRustNeighbors) * mPoints.GetStructuralMaterial(p).RustReceptivity;
+        float const betaRust = (betaRustDamage + betaRustNeighbors) * structuralMaterial.RustReceptivity;
 
         // Rust
         mPoints.SetRust(p, mPoints.GetRust(p) * (1.0f - betaRust));
@@ -3680,6 +3691,17 @@ void Ship::RotPoints(
         // Grow
         float const currentAlgaeGrowth = mPoints.GetAlgaeGrowth(p);
         mPoints.SetAlgaeGrowth(p, currentAlgaeGrowth + (mPoints.GetAlgaeGrowthPattern(p) - currentAlgaeGrowth) * betaAlgaeGrowthUnderwater);
+
+        //
+        // Water solubility
+        //
+
+        float const betaSolubility =
+            (1.0f - a_waterSolubility)
+            * std::min(isUnderwater + water, 1.0f)
+            * structuralMaterial.WaterSolubility;
+
+        alphaWeakness = std::min(alphaWeakness, 1.0f - betaSolubility);
 
         //
         // Weakness

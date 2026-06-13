@@ -1642,13 +1642,12 @@
 					+ Add to AlgaeGrowth buffer
 						+ Asymptote is Perlin
 
-				- Solubility:
-					- Driven by material's water_solubility
-					- Speed: RotAcceler8r
-					- Amount:
-						- Water => +
-						- Underwater => +
-					- Contribute to Weakness: update min
+				+ Solubility:
+					+ Driven by material's water_solubility
+					+ Speed: RotAcceler8r
+					+ Amount:
+						+ Water or Underwater
+					+ Contribute to Weakness: update min
 
 				- Optimize:
 					- Ship::RotPoints
@@ -1736,7 +1735,7 @@
 		- Finish rename Rot->Decay:
 			- Ship::RotPoints, & period names
 
-		- Do "water soluble metal" material
+		+ Do "water soluble metal" material
 
 		- Test:
 			- StressedSprings shader - no regressions

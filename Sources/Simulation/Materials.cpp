@@ -75,8 +75,11 @@ StructuralMaterial StructuralMaterial::Create(
         float const waterDiffusionSpeed = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_diffusion_speed", 0.5f);
         float const waterRetention = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_retention", 0.05f);
         float const rotReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rot_receptivity", 1.0);
+        assert(rotReceptivity <= 1.0f);
         float const rustReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rust_receptivity", 0.0);
+        assert(rustReceptivity <= 1.0f);
         float const waterSolubility = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_solubility", 0.0);
+        assert(waterSolubility <= 1.0f);
 
         // Heat
 
