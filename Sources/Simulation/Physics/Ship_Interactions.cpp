@@ -1646,15 +1646,18 @@ bool Ship::RustThrough(
             float const s2 = 1.0f - std::min(1.0f, (ThrongDistance - a) / ThrongRadius); // Right center
 
             // Combine
-            float const distanceCoeff = std::max(s1, s2);
+            float rustCoeff = std::max(s1, s2);
 
             // Incorporate underwaterness/waterness
-            float const rustCoeff = (mParentWorld.GetOceanSurface().IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
-                ? 0.175f
-                : 0.1f;
+            rustCoeff *= (mParentWorld.GetOceanSurface().IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
+                ? 0.225f
+                : 0.15f;
+
+            // Incorporate mass, for variation
+            rustCoeff *= 0.7f + 0.3f * std::min(mPoints.GetMass(pointIndex) / 700.0f, 1.0f);
 
             // Rust and weaken
-            float const beta = rustCoeff * rustCoeffMultiplier * distanceCoeff;
+            float const beta = rustCoeff * rustCoeffMultiplier;
             mPoints.SetRust(pointIndex, mPoints.GetRust(pointIndex) * (1.0f - beta));
             mPoints.SetWeakness(pointIndex, mPoints.GetWeakness(pointIndex) * (1.0f - beta * rustWeaknessFactor));
 

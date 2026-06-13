@@ -3652,7 +3652,7 @@ void Ship::RotPoints(
         float const betaRust = (betaRustDamage + betaRustNeighbors) * mPoints.GetStructuralMaterial(p).RustReceptivity;
 
         // Min rust value (i.e. maximum rust) depends on damage (and mass): if not damaged,
-        // our rust asymptote is not zero but slightly higher
+        // our rust asymptote is not zero but slightly higher; the heavier, the less rust
         float const minRustAsymptote = 0.2f + 0.25f * std::min(mPoints.GetMass(p) / 700.0f, 1.0f);
         float const minRust = minRustAsymptote * (1.0f - isDamaged);
 
