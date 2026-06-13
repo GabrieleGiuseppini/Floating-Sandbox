@@ -3642,22 +3642,19 @@ void Ship::RotPoints(
             avgNeighborsRust /= static_cast<float>(nCs);
         }
 
-        // Mass
-        float constexpr MinMassMultiplier = 0.75f;
-        float const massMultiplier = MinMassMultiplier + (1.0f - MinMassMultiplier) * std::min(mPoints.GetMass(p) / 700.0f, 1.0f);
-
         float const betaRustNeighbors =
             Mix(1.0f - a_high_rust, 1.0f - a_higher_rust, isUnderwater) // Rusts faster underwater
             * avgNeighborsRust
-            * massMultiplier * mPoints.GetRandomNormalizedUniformPersonalitySeed(p);
+            * mPoints.GetRandomNormalizedUniformPersonalitySeed(p);
 
         // Combine
 
-        // Min rust value (i.e. maximum rust) depends on damage: if not damaged,
-        // our rust asymptote is not zero but slightly higher
-        float const minRust = 0.2f * (1.0f - isDamaged);
-
         float const betaRust = (betaRustDamage + betaRustNeighbors) * mPoints.GetStructuralMaterial(p).RustReceptivity;
+
+        // Min rust value (i.e. maximum rust) depends on damage (and mass): if not damaged,
+        // our rust asymptote is not zero but slightly higher
+        float const minRustAsymptote = 0.2f + 0.25f * std::min(mPoints.GetMass(p) / 700.0f, 1.0f);
+        float const minRust = minRustAsymptote * (1.0f - isDamaged);
 
         float const newRust =
             mPoints.GetRust(p)
