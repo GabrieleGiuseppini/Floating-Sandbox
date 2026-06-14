@@ -1257,6 +1257,24 @@ private:
     float mStaticPressureIterationsCount;
 
     //
+    // Decay
+    //
+
+    float mCurrentRotAcceler8r; // Last seen, to detect changes
+    float mDecayRotXUwRot;
+    float mDecayRotBetaRot;
+
+    float mCurrentRustAcceler8r; // Last seen, to detect changes
+    float mDecayRustAlphaLowRust;
+    float mDecayRustAlphaMediumRust;
+    float mDecayRustAlphaHighRust;
+
+    float mCurrentAlgaeGrowthAcceler8r; // Last seen, to detect changes
+    float mDecayRotAlphaAlgaeGrowth;
+
+    float mDecayRotAlphaWaterSolubility;
+
+    //
     // Light diffusion
     //
 

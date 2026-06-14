@@ -1562,7 +1562,7 @@
 				+ RustAcceler8r
 				+ GameController
 
-			= LFLoop:
+			+ LFLoop:
 				+ Important: don't add multiple weaknesses, do min among all
 					+ Just calc min alpha and use that for weakness
 				+ Rot:
@@ -1649,11 +1649,10 @@
 						+ Water or Underwater
 					+ Contribute to Weakness: update min
 
-				- Optimize:
-					- Ship::RotPoints
-						- Do we really need massMultiplier?
-					- Precalcd' coeffs & update @ SimParams changes
-						- Members of Ship
+				+ Optimize:
+					+ Precalcd' coeffs & update @ SimParams changes
+						+ Members of Ship
+					+ Ship::RotPoints
 
 			+ Repair
 				+ Lower weakness
@@ -1746,10 +1745,9 @@
 			- Cardboard: rots (& doesn't rust)
 			- Lego doesn't rot nor rust nor dissolves
 			- Water Soluble Metal: dissolves
-			- Tornadoes: weaken
+			+ Tornadoes: weaken
 			- Repair
-				- Note: doesn't clean anymore; it just repairs weakness
-					- Test repairing heavily rotten structure
+				- Test repairing heavily rotten/rusted structure
 
 		- changelist
 

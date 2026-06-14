@@ -131,6 +131,10 @@ Ship::Ship(
     , mStaticPressureNetForceMagnitudeCount(0.0f)
     , mStaticPressureIterationsPercentagesSum(0.0f)
     , mStaticPressureIterationsCount(0.0f)
+    // Decay
+    , mCurrentRotAcceler8r(std::numeric_limits<float>::lowest())
+    , mCurrentRustAcceler8r(std::numeric_limits<float>::lowest())
+    , mCurrentAlgaeGrowthAcceler8r(std::numeric_limits<float>::lowest())
     // Render
     , mLastUploadedDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
@@ -3547,37 +3551,64 @@ void Ship::DecayPoints(
     //      x_uw = (1-a_uw) / (a_uw - a_uw_fl)
     //
 
-    float constexpr NsRot = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+    if (simulationParameters.RotAcceler8r != mCurrentRotAcceler8r)
+    {
+        // Rust
 
-    float const a_uw_rot = simulationParameters.RotAcceler8r != 0.0f
-        ? powf(0.75f, simulationParameters.RotAcceler8r / NsRot) // a_uw = 0.75 ^ (1/Ns)
-        : 1.0f;
+        float constexpr NsRot = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
-    float const a_uw_fl_rot = simulationParameters.RotAcceler8r != 0.0f
-        ? powf(0.25f, simulationParameters.RotAcceler8r / NsRot) // a_uw_fl = 0.25 ^ (1/Ns)
-        : 1.0f;
+        float const a_uw_rot = simulationParameters.RotAcceler8r != 0.0f
+            ? powf(0.75f, simulationParameters.RotAcceler8r / NsRot) // a_uw = 0.75 ^ (1/Ns)
+            : 1.0f;
 
-    float const x_uw_rot = (1.0f - a_uw_rot) / (a_uw_rot - a_uw_fl_rot);
-    float const beta_rot = (1.0f - a_uw_rot) / x_uw_rot;
+        float const a_uw_fl_rot = simulationParameters.RotAcceler8r != 0.0f
+            ? powf(0.25f, simulationParameters.RotAcceler8r / NsRot) // a_uw_fl = 0.25 ^ (1/Ns)
+            : 1.0f;
+
+        mDecayRotXUwRot = (1.0f - a_uw_rot) / (a_uw_rot - a_uw_fl_rot);
+        mDecayRotBetaRot = (1.0f - a_uw_rot) / mDecayRotXUwRot;
+
+        // Water solubility
+
+        float constexpr NsWaterSolubility = 2.5f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+
+        mDecayRotAlphaWaterSolubility = simulationParameters.RotAcceler8r != 0.0f
+            ? powf(0.1f, simulationParameters.RotAcceler8r / NsWaterSolubility)
+            : 1.0f;
+
+        mCurrentRotAcceler8r = simulationParameters.RotAcceler8r;
+    }
+
+    float const x_uw_rot = mDecayRotXUwRot;
+    float const beta_rot = mDecayRotBetaRot;
 
     //
     // Rust
     //
 
-    // 1.5 minutes to reach hi/low rust
-    float constexpr NsRust = 1.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+    if (simulationParameters.RustAcceler8r != mCurrentRustAcceler8r)
+    {
+        // 1.5 minutes to reach hi/low rust
+        float constexpr NsRust = 1.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
-    float const a_low_rust = simulationParameters.RustAcceler8r != 0.0f
-        ? std::max(powf(0.50f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
-        : 1.0f;
+        mDecayRustAlphaLowRust = simulationParameters.RustAcceler8r != 0.0f
+            ? std::max(powf(0.50f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
+            : 1.0f;
 
-    float const a_medium_rust = simulationParameters.RustAcceler8r != 0.0f
-        ? std::max(powf(0.25f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
-        : 1.0f;
+        mDecayRustAlphaMediumRust = simulationParameters.RustAcceler8r != 0.0f
+            ? std::max(powf(0.25f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
+            : 1.0f;
 
-    float const a_high_rust = simulationParameters.RustAcceler8r != 0.0f
-        ? std::max(powf(0.01f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
-        : 1.0f;
+        mDecayRustAlphaHighRust = simulationParameters.RustAcceler8r != 0.0f
+            ? std::max(powf(0.01f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
+            : 1.0f;
+
+        mCurrentRustAcceler8r = simulationParameters.RustAcceler8r;
+    }
+
+    float const a_low_rust = mDecayRustAlphaLowRust;
+    float const a_medium_rust = mDecayRustAlphaMediumRust;
+    float const a_high_rust = mDecayRustAlphaHighRust;
 
     // Adj = 0 => 0.0
     // Adj = 1 => Base
@@ -3592,21 +3623,24 @@ void Ship::DecayPoints(
     // Algae growth
     //
 
-    float constexpr NsAlgaeGrowth = 30.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+    if (simulationParameters.AlgaeGrowthAcceler8r != mCurrentAlgaeGrowthAcceler8r)
+    {
+        float constexpr NsAlgaeGrowth = 30.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
-    float const a_algeGrowth = simulationParameters.AlgaeGrowthAcceler8r != 0.0f
-        ? powf(0.25f, simulationParameters.AlgaeGrowthAcceler8r / NsAlgaeGrowth)
-        : 1.0f;
+        mDecayRotAlphaAlgaeGrowth = simulationParameters.AlgaeGrowthAcceler8r != 0.0f
+            ? powf(0.25f, simulationParameters.AlgaeGrowthAcceler8r / NsAlgaeGrowth)
+            : 1.0f;
+
+        mCurrentAlgaeGrowthAcceler8r = simulationParameters.AlgaeGrowthAcceler8r;
+    }
+
+    float const a_algeGrowth = mDecayRotAlphaAlgaeGrowth;
 
     //
     // Water solubility
     //
 
-    float constexpr NsWaterSolubility = 2.5f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
-
-    float const a_waterSolubility = simulationParameters.RotAcceler8r != 0.0f
-        ? powf(0.1f, simulationParameters.RotAcceler8r / NsWaterSolubility)
-        : 1.0f;
+    float const b_waterSolubility = 1.0f - mDecayRotAlphaWaterSolubility;
 
     //
     // Process all non-ephemeral points in this partition - no real reason
@@ -3658,7 +3692,7 @@ void Ship::DecayPoints(
         // 2) Rust by neighbors, imprinting pattern via mass, and randomizing
 
         float avgNeighborsRust = 0.0f;
-        auto nCs = mPoints.GetConnectedSprings(p).ConnectedSprings.size();
+        auto const nCs = mPoints.GetConnectedSprings(p).ConnectedSprings.size();
         if (nCs > 0)
         {
             for (auto const & cs : mPoints.GetConnectedSprings(p).ConnectedSprings)
@@ -3677,6 +3711,7 @@ void Ship::DecayPoints(
         // Combine
 
         float const betaRust = (betaRustDamage + betaRustNeighbors) * structuralMaterial.RustReceptivity;
+        assert(betaRust >= 0.0f && betaRust <= 1.0f);
 
         // Rust
         mPoints.SetRust(p, mPoints.GetRust(p) * (1.0f - betaRust));
@@ -3690,7 +3725,7 @@ void Ship::DecayPoints(
 
         float const betaAlgaeGrowthUnderwater = (1.0f - a_algeGrowth) * isUnderwater;
 
-        // Grow
+        // Grow towards the pattern
         float const currentAlgaeGrowth = mPoints.GetAlgaeGrowth(p);
         mPoints.SetAlgaeGrowth(p, currentAlgaeGrowth + (mPoints.GetAlgaeGrowthPattern(p) - currentAlgaeGrowth) * betaAlgaeGrowthUnderwater);
 
@@ -3699,7 +3734,7 @@ void Ship::DecayPoints(
         //
 
         float const betaSolubility =
-            (1.0f - a_waterSolubility)
+            b_waterSolubility
             * std::min(isUnderwater + water, 1.0f)
             * structuralMaterial.WaterSolubility;
 
