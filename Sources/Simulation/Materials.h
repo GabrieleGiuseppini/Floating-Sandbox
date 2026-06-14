@@ -389,6 +389,7 @@ public:
 
     // Particle Emission
     float ParticleEmissionRate; // Number of particles per second
+    float ParticleLifetimeAdjustment; // Relative to use-case
 
     // Instancing
     bool IsInstanced; // When true, only one particle may exist with a given (full) color key
@@ -460,6 +461,7 @@ public:
         float minimumOperatingTemperature,
         float maximumOperatingTemperature,
         float particleEmissionRate,
+        float particleLifetimeAdjustment,
         bool isInstanced,
         EngineElementType engineType,
         float engineCCWDirection,
@@ -489,6 +491,7 @@ public:
         , MinimumOperatingTemperature(minimumOperatingTemperature)
         , MaximumOperatingTemperature(maximumOperatingTemperature)
         , ParticleEmissionRate(particleEmissionRate)
+        , ParticleLifetimeAdjustment(particleLifetimeAdjustment)
         //
         , IsInstanced(isInstanced)
         , EngineType(engineType)
@@ -528,6 +531,7 @@ public:
         , MinimumOperatingTemperature(0.0f)
         , MaximumOperatingTemperature(1000.0f)
         , ParticleEmissionRate(1.0f)
+        , ParticleLifetimeAdjustment(1.0f)
         //
         , IsInstanced(isInstanced)
         , EngineType(EngineElementType::Diesel)

@@ -1693,7 +1693,29 @@
 					- Finalize color of rot
 				+ ship_element
 
-				= Try multi-channel texture for rust and algae
+				= Try multi-channel texture for rust and algae					
+					- "ShipEnhancements" DB
+					- "ShipEnhancements" texture
+						- OpenGL param
+						- Activation & load @ GlobalRenderContext
+					- Ship VAOs: 
+						- TODOHERE: HighQuality flag
+
+
+					- Param for Ship shaders: ShipEnhancementsTextureSpaceMagnificationFactor (vec2)
+						- Calc'd by ShipRenderContext @ init, based on ship's world size and GlobalRenderContext::GetShipEnhancementsTextureWorldSize
+						- SetInAllShaders
+
+					- Texture finalization:
+						- Rust
+						- Algae
+						- GlobalRenderContext: build dual-channel
+
+					- Add to Android port plan
+
+
+					- TODOOLD
+
 					= Do test first with dummy texture for perf impact
 						- New Dell
 						+ Old Dell: 18.2-18.6-19.2 (29.18 FPS) => 19.8-21.3 (26.6 FPS)
@@ -1735,6 +1757,8 @@
 			+ Ship::RotPoints, & period names
 
 		+ Do "water soluble metal" material
+
+		- Smooth underwater transition
 
 		- Test:
 			- StressedSprings shader - no regressions

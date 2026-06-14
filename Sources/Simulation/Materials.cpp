@@ -289,12 +289,14 @@ ElectricalMaterial ElectricalMaterial::Create(
 
         // Particle emitter properties
         float particleEmissionRate = 0.0f;
+        float particleLifetimeAdjustment = 1.0f;
         if (ElectricalElementType::SmokeEmitter == electricalType)
         {
             particleEmissionRate = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "particle_emission_rate");
-
             if (particleEmissionRate < 0.0f)
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"particle_emission_rate\" parameter must be greater than or equal 0.0");
+
+            particleLifetimeAdjustment = Utils::GetOptionalJsonMember<float>(electricalMaterialJson, "particle_lifetime_adjustment", 1.0f);
         }
 
         // Instancing
@@ -399,6 +401,7 @@ ElectricalMaterial ElectricalMaterial::Create(
             minimumOperatingTemperature,
             maximumOperatingTemperature,
             particleEmissionRate,
+            particleLifetimeAdjustment,
             isInstanced,
             engineType,
             engineDirection,

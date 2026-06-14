@@ -2432,6 +2432,8 @@ void ElectricalElements::UpdateSinks(
                                     * simulationParameters.SmokeEmitterSmokeParticleLifetimeAdjustment;
                             }
 
+                            maxSimulationLifetime *= mMaterialBuffer[sinkElementIndex]->ParticleLifetimeAdjustment;
+
                             // Choose temperature: highest of emitter's and current air + something (to ensure buoyancy)
                             float const smokeTemperature = std::max(
                                 points.GetTemperature(emitterPointIndex),
