@@ -3565,22 +3565,22 @@ void Ship::DecayPoints(
             ? powf(0.25f, simulationParameters.RotAcceler8r / NsRot) // a_uw_fl = 0.25 ^ (1/Ns)
             : 1.0f;
 
-        mDecayRotXUwRot = (1.0f - a_uw_rot) / (a_uw_rot - a_uw_fl_rot);
-        mDecayRotBetaRot = (1.0f - a_uw_rot) / mDecayRotXUwRot;
+        mDecayRotXUw = (1.0f - a_uw_rot) / (a_uw_rot - a_uw_fl_rot);
+        mDecayRotBeta = (1.0f - a_uw_rot) / mDecayRotXUw;
 
         // Water solubility
 
         float constexpr NsWaterSolubility = 2.5f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
-        mDecayRotAlphaWaterSolubility = simulationParameters.RotAcceler8r != 0.0f
+        mDecayWaterSolubilityAlpha = simulationParameters.RotAcceler8r != 0.0f
             ? powf(0.1f, simulationParameters.RotAcceler8r / NsWaterSolubility)
             : 1.0f;
 
         mCurrentRotAcceler8r = simulationParameters.RotAcceler8r;
     }
 
-    float const x_uw_rot = mDecayRotXUwRot;
-    float const beta_rot = mDecayRotBetaRot;
+    float const x_uw_rot = mDecayRotXUw;
+    float const beta_rot = mDecayRotBeta;
 
     //
     // Rust
@@ -3591,24 +3591,24 @@ void Ship::DecayPoints(
         // 1.5 minutes to reach hi/low rust
         float constexpr NsRust = 1.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
-        mDecayRustAlphaLowRust = simulationParameters.RustAcceler8r != 0.0f
+        mDecayRustAlphaLow = simulationParameters.RustAcceler8r != 0.0f
             ? std::max(powf(0.50f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
             : 1.0f;
 
-        mDecayRustAlphaMediumRust = simulationParameters.RustAcceler8r != 0.0f
+        mDecayRustAlphaMedium = simulationParameters.RustAcceler8r != 0.0f
             ? std::max(powf(0.25f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
             : 1.0f;
 
-        mDecayRustAlphaHighRust = simulationParameters.RustAcceler8r != 0.0f
+        mDecayRustAlphaHigh = simulationParameters.RustAcceler8r != 0.0f
             ? std::max(powf(0.01f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
             : 1.0f;
 
         mCurrentRustAcceler8r = simulationParameters.RustAcceler8r;
     }
 
-    float const a_low_rust = mDecayRustAlphaLowRust;
-    float const a_medium_rust = mDecayRustAlphaMediumRust;
-    float const a_high_rust = mDecayRustAlphaHighRust;
+    float const a_low_rust = mDecayRustAlphaLow;
+    float const a_medium_rust = mDecayRustAlphaMedium;
+    float const a_high_rust = mDecayRustAlphaHigh;
 
     // Adj = 0 => 0.0
     // Adj = 1 => Base
@@ -3627,20 +3627,20 @@ void Ship::DecayPoints(
     {
         float constexpr NsAlgaeGrowth = 30.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
-        mDecayRotAlphaAlgaeGrowth = simulationParameters.AlgaeGrowthAcceler8r != 0.0f
+        mDecayAlgaeGrowthAlpha = simulationParameters.AlgaeGrowthAcceler8r != 0.0f
             ? powf(0.25f, simulationParameters.AlgaeGrowthAcceler8r / NsAlgaeGrowth)
             : 1.0f;
 
         mCurrentAlgaeGrowthAcceler8r = simulationParameters.AlgaeGrowthAcceler8r;
     }
 
-    float const a_algeGrowth = mDecayRotAlphaAlgaeGrowth;
+    float const a_algeGrowth = mDecayAlgaeGrowthAlpha;
 
     //
     // Water solubility
     //
 
-    float const b_waterSolubility = 1.0f - mDecayRotAlphaWaterSolubility;
+    float const b_waterSolubility = 1.0f - mDecayWaterSolubilityAlpha;
 
     //
     // Process all non-ephemeral points in this partition - no real reason

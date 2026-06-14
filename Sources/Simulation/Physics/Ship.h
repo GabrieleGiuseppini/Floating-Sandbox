@@ -1261,18 +1261,18 @@ private:
     //
 
     float mCurrentRotAcceler8r; // Last seen, to detect changes
-    float mDecayRotXUwRot;
-    float mDecayRotBetaRot;
+    float mDecayRotXUw;
+    float mDecayRotBeta;
 
     float mCurrentRustAcceler8r; // Last seen, to detect changes
-    float mDecayRustAlphaLowRust;
-    float mDecayRustAlphaMediumRust;
-    float mDecayRustAlphaHighRust;
+    float mDecayRustAlphaLow;
+    float mDecayRustAlphaMedium;
+    float mDecayRustAlphaHigh;
 
     float mCurrentAlgaeGrowthAcceler8r; // Last seen, to detect changes
-    float mDecayRotAlphaAlgaeGrowth;
+    float mDecayAlgaeGrowthAlpha;
 
-    float mDecayRotAlphaWaterSolubility;
+    float mDecayWaterSolubilityAlpha;
 
     //
     // Light diffusion
