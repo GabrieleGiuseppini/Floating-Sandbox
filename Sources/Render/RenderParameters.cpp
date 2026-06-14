@@ -44,7 +44,7 @@ RenderParameters::RenderParameters(
 	, ShowFrontiers(false)
 	, ShowAABBs(false)
 	, ShipWaterColor(vec3f::zero()) // Calculated
-	, ShipWaterContrast(0.71875f)
+	, ShipWaterContrast(0.5f) // Was 0.71875 before 1.21
 	, ShipWaterLevelOfDetail(0.6875f)
 	, HeatRenderMode(HeatRenderModeType::Incandescence)
 	, HeatSensitivity(0.0f)

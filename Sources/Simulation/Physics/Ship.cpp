@@ -3689,7 +3689,7 @@ void Ship::DecayPoints(
 
         float const betaRustDamage = (1.0f - Mix(a_low_rust, a_medium_rust, water)) * isDamaged;
 
-        // 2) Rust by neighbors, imprinting pattern via mass, and randomizing
+        // 2) Rust by neighbors, imprinting pattern via random personality seed
 
         float avgNeighborsRust = 0.0f;
         auto const nCs = mPoints.GetConnectedSprings(p).ConnectedSprings.size();
