@@ -1797,6 +1797,47 @@
         {
             "buoyancy_volume_fill": 0.05,
             "color_key": [
+                "#D5D5D5",
+                "#FFA385",
+                "#FFFFD2",
+                "#FFF785",
+                "#DBFF85",
+                "#95FFFB",
+                "#B0C7E6",
+                "#FF95FF",
+                "#FFE485",
+                "#A6A696"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 393.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0215,
+                "nominal_mass": 30
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Soft Cloth",
+            "palette_coordinates": {
+                "category": "Cloth",
+                "sub_category": "Soft Cloth",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Cloth",
+            "specific_heat": 1400.0,
+            "stiffness": 0.0005,
+            "strength": 4.9,
+            "texture_name": "cloth_1",
+            "thermal_conductivity": 0.04,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.5,
+            "wind_receptivity": 0.4
+        },
+        {
+            "buoyancy_volume_fill": 0.05,
+            "color_key": [
                 "#DADADA",
                 "#FFA88A",
                 "#FFFFD7",
@@ -4792,6 +4833,7 @@
                         "name": "Cloth",
                         "sub_categories": [
                             "Cloth",
+			    "Soft Cloth",
                             "Strong Cloth"
                         ]
                     }
