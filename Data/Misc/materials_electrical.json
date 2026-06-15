@@ -40,6 +40,60 @@
 	},
         "wet_failure_rate": 4.5
     },
+
+    
+    
+    
+    
+    
+    {
+        "color_key": "#D8E010",
+	"conducts_electricity": true,
+        "electrical_type": "Lamp",
+	"external_pressure_breakage_threshold": 50190.43,
+        "heat_generated": 600.0,
+        "is_self_powered": false,
+        "light_color": "#FFFF40",
+        "light_spread": 14.625,
+        "luminiscence": 0.5,
+        "maximum_operating_temperature": 398.15,
+        "minimum_operating_temperature": 233.15,
+        "name": "Medium Lamp Watertight",
+	"palette_coordinates": {
+		"category": "Lamps",
+		"sub_category": "Lamps",
+		"sub_category_ordinal": 2
+	},
+        "wet_failure_rate": 0.0
+    },
+    {
+        "color_key": "#D9E011",
+	"conducts_electricity": true,
+        "electrical_type": "Lamp",
+	"external_pressure_breakage_threshold": 4019.04,
+        "heat_generated": 200.0,
+        "is_self_powered": false,
+        "light_color": "#FFFF40",
+        "light_spread": 14.625,
+        "luminiscence": 0.5,
+        "maximum_operating_temperature": 398.15,
+        "minimum_operating_temperature": 233.15,
+        "name": "Medium Lamp",
+	"palette_coordinates": {
+		"category": "Lamps",
+		"sub_category": "Lamps",
+		"sub_category_ordinal": 3
+	},
+        "wet_failure_rate": 4.5
+    },
+    
+    
+    
+    
+    
+    
+    
+    
     {
         "color_key": "#DFE010",
 	"conducts_electricity": true,
@@ -56,7 +110,7 @@
 	"palette_coordinates": {
 		"category": "Lamps",
 		"sub_category": "Lamps",
-		"sub_category_ordinal": 2
+		"sub_category_ordinal": 4
 	},
         "wet_failure_rate": 0.0
     },
@@ -76,7 +130,7 @@
 	"palette_coordinates": {
 		"category": "Lamps",
 		"sub_category": "Lamps",
-		"sub_category_ordinal": 3
+		"sub_category_ordinal": 5
 	},
         "wet_failure_rate": 3.0
     },
@@ -96,7 +150,7 @@
         "palette_coordinates": {
 		"category": "Lamps",
 		"sub_category": "Lamps",
-		"sub_category_ordinal": 4
+		"sub_category_ordinal": 6
 	},
         "wet_failure_rate": 0.0
     },
