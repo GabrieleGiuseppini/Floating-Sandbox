@@ -1766,6 +1766,7 @@
 			- Strength shader - no regressions
 			- Debris
 			- GenericTextures
+			- Electric spark rots the structure
 
 			- Cardboard: rots (& doesn't rust)
 			- Lego doesn't rot nor rust nor dissolves
