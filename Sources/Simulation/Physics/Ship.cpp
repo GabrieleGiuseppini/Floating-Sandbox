@@ -3553,20 +3553,23 @@ void Ship::DecayPoints(
 
     if (simulationParameters.RotAcceler8r != mCurrentRotAcceler8r)
     {
-        // Rust
+        // Rot
 
-        float constexpr NsRot = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+        if (simulationParameters.RotAcceler8r >= 0.01f)
+        {
+            float constexpr NsRot = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
-        float const a_uw_rot = simulationParameters.RotAcceler8r != 0.0f
-            ? powf(0.75f, simulationParameters.RotAcceler8r / NsRot) // a_uw = 0.75 ^ (1/Ns)
-            : 1.0f;
+            float const a_uw_rot = powf(0.75f, simulationParameters.RotAcceler8r / NsRot); // a_uw = 0.75 ^ (1/Ns)
+            float const a_uw_fl_rot = powf(0.25f, simulationParameters.RotAcceler8r / NsRot); // a_uw_fl = 0.25 ^ (1/Ns)
 
-        float const a_uw_fl_rot = simulationParameters.RotAcceler8r != 0.0f
-            ? powf(0.25f, simulationParameters.RotAcceler8r / NsRot) // a_uw_fl = 0.25 ^ (1/Ns)
-            : 1.0f;
-
-        mDecayRotXUw = (1.0f - a_uw_rot) / (a_uw_rot - a_uw_fl_rot);
-        mDecayRotBeta = (1.0f - a_uw_rot) / mDecayRotXUw;
+            mDecayRotXUw = (1.0f - a_uw_rot) / (a_uw_rot - a_uw_fl_rot);
+            mDecayRotBeta = (1.0f - a_uw_rot) / mDecayRotXUw;
+        }
+        else
+        {
+            mDecayRotXUw = 0.0f;
+            mDecayRotBeta = 0.0f;
+        }
 
         // Water solubility
 
