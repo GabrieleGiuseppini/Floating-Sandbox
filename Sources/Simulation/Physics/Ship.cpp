@@ -3655,8 +3655,9 @@ void Ship::DecayPoints(
     ElementCount const endPointIndex = std::min(startPointIndex + partitionSize, mPoints.GetRawShipPointCount());
     for (ElementIndex p = startPointIndex; p < endPointIndex; ++p)
     {
+        float constexpr UnderwaterInterfaceWidth = 2.0f;
+        float const isUnderwater = Clamp((mPoints.GetCachedDepth(p) + UnderwaterInterfaceWidth) / UnderwaterInterfaceWidth, 0.0f, 1.0f);
         float const water = std::min(mPoints.GetWater(p), 1.0f);
-        float const isUnderwater = mPoints.IsCachedUnderwater(p) ? 1.0f : 0.0f;
         float const isDamaged = mPoints.GetIsDamaged(p);
         auto const & structuralMaterial = mPoints.GetStructuralMaterial(p);
 

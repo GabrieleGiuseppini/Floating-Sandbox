@@ -1762,8 +1762,7 @@
 
 		+ I found the first bug. As soon as i turned the rot accelerator down my ship just rusted and immediatley fell apart in 1.5 seconds.
 			+ Fix: mDecayRotXUw becomes -IND with denominator being zero (alpha's are equal)
-
-		- Smooth underwater transition
+		+ Smooth underwater transition
 
 		- Adjust rust spread speed to 0.2 adjustment
 			- But keep current speed when underwater/wet; best to intoduce damage-specific Ns?
