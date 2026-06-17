@@ -3557,10 +3557,10 @@ void Ship::DecayPoints(
 
         if (simulationParameters.RotAcceler8r >= 0.01f)
         {
-            float constexpr NsRot = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            float constexpr Ns = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
-            float const a_uw_rot = powf(0.75f, simulationParameters.RotAcceler8r / NsRot); // a_uw = 0.75 ^ (1/Ns)
-            float const a_uw_fl_rot = powf(0.25f, simulationParameters.RotAcceler8r / NsRot); // a_uw_fl = 0.25 ^ (1/Ns)
+            float const a_uw_rot = powf(0.75f, simulationParameters.RotAcceler8r / Ns); // a_uw = 0.75 ^ (1/Ns)
+            float const a_uw_fl_rot = powf(0.25f, simulationParameters.RotAcceler8r / Ns); // a_uw_fl = 0.25 ^ (1/Ns)
 
             mDecayRotXUw = (1.0f - a_uw_rot) / (a_uw_rot - a_uw_fl_rot);
             mDecayRotBeta = (1.0f - a_uw_rot) / mDecayRotXUw;
@@ -3591,27 +3591,31 @@ void Ship::DecayPoints(
 
     if (simulationParameters.RustAcceler8r != mCurrentRustAcceler8r)
     {
-        // 1.5 minutes to reach hi/low rust
-        float constexpr NsRust = 1.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+        if (simulationParameters.RustAcceler8r != 0.0f)
+        {
+            float constexpr NsDamage = 7.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            mDecayRustDamageDryAlpha = std::max(powf(0.50f, simulationParameters.RustAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            mDecayRustDamageWetAlpha = std::max(powf(0.0009765625f, simulationParameters.RustAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
 
-        mDecayRustAlphaLow = simulationParameters.RustAcceler8r != 0.0f
-            ? std::max(powf(0.50f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
-            : 1.0f;
-
-        mDecayRustAlphaMedium = simulationParameters.RustAcceler8r != 0.0f
-            ? std::max(powf(0.25f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
-            : 1.0f;
-
-        mDecayRustAlphaHigh = simulationParameters.RustAcceler8r != 0.0f
-            ? std::max(powf(0.01f, simulationParameters.RustAcceler8r / NsRust), 0.5f) // At least 0.5 to ensure sum of beta's < 1
-            : 1.0f;
+            float constexpr NsNeighbors = 1.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            mDecayRustNeighborsDryAlpha = std::max(powf(0.25f, simulationParameters.RustAcceler8r / NsNeighbors), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            mDecayRustNeighborsWetAlpha = std::max(powf(0.01f, simulationParameters.RustAcceler8r / NsNeighbors), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+        }
+        else
+        {
+            mDecayRustDamageDryAlpha = 1.0f;
+            mDecayRustDamageWetAlpha = 1.0f;
+            mDecayRustNeighborsDryAlpha = 1.0f;
+            mDecayRustNeighborsWetAlpha = 1.0f;
+        }
 
         mCurrentRustAcceler8r = simulationParameters.RustAcceler8r;
     }
 
-    float const a_low_rust = mDecayRustAlphaLow;
-    float const a_medium_rust = mDecayRustAlphaMedium;
-    float const a_high_rust = mDecayRustAlphaHigh;
+    float const a_rust_damage_dry = mDecayRustDamageDryAlpha;
+    float const a_rust_damage_wet = mDecayRustDamageWetAlpha;
+    float const a_rust_neighbors_dry = mDecayRustNeighborsDryAlpha;
+    float const a_rust_neighbors_wet = mDecayRustNeighborsWetAlpha;
 
     // Adj = 0 => 0.0
     // Adj = 1 => Base
@@ -3628,10 +3632,10 @@ void Ship::DecayPoints(
 
     if (simulationParameters.AlgaeGrowthAcceler8r != mCurrentAlgaeGrowthAcceler8r)
     {
-        float constexpr NsAlgaeGrowth = 30.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+        float constexpr Ns = 30.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
         mDecayAlgaeGrowthAlpha = simulationParameters.AlgaeGrowthAcceler8r != 0.0f
-            ? powf(0.25f, simulationParameters.AlgaeGrowthAcceler8r / NsAlgaeGrowth)
+            ? powf(0.25f, simulationParameters.AlgaeGrowthAcceler8r / Ns)
             : 1.0f;
 
         mCurrentAlgaeGrowthAcceler8r = simulationParameters.AlgaeGrowthAcceler8r;
@@ -3692,7 +3696,7 @@ void Ship::DecayPoints(
 
         // 1) Rust if damaged; more so if wet
 
-        float const betaRustDamage = (1.0f - Mix(a_low_rust, a_medium_rust, isWet)) * isDamaged;
+        float const betaRustDamage = (1.0f - Mix(a_rust_damage_dry, a_rust_damage_wet, isWet)) * isDamaged;
 
         // 2) Rust by neighbors, imprinting pattern via random personality seed
 
@@ -3709,7 +3713,7 @@ void Ship::DecayPoints(
         }
 
         float const betaRustNeighbors =
-            (1.0f - Mix(a_medium_rust, a_high_rust, isWet)) // Rusts faster when wet
+            (1.0f - Mix(a_rust_neighbors_dry, a_rust_neighbors_wet, isWet)) // Rusts faster when wet
             * avgNeighborsRust
             * (1.0f - 0.982f * mPoints.GetRandomNormalizedUniformPersonalitySeed(p)); // Allow zero's to rust
 

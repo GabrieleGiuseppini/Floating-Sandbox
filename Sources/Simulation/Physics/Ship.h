@@ -1265,9 +1265,10 @@ private:
     float mDecayRotBeta;
 
     float mCurrentRustAcceler8r; // Last seen, to detect changes
-    float mDecayRustAlphaLow;
-    float mDecayRustAlphaMedium;
-    float mDecayRustAlphaHigh;
+    float mDecayRustDamageDryAlpha;
+    float mDecayRustDamageWetAlpha;
+    float mDecayRustNeighborsDryAlpha;
+    float mDecayRustNeighborsWetAlpha;
 
     float mCurrentAlgaeGrowthAcceler8r; // Last seen, to detect changes
     float mDecayAlgaeGrowthAlpha;
