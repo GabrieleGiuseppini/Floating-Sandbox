@@ -3658,6 +3658,7 @@ void Ship::DecayPoints(
         float constexpr UnderwaterInterfaceWidth = 2.0f;
         float const isUnderwater = Clamp((mPoints.GetCachedDepth(p) + UnderwaterInterfaceWidth) / UnderwaterInterfaceWidth, 0.0f, 1.0f);
         float const water = std::min(mPoints.GetWater(p), 1.0f);
+        float const isWet = std::min(isUnderwater + water, 1.0f);
         float const isDamaged = mPoints.GetIsDamaged(p);
         auto const & structuralMaterial = mPoints.GetStructuralMaterial(p);
 
@@ -3689,9 +3690,9 @@ void Ship::DecayPoints(
         // Rust
         //
 
-        // 1) Rust if damaged; more so if has water
+        // 1) Rust if damaged; more so if wet
 
-        float const betaRustDamage = (1.0f - Mix(a_low_rust, a_medium_rust, water)) * isDamaged;
+        float const betaRustDamage = (1.0f - Mix(a_low_rust, a_medium_rust, isWet)) * isDamaged;
 
         // 2) Rust by neighbors, imprinting pattern via random personality seed
 
@@ -3708,7 +3709,7 @@ void Ship::DecayPoints(
         }
 
         float const betaRustNeighbors =
-            (1.0f - Mix(a_medium_rust, a_high_rust, isUnderwater)) // Rusts faster underwater
+            (1.0f - Mix(a_medium_rust, a_high_rust, isWet)) // Rusts faster when wet
             * avgNeighborsRust
             * (1.0f - 0.982f * mPoints.GetRandomNormalizedUniformPersonalitySeed(p)); // Allow zero's to rust
 
@@ -3739,7 +3740,7 @@ void Ship::DecayPoints(
 
         float const betaSolubility =
             b_waterSolubility
-            * std::min(isUnderwater + water, 1.0f)
+            * isWet
             * structuralMaterial.WaterSolubility;
 
         alphaWeakness = std::min(alphaWeakness, 1.0f - betaSolubility);

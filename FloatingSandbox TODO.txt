@@ -1764,10 +1764,10 @@
 			+ Fix: mDecayRotXUw becomes -IND with denominator being zero (alpha's are equal)
 		+ Smooth underwater transition
 
-		- Adjust rust spread speed to 0.2 adjustment
-			- But keep current speed when underwater/wet; best to intoduce damage-specific Ns?
+		- Adjust rust spread speed to 0.2 adjustment, but keep current speed when underwater/wet
+			- Beta dry, Beta wet -- in terms of time and/or gamma
 
-		- Then make a weaker version of the soluable material, basicly low-grade soluable iron - a good compromise eh? what it does is speed up its destruction when waterline reaches it 2 times, basicly no flooding required
+		- Then make a weaker version of the soluble material, basicly low-grade soluable iron - a good compromise eh? what it does is speed up its destruction when waterline reaches it 2 times, basicly no flooding required
 
 		- Add white-ish and black-ish for water-soluble
 
