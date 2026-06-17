@@ -1765,10 +1765,12 @@
 		+ Smooth underwater transition
 		+ Adjust rust spread speed to 0.2 adjustment, but keep current speed when underwater/wet
 			+ Beta dry, Beta wet -- in terms of time and/or gamma
-
-		- Add white-ish and black-ish for water-soluble
-
-		- Add white-ish and black-ish for lift (see first if really needed)
+		+ Add white-ish and black-ish for water-soluble
+			+ Copy Aluminium Hull, Light Aluminium I-Beam (as "Water-Soluble Aluminium I-Beam")
+			+ Make them water-soluble
+		+ Add white-ish and black-ish for lift
+			+ Copy Aluminium Hull, add last to Aluminium group
+			+ Give it lift
 
 		- Make a weaker version of the soluble material, basically low-grade soluable iron - a good compromise eh? what it does is speed up its destruction when waterline reaches it 2 times, basicly no flooding required
 

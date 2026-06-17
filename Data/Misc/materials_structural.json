@@ -372,10 +372,10 @@
                 "nominal_mass": 7950
             },
             "melting_temperature": 1588.15,
-            "name": "Iron Hull Aerodynamic",
+            "name": "Aerodynamic Iron Hull",
             "palette_coordinates": {
                 "category": "Metals",
-                "sub_category": "Iron Hull Aerodynamic",
+                "sub_category": "Aerodynamic Iron Hull",
                 "sub_category_ordinal": 0
             },
             "rust_receptivity": 0.9,
@@ -1159,6 +1159,138 @@
             "stiffness": 1.0,
             "strength": 0.027,
             "texture_name": "metal_riveted_2",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#E9E8E8",
+                "#FFB799",
+                "#FFFFE6",
+                "#FFFF99",
+                "#EFFF98",
+                "#A9FFFF",
+                "#C4DAF9",
+                "#FFA9FF",
+                "#FFF899",
+                "#BAB9A9"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Water-Soluble Aluminium Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Water-Soluble Aluminium Hull",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.9,
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "texture_name": "metal_riveted_2_small",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "water_solubility": 1.0,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#EFEDEE",
+                "#FFBB9E",
+                "#FFFFEB",
+                "#FFFF9E",
+                "#F5FF9E",
+                "#AFFFFF",
+                "#CADFFF",
+                "#FFADFF",
+                "#FFFC9E",
+                "#C0BEAF"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Water-Soluble Aluminium I-Beam",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Water-Soluble Aluminium I-Beam",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.9,
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.09,
+            "texture_name": "metal_riveted_2",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "water_solubility": 1.0,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#E1E3E4",
+                "#FFB194",
+                "#FFFFE1",
+                "#FFFF94",
+                "#E7FF94",
+                "#A1FFFF",
+                "#BCD5F5",
+                "#FFA3FF",
+                "#FFF294",
+                "#B2B4A5"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "lift_coefficient": 1.0,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Aerodynamic Aluminium Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Aerodynamic Aluminium Hull",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.9,
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "texture_name": "metal_riveted_2_small",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
             "water_diffusion_speed": 0.5,
@@ -4645,7 +4777,7 @@
                             "Double-Bottom Iron",
                             "Water-Soluble Iron Hull",
                             "Water-Soluble Iron I-Beam",
-                            "Iron Hull Aerodynamic"
+                            "Aerodynamic Iron Hull"
                         ]
                     },
                     {
@@ -4687,7 +4819,10 @@
                             "Light Aluminium Bulkhead",
                             "Solid Aluminium I-Beam",
                             "Light Aluminium I-Beam",
-                            "Low-Grade Aluminium"
+                            "Low-Grade Aluminium",
+                            "Water-Soluble Aluminium Hull",
+                            "Water-Soluble Aluminium I-Beam",
+                            "Aerodynamic Aluminium Hull"
                         ]
                     },
                     {
@@ -4833,7 +4968,7 @@
                         "name": "Cloth",
                         "sub_categories": [
                             "Cloth",
-			    "Soft Cloth",
+                            "Soft Cloth",
                             "Strong Cloth"
                         ]
                     }
