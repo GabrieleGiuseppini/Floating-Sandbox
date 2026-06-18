@@ -3573,7 +3573,7 @@ void Ship::DecayPoints(
 
         // Water solubility
 
-        float constexpr NsWaterSolubility = 2.5f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+        float constexpr NsWaterSolubility = 0.76782f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
         mDecayWaterSolubilityAlpha = simulationParameters.RotAcceler8r != 0.0f
             ? powf(0.1f, simulationParameters.RotAcceler8r / NsWaterSolubility)

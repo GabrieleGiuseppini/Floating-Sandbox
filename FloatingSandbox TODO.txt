@@ -1771,20 +1771,28 @@
 		+ Add white-ish and black-ish for lift
 			+ Copy Aluminium Hull, add last to Aluminium group
 			+ Give it lift
-
-		- Make a weaker version of the soluble material, basically low-grade soluable iron - a good compromise eh? what it does is speed up its destruction when waterline reaches it 2 times, basicly no flooding required
+		+ Make a weaker version of the soluble material, basically low-grade soluable iron - a good compromise eh? what it does is speed up its destruction when waterline reaches it 2 times, basicly no flooding required
+			+ Check current test ship
+			+ Current water-soluble materials' water-solubility becomes 0.5
+				+ Change NS so that (1.0f - mDecayWaterSolubilityAlpha_OLD) == (1.0f - mDecayWaterSolubilityAlpha_NEW) * 0.5
+					+ NS=0.76782
+			+ Old material with 0.5, and cardboards 0.2->0.1 0.3->0.15
+			+ Verify old materials
+			+ Verify cardboard
+			+ New material with 1.0
+				+ Copy from Low-Grade Iron, call it "Water-Soluble Low-Grade Iron"
+			+ Change test ship & test
 
 		- Test:
-			- StressedSprings shader - no regressions
-			- InternalPressure shader - no regressions
-			- Strength shader - no regressions
-			- Debris
-			- GenericTextures
-			- Electric spark rots the structure
-
-			- Cardboard: rots (& doesn't rust)
-			- Lego doesn't rot nor rust nor dissolves
-			- Water Soluble Metal: dissolves
+			+ StressedSprings shader - no regressions
+			+ InternalPressure shader - no regressions
+			+ Strength shader - no regressions
+			+ Debris
+			+ GenericTextures
+			+ Electric spark rots the structure
+			+ Cardboard: rots (& doesn't rust)
+			+ Lego doesn't rot nor rust nor dissolves
+			+ Water Soluble Metal: dissolves
 			+ Tornadoes: weaken
 			- Repair
 				- Test repairing heavily rotten/rusted structure

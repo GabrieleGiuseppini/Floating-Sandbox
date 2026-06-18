@@ -299,7 +299,7 @@
             "thermal_expansion_coefficient": 1.06e-05,
             "water_diffusion_speed": 0.5,
             "water_retention": 0.05,
-            "water_solubility": 1.0,
+            "water_solubility": 0.5,
             "wind_receptivity": 0.1
         },
         {
@@ -338,6 +338,50 @@
             "specific_heat": 449.0,
             "stiffness": 1.0,
             "strength": 0.051,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "water_solubility": 0.5,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#1D1E1F",
+                "#610000",
+                "#B8AD1C",
+                "#5D4000",
+                "#235900",
+                "#004845",
+                "#001030",
+                "#63004F",
+                "#852D00",
+                "#020103"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1783.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7850
+            },
+            "melting_temperature": 1588.15,
+            "name": "Water-Soluble Low-Grade Iron",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Water-Soluble Low-Grade Iron",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.9,
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.02,
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
@@ -1206,7 +1250,7 @@
             "thermal_expansion_coefficient": 2.2e-05,
             "water_diffusion_speed": 0.5,
             "water_retention": 0.05,
-            "water_solubility": 1.0,
+            "water_solubility": 0.5,
             "wind_receptivity": 0.1
         },
         {
@@ -1250,7 +1294,7 @@
             "thermal_expansion_coefficient": 2.2e-05,
             "water_diffusion_speed": 0.5,
             "water_retention": 0.05,
-            "water_solubility": 1.0,
+            "water_solubility": 0.5,
             "wind_receptivity": 0.1
         },
         {
@@ -2526,7 +2570,7 @@
             "thermal_expansion_coefficient": 0.0043,
             "water_diffusion_speed": 0.5,
             "water_retention": 0.2,
-            "water_solubility": 0.2,
+            "water_solubility": 0.1,
             "wind_receptivity": 0.15
         },
         {
@@ -2569,7 +2613,7 @@
             "thermal_expansion_coefficient": 0.00434,
             "water_diffusion_speed": 0.55,
             "water_retention": 0.75,
-            "water_solubility": 0.3,
+            "water_solubility": 0.15,
             "wind_receptivity": 0.15
         },
         {
@@ -2602,7 +2646,7 @@
             "thermal_expansion_coefficient": 0.0035,
             "water_diffusion_speed": 0.65,
             "water_retention": 0.85,
-            "water_solubility": 0.2,
+            "water_solubility": 0.1,
             "wind_receptivity": 0.15
         },
         {
@@ -2635,7 +2679,7 @@
             "thermal_expansion_coefficient": 0.0035,
             "water_diffusion_speed": 0.65,
             "water_retention": 0.85,
-            "water_solubility": 0.3,
+            "water_solubility": 0.15,
             "wind_receptivity": 0.15
         },
         {
@@ -4777,6 +4821,7 @@
                             "Double-Bottom Iron",
                             "Water-Soluble Iron Hull",
                             "Water-Soluble Iron I-Beam",
+                            "Water-Soluble Low-Grade Iron",
                             "Aerodynamic Iron Hull"
                         ]
                     },
