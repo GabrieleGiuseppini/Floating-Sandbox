@@ -1151,15 +1151,16 @@ void Ship::ApplyTornado(
 
                     // Delta-weakness to reach our target
                     float constexpr TargetWeakness = 0.12f;
-                    float const deltaWeakness = (TargetWeakness - mPoints.GetAdditionalWeakness(pointIndex)) * 0.1f; // Reach slowly
+                    float const currentWeakness = mPoints.GetWeakness(pointIndex);
+                    float const deltaWeakness = (TargetWeakness - currentWeakness) * 0.1f; // Reach slowly
 
                     // How much we weaken depends on the strength of the point, so we may weaken "structurally", not homogeneuosly
                     // float const weakeningStrength = 1.0f - LinearStep(0.02f, 0.27f, mPoints.GetFactoryStrength(pointIndex)); // This was a totally different way, opposite (weakening the weak)
                     float const weakeningStrength = LinearStep(0.01f, 0.07f, mPoints.GetFactoryStrength(pointIndex));
 
-                    mPoints.SetAdditionalWeakness(
+                    mPoints.SetWeakness(
                         pointIndex,
-                        mPoints.GetAdditionalWeakness(pointIndex) + deltaWeakness * weakeningStrength * tornadoDepth * args.StrengthMultiplier);
+                        currentWeakness + deltaWeakness * weakeningStrength * tornadoDepth * args.StrengthMultiplier);
 
                     //
                     // Heat
@@ -1563,12 +1564,25 @@ bool Ship::ScrubThrough(
             //
 
             float const distance = std::sqrt(squarePointDistance);
+            float strength = 0.5f * (radius - distance) / radius;
 
-            float const newDecay =
-                mPoints.GetDecay(pointIndex)
-                + 0.5f * (1.0f - mPoints.GetDecay(pointIndex)) * (radius - distance) / radius;
+            // x' = x + (1-x)*s == x(1-s) + s
 
-            mPoints.SetDecay(pointIndex, newDecay);
+            mPoints.SetRot(
+                pointIndex,
+                mPoints.GetRot(pointIndex) * (1.0f - strength) + strength);
+
+            mPoints.SetRust(
+                pointIndex,
+                mPoints.GetRust(pointIndex) * (1.0f - strength) + strength);
+
+            mPoints.SetAlgaeGrowth(
+                pointIndex,
+                mPoints.GetAlgaeGrowth(pointIndex) * (1.0f - strength) + strength);
+
+            mPoints.SetWeakness(
+                pointIndex,
+                mPoints.GetWeakness(pointIndex) * (1.0f - strength) + strength);
 
             // Remember at least one point has been scrubbed
             hasScrubbed |= true;
@@ -1578,15 +1592,31 @@ bool Ship::ScrubThrough(
     return hasScrubbed;
 }
 
-bool Ship::RotThrough(
+bool Ship::RustThrough(
     vec2f const & startPos,
     vec2f const & endPos,
     float radius,
     SimulationParameters const & simulationParameters)
 {
-    float const decayCoeffMultiplier = simulationParameters.IsUltraViolentMode
+    //
+    // Multiple throngs, along perpendicular to segment
+    //
+
+    float constexpr ThrongRadius = 1.2f;
+    float constexpr ThrongDistance = 3.5f;
+
+    float const rustCoeffMultiplier = simulationParameters.IsUltraViolentMode
         ? 2.5f
         : 1.0f;
+
+    // Adj = 0 => 0.0
+    // Adj = 1 => Base
+    // Adj = Max => 1.0
+    static_assert(SimulationParameters::MaxRustWeaknessAdjustment > 1.0f);
+    float constexpr BaseRustWeakness = 0.4f;
+    float const rustWeaknessFactor = (simulationParameters.RustWeaknessAdjustment <= 1.0f)
+        ? BaseRustWeakness * simulationParameters.RustWeaknessAdjustment
+        : BaseRustWeakness + (1.0f - BaseRustWeakness) * (simulationParameters.RustWeaknessAdjustment - 1.0f) / (SimulationParameters::MaxRustWeaknessAdjustment - 1.0f);
 
     //
     // Find all points in the radius of the segment
@@ -1594,39 +1624,49 @@ bool Ship::RotThrough(
 
     float const squareRadius = radius * radius;
 
-    // Visit all points (excluding ephemerals, they don't rot and
-    // thus we don't need to rot them!)
-    bool hasRotted = false;
+    // Visit all points (excluding ephemerals, they don't rust and thus we don't need to rust them!)
+    bool hasRusted = false;
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
         auto const & pointPosition = mPoints.GetPosition(pointIndex);
 
-        if (float const squarePointDistance = Geometry::Segment::SquareDistanceToPoint(startPos, endPos, pointPosition);
+        if (float const squarePointDistance = Geometry::Segment::SquareDistanceToPointUncapped(startPos, endPos, pointPosition);
             squarePointDistance <= squareRadius)
         {
             //
-            // Rot this point, with magnitude dependent from distance,
+            // Rust this point, with magnitude dependent from distance from closest throng center,
             // and more pronounced when the point is underwater or has water
             //
 
-            float const distance = std::sqrt(squarePointDistance);
+            float const d = std::sqrt(squarePointDistance);
+            float const a = std::fmodf(d, ThrongDistance); // 0 at left center, ThrongDistance at right center
 
-            float const decayCoeff = (mParentWorld.GetOceanSurface().IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
-                ? 0.0175f
-                : 0.010f;
+            // Strengths of two centers as function of distance from the center
+            float const s1 = 1.0f - std::min(1.0f, a / ThrongRadius); // Left center
+            float const s2 = 1.0f - std::min(1.0f, (ThrongDistance - a) / ThrongRadius); // Right center
 
-            float const newDecay =
-                mPoints.GetDecay(pointIndex)
-                * (1.0f - decayCoeff * decayCoeffMultiplier * (radius - distance) / radius);
+            // Combine
+            float rustCoeff = std::max(s1, s2);
 
-            mPoints.SetDecay(pointIndex, newDecay);
+            // Incorporate underwaterness/waterness
+            rustCoeff *= (mParentWorld.GetOceanSurface().IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
+                ? 0.225f
+                : 0.15f;
 
-            // Remember at least one point has been rotted
-            hasRotted |= true;
+            // Incorporate mass, for variation
+            rustCoeff *= 0.7f + 0.3f * std::min(mPoints.GetMass(pointIndex) / 700.0f, 1.0f);
+
+            // Rust and weaken
+            float const beta = rustCoeff * rustCoeffMultiplier;
+            mPoints.SetRust(pointIndex, mPoints.GetRust(pointIndex) * (1.0f - beta));
+            mPoints.SetWeakness(pointIndex, mPoints.GetWeakness(pointIndex) * (1.0f - beta * rustWeaknessFactor));
+
+            // Remember at least one point has been rusted
+            hasRusted |= true;
         }
     }
 
-    return hasRotted;
+    return hasRusted;
 }
 
 void Ship::ApplyThanosSnap(
@@ -1693,8 +1733,8 @@ void Ship::ApplyThanosSnap(
                     currentSimulationTime,
                     simulationParameters);
 
-                // Set decay to min, so that debris gets darkened
-                mPoints.SetDecay(pointIndex, 0.0f);
+                // Set rot to min, so that debris gets darkened
+                mPoints.SetRot(pointIndex, 0.0f);
             }
         }
     }
@@ -2012,12 +2052,15 @@ void Ship::SpawnAirBubble(
         simulationParameters);
 }
 
-bool Ship::DestroyTriangle(ElementIndex triangleIndex)
+bool Ship::DestroyTriangle(
+    ElementIndex triangleIndex,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
 {
     if (triangleIndex < mTriangles.GetElementCount()
         && !mTriangles.IsDeleted(triangleIndex))
     {
-        mTriangles.Destroy(triangleIndex);
+        mTriangles.Destroy(triangleIndex, currentSimulationTime, simulationParameters);
         return true;
     }
     else

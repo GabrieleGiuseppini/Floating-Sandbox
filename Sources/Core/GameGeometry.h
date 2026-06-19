@@ -74,6 +74,8 @@ public:
 
     /*
      * Returns the distance between a point and a segment.
+     * If the point projects outside of the segment, the distance
+     * returned is that from the closest endpoint.
      */
     inline static float SquareDistanceToPoint(
         vec2f const & segmentP1,
@@ -94,6 +96,35 @@ public:
         // It falls where t = [(P-P1) . (P2-P)] / |P2-P1|^2
         // We clamp t from [0,1] to handle points outside the segment P1-P2.
         const float t = std::max(0.0f, std::min(1.0f, (point - segmentP1).dot(segmentP2 - segmentP1) / segmentSquaredLength));
+        vec2f const projection = segmentP1 + (segmentP2 - segmentP1) * t;  // Projection falls on the segment
+        return (projection - point).squareLength();
+    }
+
+    /*
+     * Returns the distance between a point and a segment, or +INF
+     * if the point does not project onto the segment.
+     */
+    inline static float SquareDistanceToPointUncapped(
+        vec2f const & segmentP1,
+        vec2f const & segmentP2,
+        vec2f const & point)
+    {
+        // From https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+
+        float const segmentSquaredLength = (segmentP2 - segmentP1).squareLength();
+        if (segmentSquaredLength == 0.0f)
+        {
+            // Overlapping endpoints
+            return (segmentP2 - point).squareLength();
+        }
+
+        // Consider the line extending the segment, parameterized as P1 + t (P2 - P1).
+        // We find projection of point P onto the line.
+        // It falls where t = [(P-P1) . (P2-P)] / |P2-P1|^2
+        // We clamp t from [0,1] to handle points outside the segment P1-P2.
+        const float t = (point - segmentP1).dot(segmentP2 - segmentP1) / segmentSquaredLength;
+        if (t < 0.0f || t > 1.0f)
+            return std::numeric_limits<float>::max();
         vec2f const projection = segmentP1 + (segmentP2 - segmentP1) * t;  // Projection falls on the segment
         return (projection - point).squareLength();
     }

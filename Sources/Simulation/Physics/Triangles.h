@@ -136,7 +136,10 @@ public:
         std::tuple<NpcFloorKindType, NpcFloorGeometryType> subSpringCFloorInfo,
         std::optional<ElementIndex> coveredTraverseSpringIndex);
 
-    void Destroy(ElementIndex triangleElementIndex);
+    void Destroy(
+        ElementIndex triangleElementIndex,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
 
     void Restore(ElementIndex triangleElementIndex);
 

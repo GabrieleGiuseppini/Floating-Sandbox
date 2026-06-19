@@ -302,7 +302,7 @@ public:
         vec2f const & endPos,
         float radius);
 
-    bool RotThrough(
+    bool RustThrough(
         vec2f const & startPos,
         vec2f const & endPos,
         float radius,
@@ -352,7 +352,10 @@ public:
         float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
-    bool DestroyTriangle(ElementIndex triangleIndex);
+    bool DestroyTriangle(
+        ElementIndex triangleIndex,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
 
     bool RestoreTriangle(ElementIndex triangleIndex);
 
@@ -775,7 +778,7 @@ private:
 
     // Misc
 
-    void RotPoints(
+    void DecayPoints(
         ElementIndex partition,
         ElementIndex partitionCount,
         float currentSimulationTime,
@@ -803,11 +806,16 @@ private:
         ElementIndex pointElementIndex,
         bool isHull);
 
-    void DestroyConnectedTriangles(ElementIndex pointElementIndex);
+    void DestroyConnectedTriangles(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
 
     void DestroyConnectedTriangles(
         ElementIndex pointAElementIndex,
-        ElementIndex pointBElementIndex);
+        ElementIndex pointBElementIndex,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
 
     void AttemptPointRestore(
         ElementIndex pointElementIndex,
@@ -921,7 +929,10 @@ public:
         ElementIndex springElementIndex,
         SimulationParameters const & simulationParameters) override;
 
-    void HandleTriangleDestroy(ElementIndex triangleElementIndex) override;
+    void HandleTriangleDestroy(
+        ElementIndex triangleElementIndex,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters) override;
 
     void HandleTriangleRestore(ElementIndex triangleElementIndex) override;
 
@@ -1244,6 +1255,25 @@ private:
     float mStaticPressureNetForceMagnitudeCount;
     float mStaticPressureIterationsPercentagesSum;
     float mStaticPressureIterationsCount;
+
+    //
+    // Decay
+    //
+
+    float mCurrentRotAcceler8r; // Last seen, to detect changes
+    float mDecayRotXUw;
+    float mDecayRotBeta;
+
+    float mCurrentRustAcceler8r; // Last seen, to detect changes
+    float mDecayRustDamageDryAlpha;
+    float mDecayRustDamageWetAlpha;
+    float mDecayRustNeighborsDryAlpha;
+    float mDecayRustNeighborsWetAlpha;
+
+    float mCurrentAlgaeGrowthAcceler8r; // Last seen, to detect changes
+    float mDecayAlgaeGrowthAlpha;
+
+    float mDecayWaterSolubilityAlpha;
 
     //
     // Light diffusion

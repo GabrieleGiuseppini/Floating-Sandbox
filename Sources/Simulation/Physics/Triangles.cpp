@@ -46,14 +46,17 @@ void Triangles::Add(
     mCoveredSpringsBuffer.emplace_back(coveredSprings);
 }
 
-void Triangles::Destroy(ElementIndex triangleElementIndex)
+void Triangles::Destroy(
+    ElementIndex triangleElementIndex,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
 {
     assert(triangleElementIndex < mElementCount);
     assert(!IsDeleted(triangleElementIndex));
 
     // Invoke destroy handler
     assert(nullptr != mShipPhysicsHandler);
-    mShipPhysicsHandler->HandleTriangleDestroy(triangleElementIndex);
+    mShipPhysicsHandler->HandleTriangleDestroy(triangleElementIndex, currentSimulationTime, simulationParameters);
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[triangleElementIndex] = true;

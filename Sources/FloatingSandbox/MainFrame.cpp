@@ -540,7 +540,7 @@ MainFrame::MainFrame(
             }
 
             {
-                auto menuItem = ADD_TOOL_MENUITEM(_("Scrub/Rot"), wxS("\tU"), "scrub_cursor_up", ToolType::Scrub, false);
+                auto menuItem = ADD_TOOL_MENUITEM(_("Scrub/Rust"), wxS("\tU"), "scrub_cursor_up", ToolType::Scrub, false);
                 ADD_PLAIN_ACCELERATOR_KEY('U', menuItem);
             }
 

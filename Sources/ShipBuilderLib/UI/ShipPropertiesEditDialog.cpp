@@ -30,9 +30,12 @@
 
 namespace ShipBuilder {
 
-int const PanelInternalMargin = 20;
-int const VerticalSeparatorSize = 20;
-int const NumericEditBoxWidth = 100;
+int constexpr PanelInternalMargin = 20;
+int constexpr VerticalSeparatorSize = 20;
+int constexpr NumericEditBoxWidth = 100;
+
+float constexpr MaxOffsetX = 500.0f;
+float constexpr MaxOffsetY = 500.0f;
 
 ShipPropertiesEditDialog::ShipPropertiesEditDialog(
     wxWindow * parent,
@@ -532,8 +535,8 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                 mOffsetXEditSpinBox = new EditSpinBox<float>(
                     panel,
                     NumericEditBoxWidth,
-                    -SimulationParameters::HalfMaxWorldWidth,
-                    SimulationParameters::HalfMaxWorldWidth,
+                    -MaxOffsetX,
+                    MaxOffsetX,
                     0.0f, // Temporary
                     wxEmptyString,
                     [this](float value)
@@ -565,8 +568,8 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                 mOffsetYEditSpinBox = new EditSpinBox<float>(
                     panel,
                     NumericEditBoxWidth,
-                    -SimulationParameters::HalfMaxWorldHeight,
-                    SimulationParameters::HalfMaxWorldHeight,
+                    -MaxOffsetY,
+                    MaxOffsetY,
                     0.0f, // Temporary
                     wxEmptyString,
                     [this](float value)
@@ -625,8 +628,8 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                     panel,
                     wxID_ANY,
                     0, // Temporary
-                    -200,
-                    200,
+                    -MaxOffsetY,
+                    MaxOffsetY,
                     wxDefaultPosition,
                     wxDefaultSize,
                     wxSL_VERTICAL | wxSL_INVERSE);
@@ -660,8 +663,8 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                     panel,
                     wxID_ANY,
                     0, // Temporary
-                    -200,
-                    200,
+                    -MaxOffsetX,
+                    MaxOffsetX,
                     wxDefaultPosition,
                     wxDefaultSize,
                     wxSL_HORIZONTAL);

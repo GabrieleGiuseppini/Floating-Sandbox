@@ -1190,26 +1190,26 @@ bool World::ScrubThrough(
     return anyHasScrubbed;
 }
 
-bool World::RotThrough(
+bool World::RustThrough(
     vec2f const & startPos,
     vec2f const & endPos,
     float radius,
     SimulationParameters const & simulationParameters)
 {
-    // Rot all ships
-    bool anyHasRotted = false;
+    // Rust all ships
+    bool anyHasRusted = false;
     for (auto & ship : mAllShips)
     {
-        bool const hasRotted = ship->RotThrough(
+        bool const hasRusted = ship->RustThrough(
             startPos,
             endPos,
             radius,
             simulationParameters);
 
-        anyHasRotted |= hasRotted;
+        anyHasRusted |= hasRusted;
     }
 
-    return anyHasRotted;
+    return anyHasRusted;
 }
 
 void World::ApplyThanosSnap(
@@ -1602,12 +1602,14 @@ void World::HighlightNpcsInRect(
     mNpcs->HighlightNpcsInRect(corner1, corner2);
 }
 
-bool World::DestroyTriangle(GlobalElementId triangleId)
+bool World::DestroyTriangle(
+    GlobalElementId triangleId,
+    SimulationParameters const & simulationParameters)
 {
     auto const shipId = triangleId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
 
-    return mAllShips[shipId]->DestroyTriangle(triangleId.GetLocalObjectId());
+    return mAllShips[shipId]->DestroyTriangle(triangleId.GetLocalObjectId(), mCurrentSimulationTime, simulationParameters);
 }
 
 bool World::RestoreTriangle(GlobalElementId triangleId)

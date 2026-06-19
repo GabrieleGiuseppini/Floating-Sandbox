@@ -23,6 +23,9 @@ enum class GameSettings : size_t
     StaticFrictionAdjustment,
     KineticFrictionAdjustment,
     RotAcceler8r,
+    RustAcceler8r,
+    RustWeaknessAdjustment,
+    AlgaeGrowthAcceler8r,
     StaticPressureForceAdjustment,
 
     // Air
@@ -128,7 +131,7 @@ enum class GameSettings : size_t
     InjectPressureQuantity,
     BlastToolRadius,
     BlastToolForceAdjustment,
-    ScrubRotToolRadius,
+    ScrubRustToolRadius,
     WindMakerToolWindSpeed,
     UltraViolentMode,
     DoGenerateDebris,

@@ -8,7 +8,8 @@ in vec2 inShipPointPosition;
 #ifndef WITH_MATTE_COLOR
 in vec2 inShipPointTextureCoordinates;
 #endif
-in vec4 inShipPointAttributeGroup; // Light, Water, Temperature, Decay
+in vec4 inShipPointAttributeGroup1; // Light, Water, Temperature, Rot
+in vec2 inShipPointAttributeGroup2; // Rust, AlgageGrowth
 in float inShipPointPlaneId;
 #if STRESS_RENDER_MODE != 0
 in float inShipPointStress; // Stress
@@ -19,7 +20,8 @@ in vec4 inShipPointColor;
 
 // Outputs
 out float vertexWorldY;
-out vec4 vertexAttributes; // Light, Water, Temperature, Decay
+out vec4 vertexAttributes1; // Light, Water, Temperature, Rot
+out vec2 vertexAttributes2; // Rust, AlgageGrowth
 #ifndef WITH_MATTE_COLOR
 out vec2 vertexTextureCoords;
 #else
@@ -36,7 +38,8 @@ void main()
 {      
     vertexWorldY = inShipPointPosition.y;
 
-    vertexAttributes = inShipPointAttributeGroup;
+    vertexAttributes1 = inShipPointAttributeGroup1;
+    vertexAttributes2 = inShipPointAttributeGroup2;
 
 #ifndef WITH_MATTE_COLOR
     vertexTextureCoords = inShipPointTextureCoordinates;
@@ -65,7 +68,8 @@ void main()
 
 // Inputs from previous shader
 in float vertexWorldY;
-in vec4 vertexAttributes; // Light, Water, Temperature, Decay
+in vec4 vertexAttributes1; // Light, Water, Temperature, Rot
+in vec2 vertexAttributes2; // Rust, AlgageGrowth
 #ifndef  WITH_MATTE_COLOR
 in vec2 vertexTextureCoords;
 #else
@@ -108,28 +112,33 @@ void main()
 
     // Discard transparent pixels, so that ropes (which are drawn temporally after
     // this shader but Z-ally behind) are not occluded by transparent triangles
-    if (vertexCol.w < 0.2)
+    if (vertexCol.a < 0.2)
         discard;
 #endif
 
 
 #if HEAT_RENDER_MODE != 1
-    // Apply decay
-    float originalLightness = dot(vec3(1.0/3.0), vertexCol.xyz);
-    vec3 decayColor = mix(vec3(ROT_GREEN_COLOR), vec3(ROT_BROWN_COLOR), originalLightness);
-    vec3 fragColour = mix(decayColor, vertexCol.xyz, vertexAttributes.w);
+
+    // Apply decay:
+    //  Rust > AlgaeGrowth > Rot
+
+    float originalLuminosity = dot(vec3(0.299, 0.587, 0.114), vertexCol.rgb);
+
+    vec3 fragColour = mix(vec3(ROT_COLOR), vertexCol.rgb, vertexAttributes1.w);
+    fragColour = mix(vec3(ALGAE_GROWTH_COLOR), fragColour, sqrt(vertexAttributes2.y));
+    fragColour = mix(vec3(RUST_COLOR) * (1.0 - (1.0 - originalLuminosity) * 0.4), fragColour, vertexAttributes2.x);
 
     // Apply point water
 #ifdef FOR_LINES
-    float vertexWater = max(vertexAttributes.y, 0.0); // Bug on Intel UHD cards: line primitives interpolate water value to below zero
+    float vertexWater = max(vertexAttributes1.y, 0.0); // Bug on Intel UHD cards: line primitives interpolate water value to below zero
 #else
-    float vertexWater = vertexAttributes.y;
+    float vertexWater = vertexAttributes1.y;
 #endif
     float vertexColorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     fragColour = mix(fragColour, paramWaterColor, vertexColorWetness);
 
     // Complement missing ambient light with point's light
-    float effectiveAmbientLightIntensity = mix(vertexAttributes.x, 1.0, paramEffectiveAmbientLightIntensity);
+    float effectiveAmbientLightIntensity = mix(vertexAttributes1.x, 1.0, paramEffectiveAmbientLightIntensity);
 
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
@@ -141,11 +150,11 @@ void main()
             vertexWorldY,
             paramOceanDepthDarkeningRate);
 
-        // Apply depth darkening - which is removed by lamp tool and electric lamp
+        // Apply depth darkening - which is removed by lamp tool and electric lamp (point's light)
         fragColour = mix(
             fragColour,
             vec3(0.),
-            darkeningFactor * (1.0 - lampToolIntensity) * (1.0 - vertexAttributes.x) * paramShipDepthDarkeningSensitivity);
+            darkeningFactor * (1.0 - lampToolIntensity) * (1.0 - vertexAttributes1.x) * paramShipDepthDarkeningSensitivity);
     }
 
     // Apply ambient light, with moonlight becoming darker (cheaply) with depth
@@ -167,16 +176,15 @@ void main()
     // Heat Overlay
 
     // Get heat color
-    vec3 heatColor = get_heat_color(vertexAttributes.z, paramHeatShift);
+    vec3 heatColor = get_heat_color(vertexAttributes1.z, paramHeatShift);
 
     // Overwrite fragment color with heat color
     vec3 fragColour = heatColor;
 #elif HEAT_RENDER_MODE == 2
-
     // Incandescence
 
     // Get heat color
-    vec3 heatColor = get_heat_color(vertexAttributes.z, paramHeatShift);
+    vec3 heatColor = get_heat_color(vertexAttributes1.z, paramHeatShift);
 
     // Screen-blend fragment color with heat color
     vec3 one = vec3(1.0);
@@ -185,8 +193,8 @@ void main()
 #error Unrecognized value for HEAT_RENDER_MODE
 #endif
     
-    // Apply electric lamp color
-    fragColour = mix(fragColour, paramLampLightColor, vertexAttributes.x);
+    // Apply electric lamp color (point's light)
+    fragColour = mix(fragColour, paramLampLightColor, vertexAttributes1.x);
 
     // Make final color, using original vertex's alpha
     gl_FragColor = vec4(fragColour, vertexCol.w);

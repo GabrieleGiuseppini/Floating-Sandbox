@@ -55,6 +55,18 @@ struct IGameControllerSettingsOptions
     virtual float GetMinStaticPressureForceAdjustment() const = 0;
     virtual float GetMaxStaticPressureForceAdjustment() const = 0;
 
+    virtual float GetMinLiftForceAdjustment() const = 0;
+    virtual float GetMaxLiftForceAdjustment() const = 0;
+
+    virtual float GetMinRustAcceler8r() const = 0;
+    virtual float GetMaxRustAcceler8r() const = 0;
+
+    virtual float GetMinRustWeaknessAdjustment() const = 0;
+    virtual float GetMaxRustWeaknessAdjustment() const = 0;
+
+    virtual float GetMinAlgaeGrowthAcceler8r() const = 0;
+    virtual float GetMaxAlgaeGrowthAcceler8r() const = 0;
+
     // Air
 
     virtual float GetMinAirDensityAdjustment() const = 0;
@@ -324,8 +336,8 @@ struct IGameControllerSettingsOptions
     virtual float GetMinBlastToolForceAdjustment() const = 0;
     virtual float GetMaxBlastToolForceAdjustment() const = 0;
 
-    virtual float GetMinScrubRotToolRadius() const = 0;
-    virtual float GetMaxScrubRotToolRadius() const = 0;
+    virtual float GetMinScrubRustToolRadius() const = 0;
+    virtual float GetMaxScrubRustToolRadius() const = 0;
 
     virtual float GetMinWindMakerToolWindSpeed() const = 0;
     virtual float GetMaxWindMakerToolWindSpeed() const = 0;

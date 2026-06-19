@@ -207,6 +207,28 @@ public:
     };
 
     /*
+     * Decay dynamics
+     */
+
+#pragma pack(push, 1)
+    union DecayBufferType
+    {
+        struct DecayType
+        {
+            float Rot; // 1.0 -> 0.0 (completely rotten) -- from Combustion and Decay (water+underwater)
+            float Rust; // 1.0 -> 0.0 (completely rusted)
+            float AlgaeGrowth; // 1.0 -> 0.0 (completely overgrown)
+        } Decay;
+
+        vec3f _vec;
+
+        DecayBufferType()
+            : Decay({1.0f, 1.0f, 1.0f})
+        { }
+    };
+#pragma pack(pop)
+
+    /*
      * Packed ocean floor collision factors.
      */
     struct OceanFloorBedrockCollisionFactors
@@ -705,10 +727,13 @@ public:
         SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters)
         : ElementContainer(make_aligned_float_element_count(shipPointCount) + maxEphemeralParticleCount)
+        , mRawShipPointCount(shipPointCount)
+        , mAlignedShipPointCount(make_aligned_float_element_count(shipPointCount))
+        , mEphemeralPointCount(maxEphemeralParticleCount)
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
-        , mIsDamagedBuffer(mBufferElementCount, shipPointCount, false)
+        , mIsDamagedBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Materials
         , mMaterialsBuffer(mBufferElementCount, shipPointCount, Materials(nullptr, nullptr))
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
@@ -725,8 +750,8 @@ public:
         , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mFactoryStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mStressBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
-        , mAdditionalWeaknessBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mDecayBuffer(mAlignedShipPointCount, 0, DecayBufferType())
+        , mWeaknessBuffer(mAlignedShipPointCount, 0, 1.0f)
         , mPinningCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mOceanFloorBedrockCollisionFactorsBuffer(mBufferElementCount, shipPointCount, OceanFloorBedrockCollisionFactors(0.0f, 0.0f, 0.0f))
@@ -762,8 +787,6 @@ public:
         , mLightBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Wind dynamics
         , mMaterialWindReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        // Rust dynamics
-        , mMaterialRustReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Various interactions
         , mIsElectrifiedBuffer(mBufferElementCount, shipPointCount, false)
         // Ephemeral particles
@@ -793,14 +816,11 @@ public:
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
         , mIsColorBufferDirty(true)
         , mTextureCoordinatesBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mAlgaeGrowthPatternBuffer(mAlignedShipPointCount, mRawShipPointCount, 0.0f)
         , mIsTextureCoordinatesBufferDirty(true)
         //////////////////////////////////
         // Container
         //////////////////////////////////
-        , mRawShipPointCount(shipPointCount)
-        , mAlignedShipPointCount(make_aligned_float_element_count(shipPointCount))
-        , mEphemeralPointCount(maxEphemeralParticleCount)
-        //
         , mParentWorld(parentWorld)
         , mMaterialDatabase(materialDatabase)
         , mSimulationEventHandler(simulationEventDispatcher)
@@ -925,6 +945,7 @@ public:
         bool isStructurallyLeaking,
         rgbaColor const & color,
         vec2f const & textureCoordinates,
+        float algaeGrowthPattern,
         float randomNormalizedUniformFloat);
 
     void CreateEphemeralParticleAirBubble(
@@ -1146,12 +1167,17 @@ public:
 
     //
     // IsDamaged (i.e. whether it has been irrevocable modified, such as detached or
-    // set to leaking)
+    // set to leaking, spring or triangle lost)
     //
 
-    bool IsDamaged(ElementIndex springElementIndex) const
+    bool IsDamaged(ElementIndex pointElementIndex) const
     {
-        return mIsDamagedBuffer[springElementIndex];
+        return GetIsDamaged(pointElementIndex) != 0.0f;
+    }
+
+    float GetIsDamaged(ElementIndex pointElementIndex) const
+    {
+        return mIsDamagedBuffer[pointElementIndex];
     }
 
     //
@@ -1426,28 +1452,60 @@ public:
         mStressBuffer.fill(0.0f);
     }
 
-    float GetDecay(ElementIndex pointElementIndex) const
+    float GetRot(ElementIndex pointElementIndex) const
     {
-        return mDecayBuffer[pointElementIndex];
+        assert(!IsEphemeral(pointElementIndex));
+        return mDecayBuffer[pointElementIndex].Decay.Rot;
     }
 
-    void SetDecay(
+    void SetRot(
         ElementIndex pointElementIndex,
         float value)
     {
-        mDecayBuffer[pointElementIndex] = value;
+        assert(!IsEphemeral(pointElementIndex));
+        mDecayBuffer[pointElementIndex].Decay.Rot = value;
     }
 
-    float GetAdditionalWeakness(ElementIndex pointElementIndex) const
+    float GetRust(ElementIndex pointElementIndex) const
     {
-        return mAdditionalWeaknessBuffer[pointElementIndex];
+        assert(!IsEphemeral(pointElementIndex));
+        return mDecayBuffer[pointElementIndex].Decay.Rust;
     }
 
-    void SetAdditionalWeakness(
+    void SetRust(
         ElementIndex pointElementIndex,
         float value)
     {
-        mAdditionalWeaknessBuffer[pointElementIndex] = value;
+        assert(!IsEphemeral(pointElementIndex));
+        mDecayBuffer[pointElementIndex].Decay.Rust = value;
+    }
+
+    float GetAlgaeGrowth(ElementIndex pointElementIndex) const
+    {
+        assert(!IsEphemeral(pointElementIndex));
+        return mDecayBuffer[pointElementIndex].Decay.AlgaeGrowth;
+    }
+
+    void SetAlgaeGrowth(
+        ElementIndex pointElementIndex,
+        float value)
+    {
+        assert(!IsEphemeral(pointElementIndex));
+        mDecayBuffer[pointElementIndex].Decay.AlgaeGrowth = value;
+    }
+
+    float GetWeakness(ElementIndex pointElementIndex) const
+    {
+        assert(!IsEphemeral(pointElementIndex));
+        return mWeaknessBuffer[pointElementIndex];
+    }
+
+    void SetWeakness(
+        ElementIndex pointElementIndex,
+        float value)
+    {
+        assert(!IsEphemeral(pointElementIndex));
+        mWeaknessBuffer[pointElementIndex] = value;
     }
 
     bool IsPinned(ElementIndex pointElementIndex) const
@@ -1776,13 +1834,13 @@ public:
         }
 
         // Check if it's the first time we get damaged
-        if (!mIsDamagedBuffer[pointElementIndex])
+        if (mIsDamagedBuffer[pointElementIndex] == 0.0f)
         {
-            // Do damage
+            // Do damage (invoke handler, explode)
             InternalDoDamage(pointElementIndex, currentSimulationTime, simulationParameters);
 
             // Flag ourselves as damaged
-            mIsDamagedBuffer[pointElementIndex] = true;
+            mIsDamagedBuffer[pointElementIndex] = 1.0f;
         }
     }
 
@@ -1934,15 +1992,6 @@ public:
     }
 
     //
-    // Rust dynamics
-    //
-
-    float GetMaterialRustReceptivity(ElementIndex pointElementIndex) const
-    {
-        return mMaterialRustReceptivityBuffer[pointElementIndex];
-    }
-
-    //
     // Various interactions
     //
 
@@ -2071,6 +2120,8 @@ public:
         mConnectedTrianglesBuffer[pointElementIndex].ConnectTriangle(
             triangleElementIndex,
             isAtOwner);
+
+        // Restore will be invoked later
     }
 
     void DisconnectTriangle(
@@ -2303,6 +2354,12 @@ public:
         return mTextureCoordinatesBuffer[pointElementIndex];
     }
 
+    float GetAlgaeGrowthPattern(ElementIndex pointElementIndex) const
+    {
+        assert(!IsEphemeral(pointElementIndex));
+        return mAlgaeGrowthPatternBuffer[pointElementIndex];
+    }
+
     // For debugging
     void MarkColorBufferAsDirty()
     {
@@ -2461,14 +2518,21 @@ private:
 
 private:
 
+    // Count of ship points; these are followed by ephemeral points
+    ElementCount const mRawShipPointCount;
+    ElementCount const mAlignedShipPointCount;
+
+    // Count of ephemeral points
+    ElementCount const mEphemeralPointCount;
+
     //////////////////////////////////////////////////////////
     // Buffers
     //////////////////////////////////////////////////////////
 
     // Damage: true when the point has been irrevocably modified
-    // (such as detached or set to leaking); only a Restore will
+    // (such as detached or set to leaking, spring or triangle lost); only a Restore will
     // make things right again
-    Buffer<bool> mIsDamagedBuffer;
+    Buffer<float> mIsDamagedBuffer;
 
     // Materials
     Buffer<Materials> mMaterialsBuffer;
@@ -2490,8 +2554,8 @@ private:
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;
     Buffer<float> mFactoryStrengthBuffer; // Immutable
     Buffer<float> mStressBuffer; // -1.0 -> 1.0, only calculated (at springs) if rendering it
-    Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
-    Buffer<float> mAdditionalWeaknessBuffer;
+    Buffer<DecayBufferType> mDecayBuffer; // Only for non-ephemeral
+    Buffer<float> mWeaknessBuffer; // 1.0=default strength, 0.0=no strength; only for non-ephemeral
     Buffer<float> mPinningCoefficientBuffer; // 1.0: not pinned; 0.0f: pinned
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
     Buffer<OceanFloorBedrockCollisionFactors> mOceanFloorBedrockCollisionFactorsBuffer;
@@ -2567,12 +2631,6 @@ private:
     Buffer<float> mMaterialWindReceptivityBuffer;
 
     //
-    // Rust dynamics
-    //
-
-    Buffer<float> mMaterialRustReceptivityBuffer;
-
-    //
     // Various interactions
     //
 
@@ -2639,17 +2697,11 @@ private:
     bool mutable mIsColorBufferDirty;  // Whether or not non-ephemeral portion of buffer is dirty since last render upload
     Buffer<vec2f> mTextureCoordinatesBuffer;
     bool mutable mIsTextureCoordinatesBufferDirty; // Whether or not is dirty since last render upload
+    Buffer<float> mAlgaeGrowthPatternBuffer; // Only for non-ephemeral
 
     //////////////////////////////////////////////////////////
     // Container
     //////////////////////////////////////////////////////////
-
-    // Count of ship points; these are followed by ephemeral points
-    ElementCount const mRawShipPointCount;
-    ElementCount const mAlignedShipPointCount;
-
-    // Count of ephemeral points
-    ElementCount const mEphemeralPointCount;
 
     World & mParentWorld;
     MaterialDatabase const & mMaterialDatabase;

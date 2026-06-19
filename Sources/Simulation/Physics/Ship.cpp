@@ -34,25 +34,25 @@
 //
 // We have the following:
 // CombustionStateMachineSlow x 4
-// RotPoints x 4
+// DecayPoints x 4
 // SpringDecayAndTemperature x 4
 // UpdateSinking x 1
 
 static int constexpr CombustionStateMachineSlowStep1 = 2;
 static int constexpr SpringDecayAndTemperatureStep1 = 5;
-static int constexpr RotPointsStep1 = 8;
+static int constexpr DecayPointsStep1 = 8;
 static int constexpr CombustionStateMachineSlowStep2 = 11;
 static int constexpr SpringDecayAndTemperatureStep2 = 14;
-static int constexpr RotPointsStep2 = 17;
+static int constexpr DecayPointsStep2 = 17;
 static int constexpr UpdateSinkingStep = 18;
 static int constexpr CombustionStateMachineSlowStep3 = 20;
 static int constexpr SpringDecayAndTemperatureStep3 = 23;
-static int constexpr RotPointsStep3 = 26;
+static int constexpr DecayPointsStep3 = 26;
 static int constexpr CombustionStateMachineSlowStep4 = 29;
 static int constexpr SpringDecayAndTemperatureStep4 = 32;
-static int constexpr RotPointsStep4 = 35;
+static int constexpr DecayPointsStep4 = 35;
 
-static_assert(RotPointsStep4 < SimulationParameters::ParticleUpdateLowFrequencyPeriod);
+static_assert(DecayPointsStep4 < SimulationParameters::ParticleUpdateLowFrequencyPeriod);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -131,6 +131,10 @@ Ship::Ship(
     , mStaticPressureNetForceMagnitudeCount(0.0f)
     , mStaticPressureIterationsPercentagesSum(0.0f)
     , mStaticPressureIterationsCount(0.0f)
+    // Decay
+    , mCurrentRotAcceler8r(std::numeric_limits<float>::lowest())
+    , mCurrentRustAcceler8r(std::numeric_limits<float>::lowest())
+    , mCurrentAlgaeGrowthAcceler8r(std::numeric_limits<float>::lowest())
     // Render
     , mLastUploadedDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
@@ -404,7 +408,7 @@ void Ship::Update(
 
 
     ///////////////////////////////////////////////////////////////////
-    // Rot points
+    // Decay points
     ///////////////////////////////////////////////////////////////////
 
 #ifdef FS_PROFILE_SHIP_UPDATE
@@ -414,37 +418,37 @@ void Ship::Update(
     // - Inputs: Position, Water, IsLeaking
     // - Output: Decay
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep1, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(DecayPointsStep1, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
-        RotPoints(
+        DecayPoints(
             0, 4,
             currentSimulationTime,
             simulationParameters);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep2, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(DecayPointsStep2, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
-        RotPoints(
+        DecayPoints(
             1, 4,
             currentSimulationTime,
             simulationParameters);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep3, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(DecayPointsStep3, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
-        RotPoints(
+        DecayPoints(
             2, 4,
             currentSimulationTime,
             simulationParameters);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep4, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(DecayPointsStep4, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
-        RotPoints(
+        DecayPoints(
             3, 4,
             currentSimulationTime,
             simulationParameters);
     }
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const elapsedRotPoints = GameChronometer::Now() - startTimestamp1;
+    auto const elapsedDecayPoints = GameChronometer::Now() - startTimestamp1;
 #endif
 
     /////////////////////////////////////////////////////////////////
@@ -820,7 +824,7 @@ void Ship::Update(
 
     static std::chrono::microseconds springRelaxationTotal{0};
     static std::chrono::microseconds updateForStressTotal{0};
-    static std::chrono::microseconds rotPointsTotal{0};
+    static std::chrono::microseconds decayPointsTotal{0};
     static std::chrono::microseconds worldForcesTotal{0};
     static std::chrono::microseconds waterDynamicsTotal{0};
     static std::chrono::microseconds parallel1Total{0};
@@ -837,7 +841,7 @@ void Ship::Update(
 
     springRelaxationTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedSpringRelaxation);
     updateForStressTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedUpdateForStress);
-    rotPointsTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedRotPoints);
+    decayPointsTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedDecayPoints);
     worldForcesTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedWorldForces);
     waterDynamicsTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedWaterDynamics);
     parallel1Total += std::chrono::duration_cast<std::chrono::microseconds>(elapsedParallel1);
@@ -856,7 +860,7 @@ void Ship::Update(
     {
         LogMessage("*** Ship update: springRelax=", springRelaxationTotal.count() / profilingFrameCounter / 1000.0f,
                    " updateForStress=", updateForStressTotal.count() / profilingFrameCounter / 1000.0f,
-                   " rotPoints=", rotPointsTotal.count() / profilingFrameCounter / 1000.0f,
+                   " decayPoints=", decayPointsTotal.count() / profilingFrameCounter / 1000.0f,
                    " worldForces=", worldForcesTotal.count() / profilingFrameCounter / 1000.0f,
                    " waterDynamics=", waterDynamicsTotal.count() / profilingFrameCounter / 1000.0f,
                    " parallel1=", parallel1Total.count() / profilingFrameCounter / 1000.0f,
@@ -872,7 +876,7 @@ void Ship::Update(
 
         springRelaxationTotal = std::chrono::microseconds(0);
         updateForStressTotal = std::chrono::microseconds(0);
-        rotPointsTotal = std::chrono::microseconds(0);
+        decayPointsTotal = std::chrono::microseconds(0);
         worldForcesTotal = std::chrono::microseconds(0);
         waterDynamicsTotal = std::chrono::microseconds(0);
         parallel1Total = std::chrono::microseconds(0);
@@ -1522,6 +1526,23 @@ void Ship::ApplyWorldSurfaceForces(
     WaterSplash strongestWaterSplash;
 
     //
+    // Lift: Cl * rho * V^2 * A / 2
+    //
+    //  - Cl: from material
+    //  - Rho: from water/air (though we only use air density, as underwater lift would be massive)
+    //  - V: point velocity along edge, absolute (we pretend a double-profile wing, otherwise airplanes cannot fly in both flip directions)
+    //  - A: 400 square meter (calculated empirically)
+    //
+
+    float constexpr WingSurface = 400.0f;
+
+    float const liftForceFactor_Rho_A_Half_Adj =
+        effectiveAirDensity
+        * WingSurface
+        / 2.0f
+        * simulationParameters.LiftForceAdjustment;
+
+    //
     // Visit all frontiers
     //
 
@@ -1533,7 +1554,7 @@ void Ship::ApplyWorldSurfaceForces(
 
         auto & frontier = mFrontiers.GetFrontier(frontierId);
 
-        // We only apply velocity drag and displace water for *external* frontiers,
+        // We only apply velocity drag and lift, and displace water for *external* frontiers,
         // not for internal ones
         if (frontier.Type == FrontierType::External)
         {
@@ -1558,9 +1579,9 @@ void Ship::ApplyWorldSurfaceForces(
             size_t visitedPoints = 0;
 #endif
 
-            ElementIndex const visitStartEdgeIndex = thisFrontierEdge.NextEdgeIndex;
+            ElementIndex const edgeVisitStartEdgeIndex = thisFrontierEdge.NextEdgeIndex;
 
-            for (ElementIndex nextEdgeIndex = visitStartEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+            for (ElementIndex nextEdgeIndex = edgeVisitStartEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
             {
 
 #ifdef _DEBUG
@@ -1579,7 +1600,25 @@ void Ship::ApplyWorldSurfaceForces(
                 // Get point depth (positive at greater depths, negative over-water)
                 float const thisPointDepth = newCachedPointDepths[thisPointIndex];
 
+                // UW coefficient: 0.0 if point in air, 1.0 if under water, smooth in-between
+                float const uwCoefficient = Clamp(thisPointDepth, 0.0f, 1.0f);
+
+                // Get point velocity
                 vec2f const thisPointVelocity = mPoints.GetVelocity(thisPointIndex);
+
+                // Edge direction - calculated between p1 and p3
+                vec2f const edgeDir = (nextPointPosition - previousPointPosition).normalise();
+
+                // Magnitude of the edge velocity along the edge; positive when following
+                // frontier's CW order, zero when perpendicular to edge
+                float const edgeVelocityAlongEdge = thisPointVelocity.dot(edgeDir);
+
+                // Normal to edge - calculated between p1 and p3; points outside
+                vec2f const edgeNormal = edgeDir.to_perpendicular();
+
+                // Magnitude of the edge velocity along the edge normal; positive when pointing out,
+                // zero when parallel to edge
+                float const edgeVelocityAlongEdgeNormal = thisPointVelocity.dot(edgeNormal);
 
                 //
                 // Drag force
@@ -1600,13 +1639,6 @@ void Ship::ApplyWorldSurfaceForces(
                 // we have to cap the force to prevent velocity overcome.
                 //
 
-                // Normal to edge - calculated between p1 and p3; points outside
-                vec2f const edgeNormal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
-
-                // Magnitude of the edge velocity along the edge normal; positive when pointing out,
-                // zero when parallel to edge
-                float const edgeVelocityAlongEdgeNormal = thisPointVelocity.dot(edgeNormal);
-
                 // Cap it to the same direction as velocity, to avoid suction force
                 // (i.e. drag force attracting surface facing opposite of velocity)
                 float const edgeVelocityCapped = std::max(
@@ -1623,7 +1655,7 @@ void Ship::ApplyWorldSurfaceForces(
                 float const dragCoefficient = Mix(
                     airPressureDragCoefficient,
                     waterPressureDragCoefficient,
-                    Clamp(thisPointDepth, 0.0f, 1.0f));
+                    uwCoefficient);
 
                 // Calculate magnitude of drag force (opposite sign), capped by max drag force
                 //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
@@ -1819,11 +1851,29 @@ void Ship::ApplyWorldSurfaceForces(
                 }
 
                 //
+                // Lift: Cl * V^2 * (Rho * A / 2)
+                //
+
+                // Cap velocity as a proxy to cap lift force, to avoid massive lift forces that
+                // would makes structures explode when velocity is reached suddenly
+                float const edgeVelocityAlongEdgeSquareCapped = std::min(edgeVelocityAlongEdge * edgeVelocityAlongEdge, 30.0f * 30.0f);
+
+                float const liftForce =
+                    mPoints.GetStructuralMaterial(thisPointIndex).LiftCoefficient
+                    * edgeVelocityAlongEdgeSquareCapped
+                    * liftForceFactor_Rho_A_Half_Adj;
+
+                // Add force, towards the interior - we assume lift materials are placed on the bottom surface if we want an upward lift
+                mPoints.AddStaticForce(
+                    thisPointIndex,
+                    -edgeNormal * liftForce);
+
+                //
                 // Advance edge in the frontier visit
                 //
 
                 nextEdgeIndex = nextFrontierEdge.NextEdgeIndex;
-                if (nextEdgeIndex == visitStartEdgeIndex)
+                if (nextEdgeIndex == edgeVisitStartEdgeIndex)
                     break;
 
                 previousPointPosition = thisPointPosition;
@@ -3454,41 +3504,42 @@ void Ship::PropagateHeat(
 // Misc
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::RotPoints(
+void Ship::DecayPoints(
     ElementIndex partition,
     ElementIndex partitionCount,
     float /*currentSimulationTime*/,
     SimulationParameters const & simulationParameters)
 {
-    if (simulationParameters.RotAcceler8r == 0.0f)
-    {
-        // Disable rotting altogether
-        return;
-    }
-
     //
-    // Rotting is done with a recursive equation:
+    // Decaying is done with a recursive equation:
     //  decay(0) = 1.0
-    //  decay(n) = A * decay(n-1), with 0 < A < 1
+    //  decay(n) = a * decay(n-1), with 0 < a < 1
     //
-    // A (alpha): the smaller the alpha, the faster we rot.
+    // a (alpha): the smaller the alpha, the faster we decay.
     //
     // This converges to:
-    //  decay(n) = A^n
+    //  decay(n) = a^n
     //
-    // We want full decay (decay=1e-10) after Nf steps:
-    //  ZeroDecay = Af ^ Nf
+    // If at time N we want decay=Dn: a = Dn ^ (1/N)
+    //
+    // However, we use beta = 1 - alpha, so that our decay can take
+    // the form: decay(n) = (1-beta*enabler) * decay(n-1), allowing
+    // enabler to turn off decay when it's zero
     //
 
     //
-    // We want to calculate alpha(x) as 1 - beta*x, with x depending on the particle's state:
+    // Rot
+    //
+
+    //
+    // We want to calculate alpha as 1 - beta*x, with x depending on the particle's state:
     //      underwater not flooded: x_uw
     //      not underwater flooded: x_fl == 1.0 (so that we can use particle's water, clamped)
-    //      underwater and flooded: x_uw_fl
+    //      underwater and flooded: x_uw_fl == x_uw + x_fl
     //
     // Constraints: after 20 minutes (Ns rot steps) we want the following decays:
-    //      underwater not flooded: a_uw ^ Ns = 0.75 (little rusting)
-    //      underwater and flooded: a_uw_fl ^ Ns = 0.25 (severe rusting)
+    //      underwater not flooded: a_uw ^ Ns = 0.75 (little rotting)
+    //      underwater and flooded: a_uw_fl ^ Ns = 0.25 (severe rotting)
     //
     // Which leads to the following formulation for the constraints:
     //      alpha(x_uw) = a_uw (~= 0.99981643)
@@ -3496,45 +3547,213 @@ void Ship::RotPoints(
     //      alpha(0) = 1.0
     //
     // After some kung-fu we obtain:
-    //      beta = (1-alpha(x_uw)) / x_uw
-    //      x_uw = (1-a_uw)/(a_uw - a_uw_fl)
+    //      beta = (1-a_uw) / x_uw
+    //      x_uw = (1-a_uw) / (a_uw - a_uw_fl)
     //
 
-    float constexpr Ns = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+    if (simulationParameters.RotAcceler8r != mCurrentRotAcceler8r)
+    {
+        // Rot
 
-    float const a_uw = simulationParameters.RotAcceler8r != 0.0f
-        ? powf(0.75f, simulationParameters.RotAcceler8r / Ns) // a_uw = 0.75 ^ (1/Ns)
-        : 1.0f;
+        if (simulationParameters.RotAcceler8r >= 0.01f)
+        {
+            float constexpr Ns = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
-    float const a_uw_fl = simulationParameters.RotAcceler8r != 0.0f
-        ? powf(0.25f, simulationParameters.RotAcceler8r / Ns) // a_uw = 0.25 ^ (1/Ns)
-        : 1.0f;
+            float const a_uw_rot = powf(0.75f, simulationParameters.RotAcceler8r / Ns); // a_uw = 0.75 ^ (1/Ns)
+            float const a_uw_fl_rot = powf(0.25f, simulationParameters.RotAcceler8r / Ns); // a_uw_fl = 0.25 ^ (1/Ns)
 
-    float const x_uw = (1.0f - a_uw) / (a_uw - a_uw_fl);
-    float const beta = (1.0f - a_uw) / x_uw;
+            mDecayRotXUw = (1.0f - a_uw_rot) / (a_uw_rot - a_uw_fl_rot);
+            mDecayRotBeta = (1.0f - a_uw_rot) / mDecayRotXUw;
+        }
+        else
+        {
+            mDecayRotXUw = 0.0f;
+            mDecayRotBeta = 0.0f;
+        }
 
+        // Water solubility
+
+        float constexpr NsWaterSolubility = 0.76782f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+
+        mDecayWaterSolubilityAlpha = simulationParameters.RotAcceler8r != 0.0f
+            ? powf(0.1f, simulationParameters.RotAcceler8r / NsWaterSolubility)
+            : 1.0f;
+
+        mCurrentRotAcceler8r = simulationParameters.RotAcceler8r;
+    }
+
+    float const x_uw_rot = mDecayRotXUw;
+    float const beta_rot = mDecayRotBeta;
+
+    //
+    // Rust
+    //
+
+    if (simulationParameters.RustAcceler8r != mCurrentRustAcceler8r)
+    {
+        if (simulationParameters.RustAcceler8r != 0.0f)
+        {
+            float constexpr NsDamage = 7.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            mDecayRustDamageDryAlpha = std::max(powf(0.50f, simulationParameters.RustAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            mDecayRustDamageWetAlpha = std::max(powf(0.0009765625f, simulationParameters.RustAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+
+            float constexpr NsNeighbors = 1.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            mDecayRustNeighborsDryAlpha = std::max(powf(0.25f, simulationParameters.RustAcceler8r / NsNeighbors), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            mDecayRustNeighborsWetAlpha = std::max(powf(0.01f, simulationParameters.RustAcceler8r / NsNeighbors), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+        }
+        else
+        {
+            mDecayRustDamageDryAlpha = 1.0f;
+            mDecayRustDamageWetAlpha = 1.0f;
+            mDecayRustNeighborsDryAlpha = 1.0f;
+            mDecayRustNeighborsWetAlpha = 1.0f;
+        }
+
+        mCurrentRustAcceler8r = simulationParameters.RustAcceler8r;
+    }
+
+    float const a_rust_damage_dry = mDecayRustDamageDryAlpha;
+    float const a_rust_damage_wet = mDecayRustDamageWetAlpha;
+    float const a_rust_neighbors_dry = mDecayRustNeighborsDryAlpha;
+    float const a_rust_neighbors_wet = mDecayRustNeighborsWetAlpha;
+
+    // Adj = 0 => 0.0
+    // Adj = 1 => Base
+    // Adj = Max => 1.0
+    static_assert(SimulationParameters::MaxRustWeaknessAdjustment > 1.0f);
+    float constexpr BaseRustWeakness = 0.025f;
+    float const rustWeaknessFactor = (simulationParameters.RustWeaknessAdjustment <= 1.0f)
+        ? BaseRustWeakness * simulationParameters.RustWeaknessAdjustment
+        : BaseRustWeakness + (1.0f - BaseRustWeakness) * (simulationParameters.RustWeaknessAdjustment - 1.0f) / (SimulationParameters::MaxRustWeaknessAdjustment - 1.0f);
+
+    //
+    // Algae growth
+    //
+
+    if (simulationParameters.AlgaeGrowthAcceler8r != mCurrentAlgaeGrowthAcceler8r)
+    {
+        float constexpr Ns = 30.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+
+        mDecayAlgaeGrowthAlpha = simulationParameters.AlgaeGrowthAcceler8r != 0.0f
+            ? powf(0.25f, simulationParameters.AlgaeGrowthAcceler8r / Ns)
+            : 1.0f;
+
+        mCurrentAlgaeGrowthAcceler8r = simulationParameters.AlgaeGrowthAcceler8r;
+    }
+
+    float const a_algeGrowth = mDecayAlgaeGrowthAlpha;
+
+    //
+    // Water solubility
+    //
+
+    float const b_waterSolubility = 1.0f - mDecayWaterSolubilityAlpha;
+
+    //
     // Process all non-ephemeral points in this partition - no real reason
-    // to exclude ephemerals, other than they're not expected to rot
+    // to exclude ephemerals, other than they're not expected to decay
+    //
+
     ElementCount const partitionSize = (mPoints.GetRawShipPointCount() / partitionCount) + ((mPoints.GetRawShipPointCount() % partitionCount) ? 1 : 0);
     ElementCount const startPointIndex = partition * partitionSize;
     ElementCount const endPointIndex = std::min(startPointIndex + partitionSize, mPoints.GetRawShipPointCount());
     for (ElementIndex p = startPointIndex; p < endPointIndex; ++p)
     {
-        float x =
-            (mPoints.IsCachedUnderwater(p) ? x_uw : 0.0f) // x_uw
-            + std::min(mPoints.GetWater(p), 1.0f); // x_fl
+        float constexpr UnderwaterInterfaceWidth = 2.0f;
+        float const isUnderwater = Clamp((mPoints.GetCachedDepth(p) + UnderwaterInterfaceWidth) / UnderwaterInterfaceWidth, 0.0f, 1.0f);
+        float const water = std::min(mPoints.GetWater(p), 1.0f);
+        float const isWet = std::min(isUnderwater + water, 1.0f);
+        float const isDamaged = mPoints.GetIsDamaged(p);
+        auto const & structuralMaterial = mPoints.GetStructuralMaterial(p);
 
-        // Adjust with leaking: if leaking and subject to rusting, then rusts faster
-        x += mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak * x * x_uw;
+        // The alpha we'll use for the weakness, resultant of all the weakening decay processes
+        float alphaWeakness = 1.0f;
 
-        // Adjust with material's rust receptivity
-        x *= mPoints.GetMaterialRustReceptivity(p);
+        //
+        // Rot
+        //
+
+        float x_rot =
+            isUnderwater * x_uw_rot // x_uw
+            + water; // x_fl
+
+        // Adjust with damage: if damaged and subject to rotting, then rots faster
+        x_rot += isDamaged * x_rot * x_uw_rot;
+
+        // Adjust with material's rot receptivity
+        x_rot *= structuralMaterial.RotReceptivity;
 
         // Calculate alpha
-        float const alpha = std::max(1.0f - beta * x, 0.0f);
+        float const alpha_rot = std::max(1.0f - beta_rot * x_rot, 0.0f);
 
-        // Decay
-        mPoints.SetDecay(p, mPoints.GetDecay(p) * alpha);
+        // Rot
+        mPoints.SetRot(p, mPoints.GetRot(p) * alpha_rot);
+        alphaWeakness = std::min(alphaWeakness, alpha_rot);
+
+        //
+        // Rust
+        //
+
+        // 1) Rust if damaged; more so if wet
+
+        float const betaRustDamage = (1.0f - Mix(a_rust_damage_dry, a_rust_damage_wet, isWet)) * isDamaged;
+
+        // 2) Rust by neighbors, imprinting pattern via random personality seed
+
+        float avgNeighborsRust = 0.0f;
+        auto const nCs = mPoints.GetConnectedSprings(p).ConnectedSprings.size();
+        if (nCs > 0)
+        {
+            for (auto const & cs : mPoints.GetConnectedSprings(p).ConnectedSprings)
+            {
+                avgNeighborsRust += 1.0f - mPoints.GetRust(cs.OtherEndpointIndex);
+            }
+
+            avgNeighborsRust /= static_cast<float>(nCs);
+        }
+
+        float const betaRustNeighbors =
+            (1.0f - Mix(a_rust_neighbors_dry, a_rust_neighbors_wet, isWet)) // Rusts faster when wet
+            * avgNeighborsRust
+            * (1.0f - 0.982f * mPoints.GetRandomNormalizedUniformPersonalitySeed(p)); // Allow zero's to rust
+
+        // Combine
+
+        float const betaRust = (betaRustDamage + betaRustNeighbors) * structuralMaterial.RustReceptivity;
+        assert(betaRust >= 0.0f && betaRust <= 1.0f);
+
+        // Rust
+        mPoints.SetRust(p, mPoints.GetRust(p) * (1.0f - betaRust));
+        alphaWeakness = std::min(alphaWeakness, 1.0f - betaRust * rustWeaknessFactor);
+
+        //
+        // Algae growth
+        //
+
+        // Growth if underwater
+
+        float const betaAlgaeGrowthUnderwater = (1.0f - a_algeGrowth) * isUnderwater;
+
+        // Grow towards the pattern
+        float const currentAlgaeGrowth = mPoints.GetAlgaeGrowth(p);
+        mPoints.SetAlgaeGrowth(p, currentAlgaeGrowth + (mPoints.GetAlgaeGrowthPattern(p) - currentAlgaeGrowth) * betaAlgaeGrowthUnderwater);
+
+        //
+        // Water solubility
+        //
+
+        float const betaSolubility =
+            b_waterSolubility
+            * isWet
+            * structuralMaterial.WaterSolubility;
+
+        alphaWeakness = std::min(alphaWeakness, 1.0f - betaSolubility);
+
+        //
+        // Weakness
+        //
+
+        mPoints.SetWeakness(p, mPoints.GetWeakness(p) * alphaWeakness);
     }
 }
 
@@ -3774,7 +3993,10 @@ void Ship::SetAndPropagateResultantPointHullness(
     }
 }
 
-void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
+void Ship::DestroyConnectedTriangles(
+    ElementIndex pointElementIndex,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
 {
     //
     // Destroy all triangles connected to the point
@@ -3786,7 +4008,7 @@ void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
     while (!connectedTriangles.empty())
     {
         assert(!mTriangles.IsDeleted(connectedTriangles.back()));
-        mTriangles.Destroy(connectedTriangles.back());
+        mTriangles.Destroy(connectedTriangles.back(), currentSimulationTime, simulationParameters);
     }
 
     assert(mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles.empty());
@@ -3794,7 +4016,9 @@ void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
 
 void Ship::DestroyConnectedTriangles(
     ElementIndex pointAElementIndex,
-    ElementIndex pointBElementIndex)
+    ElementIndex pointBElementIndex,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
 {
     //
     // Destroy the triangles that have an edge among the two points
@@ -3814,7 +4038,7 @@ void Ship::DestroyConnectedTriangles(
                 || mTriangles.GetPointCIndex(triangleIndex) == pointBElementIndex)
             {
                 // Erase it
-                mTriangles.Destroy(triangleIndex);
+                mTriangles.Destroy(triangleIndex, currentSimulationTime, simulationParameters);
             }
 
             if (t == 0)
@@ -4473,13 +4697,13 @@ void Ship::HandleSpringDestroy(
     if (destroyAllTriangles)
     {
         // We destroy all triangles connected to each endpoint
-        DestroyConnectedTriangles(pointAIndex);
-        DestroyConnectedTriangles(pointBIndex);
+        DestroyConnectedTriangles(pointAIndex, currentSimulationTime, simulationParameters);
+        DestroyConnectedTriangles(pointBIndex, currentSimulationTime, simulationParameters);
     }
     else
     {
         // We destroy only triangles connected to both endpoints
-        DestroyConnectedTriangles(pointAIndex, pointBIndex);
+        DestroyConnectedTriangles(pointAIndex, pointBIndex, currentSimulationTime, simulationParameters);
     }
 
 
@@ -4606,7 +4830,10 @@ void Ship::HandleSpringRestore(
     }
 }
 
-void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
+void Ship::HandleTriangleDestroy(
+    ElementIndex triangleElementIndex,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
 {
     //
     // Remove triangle from other elements
@@ -4624,10 +4851,13 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
         mSprings.RemoveCoveringTriangle(coveredSpringIndex);
     }
 
-    // Disconnect triangle from its endpoints
+    // Disconnect triangle from its endpoints, and marking the points as damaged
     mPoints.DisconnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
+    mPoints.Damage(mTriangles.GetPointAIndex(triangleElementIndex), currentSimulationTime, simulationParameters);
     mPoints.DisconnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+    mPoints.Damage(mTriangles.GetPointBIndex(triangleElementIndex), currentSimulationTime, simulationParameters);
     mPoints.DisconnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+    mPoints.Damage(mTriangles.GetPointCIndex(triangleElementIndex), currentSimulationTime, simulationParameters);
 
     //
     // Maintain frontier
@@ -5024,6 +5254,8 @@ void Ship::HandleElectricSpark(
     float currentSimulationTime,
     SimulationParameters const & simulationParameters)
 {
+    assert(!mPoints.IsEphemeral(pointElementIndex));
+
     //
     // Electrification
     //
@@ -5058,9 +5290,9 @@ void Ship::HandleElectricSpark(
         (simulationParameters.IsUltraViolentMode ? 0.99f : 0.9995f)
         + (1.0f - strength) * 0.0003f;
 
-    mPoints.SetDecay(
+    mPoints.SetRot(
         pointElementIndex,
-        mPoints.GetDecay(pointElementIndex) * rotCoefficient);
+        mPoints.GetRot(pointElementIndex) * rotCoefficient);
 
     //
     // Electrical elements

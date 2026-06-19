@@ -2,11 +2,16 @@
 - Added water splashes and foam
 - Quadrupled the number of ephemeral particles *and* optimized their integration workflow, achieving zero net CPU cost (!) and allowing for far more ephemerals (bubble, smoke, dust clouds, splashes, etc.)
 - Improved hydrostatic pressure simulation - less crazy behaviors at great depths
-- Improved "wild mast" issue, where masts on the ocean floor would pick up silt clouds
+- Added new materials:
+	- Soft Cloth
+	- Medium Lamps
+	- Fleeting Smoke Emitter - emits short-lived smoke
+	- Aerodynamic Iron - simulates lift and allows planes to climb
+- Improved "wild mast" issue, where masts on the ocean floor would pick up silt clouds from nowhere
 - Rendering improvements:
 	- Enabled multi-sampling, reducing aliasing around the ship's structure and landmasses
 	- Redesigned ocean floor tessellation, reducing rendering artifacts
-	- Reduced baseline GPU bandwidth requirements - we now upload less data to the GPU!
+	- Reduced baseline GPU bandwidth requirements - we now upload half of the data to the GPU!
 - Fixed a glitch with ocean waves flattening out on the right side of the screen
 - Fixed a crash when exiting the game on systems with certain nVidia cards
 - Added 1 new ship

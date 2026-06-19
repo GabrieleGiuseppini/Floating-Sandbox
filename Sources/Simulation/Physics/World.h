@@ -379,7 +379,7 @@ public:
         vec2f const & endPos,
         float radius);
 
-    bool RotThrough(
+    bool RustThrough(
         vec2f const & startPos,
         vec2f const & endPos,
         float radius,
@@ -520,7 +520,9 @@ public:
         vec2f const & corner1,
         vec2f const & corner2);
 
-    bool DestroyTriangle(GlobalElementId triangleId);
+    bool DestroyTriangle(
+        GlobalElementId triangleId,
+        SimulationParameters const & simulationParameters);
 
     bool RestoreTriangle(GlobalElementId triangleId);
 

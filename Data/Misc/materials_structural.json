@@ -31,6 +31,7 @@
                 "sub_category": "Iron Hull",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
             "stiffness": 1.0,
@@ -73,6 +74,7 @@
                 "sub_category": "Solid Iron Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
             "stiffness": 1.0,
@@ -115,6 +117,7 @@
                 "sub_category": "Light Iron Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
             "stiffness": 1.0,
@@ -157,6 +160,7 @@
                 "sub_category": "Solid Iron I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
             "stiffness": 1.0,
@@ -199,6 +203,7 @@
                 "sub_category": "Light Iron I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
             "stiffness": 1.0,
@@ -241,11 +246,188 @@
                 "sub_category": "Low-Grade Iron",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
             "stiffness": 1.0,
             "strength": 0.02,
             "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#474852",
+                "#8B1602",
+                "#E2D74F",
+                "#876A02",
+                "#4D8302",
+                "#077278",
+                "#223A63",
+                "#8D0882",
+                "#AF5702",
+                "#181913"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1783.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 7950
+            },
+            "melting_temperature": 1588.15,
+            "name": "Water-Soluble Iron Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Water-Soluble Iron Hull",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 1.0,
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.055,
+            "texture_name": "metal_riveted_1_small",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "water_solubility": 0.5,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#878992",
+                "#CB5742",
+                "#FFFF8F",
+                "#C7AB42",
+                "#8DC442",
+                "#47B3B8",
+                "#627BA3",
+                "#CD49C2",
+                "#EF9842",
+                "#585A53"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1783.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7850
+            },
+            "melting_temperature": 1588.15,
+            "name": "Water-Soluble Iron I-Beam",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Water-Soluble Iron I-Beam",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 1.0,
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.051,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "water_solubility": 0.5,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#1D1E1F",
+                "#610000",
+                "#B8AD1C",
+                "#5D4000",
+                "#235900",
+                "#004845",
+                "#001030",
+                "#63004F",
+                "#852D00",
+                "#020103"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1783.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7850
+            },
+            "melting_temperature": 1588.15,
+            "name": "Water-Soluble Low-Grade Iron",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Water-Soluble Low-Grade Iron",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.9,
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.02,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "water_solubility": 1.0,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#494959",
+                "#8D2709",
+                "#E4E856",
+                "#897B09",
+                "#4F9409",
+                "#09837F",
+                "#244B6A",
+                "#8F1989",
+                "#B16809",
+                "#1A2A1A"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1783.15,
+            "is_hull": true,
+            "lift_coefficient": 1.0,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 7950
+            },
+            "melting_temperature": 1588.15,
+            "name": "Aerodynamic Iron Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Aerodynamic Iron Hull",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.9,
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.055,
+            "texture_name": "metal_riveted_1_small",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
             "water_diffusion_speed": 0.5,
@@ -283,6 +465,7 @@
                 "sub_category": "Steel Hull",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.5,
             "sound_type": "Metal",
             "specific_heat": 490.0,
             "stiffness": 1.0,
@@ -325,6 +508,7 @@
                 "sub_category": "Solid Steel Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.5,
             "sound_type": "Metal",
             "specific_heat": 490.0,
             "stiffness": 1.0,
@@ -367,6 +551,7 @@
                 "sub_category": "Light Steel Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.5,
             "sound_type": "Metal",
             "specific_heat": 490.0,
             "stiffness": 1.0,
@@ -409,6 +594,7 @@
                 "sub_category": "Solid Steel I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.5,
             "sound_type": "Metal",
             "specific_heat": 490.0,
             "stiffness": 1.0,
@@ -452,6 +638,7 @@
                 "sub_category": "Light Steel I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.5,
             "sound_type": "Metal",
             "specific_heat": 490.0,
             "stiffness": 1.0,
@@ -494,6 +681,7 @@
                 "sub_category": "Low-Grade Steel",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.7,
             "sound_type": "Metal",
             "specific_heat": 490.0,
             "stiffness": 1.0,
@@ -536,6 +724,7 @@
                 "sub_category": "Titanium Hull",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
             "stiffness": 1.0,
@@ -578,6 +767,7 @@
                 "sub_category": "Solid Titanium Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
             "stiffness": 1.0,
@@ -620,6 +810,7 @@
                 "sub_category": "Light Titanium Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
             "stiffness": 1.0,
@@ -662,6 +853,7 @@
                 "sub_category": "Solid Titanium I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
             "stiffness": 1.0,
@@ -704,6 +896,7 @@
                 "sub_category": "Light Titanium I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
             "stiffness": 1.0,
@@ -746,6 +939,7 @@
                 "sub_category": "Low-Grade Titanium",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
             "stiffness": 1.0,
@@ -788,6 +982,7 @@
                 "sub_category": "Aluminium Hull",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
             "stiffness": 1.0,
@@ -830,6 +1025,7 @@
                 "sub_category": "Solid Aluminium Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
             "stiffness": 1.0,
@@ -872,6 +1068,7 @@
                 "sub_category": "Light Aluminium Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
             "stiffness": 1.0,
@@ -914,6 +1111,7 @@
                 "sub_category": "Solid Aluminium I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
             "stiffness": 1.0,
@@ -956,6 +1154,7 @@
                 "sub_category": "Light Aluminium I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
             "stiffness": 1.0,
@@ -998,11 +1197,144 @@
                 "sub_category": "Low-Grade Aluminium",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 1.0,
             "sound_type": "Metal",
             "specific_heat": 897.0,
             "stiffness": 1.0,
             "strength": 0.027,
             "texture_name": "metal_riveted_2",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#E9E8E8",
+                "#FFB799",
+                "#FFFFE6",
+                "#FFFF99",
+                "#EFFF98",
+                "#A9FFFF",
+                "#C4DAF9",
+                "#FFA9FF",
+                "#FFF899",
+                "#BAB9A9"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Water-Soluble Aluminium Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Water-Soluble Aluminium Hull",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.9,
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "texture_name": "metal_riveted_2_small",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "water_solubility": 0.5,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#EFEDEE",
+                "#FFBB9E",
+                "#FFFFEB",
+                "#FFFF9E",
+                "#F5FF9E",
+                "#AFFFFF",
+                "#CADFFF",
+                "#FFADFF",
+                "#FFFC9E",
+                "#C0BEAF"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Water-Soluble Aluminium I-Beam",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Water-Soluble Aluminium I-Beam",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.9,
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.09,
+            "texture_name": "metal_riveted_2",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "water_solubility": 0.5,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#E1E3E4",
+                "#FFB194",
+                "#FFFFE1",
+                "#FFFF94",
+                "#E7FF94",
+                "#A1FFFF",
+                "#BCD5F5",
+                "#FFA3FF",
+                "#FFF294",
+                "#B2B4A5"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "lift_coefficient": 1.0,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Aerodynamic Aluminium Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Aerodynamic Aluminium Hull",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.9,
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "texture_name": "metal_riveted_2_small",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
             "water_diffusion_speed": 0.5,
@@ -1641,6 +1973,47 @@
         {
             "buoyancy_volume_fill": 0.05,
             "color_key": [
+                "#D5D5D5",
+                "#FFA385",
+                "#FFFFD2",
+                "#FFF785",
+                "#DBFF85",
+                "#95FFFB",
+                "#B0C7E6",
+                "#FF95FF",
+                "#FFE485",
+                "#A6A696"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 393.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0215,
+                "nominal_mass": 30
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Soft Cloth",
+            "palette_coordinates": {
+                "category": "Cloth",
+                "sub_category": "Soft Cloth",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Cloth",
+            "specific_heat": 1400.0,
+            "stiffness": 0.0005,
+            "strength": 4.9,
+            "texture_name": "cloth_1",
+            "thermal_conductivity": 0.04,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.5,
+            "wind_receptivity": 0.4
+        },
+        {
+            "buoyancy_volume_fill": 0.05,
+            "color_key": [
                 "#DADADA",
                 "#FFA88A",
                 "#FFFFD7",
@@ -2016,6 +2389,7 @@
                 "sub_category": "Aluminium Sheet Hull",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
             "stiffness": 0.5,
@@ -2058,6 +2432,7 @@
                 "sub_category": "Aluminium Sheet",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
             "stiffness": 0.5,
@@ -2100,6 +2475,7 @@
                 "sub_category": "Tungsten Hull",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.2,
             "sound_type": "Metal",
             "specific_heat": 134.0,
             "stiffness": 1.0,
@@ -2142,6 +2518,7 @@
                 "sub_category": "Tungsten",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.2,
             "sound_type": "Metal",
             "specific_heat": 134.0,
             "stiffness": 1.0,
@@ -2184,7 +2561,6 @@
                 "sub_category": "Cardboard Hull",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 10.0,
             "sound_type": "Wood",
             "specific_heat": 1336.0,
             "stiffness": 1.0,
@@ -2194,6 +2570,7 @@
             "thermal_expansion_coefficient": 0.0043,
             "water_diffusion_speed": 0.5,
             "water_retention": 0.2,
+            "water_solubility": 0.1,
             "wind_receptivity": 0.15
         },
         {
@@ -2227,7 +2604,6 @@
                 "sub_category": "Cardboard",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 10.0,
             "sound_type": "Wood",
             "specific_heat": 1336.0,
             "stiffness": 1.0,
@@ -2237,6 +2613,7 @@
             "thermal_expansion_coefficient": 0.00434,
             "water_diffusion_speed": 0.55,
             "water_retention": 0.75,
+            "water_solubility": 0.15,
             "wind_receptivity": 0.15
         },
         {
@@ -2260,7 +2637,6 @@
                 "sub_category_ordinal": 0
             },
             "render_color": "#F2F5F5",
-            "rust_receptivity": 10.0,
             "sound_type": "Cloth",
             "specific_heat": 1400.0,
             "stiffness": 1.0,
@@ -2270,6 +2646,7 @@
             "thermal_expansion_coefficient": 0.0035,
             "water_diffusion_speed": 0.65,
             "water_retention": 0.85,
+            "water_solubility": 0.1,
             "wind_receptivity": 0.15
         },
         {
@@ -2293,7 +2670,6 @@
                 "sub_category_ordinal": 0
             },
             "render_color": "#FCFAFA",
-            "rust_receptivity": 10.0,
             "sound_type": "Cloth",
             "specific_heat": 1400.0,
             "stiffness": 1.0,
@@ -2303,6 +2679,7 @@
             "thermal_expansion_coefficient": 0.0035,
             "water_diffusion_speed": 0.65,
             "water_retention": 0.85,
+            "water_solubility": 0.15,
             "wind_receptivity": 0.15
         },
         {
@@ -2336,6 +2713,7 @@
                 "sub_category": "Double-Bottom Steel",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.5,
             "sound_type": "Metal",
             "specific_heat": 490.0,
             "stiffness": 1.0,
@@ -2378,7 +2756,7 @@
                 "sub_category": "Stainless Steel Hull",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0,
+            "rot_receptivity": 0.1,
             "sound_type": "Metal",
             "specific_heat": 490.0,
             "stiffness": 1.0,
@@ -2421,7 +2799,7 @@
                 "sub_category": "Stainless Steel",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0,
+            "rot_receptivity": 0.1,
             "sound_type": "Metal",
             "specific_heat": 490.0,
             "stiffness": 1.0,
@@ -2464,6 +2842,7 @@
                 "sub_category": "Double-Bottom Titanium",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
             "stiffness": 1.0,
@@ -2506,6 +2885,7 @@
                 "sub_category": "Double-Bottom Iron",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
             "stiffness": 1.0,
@@ -2549,6 +2929,7 @@
                 "sub_category": "Nails",
                 "sub_category_ordinal": 0
             },
+            "rust_receptivity": 0.95,
             "sound_type": "Metal",
             "specific_heat": 228.0,
             "stiffness": 1.0,
@@ -2756,7 +3137,7 @@
                 "sub_category": "Rubber Hull Soft",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0,
+            "rot_receptivity": 0.0,
             "sound_type": "Rubber",
             "specific_heat": 1250.0,
             "stiffness": 0.5,
@@ -2792,7 +3173,7 @@
                 "sub_category": "Rubber Soft",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0,
+            "rot_receptivity": 0.0,
             "sound_type": "Rubber",
             "specific_heat": 1250.0,
             "stiffness": 0.5,
@@ -2828,7 +3209,7 @@
                 "sub_category": "Rubber Hull Hard",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0,
+            "rot_receptivity": 0.0,
             "sound_type": "Rubber",
             "specific_heat": 1250.0,
             "stiffness": 1.0,
@@ -2864,7 +3245,7 @@
                 "sub_category": "Rubber Hard",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0,
+            "rot_receptivity": 0.0,
             "sound_type": "Rubber",
             "specific_heat": 1250.0,
             "stiffness": 1.0,
@@ -2907,7 +3288,7 @@
                 "sub_category": "Fiberglass Hull",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0,
+            "rot_receptivity": 0.0,
             "sound_type": "Plastic",
             "specific_heat": 700.0,
             "stiffness": 1.1,
@@ -2949,7 +3330,7 @@
                 "sub_category": "Fiberglass",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0,
+            "rot_receptivity": 0.0,
             "sound_type": "Plastic",
             "specific_heat": 700.0,
             "stiffness": 1.1,
@@ -2987,7 +3368,7 @@
                 "sub_category": "LEGO Hull (ABS)",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0,
+            "rot_receptivity": 0.0,
             "sound_type": "Lego",
             "specific_heat": 523.512,
             "stiffness": 1.1,
@@ -3026,7 +3407,7 @@
                 "sub_category": "LEGO (ABS)",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0,
+            "rot_receptivity": 0.0,
             "sound_type": "Lego",
             "specific_heat": 523.512,
             "stiffness": 1.1,
@@ -3164,7 +3545,7 @@
                 "sub_category": "Hydrogen",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0.0,
+            "rot_receptivity": 0.0,
             "sound_type": "Gas",
             "specific_heat": 14310.0,
             "stiffness": 1.0,
@@ -3200,7 +3581,7 @@
                 "sub_category": "Hydrogen",
                 "sub_category_ordinal": 1
             },
-            "rust_receptivity": 0.0,
+            "rot_receptivity": 0.0,
             "sound_type": "Gas",
             "specific_heat": 14310.0,
             "stiffness": 1.0,
@@ -3232,7 +3613,7 @@
                 "sub_category": "Helium",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0.0,
+            "rot_receptivity": 0.0,
             "sound_type": "Gas",
             "specific_heat": 5193.0,
             "stiffness": 1.0,
@@ -3264,7 +3645,7 @@
                 "sub_category": "Helium",
                 "sub_category_ordinal": 1
             },
-            "rust_receptivity": 0.0,
+            "rot_receptivity": 0.0,
             "sound_type": "Gas",
             "specific_heat": 5193.0,
             "stiffness": 1.0,
@@ -3275,7 +3656,6 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
-
         {
             "buoyancy_volume_fill": 1.0,
             "color_key": "#9a9b9c",
@@ -3305,7 +3685,7 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
-	{
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": "#2a2b2c",
             "combustion_type": "Combustion",
@@ -3334,7 +3714,6 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.005
         },
-
         {
             "buoyancy_volume_fill": 0.006,
             "color_key": "#F5CB42",
@@ -3365,14 +3744,6 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
-
-
-
-
-
-
-
-
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
@@ -3404,7 +3775,7 @@
                 "sub_category": "Concrete Hull",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0.2,
+            "rot_receptivity": 0.2,
             "sound_type": "Wood",
             "specific_heat": 0.75,
             "stiffness": 1.0,
@@ -3447,7 +3818,7 @@
                 "sub_category": "Concrete",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0.3,
+            "rot_receptivity": 0.3,
             "sound_type": "Wood",
             "specific_heat": 0.96,
             "stiffness": 1.0,
@@ -3480,7 +3851,7 @@
                 "sub_category_ordinal": 0
             },
             "render_color": "#E6E6E6",
-            "rust_receptivity": 0.0,
+            "rot_receptivity": 0.0,
             "sound_type": "Wood",
             "specific_heat": 1131.0,
             "stiffness": 1.0,
@@ -3513,7 +3884,7 @@
                 "sub_category_ordinal": 0
             },
             "render_color": "#EDEDED",
-            "rust_receptivity": 0.0,
+            "rot_receptivity": 0.0,
             "sound_type": "Wood",
             "specific_heat": 1131.0,
             "stiffness": 1.0,
@@ -3545,7 +3916,7 @@
                 "sub_category": "Mylar Hull",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0.0,
+            "rot_receptivity": 0.0,
             "sound_type": "Cloth",
             "specific_heat": 1172.304,
             "stiffness": 0.05,
@@ -3577,7 +3948,7 @@
                 "sub_category": "Mylar",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0.0,
+            "rot_receptivity": 0.0,
             "sound_type": "Cloth",
             "specific_heat": 1172.304,
             "stiffness": 0.0002,
@@ -3770,7 +4141,7 @@
                 "#050180",
                 "#6d0191",
                 "#ed8728",
-		"#717371",
+                "#717371",
                 "#260200"
             ],
             "combustion_type": "Combustion",
@@ -3790,7 +4161,6 @@
                 "sub_category": "Ropes",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 1.0,
             "sound_type": "Cable",
             "specific_heat": 1400.0,
             "stiffness": 1.84,
@@ -3813,7 +4183,7 @@
                 "#090B34",
                 "#480153",
                 "#6A2801",
-		"#747779"
+                "#747779"
             ],
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.5,
@@ -3832,7 +4202,6 @@
                 "sub_category": "Tense Ropes",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 1.0,
             "sound_type": "Cable",
             "specific_heat": 1400.0,
             "spring_tension": 0.98,
@@ -3874,7 +4243,6 @@
                 "sub_category": "Strong Ropes",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 1.0,
             "sound_type": "Cable",
             "specific_heat": 1400.0,
             "stiffness": 1.84,
@@ -3896,7 +4264,7 @@
                 "#090A33",
                 "#480052",
                 "#6A2700",
-		"#747678"
+                "#747678"
             ],
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.5,
@@ -3915,7 +4283,6 @@
                 "sub_category": "Tense Strong Ropes",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 1.0,
             "sound_type": "Cable",
             "specific_heat": 1400.0,
             "spring_tension": 0.98,
@@ -3938,7 +4305,7 @@
                 "#0d055c",
                 "#541853",
                 "#944b13",
-		"#717472",
+                "#717472",
                 "#241616"
             ],
             "combustion_type": "Combustion",
@@ -3958,7 +4325,7 @@
                 "sub_category": "Iron Chains",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 1.0,
+            "rust_receptivity": 0.9,
             "sound_type": "Chain",
             "specific_heat": 449.0,
             "stiffness": 1.85,
@@ -4000,7 +4367,7 @@
                 "sub_category": "Strong Iron Chains",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 1.0,
+            "rust_receptivity": 0.9,
             "sound_type": "Chain",
             "specific_heat": 449.0,
             "stiffness": 1.85,
@@ -4042,7 +4409,7 @@
                 "sub_category": "Aluminium Chains",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 1.0,
+            "rust_receptivity": 0.9,
             "sound_type": "Chain",
             "specific_heat": 897.0,
             "stiffness": 1.85,
@@ -4084,7 +4451,7 @@
                 "sub_category": "Rubber Bands",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0,
+            "rot_receptivity": 0.0,
             "sound_type": "RubberBand",
             "specific_heat": 1250.0,
             "stiffness": 0.05,
@@ -4127,7 +4494,7 @@
                 "sub_category": "Strong Rubber Bands",
                 "sub_category_ordinal": 0
             },
-            "rust_receptivity": 0,
+            "rot_receptivity": 0.0,
             "sound_type": "RubberBand",
             "specific_heat": 1250.0,
             "stiffness": 0.05,
@@ -4328,7 +4695,8 @@
             },
             "melting_temperature": 1000000.0,
             "name": "Hydrogen Tank",
-            "rust_receptivity": 0.0,
+            "rot_receptivity": 0.0,
+            "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
             "stiffness": 1.0,
@@ -4404,7 +4772,7 @@
                         "name": "Ropes",
                         "sub_categories": [
                             "Ropes",
-			    "Tense Ropes",
+                            "Tense Ropes",
                             "Strong Ropes",
                             "Tense Strong Ropes"
                         ]
@@ -4450,7 +4818,11 @@
                             "Solid Iron I-Beam",
                             "Light Iron I-Beam",
                             "Low-Grade Iron",
-                            "Double-Bottom Iron"
+                            "Double-Bottom Iron",
+                            "Water-Soluble Iron Hull",
+                            "Water-Soluble Iron I-Beam",
+                            "Water-Soluble Low-Grade Iron",
+                            "Aerodynamic Iron Hull"
                         ]
                     },
                     {
@@ -4492,7 +4864,10 @@
                             "Light Aluminium Bulkhead",
                             "Solid Aluminium I-Beam",
                             "Light Aluminium I-Beam",
-                            "Low-Grade Aluminium"
+                            "Low-Grade Aluminium",
+                            "Water-Soluble Aluminium Hull",
+                            "Water-Soluble Aluminium I-Beam",
+                            "Aerodynamic Aluminium Hull"
                         ]
                     },
                     {
@@ -4638,6 +5013,7 @@
                         "name": "Cloth",
                         "sub_categories": [
                             "Cloth",
+                            "Soft Cloth",
                             "Strong Cloth"
                         ]
                     }

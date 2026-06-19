@@ -1464,24 +1464,386 @@
 			+ Yet, limit vel a bit
 		+ Test bombs
 
-
-	- Fix foam with angley waves: is it because it becomes too wide?
-
-	- Do lift material
+	+ Do lift material
 		! @ frontier force application, as a _static_ force
-		- StructuralMaterial::lift_coefficient, default 0.0
-			- Make "Iron Hull Aerodynamic" and "Aluminium Hull Aerodynamic" materials, lift_coefficient=1.2
-				- Use scripts for variants
-		- Material.cpp
-		- Setting for adjustment
-			- SimParams
-			- GameController
-		- Ship::ApplySurfaceForces
+		+ StructuralMaterial::lift_coefficient, default 0.0
+			+ Make "Iron Hull Aerodynamic" and "Aluminium Hull Aerodynamic" materials, lift_coefficient=1.2
+				+ Use scripts for variants
+		+ Material.cpp
+		+ Setting for adjustment
+			+ SimParams
+			+ GameController
+		+ Ship::ApplySurfaceForces
+		+ Fine-tune
+			+ Add tiny 45deg lift material @ tail
+			+ Add thrust engines @ tail for up/down help
+			+ Test in release
+			+ Conclusion:
+				! For correct physics: we need at least 66 m/s, speed here is 16
+				+ Takes off from reset: multiplier (thermal): 4
+				+ Underwater is too much; just use air density
+				+ See assembly to see if we need precalc'd factor				
+		+ Test:
+			+ ShipBuilder palette title sizes
+			+ Android's plane
+				+ Make double-backup first
+				+ ...
+				+ Take backup and nuke double-backup		
+		+ Port plane & code & materials to Android
+		+ Merge into master
+		+ Test on Android
+		+ changelist
+
+	= Rot rework + "water soluble" material:
+		! Spec:
+			! Quantities:
+				! Rot:
+					- From: combustion, LFLoop (water+underwater) - so all materials weaken
+					- Phys effect: weakens
+					- Renders (dark brown)
+				! Weakness:
+					- From: tornadoes, ...
+					- Phys effect: weakens
+				! Rust:
+					- From: LFLoop
+					- Phys effect: weakens
+					- Renders (red)
+				! AlgaeGrowth (encrusting):
+					- From: LFLoop
+					- Renders (green)
+			! New Water Solubility material property; doesn't affect rendering, just acts on weakness
+		+ Impl:
+			+ StructuralMaterial:
+				+ New rot_receptivity, default is 1.0 (same as current rust_receptivity)
+				+ rust_receptivity default is 0.0
+				+ New water_solubility, default is 0.0
+					+ Solubility doesn't affect rendering; just acts on weakness
+			+ structural_materials.json:
+				! All materials' defaults:
+					! rot_receptivity 1.0 
+					! rust_receptivity 0.0
+					! water_solubility 0.0
+				+ Metals:
+					+ rust_receptivity=old rust_receptivity/1.0
+						+ Steels: 0.5
+				+ Wood:
+					+ Nothing
+				+ Cardboard:
+					+ water_solubility=old rust_receptivity
+					+ no rust_receptivity
+				+ Stainless:
+					+ rot_receptivity=old rust_receptivity
+					+ no rust_receptivity (nuke "rust_receptivity": 0,)
+				+ Concrete, etc.:
+					+ rot_receptivity=old rust_receptivity
+					+ no rust_receptivity
+			+ Points:
+				+ Members:
+					+ AdditionalWeakness => Weakness
+						+ Getters/Setters
+					+ Decay: not a float but 3-fold struct: Rot, Rust, AlgaeGrowth -- union of struct superimposed with vec3f
+						! Start with 1, decay towards 0
+						+ Getters/Setters
+					+ AlgaeGrowthPattern: float
+				+ Code:
+					+ cctor: takes algae pattern
+			+ Spring strength uses Weakness only
+			+ ShipFactory:
+				+ Provide algae pattern w/perlin
+					+ 6, 6, 0.1 == 64 cells = size/16
+
+			+ Combustion:
+				+ Add to Weakness
+				+ Add to Rot buffer
+			+ Tornadoes:
+				+ Add to Weakness
+			+ SimulationParameters:
+				+ AlgaeGrowthAcceler8r
+				+ RustAcceler8r
+				+ GameController
+
+			+ LFLoop:
+				+ Important: don't add multiple weaknesses, do min among all
+					+ Just calc min alpha and use that for weakness
+				+ Rot:
+					+ Driven by material's rot_receptivity
+					+ Speed: RotAcceler8r
+					+ Amount:
+						+ Like now
+					+ Add to Weakness
+					+ Add to Rot buffer
+				+ Rust:
+					+ Should be for any point that is now exposed (i.e. which has lost at least one triangle)
+						+ 1) Mark point as damaged when we remove a triangle, by point Points::DisconnectTriangle itself
+						+ 2) Do it instead from HandleTriangleDestroy
+						+ Test:
+							+ Repair
+							+ Damage single particles
+					+ Driven by material's rust_receptivity
+					+ Speed: RustAcceler8r
+					+ Amount:
+						+ Damaged: +++
+							+ alpha = 1 - beta_damaged * damaged
+							+ Beta gets higher if there's water in it
+								! Can combine alpha's for various periods:
+									! a_low_rust=0.99973 a_high_rust=0.998701
+									! https://www.toolfk.com/online-plotter-frame#W3sidHlwZSI6MCwiZXEiOiIwLjk5OTczXngiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjAsImVxIjoiMC45OTg3MDFeeCIsImNvbG9yIjoiI0ZGMDUwNSJ9LHsidHlwZSI6MCwiZXEiOiIoKDAuOTk5NzMrMC45OTg3MDEpLzIpXngiLCJjb2xvciI6IiMwNUYwMjAifSx7InR5cGUiOjEwMDAsIndpbmRvdyI6WyItNDE2LjkwOTk5OTk5OTk5ODk0IiwiNjA4OS41OSIsIi0zLjUiLCI0LjUiXX1d
+								+ The alpha used for beta_damage is Mix(low_alpha, high_alpha, water);
+
+						+ Neighbors:
+							+ mass_multiplier = 0.5 + 0.5 * LinearStep(0.0, 1000.0)
+							+ beta = beta_high * avg_n_rust * mass_multiplier
+
+						+ Final:
+							+ Rust' = rust * (1 - (beta_damaged * damaged + beta_spread * neighbors_rust_amount * mass/whatever_for_structure) * mat.rust_receptibity)
+
+						+ Try with bottom rust of neighbors = 0.2 instead of 0.0
+							+ Bottom = f(damaged): 0 or 0.2
+							X If too slow: forget target, use max(0.2, newRust)
+
+						+ Boost rust if underwater
+
+					+ Add to Weakness
+						+ Min alpha/max beta
+						+ Does it become weak too soon? Want rust to expand more before it weakens
+
+					+ Add to Rust buffer
+
+					+ Add weakness setting
+						+ SettingsDialog
+						+ Test:
+							+ Scrub tool
+							+ Plain
+
+					+ FIX: asymptote thing cancels out tool-induced rust; need to change to beta
+						+ Do we still need mass then, given that we converge towards 0?
+					+ FIX: decay explodes oscillating with accel=500
+						+ Due to alpha's becoming 0.001, sum of beta's then is > 1
+
+					+ Test timings
+
+				+ Nail down time for decay
+					! Now: nSec / (SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod))
+					! Next: nSec * steps_in_sec
+						! steps_in_sec = 36/64 = SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod)
+					+ Test in RelWithDebInfo
+					+ Timing
+					+ Fix: spread is too fast, as it grows
+						+ alpha=>beta
+
+				+ Adjust rust color base
+
+				+ SettingsDialog: "Rot" static => "Decay"
+
+				+ AlgaeGrowth:
+					+ Speed: AlgaeGrowthAcceler8r
+					+ Amount:
+						+ Underwater => +
+					+ Add to AlgaeGrowth buffer
+						+ Asymptote is Perlin
+
+				+ Solubility:
+					+ Driven by material's water_solubility
+					+ Speed: RotAcceler8r
+					+ Amount:
+						+ Water or Underwater
+					+ Contribute to Weakness: update min
+
+				+ Optimize:
+					+ Precalcd' coeffs & update @ SimParams changes
+						+ Members of Ship
+					+ Ship::RotPoints
+
+			+ Repair
+				+ Lower weakness
+				+ Clean rot+rust, as that would be inconsistent with weakness
+					+ Copy from old code, but likely is same place as weakness restore now
+			+ Scrub tool: lower weakness + 3
+
+			+ Rot tool: rust
+				+ Rename first: Rot->Decay
+					+ Points buffer
+					+ Settings (GameController)
+					+ Tool
+					+ SettingsDialog
+					+ Android plan
+				+ Test radius setting works
+				+ With multiple throngs along perp to direction
+			+ Do we still need decay render mode?
+				+ If we remove it: add to Android plan
+
+			+ ShipRenderContext:
+				! AttributeGroup VBO becomes 6-way: Light, Water, Temperature, Rot, Rust, AlgaeGrowth
+				+ ShaderSets attributes
+				+ Vertex struct (just for convenience, comment on not being used directly)
+				+ Ship VAO
+				+ Ship Uploads
+				+ Debris VAO
+
+			+ Shaders:
+				+ AttributeGroup vertex buffer changes
+					+ All shaders
+					+ Debris
+				+ Color: Rust over AlgaeGrowth over Rot
+
+				+ Color constants
+					+ Search all uses
+
+				+ ship_decay
+					- Finalize color of rot
+				+ ship_element
+
+				+ Use texture's lightness as pattern
+				    float originalLuminosity = dot(vec3(0.299, 0.587, 0.114), vertexCol.xyz);    
+				    fragColour = mix(rustSample * (1.0 - (1.0 - originalLuminosity) * 0.15), fragColour, vertexAttributes2.x);
+
+				X Try rust _over_ water (@ship_element)
+					+ Ended up lowering water contrast
+
+			+ SettingsDialog:
+				+ AlgaeGrowthAcceler8r
+				+ RustAcceler8r
+
+		+ Finish rename Rot->Decay:
+			+ Ship::RotPoints, & period names
+
+		+ Do "water soluble metal" material
+
+
+		+ I found the first bug. As soon as i turned the rot accelerator down my ship just rusted and immediatley fell apart in 1.5 seconds.
+			+ Fix: mDecayRotXUw becomes -IND with denominator being zero (alpha's are equal)
+		+ Smooth underwater transition
+		+ Adjust rust spread speed to 0.2 adjustment, but keep current speed when underwater/wet
+			+ Beta dry, Beta wet -- in terms of time and/or gamma
+		+ Add white-ish and black-ish for water-soluble
+			+ Copy Aluminium Hull, Light Aluminium I-Beam (as "Water-Soluble Aluminium I-Beam")
+			+ Make them water-soluble
+		+ Add white-ish and black-ish for lift
+			+ Copy Aluminium Hull, add last to Aluminium group
+			+ Give it lift
+		+ Make a weaker version of the soluble material, basically low-grade soluable iron - a good compromise eh? what it does is speed up its destruction when waterline reaches it 2 times, basicly no flooding required
+			+ Check current test ship
+			+ Current water-soluble materials' water-solubility becomes 0.5
+				+ Change NS so that (1.0f - mDecayWaterSolubilityAlpha_OLD) == (1.0f - mDecayWaterSolubilityAlpha_NEW) * 0.5
+					+ NS=0.76782
+			+ Old material with 0.5, and cardboards 0.2->0.1 0.3->0.15
+			+ Verify old materials
+			+ Verify cardboard
+			+ New material with 1.0
+				+ Copy from Low-Grade Iron, call it "Water-Soluble Low-Grade Iron"
+			+ Change test ship & test
 
 		- Test:
-			- ShipBuilder palette title sizes
+			+ StressedSprings shader - no regressions
+			+ InternalPressure shader - no regressions
+			+ Strength shader - no regressions
+			+ Debris
+			+ GenericTextures
+			+ Electric spark rots the structure
+			+ Cardboard: rots (& doesn't rust)
+			+ Lego doesn't rot nor rust nor dissolves
+			+ Water Soluble Metal: dissolves
+			+ Tornadoes: weaken
+			- Repair
+				- Test repairing heavily rotten/rusted structure
+
+		- Merge into master
+			- With PR for Android
+
+		- Android port:
+			- ShipRenderContext/VBO changes
+			- Shader coloring changes
+			- New settings
+			- ScrubRot tool name change @ tool (cosmetic) and settings (mandated)
+			- Removal of ship_decay shaders
+			- changelist
+
+		- changelist
+
+		= Try multi-channel texture for rust and algae		
+			- New branch
+			- TODO: most of it is from git stash
+			- "ShipEnhancements" DB
+			- "ShipEnhancements" texture
+				- OpenGL param
+				- Activation & load @ GlobalRenderContext
+			- Ship VAOs: 
+				- TODOHERE: HighQuality flag
+
+			- Param for Ship shaders: ShipEnhancementsTextureSpaceMagnificationFactor (vec2)
+				- Calc'd by ShipRenderContext @ init, based on ship's world size and GlobalRenderContext::GetShipEnhancementsTextureWorldSize
+				- SetInAllShaders
+
+			- Texture finalization:
+				- Rust
+				- Algae
+				- GlobalRenderContext: build dual-channel
+
+			- Add to Android port plan
+
+
+			- TODOOLD
+
+			= Do test first with dummy texture for perf impact
+				- New Dell
+				+ Old Dell: 18.2-18.6-19.2 (29.18 FPS) => 19.8-21.3 (26.6 FPS)
+			- Do another test with real texture to see how awesome it would be, evt'lly worth doing subject to calibration
+			- If ok:
+				- Piggyback on NoiseTexture
+					- TODO: only needed if too many texture units; otherwise, useless
+					- See first if we access g,b of Fine and Gross noises
+						- Should not, they're greyscale
+					- "Noise" -> "NoiseAndShipEnhancements"
+						- ShaderSets
+						- Shaders
+					- TODOHERE		
+					
+				- Make DB, same World coords (though we'll only use first)
+				- Param for Ship shaders: ShipEnhancementsTextureSpaceMagnificationFactor (vec2)
+					- Calc'd by ShipRenderContext @ init, based on ship's world size and GlobalRenderContext::TODO:GetOrCalc?
+					- SetInAllShaders
+				- Watchout: what to do with non-textured shaders? Currently we don't set params
+					- Make sure we use matte color
+				- Watchout: init'n of RenderContext, calling initialize-this-texture at wrong place
+
+				- Find rust texture
+				- Find algae texture
+
+				- Port to Android
+
 			
-	- Do water solubile material - see Discord
+	- TODOOLD
+	- Rot rework:
+		- 1. Current decay serves for rot (rust) + burn, like now; only two changes:
+			- Color: rust->black (i.e. no green)
+			- Different propagation:
+				- Damaged points get more rust
+				- The strength of rust at a point depends on avg of neighbors
+					- So rotting spreads from damaged points
+				- Randomize more at each point
+					- Can use point's personality seed
+		- 2. New quantity for "water-rotting", with flag/acceler8r
+			- Perlin-based quantity, "factory" and immutable, at Points
+				- Created @ factory time
+			- At RotPoints, also converge underwater points' "water-rotting" quantity to Perlin
+				- The strength of water rotting at a point depends on avg of neighbors
+					- So rotting spreads from "more perlin" points
+			- Shader: green
+		- 3. Scrub also clears "water-rotting" quantity
+	- Do "water soluble metal" material
+		- When flooded
+		- ...and another one one under waterline?
+
+
+
+
+
+	- Aerodynamic aluminium (colors as well)
+
+	- See: jet flames covered by silt clouds
+		- Apparently, silt clouds' low-alpha is covering jet flames
+
+	- Fix foam with angley waves: is it because it becomes too wide?
 
 	- TimCan's new sounds for PC+Mobile
 			- FS Deep Horn
@@ -1506,24 +1868,6 @@
 		- Update with .pot (from silt/black smoke release)
 		- Send again for new strings
 		- Release
-
-	- Rot rework:
-		- 1. Current decay serves for rot (rust) + burn, like now; only two changes:
-			- Color: rust->black (i.e. no green)
-			- Different propagation:
-				- Damaged points get more rust
-				- The strength of rust at a point depends on avg of neighbors
-					- So rotting spreads from damaged points
-				- Randomize more at each point
-		- 2. New quantity for "water-rotting", with flag/acceler8r
-			- Perlin-based quantity, "factory" and immutable, at Points
-				- Created @ factory time
-			- At RotPoints, also converge underwater points' "water-rotting" quantity to Perlin
-				- The strength of water rotting at a point depends on avg of neighbors
-					- So rotting spreads from "more perlin" points
-			- Shader: green
-		- 3. Scrub also clears "water-rotting" quantity
-
 
 	- Try Android font
 

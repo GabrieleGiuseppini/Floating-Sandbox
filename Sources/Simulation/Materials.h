@@ -82,6 +82,7 @@ public:
     float ElasticityCoefficient;
     float KineticFrictionCoefficient;
     float StaticFrictionCoefficient;
+    float LiftCoefficient;
 
     std::optional<MaterialUniqueType> UniqueType;
 
@@ -95,7 +96,9 @@ public:
     float WaterIntake;
     float WaterDiffusionSpeed;
     float WaterRetention;
-    float RustReceptivity;
+    float RotReceptivity; // Strength decay and browning when underwater|flooded
+    float RustReceptivity; // Rust when flooded
+    float WaterSolubility; // Strength decay when underwater|flooded (no rendering)
 
     // Heat
     float IgnitionTemperature; // K
@@ -167,6 +170,7 @@ public:
         float elasticityCoefficient,
         float kineticFrictionCoefficient,
         float staticFrictionCoefficient,
+        float liftCoefficient,
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
         std::optional<std::string> materialTextureName,
@@ -176,7 +180,9 @@ public:
         float waterIntake,
         float waterDiffusionSpeed,
         float waterRetention,
+        float rotReceptivity,
         float rustReceptivity,
+        float waterSolubility,
         // Heat
         float ignitionTemperature,
         float meltingTemperature,
@@ -208,6 +214,7 @@ public:
         , ElasticityCoefficient(elasticityCoefficient)
         , KineticFrictionCoefficient(kineticFrictionCoefficient)
         , StaticFrictionCoefficient(staticFrictionCoefficient)
+        , LiftCoefficient(liftCoefficient)
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
         , MaterialTextureName(materialTextureName)
@@ -216,7 +223,9 @@ public:
         , WaterIntake(waterIntake)
         , WaterDiffusionSpeed(waterDiffusionSpeed)
         , WaterRetention(waterRetention)
+        , RotReceptivity(rotReceptivity)
         , RustReceptivity(rustReceptivity)
+        , WaterSolubility(waterSolubility)
         , IgnitionTemperature(ignitionTemperature)
         , MeltingTemperature(meltingTemperature)
         , ThermalConductivity(thermalConductivity)
@@ -252,6 +261,7 @@ public:
         , ElasticityCoefficient(1.0f)
         , KineticFrictionCoefficient(1.0f)
         , StaticFrictionCoefficient(1.0f)
+        , LiftCoefficient(0.0f)
         , UniqueType(std::nullopt)
         , MaterialSound(std::nullopt)
         , MaterialTextureName(std::nullopt)
@@ -260,7 +270,9 @@ public:
         , WaterIntake(1.0f)
         , WaterDiffusionSpeed(1.0f)
         , WaterRetention(1.0f)
-        , RustReceptivity(1.0f)
+        , RotReceptivity(1.0f)
+        , RustReceptivity(0.0f)
+        , WaterSolubility(0.0f)
         , IgnitionTemperature(200.0f)
         , MeltingTemperature(200.0f)
         , ThermalConductivity(1.0f)
@@ -377,6 +389,7 @@ public:
 
     // Particle Emission
     float ParticleEmissionRate; // Number of particles per second
+    float ParticleLifetimeAdjustment; // Relative to use-case
 
     // Instancing
     bool IsInstanced; // When true, only one particle may exist with a given (full) color key
@@ -448,6 +461,7 @@ public:
         float minimumOperatingTemperature,
         float maximumOperatingTemperature,
         float particleEmissionRate,
+        float particleLifetimeAdjustment,
         bool isInstanced,
         EngineElementType engineType,
         float engineCCWDirection,
@@ -477,6 +491,7 @@ public:
         , MinimumOperatingTemperature(minimumOperatingTemperature)
         , MaximumOperatingTemperature(maximumOperatingTemperature)
         , ParticleEmissionRate(particleEmissionRate)
+        , ParticleLifetimeAdjustment(particleLifetimeAdjustment)
         //
         , IsInstanced(isInstanced)
         , EngineType(engineType)
@@ -516,6 +531,7 @@ public:
         , MinimumOperatingTemperature(0.0f)
         , MaximumOperatingTemperature(1000.0f)
         , ParticleEmissionRate(1.0f)
+        , ParticleLifetimeAdjustment(1.0f)
         //
         , IsInstanced(isInstanced)
         , EngineType(EngineElementType::Diesel)

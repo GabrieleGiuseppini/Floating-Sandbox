@@ -60,6 +60,18 @@ struct IGameControllerSettings
     virtual float GetStaticPressureForceAdjustment() const = 0;
     virtual void SetStaticPressureForceAdjustment(float value) = 0;
 
+    virtual float GetLiftForceAdjustment() const = 0;
+    virtual void SetLiftForceAdjustment(float value) = 0;
+
+    virtual float GetRustAcceler8r() const = 0;
+    virtual void SetRustAcceler8r(float value) = 0;
+
+    virtual float GetRustWeaknessAdjustment() const = 0;
+    virtual void SetRustWeaknessAdjustment(float value) = 0;
+
+    virtual float GetAlgaeGrowthAcceler8r() const = 0;
+    virtual void SetAlgaeGrowthAcceler8r(float value) = 0;
+
     virtual float GetTimeOfDay() const = 0;
     virtual void SetTimeOfDay(float value) = 0;
 
@@ -361,8 +373,8 @@ struct IGameControllerSettings
     virtual float GetBlastToolForceAdjustment() const = 0;
     virtual void SetBlastToolForceAdjustment(float value) = 0;
 
-    virtual float GetScrubRotToolRadius() const = 0;
-    virtual void SetScrubRotToolRadius(float value) = 0;
+    virtual float GetScrubRustToolRadius() const = 0;
+    virtual void SetScrubRustToolRadius(float value) = 0;
 
     virtual float GetWindMakerToolWindSpeed() const = 0;
     virtual void SetWindMakerToolWindSpeed(float value) = 0;

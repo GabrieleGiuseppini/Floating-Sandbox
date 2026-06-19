@@ -45,6 +45,7 @@ StructuralMaterial StructuralMaterial::Create(
         float const elasticityCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "elasticity_coefficient", 0.5f);
         float const kineticFrictionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "friction_kinetic_coefficient", 0.25f);
         float const staticFrictionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "friction_static_coefficient", 0.25f);
+        float const liftCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "lift_coefficient", 0.0f);
 
         std::optional<MaterialUniqueType> uniqueType;
         {
@@ -73,7 +74,12 @@ StructuralMaterial StructuralMaterial::Create(
         float const waterIntake = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_intake", 1.0);
         float const waterDiffusionSpeed = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_diffusion_speed", 0.5f);
         float const waterRetention = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_retention", 0.05f);
-        float const rustReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rust_receptivity", 1.0);
+        float const rotReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rot_receptivity", 1.0);
+        assert(rotReceptivity <= 1.0f);
+        float const rustReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rust_receptivity", 0.0);
+        assert(rustReceptivity <= 1.0f);
+        float const waterSolubility = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_solubility", 0.0);
+        assert(waterSolubility <= 1.0f);
 
         // Heat
 
@@ -126,6 +132,7 @@ StructuralMaterial StructuralMaterial::Create(
             elasticityCoefficient,
             kineticFrictionCoefficient,
             staticFrictionCoefficient,
+            liftCoefficient,
             uniqueType,
             materialSound,
             materialTextureName,
@@ -134,7 +141,9 @@ StructuralMaterial StructuralMaterial::Create(
             waterIntake,
             waterDiffusionSpeed,
             waterRetention,
+            rotReceptivity,
             rustReceptivity,
+            waterSolubility,
             // Heat
             ignitionTemperature,
             meltingTemperature,
@@ -280,12 +289,14 @@ ElectricalMaterial ElectricalMaterial::Create(
 
         // Particle emitter properties
         float particleEmissionRate = 0.0f;
+        float particleLifetimeAdjustment = 1.0f;
         if (ElectricalElementType::SmokeEmitter == electricalType)
         {
             particleEmissionRate = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "particle_emission_rate");
-
             if (particleEmissionRate < 0.0f)
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"particle_emission_rate\" parameter must be greater than or equal 0.0");
+
+            particleLifetimeAdjustment = Utils::GetOptionalJsonMember<float>(electricalMaterialJson, "particle_lifetime_adjustment", 1.0f);
         }
 
         // Instancing
@@ -390,6 +401,7 @@ ElectricalMaterial ElectricalMaterial::Create(
             minimumOperatingTemperature,
             maximumOperatingTemperature,
             particleEmissionRate,
+            particleLifetimeAdjustment,
             isInstanced,
             engineType,
             engineDirection,

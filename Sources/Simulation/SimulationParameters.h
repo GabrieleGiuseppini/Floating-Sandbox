@@ -136,11 +136,27 @@ struct SimulationParameters
 
     float RotAcceler8r;
     static float constexpr MinRotAcceler8r = 0.0f;
-    static float constexpr MaxRotAcceler8r = 1000.0f;
+    static float constexpr MaxRotAcceler8r = 500.0f;
 
     float StaticPressureForceAdjustment;
     static float constexpr MinStaticPressureForceAdjustment = 0.0f;
     static float constexpr MaxStaticPressureForceAdjustment = 20.0f;
+
+    float LiftForceAdjustment;
+    static float constexpr MinLiftForceAdjustment = 0.0f;
+    static float constexpr MaxLiftForceAdjustment = 20.0f;
+
+    float RustAcceler8r;
+    static float constexpr MinRustAcceler8r = 0.0f;
+    static float constexpr MaxRustAcceler8r = 500.0f;
+
+    float RustWeaknessAdjustment;
+    static float constexpr MinRustWeaknessAdjustment = 0.0f;
+    static float constexpr MaxRustWeaknessAdjustment = 5.0f;
+
+    float AlgaeGrowthAcceler8r;
+    static float constexpr MinAlgaeGrowthAcceler8r = 0.0f;
+    static float constexpr MaxAlgaeGrowthAcceler8r = 500.0f;
 
     // Air
 
@@ -453,8 +469,8 @@ struct SimulationParameters
     static float constexpr SmotheringWaterLowWatermark = 0.05f;
     static float constexpr SmotheringWaterHighWatermark = 0.1f;
 
-    static float constexpr SmotheringDecayLowWatermark = 0.0005f;
-    static float constexpr SmotheringDecayHighWatermark = 0.05f;
+    static float constexpr SmotheringRotLowWatermark = 0.0005f;
+    static float constexpr SmotheringRotHighWatermark = 0.05f;
 
     unsigned int MaxBurningParticlesPerShip;
     static unsigned int constexpr MaxMaxBurningParticlesPerShip = 1000;
@@ -746,9 +762,9 @@ struct SimulationParameters
     static float constexpr MinBlastToolForceAdjustment = 0.1f;
     static float constexpr MaxBlastToolForceAdjustment = 10.0f;
 
-    float ScrubRotToolRadius;
-    static float constexpr MinScrubRotToolRadius = 1.0f;
-    static float constexpr MaxScrubRotToolRadius = 20.0f;
+    float ScrubRustToolRadius;
+    static float constexpr MinScrubRustToolRadius = 1.0f;
+    static float constexpr MaxScrubRustToolRadius = 20.0f;
 
     float WindMakerToolWindSpeed; // Beaufort scale, km/h
     static float constexpr MinWindMakerToolWindSpeed = 20.0f;

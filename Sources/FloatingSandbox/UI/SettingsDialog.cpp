@@ -1209,7 +1209,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
         gridSizer->Add(
             waterBoxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 4),
+            wxGBSpan(1, 7),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -1321,19 +1321,19 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
     }
 
     //
-    // Rotting
+    // Decay
     //
 
     {
-        wxStaticBoxSizer * rottingBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Rotting"));
+        wxStaticBoxSizer * decayBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Decay"));
 
         {
-            wxGridBagSizer * rottingSizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * decaySizer = new wxGridBagSizer(0, 0);
 
             // Rot Accelerator
             {
                 mRotAcceler8rSlider = new SliderControl<float>(
-                    rottingBoxSizer->GetStaticBox(),
+                    decayBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
@@ -1349,7 +1349,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                         1.0f,
                         mGameControllerSettingsOptions.GetMaxRotAcceler8r()));
 
-                rottingSizer->Add(
+                decaySizer->Add(
                     mRotAcceler8rSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
@@ -1357,19 +1357,100 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(rottingSizer);
+            // Rust Accelerator
+            {
+                mRustAcceler8rSlider = new SliderControl<float>(
+                    decayBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Rust Acceler8r"),
+                    _("Adjusts the speed with which materials rust when exposed to sea water. Set to zero to disable rusting altogether."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RustAcceler8r, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinRustAcceler8r(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxRustAcceler8r()));
 
-            rottingBoxSizer->Add(
-                rottingSizer,
+                decaySizer->Add(
+                    mRustAcceler8rSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Rust Weakness Adjustment
+            {
+                mRustWeaknessAdjustmentSlider = new SliderControl<float>(
+                    decayBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Rust Decay Adjust"),
+                    _("Adjusts the speed with which structures weaken when rusted. Set to zero to prevent rust from weakening structures altogether."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RustWeaknessAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinRustWeaknessAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxRustWeaknessAdjustment()));
+
+                decaySizer->Add(
+                    mRustWeaknessAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Algae Growth Accelerator
+            {
+                mAlgaeGrowthAcceler8rSlider = new SliderControl<float>(
+                    decayBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Algae Growth Acceler8r"),
+                    _("Adjusts the speed with which algae grow over structures when these are exposed to sea water. Set to zero to disable algae growth altogether."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AlgaeGrowthAcceler8r, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinAlgaeGrowthAcceler8r(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxAlgaeGrowthAcceler8r()));
+
+                decaySizer->Add(
+                    mAlgaeGrowthAcceler8rSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            WxHelpers::MakeAllColumnsExpandable(decaySizer);
+
+            decayBoxSizer->Add(
+                decaySizer,
                 1,
                 wxEXPAND | wxALL,
                 StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
-            rottingBoxSizer,
+            decayBoxSizer,
             wxGBPosition(1, 3),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -4359,11 +4440,11 @@ void SettingsDialog::PopulateOtherToolsPanel(
     }
 
     //
-    // Scrub/Rot Tool
+    // Scrub/Rust Tool
     //
 
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Scrub/Rot Tool"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Scrub/Rust Tool"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
@@ -4386,26 +4467,26 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            // Scrub/Rot Radius
+            // Scrub/Rust Radius
             {
-                mScrubRotRadiusSlider = new SliderControl<float>(
+                mScrubRustRadiusSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Radius"),
-                    _("How wide an area is affected by the scrub/rot tool (m)."),
+                    _("How wide an area is affected by the scrub/rust tool (m)."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::ScrubRotToolRadius, value);
+                        this->mLiveSettings.SetValue(GameSettings::ScrubRustToolRadius, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinScrubRotToolRadius(),
-                        mGameControllerSettingsOptions.GetMaxScrubRotToolRadius()));
+                        mGameControllerSettingsOptions.GetMinScrubRustToolRadius(),
+                        mGameControllerSettingsOptions.GetMaxScrubRustToolRadius()));
 
                 sizer->Add(
-                    mScrubRotRadiusSlider,
+                    mScrubRustRadiusSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -5859,7 +5940,6 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             _("Draw Only Springs"),
             _("Draw Only Edge Springs"),
             _("Draw Structure"),
-            _("Draw Decay"),
             _("Draw Internal Pressure"),
             _("Draw Strength")
         };
@@ -5897,15 +5977,11 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                 }
                 else if (6 == selectedDebugShipRenderMode)
                 {
-                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Decay);
-                }
-                else if (7 == selectedDebugShipRenderMode)
-                {
                     mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::InternalPressure);
                 }
                 else
                 {
-                    assert(8 == selectedDebugShipRenderMode);
+                    assert(7 == selectedDebugShipRenderMode);
                     mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Strength);
                 }
 
@@ -6760,6 +6836,9 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
     mWaterTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::WaterTemperature));
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
+    mRustAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RustAcceler8r));
+    mRustWeaknessAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RustWeaknessAdjustment));
+    mAlgaeGrowthAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::AlgaeGrowthAcceler8r));
 
     //
     // Ocean
@@ -6878,7 +6957,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mInjectPressureQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::InjectPressureQuantity));
     mRepairRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::RepairRadius));
     mRepairSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RepairSpeedAdjustment));
-    mScrubRotRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::ScrubRotToolRadius));
+    mScrubRustRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::ScrubRustToolRadius));
     mWindMakerWindSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WindMakerToolWindSpeed));
     mDoApplyPhysicsToolsToShipsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoApplyPhysicsToolsToShips));
     mDoApplyPhysicsToolsToNpcsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs));
@@ -7124,21 +7203,15 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
 
-        case DebugShipRenderModeType::Decay:
+        case DebugShipRenderModeType::InternalPressure:
         {
             mDebugShipRenderModeRadioBox->SetSelection(6);
             break;
         }
 
-        case DebugShipRenderModeType::InternalPressure:
-        {
-            mDebugShipRenderModeRadioBox->SetSelection(7);
-            break;
-        }
-
         case DebugShipRenderModeType::Strength:
         {
-            mDebugShipRenderModeRadioBox->SetSelection(8);
+            mDebugShipRenderModeRadioBox->SetSelection(7);
             break;
         }
     }

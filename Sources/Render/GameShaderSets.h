@@ -81,7 +81,6 @@ enum class ProgramKind
     ShipSpringsColorHeatOverlayStress,
     ShipSpringsColorIncandescence,
     ShipSpringsColorIncandescenceStress,
-    ShipSpringsDecay,
     ShipSpringsInternalPressure,
     ShipSpringsStrength,
     ShipSpringsTexture,
@@ -97,7 +96,6 @@ enum class ProgramKind
     ShipTrianglesColorHeatOverlayStress,
     ShipTrianglesColorIncandescence,
     ShipTrianglesColorIncandescenceStress,
-    ShipTrianglesDecay,
     ShipTrianglesInternalPressure,
     ShipTrianglesStrength,
     ShipTrianglesTexture,
@@ -263,12 +261,13 @@ enum class VertexAttributeKind : std::uint32_t
 
     ShipPointPosition = 0,
     ShipPointTextureCoordinates = 1,
-    ShipPointAttributeGroup = 2,   // Light, Water, Temperature, Decay
-    ShipPointColor = 3,
-    ShipPointPlaneId = 4,
-    ShipPointStress = 5,
-    ShipPointAuxiliaryData = 6,
-    ShipPointFrontierColor = 7,
+    ShipPointAttributeGroup1 = 2,   // Light, Water, Temperature, Rot
+    ShipPointAttributeGroup2 = 3,   // Rust, AlgaeGrowth
+    ShipPointColor = 4,
+    ShipPointPlaneId = 5,
+    ShipPointStress = 6,
+    ShipPointAuxiliaryData = 7,
+    ShipPointFrontierColor = 8,
 
     NpcAttributeGroup1 = 0,
     NpcAttributeGroup2 = 1,

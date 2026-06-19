@@ -96,7 +96,7 @@ public:
         float const * light,
         float const * water,
         float const * temperature,
-        float const * decay,
+        vec3f const * rot,
         std::optional<float const *> planeId);
 
     // Invoked on render thread
@@ -209,7 +209,6 @@ public:
         vec4f const & color,
         float light,
         float water,
-        float decay,
         float temperature,
         float stress)
     {
@@ -218,7 +217,9 @@ public:
             light,
             water,
             temperature,
-            decay,
+            1.0f, // Rot
+            1.0f, // Rust
+            1.0f, // AlgaeGrowth
             static_cast<float>(planeId),
             stress,
             color);
@@ -1533,6 +1534,17 @@ private:
         int pointIndex3;
     };
 
+    // Not used directly, as we don't have a buffer
+    struct PointAttributeGroupVertex
+    {
+        float light;
+        float water;
+        float temperature;
+        float rot;
+        float rust;
+        float algaeGrowth;
+    };
+
     struct DebrisVertex
     {
         // Note: replicating layout of point shaders
@@ -1540,7 +1552,9 @@ private:
         float light;
         float water;
         float temperature;
-        float decay;
+        float rot;
+        float rust;
+        float algaeGrowth;
         float planeId;
         float stress;
         vec4f color;
@@ -1550,7 +1564,9 @@ private:
             float _light,
             float _water,
             float _temperature,
-            float _decay,
+            float _rot,
+            float _rust,
+            float _algaeGrowth,
             float _planeId,
             float _stress,
             vec4f const & _color)
@@ -1558,7 +1574,9 @@ private:
             , light(_light)
             , water(_water)
             , temperature(_temperature)
-            , decay(_decay)
+            , rot(_rot)
+            , rust(_rust)
+            , algaeGrowth(_algaeGrowth)
             , planeId(_planeId)
             , stress(_stress)
             , color(_color)
@@ -1828,7 +1846,7 @@ private:
 
     GameOpenGLVBO mPointPositionVBO;
     GameOpenGLVBO mPointTextureCoordinatesVBO;
-    GameOpenGLVBO mPointAttributeGroupVBO;
+    GameOpenGLVBO mPointAttributeGroupVBO; // Light, water, temperature, rot, rust, algae growth
     GameOpenGLVBO mPointColorVBO;
     GameOpenGLVBO mPointPlaneIdVBO;
     GameOpenGLVBO mPointStressVBO;

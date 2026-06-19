@@ -96,11 +96,11 @@ void Ship::RepairAt(
     // so the resurrection of triangles wouldn't be complete if we resurrected triangles
     // only when restoring a spring
     //
-    // b) (Partially) restore (in-radius) springs' rest lengths
+    // b) Restore (in-radius) electrical elements of repaired points
     //
-    // c) Restore (in-radius) electrical elements of repaired points
+    // c) (Partially) restore (in-radius) points' decay and weakness
     //
-    // d) (Partially) restore (in-radius) points' weakness
+    // d) (Partially) restore (in-radius) springs' rest lengths
     //
 
     // Visit all (in-radius) non-ephemeral points
@@ -129,7 +129,46 @@ void Ship::RepairAt(
             }
         }
 
-        // b) Visit all springs, trying to restore their rest lengths
+        // b) Restore electrical element - iff point is not damaged
+        if (!mPoints.IsDamaged(pointIndex))
+        {
+            auto const electricalElementIndex = mPoints.GetElectricalElement(pointIndex);
+            if (NoneElementIndex != electricalElementIndex
+                && mElectricalElements.IsDeleted(electricalElementIndex))
+            {
+                mElectricalElements.Restore(electricalElementIndex);
+            }
+        }
+
+        // c) (Partially) restore (in-radius) points' decay and weakness
+        //
+        // Note: we restore decay to be consistent with weakness
+
+        float const currentRot = mPoints.GetRot(pointIndex);
+        float newRot = currentRot + (1.0f - currentRot) / 2.0f;
+        if (std::fabsf(1.0f - newRot) < 0.001f)
+            newRot = 1.0f;
+        mPoints.SetRot(
+            pointIndex,
+            newRot);
+
+        float const currentRust = mPoints.GetRust(pointIndex);
+        float newRust = currentRust + (1.0f - currentRust) / 2.0f;
+        if (std::fabsf(1.0f - newRust) < 0.001f)
+            newRust = 1.0f;
+        mPoints.SetRust(
+            pointIndex,
+            newRust);
+
+        float const currentWeakness = mPoints.GetWeakness(pointIndex);
+        float newWeakness = currentWeakness + (1.0f - currentWeakness) / 2.0f;
+        if (std::fabsf(1.0f - newWeakness) < 0.001f)
+            newWeakness = 1.0f;
+        mPoints.SetWeakness(
+            pointIndex,
+            newWeakness);
+
+        // d) Visit all springs, trying to restore their rest lengths
         for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
         {
             if (mSprings.GetRestLength(cs.SpringIndex) != mSprings.GetFactoryRestLength(cs.SpringIndex))
@@ -146,33 +185,14 @@ void Ship::RepairAt(
                         cs.SpringIndex,
                         mSprings.GetFactoryRestLength(cs.SpringIndex));
                 }
-
-                // Recalculate this spring's coefficients, now that we have changed its rest length
-                mSprings.UpdateForRestLength(
-                    cs.SpringIndex,
-                    mPoints);
             }
-        }
 
-        // c) Restore electrical element - iff point is not damaged
-        if (!mPoints.IsDamaged(pointIndex))
-        {
-            auto const electricalElementIndex = mPoints.GetElectricalElement(pointIndex);
-            if (NoneElementIndex != electricalElementIndex
-                && mElectricalElements.IsDeleted(electricalElementIndex))
-            {
-                mElectricalElements.Restore(electricalElementIndex);
-            }
+            // Recalculate this spring's coefficients, now that we have changed
+            // its rest length and weakness
+            mSprings.UpdateForRestLengthAndWeakness(
+                cs.SpringIndex,
+                mPoints);
         }
-
-        // d) (Partially) restore (in-radius) points' weakness
-        float const currentWeakness = mPoints.GetAdditionalWeakness(pointIndex);
-        float newWeakness = currentWeakness + (1.0f - currentWeakness) / 2.0f;
-        if (std::fabsf(1.0f - newWeakness) < 0.001f)
-            newWeakness = 1.0f;
-        mPoints.SetAdditionalWeakness(
-            pointIndex,
-            newWeakness);
     }
 
     //
@@ -851,17 +871,6 @@ bool Ship::RepairFromAttractor(
                         attracteePointIndex,
                         sumVelocity / static_cast<float>(mPoints.GetConnectedSprings(attracteePointIndex).ConnectedSprings.size()));
 
-                    // Halve the decay of both endpoints, to prevent newly-repaired
-                    // rotten particles from crumbling again
-                    float const attractorDecay = mPoints.GetDecay(attractorPointIndex);
-                    mPoints.SetDecay(
-                        attractorPointIndex,
-                        attractorDecay + (1.0f - attractorDecay) / 2.0f);
-                    float const attracteeDecay = mPoints.GetDecay(attracteePointIndex);
-                    mPoints.SetDecay(
-                        attracteePointIndex,
-                        attracteeDecay + (1.0f - attracteeDecay) / 2.0f);
-
                     // Restore the spring's rest length to its factory value
                     mSprings.SetRestLength(
                         fcs.SpringIndex,
@@ -873,7 +882,7 @@ bool Ship::RepairFromAttractor(
 
                     // Recalculate the spring's coefficients, since we have changed the
                     // spring's rest length
-                    mSprings.UpdateForRestLength(
+                    mSprings.UpdateForRestLengthAndWeakness(
                         fcs.SpringIndex,
                         mPoints);
 

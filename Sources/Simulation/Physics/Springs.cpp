@@ -516,7 +516,7 @@ void Springs::inline_UpdateCoefficients(
     //
     // The breaking elongation - i.e. the max delta L, aka displacement tolerance - depends on:
     //  - The material strength and the strength adjustment
-    //  - The spring's decay (which itself is a function of the endpoints' decay)
+    //  - The spring's weakness (which itself is a function of the endpoints' weaknesses)
     //  - If the endpoints are melting, their temperature - so to keep springs intact while melting makes them longer
     //  - The actual number of mechanics iterations we'll be performing
     //
@@ -524,11 +524,9 @@ void Springs::inline_UpdateCoefficients(
     // compared against the spring's absolute delta L without having to divide the delta L by the rest length
     //
 
-    // Weakness of spring == avg of two endpoints' decay and additional weakness
+    // Weakness of spring == avg of two endpoints' weaknesses
     float const springWeakness =
-        (points.GetDecay(endpointAIndex) + points.GetDecay(endpointBIndex)) / 2.0f
-        *
-        (points.GetAdditionalWeakness(endpointAIndex) + points.GetAdditionalWeakness(endpointBIndex)) / 2.0f;
+        (points.GetWeakness(endpointAIndex) + points.GetWeakness(endpointBIndex)) / 2.0f;
 
     // If we're melting, the current spring length, when longer than the
     // previous rest length, is also its new rest length - but no more than a few times
