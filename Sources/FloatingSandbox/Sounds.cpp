@@ -190,7 +190,7 @@ SoundType StrToSoundType(std::string const & str)
     else if (Utils::CaseInsensitiveEquals(str, "Scrub"))
         return SoundType::Scrub;
     else if (Utils::CaseInsensitiveEquals(str, "Rot"))
-        return SoundType::Rot;
+        return SoundType::Rust;
     else if (Utils::CaseInsensitiveEquals(str, "RepairStructure"))
         return SoundType::RepairStructure;
     else if (Utils::CaseInsensitiveEquals(str, "ThanosSnap"))

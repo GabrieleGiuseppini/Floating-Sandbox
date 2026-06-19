@@ -816,8 +816,8 @@ public:
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
         , mIsColorBufferDirty(true)
         , mTextureCoordinatesBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mAlgaeGrowthPatternBuffer(mAlignedShipPointCount, mRawShipPointCount, 0.0f)
         , mIsTextureCoordinatesBufferDirty(true)
+        , mAlgaeGrowthPatternBuffer(mAlignedShipPointCount, mRawShipPointCount, 0.0f)
         //////////////////////////////////
         // Container
         //////////////////////////////////

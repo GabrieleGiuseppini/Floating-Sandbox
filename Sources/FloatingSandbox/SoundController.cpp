@@ -563,7 +563,7 @@ SoundController::SoundController(
                 || soundType == SoundType::TerrainAdjust
                 || soundType == SoundType::ThanosSnap
                 || soundType == SoundType::Scrub
-                || soundType == SoundType::Rot
+                || soundType == SoundType::Rust
                 || soundType == SoundType::InteractiveSwitchOn
                 || soundType == SoundType::InteractiveSwitchOff
                 || soundType == SoundType::ElectricalPanelClose
@@ -1431,10 +1431,10 @@ void SoundController::PlayScrubSound()
         true);
 }
 
-void SoundController::PlayRotSound()
+void SoundController::PlayRustSound()
 {
     PlayOneShotMultipleChoiceSound(
-        SoundType::Rot,
+        SoundType::Rust,
         SoundGroupType::Tools,
         100.0f,
         true);

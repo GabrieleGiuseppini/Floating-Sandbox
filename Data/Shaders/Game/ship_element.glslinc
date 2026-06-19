@@ -9,7 +9,7 @@ in vec2 inShipPointPosition;
 in vec2 inShipPointTextureCoordinates;
 #endif
 in vec4 inShipPointAttributeGroup1; // Light, Water, Temperature, Rot
-in vec2 inShipPointAttributeGroup2; // Rust, AlgageGrowth
+in vec2 inShipPointAttributeGroup2; // Rust, AlgaeGrowth
 in float inShipPointPlaneId;
 #if STRESS_RENDER_MODE != 0
 in float inShipPointStress; // Stress
@@ -21,7 +21,7 @@ in vec4 inShipPointColor;
 // Outputs
 out float vertexWorldY;
 out vec4 vertexAttributes1; // Light, Water, Temperature, Rot
-out vec2 vertexAttributes2; // Rust, AlgageGrowth
+out vec2 vertexAttributes2; // Rust, AlgaeGrowth
 #ifndef WITH_MATTE_COLOR
 out vec2 vertexTextureCoords;
 #else
@@ -69,7 +69,7 @@ void main()
 // Inputs from previous shader
 in float vertexWorldY;
 in vec4 vertexAttributes1; // Light, Water, Temperature, Rot
-in vec2 vertexAttributes2; // Rust, AlgageGrowth
+in vec2 vertexAttributes2; // Rust, AlgaeGrowth
 #ifndef  WITH_MATTE_COLOR
 in vec2 vertexTextureCoords;
 #else

@@ -1,12 +1,14 @@
 1.21.0
 - Added water splashes and foam
+- Redesigned rot mechanics - we now have rotting, rusting, and algae growth accretion!
 - Quadrupled the number of ephemeral particles *and* optimized their integration workflow, achieving zero net CPU cost (!) and allowing for far more ephemerals (bubble, smoke, dust clouds, splashes, etc.)
 - Improved hydrostatic pressure simulation - less crazy behaviors at great depths
 - Added new materials:
 	- Soft Cloth
 	- Medium Lamps
 	- Fleeting Smoke Emitter - emits short-lived smoke
-	- Aerodynamic Iron - simulates lift and allows planes to climb
+	- Aerodynamic metals - simulates lift and allows planes to climb
+	- Water-Soluble metals - disintegrate with water
 - Improved "wild mast" issue, where masts on the ocean floor would pick up silt clouds from nowhere
 - Rendering improvements:
 	- Enabled multi-sampling, reducing aliasing around the ship's structure and landmasses

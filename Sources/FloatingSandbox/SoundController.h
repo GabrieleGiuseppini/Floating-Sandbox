@@ -157,7 +157,7 @@ public:
 
     void PlayScrubSound();
 
-    void PlayRotSound();
+    void PlayRustSound();
 
     void PlayPliersSound(bool isUnderwater);
 

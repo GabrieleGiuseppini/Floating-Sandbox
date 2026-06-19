@@ -119,7 +119,7 @@ enum class SoundType : uint32_t
     Snapshot,
     TerrainAdjust,
     Scrub,
-    Rot,
+    Rust,
     RepairStructure,
     ThanosSnap,
     WaveMaker,

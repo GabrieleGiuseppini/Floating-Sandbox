@@ -1747,18 +1747,17 @@
 			- Repair
 				- Test repairing heavily rotten/rusted structure
 
-		- Merge into master
-			- With PR for Android
+		+ Merge into master
+			+ With PR for Android
 
-		- Android port:
-			- ShipRenderContext/VBO changes
-			- Shader coloring changes
-			- New settings
-			- ScrubRot tool name change @ tool (cosmetic) and settings (mandated)
-			- Removal of ship_decay shaders
-			- changelist
+		+ Android port:
+			+ ShipRenderContext/VBO changes
+			+ Shader coloring changes
+			+ New settings
+			+ ScrubRot tool name change @ tool (cosmetic) and settings (mandated)
+			+ Removal of ship_decay shaders
 
-		- changelist
+		+ changelist
 
 		= Try multi-channel texture for rust and algae		
 			- New branch
