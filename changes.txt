@@ -1,4 +1,6 @@
 1.21.0
+- Added new Tornado tool!
+	- With tunable intensity, shape, and...temperature
 - Added water splashes and foam
 - Redesigned rot mechanics - we now have rotting, rusting, and algae growth accretion!
 - Quadrupled the number of ephemeral particles *and* optimized their integration workflow, achieving zero net CPU cost (!) and allowing for far more ephemerals (bubble, smoke, dust clouds, splashes, etc.)

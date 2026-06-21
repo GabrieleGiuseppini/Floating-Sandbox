@@ -3003,7 +3003,7 @@ public:
                         {
                             // Play sound
                             if (inputState.IsShiftKeyDown)
-                                mSoundController.PlayRotSound();
+                                mSoundController.PlayRustSound();
                             else
                                 mSoundController.PlayScrubSound();
 

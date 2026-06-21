@@ -567,7 +567,7 @@ private:
             case SoundType::TerrainAdjust:
             case SoundType::ThanosSnap:
             case SoundType::Scrub:
-            case SoundType::Rot:
+            case SoundType::Rust:
             case SoundType::Snapshot:
             case SoundType::Error:
                 return 2;
