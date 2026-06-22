@@ -1801,6 +1801,9 @@
 
 			- Calibration
 
+			- Test:
+				- All ship shaders work
+
 			- Make PR
 				- Port to Android
 					- Add to plan: calibration
