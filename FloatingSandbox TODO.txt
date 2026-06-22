@@ -1794,16 +1794,16 @@
 				+ Make colors based on paramShipHighQualityRendering
 				+ Use paramShipEnhancementsTextureSpaceMagnificationFactor
 
-			- Test:
+			+ Test:
 				+ nVidia
-				- All ship shaders work
-				- Rust, Algae on all ship shaders
-					- FIX: Draw structure (et al): doesn't pickup texture
-						- SetTextureParametersInAllShaders called early on after ShaderManager has been initialized
-							- Commit all
-							- Do above
-							- Nuke all the SetTextureParameters calls
-
+				+ All ship shaders work
+				+ Rust, Algae on all ship shaders
+					+ FIX: Draw structure (et al): doesn't pickup texture
+						+ SetTextureParametersInAllShaders called early on after ShaderManager has been initialized
+							+ Commit all
+							+ Do above
+							+ Nuke all SetTextureParameters calls
+						+ Tests
 			- Send beta
 				- Bump up version
 
@@ -1820,7 +1820,10 @@
 
 			- Make PR
 				- Port to Android
-					- Add to plan: calibration
+					- Add to plan: 
+						- Port ShaderManager::SetTextureParametersInAllShaders and hide public calls
+							- Nuke all calls to SetTextureParameters<Program>()
+						- Calibration
 				- Merge into master
 
 			

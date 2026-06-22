@@ -97,16 +97,6 @@ View::View(
         false,  // Don't need multi-sampling
         SimpleProgressCallback::Dummy());
 
-    // Set texture samplers in programs
-    mShaderManager->ActivateProgram<ProgramKind::MipMappedTextureQuad>();
-    mShaderManager->SetTextureParameters<ProgramKind::MipMappedTextureQuad>();
-    mShaderManager->ActivateProgram<ProgramKind::StructureMesh>();
-    mShaderManager->SetTextureParameters<ProgramKind::StructureMesh>();
-    mShaderManager->ActivateProgram<ProgramKind::Texture>();
-    mShaderManager->SetTextureParameters<ProgramKind::Texture>();
-    mShaderManager->ActivateProgram<ProgramKind::TextureNdc>();
-    mShaderManager->SetTextureParameters<ProgramKind::TextureNdc>();
-
     //
     // Create mipmapped texture atlas
     //

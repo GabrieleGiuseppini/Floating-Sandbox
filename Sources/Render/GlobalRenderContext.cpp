@@ -132,7 +132,6 @@ void GlobalRenderContext::InitializeGenericTextures()
 
     // Set FlamesBackground shader parameters
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFlamesBackground>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipFlamesBackground>();
     // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR in atlas)
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFlamesBackground, GameShaderSets::ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates>(
         fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasPixelDx);
@@ -142,7 +141,6 @@ void GlobalRenderContext::InitializeGenericTextures()
 
     // Set FlamesForeground shader parameters
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFlamesForeground>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipFlamesForeground>();
     // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR in atlas)
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFlamesForeground, GameShaderSets::ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates>(
         fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasPixelDx);
@@ -205,12 +203,6 @@ void GlobalRenderContext::InitializeGenericTextures()
 
     // Store metadata
     mGenericMipMappedTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase>>(genericMipMappedTextureAtlas.Metadata);
-
-    // Set texture in all shaders that use it
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::GenericMipMappedTexturesNdc>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::GenericMipMappedTexturesNdc>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures>();
 }
 
 void GlobalRenderContext::InitializeExplosionTextures()
@@ -248,10 +240,6 @@ void GlobalRenderContext::InitializeExplosionTextures()
 
     // Store metadata
     mExplosionTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GameTextureDatabases::ExplosionTextureDatabase>>(explosionTextureAtlas.Metadata);
-
-    // Set texture in ship shaders
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipExplosions>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipExplosions>();
 }
 
 void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<GameTextureDatabases::NpcTextureDatabase> && npcTextureAtlas)
@@ -286,10 +274,6 @@ void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<GameTextureDatabase
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     CheckOpenGLError();
-
-    // Set texture in ship shaders
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsTexture>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipNpcsTexture>();
 }
 
 void GlobalRenderContext::InitializeShipEnhancementsTexture()

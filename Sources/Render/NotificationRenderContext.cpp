@@ -103,11 +103,6 @@ NotificationRenderContext::NotificationRenderContext(
     //
 
     {
-
-        // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Text>();
-        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::Text>();
-
         // Initialize VBO
         glGenBuffers(1, &tmpGLuint);
         mTextVBO = tmpGLuint;
@@ -159,10 +154,6 @@ NotificationRenderContext::NotificationRenderContext(
     //
 
     {
-        // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::TextureNotifications>();
-        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::TextureNotifications>();
-
         // Initialize VAO
         glGenVertexArrays(1, &tmpGLuint);
         mTextureNotificationVAO = tmpGLuint;
@@ -207,10 +198,6 @@ NotificationRenderContext::NotificationRenderContext(
         CheckOpenGLError();
 
         glBindVertexArray(0);
-
-        // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::PhysicsProbePanel>();
-        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::PhysicsProbePanel>();
     }
 
     //
@@ -263,10 +250,6 @@ NotificationRenderContext::NotificationRenderContext(
         CheckOpenGLError();
 
         glBindVertexArray(0);
-
-        // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LaserRay>();
-        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LaserRay>();
     }
 
     //
@@ -298,10 +281,6 @@ NotificationRenderContext::NotificationRenderContext(
 
         glBindVertexArray(0);
 
-        // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification_NdcCoords>();
-        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::MultiNotification_NdcCoords>();
-
         // Prepare buffer
         mMultiNotificationNdcCoordsVertexBuffer.reserve(6 * 4); // Arbitrary
     }
@@ -332,10 +311,6 @@ NotificationRenderContext::NotificationRenderContext(
         CheckOpenGLError();
 
         glBindVertexArray(0);
-
-        // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification_WorldCoords>();
-        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::MultiNotification_WorldCoords>();
 
         // Prepare buffer
         mMultiNotificationWorldCoordsVertexBuffer.reserve(6 * 4); // Arbitrary
