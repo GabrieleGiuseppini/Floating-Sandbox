@@ -1760,25 +1760,47 @@
 		+ changelist
 
 		= Try multi-channel texture for rust and algae		
-			- New branch
-			- TODO: most of it is from git stash
+			+ New branch
+			- Recover code from git stash
 			- "ShipEnhancements" DB
+
+			- RenderParameters:
+				- New boolean: ShipHighQualityRendering
+					- Default: true
+					- Own dirty flag
+
+			- Shaders params:
+				= Enhancements texture
+				- ShipEnhancementsTextureSpaceMagnificationFactor (vec2)
+					- Calc'd by ShipRenderContext @ init, based on ship's world size and GlobalRenderContext::GetShipEnhancementsTextureWorldSize
+					- SetInAllShaders
+				- ShipHighQualityRendering
+					- Set at ShipRenderContext via ApplyShipQualityRenderModeChanges()
+					- Call ApplyShipQualityRenderModeChanges upon changes
+
 			- "ShipEnhancements" texture
 				- OpenGL param
 				- Activation & load @ GlobalRenderContext
 			- Ship VAOs: 
-				- TODOHERE: HighQuality flag
+				- Nothing
 
-			- Param for Ship shaders: ShipEnhancementsTextureSpaceMagnificationFactor (vec2)
-				- Calc'd by ShipRenderContext @ init, based on ship's world size and GlobalRenderContext::GetShipEnhancementsTextureWorldSize
-				- SetInAllShaders
+			- Shader:
+				- Make colors based on paramShipHighQualityRendering
+				- Use param ShipEnhancementsTextureSpaceMagnificationFactor
+
+			- SettingsWindow
 
 			- Texture finalization:
 				- Rust
 				- Algae
 				- GlobalRenderContext: build dual-channel
 
-			- Add to Android port plan
+			- Calibration
+
+			- Make PR
+				- Port to Android
+					- Add to plan: calibration
+				- Merge into master
 
 
 			- TODOOLD
