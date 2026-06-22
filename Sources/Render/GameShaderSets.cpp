@@ -487,6 +487,10 @@ ProgramParameterKind StrToProgramParameterKind(std::string const & str)
         return ProgramParameterKind::RainDensity;
     else if (str == "ShipDepthDarkeningSensitivity")
         return ProgramParameterKind::ShipDepthDarkeningSensitivity;
+    else if (str == "ShipEnhancementsTextureSpaceMagnificationFactor")
+        return ProgramParameterKind::ShipEnhancementsTextureSpaceMagnificationFactor;
+    else if (str == "ShipHighQualityRendering")
+        return ProgramParameterKind::ShipHighQualityRendering;
     else if (str == "ShipParticleRenderMode")
         return ProgramParameterKind::ShipParticleRenderMode;
     else if (str == "SimulationTime")
@@ -546,6 +550,8 @@ ProgramParameterKind StrToProgramParameterKind(std::string const & str)
         return ProgramParameterKind::NpcAtlasTexture;
     else if (str == "OceanTexture")
         return ProgramParameterKind::OceanTexture;
+    else if (str == "ShipEnhancementsTexture")
+        return ProgramParameterKind::ShipEnhancementsTexture;
     else
         throw GameException("Unrecognized Game program parameter \"" + str + "\"");
 }
@@ -610,6 +616,10 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
             return "RainDensity";
         case ProgramParameterKind::ShipDepthDarkeningSensitivity:
             return "ShipDepthDarkeningSensitivity";
+        case ProgramParameterKind::ShipEnhancementsTextureSpaceMagnificationFactor:
+            return "ShipEnhancementsTextureSpaceMagnificationFactor";
+        case ProgramParameterKind::ShipHighQualityRendering:
+            return "ShipHighQualityRendering";
         case ProgramParameterKind::ShipParticleRenderMode:
             return "ShipParticleRenderMode";
         case ProgramParameterKind::SimulationTime:
@@ -669,6 +679,8 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
             return "NpcAtlasTexture";
         case ProgramParameterKind::OceanTexture:
             return "OceanTexture";
+        case ProgramParameterKind::ShipEnhancementsTexture:
+            return "ShipEnhancementsTexture";
     }
 
     assert(false);

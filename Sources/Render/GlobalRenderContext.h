@@ -40,6 +40,8 @@ public:
 
     void InitializeNpcTextures(TextureAtlas<GameTextureDatabases::NpcTextureDatabase> && npcTextureAtlas);
 
+    void InitializeShipEnhancementsTexture();
+
     void ProcessParameterChanges(RenderParameters const & renderParameters);
 
     void RenderPrepareStart();
@@ -132,6 +134,8 @@ private:
     std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::ExplosionTextureDatabase>> mExplosionTextureAtlasMetadata;
 
     GameOpenGLTexture mNpcTextureAtlasOpenGLHandle;
+
+    GameOpenGLTexture mShipEnhancementsTextureOpenGLHandle;
 
     UploadedTextureManager<NoiseType> mUploadedNoiseTexturesManager;
     std::unique_ptr<Buffer2D<float, struct IntegralTag>> mPerlinNoise_4_32_043_ToUpload; // When set, will be uploaded in rendering thread

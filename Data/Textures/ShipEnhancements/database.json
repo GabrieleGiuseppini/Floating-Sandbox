@@ -1,0 +1,13 @@
+[
+
+{
+	"group_name": "ShipEnhancements",
+	"world_scaling": 1.0,
+	"frames":[
+		{				
+			"frame_name_pattern": "rust_\\d+"
+		}
+	]
+}
+
+]

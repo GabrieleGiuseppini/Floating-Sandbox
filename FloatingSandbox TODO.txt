@@ -1761,28 +1761,31 @@
 
 		= Try multi-channel texture for rust and algae		
 			+ New branch
-			- Recover code from git stash
-			- "ShipEnhancements" DB
+			+ Recover code from git stash
+				+ Shader
+				+ ShaderSets
+				+ GlobalRenderContext
+				+ ShipRenderContext - setting texture parameters
+			+ "ShipEnhancements" DB
 
-			- RenderParameters:
-				- New boolean: ShipHighQualityRendering
-					- Default: true
-					- Own dirty flag
+			+ RenderParameters:
+				+ New boolean: ShipHighQualityRendering
+					+ Default: true
+					+ Own dirty flag
 
-			- Shaders params:
-				= Enhancements texture
+			= Shaders params:
+				+ ShipEnhancements texture
 				- ShipEnhancementsTextureSpaceMagnificationFactor (vec2)
 					- Calc'd by ShipRenderContext @ init, based on ship's world size and GlobalRenderContext::GetShipEnhancementsTextureWorldSize
-					- SetInAllShaders
-				- ShipHighQualityRendering
-					- Set at ShipRenderContext via ApplyShipQualityRenderModeChanges()
-					- Call ApplyShipQualityRenderModeChanges upon changes
+						- SetInAllShaders
+				+ ShipHighQualityRendering
+					+ Set at ShipRenderContext via ApplyShipQualityRenderModeChanges()
+						+ SetInAllShaders
+					+ Call ApplyShipQualityRenderModeChanges upon changes
 
-			- "ShipEnhancements" texture
-				- OpenGL param
-				- Activation & load @ GlobalRenderContext
-			- Ship VAOs: 
-				- Nothing
+			+ "ShipEnhancements" texture
+				+ OpenGL param
+				+ Activation & load @ GlobalRenderContext
 
 			= Shader:
 				+ Make colors based on paramShipHighQualityRendering
@@ -1794,6 +1797,7 @@
 				- Rust
 				- Algae
 				- GlobalRenderContext: build dual-channel
+					- Load database instead of frames?
 
 			- Calibration
 

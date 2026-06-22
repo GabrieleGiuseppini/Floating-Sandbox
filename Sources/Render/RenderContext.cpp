@@ -165,18 +165,16 @@ RenderContext::RenderContext(
             mInnerContext->globalRenderContext->InitializeGenericTextures();
         });
 
-    progressCallback(0.2f, ProgressMessageType::LoadingExplosionTextureAtlas);
+    progressCallback(0.2f, ProgressMessageType::LoadingExplosionTextureAtlas); // ...and a bit more
 
     mRenderThread.RunSynchronously(
         [&]()
         {
             mInnerContext->globalRenderContext->InitializeExplosionTextures();
-        });
 
-    mRenderThread.RunSynchronously(
-        [&]()
-        {
             mInnerContext->globalRenderContext->InitializeNpcTextures(std::move(npcTextureAtlas)); // Safe as it's synchronous
+
+            mInnerContext->globalRenderContext->InitializeShipEnhancementsTexture();
         });
 
     mRenderThread.RunSynchronously(

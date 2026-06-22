@@ -23,6 +23,7 @@ GlobalRenderContext::GlobalRenderContext(
     , mExplosionTextureAtlasOpenGLHandle()
     , mExplosionTextureAtlasMetadata()
     , mNpcTextureAtlasOpenGLHandle()
+    , mShipEnhancementsTextureOpenGLHandle()
     , mUploadedNoiseTexturesManager()
     , mPerlinNoise_4_32_043_ToUpload()
     , mPerlinNoise_8_1024_073_ToUpload()
@@ -288,6 +289,35 @@ void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<GameTextureDatabase
     // Set texture in ship shaders
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsTexture>();
     mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipNpcsTexture>();
+}
+
+void GlobalRenderContext::InitializeShipEnhancementsTexture()
+{
+    // Activate texture
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::ShipEnhancementsTexture>();
+
+    // Create OpenGL handle
+    GLuint tmpGLuint;
+    glGenTextures(1, &tmpGLuint);
+    mShipEnhancementsTextureOpenGLHandle = tmpGLuint;
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mShipEnhancementsTextureOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload texture
+    auto frame = mAssetManager.LoadTextureDatabaseFrameRGBA("ShipEnhancements", "rust_0.png");
+    GameOpenGL::UploadTexture(frame);
+
+    // Set repeat mode
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    CheckOpenGLError();
+
+    // Set filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
 }
 
 void GlobalRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)

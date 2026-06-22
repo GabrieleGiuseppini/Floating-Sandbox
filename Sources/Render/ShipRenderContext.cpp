@@ -327,6 +327,32 @@ ShipRenderContext::ShipRenderContext(
         glBindVertexArray(0);
     }
 
+    // Set texture parameters in all ship shaders, as at this moment all texture units should be activated
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTexture>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTexture>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureStress>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureStress>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlay>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlay>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlayStress>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlayStress>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureIncandescence>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureIncandescence>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureIncandescenceStress>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureIncandescenceStress>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTexture>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTexture>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureStress>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureStress>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlay>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlay>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlayStress>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlayStress>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescence>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescence>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
+
     //
     // Initialize Debris VAO
     //
@@ -787,7 +813,6 @@ ShipRenderContext::ShipRenderContext(
         CheckOpenGLError();
     }
 
-
     //
     // Set initial values of non-render parameters from which
     // other parameters are calculated
@@ -801,6 +826,7 @@ ShipRenderContext::ShipRenderContext(
     // Update parameters for initial values
     //
 
+    ApplyShipQualityRenderModeChanges(renderParameters);
     ApplyShipViewModeChanges(renderParameters);
     ApplyShipStructureRenderModeChanges(renderParameters);
     ApplyViewModelChanges(renderParameters);
@@ -1193,6 +1219,11 @@ void ShipRenderContext::UploadEnd()
 
 void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)
 {
+    if (renderParameters.IsShipHighQualityRenderingDirty)
+    {
+        ApplyShipQualityRenderModeChanges(renderParameters);
+    }
+
     if (renderParameters.IsShipViewModeDirty)
     {
         ApplyShipViewModeChanges(renderParameters);
@@ -2583,6 +2614,18 @@ void ShipRenderContext::RenderDrawPointToPointArrows(RenderParameters const & /*
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+void ShipRenderContext::ApplyShipQualityRenderModeChanges(RenderParameters const & renderParameters)
+{
+    if (renderParameters.IsShipHighQualityRendering)
+    {
+        mShaderManager.SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::ShipHighQualityRendering>(1.0f);
+    }
+    else
+    {
+        mShaderManager.SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::ShipHighQualityRendering>(0.0f);
+    }
+}
+
 void ShipRenderContext::ApplyShipViewModeChanges(RenderParameters const & renderParameters)
 {
     //
@@ -2631,32 +2674,6 @@ void ShipRenderContext::ApplyShipViewModeChanges(RenderParameters const & render
             break;
         }
     }
-
-    // Set texture parameter in shaders
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTexture>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTexture>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureStress>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureStress>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlay>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlay>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlayStress>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlayStress>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureIncandescence>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureIncandescence>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureIncandescenceStress>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureIncandescenceStress>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTexture>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTexture>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureStress>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureStress>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlay>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlay>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlayStress>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlayStress>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescence>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescence>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
 }
 
 void ShipRenderContext::ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters)

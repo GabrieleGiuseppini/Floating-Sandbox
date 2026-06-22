@@ -1468,6 +1468,7 @@ private:
     void RenderPreparePointToPointArrows(RenderParameters const & renderParameters);
     void RenderDrawPointToPointArrows(RenderParameters const & renderParameters);
 
+    void ApplyShipQualityRenderModeChanges(RenderParameters const & renderParameters);
     void ApplyShipViewModeChanges(RenderParameters const & renderParameters);
     void ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters);
     void ApplyViewModelChanges(RenderParameters const & renderParameters);

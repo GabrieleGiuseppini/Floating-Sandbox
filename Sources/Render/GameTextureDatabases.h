@@ -295,4 +295,27 @@ struct NpcTextureDatabase
     }
 };
 
+// Ship enhancements
+
+enum class ShipEnhancementsTextureGroups : uint16_t
+{
+    ShipEnhancements = 0,
+
+    _Last = ShipEnhancements
+};
+
+struct ShipEnhancementsTextureDatabase
+{
+    static inline std::string DatabaseName = "ShipEnhancements";
+
+    using TextureGroupsType = ShipEnhancementsTextureGroups;
+
+    static ShipEnhancementsTextureGroups StrToTextureGroup(std::string const & str)
+    {
+        if (Utils::CaseInsensitiveEquals(str, "ShipEnhancements"))
+            return ShipEnhancementsTextureGroups::ShipEnhancements;
+        else
+            throw GameException("Unrecognized ShipEnhancements texture group \"" + str + "\"");
+    }
+};
 }
