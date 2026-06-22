@@ -1784,9 +1784,9 @@
 			- Ship VAOs: 
 				- Nothing
 
-			- Shader:
-				- Make colors based on paramShipHighQualityRendering
-				- Use param ShipEnhancementsTextureSpaceMagnificationFactor
+			= Shader:
+				+ Make colors based on paramShipHighQualityRendering
+				- Use paramShipEnhancementsTextureSpaceMagnificationFactor
 
 			- SettingsWindow
 
