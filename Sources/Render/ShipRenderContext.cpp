@@ -328,6 +328,7 @@ ShipRenderContext::ShipRenderContext(
     }
 
     // Set texture parameters in all ship shaders, as at this moment all texture units should be activated
+    // TODOHERE: _all_ _shaders
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTexture>();
     mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTexture>();
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureStress>();

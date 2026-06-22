@@ -1794,17 +1794,29 @@
 				+ Make colors based on paramShipHighQualityRendering
 				+ Use paramShipEnhancementsTextureSpaceMagnificationFactor
 
+			- Test:
+				+ nVidia
+				- All ship shaders work
+				- Rust, Algae on all ship shaders
+					- FIX: Draw structure (et al): doesn't pickup texture
+						- SetTextureParametersInAllShaders called early on after ShaderManager has been initialized
+							- Commit all
+							- Do above
+							- Nuke all the SetTextureParameters calls
+
+			- Send beta
+				- Bump up version
+
 			- SettingsWindow
 
 			- Texture finalization:
 				- Rust
+					- Rust0220, exists @ 1024
 				- Algae
+					- Mossy Rock 4 / Albedo (search: "algae seamless"), exists @ 4096
 
 			- Calibration
 
-			- Test:
-				- All ship shaders work
-				- Rust, Algae on all ship shaders
 
 			- Make PR
 				- Port to Android
