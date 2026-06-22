@@ -1892,7 +1892,7 @@ void View::UpdateStructuralLayerVisualizationParameters()
     // Set ship particle texture size - normalized size (i.e. in the 0->1 texture space) of 1 ship particle pixel (w, h separately)
     //
 
-    vec2f const pixelsPerShipParticle = mViewModel.ShipSpaceSizeToPhysicalDisplaySize({ 1, 1 }).ToFloat();
+    FloatSize const pixelsPerShipParticle = mViewModel.ShipSpaceSizeToPhysicalDisplaySize({ 1, 1 }).ToFloat<FloatSize>();
 
     float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
     float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
@@ -1902,7 +1902,7 @@ void View::UpdateStructuralLayerVisualizationParameters()
         1.0f / shipHeight);
 
     mShaderManager->ActivateProgram<ProgramKind::StructureMesh>();
-    mShaderManager->SetProgramParameter<ProgramKind::StructureMesh, ProgramParameterKind::PixelsPerShipParticle>(pixelsPerShipParticle.x, pixelsPerShipParticle.y);
+    mShaderManager->SetProgramParameter<ProgramKind::StructureMesh, ProgramParameterKind::PixelsPerShipParticle>(pixelsPerShipParticle.width, pixelsPerShipParticle.height);
     mShaderManager->SetProgramParameter<ProgramKind::StructureMesh, ProgramParameterKind::ShipParticleTextureSize>(shipParticleTextureSize.x, shipParticleTextureSize.y);
 }
 
@@ -2151,7 +2151,7 @@ void View::UpdateRectOverlay()
             static_cast<float>(mRectOverlayShipSpaceRect->origin.x + mRectOverlayShipSpaceRect->size.width),
             static_cast<float>(mRectOverlayShipSpaceRect->origin.y));
 
-        rectPhysSize = mViewModel.ShipSpaceSizeToPhysicalDisplaySize(mRectOverlayShipSpaceRect->size).ToFloat();
+        rectPhysSize = mViewModel.ShipSpaceSizeToPhysicalDisplaySize(mRectOverlayShipSpaceRect->size).ToFloat<vec2f>();
     }
     else if (mRectOverlayExteriorTextureSpaceRect.has_value())
     {
@@ -2272,7 +2272,7 @@ void View::UpdateDashedLineOverlay()
 
         ShipSpaceSize const shipRect(std::abs(p.first.x - p.second.x), std::abs(p.first.y - p.second.y));
         DisplayPhysicalSize physRec = mViewModel.ShipSpaceSizeToPhysicalDisplaySize(shipRect);
-        float pixelLength = physRec.ToFloat().length();
+        float pixelLength = physRec.ToFloat<vec2f>().length();
 
         // Normalize length so it's a multiple of the period + 1/2 period
         float constexpr DashPeriod = 8.0f; // 4 + 4

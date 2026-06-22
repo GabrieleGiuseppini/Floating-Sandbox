@@ -840,6 +840,7 @@ public:
         size_t shipPointCount, // Ship-only points
         size_t maxEphemeralParticles,
         size_t maxSpringsPerPoint,
+        FloatSize shipWorldSize,
         RgbaImageData exteriorTextureImage,
         RgbaImageData interiorViewImage);
 

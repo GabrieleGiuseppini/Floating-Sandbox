@@ -24,6 +24,7 @@ GlobalRenderContext::GlobalRenderContext(
     , mExplosionTextureAtlasMetadata()
     , mNpcTextureAtlasOpenGLHandle()
     , mShipEnhancementsTextureOpenGLHandle()
+    , mShipEnchancementsWorldDimensions(0.0f, 0.0f) // Will be recalculated
     , mUploadedNoiseTexturesManager()
     , mPerlinNoise_4_32_043_ToUpload()
     , mPerlinNoise_8_1024_073_ToUpload()
@@ -293,6 +294,29 @@ void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<GameTextureDatabase
 
 void GlobalRenderContext::InitializeShipEnhancementsTexture()
 {
+    // Load texture database
+    auto shipEnhancementsTextureDatabase = TextureDatabase<GameTextureDatabases::ShipEnhancementsTextureDatabase>::Load(mAssetManager);
+
+    // Make image mixing channels
+    auto rustFrame = shipEnhancementsTextureDatabase.GetGroup(GameTextureDatabases::ShipEnhancementsTextureGroups::ShipEnhancements).LoadFrame(0, mAssetManager);
+    auto algaeGrowthFrame = shipEnhancementsTextureDatabase.GetGroup(GameTextureDatabases::ShipEnhancementsTextureGroups::ShipEnhancements).LoadFrame(1, mAssetManager);
+    assert(rustFrame.TextureData.Size == algaeGrowthFrame.TextureData.Size);
+    RgbaImageData::Transform(
+        rustFrame.TextureData,
+        [&](rgbaColor const & rustSample, ImageCoordinates const & coords) -> rgbaColor
+        {
+            auto const & algaeGrowthSample = algaeGrowthFrame.TextureData[coords];
+
+            return rgbaColor(
+                rustSample.r,
+                rustSample.g,
+                algaeGrowthSample.r,
+                algaeGrowthSample.g);
+        });
+
+    // Remember world dimensions
+    mShipEnchancementsWorldDimensions = FloatSize(rustFrame.Metadata.WorldWidth, rustFrame.Metadata.WorldHeight);
+
     // Activate texture
     mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::ShipEnhancementsTexture>();
 
@@ -306,8 +330,7 @@ void GlobalRenderContext::InitializeShipEnhancementsTexture()
     CheckOpenGLError();
 
     // Upload texture
-    auto frame = mAssetManager.LoadTextureDatabaseFrameRGBA("ShipEnhancements", "rust_0.png");
-    GameOpenGL::UploadTexture(frame);
+    GameOpenGL::UploadTexture(rustFrame.TextureData);
 
     // Set repeat mode
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

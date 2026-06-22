@@ -345,8 +345,8 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
     // Visit all triangles and render their floors
     //
 
-    vec2f const shipSizeF = shipSize.ToFloat();
-    vec2f const textureSizeF = interiorView.Size.ToFloat();
+    vec2f const shipSizeF = shipSize.ToFloat<vec2f>();
+    vec2f const textureSizeF = interiorView.Size.ToFloat<vec2f>();
 
     // Size of the quad occupied by two triangles adjoined along
     // their diagonals, in pixels

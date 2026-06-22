@@ -80,6 +80,11 @@ public:
         return *mExplosionTextureAtlasMetadata;
     }
 
+    inline FloatSize GetShipEnchancementsWorldDimensions() const
+    {
+        return mShipEnchancementsWorldDimensions;
+    }
+
     inline GLuint GetNoiseTextureOpenGLHandle(NoiseType noiseType) const
     {
         return mUploadedNoiseTexturesManager.GetOpenGLHandle(noiseType);
@@ -136,6 +141,7 @@ private:
     GameOpenGLTexture mNpcTextureAtlasOpenGLHandle;
 
     GameOpenGLTexture mShipEnhancementsTextureOpenGLHandle;
+    FloatSize mShipEnchancementsWorldDimensions;
 
     UploadedTextureManager<NoiseType> mUploadedNoiseTexturesManager;
     std::unique_ptr<Buffer2D<float, struct IntegralTag>> mPerlinNoise_4_32_043_ToUpload; // When set, will be uploaded in rendering thread

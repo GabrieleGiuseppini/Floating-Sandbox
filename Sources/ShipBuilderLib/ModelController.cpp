@@ -423,7 +423,7 @@ void ModelController::ResizeShip(
 
         mModel.SetExteriorTextureLayer(
             mModel.GetExteriorTextureLayer().MakeReframed(
-                ImageSize::FromFloatRound(newSize.ToFloat().scale(shipToTexture)),
+                ImageSize::FromFloatRound(newSize.ToFloat<vec2f>().scale(shipToTexture)),
                 ImageCoordinates::FromFloatRound(originOffset.ToFloat().scale(shipToTexture)),
                 rgbaColor(0, 0, 0, 0)));
 
@@ -440,7 +440,7 @@ void ModelController::ResizeShip(
 
         mModel.SetInteriorTextureLayer(
             mModel.GetInteriorTextureLayer().MakeReframed(
-                ImageSize::FromFloatRound(newSize.ToFloat().scale(shipToTexture)),
+                ImageSize::FromFloatRound(newSize.ToFloat<vec2f>().scale(shipToTexture)),
                 ImageCoordinates::FromFloatRound(originOffset.ToFloat().scale(shipToTexture)),
                 rgbaColor(0, 0, 0, 0)));
 

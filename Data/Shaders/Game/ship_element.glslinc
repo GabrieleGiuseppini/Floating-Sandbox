@@ -85,6 +85,7 @@ uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
 #endif
 uniform vec3 paramLampLightColor;
+uniform vec2 paramShipEnhancementsTextureSpaceMagnificationFactor;
 uniform float paramShipHighQualityRendering;
 #if HEAT_RENDER_MODE != 0
 uniform float paramHeatShift;
@@ -118,9 +119,10 @@ void main()
     vec3 algaeGrowthSample;
     if (paramShipHighQualityRendering != 0.0f)
     {
-        // TODOHERE
-        rustSample = texture2D(paramShipEnhancementsTexture, vertexTextureCoords * vec2(15.0, 6.0)).rgb;
-        algaeGrowthSample = vec3(ALGAE_GROWTH_COLOR);
+        vec4 shipEnhancementSample = texture2D(paramShipEnhancementsTexture, vertexTextureCoords * paramShipEnhancementsTextureSpaceMagnificationFactor);
+
+        rustSample = vec3(shipEnhancementSample.r, shipEnhancementSample.g, 0.0);
+        algaeGrowthSample = vec3(shipEnhancementSample.b, shipEnhancementSample.a, 0.0);
     }
     else
     {

@@ -338,6 +338,7 @@ void RenderContext::AddShip(
     size_t shipPointCount,
     size_t maxEphemeralParticles,
     size_t maxSpringsPerPoint,
+    FloatSize shipWorldSize,
     RgbaImageData exteriorTextureImage,
     RgbaImageData interiorViewImage)
 {
@@ -373,6 +374,7 @@ void RenderContext::AddShip(
                     shipPointCount,
                     maxEphemeralParticles,
                     maxSpringsPerPoint,
+                    shipWorldSize,
                     std::move(exteriorTextureImage),
                     std::move(interiorViewImage),
                     *mInnerContext->shaderManager,

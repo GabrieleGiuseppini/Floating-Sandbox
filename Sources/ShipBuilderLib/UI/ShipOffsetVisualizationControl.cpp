@@ -90,17 +90,17 @@ void ShipOffsetVisualizationControl::OnChange()
     float const niceWorldX = static_cast<float>(GetSize().GetWidth() - Margin - Margin) / 2.0f;
     float const niceWorldY = static_cast<float>(GetSize().GetHeight() - Margin - Margin) / 2.0f;
 
-    vec2f const shipWorldSize = 
+    auto const shipWorldSize =
         ShipSpaceSize(mShipVisualization.GetWidth(), mShipVisualization.GetHeight())
-        .ToFractionalCoords(mShipSpaceToWorldSpaceCoordsRatio);
+        .ToFractionalCoords<FloatSize>(mShipSpaceToWorldSpaceCoordsRatio);
 
     float const furthestShipX = std::max(
-        std::abs(mOffsetX - shipWorldSize.x / 2.0f),     // L
-        std::abs(mOffsetX + shipWorldSize.x / 2.0f));    // R
+        std::abs(mOffsetX - shipWorldSize.width / 2.0f),     // L
+        std::abs(mOffsetX + shipWorldSize.width / 2.0f));    // R
 
     float const furthestShipY = std::max(
-        std::abs(mOffsetY + shipWorldSize.y),   // Top
-        std::abs(mOffsetY));                    // Bottom
+        std::abs(mOffsetY + shipWorldSize.height), // Top
+        std::abs(mOffsetY));                       // Bottom
 
     // Calculate multiplier to bring ship's furthest point (L, R, T, or B) at "nice place"
     float const bestShipSpaceMultiplier = std::min(
@@ -110,9 +110,9 @@ void ShipOffsetVisualizationControl::OnChange()
     //
     // Create rescaled ship
     //
-    
-    float const rescaledWidth = shipWorldSize.x * bestShipSpaceMultiplier;
-    float const rescaledHeight = shipWorldSize.y * bestShipSpaceMultiplier;
+
+    float const rescaledWidth = shipWorldSize.width * bestShipSpaceMultiplier;
+    float const rescaledHeight = shipWorldSize.height * bestShipSpaceMultiplier;
 
     mResizedShipBitmap = wxBitmap(
         mShipVisualization.Scale(

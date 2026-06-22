@@ -18,6 +18,7 @@ ShipRenderContext::ShipRenderContext(
     size_t shipPointCount,
     size_t maxEphemeralParticles,
     size_t maxSpringsPerPoint,
+    FloatSize shipWorldSize,
     RgbaImageData exteriorViewImage,
     RgbaImageData interiorViewImage,
     ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
@@ -168,7 +169,6 @@ ShipRenderContext::ShipRenderContext(
 
     // Clear errors
     glGetError();
-
 
     //
     // Initialize buffers
@@ -352,6 +352,13 @@ ShipRenderContext::ShipRenderContext(
     mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescence>();
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
     mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
+
+    // Initialize ship enhancements world scaling
+    auto const & shipEnhancementsWorldSize = mGlobalRenderContext.GetShipEnchancementsWorldDimensions();
+    mShaderManager.SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::ShipEnhancementsTextureSpaceMagnificationFactor>(
+        vec2f(
+            shipWorldSize.width / shipEnhancementsWorldSize.width,
+            shipWorldSize.height / shipEnhancementsWorldSize.height));
 
     //
     // Initialize Debris VAO

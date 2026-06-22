@@ -72,6 +72,7 @@ namespace Physics {
 
 Ship::Ship(
     ShipId id,
+    FloatSize const & worldSize,
     World & parentWorld,
     MaterialDatabase const & materialDatabase,
     SimulationEventDispatcher & simulationEventDispatcher,
@@ -82,6 +83,7 @@ Ship::Ship(
     Frontiers && frontiers,
     RgbaImageData && interiorTextureImage)
     : mId(id)
+    , mWorldSize(worldSize)
     , mParentWorld(parentWorld)
     , mMaterialDatabase(materialDatabase)
     , mSimulationEventHandler(simulationEventDispatcher)

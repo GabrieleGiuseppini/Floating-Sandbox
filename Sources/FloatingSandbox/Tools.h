@@ -345,7 +345,7 @@ public:
                     integralOffset);
 
                 // Accumulate debt
-                mCurrentTrajectory->CumulativeUnconsumedMoveOffset = fractionalOffset - integralOffset.ToFloat();
+                mCurrentTrajectory->CumulativeUnconsumedMoveOffset = fractionalOffset - integralOffset.ToFloat<vec2f>();
             }
             else
             {
@@ -774,7 +774,7 @@ public:
                 }
 
                 // Accumulate debt
-                trajectory.CumulativeUnconsumedMoveOffset = fractionalOffset - integralOffset.ToFloat();
+                trajectory.CumulativeUnconsumedMoveOffset = fractionalOffset - integralOffset.ToFloat<vec2f>();
 
                 // Store new current position
                 trajectory.CurrentPosition = newCurrentPosition;
@@ -2769,7 +2769,7 @@ public:
 
                     // Display angle
 
-                    int lineAngle = static_cast<int>(std::roundf((end - start).ToFloat().angleCw() / (2.0f * Pi<float>) * 360.0f));
+                    int lineAngle = static_cast<int>(std::roundf((end - start).ToFloat<vec2f>().angleCw() / (2.0f * Pi<float>) * 360.0f));
                     if (lineAngle > 90)
                     {
                         lineAngle = 180 - lineAngle;
@@ -2992,7 +2992,7 @@ public:
                 // See if we should emit a sound
                 if (hasStriked)
                 {
-                    vec2f const newStrikeVector = (inputState.MousePosition - *mPreviousMousePos).ToFloat();
+                    vec2f const newStrikeVector = (inputState.MousePosition - *mPreviousMousePos).ToFloat<vec2f>();
                     if (newStrikeVector.length() > 1.0f)
                     {
                         auto const now = std::chrono::steady_clock::now();

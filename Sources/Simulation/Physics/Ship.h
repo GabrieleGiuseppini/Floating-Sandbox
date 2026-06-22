@@ -43,6 +43,7 @@ public:
 
     Ship(
         ShipId id,
+        FloatSize const & worldSize,
         World & parentWorld,
         MaterialDatabase const & materialDatabase,
         SimulationEventDispatcher & simulationEventDispatcher,
@@ -56,6 +57,8 @@ public:
     void Announce();
 
     ShipId GetId() const { return mId; }
+
+    FloatSize GetWorldSize() const { return mWorldSize; }
 
     World const & GetParentWorld() const { return mParentWorld; }
     World & GetParentWorld() { return mParentWorld; }
@@ -1062,6 +1065,7 @@ private:
 private:
 
     ShipId const mId;
+    FloatSize const mWorldSize;
     World & mParentWorld;
     MaterialDatabase const & mMaterialDatabase;
     SimulationEventDispatcher & mSimulationEventHandler;

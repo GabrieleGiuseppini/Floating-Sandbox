@@ -48,6 +48,7 @@ public:
         size_t shipPointCount, // Ship-only count (aligned)
         size_t maxEphemeralParticles,
         size_t maxSpringsPerPoint,
+        FloatSize shipWorldSize,
         RgbaImageData exteriorViewImage,
         RgbaImageData interiorViewImage,
         ShaderManager<GameShaderSets::ShaderSet> & shaderManager,

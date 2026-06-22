@@ -453,6 +453,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
 
     auto ship = std::make_unique<Ship>(
         shipId,
+        shipSize.ToFloat<FloatSize>(),
         parentWorld,
         materialDatabase,
         simulationEventDispatcher,
