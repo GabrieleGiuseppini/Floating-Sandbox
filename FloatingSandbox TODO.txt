@@ -1733,7 +1733,7 @@
 				+ Copy from Low-Grade Iron, call it "Water-Soluble Low-Grade Iron"
 			+ Change test ship & test
 
-		- Test:
+		+ Test:
 			+ StressedSprings shader - no regressions
 			+ InternalPressure shader - no regressions
 			+ Strength shader - no regressions
@@ -1744,8 +1744,8 @@
 			+ Lego doesn't rot nor rust nor dissolves
 			+ Water Soluble Metal: dissolves
 			+ Tornadoes: weaken
-			- Repair
-				- Test repairing heavily rotten/rusted structure
+			+ Repair
+				+ Test repairing heavily rotten/rusted structure
 
 		+ Merge into master
 			+ With PR for Android
