@@ -4777,25 +4777,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // See Ship Through Water
-            {
-                mSeeShipThroughOceanCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("See Ship Through Water"));
-                mSeeShipThroughOceanCheckBox->SetToolTip(_("Shows the ship either behind the sea water or in front of it."));
-                mSeeShipThroughOceanCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
-                    [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue(GameSettings::ShowShipThroughOcean, event.IsChecked());
-                        OnLiveSettingsChanged();
-                    });
-
-                sizer->Add(
-                    mSeeShipThroughOceanCheckBox,
-                    wxGBPosition(2, 0),
-                    wxGBSpan(1, 1),
-                    wxALL,
-                    CellBorderInner);
-            }
-
             // Ocean Transparency
             {
                 mOceanTransparencySlider = new SliderControl<float>(
@@ -4817,8 +4798,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mOceanTransparencySlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(3, 1),
-                    wxALL,
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
@@ -4844,8 +4825,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mOceanDepthDarkeningRateSlider,
                     wxGBPosition(0, 2),
-                    wxGBSpan(3, 1),
-                    wxALL,
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
@@ -5225,6 +5206,25 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // High-quality rendering
+            {
+                mShipRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Rendering"));
+                mShipRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders the ship with additional details. Requires more computational resources."));
+                mShipRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::ShipHighQualityRendering, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mShipRenderDetailModeDetailedCheckBox,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
             // Heat sensitivity
             {
                 mHeatSensitivitySlider = new SliderControl<float>(
@@ -5246,7 +5246,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mHeatSensitivitySlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -5272,7 +5272,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mShipAmbientLightSensitivitySlider,
                     wxGBPosition(0, 2),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -5298,7 +5298,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mShipDepthDarkeningSensitivitySlider,
                     wxGBPosition(0, 3),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -5324,7 +5324,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mShipFlameSizeAdjustmentSlider,
                     wxGBPosition(0, 4),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -5350,7 +5350,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mShipFlameKaosAdjustmentSlider,
                     wxGBPosition(0, 5),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -5420,7 +5420,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mWaterContrastSlider,
                     wxGBPosition(1, 0),
-                    wxGBSpan(1, 1),
+                    wxGBSpan(2, 1),
                     wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                     CellBorderInner);
             }
@@ -5446,12 +5446,14 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mWaterLevelOfDetailSlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(2, 1),
-                    wxALL,
+                    wxGBSpan(3, 1),
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            sizer->AddGrowableRow(2);
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5999,6 +6001,19 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
     // Extra Draw Options
     {
         wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Extra Draw Options"));
+
+        {
+            mSeeShipThroughOceanCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("See Ship Through Water"));
+            mSeeShipThroughOceanCheckBox->SetToolTip(_("Shows the ship either behind the sea water or in front of it."));
+            mSeeShipThroughOceanCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                [this](wxCommandEvent & event)
+                {
+                    mLiveSettings.SetValue(GameSettings::ShowShipThroughOcean, event.IsChecked());
+                    OnLiveSettingsChanged();
+                });
+
+            boxSizer->Add(mSeeShipThroughOceanCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+        }
 
         {
             mDrawExplosionsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Draw Explosions"));
@@ -6999,7 +7014,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mFlatOceanColorPicker->SetColour(wxColor(flatOceanColor.r, flatOceanColor.g, flatOceanColor.b));
 
     mOceanRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<OceanRenderDetailType>(GameSettings::OceanRenderDetail) == OceanRenderDetailType::Detailed);
-    mSeeShipThroughOceanCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipThroughOcean));
     mOceanTransparencySlider->SetValue(settings.GetValue<float>(GameSettings::OceanTransparency));
     mOceanDepthDarkeningRateSlider->SetValue(settings.GetValue<float>(GameSettings::OceanDepthDarkeningRate));
 
@@ -7112,6 +7126,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         }
     }
 
+    mShipRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShipHighQualityRendering));
     mShipFlameSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameSizeAdjustment));
     mShipFlameKaosAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameKaosAdjustment));
     mShipAmbientLightSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::ShipAmbientLightSensitivity));
@@ -7216,6 +7231,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         }
     }
 
+    mSeeShipThroughOceanCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipThroughOcean));
     mDrawExplosionsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawExplosions));
     mDrawFlamesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawFlames));
     mShowFrontiersCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipFrontiers));
