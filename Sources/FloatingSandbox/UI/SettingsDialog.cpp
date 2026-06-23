@@ -1924,14 +1924,12 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
                     });
 
-                auto sizer = windSizer->Add(
+                windSizer->Add(
                     mModulateWindCheckBox,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
+                    wxEXPAND | wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
                     CellBorderInner);
-
-                sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
             }
 
             // Wind Gust Amplitude
@@ -1940,7 +1938,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     windBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Gust Amplitude"),
                     _("The amplitude of wind gusts, as a multiplier of the base wind speed."),
                     [this](float value)
@@ -2068,6 +2066,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            wavesSizer->AddGrowableRow(0);
+
             WxHelpers::MakeAllColumnsExpandable(wavesSizer);
 
             wavesBoxSizer->Add(
@@ -2122,6 +2122,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
+
+            interactiveWavesSizer->AddGrowableRow(0);
 
             WxHelpers::MakeAllColumnsExpandable(interactiveWavesSizer);
 
@@ -2209,7 +2211,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     displacementWavesBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Foam Sensitivity"),
                     _("Adjusts the sensitivity for creating foam on the ocean surface upon disturbances. Set to zero to disable foam altogether."),
                     [this](float value)
@@ -2236,7 +2238,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     displacementWavesBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Foam Persistence"),
                     _("Adjusts how long foam takes to settle."),
                     [this](float value)
@@ -2262,7 +2264,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     displacementWavesBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Splash Sensitivity"),
                     _("Adjusts the sensitivity for creating splashes on the ocean surface upon disturbances. Set to zero to disable splashes altogether."),
                     [this](float value)
