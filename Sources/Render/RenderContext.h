@@ -685,6 +685,17 @@ public:
         mRenderParameters.AreShipStructureRenderModeSelectorsDirty = true;
     }
 
+    bool GetShipHighQualityRendering() const
+    {
+        return mRenderParameters.IsShipHighQualityRendering;
+    }
+
+    void SetShipHighQualityRendering(bool isHighQualityRendering)
+    {
+        mRenderParameters.IsShipHighQualityRendering = isHighQualityRendering;
+        mRenderParameters.IsShipHighQualityRenderingDirty = true;
+    }
+
     VectorFieldRenderModeType GetVectorFieldRenderMode() const
     {
         return mVectorFieldRenderMode;

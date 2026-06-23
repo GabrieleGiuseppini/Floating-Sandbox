@@ -1147,6 +1147,9 @@ public:
     StressRenderModeType GetStressRenderMode() const override { return mRenderContext->GetStressRenderMode(); }
     void SetStressRenderMode(StressRenderModeType value) override { mRenderContext->SetStressRenderMode(value); }
 
+    bool GetShipHighQualityRendering() const override { return mRenderContext->GetShipHighQualityRendering(); };
+    void SetShipHighQualityRendering(bool value) override { mRenderContext->SetShipHighQualityRendering(value); }
+
     bool GetDrawExplosions() const override { return mRenderContext->GetDrawExplosions(); }
     void SetDrawExplosions(bool value) override { mRenderContext->SetDrawExplosions(value); }
 

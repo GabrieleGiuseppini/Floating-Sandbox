@@ -221,6 +221,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(HeatRenderModeType, HeatRenderMode);
     ADD_GC_SETTING(float, HeatSensitivity);
     ADD_GC_SETTING(StressRenderModeType, StressRenderMode);
+    ADD_GC_SETTING(bool, ShipHighQualityRendering);
     ADD_GC_SETTING(bool, DrawExplosions);
     ADD_GC_SETTING(bool, DrawFlames);
     ADD_GC_SETTING(float, ShipFlameSizeAdjustment);

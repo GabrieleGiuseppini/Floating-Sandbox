@@ -1808,7 +1808,10 @@
 			+ Rot<->Rust
 			+ Non-damaged rust
 
-			- SettingsWindow
+			= SettingsWindow
+				- Move Render panel's "See Ship Through Water" to "Advanced", as lst in existing
+					- This should shorten upper panel
+				- Fix water sliders if needed
 
 			- Send beta
 				- Bump up version
@@ -1857,6 +1860,9 @@
 
 
 	+ Aerodynamic aluminium (colors as well)
+
+	- Try: ash with Thanos' snap
+		- New material, not in palette, with unique key
 
 	- See: jet flames covered by silt clouds
 		- Apparently, silt clouds' low-alpha is covering jet flames
