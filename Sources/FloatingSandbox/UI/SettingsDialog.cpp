@@ -4820,7 +4820,10 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            sizer->AddGrowableRow(1);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -4968,7 +4971,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5048,7 +5051,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllExpandable(sizer);
+
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5092,7 +5097,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllExpandable(sizer);
+
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5345,7 +5352,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllExpandable(sizer);
+
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5441,9 +5450,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            sizer->AddGrowableRow(1);
+            WxHelpers::MakeAllExpandable(sizer);
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5599,7 +5608,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5748,7 +5757,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -5825,7 +5834,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -5905,7 +5914,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -6272,7 +6281,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(performanceSizer);
+            WxHelpers::MakeAllExpandable(performanceSizer);
 
             performanceBoxSizer->Add(
                 performanceSizer,
@@ -6291,7 +6300,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -6748,7 +6757,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -6801,7 +6810,7 @@ void SettingsDialog::PopulateParallelismExperimentsPanel(wxPanel * panel)
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
