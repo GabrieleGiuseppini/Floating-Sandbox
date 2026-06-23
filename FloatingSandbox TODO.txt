@@ -1804,6 +1804,10 @@
 							+ Do above
 							+ Nuke all SetTextureParameters calls
 						+ Tests
+
+			+ Rot<->Rust
+			- Non-damaged rust
+
 			- Send beta
 				- Bump up version
 
@@ -1816,6 +1820,10 @@
 					- Mossy Rock 4 / Albedo (search: "algae seamless"), exists @ 4096
 
 			- Calibration
+
+			- If won't fly, take these commits:
+				- Rot<->Rust
+				- Non-damaged rust
 
 
 			- Make PR
