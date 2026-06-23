@@ -4978,7 +4978,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5058,7 +5058,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5102,7 +5102,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5355,7 +5355,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5420,7 +5420,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mWaterContrastSlider,
                     wxGBPosition(1, 0),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(1, 1),
                     wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                     CellBorderInner);
             }
@@ -5446,12 +5446,12 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mWaterLevelOfDetailSlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(3, 1),
+                    wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            sizer->AddGrowableRow(2);
+            sizer->AddGrowableRow(1);
 
             boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
         }
@@ -5609,7 +5609,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(

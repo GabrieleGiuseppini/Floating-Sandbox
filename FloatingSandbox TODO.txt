@@ -1808,11 +1808,11 @@
 			+ Rot<->Rust
 			+ Non-damaged rust
 
-			= SettingsWindow
-				- Move Render panel's "See Ship Through Water" to "Advanced", as lst in existing
-					- This should shorten upper panel
-				- Fix water sliders if needed
-					- Try flexible row
+			+ SettingsWindow
+				+ Move Render panel's "See Ship Through Water" to "Advanced", as lst in existing
+					+ This should shorten upper panel
+				+ Fix water sliders if needed
+					+ Try flexible row
 
 			- Send beta
 				- Bump up version
