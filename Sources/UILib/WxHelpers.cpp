@@ -491,8 +491,22 @@ wxImage WxHelpers::MakeImage(RgbaImageData const & imageData)
     return dst;
 }
 
+void WxHelpers::MakeAllRowsExpandable(wxFlexGridSizer * gridSizer)
+{
+    for (int r = 0; r < gridSizer->GetRows(); ++r)
+        gridSizer->AddGrowableRow(r);
+}
+
 void WxHelpers::MakeAllColumnsExpandable(wxFlexGridSizer * gridSizer)
 {
+    for (int c = 0; c < gridSizer->GetCols(); ++c)
+        gridSizer->AddGrowableCol(c);
+}
+
+void WxHelpers::MakeAllExpandable(wxFlexGridSizer * gridSizer)
+{
+    for (int r = 0; r < gridSizer->GetRows(); ++r)
+        gridSizer->AddGrowableRow(r);
     for (int c = 0; c < gridSizer->GetCols(); ++c)
         gridSizer->AddGrowableCol(c);
 }

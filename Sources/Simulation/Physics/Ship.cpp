@@ -3595,9 +3595,9 @@ void Ship::DecayPoints(
     {
         if (simulationParameters.RustAcceler8r != 0.0f)
         {
-            float constexpr NsExposed = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
-            mDecayRustExposedDryAlpha = std::max(powf(0.75f, simulationParameters.RustAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
-            mDecayRustExposedWetAlpha = std::max(powf(0.70f, simulationParameters.RustAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            float constexpr NsExposed = 30.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            mDecayRustExposedDryAlpha = std::max(powf(0.85f, simulationParameters.RustAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            mDecayRustExposedWetAlpha = std::max(powf(0.75f, simulationParameters.RustAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
 
             float constexpr NsDamage = 7.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
             mDecayRustDamageDryAlpha = std::max(powf(0.50f, simulationParameters.RustAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1

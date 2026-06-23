@@ -69,7 +69,9 @@ namespace WxHelpers
 
     wxImage MakeImage(RgbaImageData const & imageData);
 
+    void MakeAllRowsExpandable(wxFlexGridSizer * gridSizer);
     void MakeAllColumnsExpandable(wxFlexGridSizer * gridSizer);
+    void MakeAllExpandable(wxFlexGridSizer * gridSizer);
 
     //////////////////////////////////////////////////////////////////////////
     // String <-> Numbers with UI- and Locale-specific formats
