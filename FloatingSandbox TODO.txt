@@ -1806,12 +1806,12 @@
 						+ Tests
 
 			+ Rot<->Rust
-			- Non-damaged rust
+			+ Non-damaged rust
+
+			- SettingsWindow
 
 			- Send beta
 				- Bump up version
-
-			- SettingsWindow
 
 			- Texture finalization:
 				- Rust

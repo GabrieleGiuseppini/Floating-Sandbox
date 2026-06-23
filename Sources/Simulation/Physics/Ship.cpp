@@ -3595,6 +3595,10 @@ void Ship::DecayPoints(
     {
         if (simulationParameters.RustAcceler8r != 0.0f)
         {
+            float constexpr NsExposed = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            mDecayRustExposedDryAlpha = std::max(powf(0.75f, simulationParameters.RustAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            mDecayRustExposedWetAlpha = std::max(powf(0.1f, simulationParameters.RustAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+
             float constexpr NsDamage = 7.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
             mDecayRustDamageDryAlpha = std::max(powf(0.50f, simulationParameters.RustAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
             mDecayRustDamageWetAlpha = std::max(powf(0.0009765625f, simulationParameters.RustAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
@@ -3605,6 +3609,8 @@ void Ship::DecayPoints(
         }
         else
         {
+            mDecayRustExposedDryAlpha = 1.0f;
+            mDecayRustExposedWetAlpha = 1.0f;
             mDecayRustDamageDryAlpha = 1.0f;
             mDecayRustDamageWetAlpha = 1.0f;
             mDecayRustNeighborsDryAlpha = 1.0f;
@@ -3614,6 +3620,8 @@ void Ship::DecayPoints(
         mCurrentRustAcceler8r = simulationParameters.RustAcceler8r;
     }
 
+    float const a_rust_exposed_dry = mDecayRustExposedDryAlpha;
+    float const a_rust_exposed_wet = mDecayRustExposedWetAlpha;
     float const a_rust_damage_dry = mDecayRustDamageDryAlpha;
     float const a_rust_damage_wet = mDecayRustDamageWetAlpha;
     float const a_rust_neighbors_dry = mDecayRustNeighborsDryAlpha;
@@ -3696,9 +3704,13 @@ void Ship::DecayPoints(
         // Rust
         //
 
-        // 1) Rust if damaged; more so if wet
+        // 1) Base rust:
+        //  - Not damaged, more so if wet
+        //  - Damaged, more so if wet
 
-        float const betaRustDamage = (1.0f - Mix(a_rust_damage_dry, a_rust_damage_wet, isWet)) * isDamaged;
+        float const betaRustBase =
+            (1.0f - Mix(a_rust_damage_dry, a_rust_damage_wet, isWet)) * isDamaged
+            + (1.0f - Mix(a_rust_exposed_dry, a_rust_exposed_wet, isWet)) * (1.0f - isDamaged);
 
         // 2) Rust by neighbors, imprinting pattern via random personality seed
 
@@ -3721,7 +3733,7 @@ void Ship::DecayPoints(
 
         // Combine
 
-        float const betaRust = (betaRustDamage + betaRustNeighbors) * structuralMaterial.RustReceptivity;
+        float const betaRust = (betaRustBase + betaRustNeighbors) * structuralMaterial.RustReceptivity;
         assert(betaRust >= 0.0f && betaRust <= 1.0f);
 
         // Rust

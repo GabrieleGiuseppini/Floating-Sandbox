@@ -1269,6 +1269,8 @@ private:
     float mDecayRotBeta;
 
     float mCurrentRustAcceler8r; // Last seen, to detect changes
+    float mDecayRustExposedDryAlpha;
+    float mDecayRustExposedWetAlpha;
     float mDecayRustDamageDryAlpha;
     float mDecayRustDamageWetAlpha;
     float mDecayRustNeighborsDryAlpha;
