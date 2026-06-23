@@ -1814,8 +1814,8 @@
 				+ Fix water sliders if needed
 					+ Try flexible row
 
-			- Send beta
-				- Bump up version
+			+ Send beta
+				+ Bump up version
 
 			- Texture finalization:
 				- Rust
@@ -1828,6 +1828,7 @@
 			- If won't fly, take these commits:
 				- Rot<->Rust
 				- Non-damaged rust
+				- SettingsDialog
 
 
 			- Make PR
@@ -1836,6 +1837,7 @@
 						- Port ShaderManager::SetTextureParametersInAllShaders and hide public calls
 							- Nuke all calls to SetTextureParameters<Program>()
 						- Calibration
+						- New setting?
 				- Merge into master
 
 			
@@ -1878,6 +1880,9 @@
 			- Super whistle
 		- PC
 		- Android
+
+	- Ships:
+		- Also from beta server's Ship Suggestions
 
 	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
 		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al
@@ -1931,17 +1936,11 @@
 	- I found this one: ShipBuilder: exporting structural layer and re-importing it is not the same
 		- Happens with the FS Birthday ship
 
-	- Reduce ghost forces from depth pressure
-		- See https://discord.com/channels/925233659118755842/1313073164879921203/1313073164879921203
-
-	- Look at non-anti-aliased borders
-		! On my new dell, also 1.18 shows non-anti-aliased borders - so it's a problem with my box
-
 	- New materials (*)
 
 	- Watertight doors should stay put even after unpowered (or new type altogether)
 	
-	- Test: underwater forces based on waves (derivative @ surface plus damper for depth)
+	- Test: underwater lateral forces based on waves (derivative @ surface plus damper for depth)
 		- Just test feasibility
 		- If ok, optimize using cached depth?
 
