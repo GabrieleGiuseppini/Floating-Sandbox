@@ -350,6 +350,8 @@ public:
         ShieldhallSteamSiren,
         QueenElizabeth2Horn,
         SSRexWhistle,
+        SteamWhistle,
+        IndustrialHorn,
         Klaxon1,
         NuclearAlarm1,
         EvacuationAlarm1,

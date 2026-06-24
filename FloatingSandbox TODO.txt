@@ -1872,14 +1872,29 @@
 
 	- Fix foam with angley waves: is it because it becomes too wide?
 
-	- TimCan's new sounds for PC+Mobile
-			- FS Deep Horn
-			- Industrial Horn
-			- Queen Horn
-			- Steam Whistle FS Mobile 1
-			- Super whistle
-		- PC
+	= TimCan's new sounds for PC+Mobile
+			! NOT:
+				- FS Deep Horn
+				- Queen Horn
+				- Super whistle
+		+ PC
+			+ Materials
+			+ shipindustrialhorn
+				- 47711 (1081.88), 23977 (5428.05) (191666 (4346.17))
+				- 72653 (1647.46), 299859 (6799.52) (227206 (5152.06)
+			+ steamwsteamhistle
+				- 96431 (2186.64), 143634 (3257.01) (47203 (1070.36))
+				- 88910 (2016.1), 171123 (3880.34) (82213 (1864.24))
+			+ Test ship
+			+ Calibrate delay for fish scare
 		- Android
+			- Port materials
+			- Sounds:
+				- Downsample
+				- Loop properties
+			- Test ship
+
+			- Remove test ship
 
 	- Ships:
 		- Also from beta server's Ship Suggestions
