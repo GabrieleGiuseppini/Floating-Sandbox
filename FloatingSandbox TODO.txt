@@ -1817,7 +1817,7 @@
 			+ Send beta
 				+ Bump up version
 
-			= More scissor between dry rust and damage rust
+			+ More scissor between dry rust and damage rust
 
 			- Texture finalization:
 				- Rust
@@ -1863,25 +1863,14 @@
 		- 3. Scrub also clears "water-rotting" quantity
 
 
-
-	+ Aerodynamic aluminium (colors as well)
-
-	- Try: ash with Thanos' snap
-		- New material, not in palette, with unique key
-
-	- See: jet flames covered by silt clouds
-		- Apparently, silt clouds' low-alpha is covering jet flames
-
-	- Fix foam with angley waves: is it because it becomes too wide?
-
-	= TimCan's new sounds for PC+Mobile
+	+ TimCan's new sounds for PC+Mobile
 			! NOT:
 				- FS Deep Horn
 				- Queen Horn
 		+ PC
 			+ Materials
 			+ shipindustrialhorn
-				- 47711 (1081.88), 23977 (5428.05) (191666 (4346.17))
+				- 47711 (1081.88), 239377 (5428.05) (191666 (4346.17))
 				- 72653 (1647.46), 299859 (6799.52) (227206 (5152.06)
 			+ shipsteamwhistle
 				- 96431 (2186.64), 143634 (3257.01) (47203 (1070.36))
@@ -1891,15 +1880,35 @@
 				- 41107 (932.132), 217722 (4937.01)
 			+ Test ship
 			+ Calibrate delay for fish scare
-		- Android
-			- Port materials
-			- Sounds:
-				- Downsample
-				- Loop properties
-				- Bake
-			- Test ship
+		+ Android
+			+ Port materials
+			+ Port code
+			+ Sounds:
+				+ Downsample
+				+ Loop properties
+				+ Bake
+			+ SoundController
+			+ Add test ship
+			+ Test
+			+ Remove test ship
 
-			- Remove test ship
+	+ Aerodynamic aluminium (colors as well)
+
+	- Redo auto-texturization, as high-res and with box filter
+		- See which textures.com materials we already have as high-res, and which ones we have to take/re-find
+		- Local DB
+			- Takes care of resizing based on Initialize(mgnification factor)
+			- See if can use greyscale knowledge to reduce mem - can keep them as floats
+		- Make sure magnification formula ends with same results as prev FS
+		- Port to Android
+
+	- Try: ash with Thanos' snap
+		- New material, not in palette, with unique key
+
+	- See: jet flames covered by silt clouds
+		- Apparently, silt clouds' low-alpha is covering jet flames
+
+	- Fix foam with angley waves: is it because it becomes too wide?
 
 	- Ships:
 		- Also from beta server's Ship Suggestions
@@ -3011,8 +3020,6 @@
 		- https://www.shadertoy.com/view/4tdXDl
 
 	+ Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool
-
-	- Redo material texturization with new "box filter" image resize algorithm (i.e. average of all instead of just interpolation within 2)
 			
 - Dynamics:
 	+ Sand particles when hitting ground
