@@ -1840,28 +1840,7 @@
 							- Nuke all calls to SetTextureParameters<Program>()
 						- Calibration
 						- New setting?
-				- Merge into master
-
-			
-	- TODOOLD
-	- Rot rework:
-		- 1. Current decay serves for rot (rust) + burn, like now; only two changes:
-			- Color: rust->black (i.e. no green)
-			- Different propagation:
-				- Damaged points get more rust
-				- The strength of rust at a point depends on avg of neighbors
-					- So rotting spreads from damaged points
-				- Randomize more at each point
-					- Can use point's personality seed
-		- 2. New quantity for "water-rotting", with flag/acceler8r
-			- Perlin-based quantity, "factory" and immutable, at Points
-				- Created @ factory time
-			- At RotPoints, also converge underwater points' "water-rotting" quantity to Perlin
-				- The strength of water rotting at a point depends on avg of neighbors
-					- So rotting spreads from "more perlin" points
-			- Shader: green
-		- 3. Scrub also clears "water-rotting" quantity
-
+				- Merge into master			
 
 	+ TimCan's new sounds for PC+Mobile
 			! NOT:
