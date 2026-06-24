@@ -2314,6 +2314,12 @@ void ElectricalElements::UpdateSinks(
                                     break;
                                 }
 
+                                case ElectricalMaterial::ShipSoundElementType::SuperWhistle:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(700));
+                                    break;
+                                }
+
                                 case ElectricalMaterial::ShipSoundElementType::IndustrialHorn:
                                 {
                                     mParentWorld.DisturbOcean(std::chrono::milliseconds(250));

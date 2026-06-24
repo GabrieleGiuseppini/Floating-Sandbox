@@ -107,6 +107,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::ShipSSRexWhistle;
     else if (Utils::CaseInsensitiveEquals(str, "ShipSteamWhistle"))
         return SoundType::ShipSteamWhistle;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipSuperWhistle"))
+        return SoundType::ShipSuperWhistle;
     else if (Utils::CaseInsensitiveEquals(str, "ShipIndustrialHorn"))
         return SoundType::ShipIndustrialHorn;
     else if (Utils::CaseInsensitiveEquals(str, "ShipKlaxon1"))

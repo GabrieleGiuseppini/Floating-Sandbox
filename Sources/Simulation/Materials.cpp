@@ -520,6 +520,8 @@ ElectricalMaterial::ShipSoundElementType ElectricalMaterial::StrToShipSoundEleme
         return ShipSoundElementType::SSRexWhistle;
     else if (Utils::CaseInsensitiveEquals(str, "SteamWhistle"))
         return ShipSoundElementType::SteamWhistle;
+    else if (Utils::CaseInsensitiveEquals(str, "SuperWhistle"))
+        return ShipSoundElementType::SuperWhistle;
     else if (Utils::CaseInsensitiveEquals(str, "IndustrialHorn"))
         return ShipSoundElementType::IndustrialHorn;
     else if (Utils::CaseInsensitiveEquals(str, "Klaxon1"))
@@ -642,6 +644,7 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
                 case ShipSoundElementType::PipeWhistle:
                 case ShipSoundElementType::SSRexWhistle:
                 case ShipSoundElementType::SteamWhistle:
+                case ShipSoundElementType::SuperWhistle:
                 {
                     ss << "Whistle #" << static_cast<int>(instanceIndex);
                     break;

@@ -2095,6 +2095,24 @@
     },
 
     {
+        "color_key": "#409A00",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Super Whistle",
+	"ship_sound_type": "SuperWhistle",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Horns",
+		"sub_category_ordinal": 9
+	}
+    },
+
+    {
         "color_key": "#409900",
 	"conducts_electricity": false,
         "electrical_type": "ShipSound",
@@ -2108,7 +2126,7 @@
         "palette_coordinates": {
 		"category": "Sounds",
 		"sub_category": "Horns",
-		"sub_category_ordinal": 9
+		"sub_category_ordinal": 10
 	}
     },
 
@@ -2386,6 +2404,24 @@
     },
 
     {
+        "color_key": "#429A00",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Super Whistle",
+	"ship_sound_type": "SuperWhistle",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Horns",
+		"sub_category_ordinal": 9
+	}
+    },
+
+    {
         "color_key": "#429900",
 	"conducts_electricity": true,
         "electrical_type": "ShipSound",
@@ -2399,7 +2435,7 @@
         "palette_coordinates": {
 		"category": "Sounds",
 		"sub_category": "Automatic Horns",
-		"sub_category_ordinal": 9
+		"sub_category_ordinal": 10
 	}
     },
 

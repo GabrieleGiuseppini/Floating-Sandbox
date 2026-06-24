@@ -1817,6 +1817,9 @@
 			+ Send beta
 				+ Bump up version
 
+			- Dry rotting?
+			- More scissor between dry rust and damage rust?
+
 			- Texture finalization:
 				- Rust
 					- Rust0220, exists @ 1024
@@ -1876,15 +1879,17 @@
 			! NOT:
 				- FS Deep Horn
 				- Queen Horn
-				- Super whistle
 		+ PC
 			+ Materials
 			+ shipindustrialhorn
 				- 47711 (1081.88), 23977 (5428.05) (191666 (4346.17))
 				- 72653 (1647.46), 299859 (6799.52) (227206 (5152.06)
-			+ steamwsteamhistle
+			+ shipsteamwhistle
 				- 96431 (2186.64), 143634 (3257.01) (47203 (1070.36))
 				- 88910 (2016.1), 171123 (3880.34) (82213 (1864.24))
+			+ shipsuperwhistle
+				- 68400 (1551.02), 230371 (5223.83)
+				- 41107 (932.132), 217722 (4937.01)
 			+ Test ship
 			+ Calibrate delay for fish scare
 		- Android
@@ -1892,6 +1897,7 @@
 			- Sounds:
 				- Downsample
 				- Loop properties
+				- Bake
 			- Test ship
 
 			- Remove test ship

@@ -351,6 +351,7 @@ public:
         QueenElizabeth2Horn,
         SSRexWhistle,
         SteamWhistle,
+        SuperWhistle,
         IndustrialHorn,
         Klaxon1,
         NuclearAlarm1,
