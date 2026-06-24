@@ -1817,8 +1817,7 @@
 			+ Send beta
 				+ Bump up version
 
-			- Dry rotting?
-			- More scissor between dry rust and damage rust?
+			= More scissor between dry rust and damage rust
 
 			- Texture finalization:
 				- Rust
