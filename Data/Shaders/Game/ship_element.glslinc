@@ -122,7 +122,7 @@ void main()
         vec4 shipEnhancementSample = texture2D(paramShipEnhancementsTexture, vertexTextureCoords * paramShipEnhancementsTextureSpaceMagnificationFactor);
 
         rustSample = vec3(shipEnhancementSample.r, shipEnhancementSample.g, 0.0);
-        algaeGrowthSample = vec3(shipEnhancementSample.b, shipEnhancementSample.a, 0.0);
+        algaeGrowthSample = vec3(shipEnhancementSample.b * 0.9, shipEnhancementSample.a, shipEnhancementSample.b * 0.9);
     }
     else
     {
