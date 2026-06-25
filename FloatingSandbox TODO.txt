@@ -1819,13 +1819,14 @@
 
 			+ More scissor between dry rust and damage rust
 
-			- Texture finalization:
-				- Rust
-					- Rust0220, exists @ 1024
-				- Algae
-					- Mossy Rock 4 / Albedo (search: "algae seamless"), exists @ 4096
+			= Texture finalization:
+				+ Rust
+					+ Rust0220, exists @ 1024
+				+ Algae
+					+ Mossy Rock 4 / Albedo (search: "algae seamless"), exists @ 4096
 
 			- Calibration
+				- Test on old Dell
 
 			- If won't fly, take these commits:
 				- Rot<->Rust
