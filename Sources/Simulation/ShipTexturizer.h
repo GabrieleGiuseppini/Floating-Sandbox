@@ -108,7 +108,7 @@ public:
 
 private:
 
-    using Vec2fImageData = ImageData<vec2f>;
+    using MaterialImageData = ImageData<vec2f>;
 
 private:
 
@@ -125,7 +125,7 @@ private:
         std::optional<std::string> const & textureName,
         IAssetManager const & assetManager) const;
 
-    inline Vec2fImageData const & GetMaterialTexture(
+    inline MaterialImageData const & GetMaterialTexture(
         std::optional<std::string> const & textureName,
         IAssetManager const & assetManager) const;
 
@@ -168,8 +168,8 @@ private:
         float pixelX,
         float pixelY) const;
 
-    inline vec2f SampleTextureBilinearRepeated(
-        Vec2fImageData const & texture,
+    inline vec2f SampleMaterialTexture(
+        MaterialImageData const & materialTexture,
         float pixelX,
         float pixelY) const;
 
@@ -188,16 +188,16 @@ private:
 
     std::unordered_map<std::string, std::string> const mMaterialTextureNameToTextureRelativePathMap;
 
-    struct CachedTexture
+    struct CachedMaterialTexture
     {
-        Vec2fImageData Texture;
+        MaterialImageData Texture;
         size_t UseCount;
 
-        CachedTexture(Vec2fImageData && texture)
+        CachedMaterialTexture(MaterialImageData && texture)
             : Texture(std::move(texture))
             , UseCount(0)
         {}
     };
 
-    mutable std::unordered_map<std::string, CachedTexture> mMaterialTextureCache;
+    mutable std::unordered_map<std::string, CachedMaterialTexture> mMaterialTextureCache;
 };

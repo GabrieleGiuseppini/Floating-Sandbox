@@ -205,7 +205,7 @@ void ShipTexturizer::AutoTexturizeInto(
 
                 // Get bump map texture
                 assert(structuralMaterial != nullptr);
-                Vec2fImageData const & materialTexture = GetMaterialTexture(structuralMaterial->MaterialTextureName, assetManager);
+                MaterialImageData const & materialTexture = GetMaterialTexture(structuralMaterial->MaterialTextureName, assetManager);
 
                 //
                 // Prepare bilinear interpolation along X
@@ -661,7 +661,7 @@ RgbaImageData ShipTexturizer::MakeMaterialTextureSample(
     auto sampleData = std::make_unique<rgbaColor[]>(sampleSize.GetLinearSize());
 
     // Get bump map texture and render color
-    Vec2fImageData const & materialTexture = GetMaterialTexture(textureName, assetManager);
+    MaterialImageData const & materialTexture = GetMaterialTexture(textureName, assetManager);
     vec3f const renderPixelColorF = renderColor.toVec3f();
 
     // Calculate constants
@@ -678,7 +678,7 @@ RgbaImageData ShipTexturizer::MakeMaterialTextureSample(
 
         for (int x = 0; x < sampleSize.width / 2; ++x)
         {
-            vec2f const bumpMapSample = SampleTextureBilinearRepeated(
+            vec2f const bumpMapSample = SampleMaterialTexture(
                 materialTexture,
                 static_cast<float>(x) * sampleToMaterialTexturePixelConversionFactor,
                 static_cast<float>(y) * sampleToMaterialTexturePixelConversionFactor);
@@ -702,7 +702,7 @@ RgbaImageData ShipTexturizer::MakeMaterialTextureSample(
     return RgbaImageData(sampleSize, std::move(sampleData));
 }
 
-ShipTexturizer::Vec2fImageData const & ShipTexturizer::GetMaterialTexture(
+ShipTexturizer::MaterialImageData const & ShipTexturizer::GetMaterialTexture(
     std::optional<std::string> const & textureName,
     IAssetManager const & assetManager) const
 {
@@ -727,26 +727,24 @@ ShipTexturizer::Vec2fImageData const & ShipTexturizer::GetMaterialTexture(
 
         // Load texture
         assert(mMaterialTextureNameToTextureRelativePathMap.count(actualTextureName) > 0);
-        RgbImageData texture = assetManager.LoadMaterialTexture(mMaterialTextureNameToTextureRelativePathMap.at(actualTextureName));
+        RgbImageData materialTexture = assetManager.LoadMaterialTexture(mMaterialTextureNameToTextureRelativePathMap.at(actualTextureName));
 
-        // Convert to vec2f
-        auto const pixelCount = texture.Size.GetLinearSize();
-        std::unique_ptr<vec2f[]> vec2fTexture = std::make_unique<vec2f[]>(pixelCount);
-        for (size_t p = 0; p < pixelCount; ++p)
-        {
-            assert(texture.Data[p].r == texture.Data[p].g);
-            assert(texture.Data[p].r == texture.Data[p].b);
+        // Convert to float bump map
+        MaterialImageData bumpMap = materialTexture.Transform<vec2f>(
+            [](rgbColor const & orig) -> vec2f
+            {
+                assert(orig.r == orig.g);
+                assert(orig.r == orig.b);
 
-            vec2fTexture[p] = vec2f(
-                static_cast<float>(texture.Data[p].r) / 255.0f,
-                1.0f); // Alpha: at this moment we hardcode it as opaque, we'll think whether we want to make transparent chains
-        }
+                return vec2f(
+                    static_cast<float>(orig.r) / 255.0f,
+                    1.0f); // Alpha: at this moment we hardcode it as opaque, we'll think whether we want to make transparent chains
+            });
 
         // Insert texture into cache
         auto const inserted = mMaterialTextureCache.emplace(
             actualTextureName,
-            Vec2fImageData(texture.Size, std::move(vec2fTexture)));
-
+            std::move(bumpMap));
         assert(inserted.second);
 
         return inserted.first->second.Texture;
@@ -1094,8 +1092,8 @@ rgbaColor ShipTexturizer::SampleTextureBilinearConstrained(
             pixelDy));
 }
 
-vec2f ShipTexturizer::SampleTextureBilinearRepeated(
-    Vec2fImageData const & texture,
+vec2f ShipTexturizer::SampleMaterialTexture(
+    MaterialImageData const & materialTexture,
     float pixelX,
     float pixelY) const
 {
@@ -1108,31 +1106,31 @@ vec2f ShipTexturizer::SampleTextureBilinearRepeated(
     float const pixelDy = pixelY - pixelYI;
 
     // Wrap integral coordinates
-    pixelXI %= static_cast<decltype(pixelXI)>(texture.Size.width);
-    pixelYI %= static_cast<decltype(pixelYI)>(texture.Size.height);
+    pixelXI %= static_cast<decltype(pixelXI)>(materialTexture.Size.width);
+    pixelYI %= static_cast<decltype(pixelYI)>(materialTexture.Size.height);
 
-    assert(pixelXI >= 0 && pixelXI < texture.Size.width);
+    assert(pixelXI >= 0 && pixelXI < materialTexture.Size.width);
     assert(pixelDx >= 0.0f && pixelDx < 1.0f);
-    assert(pixelYI >= 0 && pixelYI < texture.Size.height);
+    assert(pixelYI >= 0 && pixelYI < materialTexture.Size.height);
     assert(pixelDy >= 0.0f && pixelDy < 1.0f);
 
     //
     // Bilinear
     //
 
-    int const nextPixelXI = (pixelXI + 1) % static_cast<decltype(pixelXI)>(texture.Size.width);
-    int const nextPixelYI = (pixelYI + 1) % static_cast<decltype(pixelYI)>(texture.Size.height);
+    int const nextPixelXI = (pixelXI + 1) % static_cast<decltype(pixelXI)>(materialTexture.Size.width);
+    int const nextPixelYI = (pixelYI + 1) % static_cast<decltype(pixelYI)>(materialTexture.Size.height);
 
     // Linear interpolation between x samples at bottom
     vec2f const interpolatedXColorBottom = Mix(
-        texture.Data[pixelXI + pixelYI * texture.Size.width],
-        texture.Data[nextPixelXI + pixelYI * texture.Size.width],
+        materialTexture.Data[pixelXI + pixelYI * materialTexture.Size.width],
+        materialTexture.Data[nextPixelXI + pixelYI * materialTexture.Size.width],
         pixelDx);
 
     // Linear interpolation between x samples at top
     vec2f const interpolatedXColorTop = Mix(
-        texture.Data[pixelXI + nextPixelYI * texture.Size.width],
-        texture.Data[nextPixelXI + nextPixelYI * texture.Size.width],
+        materialTexture.Data[pixelXI + nextPixelYI * materialTexture.Size.width],
+        materialTexture.Data[nextPixelXI + nextPixelYI * materialTexture.Size.width],
         pixelDx);
 
     // Linear interpolation between two vertical samples

@@ -1879,6 +1879,11 @@
 
 	+ Aerodynamic aluminium (colors as well)
 
+	- Reconsider compressing textures (decay now, later materials)
+		- jpeg: need lib @ PC and Android, and JpgTools
+			- Need to remove it from wxWidgets
+		- Linux
+
 	- Redo auto-texturization, as high-res and with box filter
 		! Math:
 			! Default MaterialTextureMagnification is 1.0
@@ -1889,24 +1894,32 @@
 			! => we build 20 target pixels with 12.5 material pixels, i.e. we _magnify_
 		- Option 1: we do nothing with box filtering - as we only have to magnify, and also we don't want to store magnified material textures - we only do higher-def textures
 			! Looks fantastic
-			- TODOHERE:
-				- Database 
-					- CustomFactor1
-				- Test
-				-  Buffer2D<float>
-				- Test
-				- Move x interpolation earlier?
+				! Requires WorldToMaterialPixel formula rearc given the new material textures' pixel sizes
+					! 12.5 material pixels / old material texture size = must be = x material pixels / new material texture size
 
-			- TODOOLD
-			- Which then require WorldToMaterialPixel formula rearc given the new material textures' pixel sizes
-				- 12.5 material pixels / old material texture size = must be = x material pixels / new material texture size
+			+ Take (time) measurements first: AidaPrima: 31/34ms
 
-		- TODOOLD
-		- See which textures.com materials we already have as high-res, and which ones we have to take/re-find
-		- Local DB
-			- Takes care of resizing based on Initialize(mgnification factor)
-			- See if can use greyscale knowledge to reduce mem - can keep them as floats
-		- Make sure magnification formula ends with same results as prev FS
+			+ Perf: Buffer2D<float>
+				+ At texture load time, so also cache is <float>
+				X NO PERF CHANGE,
+
+			- Perf: Move x interpolation earlier				
+				! It depends on x, but unfortunately loop is nested in y
+
+			-------
+
+			- To continue here, need jpeg work
+
+			- Database 
+				- CustomFactor1
+
+			- New material textures
+				- See which textures.com materials we already have as high-res, and which ones we have to take/re-find
+
+			- Populate CustomFactor1
+			- Use CustomFactor1
+				- Make sure magnification formula ends with same results as prev FS
+
 		- Port to Android
 
 	- Try: ash with Thanos' snap
