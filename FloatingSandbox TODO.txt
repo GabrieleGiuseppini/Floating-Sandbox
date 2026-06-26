@@ -1822,8 +1822,10 @@
 			= Texture finalization:
 				+ Rust
 					+ Rust0220, exists @ 1024
-				+ Algae
+				= Algae
 					+ Mossy Rock 4 / Albedo (search: "algae seamless"), exists @ 4096
+					- TODO: do something else - more matte green, barnacles as noise
+						- Check pixel size vs world size, not a multiple!
 
 			- Calibration
 				- Test on old Dell
@@ -1875,6 +1877,28 @@
 	+ Aerodynamic aluminium (colors as well)
 
 	- Redo auto-texturization, as high-res and with box filter
+		! Math:
+			! Default MaterialTextureMagnification is 1.0
+			! Thus, WorldToMaterialPixel is 1.0f / (0.08 * magnification) = 12.5
+			! Material texture coordinates advance intra-1-world by WorldToMaterialPixel / texture_quad_mag_factor (there are texture_quad_mag_factor target pixels per-world-quad)
+			! Material texture coordinates for world coords wc are wc * WorldToMaterialPixel = wc * 12.5
+			! MagnificationFactor is 20 (for default ship) => 20 target pixels for eac 1x1 world quad
+			! => we build 20 target pixels with 12.5 material pixels, i.e. we _magnify_
+		- Option 1: we do nothing with box filtering - as we only have to magnify, and also we don't want to store magnified material textures - we only do higher-def textures
+			! Looks fantastic
+			- TODOHERE:
+				- Database 
+					- CustomFactor1
+				- Test
+				-  Buffer2D<float>
+				- Test
+				- Move x interpolation earlier?
+
+			- TODOOLD
+			- Which then require WorldToMaterialPixel formula rearc given the new material textures' pixel sizes
+				- 12.5 material pixels / old material texture size = must be = x material pixels / new material texture size
+
+		- TODOOLD
 		- See which textures.com materials we already have as high-res, and which ones we have to take/re-find
 		- Local DB
 			- Takes care of resizing based on Initialize(mgnification factor)

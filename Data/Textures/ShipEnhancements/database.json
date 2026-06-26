@@ -2,8 +2,8 @@
 
 {
 	"group_name": "ShipEnhancements",
-	"world_width": 15.0,
-	"world_height": 15.0,
+	"world_width": 14.7,
+	"world_height": 14.7,
 	"frames":[
 		{				
 			"frame_name_pattern": "rust_\\d+"
