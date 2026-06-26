@@ -1824,8 +1824,10 @@
 					+ Rust0220, exists @ 1024
 				= Algae
 					+ Mossy Rock 4 / Albedo (search: "algae seamless"), exists @ 4096
-					- TODO: do something else - more matte green, barnacles as noise
-						- Check pixel size vs world size, not a multiple!
+					= TODO: do something else - more matte green, barnacles as noise
+						+ Check pixel size vs world size, not a multiple!
+					- Test Rust, Algae
+					- Rethink texture sizes: 512?
 
 			- Calibration
 				- Test on old Dell
@@ -1838,6 +1840,8 @@
 
 			- Make PR
 				- Port to Android
+					- Textures
+						- Resize to 512x512
 					- Add to plan: 
 						- Port ShaderManager::SetTextureParametersInAllShaders and hide public calls
 							- Nuke all calls to SetTextureParameters<Program>()
