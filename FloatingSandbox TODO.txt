@@ -1822,12 +1822,11 @@
 			= Texture finalization:
 				+ Rust
 					+ Rust0220, exists @ 1024
-				= Algae
+				+ Algae
 					+ Mossy Rock 4 / Albedo (search: "algae seamless"), exists @ 4096
-					= TODO: do something else - more matte green, barnacles as noise
+					+ TODO: do something else - more matte green, barnacles as noise
 						+ Check pixel size vs world size, not a multiple!
-					- Test Rust, Algae
-					- Rethink texture sizes: 512?
+					+ Test Rust, Algae
 
 			- Calibration
 				- Test on old Dell
