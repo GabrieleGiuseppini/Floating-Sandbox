@@ -39,7 +39,7 @@ Some nerdy facts here.
 * As the topology of the ship's mesh changes during the game due to destruction and wrecking, the simulator constantly re-calculates the external boundaries of each connected component via an algorithm that only operates on the neighborhood of topology changes
 * The ocean surface is simulated with modified [Shallow Water Equations](https://en.wikipedia.org/wiki/Shallow_water_equations) (SWE's), coupled with rigid bodies to generate surface perturbations
 * The physics of NPC's takes place in a [barycentric coordinate system](https://en.wikipedia.org/wiki/Barycentric_coordinate_system), tracing NPC's particles' trajectories within the triangular ship mesh
-* Rendering is implemented with OpenGL (targeting a very old but widely-adopted 2.1) and happens on a separate thread, allowing the game to update the next simulation step while rendering the previous one. All of the final shading is implemented in _glsl_, with many renderings being completely procedural (e.g. flames, lightnings, rain)
+* Rendering is implemented with OpenGL (targeting a very old but widely-adopted 2.1) and happens on a separate thread, allowing the game to update the next simulation step while rendering the previous one. All of the final shading is implemented in _glsl_, with many renderings being completely procedural (e.g. flames, lightnings, rain, tornadoes)
 
 And even with all of this, the simulator still adapts itself to the characteristics of the machine it's running on, obtaining perfectly reasonable FPS rates on old computers - even on single-core laptops!
 
