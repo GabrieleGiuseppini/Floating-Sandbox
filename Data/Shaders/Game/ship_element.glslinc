@@ -117,7 +117,7 @@ void main()
 
     vec3 rustSample;
     vec3 algaeGrowthSample;
-    if (paramShipHighQualityRendering != 0.0f)
+    if (paramShipHighQualityRendering != 0.0f) // Fine to branch - all pixels will follow the same branching
     {
         vec4 shipEnhancementSample = texture2D(paramShipEnhancementsTexture, vertexTextureCoords * paramShipEnhancementsTextureSpaceMagnificationFactor);
 
@@ -259,7 +259,7 @@ void main()
 #endif
 
 #ifdef FOR_POINTS
-    if (paramShipParticleRenderMode != 0.0)
+    if (paramShipParticleRenderMode != 0.0) // Fine to branch - all pixels will follow the same branching
     {
         float d = length(gl_PointCoord - vec2(0.5)) * 2.0;
 
