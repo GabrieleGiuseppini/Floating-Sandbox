@@ -23,6 +23,8 @@ GlobalRenderContext::GlobalRenderContext(
     , mExplosionTextureAtlasOpenGLHandle()
     , mExplosionTextureAtlasMetadata()
     , mNpcTextureAtlasOpenGLHandle()
+    , mShipEnhancementsTextureOpenGLHandle()
+    , mShipEnchancementsWorldDimensions(0.0f, 0.0f) // Will be recalculated
     , mUploadedNoiseTexturesManager()
     , mPerlinNoise_4_32_043_ToUpload()
     , mPerlinNoise_8_1024_073_ToUpload()
@@ -130,7 +132,6 @@ void GlobalRenderContext::InitializeGenericTextures()
 
     // Set FlamesBackground shader parameters
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFlamesBackground>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipFlamesBackground>();
     // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR in atlas)
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFlamesBackground, GameShaderSets::ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates>(
         fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasPixelDx);
@@ -140,7 +141,6 @@ void GlobalRenderContext::InitializeGenericTextures()
 
     // Set FlamesForeground shader parameters
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFlamesForeground>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipFlamesForeground>();
     // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR in atlas)
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFlamesForeground, GameShaderSets::ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates>(
         fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasPixelDx);
@@ -203,12 +203,6 @@ void GlobalRenderContext::InitializeGenericTextures()
 
     // Store metadata
     mGenericMipMappedTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase>>(genericMipMappedTextureAtlas.Metadata);
-
-    // Set texture in all shaders that use it
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::GenericMipMappedTexturesNdc>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::GenericMipMappedTexturesNdc>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures>();
 }
 
 void GlobalRenderContext::InitializeExplosionTextures()
@@ -246,10 +240,6 @@ void GlobalRenderContext::InitializeExplosionTextures()
 
     // Store metadata
     mExplosionTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GameTextureDatabases::ExplosionTextureDatabase>>(explosionTextureAtlas.Metadata);
-
-    // Set texture in ship shaders
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipExplosions>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipExplosions>();
 }
 
 void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<GameTextureDatabases::NpcTextureDatabase> && npcTextureAtlas)
@@ -284,10 +274,57 @@ void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<GameTextureDatabase
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     CheckOpenGLError();
+}
 
-    // Set texture in ship shaders
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsTexture>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipNpcsTexture>();
+void GlobalRenderContext::InitializeShipEnhancementsTexture()
+{
+    // Load texture database
+    auto shipEnhancementsTextureDatabase = TextureDatabase<GameTextureDatabases::ShipEnhancementsTextureDatabase>::Load(mAssetManager);
+
+    // Make image mixing channels
+    auto rustFrame = shipEnhancementsTextureDatabase.GetGroup(GameTextureDatabases::ShipEnhancementsTextureGroups::ShipEnhancements).LoadFrame(0, mAssetManager);
+    auto algaeGrowthFrame = shipEnhancementsTextureDatabase.GetGroup(GameTextureDatabases::ShipEnhancementsTextureGroups::ShipEnhancements).LoadFrame(1, mAssetManager);
+    assert(rustFrame.TextureData.Size == algaeGrowthFrame.TextureData.Size);
+    RgbaImageData::Transform(
+        rustFrame.TextureData,
+        [&](rgbaColor const & rustSample, ImageCoordinates const & coords) -> rgbaColor
+        {
+            auto const & algaeGrowthSample = algaeGrowthFrame.TextureData[coords];
+
+            return rgbaColor(
+                rustSample.r,
+                rustSample.g,
+                algaeGrowthSample.r,
+                algaeGrowthSample.g);
+        });
+
+    // Remember world dimensions
+    mShipEnchancementsWorldDimensions = FloatSize(rustFrame.Metadata.WorldWidth, rustFrame.Metadata.WorldHeight);
+
+    // Activate texture
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::ShipEnhancementsTexture>();
+
+    // Create OpenGL handle
+    GLuint tmpGLuint;
+    glGenTextures(1, &tmpGLuint);
+    mShipEnhancementsTextureOpenGLHandle = tmpGLuint;
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mShipEnhancementsTextureOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload texture
+    GameOpenGL::UploadMipmappedTexture(std::move(rustFrame.TextureData));
+
+    // Set repeat mode
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    CheckOpenGLError();
+
+    // Set filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
 }
 
 void GlobalRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)

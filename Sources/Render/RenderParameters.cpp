@@ -33,6 +33,7 @@ RenderParameters::RenderParameters(
 	, LandSiltTextureIndex(1) // Sand 2
 	, LandRenderDetail(LandRenderDetailType::Detailed)
 	// Ship
+	, IsShipHighQualityRendering(true)
 	, ShipViewMode(ShipViewModeType::Exterior)
 	, ShipAmbientLightSensitivity(1.0f)
 	, ShipDepthDarkeningSensitivity(0.906f)
@@ -67,6 +68,7 @@ RenderParameters::RenderParameters(
 	, AreLandRenderParametersDirty(true)
 	, AreLandTextureIndicesDirty(true)
 	, IsLandRenderDetailDirty(true)
+	, IsShipHighQualityRenderingDirty(true)
 	, IsShipViewModeDirty(true)
 	, IsShipAmbientLightSensitivityDirty(true)
 	, IsShipDepthDarkeningSensitivityDirty(true)
@@ -100,6 +102,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	AreLandTextureIndicesDirty = false;
 	IsLandRenderDetailDirty = false;
 	//
+	IsShipHighQualityRenderingDirty = false;
 	IsShipViewModeDirty = false;
 	IsShipAmbientLightSensitivityDirty = false;
 	IsShipDepthDarkeningSensitivityDirty = false;

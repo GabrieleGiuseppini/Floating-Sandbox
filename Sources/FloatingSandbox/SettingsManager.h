@@ -191,6 +191,7 @@ enum class GameSettings : size_t
     HeatRenderMode,
     HeatSensitivity,
     StressRenderMode,
+    ShipHighQualityRendering,
     DrawExplosions,
     DrawFlames,
     ShipFlameSizeAdjustment,

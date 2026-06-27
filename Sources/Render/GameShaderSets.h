@@ -154,6 +154,8 @@ enum class ProgramParameterKind : std::uint8_t
     RainAngle,
     RainDensity,
     ShipDepthDarkeningSensitivity,
+    ShipEnhancementsTextureSpaceMagnificationFactor,
+    ShipHighQualityRendering,
     ShipParticleRenderMode,
     SimulationTime,
     StarTransparency,
@@ -185,9 +187,10 @@ enum class ProgramParameterKind : std::uint8_t
     NoiseTexture,                           // 7
     OceanTexture,                           // 8
     NpcAtlasTexture,                        // 9
+    ShipEnhancementsTexture,                // 10,
 
     _FirstTexture = SharedTexture,
-    _LastTexture = NpcAtlasTexture
+    _LastTexture = ShipEnhancementsTexture
 };
 
 namespace _detail {

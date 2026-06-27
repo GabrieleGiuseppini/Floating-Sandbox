@@ -54,6 +54,7 @@ struct RenderParameters
     // Ship
     //
 
+    bool IsShipHighQualityRendering;
     ShipViewModeType ShipViewMode;
     float ShipAmbientLightSensitivity;
     float ShipDepthDarkeningSensitivity;
@@ -98,6 +99,7 @@ struct RenderParameters
     bool AreLandTextureIndicesDirty; // Either of bedrock, silt
     bool IsLandRenderDetailDirty;
     // Ship
+    bool IsShipHighQualityRenderingDirty;
     bool IsShipViewModeDirty;
     bool IsShipAmbientLightSensitivityDirty;
     bool IsShipDepthDarkeningSensitivityDirty;

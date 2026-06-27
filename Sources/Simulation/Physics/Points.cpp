@@ -221,6 +221,90 @@ void Points::CreateEphemeralParticleAirBubble(
     //mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor.toVec4f();
 }
 
+void Points::CreateEphemeralParticleAsh(
+    vec2f const & position,
+    vec2f const & velocity,
+    float depth,
+    float currentSimulationTime,
+    float maxSimulationLifetime,
+    PlaneId planeId,
+    SimulationParameters const & simulationParameters)
+{
+    // Get a free slot (but don't steal one)
+    auto const ephemeralParticleIndex = FindFreeEphemeralParticle(0, false);
+    if (ephemeralParticleIndex == NoneElementIndex)
+        return; // No luck
+    auto const pointIndex = EphemeralParticleIndexToPointIndex(ephemeralParticleIndex);
+
+    //
+    // Store attributes
+    //
+
+    StructuralMaterial const & ashStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Ash);
+
+    assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
+    mMaterialsBuffer[pointIndex] = Materials(&ashStructuralMaterial, nullptr);
+    mPositionBuffer[pointIndex] = position;
+    mVelocityBuffer[pointIndex] = velocity;
+    mStaticForceBuffer[pointIndex] = vec2f::zero();
+    mAugmentedMaterialMassBuffer[pointIndex] = ashStructuralMaterial.GetMass();
+    mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
+    mMassBuffer[pointIndex] = ashStructuralMaterial.GetMass();
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = ashStructuralMaterial.BuoyancyVolumeFill;
+    mPinningCoefficientBuffer[pointIndex] = 1.0f;
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(pointIndex, 1.0f);
+    mOceanFloorBedrockCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorBedrockCollisionFactors(
+        mCurrentElasticityAdjustment,
+        mCurrentStaticFrictionAdjustment,
+        mCurrentKineticFrictionAdjustment,
+        mCurrentOceanFloorBedrockElasticityCoefficient,
+        mCurrentOceanFloorBedrockFrictionCoefficient,
+        ashStructuralMaterial.ElasticityCoefficient,
+        ashStructuralMaterial.StaticFrictionCoefficient,
+        ashStructuralMaterial.KineticFrictionCoefficient);
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth;
+    mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
+        ashStructuralMaterial.BuoyancyVolumeFill,
+        ashStructuralMaterial.ThermalExpansionCoefficient);
+    mCachedDepthBuffer[pointIndex] = depth;
+    mFoobarSensitivityBuffer[pointIndex] = 1.0f;
+
+    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mMaterialWaterIntakeBuffer[pointIndex] = ashStructuralMaterial.WaterIntake;
+    //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - ashStructuralMaterial.WaterRetention;
+    //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = ashStructuralMaterial.WaterDiffusionSpeed;
+    mWaterBuffer[pointIndex] = 0.0f;
+    assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
+    //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
+
+    mTemperatureBuffer[pointIndex] = depth > 0.0f ? simulationParameters.WaterTemperature : simulationParameters.AirTemperature;
+    assert(ashStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / ashStructuralMaterial.GetHeatCapacity();
+    //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = ashStructuralMaterial.ThermalExpansionCoefficient;
+    //mMaterialIgnitionTemperatureBuffer[pointIndex] = ashStructuralMaterial.IgnitionTemperature;
+    //mMaterialCombustionTypeBuffer[pointIndex] = ashStructuralMaterial.CombustionType;
+    //mCombustionStateBuffer[pointIndex] = CombustionState();
+
+    //mWaterReactionStateBuffer.emplace_back(0.0f);
+
+    assert(mLightBuffer[pointIndex] == 0.0f);
+    //mLightBuffer[pointIndex] = 0.0f;
+
+    mMaterialWindReceptivityBuffer[pointIndex] = ashStructuralMaterial.WindReceptivity;
+
+    mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::Ash;
+    mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].StartSimulationTime = currentSimulationTime;
+    mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].MaxSimulationLifetime = maxSimulationLifetime;
+    mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].State = EphemeralState::AshState();
+
+    assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
+    //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+    mPlaneIdBuffer[pointIndex] = planeId;
+    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
+
+    mColorBuffer[pointIndex] = ashStructuralMaterial.RenderColor.toVec4f();
+}
+
 void Points::CreateEphemeralParticleDebris(
     vec2f const & position,
     vec2f const & velocity,
@@ -1875,6 +1959,30 @@ void Points::UpdateEphemeralParticles(
                     break;
                 }
 
+                case EphemeralType::Ash:
+                {
+                    // Check if expired
+                    auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].StartSimulationTime;
+                    auto const maxSimulationLifetime = mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].MaxSimulationLifetime;
+                    if (elapsedSimulationLifetime >= maxSimulationLifetime)
+                    {
+                        ExpireEphemeralParticle(ephemeralParticleIndex);
+                    }
+                    else
+                    {
+                        // Update alpha based off remaining time
+                        float const alpha = std::max(
+                            1.0f - LinearStep(0.5f, 1.0f, elapsedSimulationLifetime / maxSimulationLifetime),
+                            0.0f);
+                        mColorBuffer[pointIndex].w = alpha;
+
+                        // Update progress
+                        mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].State.Ash.ElapsedSimulationTime = elapsedSimulationLifetime;
+                    }
+
+                    break;
+                }
+
                 case EphemeralType::Debris:
                 {
                     // Check if expired
@@ -2456,6 +2564,27 @@ void Points::UploadEphemeralParticles(
                         scale,
                         std::min(0.6f, state.CurrentDeltaY), // Alpha
                         state.SimulationLifetime * Pi<float> * 2.0f); // Angle
+
+                    break;
+                }
+
+                case EphemeralType::Ash:
+                {
+                    auto const & state = mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].State.Ash;
+
+                    float const orbitRadius = 0.75f + 1.0f * state.ElapsedSimulationTime;
+                    vec2f const orbitPosition =
+                        GetPosition(pointIndex)
+                        + vec2f(0, orbitRadius).rotate(state.ElapsedSimulationTime * 0.7f * 2.0f * Pi<float>);
+
+                    shipRenderContext.UploadDebris(
+                        GetPlaneId(pointIndex),
+                        orbitPosition,
+                        GetColor(pointIndex),
+                        GetLight(pointIndex),
+                        GetWater(pointIndex),
+                        GetTemperature(pointIndex),
+                        GetStress(pointIndex));
 
                     break;
                 }

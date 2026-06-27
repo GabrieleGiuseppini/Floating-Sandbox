@@ -409,7 +409,7 @@ public:
 
         return ImageRect(
             ImageCoordinates::FromFloatFloor(shipRect.origin.ToFloat().scale(shipToTexture)),
-            ImageSize::FromFloatFloor(shipRect.size.ToFloat().scale(shipToTexture)));
+            ImageSize::FromFloatFloor(shipRect.size.ToFloat<vec2f>().scale(shipToTexture)));
     }
 
     ShipSpaceCoordinates ExteriorTextureSpaceToShipSpace(ImageCoordinates const & imageCoordinates) const
@@ -487,7 +487,7 @@ public:
 
         return ImageRect(
             ImageCoordinates::FromFloatFloor(shipRect.origin.ToFloat().scale(shipToTexture)),
-            ImageSize::FromFloatFloor(shipRect.size.ToFloat().scale(shipToTexture)));
+            ImageSize::FromFloatFloor(shipRect.size.ToFloat<vec2f>().scale(shipToTexture)));
     }
 
     ShipSpaceRect InteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const

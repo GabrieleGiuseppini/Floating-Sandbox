@@ -40,6 +40,8 @@ public:
 
     void InitializeNpcTextures(TextureAtlas<GameTextureDatabases::NpcTextureDatabase> && npcTextureAtlas);
 
+    void InitializeShipEnhancementsTexture();
+
     void ProcessParameterChanges(RenderParameters const & renderParameters);
 
     void RenderPrepareStart();
@@ -76,6 +78,11 @@ public:
     {
         assert(!!mExplosionTextureAtlasMetadata);
         return *mExplosionTextureAtlasMetadata;
+    }
+
+    inline FloatSize GetShipEnchancementsWorldDimensions() const
+    {
+        return mShipEnchancementsWorldDimensions;
     }
 
     inline GLuint GetNoiseTextureOpenGLHandle(NoiseType noiseType) const
@@ -132,6 +139,9 @@ private:
     std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::ExplosionTextureDatabase>> mExplosionTextureAtlasMetadata;
 
     GameOpenGLTexture mNpcTextureAtlasOpenGLHandle;
+
+    GameOpenGLTexture mShipEnhancementsTextureOpenGLHandle;
+    FloatSize mShipEnchancementsWorldDimensions;
 
     UploadedTextureManager<NoiseType> mUploadedNoiseTexturesManager;
     std::unique_ptr<Buffer2D<float, struct IntegralTag>> mPerlinNoise_4_32_043_ToUpload; // When set, will be uploaded in rendering thread

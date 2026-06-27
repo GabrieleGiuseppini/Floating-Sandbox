@@ -551,19 +551,20 @@ struct _IntegralSize
             static_cast<int>(std::roundf(static_cast<float>(this->height) * shrinkFactor)));
     }
 
-    vec2f ToFloat() const
+    template<typename TFloatSize>
+    TFloatSize ToFloat() const
     {
-        return vec2f(
+        return TFloatSize(
             static_cast<float>(width),
             static_cast<float>(height));
     }
 
-    template<typename TCoordsRatio>
-    vec2f ToFractionalCoords(TCoordsRatio const & coordsRatio) const
+    template<typename TFloatSize, typename TCoordsRatio>
+    TFloatSize ToFractionalCoords(TCoordsRatio const & coordsRatio) const
     {
         assert(coordsRatio.inputUnits != 0.0f);
 
-        return vec2f(
+        return TFloatSize(
             static_cast<float>(width) / coordsRatio.inputUnits * coordsRatio.outputUnits,
             static_cast<float>(height) / coordsRatio.inputUnits * coordsRatio.outputUnits);
     }

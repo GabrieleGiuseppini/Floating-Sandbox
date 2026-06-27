@@ -48,6 +48,7 @@ public:
         size_t shipPointCount, // Ship-only count (aligned)
         size_t maxEphemeralParticles,
         size_t maxSpringsPerPoint,
+        FloatSize shipWorldSize,
         RgbaImageData exteriorViewImage,
         RgbaImageData interiorViewImage,
         ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
@@ -1468,6 +1469,7 @@ private:
     void RenderPreparePointToPointArrows(RenderParameters const & renderParameters);
     void RenderDrawPointToPointArrows(RenderParameters const & renderParameters);
 
+    void ApplyShipQualityRenderModeChanges(RenderParameters const & renderParameters);
     void ApplyShipViewModeChanges(RenderParameters const & renderParameters);
     void ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters);
     void ApplyViewModelChanges(RenderParameters const & renderParameters);

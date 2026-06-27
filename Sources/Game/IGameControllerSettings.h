@@ -539,6 +539,9 @@ struct IGameControllerSettings
     virtual StressRenderModeType GetStressRenderMode() const = 0;
     virtual void SetStressRenderMode(StressRenderModeType value) = 0;
 
+    virtual bool GetShipHighQualityRendering() const = 0;
+    virtual void SetShipHighQualityRendering(bool value) = 0;
+
     virtual bool GetDrawExplosions() const = 0;
     virtual void SetDrawExplosions(bool value) = 0;
 

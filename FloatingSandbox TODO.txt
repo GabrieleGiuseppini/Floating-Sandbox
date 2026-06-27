@@ -1760,98 +1760,186 @@
 		+ changelist
 
 		= Try multi-channel texture for rust and algae		
-			- New branch
-			- TODO: most of it is from git stash
-			- "ShipEnhancements" DB
-			- "ShipEnhancements" texture
-				- OpenGL param
-				- Activation & load @ GlobalRenderContext
-			- Ship VAOs: 
-				- TODOHERE: HighQuality flag
+			+ New branch
+			+ Recover code from git stash
+				+ Shader
+				+ ShaderSets
+				+ GlobalRenderContext
+				+ ShipRenderContext - setting texture parameters
+			+ "ShipEnhancements" DB
 
-			- Param for Ship shaders: ShipEnhancementsTextureSpaceMagnificationFactor (vec2)
-				- Calc'd by ShipRenderContext @ init, based on ship's world size and GlobalRenderContext::GetShipEnhancementsTextureWorldSize
-				- SetInAllShaders
+			+ RenderParameters:
+				+ New boolean: ShipHighQualityRendering
+					+ Default: true
+					+ Own dirty flag
 
-			- Texture finalization:
-				- Rust
-				- Algae
-				- GlobalRenderContext: build dual-channel
+			+ Shaders params:
+				+ ShipEnhancements texture
+				+ ShipEnhancementsTextureSpaceMagnificationFactor (vec2)
+					+ Calc'd by ShipRenderContext @ init, based on ship's world size and GlobalRenderContext::GetShipEnhancementsTextureWorldSize
+						+ SetInAllShaders
+				+ ShipHighQualityRendering
+					+ Set at ShipRenderContext via ApplyShipQualityRenderModeChanges()
+						+ SetInAllShaders
+					+ Call ApplyShipQualityRenderModeChanges upon changes
 
-			- Add to Android port plan
+			+ "ShipEnhancements" texture
+				+ OpenGL param
+				+ Activation & load @ GlobalRenderContext
+
+			+ GlobalRenderContext: build dual-channel
+				+ Load database instead of frames
+
+			+ Shader:
+				+ Make colors based on paramShipHighQualityRendering
+				+ Use paramShipEnhancementsTextureSpaceMagnificationFactor
+
+			+ Test:
+				+ nVidia
+				+ All ship shaders work
+				+ Rust, Algae on all ship shaders
+					+ FIX: Draw structure (et al): doesn't pickup texture
+						+ SetTextureParametersInAllShaders called early on after ShaderManager has been initialized
+							+ Commit all
+							+ Do above
+							+ Nuke all SetTextureParameters calls
+						+ Tests
+
+			+ Rot<->Rust
+			+ Non-damaged rust
+
+			+ SettingsWindow
+				+ Move Render panel's "See Ship Through Water" to "Advanced", as lst in existing
+					+ This should shorten upper panel
+				+ Fix water sliders if needed
+					+ Try flexible row
+
+			+ Send beta
+				+ Bump up version
+
+			+ More scissor between dry rust and damage rust
+
+			+ Texture finalization:
+				+ Rust
+					+ Rust0220, exists @ 1024
+				+ Algae
+					+ Mossy Rock 4 / Albedo (search: "algae seamless"), exists @ 4096
+					+ TODO: do something else - more matte green, barnacles as noise
+						+ Check pixel size vs world size, not a multiple!
+					+ Test Rust, Algae
+
+			= Calibration
+				- Test on old Dell
+
+			= Make PR
+				+ Port to Android
+				- Merge into master			
+
+	+ TimCan's new sounds for PC+Mobile
+			! NOT:
+				- FS Deep Horn
+				- Queen Horn
+		+ PC
+			+ Materials
+			+ shipindustrialhorn
+				- 47711 (1081.88), 239377 (5428.05) (191666 (4346.17))
+				- 72653 (1647.46), 299859 (6799.52) (227206 (5152.06)
+			+ shipsteamwhistle
+				- 96431 (2186.64), 143634 (3257.01) (47203 (1070.36))
+				- 88910 (2016.1), 171123 (3880.34) (82213 (1864.24))
+			+ shipsuperwhistle
+				- 68400 (1551.02), 230371 (5223.83)
+				- 41107 (932.132), 217722 (4937.01)
+			+ Test ship
+			+ Calibrate delay for fish scare
+		+ Android
+			+ Port materials
+			+ Port code
+			+ Sounds:
+				+ Downsample
+				+ Loop properties
+				+ Bake
+			+ SoundController
+			+ Add test ship
+			+ Test
+			+ Remove test ship
+
+	+ Aerodynamic aluminium (colors as well)
+	
+	+ Try: ash with Thanos' snap
+		+ New material, not in palette, with unique key
 
 
-			- TODOOLD
-
-			= Do test first with dummy texture for perf impact
-				- New Dell
-				+ Old Dell: 18.2-18.6-19.2 (29.18 FPS) => 19.8-21.3 (26.6 FPS)
-			- Do another test with real texture to see how awesome it would be, evt'lly worth doing subject to calibration
-			- If ok:
-				- Piggyback on NoiseTexture
-					- TODO: only needed if too many texture units; otherwise, useless
-					- See first if we access g,b of Fine and Gross noises
-						- Should not, they're greyscale
-					- "Noise" -> "NoiseAndShipEnhancements"
-						- ShaderSets
-						- Shaders
-					- TODOHERE		
-					
-				- Make DB, same World coords (though we'll only use first)
-				- Param for Ship shaders: ShipEnhancementsTextureSpaceMagnificationFactor (vec2)
-					- Calc'd by ShipRenderContext @ init, based on ship's world size and GlobalRenderContext::TODO:GetOrCalc?
-					- SetInAllShaders
-				- Watchout: what to do with non-textured shaders? Currently we don't set params
-					- Make sure we use matte color
-				- Watchout: init'n of RenderContext, calling initialize-this-texture at wrong place
-
-				- Find rust texture
-				- Find algae texture
-
-				- Port to Android
-
-			
-	- TODOOLD
-	- Rot rework:
-		- 1. Current decay serves for rot (rust) + burn, like now; only two changes:
-			- Color: rust->black (i.e. no green)
-			- Different propagation:
-				- Damaged points get more rust
-				- The strength of rust at a point depends on avg of neighbors
-					- So rotting spreads from damaged points
-				- Randomize more at each point
-					- Can use point's personality seed
-		- 2. New quantity for "water-rotting", with flag/acceler8r
-			- Perlin-based quantity, "factory" and immutable, at Points
-				- Created @ factory time
-			- At RotPoints, also converge underwater points' "water-rotting" quantity to Perlin
-				- The strength of water rotting at a point depends on avg of neighbors
-					- So rotting spreads from "more perlin" points
-			- Shader: green
-		- 3. Scrub also clears "water-rotting" quantity
-	- Do "water soluble metal" material
-		- When flooded
-		- ...and another one one under waterline?
+	- Ships:
+		- Those @ TO_TAKE
+		- Ryanair's flying planes
+		- Also from beta server's Ship Suggestions
 
 
 
 
 
-	- Aerodynamic aluminium (colors as well)
+
+
+
+
+
+
+
+
+
+
+	- Reconsider compressing textures (decay now, later materials)
+		- jpeg: need lib @ PC and Android, and JpgTools
+			- Need to remove it from wxWidgets
+		- Linux
+
+	- Redo auto-texturization, as high-res and with box filter
+		! Math:
+			! Default MaterialTextureMagnification is 1.0
+			! Thus, WorldToMaterialPixel is 1.0f / (0.08 * magnification) = 12.5
+				! Range for WorldToMaterialPixel: 1.0f / (0.08 * [0.1, 2.0]) = [1250, 6.25]
+			! Material texture coordinates advance intra-1-world by WorldToMaterialPixel / texture_quad_mag_factor (there are texture_quad_mag_factor target pixels per-world-quad)
+			! Material texture coordinates for world coords wc are wc * WorldToMaterialPixel = wc * 12.5
+			! MagnificationFactor is 20 (for default ship) => 20 target pixels for eac 1x1 world quad
+			! => we build 20 target pixels with 12.5 material pixels, i.e. we _magnify_
+		- Option 1: we do nothing with box filtering - as we only have to magnify, and also we don't want to store magnified material textures - we only do higher-def textures
+			! Looks fantastic
+				! Requires WorldToMaterialPixel formula rearc given the new material textures' pixel sizes
+					! 12.5 material pixels / old material texture size = must be = x material pixels / new material texture size
+
+			+ Take (time) measurements first: AidaPrima: 31/34ms
+
+			+ Perf: Buffer2D<float>
+				+ At texture load time, so also cache is <float>
+				X NO PERF CHANGE,
+
+			= Perf: Move x interpolation earlier				
+				! It depends on x, but unfortunately loop is nested in y
+				+ Force WorldToMaterialPixel to be integer
+				+ Then can pre-cal X and Y interpolation vals for all 1-wide world quads
+				- New measurement: AidaPrima: double! It's because of all mod's (%)
+
+			-------
+
+			- To continue here, need jpeg work
+
+			- Database 
+				- CustomFactor1
+
+			- New material textures
+				- See which textures.com materials we already have as high-res, and which ones we have to take/re-find
+
+			- Populate CustomFactor1
+			- Use CustomFactor1
+				- Make sure magnification formula ends with same results as prev FS
+
+		- Port to Android
 
 	- See: jet flames covered by silt clouds
 		- Apparently, silt clouds' low-alpha is covering jet flames
 
 	- Fix foam with angley waves: is it because it becomes too wide?
-
-	- TimCan's new sounds for PC+Mobile
-			- FS Deep Horn
-			- Industrial Horn
-			- Queen Horn
-			- Steam Whistle FS Mobile 1
-			- Super whistle
-		- PC
-		- Android
 
 	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
 		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al
@@ -1905,17 +1993,11 @@
 	- I found this one: ShipBuilder: exporting structural layer and re-importing it is not the same
 		- Happens with the FS Birthday ship
 
-	- Reduce ghost forces from depth pressure
-		- See https://discord.com/channels/925233659118755842/1313073164879921203/1313073164879921203
-
-	- Look at non-anti-aliased borders
-		! On my new dell, also 1.18 shows non-anti-aliased borders - so it's a problem with my box
-
 	- New materials (*)
 
 	- Watertight doors should stay put even after unpowered (or new type altogether)
 	
-	- Test: underwater forces based on waves (derivative @ surface plus damper for depth)
+	- Test: underwater lateral forces based on waves (derivative @ surface plus damper for depth)
 		- Just test feasibility
 		- If ok, optimize using cached depth?
 
@@ -2966,8 +3048,6 @@
 		- https://www.shadertoy.com/view/4tdXDl
 
 	+ Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool
-
-	- Redo material texturization with new "box filter" image resize algorithm (i.e. average of all instead of just interpolation within 2)
 			
 - Dynamics:
 	+ Sand particles when hitting ground

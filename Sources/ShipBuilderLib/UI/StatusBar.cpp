@@ -311,7 +311,7 @@ void StatusBar::RefreshCanvasSize()
 
         if (mShipScale.has_value())
         {
-            auto const worldCoords = mCanvasSize->ToFractionalCoords(*mShipScale);
+            auto const worldCoords = mCanvasSize->ToFractionalCoords<vec2f>(*mShipScale);
 
             ss << " (";
 

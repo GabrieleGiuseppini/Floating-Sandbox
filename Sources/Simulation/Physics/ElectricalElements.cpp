@@ -2308,6 +2308,24 @@ void ElectricalElements::UpdateSinks(
                                     break;
                                 }
 
+                                case ElectricalMaterial::ShipSoundElementType::SteamWhistle:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(700));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::SuperWhistle:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(700));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::IndustrialHorn:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
+                                    break;
+                                }
+
                                 case ElectricalMaterial::ShipSoundElementType::Klaxon1:
                                 {
                                     mParentWorld.DisturbOcean(std::chrono::milliseconds(100));

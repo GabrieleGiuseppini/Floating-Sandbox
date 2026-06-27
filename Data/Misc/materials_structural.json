@@ -31,6 +31,7 @@
                 "sub_category": "Iron Hull",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
@@ -74,6 +75,7 @@
                 "sub_category": "Solid Iron Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
@@ -117,6 +119,7 @@
                 "sub_category": "Light Iron Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
@@ -160,6 +163,7 @@
                 "sub_category": "Solid Iron I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
@@ -203,6 +207,7 @@
                 "sub_category": "Light Iron I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
@@ -246,6 +251,7 @@
                 "sub_category": "Low-Grade Iron",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
@@ -289,6 +295,7 @@
                 "sub_category": "Water-Soluble Iron Hull",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 1.0,
             "sound_type": "Metal",
             "specific_heat": 449.0,
@@ -333,6 +340,7 @@
                 "sub_category": "Water-Soluble Iron I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 1.0,
             "sound_type": "Metal",
             "specific_heat": 449.0,
@@ -377,6 +385,7 @@
                 "sub_category": "Water-Soluble Low-Grade Iron",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
@@ -422,6 +431,7 @@
                 "sub_category": "Aerodynamic Iron Hull",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
@@ -465,6 +475,7 @@
                 "sub_category": "Steel Hull",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.5,
             "sound_type": "Metal",
             "specific_heat": 490.0,
@@ -508,6 +519,7 @@
                 "sub_category": "Solid Steel Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.5,
             "sound_type": "Metal",
             "specific_heat": 490.0,
@@ -551,6 +563,7 @@
                 "sub_category": "Light Steel Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.5,
             "sound_type": "Metal",
             "specific_heat": 490.0,
@@ -594,6 +607,7 @@
                 "sub_category": "Solid Steel I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.5,
             "sound_type": "Metal",
             "specific_heat": 490.0,
@@ -638,6 +652,7 @@
                 "sub_category": "Light Steel I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.5,
             "sound_type": "Metal",
             "specific_heat": 490.0,
@@ -681,6 +696,7 @@
                 "sub_category": "Low-Grade Steel",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.7,
             "sound_type": "Metal",
             "specific_heat": 490.0,
@@ -724,6 +740,7 @@
                 "sub_category": "Titanium Hull",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
@@ -767,6 +784,7 @@
                 "sub_category": "Solid Titanium Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
@@ -810,6 +828,7 @@
                 "sub_category": "Light Titanium Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
@@ -853,6 +872,7 @@
                 "sub_category": "Solid Titanium I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
@@ -896,6 +916,7 @@
                 "sub_category": "Light Titanium I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
@@ -939,6 +960,7 @@
                 "sub_category": "Low-Grade Titanium",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
@@ -982,6 +1004,7 @@
                 "sub_category": "Aluminium Hull",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
@@ -1025,6 +1048,7 @@
                 "sub_category": "Solid Aluminium Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
@@ -1068,6 +1092,7 @@
                 "sub_category": "Light Aluminium Bulkhead",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
@@ -1111,6 +1136,7 @@
                 "sub_category": "Solid Aluminium I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
@@ -1154,6 +1180,7 @@
                 "sub_category": "Light Aluminium I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
@@ -1197,6 +1224,7 @@
                 "sub_category": "Low-Grade Aluminium",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 1.0,
             "sound_type": "Metal",
             "specific_heat": 897.0,
@@ -1240,6 +1268,7 @@
                 "sub_category": "Water-Soluble Aluminium Hull",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
@@ -1284,6 +1313,7 @@
                 "sub_category": "Water-Soluble Aluminium I-Beam",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
@@ -1329,6 +1359,7 @@
                 "sub_category": "Aerodynamic Aluminium Hull",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
@@ -2389,6 +2420,7 @@
                 "sub_category": "Aluminium Sheet Hull",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
@@ -2432,6 +2464,7 @@
                 "sub_category": "Aluminium Sheet",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 897.0,
@@ -2475,6 +2508,7 @@
                 "sub_category": "Tungsten Hull",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.2,
             "sound_type": "Metal",
             "specific_heat": 134.0,
@@ -2518,6 +2552,7 @@
                 "sub_category": "Tungsten",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.2,
             "sound_type": "Metal",
             "specific_heat": 134.0,
@@ -2713,6 +2748,7 @@
                 "sub_category": "Double-Bottom Steel",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.5,
             "sound_type": "Metal",
             "specific_heat": 490.0,
@@ -2842,6 +2878,7 @@
                 "sub_category": "Double-Bottom Titanium",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 523.0,
@@ -2885,6 +2922,7 @@
                 "sub_category": "Double-Bottom Iron",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Metal",
             "specific_heat": 449.0,
@@ -2929,6 +2967,7 @@
                 "sub_category": "Nails",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.95,
             "sound_type": "Metal",
             "specific_heat": 228.0,
@@ -3744,6 +3783,38 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
+
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": "#1a1217",
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1000000.0,
+            "is_exempt_from_palette": true,
+            "is_hull": false,
+            "mass": {
+                "density": 0.022935,
+                "nominal_mass": 5.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Ash",
+	    "render_color": "#202020",
+            "sound_type": "Cloth",
+            "specific_heat": 1400.0,
+            "stiffness": 1.0,
+            "strength": 0.5,
+            "texture_name": "paper_1",
+            "thermal_conductivity": 0.05,
+            "thermal_expansion_coefficient": 0.0,
+            "unique_type": "Ash",
+            "water_diffusion_speed": 0.65,
+            "water_retention": 0.85,
+            "water_solubility": 0.15,
+            "wind_receptivity": 0.1
+        },
+
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
@@ -4325,6 +4396,7 @@
                 "sub_category": "Iron Chains",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Chain",
             "specific_heat": 449.0,
@@ -4367,6 +4439,7 @@
                 "sub_category": "Strong Iron Chains",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Chain",
             "specific_heat": 449.0,
@@ -4409,6 +4482,7 @@
                 "sub_category": "Aluminium Chains",
                 "sub_category_ordinal": 0
             },
+            "rot_receptivity": 0.0,
             "rust_receptivity": 0.9,
             "sound_type": "Chain",
             "specific_heat": 897.0,

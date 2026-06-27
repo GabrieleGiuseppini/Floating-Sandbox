@@ -51,44 +51,6 @@ public:
         return *(mPrograms[programIndex].OpenGLHandle);
     }
 
-    /*
-     * Sets all the texture parameters (identified as such by belonging to our ProgramParameterKind's _Texture range)
-     * in the specified (template argument) shader to the corresponding texture unit (identified via the integral value of that ProgramParameterKind).
-     */
-    template <typename TShaderSet::ProgramKindType Program>
-    inline void SetTextureParameters()
-    {
-        size_t programIndex = static_cast<size_t>(Program);
-
-        // Find all texture parameters
-        for (size_t parameterIndex = 0; parameterIndex < mPrograms[programIndex].UniformLocations.size(); ++parameterIndex)
-        {
-            if (mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation)
-            {
-                typename TShaderSet::ProgramParameterKindType parameter = static_cast<typename TShaderSet::ProgramParameterKindType>(parameterIndex);
-
-                // See if it's a texture/sampler parameter
-                if (parameter >= TShaderSet::ProgramParameterKindType::_FirstTexture
-                    && parameter <= TShaderSet::ProgramParameterKindType::_LastTexture)
-                {
-                    //
-                    // Set it
-                    //
-
-                    auto const textureUnitIndex = static_cast<uint8_t>(parameter) - static_cast<uint8_t>(TShaderSet::ProgramParameterKindType::_FirstTexture);
-
-                    assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
-
-                    glUniform1i(
-                        mPrograms[programIndex].UniformLocations[parameterIndex],
-                        textureUnitIndex);
-
-                    CheckUniformError(Program, parameter);
-                }
-            }
-        }
-    }
-
     template <typename TShaderSet::ProgramKindType Program, typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameter(int value)
     {
@@ -178,6 +140,30 @@ public:
             val2);
 
         CheckUniformError<Program, Parameter>();
+    }
+
+    /*
+     * Warning: changes currently-active program
+     */
+    template <typename TShaderSet::ProgramParameterKindType Parameter>
+    inline void SetProgramParameterInAllShaders(vec2f const & val)
+    {
+        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
+        assert(parameterIndex < mProgramsByProgramParameter.size());
+        for (typename TShaderSet::ProgramKindType program : mProgramsByProgramParameter[parameterIndex])
+        {
+            uint32_t const programIndex = static_cast<uint32_t>(program);
+            assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
+
+            ActivateProgram(program);
+
+            glUniform2f(
+                mPrograms[programIndex].UniformLocations[parameterIndex],
+                val.x,
+                val.y);
+
+            CheckUniformError(program, Parameter);
+        }
     }
 
     template <typename TShaderSet::ProgramKindType Program, typename TShaderSet::ProgramParameterKindType Parameter>
@@ -425,6 +411,8 @@ private:
     static std::set<std::string> ExtractVertexAttributeNames(GameOpenGLShaderProgram const & shaderProgram);
 
     static std::set<std::string> ExtractParameterNames(GameOpenGLShaderProgram const & shaderProgram);
+
+    void SetTextureParametersInAllShaders();
 
 private:
 

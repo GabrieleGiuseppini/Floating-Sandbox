@@ -11,6 +11,7 @@
 	- Fleeting Smoke Emitter - emits short-lived smoke
 	- Aerodynamic metals - simulates lift and allows planes to climb
 	- Water-Soluble metals - disintegrate with water
+- Added three new ship sounds (thanks to TimCan!)
 - Improved "wild mast" issue, where masts on the ocean floor would pick up silt clouds from nowhere
 - Rendering improvements:
 	- Enabled multi-sampling, reducing aliasing around the ship's structure and landmasses

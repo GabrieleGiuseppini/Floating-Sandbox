@@ -88,6 +88,7 @@ void ComputerCalibrator::TuneGame(
         renderContext.SetLandRenderDetail(LandRenderDetailType::Basic);
         renderContext.SetDoCrepuscularGradient(false);
         renderContext.SetShipDepthDarkeningSensitivity(0.0f);
+        renderContext.SetShipHighQualityRendering(false);
     }
 
     if (score.NormalizedGfxScore < 0.1f

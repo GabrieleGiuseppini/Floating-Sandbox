@@ -185,7 +185,9 @@ StructuralMaterial::MaterialUniqueType StructuralMaterial::StrToMaterialUniqueTy
 {
     if (Utils::CaseInsensitiveEquals(str, "Air"))
         return MaterialUniqueType::Air;
-    if (Utils::CaseInsensitiveEquals(str, "Glass"))
+    else if (Utils::CaseInsensitiveEquals(str, "Ash"))
+        return MaterialUniqueType::Ash;
+    else if (Utils::CaseInsensitiveEquals(str, "Glass"))
         return MaterialUniqueType::Glass;
     else if (Utils::CaseInsensitiveEquals(str, "Rope"))
         return MaterialUniqueType::Rope;
@@ -518,6 +520,12 @@ ElectricalMaterial::ShipSoundElementType ElectricalMaterial::StrToShipSoundEleme
         return ShipSoundElementType::QueenElizabeth2Horn;
     else if (Utils::CaseInsensitiveEquals(str, "SSRexWhistle"))
         return ShipSoundElementType::SSRexWhistle;
+    else if (Utils::CaseInsensitiveEquals(str, "SteamWhistle"))
+        return ShipSoundElementType::SteamWhistle;
+    else if (Utils::CaseInsensitiveEquals(str, "SuperWhistle"))
+        return ShipSoundElementType::SuperWhistle;
+    else if (Utils::CaseInsensitiveEquals(str, "IndustrialHorn"))
+        return ShipSoundElementType::IndustrialHorn;
     else if (Utils::CaseInsensitiveEquals(str, "Klaxon1"))
         return ShipSoundElementType::Klaxon1;
     else if (Utils::CaseInsensitiveEquals(str, "NuclearAlarm1"))
@@ -628,6 +636,7 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
                 case ShipSoundElementType::LakeFreighterHorn:
                 case ShipSoundElementType::ShieldhallSteamSiren:
                 case ShipSoundElementType::QueenElizabeth2Horn:
+                case ShipSoundElementType::IndustrialHorn:
                 {
                     ss << "Horn #" << static_cast<int>(instanceIndex);
                     break;
@@ -636,6 +645,8 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
                 case ShipSoundElementType::FourFunnelLinerWhistle:
                 case ShipSoundElementType::PipeWhistle:
                 case ShipSoundElementType::SSRexWhistle:
+                case ShipSoundElementType::SteamWhistle:
+                case ShipSoundElementType::SuperWhistle:
                 {
                     ss << "Whistle #" << static_cast<int>(instanceIndex);
                     break;

@@ -71,6 +71,12 @@ ShaderManager<TShaderSet>::ShaderManager(
             throw GameException("Cannot find GLSL source file for program \"" + TShaderSet::ProgramKindToStr(static_cast<typename TShaderSet::ProgramKindType>(i)) + "\"");
         }
     }
+
+    //
+    // Set texture parameters in all shaders
+    //
+
+    SetTextureParametersInAllShaders();
 }
 
 template<typename TShaderSet>
@@ -485,3 +491,36 @@ std::set<std::string> ShaderManager<TShaderSet>::ExtractParameterNames(GameOpenG
 
     return parameterNames;
 }
+
+template<typename TShaderSet>
+void ShaderManager<TShaderSet>::SetTextureParametersInAllShaders()
+{
+    /*
+     * Sets all the texture parameters (identified as such by belonging to our ProgramParameterKind's _Texture range)
+     * in all shaders, to the corresponding texture unit (identified via the integral value of that ProgramParameterKind).
+     */
+
+    // Vist all texture parameters
+    for (size_t textureParameterIndex = static_cast<size_t>(TShaderSet::ProgramParameterKindType::_FirstTexture);
+        textureParameterIndex <= static_cast<size_t>(TShaderSet::ProgramParameterKindType::_LastTexture);
+        ++textureParameterIndex)
+    {
+        for (typename TShaderSet::ProgramKindType program : mProgramsByProgramParameter[textureParameterIndex])
+        {
+            uint32_t const programIndex = static_cast<uint32_t>(program);
+            assert(mPrograms[programIndex].UniformLocations[textureParameterIndex] != NoParameterLocation);
+
+            auto const textureUnitIndex = static_cast<uint8_t>(textureParameterIndex) - static_cast<uint8_t>(TShaderSet::ProgramParameterKindType::_FirstTexture);
+
+            ActivateProgram(program);
+
+            glUniform1i(
+                mPrograms[programIndex].UniformLocations[textureParameterIndex],
+                textureUnitIndex);
+
+            CheckUniformError(program, static_cast<typename TShaderSet::ProgramParameterKindType>(textureParameterIndex));
+        }
+    }
+}
+
+

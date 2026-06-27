@@ -2213,6 +2213,7 @@ void GameController::InternalAddShip(
     ShipMetadata const & shipMetadata)
 {
     ShipId const shipId = ship->GetId();
+    FloatSize const shipWorldSize = ship->GetWorldSize();
     ElementCount const shipPointCount = ship->GetAlignedShipPointCount();
     ElementCount const shipMaxEphemeralParticleCount = ship->GetMaxEphemeralParticleCount();
 
@@ -2240,6 +2241,7 @@ void GameController::InternalAddShip(
         shipPointCount,
         shipMaxEphemeralParticleCount,
         SimulationParameters::MaxSpringsPerPoint,
+        shipWorldSize,
         std::move(exteriorTextureImage),
         std::move(interiorViewImage));
 

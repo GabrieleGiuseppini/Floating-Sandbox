@@ -38,6 +38,7 @@ public:
     enum class MaterialUniqueType : size_t // There's an array indexed by this
     {
         Air = 0,
+        Ash,
         Glass,
         Rope,
         SiltCloud,
@@ -350,6 +351,9 @@ public:
         ShieldhallSteamSiren,
         QueenElizabeth2Horn,
         SSRexWhistle,
+        SteamWhistle,
+        SuperWhistle,
+        IndustrialHorn,
         Klaxon1,
         NuclearAlarm1,
         EvacuationAlarm1,

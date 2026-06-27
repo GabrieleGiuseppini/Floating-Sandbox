@@ -685,6 +685,17 @@ public:
         mRenderParameters.AreShipStructureRenderModeSelectorsDirty = true;
     }
 
+    bool GetShipHighQualityRendering() const
+    {
+        return mRenderParameters.IsShipHighQualityRendering;
+    }
+
+    void SetShipHighQualityRendering(bool isHighQualityRendering)
+    {
+        mRenderParameters.IsShipHighQualityRendering = isHighQualityRendering;
+        mRenderParameters.IsShipHighQualityRenderingDirty = true;
+    }
+
     VectorFieldRenderModeType GetVectorFieldRenderMode() const
     {
         return mVectorFieldRenderMode;
@@ -840,6 +851,7 @@ public:
         size_t shipPointCount, // Ship-only points
         size_t maxEphemeralParticles,
         size_t maxSpringsPerPoint,
+        FloatSize shipWorldSize,
         RgbaImageData exteriorTextureImage,
         RgbaImageData interiorViewImage);
 

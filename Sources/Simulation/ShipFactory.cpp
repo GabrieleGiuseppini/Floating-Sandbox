@@ -453,6 +453,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
 
     auto ship = std::make_unique<Ship>(
         shipId,
+        shipSize.ToFloat<FloatSize>(),
         parentWorld,
         materialDatabase,
         simulationEventDispatcher,
@@ -1930,6 +1931,9 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
                 pointInfo.DefinitionCoordinates->y % AlgaeGrowthPatternSize);
 
             algaeGrowthPatternSample = std::fabsf(algaeGrowthPattern[algaeGrowthPatternSampleCoords]);
+
+            // Squash towards zero to ensure there are no 1's leaving bald spots
+            algaeGrowthPatternSample *= 0.4f;
         }
         else
         {

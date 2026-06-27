@@ -737,7 +737,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -756,6 +756,8 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
 
     //
     // Ultra-Violent Mode
+    //
+
     {
         wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Ultra-Violent Mode"));
 
@@ -944,7 +946,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(combustionSizer);
+            WxHelpers::MakeAllExpandable(combustionSizer);
 
             combustionBoxSizer->Add(
                 combustionSizer,
@@ -1025,7 +1027,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(thermodynamicsSizer);
+            WxHelpers::MakeAllExpandable(thermodynamicsSizer);
 
             thermodynamicsBoxSizer->Add(
                 thermodynamicsSizer,
@@ -1044,7 +1046,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -1058,7 +1060,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBoxSizer * waterBoxSizer = new wxStaticBoxSizer(wxHORIZONTAL, panel, _("Water"));
+        wxStaticBoxSizer * waterBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Water"));
 
         {
             wxGridBagSizer * waterSizer = new wxGridBagSizer(0, 0);
@@ -1197,7 +1199,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(waterSizer);
+            WxHelpers::MakeAllExpandable(waterSizer);
 
             waterBoxSizer->Add(
                 waterSizer,
@@ -1303,7 +1305,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -1438,7 +1440,8 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(decaySizer);
+
+            WxHelpers::MakeAllExpandable(decaySizer);
 
             decayBoxSizer->Add(
                 decaySizer,
@@ -1457,7 +1460,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -1503,8 +1506,7 @@ void SettingsDialog::PopulateOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(oceanSizer);
-            oceanSizer->AddGrowableRow(0);
+            WxHelpers::MakeAllExpandable(oceanSizer);
 
             oceanBoxSizer->Add(
                 oceanSizer,
@@ -1663,9 +1665,7 @@ void SettingsDialog::PopulateOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            bedrockSizer->AddGrowableRow(1);
-
-            WxHelpers::MakeAllColumnsExpandable(bedrockSizer);
+            WxHelpers::MakeAllExpandable(bedrockSizer);
 
             bedrockBoxSizer->Add(
                 bedrockSizer,
@@ -1823,7 +1823,7 @@ void SettingsDialog::PopulateOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(siltSizer);
+            WxHelpers::MakeAllExpandable(siltSizer);
 
             siltBoxSizer->Add(
                 siltSizer,
@@ -1842,7 +1842,7 @@ void SettingsDialog::PopulateOceanPanel(wxPanel * panel)
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -1924,14 +1924,12 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
                     });
 
-                auto sizer = windSizer->Add(
+                windSizer->Add(
                     mModulateWindCheckBox,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
+                    wxEXPAND | wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
                     CellBorderInner);
-
-                sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
             }
 
             // Wind Gust Amplitude
@@ -1940,7 +1938,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     windBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Gust Amplitude"),
                     _("The amplitude of wind gusts, as a multiplier of the base wind speed."),
                     [this](float value)
@@ -1960,9 +1958,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            windSizer->AddGrowableRow(1);
-
-            WxHelpers::MakeAllColumnsExpandable(windSizer);
+            WxHelpers::MakeAllExpandable(windSizer);
 
             windBoxSizer->Add(
                 windSizer,
@@ -2068,7 +2064,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(wavesSizer);
+            WxHelpers::MakeAllExpandable(wavesSizer);
 
             wavesBoxSizer->Add(
                 wavesSizer,
@@ -2123,7 +2119,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(interactiveWavesSizer);
+            WxHelpers::MakeAllExpandable(interactiveWavesSizer);
 
             interactiveWavesBoxSizer->Add(
                 interactiveWavesSizer,
@@ -2209,7 +2205,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     displacementWavesBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Foam Sensitivity"),
                     _("Adjusts the sensitivity for creating foam on the ocean surface upon disturbances. Set to zero to disable foam altogether."),
                     [this](float value)
@@ -2236,7 +2232,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     displacementWavesBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Foam Persistence"),
                     _("Adjusts how long foam takes to settle."),
                     [this](float value)
@@ -2262,7 +2258,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     displacementWavesBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Splash Sensitivity"),
                     _("Adjusts the sensitivity for creating splashes on the ocean surface upon disturbances. Set to zero to disable splashes altogether."),
                     [this](float value)
@@ -2309,9 +2305,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            displacementWavesSizer->AddGrowableRow(1);
-
-            WxHelpers::MakeAllColumnsExpandable(displacementWavesSizer);
+            WxHelpers::MakeAllExpandable(displacementWavesSizer);
 
             displacementWavesBoxSizer->Add(
                 displacementWavesSizer,
@@ -2330,7 +2324,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -2462,7 +2456,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     airBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Air Bubbles Density"),
                     _("The density of air bubbles generated when water enters a ship."),
                     [this](float value)
@@ -2482,7 +2476,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(airSizer);
+            WxHelpers::MakeAllExpandable(airSizer);
 
             airBoxSizer->Add(
                 airSizer,
@@ -2668,7 +2662,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(smokeSizer);
+            WxHelpers::MakeAllExpandable(smokeSizer);
 
             smokeBoxSizer->Add(
                 smokeSizer,
@@ -2798,9 +2792,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            skySizer->AddGrowableRow(1);
-
-            WxHelpers::MakeAllColumnsExpandable(skySizer);
+            WxHelpers::MakeAllExpandable(skySizer);
 
             skyBoxSizer->Add(
                 skySizer,
@@ -2819,7 +2811,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -2844,7 +2836,7 @@ void SettingsDialog::PopulateLightsElectricalMarineLifePanel(wxPanel * panel)
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Engine Thrust Adjust"),
                     _("Adjusts the thrust exerted by engines."),
                     [this](float value)
@@ -2961,7 +2953,7 @@ void SettingsDialog::PopulateLightsElectricalMarineLifePanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -3041,7 +3033,7 @@ void SettingsDialog::PopulateLightsElectricalMarineLifePanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(lightsSizer);
+            WxHelpers::MakeAllExpandable(lightsSizer);
 
             lightsBoxSizer->Add(
                 lightsSizer,
@@ -3120,7 +3112,7 @@ void SettingsDialog::PopulateLightsElectricalMarineLifePanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(underwaterPlantsSizer);
+            WxHelpers::MakeAllExpandable(underwaterPlantsSizer);
 
             underwaterPlantsBoxSizer->Add(
                 underwaterPlantsSizer,
@@ -3255,7 +3247,7 @@ void SettingsDialog::PopulateLightsElectricalMarineLifePanel(wxPanel * panel)
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Shoal Radius Adjust"),
                     _("Adjusts the radius of the neighborhood tracked by fishes in a shoal."),
                     [this](float value)
@@ -3276,7 +3268,7 @@ void SettingsDialog::PopulateLightsElectricalMarineLifePanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -3382,7 +3374,7 @@ void SettingsDialog::PopulateLightsElectricalMarineLifePanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -3401,7 +3393,7 @@ void SettingsDialog::PopulateLightsElectricalMarineLifePanel(wxPanel * panel)
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -3548,7 +3540,7 @@ void SettingsDialog::PopulatePowerToolsAndPhenomenaPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -3618,7 +3610,7 @@ void SettingsDialog::PopulatePowerToolsAndPhenomenaPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -3688,7 +3680,7 @@ void SettingsDialog::PopulatePowerToolsAndPhenomenaPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -3772,7 +3764,7 @@ void SettingsDialog::PopulatePowerToolsAndPhenomenaPanel(
                     stormsBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Rain Flood Adjust"),
                     _("Adjusts the extent to which rain floods exposed areas of a ship."),
                     [this](float value)
@@ -3799,7 +3791,7 @@ void SettingsDialog::PopulatePowerToolsAndPhenomenaPanel(
                     stormsBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Lightning Hit Probability"),
                     _("Adjusts the probability of a lightning hitting the ship. Set to zero to prevent altogether lightnings from hitting the ship."),
                     [this](float value)
@@ -3871,9 +3863,7 @@ void SettingsDialog::PopulatePowerToolsAndPhenomenaPanel(
                     CellBorderInner);
             }
 
-            stormsSizer->AddGrowableRow(1);
-
-            WxHelpers::MakeAllColumnsExpandable(stormsSizer);
+            WxHelpers::MakeAllExpandable(stormsSizer);
 
             stormsBoxSizer->Add(
                 stormsSizer,
@@ -3953,7 +3943,7 @@ void SettingsDialog::PopulatePowerToolsAndPhenomenaPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(wavePhenomenaSizer);
+            WxHelpers::MakeAllExpandable(wavePhenomenaSizer);
 
             wavePhenomenaBoxSizer->Add(
                 wavePhenomenaSizer,
@@ -4049,7 +4039,7 @@ void SettingsDialog::PopulatePowerToolsAndPhenomenaPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -4068,7 +4058,7 @@ void SettingsDialog::PopulatePowerToolsAndPhenomenaPanel(
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -4158,7 +4148,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -4255,7 +4245,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -4326,7 +4316,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -4422,7 +4412,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -4493,7 +4483,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -4563,7 +4553,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -4627,7 +4617,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -4777,25 +4767,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // See Ship Through Water
-            {
-                mSeeShipThroughOceanCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("See Ship Through Water"));
-                mSeeShipThroughOceanCheckBox->SetToolTip(_("Shows the ship either behind the sea water or in front of it."));
-                mSeeShipThroughOceanCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
-                    [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue(GameSettings::ShowShipThroughOcean, event.IsChecked());
-                        OnLiveSettingsChanged();
-                    });
-
-                sizer->Add(
-                    mSeeShipThroughOceanCheckBox,
-                    wxGBPosition(2, 0),
-                    wxGBSpan(1, 1),
-                    wxALL,
-                    CellBorderInner);
-            }
-
             // Ocean Transparency
             {
                 mOceanTransparencySlider = new SliderControl<float>(
@@ -4817,8 +4788,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mOceanTransparencySlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(3, 1),
-                    wxALL,
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
@@ -4844,12 +4815,15 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mOceanDepthDarkeningRateSlider,
                     wxGBPosition(0, 2),
-                    wxGBSpan(3, 1),
-                    wxALL,
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            sizer->AddGrowableRow(1);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -4997,7 +4971,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5077,7 +5051,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllExpandable(sizer);
+
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5121,7 +5097,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllExpandable(sizer);
+
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5225,6 +5203,25 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // High-quality rendering
+            {
+                mShipRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Rendering"));
+                mShipRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders the ship with additional details. Requires more computational resources."));
+                mShipRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::ShipHighQualityRendering, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mShipRenderDetailModeDetailedCheckBox,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
             // Heat sensitivity
             {
                 mHeatSensitivitySlider = new SliderControl<float>(
@@ -5246,7 +5243,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mHeatSensitivitySlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -5272,7 +5269,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mShipAmbientLightSensitivitySlider,
                     wxGBPosition(0, 2),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -5298,7 +5295,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mShipDepthDarkeningSensitivitySlider,
                     wxGBPosition(0, 3),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -5324,7 +5321,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mShipFlameSizeAdjustmentSlider,
                     wxGBPosition(0, 4),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -5350,12 +5347,14 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 sizer->Add(
                     mShipFlameKaosAdjustmentSlider,
                     wxGBPosition(0, 5),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllExpandable(sizer);
+
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5447,11 +5446,13 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mWaterLevelOfDetailSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(2, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllExpandable(sizer);
+
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5607,7 +5608,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -5620,7 +5621,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -5756,7 +5757,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -5833,7 +5834,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -5913,7 +5914,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(sizer);
+            WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
                 sizer,
@@ -5999,6 +6000,19 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
     // Extra Draw Options
     {
         wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Extra Draw Options"));
+
+        {
+            mSeeShipThroughOceanCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("See Ship Through Water"));
+            mSeeShipThroughOceanCheckBox->SetToolTip(_("Shows the ship either behind the sea water or in front of it."));
+            mSeeShipThroughOceanCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                [this](wxCommandEvent & event)
+                {
+                    mLiveSettings.SetValue(GameSettings::ShowShipThroughOcean, event.IsChecked());
+                    OnLiveSettingsChanged();
+                });
+
+            boxSizer->Add(mSeeShipThroughOceanCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+        }
 
         {
             mDrawExplosionsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Draw Explosions"));
@@ -6267,7 +6281,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            WxHelpers::MakeAllColumnsExpandable(performanceSizer);
+            WxHelpers::MakeAllExpandable(performanceSizer);
 
             performanceBoxSizer->Add(
                 performanceSizer,
@@ -6286,7 +6300,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -6743,7 +6757,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -6796,7 +6810,7 @@ void SettingsDialog::PopulateParallelismExperimentsPanel(wxPanel * panel)
 
     // Finalize panel
 
-    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+    WxHelpers::MakeAllExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -6999,7 +7013,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mFlatOceanColorPicker->SetColour(wxColor(flatOceanColor.r, flatOceanColor.g, flatOceanColor.b));
 
     mOceanRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<OceanRenderDetailType>(GameSettings::OceanRenderDetail) == OceanRenderDetailType::Detailed);
-    mSeeShipThroughOceanCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipThroughOcean));
     mOceanTransparencySlider->SetValue(settings.GetValue<float>(GameSettings::OceanTransparency));
     mOceanDepthDarkeningRateSlider->SetValue(settings.GetValue<float>(GameSettings::OceanDepthDarkeningRate));
 
@@ -7112,6 +7125,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         }
     }
 
+    mShipRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShipHighQualityRendering));
     mShipFlameSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameSizeAdjustment));
     mShipFlameKaosAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameKaosAdjustment));
     mShipAmbientLightSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::ShipAmbientLightSensitivity));
@@ -7216,6 +7230,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         }
     }
 
+    mSeeShipThroughOceanCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipThroughOcean));
     mDrawExplosionsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawExplosions));
     mDrawFlamesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawFlames));
     mShowFrontiersCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipFrontiers));

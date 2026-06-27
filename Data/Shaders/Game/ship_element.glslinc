@@ -5,9 +5,7 @@
 
 // Inputs
 in vec2 inShipPointPosition;
-#ifndef WITH_MATTE_COLOR
 in vec2 inShipPointTextureCoordinates;
-#endif
 in vec4 inShipPointAttributeGroup1; // Light, Water, Temperature, Rot
 in vec2 inShipPointAttributeGroup2; // Rust, AlgaeGrowth
 in float inShipPointPlaneId;
@@ -22,9 +20,8 @@ in vec4 inShipPointColor;
 out float vertexWorldY;
 out vec4 vertexAttributes1; // Light, Water, Temperature, Rot
 out vec2 vertexAttributes2; // Rust, AlgaeGrowth
-#ifndef WITH_MATTE_COLOR
 out vec2 vertexTextureCoords;
-#else
+#ifdef WITH_MATTE_COLOR
 out vec4 vertexCol;
 #endif
 #if STRESS_RENDER_MODE != 0
@@ -40,10 +37,9 @@ void main()
 
     vertexAttributes1 = inShipPointAttributeGroup1;
     vertexAttributes2 = inShipPointAttributeGroup2;
-
-#ifndef WITH_MATTE_COLOR
     vertexTextureCoords = inShipPointTextureCoordinates;
-#else
+
+#ifdef WITH_MATTE_COLOR
     vertexCol = inShipPointColor;
 #endif
 
@@ -70,9 +66,8 @@ void main()
 in float vertexWorldY;
 in vec4 vertexAttributes1; // Light, Water, Temperature, Rot
 in vec2 vertexAttributes2; // Rust, AlgaeGrowth
-#ifndef  WITH_MATTE_COLOR
 in vec2 vertexTextureCoords;
-#else
+#ifdef  WITH_MATTE_COLOR
 in vec4 vertexCol;
 #endif
 #if STRESS_RENDER_MODE != 0
@@ -90,6 +85,8 @@ uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
 #endif
 uniform vec3 paramLampLightColor;
+uniform vec2 paramShipEnhancementsTextureSpaceMagnificationFactor;
+uniform float paramShipHighQualityRendering;
 #if HEAT_RENDER_MODE != 0
 uniform float paramHeatShift;
 #endif
@@ -104,6 +101,8 @@ uniform float paramShipParticleRenderMode;
 // Input texture
 uniform sampler2D paramSharedTexture;
 #endif
+// Enhancements texture
+uniform sampler2D paramShipEnhancementsTexture;
 
 void main()
 {
@@ -116,17 +115,32 @@ void main()
         discard;
 #endif
 
+    vec3 rustSample;
+    vec3 algaeGrowthSample;
+    if (paramShipHighQualityRendering != 0.0) // Fine to branch - all pixels will follow the same branching
+    {
+        vec4 shipEnhancementSample = texture2D(paramShipEnhancementsTexture, vertexTextureCoords * paramShipEnhancementsTextureSpaceMagnificationFactor);
+
+        rustSample = vec3(shipEnhancementSample.r, shipEnhancementSample.g, 0.0);
+        algaeGrowthSample = vec3(shipEnhancementSample.b, shipEnhancementSample.a, 0.0);
+    }
+    else
+    {
+        rustSample = vec3(RUST_COLOR);
+        algaeGrowthSample = vec3(ALGAE_GROWTH_COLOR);
+    }
+
 
 #if HEAT_RENDER_MODE != 1
 
     // Apply decay:
-    //  Rust > AlgaeGrowth > Rot
+    //  AlgaeGrowth > Rust > Rot
 
     float originalLuminosity = dot(vec3(0.299, 0.587, 0.114), vertexCol.rgb);
 
     vec3 fragColour = mix(vec3(ROT_COLOR), vertexCol.rgb, vertexAttributes1.w);
-    fragColour = mix(vec3(ALGAE_GROWTH_COLOR), fragColour, sqrt(vertexAttributes2.y));
-    fragColour = mix(vec3(RUST_COLOR) * (1.0 - (1.0 - originalLuminosity) * 0.4), fragColour, vertexAttributes2.x);
+    fragColour = mix(rustSample * (1.0 - (1.0 - originalLuminosity) * 0.4), fragColour, sqrt(vertexAttributes2.x));
+    fragColour = mix(algaeGrowthSample, fragColour, sqrt(vertexAttributes2.y));
 
     // Apply point water
 #ifdef FOR_LINES
@@ -197,7 +211,7 @@ void main()
     fragColour = mix(fragColour, paramLampLightColor, vertexAttributes1.x);
 
     // Make final color, using original vertex's alpha
-    gl_FragColor = vec4(fragColour, vertexCol.w);
+    gl_FragColor = vec4(fragColour, vertexCol.a);
 
     //
     // Stress
@@ -245,7 +259,7 @@ void main()
 #endif
 
 #ifdef FOR_POINTS
-    if (paramShipParticleRenderMode != 0.0)
+    if (paramShipParticleRenderMode != 0.0) // Fine to branch - all pixels will follow the same branching
     {
         float d = length(gl_PointCoord - vec2(0.5)) * 2.0;
 

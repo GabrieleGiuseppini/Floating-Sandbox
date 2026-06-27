@@ -54,6 +54,7 @@ public:
     {
         None,   // Not an ephemeral particle (or not an _active_ ephemeral particle)
         AirBubble,
+        Ash,
         Debris,
         SiltCloud,
         Smoke,
@@ -369,6 +370,16 @@ private:
             {}
         };
 
+        struct AshState
+        {
+            float ElapsedSimulationTime;
+
+            AshState()
+                : ElapsedSimulationTime(0.0f)
+            {
+            }
+        };
+
         struct DebrisState
         {
         };
@@ -516,6 +527,7 @@ private:
         };
 
         AirBubbleState AirBubble;
+        AshState Ash;
         DebrisState Debris;
         SiltCloudState SiltCloud;
         SmokeState Smoke;
@@ -526,6 +538,10 @@ private:
 
         EphemeralState(AirBubbleState airBubble)
             : AirBubble(airBubble)
+        {}
+
+        EphemeralState(AshState ash)
+            : Ash(ash)
         {}
 
         EphemeralState(DebrisState debris)
@@ -958,6 +974,15 @@ public:
         float vortexPeriod,
         float currentSimulationTime,
         PlaneId planeId);
+
+    void CreateEphemeralParticleAsh(
+        vec2f const & position,
+        vec2f const & velocity,
+        float depth,
+        float currentSimulationTime,
+        float maxSimulationLifetime,
+        PlaneId planeId,
+        SimulationParameters const & simulationParameters);
 
     void CreateEphemeralParticleDebris(
         vec2f const & position,

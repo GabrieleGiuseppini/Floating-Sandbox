@@ -636,6 +636,9 @@ SoundController::SoundController(
                 || soundType == SoundType::ShipShieldhallSteamSiren
                 || soundType == SoundType::ShipQueenElizabeth2Horn
                 || soundType == SoundType::ShipSSRexWhistle
+                || soundType == SoundType::ShipSteamWhistle
+                || soundType == SoundType::ShipSuperWhistle
+                || soundType == SoundType::ShipIndustrialHorn
                 || soundType == SoundType::ShipKlaxon1
                 || soundType == SoundType::ShipNuclearAlarm1
                 || soundType == SoundType::ShipEvacuationAlarm1
@@ -851,6 +854,60 @@ SoundController::SoundController(
                     }
 
                     shipSoundElementType = ElectricalMaterial::ShipSoundElementType::SSRexWhistle;
+
+                    break;
+                }
+
+                case SoundType::ShipSteamWhistle:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 2.18664f;
+                        loopEndSample = 3.25701f;
+                    }
+                    else
+                    {
+                        loopStartSample = 2.0161f;
+                        loopEndSample = 3.88034f;
+                    }
+
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::SteamWhistle;
+
+                    break;
+                }
+
+                case SoundType::ShipSuperWhistle:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 1.55102f;
+                        loopEndSample = 5.22383f;
+                    }
+                    else
+                    {
+                        loopStartSample = 0.932132f;
+                        loopEndSample = 4.93701f;
+                    }
+
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::SuperWhistle;
+
+                    break;
+                }
+
+                case SoundType::ShipIndustrialHorn:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 1.08188f;
+                        loopEndSample = 5.42805f;
+                    }
+                    else
+                    {
+                        loopStartSample = 1.64746f;
+                        loopEndSample = 6.79952f;
+                    }
+
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::IndustrialHorn;
 
                     break;
                 }
@@ -2474,6 +2531,24 @@ void SoundController::OnShipSoundUpdated(
             case ElectricalMaterial::ShipSoundElementType::SSRexWhistle:
             {
                 soundType = SoundType::ShipSSRexWhistle;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::SteamWhistle:
+            {
+                soundType = SoundType::ShipSteamWhistle;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::SuperWhistle:
+            {
+                soundType = SoundType::ShipSuperWhistle;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::IndustrialHorn:
+            {
+                soundType = SoundType::ShipIndustrialHorn;
                 break;
             }
 

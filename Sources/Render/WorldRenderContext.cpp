@@ -195,10 +195,6 @@ WorldRenderContext::WorldRenderContext(
         }
 
         glBindVertexArray(0);
-
-        // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Sky>();
-        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::Sky>();
     }
 
 
@@ -240,10 +236,6 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     glBindVertexArray(0);
-
-    // Set texture parameters
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Lightning>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::Lightning>();
 
 
     //
@@ -293,12 +285,6 @@ WorldRenderContext::WorldRenderContext(
 
     glBindVertexArray(0);
 
-    // Set (noise) texture parameters
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatDetailed>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandFlatDetailed>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureDetailed>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandTextureDetailed>();
-
 
     //
     // Initialize Ocean Basic VAO
@@ -318,13 +304,6 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     glBindVertexArray(0);
-
-    // Set texture parameters
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthBasic>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanDepthBasic>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureBasic>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanTextureBasic>();
-
 
 
     //
@@ -349,35 +328,6 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     glBindVertexArray(0);
-
-    // Set texture parameters
-
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedBackgroundLower>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanFlatDetailedBackgroundLower>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedBackgroundUpper>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanFlatDetailedBackgroundUpper>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedForegroundLower>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanFlatDetailedForegroundLower>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedForegroundUpper>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanFlatDetailedForegroundUpper>();
-
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedBackgroundLower>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanDepthDetailedBackgroundLower>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedBackgroundUpper>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanDepthDetailedBackgroundUpper>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedForegroundLower>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanDepthDetailedForegroundLower>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedForegroundUpper>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanDepthDetailedForegroundUpper>();
-
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundLower>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundLower>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundUpper>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundUpper>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundLower>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundLower>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundUpper>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundUpper>();
 
 
     //
@@ -445,9 +395,6 @@ WorldRenderContext::WorldRenderContext(
 
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::UnderwaterPlant>();
 
-        // Set texture parameters
-        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::UnderwaterPlant>();
-
         // Set per-species texture properties
         {
             std::vector<vec4f> atlasTileGeometries;
@@ -507,10 +454,6 @@ WorldRenderContext::WorldRenderContext(
         ////mGlobalRenderContext.GetElementIndices().Bind()
 
         glBindVertexArray(0);
-
-        // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AntiGravityField>();
-        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::AntiGravityField>();
     }
 
     //
@@ -541,10 +484,6 @@ WorldRenderContext::WorldRenderContext(
         ////mGlobalRenderContext.GetElementIndices().Bind()
 
         glBindVertexArray(0);
-
-        // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Tornado>();
-        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::Tornado>();
     }
 
     //
@@ -735,12 +674,6 @@ void WorldRenderContext::InitializeCloudTextures()
 
     // Store metadata
     mCloudTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GameTextureDatabases::CloudTextureDatabase>>(cloudTextureAtlas.Metadata);
-
-    // Set textures in shader
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsBasic>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::CloudsBasic>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsDetailed>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::CloudsDetailed>();
 }
 
 void WorldRenderContext::InitializeWorldTextures()
@@ -865,12 +798,6 @@ void WorldRenderContext::InitializeFishTextures()
 
     // Store metadata
     mFishTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GameTextureDatabases::FishTextureDatabase>>(fishTextureAtlas.Metadata);
-
-    // Set textures in shader
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesBasic>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::FishesBasic>();
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesDetailed>();
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::FishesDetailed>();
 }
 
 void WorldRenderContext::OnReset(RenderParameters const & renderParameters)
@@ -2957,19 +2884,17 @@ void WorldRenderContext::UploadLandTexture(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     CheckOpenGLError();
 
-    // Set texture and texture parameters (from last one called...) in all texture shaders
+    // Set texture parameters (from last one called...) in all texture shaders
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureBasic>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureBasic, GameShaderSets::ProgramParameterKind::TextureScaling>(
         1.0f / textureSpecifications[clampedTextureIndex].Metadata.WorldWidth,
         1.0f / textureSpecifications[clampedTextureIndex].Metadata.WorldHeight);
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandTextureBasic>();
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureDetailed>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureDetailed, GameShaderSets::ProgramParameterKind::TextureScaling>(
         1.0f / textureSpecifications[clampedTextureIndex].Metadata.WorldWidth,
         1.0f / textureSpecifications[clampedTextureIndex].Metadata.WorldHeight);
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandTextureDetailed>();
 }
 
 template <typename TVertexBuffer>
