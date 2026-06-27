@@ -1831,9 +1831,9 @@
 			= Calibration
 				- Test on old Dell
 
-			= Make PR
+			+ Make PR
 				+ Port to Android
-				- Merge into master			
+				+ Merge into master			
 
 	+ TimCan's new sounds for PC+Mobile
 			! NOT:
