@@ -1833,13 +1833,6 @@
 
 			- Make PR
 				- Port to Android
-					- Textures
-						- Resize to 512x512
-					- Add to plan: 
-						- Port ShaderManager::SetTextureParametersInAllShaders and hide public calls
-							- Nuke all calls to SetTextureParameters<Program>()
-						- Calibration?
-						- New setting (ship high-quality) -- needed? Check perf before and after
 				- Merge into master			
 
 	+ TimCan's new sounds for PC+Mobile
