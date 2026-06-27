@@ -1872,6 +1872,29 @@
 			+ Remove test ship
 
 	+ Aerodynamic aluminium (colors as well)
+	
+	+ Try: ash with Thanos' snap
+		+ New material, not in palette, with unique key
+
+
+	- Ships:
+		- Those @ TO_TAKE
+		- Ryanair's flying planes
+		- Also from beta server's Ship Suggestions
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	- Reconsider compressing textures (decay now, later materials)
 		- jpeg: need lib @ PC and Android, and JpgTools
@@ -1920,16 +1943,10 @@
 
 		- Port to Android
 
-	- Try: ash with Thanos' snap
-		- New material, not in palette, with unique key
-
 	- See: jet flames covered by silt clouds
 		- Apparently, silt clouds' low-alpha is covering jet flames
 
 	- Fix foam with angley waves: is it because it becomes too wide?
-
-	- Ships:
-		- Also from beta server's Ship Suggestions
 
 	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
 		! We changed this from before (where we were stripping all after _) to now (retain full lang from wx), and wx has uk_UA et al

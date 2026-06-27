@@ -38,6 +38,7 @@ public:
     enum class MaterialUniqueType : size_t // There's an array indexed by this
     {
         Air = 0,
+        Ash,
         Glass,
         Rope,
         SiltCloud,

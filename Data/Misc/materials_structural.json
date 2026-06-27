@@ -3783,6 +3783,38 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
+
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": "#1a1217",
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1000000.0,
+            "is_exempt_from_palette": true,
+            "is_hull": false,
+            "mass": {
+                "density": 0.022935,
+                "nominal_mass": 5.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Ash",
+	    "render_color": "#202020",
+            "sound_type": "Cloth",
+            "specific_heat": 1400.0,
+            "stiffness": 1.0,
+            "strength": 0.5,
+            "texture_name": "paper_1",
+            "thermal_conductivity": 0.05,
+            "thermal_expansion_coefficient": 0.0,
+            "unique_type": "Ash",
+            "water_diffusion_speed": 0.65,
+            "water_retention": 0.85,
+            "water_solubility": 0.15,
+            "wind_receptivity": 0.1
+        },
+
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [

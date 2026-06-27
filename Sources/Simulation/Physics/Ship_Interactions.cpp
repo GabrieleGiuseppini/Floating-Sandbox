@@ -1708,9 +1708,9 @@ void Ship::ApplyThanosSnap(
     // Visit all points (excluding ephemerals, there's nothing to detach there)
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
-        auto const x = mPoints.GetPosition(pointIndex).x;
-        if (leftX <= x
-            && x <= rightX
+        auto const & pointPosition = mPoints.GetPosition(pointIndex);
+        if (leftX <= pointPosition.x
+            && pointPosition.x <= rightX
             && !mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty())
         {
             //
@@ -1735,6 +1735,25 @@ void Ship::ApplyThanosSnap(
 
                 // Set rot to min, so that debris gets darkened
                 mPoints.SetRot(pointIndex, 0.0f);
+
+                // Produce ash particles
+                float constexpr Lifetime = 1.5f;
+                mPoints.CreateEphemeralParticleAsh(
+                    pointPosition,
+                    vec2f(detachVelocity.x * 1.8f, detachVelocity.y),
+                    mPoints.GetCachedDepth(pointIndex),
+                    currentSimulationTime,
+                    Lifetime,
+                    mPoints.GetPlaneId(pointIndex),
+                    simulationParameters);
+                mPoints.CreateEphemeralParticleAsh(
+                    pointPosition,
+                    vec2f(-detachVelocity.x * 0.75f, detachVelocity.y),
+                    mPoints.GetCachedDepth(pointIndex),
+                    currentSimulationTime,
+                    Lifetime,
+                    mPoints.GetPlaneId(pointIndex),
+                    simulationParameters);
             }
         }
     }
