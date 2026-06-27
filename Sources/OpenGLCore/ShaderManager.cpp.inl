@@ -518,7 +518,7 @@ void ShaderManager<TShaderSet>::SetTextureParametersInAllShaders()
                 mPrograms[programIndex].UniformLocations[textureParameterIndex],
                 textureUnitIndex);
 
-            CheckUniformError(program, static_cast<TShaderSet::ProgramParameterKindType>(textureParameterIndex));
+            CheckUniformError(program, static_cast<typename TShaderSet::ProgramParameterKindType>(textureParameterIndex));
         }
     }
 }

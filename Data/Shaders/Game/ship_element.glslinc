@@ -111,13 +111,13 @@ void main()
 
     // Discard transparent pixels, so that ropes (which are drawn temporally after
     // this shader but Z-ally behind) are not occluded by transparent triangles
-    if (vertexCol.w < 0.2)
+    if (vertexCol.a < 0.2)
         discard;
 #endif
 
     vec3 rustSample;
     vec3 algaeGrowthSample;
-    if (paramShipHighQualityRendering != 0.0f) // Fine to branch - all pixels will follow the same branching
+    if (paramShipHighQualityRendering != 0.0) // Fine to branch - all pixels will follow the same branching
     {
         vec4 shipEnhancementSample = texture2D(paramShipEnhancementsTexture, vertexTextureCoords * paramShipEnhancementsTextureSpaceMagnificationFactor);
 
@@ -211,7 +211,7 @@ void main()
     fragColour = mix(fragColour, paramLampLightColor, vertexAttributes1.x);
 
     // Make final color, using original vertex's alpha
-    gl_FragColor = vec4(fragColour, vertexCol.w);
+    gl_FragColor = vec4(fragColour, vertexCol.a);
 
     //
     // Stress

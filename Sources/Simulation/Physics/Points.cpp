@@ -278,7 +278,7 @@ void Points::CreateEphemeralParticleAsh(
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
     mTemperatureBuffer[pointIndex] = depth > 0.0f ? simulationParameters.WaterTemperature : simulationParameters.AirTemperature;
-    assert(structuralMaterial.GetHeatCapacity() > 0.0f);
+    assert(ashStructuralMaterial.GetHeatCapacity() > 0.0f);
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / ashStructuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = ashStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = ashStructuralMaterial.IgnitionTemperature;
