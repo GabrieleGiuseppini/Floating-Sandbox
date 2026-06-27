@@ -1819,7 +1819,7 @@
 
 			+ More scissor between dry rust and damage rust
 
-			= Texture finalization:
+			+ Texture finalization:
 				+ Rust
 					+ Rust0220, exists @ 1024
 				+ Algae
@@ -1828,14 +1828,8 @@
 						+ Check pixel size vs world size, not a multiple!
 					+ Test Rust, Algae
 
-			- Calibration
+			= Calibration
 				- Test on old Dell
-
-			- If won't fly, take these commits:
-				- Rot<->Rust
-				- Non-damaged rust
-				- SettingsDialog
-
 
 			- Make PR
 				- Port to Android
@@ -1844,8 +1838,8 @@
 					- Add to plan: 
 						- Port ShaderManager::SetTextureParametersInAllShaders and hide public calls
 							- Nuke all calls to SetTextureParameters<Program>()
-						- Calibration
-						- New setting?
+						- Calibration?
+						- New setting (ship high-quality) -- needed? Check perf before and after
 				- Merge into master			
 
 	+ TimCan's new sounds for PC+Mobile
@@ -1888,6 +1882,7 @@
 		! Math:
 			! Default MaterialTextureMagnification is 1.0
 			! Thus, WorldToMaterialPixel is 1.0f / (0.08 * magnification) = 12.5
+				! Range for WorldToMaterialPixel: 1.0f / (0.08 * [0.1, 2.0]) = [1250, 6.25]
 			! Material texture coordinates advance intra-1-world by WorldToMaterialPixel / texture_quad_mag_factor (there are texture_quad_mag_factor target pixels per-world-quad)
 			! Material texture coordinates for world coords wc are wc * WorldToMaterialPixel = wc * 12.5
 			! MagnificationFactor is 20 (for default ship) => 20 target pixels for eac 1x1 world quad
@@ -1903,8 +1898,11 @@
 				+ At texture load time, so also cache is <float>
 				X NO PERF CHANGE,
 
-			- Perf: Move x interpolation earlier				
+			= Perf: Move x interpolation earlier				
 				! It depends on x, but unfortunately loop is nested in y
+				+ Force WorldToMaterialPixel to be integer
+				+ Then can pre-cal X and Y interpolation vals for all 1-wide world quads
+				- New measurement: AidaPrima: double! It's because of all mod's (%)
 
 			-------
 
