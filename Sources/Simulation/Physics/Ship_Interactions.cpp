@@ -1651,7 +1651,7 @@ bool Ship::RustThrough(
             // Incorporate underwaterness/waterness
             rustCoeff *= (mParentWorld.GetOceanSurface().IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
                 ? 0.225f
-                : 0.15f;
+                : 0.175f;
 
             // Incorporate mass, for variation
             rustCoeff *= 0.7f + 0.3f * std::min(mPoints.GetMass(pointIndex) / 700.0f, 1.0f);

@@ -1494,7 +1494,7 @@
 		+ Test on Android
 		+ changelist
 
-	= Rot rework + "water soluble" material:
+	+ Rot rework + "water soluble" material:
 		! Spec:
 			! Quantities:
 				! Rot:
@@ -1759,7 +1759,7 @@
 
 		+ changelist
 
-		= Try multi-channel texture for rust and algae		
+		+ Try multi-channel texture for rust and algae		
 			+ New branch
 			+ Recover code from git stash
 				+ Shader
@@ -1828,13 +1828,13 @@
 						+ Check pixel size vs world size, not a multiple!
 					+ Test Rust, Algae
 
-			= Calibration
-				- Test on old Dell
+			+ Calibration
+				+ Test on old Dell
 
 			+ Make PR
 				+ Port to Android
-				+ Merge into master			
-
+				+ Merge into master
+				
 	+ TimCan's new sounds for PC+Mobile
 			! NOT:
 				- FS Deep Horn
@@ -1870,10 +1870,17 @@
 		+ New material, not in palette, with unique key
 
 
+	- Ubuntu pre-build
+
 	- Ships:
 		- Those @ TO_TAKE
 		- Ryanair's flying planes
 		- Also from beta server's Ship Suggestions
+
+	- Release template here!!!
+
+
+
 
 
 
@@ -1891,7 +1898,7 @@
 
 	- Reconsider compressing textures (decay now, later materials)
 		- jpeg: need lib @ PC and Android, and JpgTools
-			- Need to remove it from wxWidgets
+			- Need to remove it from wxWidgets?
 		- Linux
 
 	- Redo auto-texturization, as high-res and with box filter
