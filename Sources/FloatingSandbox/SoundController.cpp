@@ -1493,7 +1493,7 @@ void SoundController::PlayRustSound()
     PlayOneShotMultipleChoiceSound(
         SoundType::Rust,
         SoundGroupType::Tools,
-        100.0f,
+        65.0f,
         true);
 }
 

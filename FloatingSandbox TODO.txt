@@ -1869,8 +1869,12 @@
 	+ Try: ash with Thanos' snap
 		+ New material, not in palette, with unique key
 
-
-	- Ubuntu pre-build
+	- Localization
+		- IT
+		- ES
+		- PT_BR
+		- RU
+		- UK
 
 	- Ships:
 		- Those @ TO_TAKE
