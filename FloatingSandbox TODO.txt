@@ -1870,8 +1870,8 @@
 		+ New material, not in palette, with unique key
 
 	= Localization
-		= IT
-			- Do
+		+ IT
+			+ Do
 		= ES
 			- Send
 		= PT_BR
