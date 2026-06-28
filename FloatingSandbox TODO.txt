@@ -1869,12 +1869,17 @@
 	+ Try: ash with Thanos' snap
 		+ New material, not in palette, with unique key
 
-	- Localization
-		- IT
-		- ES
-		- PT_BR
-		- RU
-		- UK
+	= Localization
+		= IT
+			- Do
+		= ES
+			- Send
+		= PT_BR
+			- Send
+		= RU
+			- Send
+		= UK
+			- Send
 
 	- Ships:
 		- Those @ TO_TAKE
