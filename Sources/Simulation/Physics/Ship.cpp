@@ -3533,26 +3533,6 @@ void Ship::DecayPoints(
     // Rot
     //
 
-    //
-    // We want to calculate alpha as 1 - beta*x, with x depending on the particle's state:
-    //      underwater not flooded: x_uw
-    //      not underwater flooded: x_fl == 1.0 (so that we can use particle's water, clamped)
-    //      underwater and flooded: x_uw_fl == x_uw + x_fl
-    //
-    // Constraints: after 20 minutes (Ns rot steps) we want the following decays:
-    //      underwater not flooded: a_uw ^ Ns = 0.75 (little rotting)
-    //      underwater and flooded: a_uw_fl ^ Ns = 0.25 (severe rotting)
-    //
-    // Which leads to the following formulation for the constraints:
-    //      alpha(x_uw) = a_uw (~= 0.99981643)
-    //      alpha(x_uw_fl) = a_uw_fl (~- 0.999115711)
-    //      alpha(0) = 1.0
-    //
-    // After some kung-fu we obtain:
-    //      beta = (1-a_uw) / x_uw
-    //      x_uw = (1-a_uw) / (a_uw - a_uw_fl)
-    //
-
     if (simulationParameters.RotAcceler8r != mCurrentRotAcceler8r)
     {
         if (simulationParameters.RotAcceler8r >= 0.01f)
