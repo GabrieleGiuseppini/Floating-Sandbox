@@ -2647,7 +2647,7 @@ void Ship::UpdatePressureAndWaterInflow(
                     {
                         // Only count water taken if this point has a spring, to avoid counting
                         // water and generating bubbles for orphaned particles
-                        // (note that leaking points have no connected triangles)qq
+                        // (note that leaking points have no connected triangles)
                         totalPointDeltaWaterForStepTotal += deltaWater_Structural;
                     }
                 }

@@ -2084,6 +2084,47 @@
             "wind_receptivity": 0.5
         },
         {
+            "buoyancy_volume_fill": 0.05,
+            "color_key": [
+                "#DADBDC",
+                "#8C170A",
+                "#E3D857",
+                "#886B0A",
+                "#4E840A",
+                "#087380",
+                "#233B6B",
+                "#8E098A",
+                "#B0580A",
+                "#191A1B"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 393.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0215,
+                "nominal_mass": 30
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Strong Soft Cloth",
+            "palette_coordinates": {
+                "category": "Cloth",
+                "sub_category": "Strong Soft Cloth",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Cloth",
+            "specific_heat": 1400.0,
+            "stiffness": 0.0005,
+            "strength": 7.0,
+            "texture_name": "cloth_1",
+            "thermal_conductivity": 0.04,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.5,
+            "wind_receptivity": 0.4
+        },
+        {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
                 "#1A1A1A",
@@ -3783,7 +3824,6 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
-
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": "#1a1217",
@@ -3800,7 +3840,7 @@
             },
             "melting_temperature": 1000000.0,
             "name": "Ash",
-	    "render_color": "#202020",
+            "render_color": "#202020",
             "sound_type": "Cloth",
             "specific_heat": 1400.0,
             "stiffness": 1.0,
@@ -3814,7 +3854,6 @@
             "water_solubility": 0.15,
             "wind_receptivity": 0.1
         },
-
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
@@ -5088,7 +5127,8 @@
                         "sub_categories": [
                             "Cloth",
                             "Soft Cloth",
-                            "Strong Cloth"
+                            "Strong Cloth",
+                            "Strong Soft Cloth"
                         ]
                     }
                 ]

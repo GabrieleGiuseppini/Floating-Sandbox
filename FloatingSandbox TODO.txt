@@ -1873,13 +1873,13 @@
 		+ IT
 			+ Do
 		= ES
-			- Send
+			+ Send
 		= PT_BR
-			- Send
+			+ Send (Kiko)
 		= RU
-			- Send
+			+ Send
 		= UK
-			- Send
+			+ Send (denis)
 
 	- Ships:
 		- Those @ TO_TAKE
@@ -1953,6 +1953,7 @@
 		- Port to Android
 
 	- See: jet flames covered by silt clouds
+		- Also fire-extinguishing bomb explosion
 		- Apparently, silt clouds' low-alpha is covering jet flames
 
 	- Fix foam with angley waves: is it because it becomes too wide?
@@ -2224,7 +2225,7 @@
 	- Russian: DKuz (now Frisk) (was: DioxCode (Fallback: Ilya_Voloshin, Faulttix#8691))
 	- Ukrainian: Denis (was: DioxCode)
 	- Spanish (Latin American): Joadix (Fallback: The G a z e r W o l f)
-	- Portuguese-Brazilian: matheusvhs ("Matheus Silva")
+	- Portuguese-Brazilian: matheusvhs ("Matheus Silva") -- now Kiko?
 
 	- Hungarian: S.S. Atlantic
 		= Doing HTMLs
