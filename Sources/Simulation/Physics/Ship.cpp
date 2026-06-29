@@ -3557,18 +3557,20 @@ void Ship::DecayPoints(
     {
         if (simulationParameters.RotAcceler8r >= 0.01f)
         {
-            float constexpr Ns = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            float constexpr NsExposed = 40.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            mDecayRotExposedDryAlpha = std::max(powf(0.85f, simulationParameters.RotAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            mDecayRotExposedWetAlpha = std::max(powf(0.25f, simulationParameters.RotAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
 
-            float const a_uw_rot = powf(0.75f, simulationParameters.RotAcceler8r / Ns); // a_uw = 0.75 ^ (1/Ns)
-            float const a_uw_fl_rot = powf(0.25f, simulationParameters.RotAcceler8r / Ns); // a_uw_fl = 0.25 ^ (1/Ns)
-
-            mDecayRotXUw = (1.0f - a_uw_rot) / (a_uw_rot - a_uw_fl_rot);
-            mDecayRotBeta = (1.0f - a_uw_rot) / mDecayRotXUw;
+            float constexpr NsDamage = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            mDecayRotDamageDryAlpha = std::max(powf(0.85f, simulationParameters.RotAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            mDecayRotDamageWetAlpha = std::max(powf(0.25f, simulationParameters.RotAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
         }
         else
         {
-            mDecayRotXUw = 0.0f;
-            mDecayRotBeta = 0.0f;
+            mDecayRotExposedDryAlpha = 1.0f;
+            mDecayRotExposedWetAlpha = 1.0f;
+            mDecayRotDamageDryAlpha = 1.0f;
+            mDecayRotDamageWetAlpha = 1.0f;
         }
 
         // Water solubility
@@ -3582,8 +3584,10 @@ void Ship::DecayPoints(
         mCurrentRotAcceler8r = simulationParameters.RotAcceler8r;
     }
 
-    float const x_uw_rot = mDecayRotXUw;
-    float const beta_rot = mDecayRotBeta;
+    float const a_rot_exposed_dry = mDecayRotExposedDryAlpha;
+    float const a_rot_exposed_wet = mDecayRotExposedWetAlpha;
+    float const a_rot_damage_dry = mDecayRotDamageDryAlpha;
+    float const a_rot_damage_wet = mDecayRotDamageWetAlpha;
 
     //
     // Rust
@@ -3681,22 +3685,20 @@ void Ship::DecayPoints(
         // Rot
         //
 
-        float x_rot =
-            isUnderwater * x_uw_rot // x_uw
-            + water; // x_fl
+        //  - Not damaged, more so if wet
+        //  - Damaged, more so if wet
 
-        // Adjust with damage: if damaged and subject to rotting, then rots faster
-        x_rot += isDamaged * x_rot * x_uw_rot;
+        float const betaRot =
+            (1.0f - Mix(a_rot_damage_dry, a_rot_damage_wet, isWet)) * isDamaged
+            + (1.0f - Mix(a_rot_exposed_dry, a_rot_exposed_wet, isWet)) * (1.0f - isDamaged);
 
-        // Adjust with material's rot receptivity
-        x_rot *= structuralMaterial.RotReceptivity;
-
-        // Calculate alpha
-        float const alpha_rot = std::max(1.0f - beta_rot * x_rot, 0.0f);
+        float const alphaRot =
+            1.0f
+            - betaRot * structuralMaterial.RotReceptivity * (1.0f - 0.7f * mPoints.GetRandomNormalizedUniformPersonalitySeed(p)); // Allow zero's to rot
 
         // Rot
-        mPoints.SetRot(p, mPoints.GetRot(p) * alpha_rot);
-        alphaWeakness = std::min(alphaWeakness, alpha_rot);
+        mPoints.SetRot(p, mPoints.GetRot(p) * alphaRot);
+        alphaWeakness = std::min(alphaWeakness, alphaRot);
 
         //
         // Rust

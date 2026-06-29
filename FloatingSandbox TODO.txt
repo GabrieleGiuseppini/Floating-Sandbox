@@ -1875,8 +1875,8 @@
 			- DENORMALS_ZERO_MODE=64
 		+ Shader
 		+ Port to Android
-	- Above-water rot
-		- Use personality seed, try to randomize it
+	+ Above-water rot
+		+ Use personality seed, try to randomize it
 
 	= Localization
 		+ IT
