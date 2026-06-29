@@ -1869,6 +1869,15 @@
 	+ Try: ash with Thanos' snap
 		+ New material, not in palette, with unique key
 
+	+ See black triangles w/rust
+		! It's denormal!
+			- FLUSH_ZERO_MODE=32768
+			- DENORMALS_ZERO_MODE=64
+		+ Shader
+		+ Port to Android
+	- Above-water rot
+		- Use personality seed, try to randomize it
+
 	= Localization
 		+ IT
 			+ Do

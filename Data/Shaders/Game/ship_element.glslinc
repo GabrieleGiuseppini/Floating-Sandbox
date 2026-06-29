@@ -139,7 +139,7 @@ void main()
     float originalLuminosity = dot(vec3(0.299, 0.587, 0.114), vertexCol.rgb);
 
     vec3 fragColour = mix(vec3(ROT_COLOR), vertexCol.rgb, vertexAttributes1.w);
-    fragColour = mix(rustSample * (1.0 - (1.0 - originalLuminosity) * 0.4), fragColour, sqrt(vertexAttributes2.x));
+    fragColour = mix(rustSample * (1.0 - (1.0 - originalLuminosity) * 0.4), fragColour, sqrt(max(vertexAttributes2.x, 0.0))); // nVidia doesnt like almost-zero here
     fragColour = mix(algaeGrowthSample, fragColour, sqrt(vertexAttributes2.y));
 
     // Apply point water
