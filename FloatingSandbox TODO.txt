@@ -1965,6 +1965,32 @@
 		- Also fire-extinguishing bomb explosion
 		- Apparently, silt clouds' low-alpha is covering jet flames
 
+
+
+
+	- Water-Air Pressure Simulation rearc:
+		! Gist:
+			! Air is modeled with two quantities: Volume and Pressure (aka Quantity)
+				! Volume however is implicitly 1.0 - min(water, 1.0), so we only need Pressure/Quantity as quantity
+				! Note: P and V are technically related via the ideal gas law, i.e. PV = nRT, but our P is not really P but n; the ideal gas law is then used
+				  to derive pressure of the air pocket from Quantity given Water, in diffusion algos below
+			! Water model:
+				! Option 1: current single-quantity, for both pressure and volume (volume=min(water, 1))
+					! In this case, we need to allow a tank with air to fully flood (thus reaching infinite air pressure), or else
+					  the water pressure will never be greater than 1.0
+					! A tank that has both water - at any pressure, also > 1 - and air has a pressure equal to max(pw, pa)
+						! This pressure is what will force air and/or water out
+					! TODOHERE: need a proxy for air pressure when tank is fully flooded and air moles are still present
+				! Option 2: splitting water into two quantities: pressure and volume
+					! TODOHERE
+
+		
+
+
+
+
+
+
 	- Fix foam with angley waves: is it because it becomes too wide?
 
 	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours

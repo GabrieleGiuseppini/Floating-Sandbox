@@ -3538,12 +3538,12 @@ void Ship::DecayPoints(
         if (simulationParameters.RotAcceler8r >= 0.01f)
         {
             float constexpr NsExposed = 40.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
-            mDecayRotExposedDryAlpha = std::max(powf(0.85f, simulationParameters.RotAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
-            mDecayRotExposedWetAlpha = std::max(powf(0.25f, simulationParameters.RotAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            mDecayRotExposedDryAlpha = powf(0.85f, simulationParameters.RotAcceler8r / NsExposed);
+            mDecayRotExposedWetAlpha = powf(0.25f, simulationParameters.RotAcceler8r / NsExposed);
 
             float constexpr NsDamage = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
-            mDecayRotDamageDryAlpha = std::max(powf(0.85f, simulationParameters.RotAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
-            mDecayRotDamageWetAlpha = std::max(powf(0.25f, simulationParameters.RotAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            mDecayRotDamageDryAlpha = powf(0.85f, simulationParameters.RotAcceler8r / NsDamage);
+            mDecayRotDamageWetAlpha = powf(0.25f, simulationParameters.RotAcceler8r / NsDamage);
         }
         else
         {

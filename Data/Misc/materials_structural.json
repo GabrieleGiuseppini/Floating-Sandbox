@@ -2117,7 +2117,7 @@
             "sound_type": "Cloth",
             "specific_heat": 1400.0,
             "stiffness": 0.0005,
-            "strength": 7.0,
+            "strength": 7.5,
             "texture_name": "cloth_1",
             "thermal_conductivity": 0.04,
             "water_diffusion_speed": 0.5,
