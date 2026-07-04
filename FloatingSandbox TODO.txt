@@ -1878,6 +1878,10 @@
 	+ Above-water rot
 		+ Use personality seed, try to randomize it
 
+	+ Transparent tornado power meter
+		+ PC
+		+ Android
+
 	= Localization
 		+ IT
 			+ Do
@@ -1939,7 +1943,7 @@
 				+ At texture load time, so also cache is <float>
 				X NO PERF CHANGE,
 
-			= Perf: Move x interpolation earlier				
+			X Perf: Move x interpolation earlier				
 				! It depends on x, but unfortunately loop is nested in y
 				+ Force WorldToMaterialPixel to be integer
 				+ Then can pre-cal X and Y interpolation vals for all 1-wide world quads
@@ -1970,6 +1974,15 @@
 
 	- Water-Air Pressure Simulation rearc:
 		! Gist:
+			! Physics facts:
+				! The total pressure at any point in a tank containing both water and air is the sum of the air pressure acting on the water surface and the 
+				  hydrostatic (gravity) pressure of the water column above that point. P = rho_water * g * h + P_air
+					! https://scied.ucar.edu/interactive/pressure-flow-water-tanks-virtual-lab
+					! https://interactivetextbooks.tudelft.nl/nb1140/content/fluiddynamics.html
+				! TODOHERE: pressure is fixed above air-water interface (in 1-water_volume) and variable underneath (in water_volume)
+				!  As water takes up space, the air volume (V_air) drops, and the internal pressure (P_air) goes up. Water will only continue to enter the tank until the 
+				   pressure of the compressed air equals the pressure of the incoming water supply.
+
 			! Air is modeled with two quantities: Volume and Pressure (aka Quantity)
 				! Volume however is implicitly 1.0 - min(water, 1.0), so we only need Pressure/Quantity as quantity
 				! Note: P and V are technically related via the ideal gas law, i.e. PV = nRT, but our P is not really P but n; the ideal gas law is then used
@@ -1982,7 +1995,34 @@
 						! This pressure is what will force air and/or water out
 					! TODOHERE: need a proxy for air pressure when tank is fully flooded and air moles are still present
 				! Option 2: splitting water into two quantities: pressure and volume
-					! TODOHERE
+					! Volume is rendered, and it's what's used for mass (so we need it ~capped in both cases)
+					! Volume is controlled so that water pressure (independent from volume) is always in equilibrium with air pressure (which depends on volume remaining and quantity of water)
+						- vAir = 1 - vWater (* depends on void)
+						- pAir = pWater
+						- pAir = qAir / vAir * whatever
+						- TODO: result
+						! TODO: do we allow void to exist? If not, need only one volume quantity (as vAir = 1 - vWater)
+
+					! Option 2a:
+						! Quantities:
+							! Pressure: tank pressure; water and/or air here have this pressure
+								! So we assume they are always at equilibrium
+							! Water Quantity: basically, moles == Volume
+								! This is what's rendered
+								! Technically between 0.0 and 1.0, but we allow for flood tool to inject more quantity
+									! ...and allow for inaccuracies to go beyond 1.0
+								! This is what gives mass
+							! Air Quantity: basically, moles
+							! Air Volume: only needed as separate quantity if we want to model void
+						! Step A: equalizes pressure (identical to current EqualizeInternalPressure)
+							- TODO: rethink this: would it zero out all differentials for water movements? Or, would those differentials be fine if based on quantity now?
+						! Step B: water and air quantities move
+							! Water quantity moves according to water momentum + pressure differentials
+								! Water momentum should take care of extra water quantity injected by flood tool
+							! Air quantity moves according to pressure differentials
+						! Step C: ingress and egress of water and air quantities
+							! Controlled by pressure differential between tank and exterior
+					
 
 		
 

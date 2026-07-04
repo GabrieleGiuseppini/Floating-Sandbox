@@ -62,9 +62,17 @@ vec4 make_power_meter()
     float absy = abs(auxPosition.y);
     float borderDepthY = smoothstep(1.0 - float2, 1.0, absy);
 
-    vec4 powerColor = mix(color2, color1, step((1. + auxPosition.y) / 2., float3));
+    // Power/Background
+    vec4 powerColor = mix(
+        vec4(color2.rgb, 0.4), 
+        color1, 
+        step((1. + auxPosition.y) / 2., float3));
 
-    return mix(powerColor, color2, max(borderDepthX, borderDepthY));
+    // Border
+    return mix(
+        powerColor, 
+        color2,
+        max(borderDepthX, borderDepthY));
 }
 
 void main()
