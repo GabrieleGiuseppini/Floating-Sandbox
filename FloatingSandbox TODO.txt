@@ -1979,52 +1979,121 @@
 				  hydrostatic (gravity) pressure of the water column above that point. P = rho_water * g * h + P_air
 					! https://scied.ucar.edu/interactive/pressure-flow-water-tanks-virtual-lab
 					! https://interactivetextbooks.tudelft.nl/nb1140/content/fluiddynamics.html
-				! TODOHERE: pressure is fixed above air-water interface (in 1-water_volume) and variable underneath (in water_volume)
-				!  As water takes up space, the air volume (V_air) drops, and the internal pressure (P_air) goes up. Water will only continue to enter the tank until the 
-				   pressure of the compressed air equals the pressure of the incoming water supply.
+				! Thus: pressure is fixed above air-water interface (in 1-water_volume) and variable underneath (in water_volume)
+				! As water takes up space, the air volume (V_air) drops, and the internal pressure (P_air) goes up. Water will only continue to enter the tank until the 
+				  pressure of the compressed air equals the pressure of the incoming water supply.
+				! In an absolutely rigid container filled to the brim with zero air pockets, the pressure is determined by the ambient pressure at the time of sealing.
+					! => A completely filled tank needs to have a quantity describing its pressure (at the moment this is 'water')
 
-			! Air is modeled with two quantities: Volume and Pressure (aka Quantity)
-				! Volume however is implicitly 1.0 - min(water, 1.0), so we only need Pressure/Quantity as quantity
-				! Note: P and V are technically related via the ideal gas law, i.e. PV = nRT, but our P is not really P but n; the ideal gas law is then used
-				  to derive pressure of the air pocket from Quantity given Water, in diffusion algos below
-			! Water model:
-				! Option 1: current single-quantity, for both pressure and volume (volume=min(water, 1))
-					! In this case, we need to allow a tank with air to fully flood (thus reaching infinite air pressure), or else
-					  the water pressure will never be greater than 1.0
-					! A tank that has both water - at any pressure, also > 1 - and air has a pressure equal to max(pw, pa)
-						! This pressure is what will force air and/or water out
-					! TODOHERE: need a proxy for air pressure when tank is fully flooded and air moles are still present
-				! Option 2: splitting water into two quantities: pressure and volume
-					! Volume is rendered, and it's what's used for mass (so we need it ~capped in both cases)
-					! Volume is controlled so that water pressure (independent from volume) is always in equilibrium with air pressure (which depends on volume remaining and quantity of water)
-						- vAir = 1 - vWater (* depends on void)
-						- pAir = pWater
-						- pAir = qAir / vAir * whatever
-						- TODO: result
-						! TODO: do we allow void to exist? If not, need only one volume quantity (as vAir = 1 - vWater)
+			! Useful simplifications that may be used:
+				! Pressure of tank == pressure at *bottom* of tank
+					! Thus: air pressure + hydrostatic pressure
+						! Hydrostatic pressure: just the weight of the quantity of water in the tank
+							! Air pressure contains information about "total push"
 
-					! Option 2a:
-						! Quantities:
-							! Pressure: tank pressure; water and/or air here have this pressure
-								! So we assume they are always at equilibrium
-							! Water Quantity: basically, moles == Volume
-								! This is what's rendered
-								! Technically between 0.0 and 1.0, but we allow for flood tool to inject more quantity
-									! ...and allow for inaccuracies to go beyond 1.0
-								! This is what gives mass
-							! Air Quantity: basically, moles
-							! Air Volume: only needed as separate quantity if we want to model void
-						! Step A: equalizes pressure (identical to current EqualizeInternalPressure)
-							- TODO: rethink this: would it zero out all differentials for water movements? Or, would those differentials be fine if based on quantity now?
-						! Step B: water and air quantities move
+			! Gist 1:
+
+				! Air is modeled with two quantities: Volume and Pressure (aka Quantity)
+					! Volume however is implicitly 1.0 - min(water, 1.0), so we only need Pressure/Quantity as quantity
+					! Note: P and V are technically related via the ideal gas law, i.e. PV = nRT, but our P is not really P but n; the ideal gas law is then used
+					  to derive pressure of the air pocket from Quantity given Water, in diffusion algos below
+				! Water model:
+					! Option 1: current single-quantity, for both pressure and volume (volume=min(water, 1))
+						! In this case, we need to allow a tank with air to fully flood (thus reaching infinite air pressure), or else
+						  the water pressure will never be greater than 1.0
+						! A tank that has both water - at any pressure, also > 1 - and air has a pressure equal to max(pw, pa)
+							! This pressure is what will force air and/or water out
+						! TODOHERE: need a proxy for air pressure when tank is fully flooded and air moles are still present
+					! Option 2: splitting water into two quantities: pressure and volume
+						! Volume is rendered, and it's what's used for mass (so we need it ~capped in both cases)
+						! Volume is controlled so that water pressure (independent from volume) is always in equilibrium with air pressure (which depends on volume remaining and quantity of water)
+							- vAir = 1 - vWater (* depends on void)
+							- pAir = pWater
+							- pAir = qAir / vAir * whatever
+							- TODO: result
+							! TODO: do we allow void to exist? If not, need only one volume quantity (as vAir = 1 - vWater)
+
+						! Option 2a:
+							! Quantities:
+								! Pressure: tank pressure; water and/or air here have this pressure
+									! So we assume they are always at equilibrium
+								! Water Quantity: basically, moles == Volume
+									! This is what's rendered
+									! Technically between 0.0 and 1.0, but we allow for flood tool to inject more quantity
+										! ...and allow for inaccuracies to go beyond 1.0
+									! This is what gives mass
+								! Air Quantity: basically, moles
+								! Air Volume: only needed as separate quantity if we want to model void
+							! Step A: equalizes pressure (identical to current EqualizeInternalPressure)
+								- TODO: rethink this: would it zero out all differentials for water movements? Or, would those differentials be fine if based on quantity now?
+									! Option 2aa:
+										! Ingress/Egress equalizes pressure at leaking points with external pressure
+										! Then, pressure moves together with water and air moves at step B:
+											! @ Water moves: transfer amount of pressure equal to fraction of water moved (we know sum of fractions <= 1)
+											! @ Air moves: transfer pressure based on delta_air_moles - TODOHERE
+							! Step B: water and air quantities move
+								! Water quantity moves according to water momentum + pressure differentials
+									! Quantity (i.e. volume) moved TODO: does it need to respect volume for air at source & destination?
+									! Water momentum should take care of extra water quantity injected by flood tool
+									! A movement of water causes a (water) volume change at both endpoints
+								! Air quantity moves according to pressure differentials
+									! With upward bias, to simulate buoyancy / counteracting hydrostatic pressure which instead brings water down
+							! Step C: ingress and egress of water and air quantities
+								! Controlled by pressure differential between tank and exterior
+					! TODO: problem: if air escapes, how does it get back? Real problem in physical reality
+					! Option 3:
+						! Pressure of tank == pressure at *bottom* of tank
+						! Thus: air pressure + hydrostatic pressure
+							! Hydrostatic pressure: just the weight of the quantity of water in the tank
+								! Air pressure contains information about "total push"
+						! Thus: we need:
+							! Air Volume
+							! Air Quantity (moles)
+							! Water Quantity (moles) == Volume
+						! Thus: pressure in a completely flooded tank (w/no air) is weight of water in the tank
+							! If we allow volume of water to go slightly above max during water moves, that will augment pressure in the tank and force it to leave afterwards towards other filled tanks
+						! Water moves:
 							! Water quantity moves according to water momentum + pressure differentials
-								! Water momentum should take care of extra water quantity injected by flood tool
-							! Air quantity moves according to pressure differentials
-						! Step C: ingress and egress of water and air quantities
-							! Controlled by pressure differential between tank and exterior
+								! Pressures at differential are air pressure + water quantity weight
+						! What is the air pressure in a tank filled with > 1 water and with non-zero moles of air?
+							! A: we don't allow > 1 water, ever
+								! When we move water we consider air at target and with it we calculate the volume of water to transfer so that air pressure at target plus 
+								  final hydrostatic pressure at target equals pressure at source tank
+									! TODO: is this a _cap_, or is it a replacement of the current water transfer?
+										! ---> TODOHERE
+							! B: we allow > 1 water transiently
+								! TODOHERE: we need a proxy for air pressure in this case
+
 					
 
-		
+			! Gist 2:
+
+				! Air quantity doesn't exist; we just have air pressure
+					! Initial everywhere: equals athmospheric air pressure at that height
+					! No more ideal gas formula, Boyle's Law
+						! but see if can later reintroduce temperature, e.g. by multiplying air pressure by f(temperature)
+				! Water stays as single-quantity: volume (moles)/pressure duality
+				! Pressure in a tank is pressure at its bottom, thus air pressure + water pressure
+				! Ingress/Egress: 
+					! Water enters or leaves based on tank pressure <-> external pressure differential
+					! Air enters or leaves based on tank pressure <-> external pressure differential
+						! With later A/W moves, air trapped here would end up being in a tank with high pressure and thus would leave
+				! Moves:
+					! Water: 
+						! Moves according to water momentum + pressure differentials
+							! Pressure at both source and destination is air pressure + water pressure
+						! When water moves, air pressure is adjusted at both source and destination:
+							! TODO: mechanism
+								! Do we actually NEED to adjust water pressure? We could do nothing here, and let it escape at its turn based on the new pressure at the tank (addition of water pressure)
+								! If we end up having to come up with a proxy for zero-volume, should resurrect Air Moles and Boyle's Law
+					! Air:
+						! Air moves according to pressure differentials and upward bias
+							! Pressure at both source and destination is air pressure + water pressure
+						! Simple air pressure increase at a tank should force water move out of it at water's turn
+							! Hopefully downward because of Bernoulli/gravity
+					! Impl notes:
+						! Could be done in same step - doing water and air separately, as both working on previous frame
+				
 
 
 
