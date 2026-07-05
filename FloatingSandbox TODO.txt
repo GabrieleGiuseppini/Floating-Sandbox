@@ -2077,12 +2077,15 @@
 						! Standard atmospheric pressure is equal to a column of water 10.33 meter high
 				! Water stays as single-quantity: volume (moles)/pressure duality
 					! Water at any given point (tank) contains information, at equilibrium, about pressure of all water above it
-				! Pressure in a tank is pressure at its bottom, thus air pressure + water pressure
+				! Pressure in a tank is pressure at its bottom, thus air pressure + water pressure					
 				! Ingress/Egress: 
 					! Water enters or leaves based on tank pressure <-> external pressure differential
 					! Air enters or leaves based on tank pressure <-> external pressure differential
 						! With later A/W moves, air trapped here would end up being in a tank with high pressure and thus would leave
 				! Moves:
+					! At equlibrium between two tanks (src and dst): pSrcAir + pSrcWat = pDstAir + pDstWat
+					! Air equilibrium: pSrcAir*vSrcAir = pDstAir*vDstAir
+					- TODO below: depends on developments with our experiments
 					! Water: 
 						! Moves according to water momentum + pressure differentials
 							! Pressure at both source and destination is air pressure + water pressure
@@ -2128,11 +2131,20 @@
 							+ Pressure at both source and destination is air pressure + water pressure
 							= Bias formula:
 								+ Option 1: when direction y >= 0, i.e. cos of angle with vertical
-								- Option 2: option 1 moves air irreversibly up, but it should be capable of moving down as well - but depending on water presence
-									- Option 1: still with pressure differential and moved to average, but:
-										- Source factor in average: internal (air + water)
-										- Dest factor in average: air + alpha*water, with alpha=-Ny
-									- Option 2:
+								= Option 2: option 1 moves air irreversibly up, but it should be capable of moving down as well - but depending on water presence
+									X Option 1: still with pressure differential and moved to average, but:
+										+ Source factor in average: internal (air + water)
+										+ Dest factor in average: air + alpha*water, with alpha=-Ny
+									= Option 2:
+										! At equlibrium: pSrcAir + pSrcWat = pDstAir + pDstWat
+										+ So: just any direction, using internal pressure - no bias at all
+											+ Upward bias is given by water pressure being higher below than up, because of gravity
+										- FIX: oscillations:
+											- Option 1: First water, then air
+												- Dupe func and do @ func
+										- FIX: losing air at bottom of air bell
+											- Option 1: try option 2.3.2: linear with avail volume (zero out diffusion if target has water >= 1.0)
+									- Option 3:
 										- TODO: definitely depending on water at dest; what about water @ source?
 										- With considering only water at dest:
 											- Air allowed to move equally in all directions, but if downwards, move is scaled as a function of target water there
@@ -2147,7 +2159,7 @@
 				- Review old water: why normalization factor ensures all water at the point moves?
 			
 				- Temperature <-> Air Pressure
-				- Finalize unit of AirPressure
+				= Finalize unit of AirPressure
 					+ Also @ Points buffer comment
 				- Air Pressure <-> forces on "walls"
 					- We've changed unit of pressure, hence current math is invalid!
@@ -2160,7 +2172,7 @@
 					- Internal Pressure
 
 				- Cleanup:
-					- Nuke InternalPressure
+					- Nuke InternalPressure concept
 						- Points
 						- ...
 					- Nuke Ship::UpdateWaterVelocities
