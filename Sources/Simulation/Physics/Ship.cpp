@@ -2660,36 +2660,52 @@ void Ship::UpdatePressureAndWaterInflow(
                 //
 
                 {
-                    // External pressure in equivalent water height
-                    float const externalPressure =
-                        Formulae::PressureToEquivalentWaterHeight(
-                            Formulae::CalculateTotalPressureAt(
+                    // TODOTEST: using whole tank
+
+                    //// External pressure in equivalent water height
+                    //float const externalPressure =
+                    //    Formulae::PressureToEquivalentWaterHeight(
+                    //        Formulae::CalculateTotalPressureAt(
+                    //            mPoints.GetPosition(pointIndex).y,
+                    //            mPoints.GetPosition(pointIndex).y + pointDepth, // oceanSurfaceY
+                    //            effectiveAirDensity,
+                    //            effectiveWaterDensity,
+                    //            simulationParameters),
+                    //        effectiveWaterDensity);
+                    //
+                    //// Internal pressure in equivalent water height
+                    //// TODO: including water just moved?
+                    //float const internalPressure = internalWaterHeight + mPoints.GetAirPressure(pointIndex);
+
+                    //if (internalPressure >= externalPressure
+                    //    || pointDepth < 0.0f) // Air can only come in if there's air outside
+                    //{
+                    //    // Assuming that external pressure is an infinite reservoir,
+                    //    // we converge internal pressure to the external
+                    //    mPoints.SetAirPressure(
+                    //        pointIndex,
+                    //        externalPressure);
+                    //}
+
+                    // TODOTEST: using only air
+
+                    // External air pressure in equivalent water height
+                    float const externalAirPressure = (pointDepth >= 0.0f)
+                        ? 0.0f // Device to force all air to be espelled when underwater - TODO: nature abhorrs discontinuities?
+                        : Formulae::PressureToEquivalentWaterHeight(
+                            Formulae::CalculateAirColumnPressureAt(
                                 mPoints.GetPosition(pointIndex).y,
-                                mPoints.GetPosition(pointIndex).y + pointDepth, // oceanSurfaceY
                                 effectiveAirDensity,
-                                effectiveWaterDensity,
                                 simulationParameters),
                             effectiveWaterDensity);
 
-                    // Internal pressure in equivalent water height
-                    // TODO: including water just moved?
-                    float const internalPressure = internalWaterHeight + mPoints.GetAirPressure(pointIndex);
-
-                    // TODOTEST
-                    if (pointIndex == 256)
-                    {
-                        LogMessage("*** Ext=", externalPressure, " Int=", internalPressure, " Depth=", pointDepth);
-                    }
-
-                    if (internalPressure >= externalPressure
-                        || pointDepth < 0.0f) // Air can only come in if there's air outside
-                    {
-                        // Assuming that external pressure is an infinite reservoir,
-                        // we converge internal pressure to the external
-                        mPoints.SetAirPressure(
-                            pointIndex,
-                            externalPressure);
-                    }
+                    // Assuming that external pressure is an infinite reservoir,
+                    // we converge internal pressure to the external.
+                    // If we're underwater we drain the pressure of the point
+                    // See TODO for rate here
+                    mPoints.SetAirPressure(
+                        pointIndex,
+                        externalAirPressure);
                 }
             }
 

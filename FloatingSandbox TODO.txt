@@ -2106,10 +2106,8 @@
 						= Air:
 							+ Only comes in if above-water
 							+ Can always go out
-							- TODO: air must escape fully (short of damping factor) if internal pressure > external & water outside
-								- Note: 
-
-
+								+ Air must escape fully (short of damping factor) if internal pressure > external & water outside
+									! Note: not if air outside: internal pressure must converge there in that case
 
 							- TODO: rate of air pressure, cannot use bernoulli
 								- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
@@ -2121,10 +2119,10 @@
 					= Water: 
 						+ Moves according to water momentum + pressure differentials
 							+ Pressure at both source and destination is air pressure + water pressure
-						- Comment: We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)
 						- Bias:
 							- Water going down should _not_ be prevented by air down? 
-								+ Physics in tube with air below and water above: technically yes, water wouldn't go down; but Rayleigh–Taylor instability makes it do so
+								! Physics in tube with air below and water above: technically yes, water wouldn't go down; but Rayleigh–Taylor instability makes it do so
+						- Comment: We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)
 					= Air:
 						= Air moves according to pressure differentials and upward bias
 							= Bias formula:
