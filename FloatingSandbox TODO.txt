@@ -2067,16 +2067,16 @@
 					
 
 			! Gist 2:
-
 				! Air quantity doesn't exist; we just have air pressure
 					! Initial everywhere: equals athmospheric air pressure at that height
 					! No more ideal gas formula, Boyle's Law
 						! but see if can later reintroduce temperature, e.g. by multiplying air pressure by f(temperature)
-					! To keep this quantity dimensional equivalent to our "water quantity/pressure" (which is equivalent delta-height, thus "space"), we dimension
+					! To keep this quantity dimensionally equivalent to our "water quantity/pressure" (which is equivalent delta-height, thus "space"), we dimension
 					  air pressure as "equivalent water height", in meters
 						! Conversion from pressure in Pa: air_pressure = Pa / (water_rho * g)
 						! Standard atmospheric pressure is equal to a column of water 10.33 meter high
 				! Water stays as single-quantity: volume (moles)/pressure duality
+					! Water at any given point (tank) contains information, at equilibrium, about pressure of all water above it
 				! Pressure in a tank is pressure at its bottom, thus air pressure + water pressure
 				! Ingress/Egress: 
 					! Water enters or leaves based on tank pressure <-> external pressure differential
@@ -2125,24 +2125,24 @@
 						- Comment: We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)
 					= Air:
 						= Air moves according to pressure differentials and upward bias
+							+ Pressure at both source and destination is air pressure + water pressure
 							= Bias formula:
 								+ Option 1: when direction y >= 0, i.e. cos of angle with vertical
 								- Option 2: option 1 moves air irreversibly up, but it should be capable of moving down as well - but depending on water presence
-									- TODO: definitely depending on water at dest; what about water @ source?
-							+ Pressure at both source and destination is air pressure + water pressure
+									- Option 1: still with pressure differential and moved to average, but:
+										- Source factor in average: internal (air + water)
+										- Dest factor in average: air + alpha*water, with alpha=-Ny
+									- Option 2:
+										- TODO: definitely depending on water at dest; what about water @ source?
+										- With considering only water at dest:
+											- Air allowed to move equally in all directions, but if downwards, move is scaled as a function of target water there
+												- Option 1: Ideally asymptotically zero move with infinite water there
+												- Option 2: just linear with avail volume
+							
+							- Air equalization rate: now we use average, see if should be settable
 						- Comment: Simple air pressure increase at a tank should force water move out of it at water's turn
 							- Hopefully downward because of Bernoulli/gravity
 
-				= TODOHERE
-					= Fix dimensional problem: water is 20-90, air is 30000
-						! Water is "meters" of delta_h, air is Pa
-							! Ingress: quantity is velocity (from delta_h) * dt, so still a 'space' -- it's a delta height
-						+ Conversion from pressure in Pa: air_pressure = Pa / (water_rho * g)
-						+ Fix at:
-							+ Init
-							+ Ingress
-					- Problem: air stays where there's water
-						- But could be side-effect of dimensional problem
 
 				- Review old water: why normalization factor ensures all water at the point moves?
 			
