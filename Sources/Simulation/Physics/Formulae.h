@@ -52,7 +52,7 @@ public:
             * SimulationParameters::GravityMagnitude;
     }
 
-    // Calculates the pressure exherted by the 1m2 column of air at the given y
+    // Calculates the pressure exherted by the 1m2 column of air at the given y, in Pa
     static float CalculateAirColumnPressureAt(
         float y,
         float airDensity,
@@ -68,7 +68,7 @@ public:
             * (SimulationParameters::HalfMaxWorldHeight * 1.1f - y) / (SimulationParameters::HalfMaxWorldHeight * 1.1f);
     }
 
-    // Calculates the pressure exherted by a 1m2 column of water of the given height
+    // Calculates the pressure exherted by a 1m2 column of water of the given height, in Pa
     static float CalculateWaterColumnPressure(
         float height,
         float waterDensity,
@@ -97,6 +97,21 @@ public:
             simulationParameters);
 
         return airPressure + waterPressure;
+    }
+
+    // Calculate the equivalent height of a 1m2-wide column of water that gives
+    // the specified pressure in Pa, with the specified water density
+    static float PressureToEquivalentWaterHeight(
+        float pressure,
+        float waterDensity)
+    {
+        // Pressure in Pa of a H-high column of water in a 1m2-wide tube: Pa = h * g * water_rho
+        return pressure / (waterDensity * SimulationParameters::GravityMagnitude);
+    }
+
+    static float AtmospheresToPascal(float atmospheres) noexcept
+    {
+        return atmospheres * SimulationParameters::AirPressureAtSeaLevel;
     }
 
     // Converts a scalar wind speed into the scalar force it would have on a 1m2 surface

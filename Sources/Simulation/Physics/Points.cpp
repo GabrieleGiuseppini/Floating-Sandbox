@@ -19,6 +19,7 @@ void Points::Add(
     vec2f const & position,
     float water,
     float internalPressure,
+    float waterDensity,
     StructuralMaterial const & structuralMaterial,
     ElectricalMaterial const * electricalMaterial,
     bool isRope,
@@ -67,7 +68,7 @@ void Points::Add(
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
 
     mInternalPressureBuffer.emplace_back(internalPressure);
-    mAirPressureBuffer.emplace_back(internalPressure);
+    mAirPressureBuffer.emplace_back(Formulae::PressureToEquivalentWaterHeight(internalPressure, waterDensity)); // Init using current water density
     mIsHullBuffer.emplace_back(structuralMaterial.IsHull); // Default is from material
     mMaterialWaterIntakeBuffer.emplace_back(structuralMaterial.WaterIntake);
     mMaterialWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);

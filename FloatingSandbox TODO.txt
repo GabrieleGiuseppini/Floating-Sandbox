@@ -2072,6 +2072,10 @@
 					! Initial everywhere: equals athmospheric air pressure at that height
 					! No more ideal gas formula, Boyle's Law
 						! but see if can later reintroduce temperature, e.g. by multiplying air pressure by f(temperature)
+					! To keep this quantity dimensional equivalent to our "water quantity/pressure" (which is equivalent delta-height, thus "space"), we dimension
+					  air pressure as "equivalent water height", in meters
+						! Conversion from pressure in Pa: air_pressure = Pa / (water_rho * g)
+						! Standard atmospheric pressure is equal to a column of water 10.33 meter high
 				! Water stays as single-quantity: volume (moles)/pressure duality
 				! Pressure in a tank is pressure at its bottom, thus air pressure + water pressure
 				! Ingress/Egress: 
@@ -2091,13 +2095,25 @@
 					! Impl notes:
 						! Could be done in same step - doing water and air separately, as both working on previous frame
 				
-			- Impl 2:
+			- Impl of Gist 2:
 				+ Make test ship
 				+ Add AirPressure buffer
 				= Ingress/Egress
 					= Option 1: Do separately water and air, each based on own pressure
-						- TODO: rate of air pressure, cannot use bernoulli
-							- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
+						+ Water:
+							+ Only comes in if underwater (externalWaterHeight >= internalWaterHeight)
+							+ Can always go out
+						= Air:
+							+ Only comes in if above-water
+							+ Can always go out
+							- TODO: air must escape fully (short of damping factor) if internal pressure > external & water outside
+								- Note: 
+
+
+
+							- TODO: rate of air pressure, cannot use bernoulli
+								- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
+							- Water pump
 					- Option 2: based on whole tank pressure
 					- Bubbles
 				+ Duplicate UpdateWaterVelocitiesXYZ: UpdateWaterAndAirPressure
@@ -2106,23 +2122,27 @@
 						+ Moves according to water momentum + pressure differentials
 							+ Pressure at both source and destination is air pressure + water pressure
 						- Comment: We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)
+						- Bias:
+							- Water going down should _not_ be prevented by air down? 
+								+ Physics in tube with air below and water above: technically yes, water wouldn't go down; but Rayleigh–Taylor instability makes it do so
 					= Air:
 						= Air moves according to pressure differentials and upward bias
 							= Bias formula:
-								+ Option 1: when direction y >= 0
+								+ Option 1: when direction y >= 0, i.e. cos of angle with vertical
+								- Option 2: option 1 moves air irreversibly up, but it should be capable of moving down as well - but depending on water presence
+									- TODO: definitely depending on water at dest; what about water @ source?
 							+ Pressure at both source and destination is air pressure + water pressure
 						- Comment: Simple air pressure increase at a tank should force water move out of it at water's turn
 							- Hopefully downward because of Bernoulli/gravity
 
-				- TODOHERE
-					- Dimensional problem: Water is 20-90, air is 30000
-						- Water is "meters" of delta_h, air is Pa
-							- Ingress: quantity is velocity (from delta_h) * dt, so still a 'space' -- a delta height
-						- TODO: what do we thus store for air pressure? Pa/(rho*g), but which rho?
-							- air pressure in Pa should be comparable to water * rho_water * g
-						- Fix at:
-							- Init
-							- Ingress
+				= TODOHERE
+					= Fix dimensional problem: water is 20-90, air is 30000
+						! Water is "meters" of delta_h, air is Pa
+							! Ingress: quantity is velocity (from delta_h) * dt, so still a 'space' -- it's a delta height
+						+ Conversion from pressure in Pa: air_pressure = Pa / (water_rho * g)
+						+ Fix at:
+							+ Init
+							+ Ingress
 					- Problem: air stays where there's water
 						- But could be side-effect of dimensional problem
 
@@ -2130,10 +2150,12 @@
 			
 				- Temperature <-> Air Pressure
 				- Finalize unit of AirPressure
-					- Also @ Points buffer comment
+					+ Also @ Points buffer comment
 				- Air Pressure <-> forces on "walls"
+					- We've changed unit of pressure, hence current math is invalid!
 					- Do we do it where we currently use InternalPressure, or do we bounce
 					  @ UpdateWaterAndAirPressure?
+					- Test Inflatable Balloon
 				- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure
 				- Tools:
 					- Flood
@@ -2146,6 +2168,10 @@
 					- Nuke Ship::UpdateWaterVelocities
 					- Ship::UpdatePressureAndWaterInflow
 					- Renames (Internal Pressure -> Air Pressure):
+						- PhysicsData
+							- PhysicsData struct
+							- De/Serialization
+							- ShipBuilder UI
 						- Points::Add args
 						- DebugShipRenderModeType::InternalPressure
 							- Shader

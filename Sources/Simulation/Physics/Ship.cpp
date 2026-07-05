@@ -2660,21 +2660,36 @@ void Ship::UpdatePressureAndWaterInflow(
                 //
 
                 {
-                    float const externalPressure = Formulae::CalculateTotalPressureAt(
-                        mPoints.GetPosition(pointIndex).y,
-                        mPoints.GetPosition(pointIndex).y + pointDepth, // oceanSurfaceY
-                        effectiveAirDensity,
-                        effectiveWaterDensity,
-                        simulationParameters);
+                    // External pressure in equivalent water height
+                    float const externalPressure =
+                        Formulae::PressureToEquivalentWaterHeight(
+                            Formulae::CalculateTotalPressureAt(
+                                mPoints.GetPosition(pointIndex).y,
+                                mPoints.GetPosition(pointIndex).y + pointDepth, // oceanSurfaceY
+                                effectiveAirDensity,
+                                effectiveWaterDensity,
+                                simulationParameters),
+                            effectiveWaterDensity);
 
-                    // Assuming that external pressure is an infinite reservoir,
-                    // we converge internal pressure to the external
-                    // TODO: rate?
+                    // Internal pressure in equivalent water height
+                    // TODO: including water just moved?
+                    float const internalPressure = internalWaterHeight + mPoints.GetAirPressure(pointIndex);
+
                     // TODOTEST
-                    //mPoints.SetAirPressure(
-                    //    pointIndex,
-                    //    externalPressure);
-                    (void)externalPressure;
+                    if (pointIndex == 256)
+                    {
+                        LogMessage("*** Ext=", externalPressure, " Int=", internalPressure, " Depth=", pointDepth);
+                    }
+
+                    if (internalPressure >= externalPressure
+                        || pointDepth < 0.0f) // Air can only come in if there's air outside
+                    {
+                        // Assuming that external pressure is an infinite reservoir,
+                        // we converge internal pressure to the external
+                        mPoints.SetAirPressure(
+                            pointIndex,
+                            externalPressure);
+                    }
                 }
             }
 

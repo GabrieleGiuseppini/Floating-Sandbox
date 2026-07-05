@@ -954,6 +954,7 @@ public:
         vec2f const & position,
         float water,
         float internalPressure,
+        float waterDensity,
         StructuralMaterial const & structuralMaterial,
         ElectricalMaterial const * electricalMaterial,
         bool isRope,
@@ -2623,13 +2624,13 @@ private:
 
     Buffer<bool> mIsHullBuffer; // Externally-computed resultant of material hullness and dynamic hullness
     Buffer<float> mInternalPressureBuffer; // Pressure at this particle (Pa)
-    Buffer<float> mAirPressureBuffer; // Air pressure at this particle (TODO)
+    Buffer<float> mAirPressureBuffer; // Air pressure at this particle, in equivalent meters of a 1m2-wide column of water
     Buffer<float> mMaterialWaterIntakeBuffer;
     Buffer<float> mMaterialWaterRestitutionBuffer;
     Buffer<float> mMaterialWaterDiffusionSpeedBuffer;
 
-    // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
-    // this point. Quantity of water is min(water, 1.0)
+    // Height of a 1m2-wide column of water which provides a pressure equivalent to the pressure at
+    // this point. Volume of water is min(water, 1.0)
     Buffer<float> mWaterBuffer;
 
     // Total velocity of the water at this point

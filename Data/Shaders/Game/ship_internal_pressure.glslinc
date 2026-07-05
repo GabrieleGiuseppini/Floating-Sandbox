@@ -54,7 +54,7 @@ void main()
         mix(
             vec3(1., 0., 0.),
             vec3(1., 1., 1.),
-            exp(-.000001 * vertexInternalPressure)),
+            exp(-.01 * vertexInternalPressure)),
         1.0);
     
     // Calculate lamp tool intensity
