@@ -67,6 +67,7 @@ void Points::Add(
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
 
     mInternalPressureBuffer.emplace_back(internalPressure);
+    mAirPressureBuffer.emplace_back(internalPressure);
     mIsHullBuffer.emplace_back(structuralMaterial.IsHull); // Default is from material
     mMaterialWaterIntakeBuffer.emplace_back(structuralMaterial.WaterIntake);
     mMaterialWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
@@ -183,6 +184,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
@@ -270,6 +272,7 @@ void Points::CreateEphemeralParticleAsh(
     mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = ashStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - ashStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = ashStructuralMaterial.WaterDiffusionSpeed;
@@ -349,6 +352,7 @@ void Points::CreateEphemeralParticleDebris(
     mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
@@ -435,6 +439,7 @@ void Points::CreateEphemeralParticleSiltCloud(
     mFoobarSensitivityBuffer[pointIndex] = 0.05f; // Don't want 'em to fly away with explosions
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = siltCloudStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - siltCloudStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = siltCloudStructuralMaterial.WaterDiffusionSpeed;
@@ -555,6 +560,7 @@ void Points::InternalCreateEphemeralParticleSmoke(
     mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = smokeStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - smokeStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = smokeStructuralMaterial.WaterDiffusionSpeed;
@@ -639,6 +645,7 @@ void Points::CreateEphemeralParticleSparkle(
     mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
@@ -720,6 +727,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterStructuralMaterial.WaterDiffusionSpeed;
@@ -811,6 +819,7 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
     mFoobarSensitivityBuffer[pointIndex] = 0.0f; // Don't want 'em to fly away with explosions
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterFoamStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterFoamStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterFoamStructuralMaterial.WaterDiffusionSpeed;
@@ -909,6 +918,7 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
     mFoobarSensitivityBuffer[pointIndex] = 0.0f; // Don't want 'em to fly away with explosions
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterSplashStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterSplashStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterSplashStructuralMaterial.WaterDiffusionSpeed;
@@ -2293,7 +2303,7 @@ void Points::Query(ElementIndex pointElementIndex) const
 {
     LogMessage("PointIndex: ", pointElementIndex, (nullptr != mMaterialsBuffer[pointElementIndex].Structural) ? (" (" + mMaterialsBuffer[pointElementIndex].Structural->Name) + ")" : "");
     LogMessage("P=", mPositionBuffer[pointElementIndex].toString(), " V=", mVelocityBuffer[pointElementIndex].toString());
-    LogMessage("M=", mMassBuffer[pointElementIndex], " IPs=", mInternalPressureBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex],
+    LogMessage("M=", mMassBuffer[pointElementIndex], " APs=", mAirPressureBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex],
                " Wk=", IsEphemeral(pointElementIndex) ? 1.0f : mWeaknessBuffer[pointElementIndex], " Rust=", IsEphemeral(pointElementIndex) ? 0.0f : mDecayBuffer[pointElementIndex].Decay.Rust);
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex], " ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
@@ -2362,7 +2372,7 @@ void Points::UploadAttributes(
     {
         renderContext.UploadShipPointAuxiliaryDataAsync(
             shipId,
-            mInternalPressureBuffer.data());
+            mAirPressureBuffer.data());
     }
     else if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::Strength)
     {

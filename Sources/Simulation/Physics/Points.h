@@ -779,6 +779,7 @@ public:
         // Pressure and water dynamics
         , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
         , mInternalPressureBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mAirPressureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterIntakeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -1686,6 +1687,31 @@ public:
     float * GetInternalPressureBufferAsFloat()
     {
         return mInternalPressureBuffer.data();
+    }
+
+    float GetAirPressure(ElementIndex pointElementIndex) const
+    {
+        return mAirPressureBuffer[pointElementIndex];
+    }
+
+    void SetAirPressure(
+        ElementIndex pointElementIndex,
+        float value)
+    {
+        mAirPressureBuffer[pointElementIndex] = value;
+    }
+
+    float * GetAirPressureBufferAsFloat()
+    {
+        return mAirPressureBuffer.data();
+    }
+
+    std::shared_ptr<Buffer<float>> MakeAirPressureBufferCopy()
+    {
+        auto airPressureBufferCopy = mFloatBufferAllocator.Allocate();
+        airPressureBufferCopy->copy_from(mAirPressureBuffer);
+
+        return airPressureBufferCopy;
     }
 
     bool GetIsHull(ElementIndex pointElementIndex) const
@@ -2597,6 +2623,7 @@ private:
 
     Buffer<bool> mIsHullBuffer; // Externally-computed resultant of material hullness and dynamic hullness
     Buffer<float> mInternalPressureBuffer; // Pressure at this particle (Pa)
+    Buffer<float> mAirPressureBuffer; // Air pressure at this particle (TODO)
     Buffer<float> mMaterialWaterIntakeBuffer;
     Buffer<float> mMaterialWaterRestitutionBuffer;
     Buffer<float> mMaterialWaterDiffusionSpeedBuffer;

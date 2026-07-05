@@ -2082,10 +2082,7 @@
 					! Water: 
 						! Moves according to water momentum + pressure differentials
 							! Pressure at both source and destination is air pressure + water pressure
-						! When water moves, air pressure is adjusted at both source and destination:
-							! TODO: mechanism
-								! Do we actually NEED to adjust water pressure? We could do nothing here, and let it escape at its turn based on the new pressure at the tank (addition of water pressure)
-								! If we end up having to come up with a proxy for zero-volume, should resurrect Air Moles and Boyle's Law
+						! We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)
 					! Air:
 						! Air moves according to pressure differentials and upward bias
 							! Pressure at both source and destination is air pressure + water pressure
@@ -2094,6 +2091,74 @@
 					! Impl notes:
 						! Could be done in same step - doing water and air separately, as both working on previous frame
 				
+			- Impl 2:
+				+ Make test ship
+				+ Add AirPressure buffer
+				= Ingress/Egress
+					= Option 1: Do separately water and air, each based on own pressure
+						- TODO: rate of air pressure, cannot use bernoulli
+							- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
+					- Option 2: based on whole tank pressure
+					- Bubbles
+				+ Duplicate UpdateWaterVelocitiesXYZ: UpdateWaterAndAirPressure
+				= UpdateWaterAndAirPressure
+					= Water: 
+						+ Moves according to water momentum + pressure differentials
+							+ Pressure at both source and destination is air pressure + water pressure
+						- Comment: We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)
+					= Air:
+						= Air moves according to pressure differentials and upward bias
+							= Bias formula:
+								+ Option 1: when direction y >= 0
+							+ Pressure at both source and destination is air pressure + water pressure
+						- Comment: Simple air pressure increase at a tank should force water move out of it at water's turn
+							- Hopefully downward because of Bernoulli/gravity
+
+				- TODOHERE
+					- Dimensional problem: Water is 20-90, air is 30000
+						- Water is "meters" of delta_h, air is Pa
+							- Ingress: quantity is velocity (from delta_h) * dt, so still a 'space' -- a delta height
+						- TODO: what do we thus store for air pressure? Pa/(rho*g), but which rho?
+							- air pressure in Pa should be comparable to water * rho_water * g
+						- Fix at:
+							- Init
+							- Ingress
+					- Problem: air stays where there's water
+						- But could be side-effect of dimensional problem
+
+				- Review old water: why normalization factor ensures all water at the point moves?
+			
+				- Temperature <-> Air Pressure
+				- Finalize unit of AirPressure
+					- Also @ Points buffer comment
+				- Air Pressure <-> forces on "walls"
+					- Do we do it where we currently use InternalPressure, or do we bounce
+					  @ UpdateWaterAndAirPressure?
+				- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure
+				- Tools:
+					- Flood
+					- Internal Pressure
+
+				- Cleanup:
+					- Nuke InternalPressure
+						- Points
+						- ...
+					- Nuke Ship::UpdateWaterVelocities
+					- Ship::UpdatePressureAndWaterInflow
+					- Renames (Internal Pressure -> Air Pressure):
+						- Points::Add args
+						- DebugShipRenderModeType::InternalPressure
+							- Shader
+						- Internal pressure view: code and UI
+					- Rename: water diffusion -> water & air diffusion
+						- Material properties: code + json
+						- SimulationParameters setting
+						- UI
+							- Whole section becomes Pressure?
+					- Cleanup upload of internal pressure
+
+					- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
+						- Watchout: when we make copies of buffers we use mFloatBufferAllocator
 
 
 
