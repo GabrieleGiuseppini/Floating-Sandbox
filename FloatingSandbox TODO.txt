@@ -2122,8 +2122,9 @@
 					= Water: 
 						+ Moves according to water momentum + pressure differentials
 							+ Pressure at both source and destination is air pressure + water pressure
-						- Bias:
-							- Water going down should _not_ be prevented by air down? 
+						= Bias:
+							= Water going down should _not_ be prevented by air down? (*)
+								! Otherwise it flies up
 								! Physics in tube with air below and water above: technically yes, water wouldn't go down; but Rayleigh–Taylor instability makes it do so
 						- Comment: We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)
 					= Air:
@@ -2139,31 +2140,35 @@
 										! At equlibrium: pSrcAir + pSrcWat = pDstAir + pDstWat
 										+ So: just any direction, using internal pressure - no bias at all
 											+ Upward bias is given by water pressure being higher below than up, because of gravity
-										= FIX: oscillations:
-											! Due to broken algo: we might still drain the point even if averaging with neighbors
-											= Option 1: static factor to slow air diffusion, e.g. 0.15
-												- Seems to work fine, and after all we move water by velocity, so somewhat scaled?; but find actual formula for speed here
-													- It's exponential, so speed depends on deltaP - need to move speed (scaling) calc'n at spring
-											- Option 2: enforce normalization so to guarantee a remainder
-										- FIX: losing air at bottom of air bell
-											- OR: water still gets to the top: reason is that air diffuses still too much towards below; should eskew wet areas more
-											- Option 1: try option 2.3.X: non-linear/linear with avail volume
-									- Option 3:
-										- Air allowed to move equally in all directions, but if downwards, move is scaled as a function of target water there
-											- TODOHERE: see why bands: do math with avgs+normalization
+									= Option 3:
+										= Air allowed to move equally in all directions, but if downwards, move is scaled as a function of target water there											
 											! TODOHERE: diffusion of water up and air up which will push water down is unbalanced - different equations
-											- Option 1: Ideally asymptotically zero move with infinite water there
+											= Option 1: Ideally asymptotically zero move with infinite water there
 												- Perfect bias function (dst pressure = dst_air + dst_water * bias):
 													- 0 if pointing up
 													- 0 => N (with N >> 1) if pointing down
+											- TODO: similar bias, for water going down- see above (*)
+											
 											- Option 2: just linear with avail volume
 							
-							- Air equalization rate: now we use average, see if should be settable
 						- Comment: Simple air pressure increase at a tank should force water move out of it at water's turn
 							- Hopefully downward because of Bernoulli/gravity
 
 
-				= Review old water: why normalization factor ensures all water at the point moves?
+				+ Review old water: why normalization factor ensures all water at the point moves?
+
+				= FIX: air pressure field oscillations:
+					! Due to broken algo: we might still drain the point even if averaging with neighbors
+					= Option 1: static factor to slow air diffusion, e.g. 0.15
+						- Seems to work fine, and after all we move water by velocity, so somewhat scaled?; but find actual formula for speed here
+							- It's exponential, so speed depends on deltaP - need to move speed (scaling) calc'n at spring
+				- FIX: losing air at bottom of air bell
+					- OR: water still gets to the top: reason is that air diffuses still too much towards below; should eskew wet areas more
+					- Fixed with limited air downard diffusion
+				- FIX: water rises too much, when compared to theoretical height
+					- Air seems to compress too much, or water has too much pressure (see ingress)
+
+
 			
 				- Temperature <-> Air Pressure
 				= Finalize unit of AirPressure

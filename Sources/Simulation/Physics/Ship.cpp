@@ -3374,7 +3374,12 @@ void Ship::UpdateWaterAndAirPressure(
 
             // Pressure difference (positive implies point -> other endpoint flow)
             // TODOTEST
-            float const dw = oldThisPointTotalPressure - oldOtherPointTotalPressure;
+            //float const dw = oldThisPointTotalPressure - oldOtherPointTotalPressure;
+            // TODOTEST: adding bias also to water: ignore air below
+            float const dw =
+                oldThisPointTotalPressure
+                - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * Step(0.0f, springNormalizedVector.y));
+            (void)oldOtherPointTotalPressure;
             // TODOOLD
             //float const dw = oldPointWaterBufferData[pointIndex] - oldPointWaterBufferData[cs.OtherEndpointIndex];
 
