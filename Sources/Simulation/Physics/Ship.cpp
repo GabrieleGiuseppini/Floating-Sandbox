@@ -3373,6 +3373,7 @@ void Ship::UpdateWaterAndAirPressure(
             //
 
             // Pressure difference (positive implies point -> other endpoint flow)
+            // TODOTEST
             float const dw = oldThisPointTotalPressure - oldOtherPointTotalPressure;
             // TODOOLD
             //float const dw = oldPointWaterBufferData[pointIndex] - oldPointWaterBufferData[cs.OtherEndpointIndex];
@@ -3476,15 +3477,37 @@ void Ship::UpdateWaterAndAirPressure(
 
             // TODO: Bias Option 2.2: no bias at all
 
-            // Move air pressure so to equalize with other endpoint;
-            // considering that other endpoint's "tank" has same volume,
-            // resultant pressure is average
-            float const resultantPressure = (oldThisPointTotalPressure + oldOtherPointTotalPressure) / 2.0f;
+            //// Move air pressure so to equalize with other endpoint;
+            //// considering that other endpoint's "tank" has same volume,
+            //// resultant pressure is average
+            //float const resultantPressure = (oldThisPointTotalPressure + oldOtherPointTotalPressure) / 2.0f;
+
+            //// Only outbound; if inbound, it will be done by other endpoint
+            //springOutboundAirFlowWeights[s] = std::max(0.0f,
+            //    (oldThisPointTotalPressure - resultantPressure)
+            //    * mSprings.GetWaterPermeability(cs.SpringIndex)); // Only along permeable springs
+
+            //// Update total outbound flow weight
+            //totalOutboundAirFlowWeight += springOutboundAirFlowWeights[s];
+
+
+            // TODOTEST: Bias Option 3.x: can also go down, depending on water pressure there though
+
+            float pMoved =
+                oldPointAirPressureBufferData[pointIndex]
+                - (oldPointAirPressureBufferData[pointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]) / 2.0f
+                * (1.0f - std::min(oldPointWaterBufferData[pointIndex], 1.0f));
+            // TODOTEST
+            //pMoved = pMoved * (1.0f - std::min(oldPointWaterBufferData[cs.OtherEndpointIndex], 1.0f) * Step(0.0f, -springNormalizedVector.y));
+            pMoved = pMoved * (1.0f - (1.0f - 1.0f / (1.0f + oldPointWaterBufferData[cs.OtherEndpointIndex])) * Step(0.0f, -springNormalizedVector.y));
 
             // Only outbound; if inbound, it will be done by other endpoint
             springOutboundAirFlowWeights[s] = std::max(0.0f,
-                (oldThisPointTotalPressure - resultantPressure)
+                pMoved
                 * mSprings.GetWaterPermeability(cs.SpringIndex)); // Only along permeable springs
+
+            // Honor spring lengths - TODOTEST
+            springOutboundAirFlowWeights[s] /= mSprings.GetFactoryRestLength(cs.SpringIndex);
 
             // Update total outbound flow weight
             totalOutboundAirFlowWeight += springOutboundAirFlowWeights[s];
@@ -3503,10 +3526,15 @@ void Ship::UpdateWaterAndAirPressure(
         float waterQuantityNormalizationFactor = 0.0f;
         if (totalOutboundWaterFlowWeight != 0.0f)
         {
-            waterQuantityNormalizationFactor =
-                oldPointWaterBufferData[pointIndex]
-                * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment
-                / totalOutboundWaterFlowWeight;
+            // TODOTEST
+            //waterQuantityNormalizationFactor =
+            //    oldPointWaterBufferData[pointIndex]
+            //    * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment
+            //    / totalOutboundWaterFlowWeight;
+            waterQuantityNormalizationFactor = std::min(
+                (oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment,
+                1.0f);
+
         }
 
         //
@@ -3524,8 +3552,9 @@ void Ship::UpdateWaterAndAirPressure(
             airPressureQuantityNormalizationFactor = std::min(
                 // TODOTEST: with/without material diffusion speed
                 //(oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment,
-                (oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * simulationParameters.WaterDiffusionSpeedAdjustment,
-                //(oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * simulationParameters.WaterDiffusionSpeedAdjustment * 0.5f,
+                //(oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * simulationParameters.WaterDiffusionSpeedAdjustment,
+                // TODOTEST: manual speed here for experiment; needs to become per-spring as it depends on delta-P
+                (oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * simulationParameters.WaterDiffusionSpeedAdjustment * 0.15f,
                 1.0f);
         }
 

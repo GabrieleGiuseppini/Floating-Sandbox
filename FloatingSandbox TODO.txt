@@ -2135,28 +2135,35 @@
 									X Option 1: still with pressure differential and moved to average, but:
 										+ Source factor in average: internal (air + water)
 										+ Dest factor in average: air + alpha*water, with alpha=-Ny
-									= Option 2:
+									= Option 2: (no bias)
 										! At equlibrium: pSrcAir + pSrcWat = pDstAir + pDstWat
 										+ So: just any direction, using internal pressure - no bias at all
 											+ Upward bias is given by water pressure being higher below than up, because of gravity
-										- FIX: oscillations:
-											- Option 1: First water, then air
-												- Dupe func and do @ func
+										= FIX: oscillations:
+											! Due to broken algo: we might still drain the point even if averaging with neighbors
+											= Option 1: static factor to slow air diffusion, e.g. 0.15
+												- Seems to work fine, and after all we move water by velocity, so somewhat scaled?; but find actual formula for speed here
+													- It's exponential, so speed depends on deltaP - need to move speed (scaling) calc'n at spring
+											- Option 2: enforce normalization so to guarantee a remainder
 										- FIX: losing air at bottom of air bell
-											- Option 1: try option 2.3.2: linear with avail volume (zero out diffusion if target has water >= 1.0)
+											- OR: water still gets to the top: reason is that air diffuses still too much towards below; should eskew wet areas more
+											- Option 1: try option 2.3.X: non-linear/linear with avail volume
 									- Option 3:
-										- TODO: definitely depending on water at dest; what about water @ source?
-										- With considering only water at dest:
-											- Air allowed to move equally in all directions, but if downwards, move is scaled as a function of target water there
-												- Option 1: Ideally asymptotically zero move with infinite water there
-												- Option 2: just linear with avail volume
+										- Air allowed to move equally in all directions, but if downwards, move is scaled as a function of target water there
+											- TODOHERE: see why bands: do math with avgs+normalization
+											! TODOHERE: diffusion of water up and air up which will push water down is unbalanced - different equations
+											- Option 1: Ideally asymptotically zero move with infinite water there
+												- Perfect bias function (dst pressure = dst_air + dst_water * bias):
+													- 0 if pointing up
+													- 0 => N (with N >> 1) if pointing down
+											- Option 2: just linear with avail volume
 							
 							- Air equalization rate: now we use average, see if should be settable
 						- Comment: Simple air pressure increase at a tank should force water move out of it at water's turn
 							- Hopefully downward because of Bernoulli/gravity
 
 
-				- Review old water: why normalization factor ensures all water at the point moves?
+				= Review old water: why normalization factor ensures all water at the point moves?
 			
 				- Temperature <-> Air Pressure
 				= Finalize unit of AirPressure
