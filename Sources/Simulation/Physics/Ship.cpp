@@ -3317,7 +3317,7 @@ void Ship::UpdateWaterAndAirPressure(
     //
 
     // TODOTEST
-    float constexpr TODOSmoothingHalfWidth = 0.25f;
+    float constexpr TODOSmoothingHalfWidth = 0.1f;
 
     for (auto pointIndex : mPoints.RawShipPoints())
     {
@@ -3506,6 +3506,7 @@ void Ship::UpdateWaterAndAirPressure(
                 oldPointAirPressureBufferData[pointIndex]
                 - (oldPointAirPressureBufferData[pointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]) / 2.0f
                 //* (1.0f - std::min(oldPointWaterBufferData[pointIndex], 1.0f)); // Move it all if current tank has no volume left
+                * (0.95f + 0.05f / (1.0f + oldPointWaterBufferData[pointIndex])); // Move it more if current tank has little volume left
                 ;
             // TODOTEST
             //pMoved = pMoved * (1.0f - std::min(oldPointWaterBufferData[cs.OtherEndpointIndex], 1.0f) * Step(0.0f, -springNormalizedVector.y));
