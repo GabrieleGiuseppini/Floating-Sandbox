@@ -2068,9 +2068,10 @@
 
 			! Gist 2:
 				! Air quantity doesn't exist; we just have air pressure
-					! Initial everywhere: equals athmospheric air pressure at that height
+					! Initial everywhere: equals ship's internal athmospheric pressure
 					! No more ideal gas formula, Boyle's Law
-						! but see if can later reintroduce temperature, e.g. by multiplying air pressure by f(temperature)
+					TODOHERE
+						! But see if can later reintroduce temperature, e.g. by multiplying air pressure by f(temperature)
 					! To keep this quantity dimensionally equivalent to our "water quantity/pressure" (which is equivalent delta-height, thus "space"), we dimension
 					  air pressure as "equivalent water height", in meters
 						! Conversion from pressure in Pa: air_pressure = Pa / (water_rho * g)
@@ -2167,6 +2168,7 @@
 					- Fixed with limited air downard diffusion
 				- FIX: water rises too much, when compared to theoretical height
 					- Air seems to compress too much, or water has too much pressure (see ingress)
+					- Damping water velocity make it reach good equilibrium2026-07-07pointIndex
 				- FIX: square interface
 					! There's clearly a non-linearity at below/above 1.0
 					= Make those steps a bit more soft

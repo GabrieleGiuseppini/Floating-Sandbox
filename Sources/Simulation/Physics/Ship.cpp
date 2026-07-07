@@ -3724,7 +3724,7 @@ void Ship::UpdateWaterAndAirPressure(
     // TODOTEST: damp water velocities
     for (auto pointIndex : mPoints.RawShipPoints())
     {
-        newPointWaterMomentumBufferData[pointIndex] *= 0.75f;
+        newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
     }
 
     //
