@@ -2109,6 +2109,8 @@
 					+ Comments with gist
 					+ Gist implementation
 					- Things to try:
+						- Points::UpdateWaterVelocitiesFromMomenta:
+							- Use max water mass, not whole water
 						- Up/down interface
 							+ Option 1: linearstep 0.1 centered around 0
 							- Option 2: pure step
@@ -2145,30 +2147,34 @@
 					- Flood
 					- Internal Pressure
 
-				- Cleanup:
-					- Nuke InternalPressure concept
-						- Points
-						- ...
-					- Nuke Ship::UpdateWaterVelocities
-					- Ship::UpdatePressureAndWaterInflow
-					- Renames (Internal Pressure -> Air Pressure):
-						- PhysicsData
-							- PhysicsData struct
-							- De/Serialization
-							- ShipBuilder UI
-						- Points::Add args
-						- DebugShipRenderModeType::InternalPressure
-							- Shader
-						- Internal pressure view: code and UI
-					- Rename: water diffusion -> water & air diffusion
-						- Material properties: code + json
-						- SimulationParameters setting
-						- UI
-							- Whole section becomes Pressure?
-					- Cleanup upload of internal pressure
+			- Test:
+				- Default air crazyness
+				- Water diffusion speed
 
-					- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
-						- Watchout: when we make copies of buffers we use mFloatBufferAllocator
+			- Cleanup:
+				- Nuke InternalPressure concept
+					- Points
+					- ...
+				- Nuke Ship::UpdateWaterVelocities
+				- Ship::UpdatePressureAndWaterInflow
+				- Renames (Internal Pressure -> Air Pressure):
+					- PhysicsData
+						- PhysicsData struct
+						- De/Serialization
+						- ShipBuilder UI
+					- Points::Add args
+					- DebugShipRenderModeType::InternalPressure
+						- Shader
+					- Internal pressure view: code and UI
+				- Rename: water diffusion -> water & air diffusion
+					- Material properties: code + json
+					- SimulationParameters setting
+					- UI
+						- Whole section becomes Pressure?
+				- Cleanup upload of internal pressure
+
+				- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
+					- Watchout: when we make copies of buffers we use mFloatBufferAllocator
 
 
 

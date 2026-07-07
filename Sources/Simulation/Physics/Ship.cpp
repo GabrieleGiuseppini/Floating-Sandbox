@@ -3473,9 +3473,6 @@ void Ship::UpdateWaterAndAirPressure(
                 airPressureMoved
                 * mSprings.GetWaterPermeability(cs.SpringIndex)); // Only along permeable springs
 
-            // Honor spring lengths - TODOTEST
-            springOutboundAirFlowWeights[s] /= mSprings.GetFactoryRestLength(cs.SpringIndex);
-
             // Update total outbound flow weight
             totalOutboundAirFlowWeight += springOutboundAirFlowWeights[s];
         }
@@ -3484,8 +3481,7 @@ void Ship::UpdateWaterAndAirPressure(
         // 2a) Calculate normalization factors for water flows:
         //    the quantity of water along a spring is proportional to the weight of the spring
         //    (resultant velocity along that spring), and the sum of all outbound flows must
-        //    match the water currently at the point, times the water/air speed fraction and
-        //    the adjustment
+        //    not exceed the water currently at the point, accounting for diffusion speed
         //
 
         assert(totalOutboundWaterFlowWeight >= 0.0f);
@@ -3494,15 +3490,15 @@ void Ship::UpdateWaterAndAirPressure(
         if (totalOutboundWaterFlowWeight != 0.0f)
         {
             waterQuantityNormalizationFactor = std::min(
-                (oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment,
+                (oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
                 1.0f);
         }
 
         //
         // 2b) Calculate normalization factors for air flows:
         //    the quantity of air along a spring is proportional to the weight of the spring
-        //    (pressure flow along that spring), and the sum of all outbound flows cannot excdeed
-        //    the air currently at the point times the air speed fraction and the adjustment
+        //    (pressure flow along that spring), and the sum of all outbound flows must not
+        //    exceed the air pressure currently at the point, accounting for diffusion speed
         //
 
         assert(totalOutboundAirFlowWeight >= 0.0f);
@@ -3510,9 +3506,9 @@ void Ship::UpdateWaterAndAirPressure(
         float airPressureQuantityNormalizationFactor = 0.0f;
         if (totalOutboundAirFlowWeight != 0.0f)
         {
+            float constexpr AirPressureEqualizationSpeed = 0.15f; // Controls convergence rate
             airPressureQuantityNormalizationFactor = std::min(
-                // TODOTEST: manual speed here for experiment; needs to become per-spring as it depends on delta-P
-                (oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * simulationParameters.WaterDiffusionSpeedAdjustment * 0.15f,
+                (oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * (AirPressureEqualizationSpeed * simulationParameters.WaterDiffusionSpeedAdjustment),
                 1.0f);
         }
 
@@ -3633,7 +3629,8 @@ void Ship::UpdateWaterAndAirPressure(
             // Air
             //
 
-            // Calculate quantity of air pressure directed outwards
+            // Calculate quantity of air pressure directed outwards,
+            // being careful not to overdrain the point
             float const springOutboundQuantityOfAirPressure = std::min(
                 springOutboundAirFlowWeights[s] * airPressureQuantityNormalizationFactor,
                 newPointAirPressureBufferData[pointIndex]);
@@ -3676,7 +3673,10 @@ void Ship::UpdateWaterAndAirPressure(
     waterSplashed = mWaterSplashedRunningAverage.Update(waterSplashed);
 #endif
 
-    // TODOTEST: damp water velocities
+    //
+    // Damp water velocities
+    //
+
     for (auto pointIndex : mPoints.RawShipPoints())
     {
         newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
