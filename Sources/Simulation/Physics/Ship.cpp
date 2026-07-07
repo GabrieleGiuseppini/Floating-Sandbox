@@ -3334,6 +3334,14 @@ void Ship::UpdateWaterAndAirPressure(
         // WaterCrazyness=1   -> alpha=Wh
         float const alphaCrazyness = 1.0f + simulationParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
 
+        // Total pressure at bottom of this point/tank
+        float const oldThisPointTotalPressureAtBottom = oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex];
+
+        // Volume at this tank that is available for air;
+        // given that plain water would cause non-linearities, we make
+        // air volume go to zero only asymptotically
+        float const oldThisPointAvailableAirVolume = 1.0f / (1.0f + oldPointWaterBufferData[pointIndex]);
+
 #if !FS_IS_PLATFORM_MOBILE()
         pointSplashNeighbors = 0.0f;
         pointSplashFreeNeighbors = 0.0f;
@@ -3341,9 +3349,6 @@ void Ship::UpdateWaterAndAirPressure(
 
         totalOutboundWaterFlowWeight = 0.0f;
         totalOutboundAirFlowWeight = 0.0f;
-
-        // Total pressure at bottom of this point/tank
-        float const oldThisPointTotalPressureAtBottom = oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex];
 
         size_t const connectedSpringCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
         for (size_t s = 0; s < connectedSpringCount; ++s)
@@ -3452,18 +3457,20 @@ void Ship::UpdateWaterAndAirPressure(
             //    - Hopefully downward because of Bernoulli/gravity and Rayleigh–Taylor
             //
 
-            //  TODOHERE
-            float pMoved =
+            float const equilibriumAirPressure = (oldPointAirPressureBufferData[pointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]) / 2.0f;
+
+            float constexpr SqueezeFactor = 0.05f;
+            float airPressureMoved =
                 oldPointAirPressureBufferData[pointIndex]
-                - (oldPointAirPressureBufferData[pointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]) / 2.0f
-                //* (1.0f - std::min(oldPointWaterBufferData[pointIndex], 1.0f)); // Move it all if current tank has no volume left
-                * (0.95f + 0.05f / (1.0f + oldPointWaterBufferData[pointIndex])); // Move it more if current tank has little volume left
-                ;
-            pMoved = pMoved * (1.0f - (1.0f - 1.0f / (1.0f + oldPointWaterBufferData[cs.OtherEndpointIndex])) * (1.0f - springUpness));
+                - equilibriumAirPressure * ((1.0f - SqueezeFactor) + SqueezeFactor * oldThisPointAvailableAirVolume); // Move it more if current tank has little volume left (squeeze effect)
+
+            // If going down, encounter resistance from water at destination (inverse squeezing)
+            float const oldOtherPointAvailableAirVolume = 1.0f / (1.0f + oldPointWaterBufferData[cs.OtherEndpointIndex]);
+            airPressureMoved = airPressureMoved * (1.0f - (1.0f - oldOtherPointAvailableAirVolume) * (1.0f - springUpness));
 
             // Only outbound; if inbound, it will be done by other endpoint
             springOutboundAirFlowWeights[s] = std::max(0.0f,
-                pMoved
+                airPressureMoved
                 * mSprings.GetWaterPermeability(cs.SpringIndex)); // Only along permeable springs
 
             // Honor spring lengths - TODOTEST

@@ -2112,6 +2112,9 @@
 						- Up/down interface
 							+ Option 1: linearstep 0.1 centered around 0
 							- Option 2: pure step
+						- Air volume:
+							+ Option 1: simple asymptote
+							- Option 2: discontinuous
 						- Water and/or air reading (and writing) from _new_
 							- Option 1: air reads from _new_ water, so we may stay true to:
 								- "We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)"
