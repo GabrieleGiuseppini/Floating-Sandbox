@@ -2106,17 +2106,24 @@
 				+ Duplicate UpdateWaterVelocitiesXYZ: UpdateWaterAndAirPressure
 				= UpdateWaterAndAirPressure
 					+ Review old water: why normalization factor ensures all water at the point moves?
-					- Comments with gist
-					- TODOHERE
-				
+					+ Comments with gist
+					+ Gist implementation
 					- Things to try:
-						- Linearstep's ranges:
-							- Back to step
-							- Asymmetric range
+						- Up/down interface
+							+ Option 1: linearstep 0.1 centered around 0
+							- Option 2: pure step
 						- Water and/or air reading (and writing) from _new_
+							- Option 1: air reads from _new_ water, so we may stay true to:
+								- "We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)"
 						- Static factor to damp air transfer to prevent oscillations: technically should be exponential, so speed depends on deltaP - need to move speed (scaling) calc'n at spring
+						= Water velocity damping:
+							= Option 1: static factor
+								- See if can optimize
+							- Option 2: based on other water and resistance
+								- TODO: research
+
 				- Ingress/Egress and bubbles
-					- TODOHERE: try based on gist above
+					- Redo based on updated gist above
 					- TODO: rate of air pressure, cannot use bernoulli
 						- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
 					- Air Bubbles

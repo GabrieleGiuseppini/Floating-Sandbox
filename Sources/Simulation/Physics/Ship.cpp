@@ -3228,10 +3228,13 @@ void Ship::UpdateWaterAndAirPressure(
     float & waterSplashed)
 {
     //
-    // For each (non-ephemeral) point, move each spring's outgoing water momentum to
-    // its destination point
+    // For each (non-ephemeral) point, move water and air along its connected springs,
+    // based on pressure differentials and water momenta (https://gabrielegiuseppini.wordpress.com/2018/09/08/momentum-based-simulation-of-water-flooding-2d-spaces/)
     //
-    // Implementation of https://gabrielegiuseppini.wordpress.com/2018/09/08/momentum-based-simulation-of-water-flooding-2d-spaces/
+    // Model is tanks, connected at bottom (for water moves) and at top (for air moves)
+    //    - Hence, water moves are governed by pressures at bottom, which are air pressure + water pressure, and water momenta
+    //    - Hence, air moves are governed by pressures at top, which are air pressure
+    //      - But compressibility of air plays a role - i.e.water volumes plays a role
     //
 
 #ifdef _DEBUG
@@ -3308,16 +3311,10 @@ void Ship::UpdateWaterAndAirPressure(
     //
     // Visit all non-ephemeral points and:
     //  - Move water and its momenta according to momenta and pressure differentials
-    //  - Move air (pressure) according to pressure differentials (and upward bias)
-    //
-    // Pressure at a point is taken as the pressure at the bottom of the point's tank,
-    // thus air pressure + water pressure
+    //  - Move air (pressure) according to pressure differentials (and volumetric bias)
     //
     // No need to visit ephemeral points as they have no springs
     //
-
-    // TODOTEST
-    float constexpr TODOSmoothingHalfWidth = 0.1f;
 
     for (auto pointIndex : mPoints.RawShipPoints())
     {
@@ -3345,8 +3342,8 @@ void Ship::UpdateWaterAndAirPressure(
         totalOutboundWaterFlowWeight = 0.0f;
         totalOutboundAirFlowWeight = 0.0f;
 
-        // Pressure at this point/tank
-        float const oldThisPointTotalPressure = oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex];
+        // Total pressure at bottom of this point/tank
+        float const oldThisPointTotalPressureAtBottom = oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex];
 
         size_t const connectedSpringCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
         for (size_t s = 0; s < connectedSpringCount; ++s)
@@ -3358,11 +3355,18 @@ void Ship::UpdateWaterAndAirPressure(
                 ? mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex)
                 : -mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex);
 
-            // Pressure at other point/tank
-            float const oldOtherPointTotalPressure = oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex];
+            // Upness: 1.0 when up, 0.0 when down - with smoothing as nature abhors discontinuities
+            float constexpr UpnessSmoothingHalfWidth = 0.1f;
+            float const springUpness = LinearStep(-UpnessSmoothingHalfWidth, UpnessSmoothingHalfWidth, springNormalizedVector.y);
 
             //
             // Water
+            //
+            // Moves according to water momentum + pressure differentials
+            //    - Source pressure is water pressure + air pressure
+            //    - Destination pressure:
+            //      - When diffusing up: water pressure + air pressure
+            //      - When diffusing down: water pressure only (Rayleigh–Taylor instability: water is not stopped by air below)
             //
 
             // Component of the point's own water velocity along the spring
@@ -3376,16 +3380,12 @@ void Ship::UpdateWaterAndAirPressure(
             //
 
             // Pressure difference (positive implies point -> other endpoint flow)
-            // TODOTEST
-            //float const dw = oldThisPointTotalPressure - oldOtherPointTotalPressure;
-            // TODOTEST: adding bias also to water: ignore air below
+            // Bias: ignore air below (Rayleigh–Taylor instability):
+            //  - Going up: this total_pressure - other total_pressure
+            //  - Going down: this total_pressure - other water_pressure
             float const dw =
-                oldThisPointTotalPressure
-                //- (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * Step(0.0f, springNormalizedVector.y));
-                - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * LinearStep(-TODOSmoothingHalfWidth, TODOSmoothingHalfWidth, springNormalizedVector.y));
-            (void)oldOtherPointTotalPressure;
-            // TODOOLD
-            //float const dw = oldPointWaterBufferData[pointIndex] - oldPointWaterBufferData[cs.OtherEndpointIndex];
+                oldThisPointTotalPressureAtBottom
+                - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness);
 
             // Gravity potential difference (positive implies point -> other endpoint flow)
             float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(cs.OtherEndpointIndex).y;
@@ -3443,75 +3443,23 @@ void Ship::UpdateWaterAndAirPressure(
             //
             // Air
             //
+            // Moves according to pressure differentials:
+            //    - Air-Air: moves to reach average air pressure
+            //    - Water at this squeezes more air out
+            //    - When traveling down, encounters resistance from water at other
+            //
+            // Simple air pressure increase at a tank should force water to move out of it at water's turn
+            //    - Hopefully downward because of Bernoulli/gravity and Rayleigh–Taylor
+            //
 
-            // TODOTEST: Bias Option 1: problem here is that it always go up
-
-            //// Move air pressure so to equalize with other endpoint;
-            //// considering that other endpoint's "tank" has same volume,
-            //// resultant pressure is average
-            //float const resultantPressure = (oldThisPointTotalPressure + oldOtherPointTotalPressure) / 2.0f;
-
-            //// Only outbound; if inbound, it will be done by other endpoint
-            //springOutboundAirFlowWeights[s] = std::max(0.0f,
-            //    (oldThisPointTotalPressure - resultantPressure)
-            //    * mSprings.GetWaterPermeability(cs.SpringIndex) // Only along permeable springs
-            //    * std::max(springNormalizedVector.y, 0.0f)); // Only above, and proportional to slope
-
-            //// Update total outbound flow weight
-            //totalOutboundAirFlowWeight += springOutboundAirFlowWeights[s];
-
-
-
-
-            // TODOTEST: Bias Option 2.1: can also go down, depending on water pressure there though
-
-            //// Move air pressure so to equalize with other endpoint;
-            //// the destination point's pressure that we consider for the average depends on the vertical
-            //// slope to get there: when going down, we need to encounter the destination water as a pushback
-
-            //float const effectiveOldOtherPointTotalPressure =
-            //    oldPointAirPressureBufferData[cs.OtherEndpointIndex]
-            //    + oldPointWaterBufferData[cs.OtherEndpointIndex] * std::max(-springNormalizedVector.y, 0.0f);
-
-            //float const resultantPressure = (oldThisPointTotalPressure + effectiveOldOtherPointTotalPressure) / 2.0f;
-
-            //// Only outbound; if inbound, it will be done by other endpoint
-            //springOutboundAirFlowWeights[s] = std::max(0.0f,
-            //    (oldThisPointTotalPressure - resultantPressure)
-            //    * mSprings.GetWaterPermeability(cs.SpringIndex)); // Only along permeable springs
-
-            //// Update total outbound flow weight
-            //totalOutboundAirFlowWeight += springOutboundAirFlowWeights[s];
-
-
-            // TODO: Bias Option 2.2: no bias at all
-
-            //// Move air pressure so to equalize with other endpoint;
-            //// considering that other endpoint's "tank" has same volume,
-            //// resultant pressure is average
-            //float const resultantPressure = (oldThisPointTotalPressure + oldOtherPointTotalPressure) / 2.0f;
-
-            //// Only outbound; if inbound, it will be done by other endpoint
-            //springOutboundAirFlowWeights[s] = std::max(0.0f,
-            //    (oldThisPointTotalPressure - resultantPressure)
-            //    * mSprings.GetWaterPermeability(cs.SpringIndex)); // Only along permeable springs
-
-            //// Update total outbound flow weight
-            //totalOutboundAirFlowWeight += springOutboundAirFlowWeights[s];
-
-
-            // TODOTEST: Bias Option 3.x: can also go down, depending on water pressure there though
-
+            //  TODOHERE
             float pMoved =
                 oldPointAirPressureBufferData[pointIndex]
                 - (oldPointAirPressureBufferData[pointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]) / 2.0f
                 //* (1.0f - std::min(oldPointWaterBufferData[pointIndex], 1.0f)); // Move it all if current tank has no volume left
                 * (0.95f + 0.05f / (1.0f + oldPointWaterBufferData[pointIndex])); // Move it more if current tank has little volume left
                 ;
-            // TODOTEST
-            //pMoved = pMoved * (1.0f - std::min(oldPointWaterBufferData[cs.OtherEndpointIndex], 1.0f) * Step(0.0f, -springNormalizedVector.y));
-            //pMoved = pMoved * (1.0f - (1.0f - 1.0f / (1.0f + oldPointWaterBufferData[cs.OtherEndpointIndex])) * Step(0.0f, -springNormalizedVector.y));
-            pMoved = pMoved * (1.0f - (1.0f - 1.0f / (1.0f + oldPointWaterBufferData[cs.OtherEndpointIndex])) * LinearStep(-TODOSmoothingHalfWidth, TODOSmoothingHalfWidth, -springNormalizedVector.y));
+            pMoved = pMoved * (1.0f - (1.0f - 1.0f / (1.0f + oldPointWaterBufferData[cs.OtherEndpointIndex])) * (1.0f - springUpness));
 
             // Only outbound; if inbound, it will be done by other endpoint
             springOutboundAirFlowWeights[s] = std::max(0.0f,
