@@ -2168,7 +2168,9 @@
 				- FIX: water rises too much, when compared to theoretical height
 					- Air seems to compress too much, or water has too much pressure (see ingress)
 				- FIX: square interface
-					- Make those steps a bit more soft
+					! There's clearly a non-linearity at below/above 1.0
+					= Make those steps a bit more soft
+						- ! Removing air bias for full tank fixes it!
 
 
 			

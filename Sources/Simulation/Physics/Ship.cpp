@@ -3316,6 +3316,9 @@ void Ship::UpdateWaterAndAirPressure(
     // No need to visit ephemeral points as they have no springs
     //
 
+    // TODOTEST
+    float constexpr TODOSmoothingHalfWidth = 0.25f;
+
     for (auto pointIndex : mPoints.RawShipPoints())
     {
         //
@@ -3378,7 +3381,8 @@ void Ship::UpdateWaterAndAirPressure(
             // TODOTEST: adding bias also to water: ignore air below
             float const dw =
                 oldThisPointTotalPressure
-                - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * Step(0.0f, springNormalizedVector.y));
+                //- (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * Step(0.0f, springNormalizedVector.y));
+                - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * LinearStep(-TODOSmoothingHalfWidth, TODOSmoothingHalfWidth, springNormalizedVector.y));
             (void)oldOtherPointTotalPressure;
             // TODOOLD
             //float const dw = oldPointWaterBufferData[pointIndex] - oldPointWaterBufferData[cs.OtherEndpointIndex];
@@ -3501,10 +3505,12 @@ void Ship::UpdateWaterAndAirPressure(
             float pMoved =
                 oldPointAirPressureBufferData[pointIndex]
                 - (oldPointAirPressureBufferData[pointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]) / 2.0f
-                * (1.0f - std::min(oldPointWaterBufferData[pointIndex], 1.0f));
+                //* (1.0f - std::min(oldPointWaterBufferData[pointIndex], 1.0f)); // Move it all if current tank has no volume left
+                ;
             // TODOTEST
             //pMoved = pMoved * (1.0f - std::min(oldPointWaterBufferData[cs.OtherEndpointIndex], 1.0f) * Step(0.0f, -springNormalizedVector.y));
-            pMoved = pMoved * (1.0f - (1.0f - 1.0f / (1.0f + oldPointWaterBufferData[cs.OtherEndpointIndex])) * Step(0.0f, -springNormalizedVector.y));
+            //pMoved = pMoved * (1.0f - (1.0f - 1.0f / (1.0f + oldPointWaterBufferData[cs.OtherEndpointIndex])) * Step(0.0f, -springNormalizedVector.y));
+            pMoved = pMoved * (1.0f - (1.0f - 1.0f / (1.0f + oldPointWaterBufferData[cs.OtherEndpointIndex])) * LinearStep(-TODOSmoothingHalfWidth, TODOSmoothingHalfWidth, -springNormalizedVector.y));
 
             // Only outbound; if inbound, it will be done by other endpoint
             springOutboundAirFlowWeights[s] = std::max(0.0f,
@@ -3715,10 +3721,10 @@ void Ship::UpdateWaterAndAirPressure(
 #endif
 
     // TODOTEST: damp water velocities
-    //for (auto pointIndex : mPoints.RawShipPoints())
-    //{
-    //    newPointWaterMomentumBufferData[pointIndex] *= 0.5f;
-    //}
+    for (auto pointIndex : mPoints.RawShipPoints())
+    {
+        newPointWaterMomentumBufferData[pointIndex] *= 0.75f;
+    }
 
     //
     // Transforming momenta into velocities
