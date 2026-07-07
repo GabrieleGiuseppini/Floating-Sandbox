@@ -2489,7 +2489,7 @@ void Points::UploadVectors(
         {
             color = vec4f(0.054f, 0.066f, 0.443f, 1.0f);
             vectorBuffer = mWaterMomentumBuffer.data();
-            lengthAdjustment = 0.4f;
+            lengthAdjustment = 0.1f;
 
             break;
         }

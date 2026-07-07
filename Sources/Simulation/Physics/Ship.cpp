@@ -3531,15 +3531,9 @@ void Ship::UpdateWaterAndAirPressure(
         float waterQuantityNormalizationFactor = 0.0f;
         if (totalOutboundWaterFlowWeight != 0.0f)
         {
-            // TODOTEST
-            //waterQuantityNormalizationFactor =
-            //    oldPointWaterBufferData[pointIndex]
-            //    * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment
-            //    / totalOutboundWaterFlowWeight;
             waterQuantityNormalizationFactor = std::min(
                 (oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment,
                 1.0f);
-
         }
 
         //
@@ -3555,9 +3549,6 @@ void Ship::UpdateWaterAndAirPressure(
         if (totalOutboundAirFlowWeight != 0.0f)
         {
             airPressureQuantityNormalizationFactor = std::min(
-                // TODOTEST: with/without material diffusion speed
-                //(oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment,
-                //(oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * simulationParameters.WaterDiffusionSpeedAdjustment,
                 // TODOTEST: manual speed here for experiment; needs to become per-spring as it depends on delta-P
                 (oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * simulationParameters.WaterDiffusionSpeedAdjustment * 0.15f,
                 1.0f);
@@ -3723,6 +3714,11 @@ void Ship::UpdateWaterAndAirPressure(
     waterSplashed = mWaterSplashedRunningAverage.Update(waterSplashed);
 #endif
 
+    // TODOTEST: damp water velocities
+    //for (auto pointIndex : mPoints.RawShipPoints())
+    //{
+    //    newPointWaterMomentumBufferData[pointIndex] *= 0.5f;
+    //}
 
     //
     // Transforming momenta into velocities
