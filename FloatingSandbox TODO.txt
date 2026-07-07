@@ -1984,15 +1984,10 @@
 				  pressure of the compressed air equals the pressure of the incoming water supply.
 				! In an absolutely rigid container filled to the brim with zero air pockets, the pressure is determined by the ambient pressure at the time of sealing.
 					! => A completely filled tank needs to have a quantity describing its pressure (at the moment this is 'water')
-
-			! Useful simplifications that may be used:
-				! Pressure of tank == pressure at *bottom* of tank
-					! Thus: air pressure + hydrostatic pressure
-						! Hydrostatic pressure: just the weight of the quantity of water in the tank
-							! Air pressure contains information about "total push"
+				! At equlibrium between two tanks connected at bottom (src and dst): pSrcAir + pSrcWat = pDstAir + pDstWat
+				! Air equilibrium: pSrcAir*vSrcAir = pDstAir*vDstAir
 
 			! Gist 1:
-
 				! Air is modeled with two quantities: Volume and Pressure (aka Quantity)
 					! Volume however is implicitly 1.0 - min(water, 1.0), so we only need Pressure/Quantity as quantity
 					! Note: P and V are technically related via the ideal gas law, i.e. PV = nRT, but our P is not really P but n; the ideal gas law is then used
@@ -2064,13 +2059,10 @@
 							! B: we allow > 1 water transiently
 								! TODOHERE: we need a proxy for air pressure in this case
 
-					
-
 			! Gist 2:
 				! Air quantity doesn't exist; we just have air pressure
 					! Initial everywhere: equals ship's internal athmospheric pressure
 					! No more ideal gas formula, Boyle's Law
-					TODOHERE
 						! But see if can later reintroduce temperature, e.g. by multiplying air pressure by f(temperature)
 					! To keep this quantity dimensionally equivalent to our "water quantity/pressure" (which is equivalent delta-height, thus "space"), we dimension
 					  air pressure as "equivalent water height", in meters
@@ -2078,106 +2070,60 @@
 						! Standard atmospheric pressure is equal to a column of water 10.33 meter high
 				! Water stays as single-quantity: volume (moles)/pressure duality
 					! Water at any given point (tank) contains information, at equilibrium, about pressure of all water above it
-				! Pressure in a tank is pressure at its bottom, thus air pressure + water pressure					
+				! Model is tanks, connected at bottom (for water moves) and at top (for air moves)
+					! Hence, water moves are governed by pressure at bottom, which is air pressure + water pressure
+					! Hance, air moves are governed by pressure at top, which is air pressure
+						! But compressibility of air plays a role - i.e. water volumes play a role				
 				! Ingress/Egress: 
-					! Water enters or leaves based on tank pressure <-> external pressure differential
+					! Water:
+						! Enters iff underwater outside and pressure outside > total pressure inside
+						! Leaves iff total pressure inside > total pressure outside
+					! Air:
+						! Enters iff above-water outside and (air) pressure outside > air pressure inside
+						! Leaves iff air pressure inside > total pressure outside
+						- enters or leaves based on tank pressure <-> external pressure differential
 					! Air enters or leaves based on tank pressure <-> external pressure differential
 						! With later A/W moves, air trapped here would end up being in a tank with high pressure and thus would leave
 				! Moves:
-					! At equlibrium between two tanks (src and dst): pSrcAir + pSrcWat = pDstAir + pDstWat
-					! Air equilibrium: pSrcAir*vSrcAir = pDstAir*vDstAir
-					- TODO below: depends on developments with our experiments
 					! Water: 
 						! Moves according to water momentum + pressure differentials
-							! Pressure at both source and destination is air pressure + water pressure
+							! Source pressure is water pressure + air pressure
+							! Destination pressure:
+								! When diffusing up: water pressure + air pressure
+								! When diffusing down: water pressure only (Rayleigh–Taylor instability: water is not stopped by air below) 
 						! We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)
 					! Air:
-						! Air moves according to pressure differentials and upward bias
-							! Pressure at both source and destination is air pressure + water pressure
+						! Moves according to pressure differentials
+							! Air-Air: moves to reach average air pressure
+							! Water at source squeezes more out
+							! When traveling down, encounters resistance from water at destination
 						! Simple air pressure increase at a tank should force water move out of it at water's turn
-							! Hopefully downward because of Bernoulli/gravity
-					! Impl notes:
-						! Could be done in same step - doing water and air separately, as both working on previous frame
+							! Hopefully downward because of Bernoulli/gravity and Rayleigh–Taylor
 				
 			- Impl of Gist 2:
 				+ Make test ship
 				+ Add AirPressure buffer
-				= Ingress/Egress
-					= Option 1: Do separately water and air, each based on own pressure
-						+ Water:
-							+ Only comes in if underwater (externalWaterHeight >= internalWaterHeight)
-							+ Can always go out
-						= Air:
-							+ Only comes in if above-water
-							+ Can always go out
-								+ Air must escape fully (short of damping factor) if internal pressure > external & water outside
-									! Note: not if air outside: internal pressure must converge there in that case
-
-							- TODO: rate of air pressure, cannot use bernoulli
-								- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
-							- Water pump
-					- Option 2: based on whole tank pressure
-					- Bubbles
 				+ Duplicate UpdateWaterVelocitiesXYZ: UpdateWaterAndAirPressure
 				= UpdateWaterAndAirPressure
-					= Water: 
-						+ Moves according to water momentum + pressure differentials
-							+ Pressure at both source and destination is air pressure + water pressure
-						= Bias:
-							= Water going down should _not_ be prevented by air down? (*)
-								! Otherwise it flies up
-								! Physics in tube with air below and water above: technically yes, water wouldn't go down; but Rayleigh–Taylor instability makes it do so
-						- Comment: We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)
-					= Air:
-						= Air moves according to pressure differentials and upward bias
-							+ Pressure at both source and destination is air pressure + water pressure
-							= Bias formula:
-								+ Option 1: when direction y >= 0, i.e. cos of angle with vertical
-								= Option 2: option 1 moves air irreversibly up, but it should be capable of moving down as well - but depending on water presence
-									X Option 1: still with pressure differential and moved to average, but:
-										+ Source factor in average: internal (air + water)
-										+ Dest factor in average: air + alpha*water, with alpha=-Ny
-									= Option 2: (no bias)
-										! At equlibrium: pSrcAir + pSrcWat = pDstAir + pDstWat
-										+ So: just any direction, using internal pressure - no bias at all
-											+ Upward bias is given by water pressure being higher below than up, because of gravity
-									= Option 3:
-										= Air allowed to move equally in all directions, but if downwards, move is scaled as a function of target water there											
-											! TODOHERE: diffusion of water up and air up which will push water down is unbalanced - different equations
-											= Option 1: Ideally asymptotically zero move with infinite water there
-												- Perfect bias function (dst pressure = dst_air + dst_water * bias):
-													- 0 if pointing up
-													- 0 => N (with N >> 1) if pointing down
-											- TODO: similar bias, for water going down- see above (*)
-											
-											- Option 2: just linear with avail volume
-							
-						- Comment: Simple air pressure increase at a tank should force water move out of it at water's turn
-							- Hopefully downward because of Bernoulli/gravity
-
-
-				+ Review old water: why normalization factor ensures all water at the point moves?
-
-				= FIX: air pressure field oscillations:
-					! Due to broken algo: we might still drain the point even if averaging with neighbors
-					= Option 1: static factor to slow air diffusion, e.g. 0.15
-						- Seems to work fine, and after all we move water by velocity, so somewhat scaled?; but find actual formula for speed here
-							- It's exponential, so speed depends on deltaP - need to move speed (scaling) calc'n at spring
-				- FIX: losing air at bottom of air bell
-					- OR: water still gets to the top: reason is that air diffuses still too much towards below; should eskew wet areas more
-					- Fixed with limited air downard diffusion
-				- FIX: water rises too much, when compared to theoretical height
-					- Air seems to compress too much, or water has too much pressure (see ingress)
-					- Damping water velocity make it reach good equilibrium2026-07-07pointIndex
-				- FIX: square interface
-					! There's clearly a non-linearity at below/above 1.0
-					= Make those steps a bit more soft
-						- ! Removing air bias for full tank fixes it!
-
-
-			
+					+ Review old water: why normalization factor ensures all water at the point moves?
+					- Comments with gist
+					- TODOHERE
+				
+					- Things to try:
+						- Linearstep's ranges:
+							- Back to step
+							- Asymmetric range
+						- Water and/or air reading (and writing) from _new_
+						- Static factor to damp air transfer to prevent oscillations: technically should be exponential, so speed depends on deltaP - need to move speed (scaling) calc'n at spring
+				- Ingress/Egress and bubbles
+					- TODOHERE: try based on gist above
+					- TODO: rate of air pressure, cannot use bernoulli
+						- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
+					- Air Bubbles
+						- Bubble contribution proportional _only_ to air pressure that left point
+					- Water pump
 				- Temperature <-> Air Pressure
-				= Finalize unit of AirPressure
+				+ Finalize unit of AirPressure
 					+ Also @ Points buffer comment
 				- Air Pressure <-> forces on "walls"
 					- We've changed unit of pressure, hence current math is invalid!
