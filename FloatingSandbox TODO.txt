@@ -1882,17 +1882,22 @@
 		+ PC
 		+ Android
 
+	- Rot exposure: faster than rust (or equal)
+
 	= Localization
 		+ IT
 			+ Do
-		= ES
+		+ ES
 			+ Send
-		= PT_BR
+			+ Got it
+		+ PT_BR
 			+ Send (Kiko)
+			+ Got it
 		= RU
 			+ Send
-		= UK
+		+ UK
 			+ Send (denis)
+			+ Got it
 
 	- Ships:
 		- Those @ TO_TAKE
