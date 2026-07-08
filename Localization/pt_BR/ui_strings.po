@@ -53,10 +53,8 @@ msgid "(Structure View)"
 msgstr "(Visualização de Estrutura)"
 
 #: ..\Sources\FloatingSandbox\UI\CreditsPanel.cpp:73
-#, fuzzy
-#| msgid "(c) Gabriele Giuseppini (G2-Labs) 2018-2025"
 msgid "(c) Gabriele Giuseppini (G2-Labs) 2018-2026"
-msgstr "Direitos Autorais - Gabriele Giuseppini (G2-Labs) 2018-2025"
+msgstr "Direitos Autorais - Gabriele Giuseppini (G2-Labs) 2018-2026"
 
 #: ..\Sources\FloatingSandbox\UI\CreditsPanel.cpp:171
 msgid "3RD-PARTY SOFTWARE"
@@ -128,10 +126,8 @@ msgstr ""
 "Ajusta o nível de detalhamento visual da água contida em um corpo físico."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2237
-#, fuzzy
-#| msgid "Adjusts how long silt clouds take to settle when underwater."
 msgid "Adjusts how long foam takes to settle."
-msgstr "Ajusta o tempo de dissipação de nuvens de poeira debaixo da água."
+msgstr "Ajusta o tempo de dissipação da espuma."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2646
 msgid "Adjusts how long it takes for smoke emitted by fire to vanish."
@@ -389,28 +385,20 @@ msgid "Adjusts the rate with which materials consume when burning."
 msgstr "Ajusta a velocidade de consumo de materiais enquanto queimam."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2210
-#, fuzzy
-#| msgid ""
-#| "Adjusts the sensitivity of dust in forming clouds upon impact. Set to "
-#| "zero to disable dust clouds altogether."
 msgid ""
 "Adjusts the sensitivity for creating foam on the ocean surface upon "
 "disturbances. Set to zero to disable foam altogether."
 msgstr ""
-"Ajusta a sensibilidade da poeira na formação de nuvens após o impacto. "
-"Defina como zero para desativar completamente as nuvens de poeira."
+"Ajusta a sensibilidade da criação de espuma após impactos com a superfície "
+"da água. Valor zero desativa salpicos por completo."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2263
-#, fuzzy
-#| msgid ""
-#| "Adjusts the sensitivity of dust in forming clouds upon impact. Set to "
-#| "zero to disable dust clouds altogether."
 msgid ""
 "Adjusts the sensitivity for creating splashes on the ocean surface upon "
 "disturbances. Set to zero to disable splashes altogether."
 msgstr ""
-"Ajusta a sensibilidade da poeira na formação de nuvens após o impacto. "
-"Defina como zero para desativar completamente as nuvens de poeira."
+"Ajusta a sensibilidade da criação de salpicos após impactos com a superfície "
+"da água. Valor zero desativa salpicos por completo."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1782
 msgid ""
@@ -445,16 +433,12 @@ msgid "Adjusts the speed of the camera movements."
 msgstr "Ajusta a velocidade dos movimentos da câmera."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1424
-#, fuzzy
-#| msgid ""
-#| "Adjusts the speed with which materials rot when exposed to sea water. Set "
-#| "to zero to disable rotting altogether."
 msgid ""
 "Adjusts the speed with which algae grow over structures when these are "
 "exposed to sea water. Set to zero to disable algae growth altogether."
 msgstr ""
-"Controla a taxa de decomposição dos materiais em contato com água do mar. "
-"Valor zero desativa o apodrecimento."
+"Controla a velocidade com que algas cresçam sobre estruturas em contato com "
+"água do mar. Valor zero desativa o crescimento de algas por completo."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:984
 msgid "Adjusts the speed with which heat propagates along materials."
@@ -475,16 +459,12 @@ msgstr ""
 "Valor zero desativa o apodrecimento."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1370
-#, fuzzy
-#| msgid ""
-#| "Adjusts the speed with which materials rot when exposed to sea water. Set "
-#| "to zero to disable rotting altogether."
 msgid ""
 "Adjusts the speed with which materials rust when exposed to sea water. Set "
 "to zero to disable rusting altogether."
 msgstr ""
-"Controla a taxa de decomposição dos materiais em contato com água do mar. "
-"Valor zero desativa o apodrecimento."
+"Controla a velocidade com que os materiais enferrujam em contato com água do "
+"mar. Valor zero desativa o enferrujamento."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1237
 msgid ""
@@ -493,16 +473,12 @@ msgstr ""
 "Ajusta a velocidade com a qual a água do mar entra ou sai de um corpo físico."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1397
-#, fuzzy
-#| msgid ""
-#| "Adjusts the speed with which materials rot when exposed to sea water. Set "
-#| "to zero to disable rotting altogether."
 msgid ""
 "Adjusts the speed with which structures weaken when rusted. Set to zero to "
 "prevent rust from weakening structures altogether."
 msgstr ""
-"Controla a taxa de decomposição dos materiais em contato com água do mar. "
-"Valor zero desativa o apodrecimento."
+"Controla a velocidade com que estruturas enfraqueçam quando enferrujadas. "
+"Valor zero desativa o enfraquecimento por completo."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4397
 msgid ""
@@ -600,10 +576,8 @@ msgid "Air and Sky"
 msgstr "Céu e Ar"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1423
-#, fuzzy
-#| msgid "Rot Acceler8r"
 msgid "Algae Growth Acceler8r"
-msgstr "Acelerador de Decomposição"
+msgstr "Acelerador de Crescimento de Algas"
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:2686
 msgid "All Layers:"
@@ -1116,10 +1090,8 @@ msgid "Debug"
 msgstr "Debug"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1330
-#, fuzzy
-#| msgid "Draw Decay"
 msgid "Decay"
-msgstr "Renderizar Decaimento"
+msgstr "Renderizar Decomposição"
 
 #: ..\Sources\FloatingSandbox\UI\BootSettingsDialog.cpp:55
 #: ..\Sources\FloatingSandbox\UI\BootSettingsDialog.cpp:100
@@ -1986,16 +1958,12 @@ msgid "Fluid Crazyness"
 msgstr "Instabilidade dos Liquidos"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2236
-#, fuzzy
-#| msgid "Game Preferences"
 msgid "Foam Persistence"
-msgstr "Preferências de Jogo"
+msgstr "Ajuste de Persistência (Espuma)"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2209
-#, fuzzy
-#| msgid "Cloud Sensitivity"
 msgid "Foam Sensitivity"
-msgstr "Sensibilidade de nuvens de poeira"
+msgstr "Sensibilidade da Espuma"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:650
 msgid "Follow NPC"
@@ -2014,10 +1982,8 @@ msgid "Force no glFinish()"
 msgstr "Forçar sem glFinish()"
 
 #: ..\Sources\FloatingSandbox\UI\BootSettingsDialog.cpp:138
-#, fuzzy
-#| msgid "Force no multithreaded rendering"
 msgid "Force no multi-sampling"
-msgstr "Desativa a renderização em múltiplas threads"
+msgstr "Forçar amostragem múltipla (MSAA) desativada"
 
 #: ..\Sources\FloatingSandbox\UI\BootSettingsDialog.cpp:93
 msgid "Force no multithreaded rendering"
@@ -2225,12 +2191,10 @@ msgstr ""
 "Drenagem adiciona ou remove."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4468
-#, fuzzy
-#| msgid "How wide an area is affected by the scrub/rot tool (m)."
 msgid "How wide an area is affected by the scrub/rust tool (m)."
 msgstr ""
-"Define a largura da área (em metros) impactada pela ferramenta da Esponja/"
-"Decomposição."
+"Define a largura da área (em metros) impactada pela ferramenta de Limpar/"
+"Enferrujar."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4107
 msgid "How wide an area is flooded or drained by the flood tool (m)."
@@ -3081,7 +3045,7 @@ msgstr "Monitor de Força"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:224
 msgid "Power Tools and Phenomena"
-msgstr ""
+msgstr "Ferramentas e Fenómenos Naturais"
 
 #: ..\Sources\ShipBuilderLib\UI\ShipNameSuggestionDialog.cpp:22
 msgid "Prefer This Ship Name?"
@@ -3296,16 +3260,12 @@ msgstr ""
 "gráfico do computador."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:5209
-#, fuzzy
-#| msgid ""
-#| "Renders the ocean with additional details. Requires more computational "
-#| "resources."
 msgid ""
 "Renders the ship with additional details. Requires more computational "
 "resources."
 msgstr ""
-"Renderiza o oceano com mais qualidade. Atenção: Isso requer maior poder "
-"gráfico do computador."
+"Renderiza o navio com mais qualidade. Atenção: Requer maior poder gráfico do "
+"computador."
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:538
 msgid "Repair"
@@ -3444,16 +3404,12 @@ msgid "Rotate the ship 90 degrees clockwise."
 msgstr "Rotacionar o navio ou objeto 90 graus no sentido horário."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1369
-#, fuzzy
-#| msgid "Rot Acceler8r"
 msgid "Rust Acceler8r"
-msgstr "Acelerador de Decomposição"
+msgstr "Acelerador de Enferrujamento"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1396
-#, fuzzy
-#| msgid "Combustion Heat Adjust"
 msgid "Rust Decay Adjust"
-msgstr "Ajuste do Calor de Combustão"
+msgstr "Ajuste da Decomposição da Ferrugem"
 
 #: ..\Sources\ShipBuilderLib\UI\MaterialPalette.cpp:618
 msgid "Rust Receptivity"
@@ -3562,16 +3518,12 @@ msgid "Screenshot directory:"
 msgstr "Diretório das Capturas de Tela:"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:543
-#, fuzzy
-#| msgid "Scrub/Rot"
 msgid "Scrub/Rust"
-msgstr "Limpar/Decompor"
+msgstr "Limpar/Enferrujar"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4437
-#, fuzzy
-#| msgid "Scrub/Rot Tool"
 msgid "Scrub/Rust Tool"
-msgstr "Ferramenta de Limpar/Decompor"
+msgstr "Ferramenta de Limpar/Enferrujar"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4631
 msgid "Sea"
@@ -3955,10 +3907,8 @@ msgid "Speed Adjust"
 msgstr "Ajuste de Velocidade"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2262
-#, fuzzy
-#| msgid "Cloud Sensitivity"
 msgid "Splash Sensitivity"
-msgstr "Sensibilidade de nuvens de poeira"
+msgstr "Sensibilidade dos Salpicos"
 
 #: ..\Sources\ShipBuilderLib\UI\MaterialPalette.cpp:857
 msgid "Spread"
@@ -4639,7 +4589,7 @@ msgstr "Volume das Ferramentas"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:513
 msgid "Tornado"
-msgstr ""
+msgstr "Tornado"
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:4575
 msgid "Trace a structure covering the texture layer."

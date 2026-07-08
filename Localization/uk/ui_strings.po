@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-28 16:37+0200\n"
+"PO-Revision-Date: 2026-07-08 18:07+0200\n"
 "Last-Translator: matheusvhs\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -55,10 +55,8 @@ msgid "(Structure View)"
 msgstr "(Перегляд структури)"
 
 #: ..\Sources\FloatingSandbox\UI\CreditsPanel.cpp:73
-#, fuzzy
-#| msgid "(c) Gabriele Giuseppini (G2-Labs) 2018-2025"
 msgid "(c) Gabriele Giuseppini (G2-Labs) 2018-2026"
-msgstr "(c) Gabriele Giuseppini (G2-Labs) 2018-2025"
+msgstr "(c) Gabriele Giuseppini (G2-Labs) 2018-2026"
 
 #: ..\Sources\FloatingSandbox\UI\CreditsPanel.cpp:171
 msgid "3RD-PARTY SOFTWARE"
@@ -130,10 +128,8 @@ msgstr ""
 "Регулює, наскільки деталізованою виглядає вода всередині фізичного тіла."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2237
-#, fuzzy
-#| msgid "Adjusts how long silt clouds take to settle when underwater."
 msgid "Adjusts how long foam takes to settle."
-msgstr "Регулює час, протягом якого мулові хмари осідають під водою."
+msgstr "Регулює час осідання піни."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2646
 msgid "Adjusts how long it takes for smoke emitted by fire to vanish."
@@ -391,28 +387,20 @@ msgid "Adjusts the rate with which materials consume when burning."
 msgstr "Регулює швидкість, з якою матеріали знищуються під час горіння."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2210
-#, fuzzy
-#| msgid ""
-#| "Adjusts the sensitivity of dust in forming clouds upon impact. Set to "
-#| "zero to disable dust clouds altogether."
 msgid ""
 "Adjusts the sensitivity for creating foam on the ocean surface upon "
 "disturbances. Set to zero to disable foam altogether."
 msgstr ""
-"Регулює чутливість пилу, що утворює хмари при ударі. Встановіть нуль, щоб "
-"повністю вимкнути хмари пилу."
+"Регулює чутливість для утворення піни на поверхні океану під час хвилювань. "
+"Встановіть нуль, щоб повністю вимкнути піну."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2263
-#, fuzzy
-#| msgid ""
-#| "Adjusts the sensitivity of dust in forming clouds upon impact. Set to "
-#| "zero to disable dust clouds altogether."
 msgid ""
 "Adjusts the sensitivity for creating splashes on the ocean surface upon "
 "disturbances. Set to zero to disable splashes altogether."
 msgstr ""
-"Регулює чутливість пилу, що утворює хмари при ударі. Встановіть нуль, щоб "
-"повністю вимкнути хмари пилу."
+"Регулює чутливість утворення бризок на поверхні океану внаслідок збурень. "
+"Встановіть значення «нуль», щоб повністю вимкнути бризки."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1782
 msgid ""
@@ -447,16 +435,13 @@ msgid "Adjusts the speed of the camera movements."
 msgstr "Регулює швидкість руху камери."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1424
-#, fuzzy
-#| msgid ""
-#| "Adjusts the speed with which materials rot when exposed to sea water. Set "
-#| "to zero to disable rotting altogether."
 msgid ""
 "Adjusts the speed with which algae grow over structures when these are "
 "exposed to sea water. Set to zero to disable algae growth altogether."
 msgstr ""
-"Регулює швидкість, з якою матеріали гниють під впливом морської води. "
-"Встановіть на нуль, щоб повністю вимкнути гниття."
+"Регулює швидкість, з якою водорості ростуть на структурах, коли вони "
+"піддаються впливу морської води. Встановіть на нуль, щоб повністю вимкнути "
+"ріст водоростей."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:984
 msgid "Adjusts the speed with which heat propagates along materials."
@@ -479,16 +464,12 @@ msgstr ""
 "Встановіть на нуль, щоб повністю вимкнути гниття."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1370
-#, fuzzy
-#| msgid ""
-#| "Adjusts the speed with which materials rot when exposed to sea water. Set "
-#| "to zero to disable rotting altogether."
 msgid ""
 "Adjusts the speed with which materials rust when exposed to sea water. Set "
 "to zero to disable rusting altogether."
 msgstr ""
-"Регулює швидкість, з якою матеріали гниють під впливом морської води. "
-"Встановіть на нуль, щоб повністю вимкнути гниття."
+"Регулює швидкість, з якою матеріали іржавіють під впливом морської води. "
+"Встановіть нуль, щоб повністю вимкнути іржавіння."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1237
 msgid ""
@@ -498,16 +479,12 @@ msgstr ""
 "тіла."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1397
-#, fuzzy
-#| msgid ""
-#| "Adjusts the speed with which materials rot when exposed to sea water. Set "
-#| "to zero to disable rotting altogether."
 msgid ""
 "Adjusts the speed with which structures weaken when rusted. Set to zero to "
 "prevent rust from weakening structures altogether."
 msgstr ""
-"Регулює швидкість, з якою матеріали гниють під впливом морської води. "
-"Встановіть на нуль, щоб повністю вимкнути гниття."
+"Регулює швидкість, з якою конструкції слабшають після іржі. Встановіть на "
+"нуль, щоб запобігти повному послабленню конструкцій іржею."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4397
 msgid ""
@@ -603,10 +580,8 @@ msgid "Air and Sky"
 msgstr "Повітря та небо"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1423
-#, fuzzy
-#| msgid "Rot Acceler8r"
 msgid "Algae Growth Acceler8r"
-msgstr "Прискорювач гниття"
+msgstr "Прискорювач росту водоростей"
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:2686
 msgid "All Layers:"
@@ -1117,10 +1092,8 @@ msgid "Debug"
 msgstr "Відкладка"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1330
-#, fuzzy
-#| msgid "Draw Decay"
 msgid "Decay"
-msgstr "Показувати Розпад"
+msgstr "Розпад"
 
 #: ..\Sources\FloatingSandbox\UI\BootSettingsDialog.cpp:55
 #: ..\Sources\FloatingSandbox\UI\BootSettingsDialog.cpp:100
@@ -1959,16 +1932,12 @@ msgid "Fluid Crazyness"
 msgstr "Водне божевілля"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2236
-#, fuzzy
-#| msgid "Game Preferences"
 msgid "Foam Persistence"
-msgstr "Ігрові Вподобання"
+msgstr "Стійкість піни"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2209
-#, fuzzy
-#| msgid "Cloud Sensitivity"
 msgid "Foam Sensitivity"
-msgstr "Хмарна чутливість"
+msgstr "Чутливість піни"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:650
 msgid "Follow NPC"
@@ -1987,10 +1956,8 @@ msgid "Force no glFinish()"
 msgstr "Не примусово використовувати glFinish ()"
 
 #: ..\Sources\FloatingSandbox\UI\BootSettingsDialog.cpp:138
-#, fuzzy
-#| msgid "Force no multithreaded rendering"
 msgid "Force no multi-sampling"
-msgstr "Забороняти багатопотоковий рендеринг"
+msgstr "Примусово заборонити багаторазову вибірку"
 
 #: ..\Sources\FloatingSandbox\UI\BootSettingsDialog.cpp:93
 msgid "Force no multithreaded rendering"
@@ -2197,10 +2164,9 @@ msgid "How much water is injected or drained by the flood tool (m3)."
 msgstr "Скільки води закачується або зливається пристроєм для затоплення (м³)."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4468
-#, fuzzy
-#| msgid "How wide an area is affected by the scrub/rot tool (m)."
 msgid "How wide an area is affected by the scrub/rust tool (m)."
-msgstr "Наскільки широку область впливає інструмент для чищення/гниття (м)."
+msgstr ""
+"Наскільки широка область, на яку впливає інструмент для чищення/іржі (м)."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4107
 msgid "How wide an area is flooded or drained by the flood tool (m)."
@@ -3045,7 +3011,7 @@ msgstr "Монітор живлення"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:224
 msgid "Power Tools and Phenomena"
-msgstr ""
+msgstr "Електроінструменти та явища"
 
 #: ..\Sources\ShipBuilderLib\UI\ShipNameSuggestionDialog.cpp:22
 msgid "Prefer This Ship Name?"
@@ -3257,16 +3223,12 @@ msgstr ""
 "ресурсів)."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:5209
-#, fuzzy
-#| msgid ""
-#| "Renders the ocean with additional details. Requires more computational "
-#| "resources."
 msgid ""
 "Renders the ship with additional details. Requires more computational "
 "resources."
 msgstr ""
-"Відображає океан із додатковими деталями. (Потрібно більше обчислювальних "
-"ресурсів)."
+"Візуалізація корабля з додатковими деталями. Вимагає більше обчислювальних "
+"ресурсів."
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:538
 msgid "Repair"
@@ -3405,16 +3367,12 @@ msgid "Rotate the ship 90 degrees clockwise."
 msgstr "Поверніть корабель на 90 градусів праворуч."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1369
-#, fuzzy
-#| msgid "Rot Acceler8r"
 msgid "Rust Acceler8r"
-msgstr "Прискорювач гниття"
+msgstr "Змінює швидкість іржавіння предмета"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1396
-#, fuzzy
-#| msgid "Combustion Heat Adjust"
 msgid "Rust Decay Adjust"
-msgstr "Температура горіння"
+msgstr "Налаштування гниття іржі"
 
 #: ..\Sources\ShipBuilderLib\UI\MaterialPalette.cpp:618
 msgid "Rust Receptivity"
@@ -3523,16 +3481,12 @@ msgid "Screenshot directory:"
 msgstr "Каталог знімків екрана:"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:543
-#, fuzzy
-#| msgid "Scrub/Rot"
 msgid "Scrub/Rust"
-msgstr "Губка/Гниття"
+msgstr "Скраб/іржа"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4437
-#, fuzzy
-#| msgid "Scrub/Rot Tool"
 msgid "Scrub/Rust Tool"
-msgstr "Інструмент Губка / Гниття"
+msgstr "Інструмент для видалення нальоту/іржі"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4631
 msgid "Sea"
@@ -3914,10 +3868,8 @@ msgid "Speed Adjust"
 msgstr "Регулювання швидкості"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2262
-#, fuzzy
-#| msgid "Cloud Sensitivity"
 msgid "Splash Sensitivity"
-msgstr "Хмарна чутливість"
+msgstr "Чутливість до бризок"
 
 #: ..\Sources\ShipBuilderLib\UI\MaterialPalette.cpp:857
 msgid "Spread"
@@ -4585,7 +4537,7 @@ msgstr "Гучність інструментів"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:513
 msgid "Tornado"
-msgstr ""
+msgstr "Торнадо"
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:4575
 msgid "Trace a structure covering the texture layer."
