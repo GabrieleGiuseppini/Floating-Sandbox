@@ -1882,17 +1882,22 @@
 		+ PC
 		+ Android
 
+	- Rot exposure: faster than rust (or equal)
+
 	= Localization
 		+ IT
 			+ Do
-		= ES
+		+ ES
 			+ Send
-		= PT_BR
+			+ Got it
+		+ PT_BR
 			+ Send (Kiko)
+			+ Got it
 		= RU
 			+ Send
-		= UK
+		+ UK
 			+ Send (denis)
+			+ Got it
 
 	- Ships:
 		- Those @ TO_TAKE
@@ -2105,10 +2110,18 @@
 					+ Review old water: why normalization factor ensures all water at the point moves?
 					+ Comments with gist
 					+ Gist implementation
-					- Fix: water level is oblique
-						- See if it's velocities - damp a lot
-						- See if it's lack of factory rest length for air diffusion?
-						- See if it's because we're using cos(angle) for upness
+					= Fix: water level is oblique
+						x See if it's velocities - damp a lot
+						X See if it's air diffusion speed
+							+ At 1.0 speed it's flat! But shaky
+						X See if it's lack of factory rest length for air diffusion?
+						~ See if it's directional biases
+							+ Removing water bias improves it
+							+ Removing water + air bias eliminates it
+							+ Removing air bias slightly improves it
+						X See if it's because we're using linearstep(cos(angle)) for upness: try step
+						= FIXED with upness being n.y
+							- Finalize
 					= Things to try:
 						X Points::UpdateWaterVelocitiesFromMomenta and other:
 							+ Use max water mass, not whole water

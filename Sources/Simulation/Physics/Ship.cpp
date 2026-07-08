@@ -3352,8 +3352,11 @@ void Ship::UpdateWaterAndAirPressure(
                 : -mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex);
 
             // Upness: 1.0 when up, 0.0 when down - with smoothing as nature abhors discontinuities
-            float constexpr UpnessSmoothingHalfWidth = 0.1f;
-            float const springUpness = LinearStep(-UpnessSmoothingHalfWidth, UpnessSmoothingHalfWidth, springNormalizedVector.y);
+            // TODOTEST
+            //float constexpr UpnessSmoothingHalfWidth = 0.1f;
+            //float const springUpness = LinearStep(-UpnessSmoothingHalfWidth, UpnessSmoothingHalfWidth, springNormalizedVector.y);
+            //float const springUpness = Step(0.0f, springNormalizedVector.y);
+            float const springUpness = springNormalizedVector.y;
 
             //
             // Water
@@ -3497,7 +3500,9 @@ void Ship::UpdateWaterAndAirPressure(
         float airPressureQuantityNormalizationFactor = 0.0f;
         if (totalOutboundAirFlowWeight != 0.0f)
         {
-            float constexpr AirPressureEqualizationSpeed = 0.15f; // Controls convergence rate
+            // TODOTEST
+            //float constexpr AirPressureEqualizationSpeed = 0.15f; // Controls convergence rate
+            float const AirPressureEqualizationSpeed = simulationParameters.AntiMatterBombImplosionStrength / 10.0f;
             airPressureQuantityNormalizationFactor = std::min(
                 (oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * (AirPressureEqualizationSpeed * simulationParameters.WaterDiffusionSpeedAdjustment),
                 1.0f);
