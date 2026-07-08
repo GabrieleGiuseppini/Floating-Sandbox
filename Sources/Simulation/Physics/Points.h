@@ -786,7 +786,7 @@ public:
         , mWaterBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mWaterMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mCumulatedIntakenWater(mBufferElementCount, shipPointCount, 0.0f)
+        , mCumulatedOutflownAirPressure(mBufferElementCount, shipPointCount, 0.0f)
         , mLeakingCompositeBuffer(mBufferElementCount, shipPointCount, LeakingComposite(false))
         , mFactoryIsStructurallyLeakingBuffer(mBufferElementCount, shipPointCount, false)
         , mTotalFactoryWetPoints(0)
@@ -848,7 +848,7 @@ public:
         , mCurrentKineticFrictionAdjustment(simulationParameters.KineticFrictionAdjustment)
         , mCurrentOceanFloorBedrockElasticityCoefficient(simulationParameters.OceanFloorBedrockElasticityCoefficient)
         , mCurrentOceanFloorBedrockFrictionCoefficient(simulationParameters.OceanFloorBedrockFrictionCoefficient)
-        , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(SimulationParameters::AirBubblesDensityToCumulatedIntakenWater(simulationParameters.AirBubblesDensity))
+        , mCurrentCumulatedOutflownAirPressureThresholdForAirBubbles(SimulationParameters::AirBubblesDensityToCumulatedOutflownAirPressure(simulationParameters.AirBubblesDensity))
         , mCurrentCombustionSpeedAdjustment(simulationParameters.CombustionSpeedAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
@@ -1848,14 +1848,19 @@ public:
         }
     }
 
-    float GetCumulatedIntakenWater(ElementIndex pointElementIndex) const
+    float GetCumulatedOutflownAirPressure(ElementIndex pointElementIndex) const
     {
-        return mCumulatedIntakenWater[pointElementIndex];
+        return mCumulatedOutflownAirPressure[pointElementIndex];
     }
 
-    float & GetCumulatedIntakenWater(ElementIndex pointElementIndex)
+    //float & GetCumulatedOutflownAirPressure(ElementIndex pointElementIndex)
+    //{
+    //    return mCumulatedOutflownAirPressure[pointElementIndex];
+    //}
+
+    void SetCumulatedOutflownAirPressure(ElementIndex pointElementIndex, float value)
     {
-        return mCumulatedIntakenWater[pointElementIndex];
+        mCumulatedOutflownAirPressure[pointElementIndex] = value;
     }
 
     LeakingComposite const & GetLeakingComposite(ElementIndex pointElementIndex) const
@@ -2517,19 +2522,19 @@ private:
             Clamp(1.0f - (materialKineticFrictionCoefficient + oceanFloorBedrockFrictionCoefficient) / 2.0f * kineticFrictionAdjustment, 0.0f, 1.0f));
     }
 
-    static inline float RandomizeCumulatedIntakenWater(float cumulatedIntakenWaterThresholdForAirBubbles)
+    static inline float RandomizeCumulatedOutflownAirPressure(float cumulatedOutflownAirPressureThresholdForAirBubbles)
     {
         return GameRandomEngine::GetInstance().GenerateUniformReal(
             0.0f,
-            cumulatedIntakenWaterThresholdForAirBubbles);
+            cumulatedOutflownAirPressureThresholdForAirBubbles);
     }
 
     inline void SetStructurallyLeaking(ElementIndex pointElementIndex)
     {
         mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak = 1.0f;
 
-        // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
-        mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
+        // Randomize the initial air pressure outflown, so that air bubbles won't come out all at the same moment
+        mCumulatedOutflownAirPressure[pointElementIndex] = RandomizeCumulatedOutflownAirPressure(mCurrentCumulatedOutflownAirPressureThresholdForAirBubbles);
     }
 
     inline ElementIndex PointIndexToEphemeralParticleIndex(ElementIndex pointElementIndex) const
@@ -2639,9 +2644,9 @@ private:
     // Total momentum of the water at this point
     Buffer<vec2f> mWaterMomentumBuffer;
 
-    // Total amount of water in/out taken which has not yet been
+    // Total amount of air pressure in/out taken which has not yet been
     // utilized for air bubbles
-    Buffer<float> mCumulatedIntakenWater;
+    Buffer<float> mCumulatedOutflownAirPressure;
 
     // Indicators of point intaking water
     Buffer<LeakingComposite> mLeakingCompositeBuffer;
@@ -2770,7 +2775,7 @@ private:
     float mCurrentKineticFrictionAdjustment;
     float mCurrentOceanFloorBedrockElasticityCoefficient;
     float mCurrentOceanFloorBedrockFrictionCoefficient;
-    float mCurrentCumulatedIntakenWaterThresholdForAirBubbles;
+    float mCurrentCumulatedOutflownAirPressureThresholdForAirBubbles;
     float mCurrentCombustionSpeedAdjustment;
 
     // Allocators for work buffers

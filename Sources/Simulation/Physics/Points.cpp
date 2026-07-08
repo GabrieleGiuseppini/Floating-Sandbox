@@ -77,7 +77,7 @@ void Points::Add(
     mWaterBuffer.emplace_back(water);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
-    mCumulatedIntakenWater.emplace_back(0.0f);
+    mCumulatedOutflownAirPressure.emplace_back(0.0f);
     mLeakingCompositeBuffer.emplace_back(LeakingComposite(isStructurallyLeaking));
     if (isStructurallyLeaking)
         SetStructurallyLeaking(pointIndex);
@@ -1135,20 +1135,20 @@ void Points::UpdateForSimulationParameters(SimulationParameters const & simulati
         mCurrentKineticFrictionAdjustment = kineticFrictionAdjustment;
     }
 
-    float const cumulatedIntakenWaterThresholdForAirBubbles = SimulationParameters::AirBubblesDensityToCumulatedIntakenWater(simulationParameters.AirBubblesDensity);
-    if (cumulatedIntakenWaterThresholdForAirBubbles != mCurrentCumulatedIntakenWaterThresholdForAirBubbles)
+    float const cumulatedOutflownAirPressureThresholdForAirBubbles = SimulationParameters::AirBubblesDensityToCumulatedOutflownAirPressure(simulationParameters.AirBubblesDensity);
+    if (cumulatedOutflownAirPressureThresholdForAirBubbles != mCurrentCumulatedOutflownAirPressureThresholdForAirBubbles)
     {
         // Randomize cumulated water intaken for each leaking point
         for (ElementIndex i : RawShipPoints())
         {
             if (GetLeakingComposite(i).IsCumulativelyLeaking)
             {
-                mCumulatedIntakenWater[i] = RandomizeCumulatedIntakenWater(cumulatedIntakenWaterThresholdForAirBubbles);
+                mCumulatedOutflownAirPressure[i] = RandomizeCumulatedOutflownAirPressure(cumulatedOutflownAirPressureThresholdForAirBubbles);
             }
         }
 
         // Remember the new value
-        mCurrentCumulatedIntakenWaterThresholdForAirBubbles = cumulatedIntakenWaterThresholdForAirBubbles;
+        mCurrentCumulatedOutflownAirPressureThresholdForAirBubbles = cumulatedOutflownAirPressureThresholdForAirBubbles;
     }
 
     float const combustionSpeedAdjustment = simulationParameters.CombustionSpeedAdjustment;

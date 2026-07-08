@@ -2549,8 +2549,8 @@ void Ship::UpdatePressureAndWaterInflow(
 
     bool const doGenerateAirBubbles = (simulationParameters.AirBubblesDensity != 0.0f);
 
-    float const cumulatedIntakenWaterThresholdForAirBubbles =
-        SimulationParameters::AirBubblesDensityToCumulatedIntakenWater(simulationParameters.AirBubblesDensity);
+    float const cumulatedOutflownAirPressureThresholdForAirBubbles =
+        SimulationParameters::AirBubblesDensityToCumulatedOutflownAirPressure(simulationParameters.AirBubblesDensity);
 
     for (auto pointIndex : mPoints.RawShipPoints())
     {
@@ -2577,7 +2577,8 @@ void Ship::UpdatePressureAndWaterInflow(
             float const internalWaterHeight = mPoints.GetWater(pointIndex);
 
             // Quantities exchanged
-            float totalPointDeltaWater = 0.0f;
+            float totalPointDeltaWater = 0.0f; // TODO: needed?
+            float totalPointDeltaAirPressureLost = 0.0f;
             float totalPointDeltaWaterForStepTotal = 0.0f; // For total returned - discounts orhpaned points' structural
 
             if (pointCompositeLeaking.LeakingSources.StructuralLeak != 0.0f)
@@ -2589,15 +2590,16 @@ void Ship::UpdatePressureAndWaterInflow(
                 {
                     //
                     // 1.1) Calculate velocity of incoming water, based off Bernoulli's equation applied to point:
-                    //  v**2/2 + p/density = c (assuming y of incoming water does not change along the intake)
-                    //      With: p = pressure of water at point = d*wh*g (d = water density, wh = water height in point)
+                    //  v**2/2 + Dp/density = c (assuming y of incoming water does not change along the intake)
+                    //      With: Dp = delta pressure = |total external pressure - total internal pressure|
                     //
-                    // Considering that at equilibrium we have v=0 and p=external_pressure,
-                    // then c=external_pressure/density;
-                    // external_pressure is height_of_water_at_y*g*density, then c=height_of_water_at_y*g;
-                    // hence, the velocity of water incoming at point p, when the "water height" in the point is already
-                    // wh and the external water pressure is d*height_of_water_at_y*g, is:
-                    //  v = +/- sqrt(2*g*|height_of_water_at_y-wh|)
+                    // However, given the simulation's propensity to compress air too much, we lower water intake
+                    // by only considering the external _water_ pressure (i.e. ignoring atmospheric pressure), also
+                    // simplifying the math along the way.
+                    //
+                    // With this simplification, Dp = Dh * density * g, with Dh = |external water height - internal water height|.
+                    // Considering that at equilibrium we have v=0 and Dp=0, then c is 0, and thus velocity becomes:
+                    //  v = +/- sqrt(2*g*|Dh|)
                     //
 
                     float incomingWaterVelocity_Structural;
@@ -2660,38 +2662,14 @@ void Ship::UpdatePressureAndWaterInflow(
                 //
 
                 {
-                    // TODOTEST: using whole tank
-
-                    //// External pressure in equivalent water height
-                    //float const externalPressure =
-                    //    Formulae::PressureToEquivalentWaterHeight(
-                    //        Formulae::CalculateTotalPressureAt(
-                    //            mPoints.GetPosition(pointIndex).y,
-                    //            mPoints.GetPosition(pointIndex).y + pointDepth, // oceanSurfaceY
-                    //            effectiveAirDensity,
-                    //            effectiveWaterDensity,
-                    //            simulationParameters),
-                    //        effectiveWaterDensity);
                     //
-                    //// Internal pressure in equivalent water height
-                    //// TODO: including water just moved?
-                    //float const internalPressure = internalWaterHeight + mPoints.GetAirPressure(pointIndex);
-
-                    //if (internalPressure >= externalPressure
-                    //    || pointDepth < 0.0f) // Air can only come in if there's air outside
-                    //{
-                    //    // Assuming that external pressure is an infinite reservoir,
-                    //    // we converge internal pressure to the external
-                    //    mPoints.SetAirPressure(
-                    //        pointIndex,
-                    //        externalPressure);
-                    //}
-
-                    // TODOTEST: using only air
+                    // - If underwater: leaves completely
+                    // - If abovewater: enters/leaves and (air/total) pressure outside <> air pressure inside
+                    //
 
                     // External air pressure in equivalent water height
                     float const externalAirPressure = (pointDepth >= 0.0f)
-                        ? 0.0f // Device to force all air to be espelled when underwater - TODO: nature abhorrs discontinuities?
+                        ? 0.0f // Device to force all air to be espelled when underwater
                         : Formulae::PressureToEquivalentWaterHeight(
                             Formulae::CalculateAirColumnPressureAt(
                                 mPoints.GetPosition(pointIndex).y,
@@ -2699,13 +2677,23 @@ void Ship::UpdatePressureAndWaterInflow(
                                 simulationParameters),
                             effectiveWaterDensity);
 
-                    // Assuming that external pressure is an infinite reservoir,
-                    // we converge internal pressure to the external.
-                    // If we're underwater we drain the pressure of the point
-                    // See TODO for rate here
-                    mPoints.SetAirPressure(
-                        pointIndex,
-                        externalAirPressure);
+                    // Internal pressure in equivalent water height
+                    float const internalAirPressure = mPoints.GetAirPressure(pointIndex);
+
+                    if (internalAirPressure >= externalAirPressure // Always if underwater
+                        || pointDepth < 0.0f) // Air can only come in if there's air outside
+                    {
+                        // Assuming that external pressure is an infinite reservoir,
+                        // we converge internal pressure to the external
+                        // See TODO for rate here
+                        float const newAirPressure = externalAirPressure;
+
+                        totalPointDeltaAirPressureLost += mPoints.GetAirPressure(pointIndex) - newAirPressure;
+
+                        mPoints.SetAirPressure(
+                            pointIndex,
+                            newAirPressure);
+                    }
                 }
             }
 
@@ -2763,12 +2751,13 @@ void Ship::UpdatePressureAndWaterInflow(
             // 5) Check if it's time to produce air bubbles
             //
 
-            mPoints.GetCumulatedIntakenWater(pointIndex) += totalPointDeltaWater;
-            if (mPoints.GetCumulatedIntakenWater(pointIndex) > cumulatedIntakenWaterThresholdForAirBubbles)
+            float newPointCumulatedOutflownAirPressure = mPoints.GetCumulatedOutflownAirPressure(pointIndex) + totalPointDeltaAirPressureLost;
+            if (newPointCumulatedOutflownAirPressure > cumulatedOutflownAirPressureThresholdForAirBubbles)
             {
                 // Generate air bubbles - but not on ropes as that looks awful
                 if (doGenerateAirBubbles
-                    && !mPoints.IsRope(pointIndex))
+                    && !mPoints.IsRope(pointIndex)
+                    && pointDepth >= 0.0f) // TODOHERE: see notes on pressure lost / underwater
                 {
                     InternalSpawnAirBubble(
                         mPoints.GetPosition(pointIndex),
@@ -2780,9 +2769,11 @@ void Ship::UpdatePressureAndWaterInflow(
                         simulationParameters);
                 }
 
-                // Consume all cumulated water
-                mPoints.GetCumulatedIntakenWater(pointIndex) = 0.0f;
+                // Consume all cumulated air pressure lost
+                newPointCumulatedOutflownAirPressure = 0.0f;
             }
+
+            mPoints.SetCumulatedOutflownAirPressure(pointIndex, newPointCumulatedOutflownAirPressure);
 
             // Adjust total water taken during this step, but not counting
             // ropes, to prevent "rushing water" sound from playing for

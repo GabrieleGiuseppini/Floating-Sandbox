@@ -325,7 +325,7 @@ struct SimulationParameters
     static float constexpr MinAirBubblesDensity = 0.0f;
     static float constexpr MaxAirBubblesDensity = 128.0f;
 
-    static float constexpr AirBubblesDensityToCumulatedIntakenWater(float airBubblesDensity)
+    static float constexpr AirBubblesDensityToCumulatedOutflownAirPressure(float airBubblesDensity)
     {
         return 128.0f - airBubblesDensity;
     }
