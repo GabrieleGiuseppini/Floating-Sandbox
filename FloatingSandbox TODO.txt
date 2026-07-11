@@ -2111,14 +2111,25 @@
 					+ Plot cross-cut
 					= Gist implementation
 						= Things to try/tune:
-							- Convert velocities to mass using dt
-								- Water
+							= Convert velocities to mass using dt
+								= Water
 								- Air
-								- Normalizations: do not use adjustments, but keep material diffusion speed 
+								+ Normalizations: do not use adjustments, but keep material diffusion speed 
+							= Oscillations
+								! Newton-Rhapson: 
+									! 0.125 diffusion speed is stable, rises exactly at sea level, but slow
+									! 0.625 is chaotic, rises more (more water inflow) - also above sea level, but speed is ok-ish
+								- Opt 1: Try gauss-seidel
+									+ No more oscillations! But very direction-sensitive, unless very slow speed
+								- Opt 2: Water -> Air simulation
+									! "We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)"
+									- Split func in two
+										- Call both
+									- Water: only water									
+									- Air: only air
+							= Water pressure after air is low
+								= Opt 1: use squeeze for air @ water
 							- Squeezeness fine-tuning: multiplier or pow
-							- Water and/or air reading (and writing) from _new_
-								- Option 1: air reads from _new_ water, so we may stay true to:
-									- "We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)"
 							- Static factor to damp air transfer to prevent oscillations (AirPressureEqualizationSpeed): 
 								= Option 1: 0.15
 									- Split WaterDiffusionSpeedAdjustment into AirPressureDiffusionSpeedAdjustment

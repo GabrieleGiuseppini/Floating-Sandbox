@@ -45,11 +45,14 @@ private:
 private:
 
     int const mWidth;
+    float const mReferencePressure;
 
     std::unique_ptr<wxBitmap> mBufferedDCBitmap;
     wxPen const mAirPressurePen;
+    wxPen const mSqueezedAirPressurePen;
     wxPen const mWaterPressurePen;
     wxPen const mTotalPressurePen;
+    wxPen const mReferencePressurePen;
     int mViewZoom;
     int mViewLeftSampleI;
 
