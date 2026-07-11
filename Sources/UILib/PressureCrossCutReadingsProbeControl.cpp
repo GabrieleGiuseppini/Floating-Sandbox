@@ -30,6 +30,8 @@ PressureCrossCutReadingsProbeControl::PressureCrossCutReadingsProbeControl(
     , mAirPressurePen(wxColor("RED"), 2, wxPENSTYLE_SOLID)
     , mWaterPressurePen(wxColor("BLUE"), 2, wxPENSTYLE_SOLID)
     , mTotalPressurePen(wxColour(50, 50, 50), 2, wxPENSTYLE_SOLID)
+    , mViewZoom(1)
+    , mViewLeftSampleI(0)
 {
     SetMinSize(wxSize(width, Height));
     SetMaxSize(wxSize(width, Height));
@@ -43,7 +45,9 @@ PressureCrossCutReadingsProbeControl::PressureCrossCutReadingsProbeControl(
     wxFont font(wxFontInfo(wxSize(8, 8)).Family(wxFONTFAMILY_TELETYPE));
     SetFont(font);
 
-    Connect(this->GetId(), wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PressureCrossCutReadingsProbeControl::OnMouseClick);
+    Connect(this->GetId(), wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PressureCrossCutReadingsProbeControl::OnLeftMouseClick);
+    Connect(this->GetId(), wxEVT_RIGHT_DOWN, (wxObjectEventFunction)&PressureCrossCutReadingsProbeControl::OnRightMouseClick);
+    Connect(this->GetId(), wxEVT_MOVE, (wxObjectEventFunction)&PressureCrossCutReadingsProbeControl::OnMouseMove);
     Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&PressureCrossCutReadingsProbeControl::OnPaint);
     Connect(this->GetId(), wxEVT_ERASE_BACKGROUND, (wxObjectEventFunction)&PressureCrossCutReadingsProbeControl::OnEraseBackground);
 
@@ -72,10 +76,38 @@ void PressureCrossCutReadingsProbeControl::Reset()
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void PressureCrossCutReadingsProbeControl::OnMouseClick(wxMouseEvent & /*event*/)
+void PressureCrossCutReadingsProbeControl::OnLeftMouseClick(wxMouseEvent & /*event*/)
 {
+    // Reset
+
+    mViewZoom = 1;
+    mViewLeftSampleI = 0;
+
     RecalculateReadingsStatistics(mReadings);
 
+    Refresh();
+}
+
+void PressureCrossCutReadingsProbeControl::OnRightMouseClick(wxMouseEvent & event)
+{
+    int const clickedSampleI = mViewLeftSampleI + event.GetX() * mReadings.size() / (mWidth * mViewZoom);
+    mViewZoom *= 2;
+    int const newSampleWindowWidth = mReadings.size() / mViewZoom;
+    mViewLeftSampleI = std::max(clickedSampleI - event.GetX() * newSampleWindowWidth / mWidth, 0);
+
+    //int const oldSampleWindowWidth = mReadings.size() / mViewZoom;
+    //int oldCenterSampleI = mViewLeftSampleI + oldSampleWindowWidth / 2;
+    //int newFocusSampleI = mViewLeftSampleI + event.GetX() * mReadings.size() / (mWidth * mViewZoom);
+
+    //
+    //int newSampleWindowWidth = mReadings.size() / mViewZoom;
+    //mViewLeftSampleI = oldCenterSampleI - newSampleWindowWidth / 2;
+
+    Refresh();
+}
+
+void PressureCrossCutReadingsProbeControl::OnMouseMove(wxMouseEvent & /*event*/)
+{
     Refresh();
 }
 
@@ -102,7 +134,7 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
 
     if (!mReadings.empty())
     {
-        float const xToSampleI = static_cast<float>(mReadings.size()) / static_cast<float>(mWidth);
+        float const xToSampleI = static_cast<float>(mReadings.size() / mViewZoom) / static_cast<float>(mWidth);
 
         int prevAirY = 0;
         int prevWaterY = 0;
@@ -110,9 +142,9 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
         float lastTotalValue = 0.0f;
         for (int x = 0; x < mWidth; ++x)
         {
-            size_t leftSampleI = static_cast<size_t>(std::roundf(static_cast<float>(x) * xToSampleI));
+            size_t leftSampleI = mViewLeftSampleI + static_cast<size_t>(std::roundf(static_cast<float>(x) * xToSampleI));
             leftSampleI = Clamp(leftSampleI, size_t(0), mReadings.size() - 1);
-            size_t rightSampleI = static_cast<size_t>(std::roundf(static_cast<float>(x + 1) * xToSampleI));
+            size_t rightSampleI = mViewLeftSampleI + static_cast<size_t>(std::roundf(static_cast<float>(x + 1) * xToSampleI));
             rightSampleI = Clamp(rightSampleI, size_t(0), mReadings.size() - 1);
 
             assert(leftSampleI <= rightSampleI);
@@ -152,7 +184,7 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
         //
 
         std::stringstream ss;
-        ss << std::fixed << std::setprecision(3) << lastTotalValue;
+        ss << std::fixed << std::setprecision(1) << lastTotalValue;
 
         wxString labelText(ss.str());
         dc.DrawText(labelText, 0, 1);
@@ -175,7 +207,7 @@ int PressureCrossCutReadingsProbeControl::MapValueToY(float value) const
     if (mMaxValue == mMinValue)
         return Height - 3;
 
-    float y = static_cast<float>(Height - 4) * (value - mMinValue) / (mMaxValue - mMinValue);
+    float y = static_cast<float>(Height - 4) * value / mMaxValue;
     return Height - 3 - static_cast<int>(round(y));
 }
 

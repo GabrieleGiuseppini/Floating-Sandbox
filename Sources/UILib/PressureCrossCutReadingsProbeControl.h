@@ -31,7 +31,9 @@ public:
 
 private:
 
-    void OnMouseClick(wxMouseEvent & event);
+    void OnLeftMouseClick(wxMouseEvent & event);
+    void OnRightMouseClick(wxMouseEvent & event);
+    void OnMouseMove(wxMouseEvent & event);
     void OnPaint(wxPaintEvent & event);
     void OnEraseBackground(wxPaintEvent & event);
 
@@ -48,6 +50,8 @@ private:
     wxPen const mAirPressurePen;
     wxPen const mWaterPressurePen;
     wxPen const mTotalPressurePen;
+    int mViewZoom;
+    int mViewLeftSampleI;
 
     float mMaxValue;
     float mMinValue;
