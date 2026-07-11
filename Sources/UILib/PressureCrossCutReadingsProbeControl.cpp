@@ -107,6 +107,7 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
         int prevAirY = 0;
         int prevWaterY = 0;
         int prevTotalY = 0;
+        float lastTotalValue = 0.0f;
         for (int x = 0; x < mWidth; ++x)
         {
             size_t leftSampleI = static_cast<size_t>(std::roundf(static_cast<float>(x) * xToSampleI));
@@ -126,7 +127,8 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
 
             int const airY = MapValueToY(airSum / static_cast<float>(rightSampleI - leftSampleI + 1));
             int const waterY = MapValueToY(waterSum / static_cast<float>(rightSampleI - leftSampleI + 1));
-            int const totalY = MapValueToY((airSum + waterSum) / static_cast<float>(rightSampleI - leftSampleI + 1));
+            lastTotalValue = (airSum + waterSum) / static_cast<float>(rightSampleI - leftSampleI + 1);
+            int const totalY = MapValueToY(lastTotalValue);
 
             if (x > 0)
             {
@@ -150,7 +152,7 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
         //
 
         std::stringstream ss;
-        ss << std::fixed << std::setprecision(3) << mMaxValue;
+        ss << std::fixed << std::setprecision(3) << lastTotalValue;
 
         wxString labelText(ss.str());
         dc.DrawText(labelText, 0, 1);

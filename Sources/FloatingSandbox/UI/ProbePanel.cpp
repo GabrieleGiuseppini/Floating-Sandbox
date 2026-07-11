@@ -175,7 +175,7 @@ void ProbePanel::OnPressureReadings(std::vector<PressureReading> const & pressur
 {
     if (!mPressureCrossCutReadingsProbe)
     {
-        mPressureCrossCutReadingsProbe = AddProbe<PressureCrossCutReadingsProbeControl>(_("Pressure Profile"), 250);
+        mPressureCrossCutReadingsProbe = AddProbe<PressureCrossCutReadingsProbeControl>(_("Pressure Profile"), 450);
         mProbesSizer->Layout();
         SetSizerAndFit(mProbesSizer);
     }
