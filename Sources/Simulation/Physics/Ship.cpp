@@ -3468,7 +3468,9 @@ void Ship::UpdateWaterAndAirPressure(
             // Store weight along spring, scaling for the greater distance traveled along
             // diagonal springs
             springOutboundWaterFlowWeights[s] =
-                springOutboundScalarWaterVelocity
+                // TODOTEST
+                //springOutboundScalarWaterVelocity
+                springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> * oldPointWaterBufferData[pointIndex]
                 / mSprings.GetFactoryRestLength(cs.SpringIndex);
 
             // Resultant outbound velocity along spring
@@ -3548,7 +3550,9 @@ void Ship::UpdateWaterAndAirPressure(
             // Store weight along spring, scaling for the greater distance traveled along
             // diagonal springs
             springOutboundAirFlowWeights[s] =
-                airV
+                // TODOTEST
+                // airV
+                airV * SimulationParameters::SimulationStepTimeDuration<float> * oldPointAirPressureBufferData[pointIndex]
                 / mSprings.GetFactoryRestLength(cs.SpringIndex)
                 * mSprings.GetWaterPermeability(cs.SpringIndex); // Only along permeable springs
 
@@ -3586,8 +3590,9 @@ void Ship::UpdateWaterAndAirPressure(
         if (totalOutboundAirFlowWeight != 0.0f)
         {
             // TODOTEST
-            float constexpr AirPressureEqualizationSpeed = 0.15f; // Controls convergence rate
+            //float constexpr AirPressureEqualizationSpeed = 0.15f; // Controls convergence rate
             //float const AirPressureEqualizationSpeed = simulationParameters.AntiMatterBombImplosionStrength / 10.0f;
+            float constexpr AirPressureEqualizationSpeed = 1.0f;
             airPressureQuantityNormalizationFactor = std::min(
                 (oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * (AirPressureEqualizationSpeed * simulationParameters.WaterDiffusionSpeedAdjustment),
                 1.0f);
@@ -3765,7 +3770,6 @@ void Ship::UpdateWaterAndAirPressure(
     {
         // TODOTEST
         //newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
-
         newPointWaterMomentumBufferData[pointIndex] *= 0.5f;
         if (!mPoints.IsDamaged(pointIndex))
             todoTotalAir += newPointAirPressureBufferData[pointIndex];
