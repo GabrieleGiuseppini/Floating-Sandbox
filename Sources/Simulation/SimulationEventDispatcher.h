@@ -443,6 +443,12 @@ public:
         }
     }
 
+    void OnPressureReadings(std::vector<PressureReading> const & pressureReadings) override
+    {
+        mPressureReadings = pressureReadings;
+    }
+
+
     //
     // Atmosphere
     //
@@ -970,6 +976,16 @@ public:
 
         mLastNpcCountsUpdated.reset();
         mLastHumanNpcCountsUpdated.reset();
+
+        if (!mPressureReadings.empty())
+        {
+            for (auto * sink : mSimulationStatisticsSinks)
+            {
+                sink->OnPressureReadings(mPressureReadings);
+            }
+
+            mPressureReadings.clear();
+        }
     }
 
     void RegisterStructuralShipEventHandler(IStructuralShipEventHandler * sink)
@@ -1036,6 +1052,7 @@ private:
     unordered_tuple_map<std::tuple<bool>, unsigned int> mWatertightDoorClosedEvents;
     std::optional<size_t> mLastNpcCountsUpdated;
     std::optional<std::tuple<size_t, size_t>> mLastHumanNpcCountsUpdated;
+    std::vector<PressureReading> mPressureReadings;
 
     // The registered sinks
 

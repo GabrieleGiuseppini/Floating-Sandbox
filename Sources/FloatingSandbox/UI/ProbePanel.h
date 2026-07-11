@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <UILib/PressureCrossCutReadingsProbeControl.h>
 #include <UILib/ScalarTimeSeriesProbeControl.h>
 #include <UILib/UnFocusablePanel.h>
 
@@ -67,6 +68,8 @@ public:
         float netForce,
         float complexity) override;
 
+    void OnPressureReadings(std::vector<PressureReading> const & pressureReadings) override;
+
     void OnGameReset() override;
 
     void OnFrameRateUpdated(
@@ -83,7 +86,7 @@ private:
     }
 
     template<typename TProbeControl>
-    std::unique_ptr<TProbeControl> AddScalarTimeSeriesProbe(
+    std::unique_ptr<TProbeControl> AddProbe(
         wxString const & name,
         int sampleCount);
 
@@ -101,5 +104,6 @@ private:
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWindSpeedProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mStaticPressureNetForceProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mStaticPressureComplexityProbe;
+    std::unique_ptr<PressureCrossCutReadingsProbeControl> mPressureCrossCutReadingsProbe;
     std::unordered_map<std::string, std::unique_ptr<ScalarTimeSeriesProbeControl>> mCustomProbes;
 };

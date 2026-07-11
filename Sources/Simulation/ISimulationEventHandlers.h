@@ -11,6 +11,7 @@
 #include <Core/GameTypes.h>
 
 #include <optional>
+#include <vector>
 
 /*
  * These interfaces define the methods that game event handlers must implement.
@@ -293,6 +294,11 @@ struct ISimulationStatisticsEventHandler
     virtual void OnStaticPressureUpdated(
         float /*netForce*/,
         float /*complexity*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnPressureReadings(std::vector<PressureReading> const & /*pressureReadings*/)
     {
         // Default-implemented
     }

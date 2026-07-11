@@ -3586,8 +3586,7 @@ void Ship::UpdateWaterAndAirPressure(
         if (totalOutboundAirFlowWeight != 0.0f)
         {
             // TODOTEST
-            //float constexpr AirPressureEqualizationSpeed = 0.15f; // Controls convergence rate
-            float constexpr AirPressureEqualizationSpeed = 0.5f; // Controls convergence rate
+            float constexpr AirPressureEqualizationSpeed = 0.15f; // Controls convergence rate
             //float const AirPressureEqualizationSpeed = simulationParameters.AntiMatterBombImplosionStrength / 10.0f;
             airPressureQuantityNormalizationFactor = std::min(
                 (oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * (AirPressureEqualizationSpeed * simulationParameters.WaterDiffusionSpeedAdjustment),
@@ -3773,6 +3772,43 @@ void Ship::UpdateWaterAndAirPressure(
     }
 
     mSimulationEventHandler.OnCustomProbe("TotalAir", todoTotalAir);
+
+
+
+    //
+    // TODOTEST: readings
+    //
+
+    std::vector<PressureReading> readings;
+
+    ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8283;
+    ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 639;
+    if (PressureCrossCutReadingsStartPointIndex < mPoints.GetRawShipPointCount())
+    {
+        for (ElementIndex pointIndex = PressureCrossCutReadingsStartPointIndex; pointIndex != NoneElementIndex && pointIndex != PressureCrossCutReadingsEndPointIndex; /* updated in loop */)
+        {
+            // Read
+            readings.emplace_back(PressureReading{ mPoints.GetAirPressure(pointIndex), mPoints.GetWater(pointIndex) });
+
+            // Advance
+            ElementIndex nextPointIndex = NoneElementIndex;
+            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+            {
+                auto const springOctant = mSprings.GetFactoryOtherEndpointOctant(cs.SpringIndex, pointIndex);
+                if (springOctant == 6)
+                {
+                    nextPointIndex = cs.OtherEndpointIndex;
+                    break;
+                }
+            }
+
+            pointIndex = nextPointIndex;
+        }
+    }
+
+    mSimulationEventHandler.OnPressureReadings(readings);
+
+
 
     //
     // Transforming momenta into velocities

@@ -1,0 +1,179 @@
+/***************************************************************************************
+* Original Author:      Gabriele Giuseppini
+* Created:              2026-07-11
+* Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+***************************************************************************************/
+#include "PressureCrossCutReadingsProbeControl.h"
+
+#include <wx/dcbuffer.h>
+
+#include <algorithm>
+#include <cassert>
+#include <iomanip>
+#include <limits>
+#include <numeric>
+#include <sstream>
+
+static constexpr int Height = 160;
+
+PressureCrossCutReadingsProbeControl::PressureCrossCutReadingsProbeControl(
+    wxWindow * parent,
+    int width)
+    : wxPanel(
+        parent,
+        wxID_ANY,
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxBORDER_SIMPLE)
+    , mWidth(width)
+    , mBufferedDCBitmap()
+    , mAirPressurePen(wxColor("RED"), 2, wxPENSTYLE_SOLID)
+    , mWaterPressurePen(wxColor("BLUE"), 2, wxPENSTYLE_SOLID)
+    , mTotalPressurePen(wxColour(50, 50, 50), 2, wxPENSTYLE_SOLID)
+{
+    SetMinSize(wxSize(width, Height));
+    SetMaxSize(wxSize(width, Height));
+
+#ifdef __WXMSW__
+    SetDoubleBuffered(true);
+#endif
+
+    SetBackgroundColour(wxColour("WHITE"));
+
+    wxFont font(wxFontInfo(wxSize(8, 8)).Family(wxFONTFAMILY_TELETYPE));
+    SetFont(font);
+
+    Connect(this->GetId(), wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PressureCrossCutReadingsProbeControl::OnMouseClick);
+    Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&PressureCrossCutReadingsProbeControl::OnPaint);
+    Connect(this->GetId(), wxEVT_ERASE_BACKGROUND, (wxObjectEventFunction)&PressureCrossCutReadingsProbeControl::OnEraseBackground);
+
+    Reset();
+}
+
+void PressureCrossCutReadingsProbeControl::RegisterReadings(std::vector<PressureReading> const & readings)
+{
+    if (mReadings.empty())
+    {
+        RecalculateReadingsStatistics(readings);
+    }
+
+    mReadings = readings;
+}
+
+void PressureCrossCutReadingsProbeControl::UpdateSimulation()
+{
+    Refresh();
+}
+
+void PressureCrossCutReadingsProbeControl::Reset()
+{
+    mReadings.clear();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+void PressureCrossCutReadingsProbeControl::OnMouseClick(wxMouseEvent & /*event*/)
+{
+    RecalculateReadingsStatistics(mReadings);
+
+    Refresh();
+}
+
+void PressureCrossCutReadingsProbeControl::OnPaint(wxPaintEvent & /*event*/)
+{
+    if (!mBufferedDCBitmap || mBufferedDCBitmap->GetSize() != this->GetSize())
+    {
+        mBufferedDCBitmap = std::make_unique<wxBitmap>(this->GetSize());
+    }
+
+    wxBufferedPaintDC bufDc(this, *mBufferedDCBitmap);
+
+    Render(bufDc);
+}
+
+void PressureCrossCutReadingsProbeControl::OnEraseBackground(wxPaintEvent & /*event*/)
+{
+    // Do nothing, eat event
+}
+
+void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
+{
+    dc.Clear();
+
+    if (!mReadings.empty())
+    {
+        float const xToSampleI = static_cast<float>(mReadings.size()) / static_cast<float>(mWidth);
+
+        int prevAirY = 0;
+        int prevWaterY = 0;
+        int prevTotalY = 0;
+        for (int x = 0; x < mWidth; ++x)
+        {
+            size_t leftSampleI = static_cast<size_t>(std::roundf(static_cast<float>(x) * xToSampleI));
+            leftSampleI = Clamp(leftSampleI, size_t(0), mReadings.size() - 1);
+            size_t rightSampleI = static_cast<size_t>(std::roundf(static_cast<float>(x + 1) * xToSampleI));
+            rightSampleI = Clamp(rightSampleI, size_t(0), mReadings.size() - 1);
+
+            assert(leftSampleI <= rightSampleI);
+
+            float airSum = 0.0f;
+            float waterSum = 0.0f;
+            for (size_t si = leftSampleI; si <= rightSampleI; ++si)
+            {
+                airSum += mReadings[si].AirPressure;
+                waterSum += mReadings[si].WaterPressure;
+            }
+
+            int const airY = MapValueToY(airSum / static_cast<float>(rightSampleI - leftSampleI + 1));
+            int const waterY = MapValueToY(waterSum / static_cast<float>(rightSampleI - leftSampleI + 1));
+            int const totalY = MapValueToY((airSum + waterSum) / static_cast<float>(rightSampleI - leftSampleI + 1));
+
+            if (x > 0)
+            {
+                dc.SetPen(mTotalPressurePen);
+                dc.DrawLine(x - 1, prevTotalY, x, totalY);
+
+                dc.SetPen(mAirPressurePen);
+                dc.DrawLine(x-1, prevAirY, x, airY);
+
+                dc.SetPen(mWaterPressurePen);
+                dc.DrawLine(x-1, prevWaterY, x, waterY);
+            }
+
+            prevAirY = airY;
+            prevWaterY = waterY;
+            prevTotalY = totalY;
+        }
+
+        //
+        // Draw label
+        //
+
+        std::stringstream ss;
+        ss << std::fixed << std::setprecision(3) << mMaxValue;
+
+        wxString labelText(ss.str());
+        dc.DrawText(labelText, 0, 1);
+    }
+}
+
+void PressureCrossCutReadingsProbeControl::RecalculateReadingsStatistics(std::vector<PressureReading> const & readings)
+{
+    mMaxValue = std::numeric_limits<float>::lowest();
+    mMinValue = std::numeric_limits<float>::max();
+    for (auto const & r : readings)
+    {
+        mMaxValue = std::max(mMaxValue, r.AirPressure + r.WaterPressure);
+        mMinValue = std::min(mMinValue, r.AirPressure + r.WaterPressure);
+    }
+}
+
+int PressureCrossCutReadingsProbeControl::MapValueToY(float value) const
+{
+    if (mMaxValue == mMinValue)
+        return Height - 3;
+
+    float y = static_cast<float>(Height - 4) * (value - mMinValue) / (mMaxValue - mMinValue);
+    return Height - 3 - static_cast<int>(round(y));
+}
+

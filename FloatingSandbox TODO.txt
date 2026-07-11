@@ -2108,14 +2108,18 @@
 				+ Duplicate UpdateWaterVelocitiesXYZ: UpdateWaterAndAirPressure
 				= UpdateWaterAndAirPressure
 					+ Review old water: why normalization factor ensures all water at the point moves?
-					- Plot cross-cut
+					+ Plot cross-cut
 					= Gist implementation
-						= Things to try:
+						= Things to try/tune:
+							- Convert velocities to mass using dt
+								- Water
+								- Air
+								- Normalizations: do not use adjustments, but keep material diffusion speed 
 							- Squeezeness fine-tuning: multiplier or pow
 							- Water and/or air reading (and writing) from _new_
 								- Option 1: air reads from _new_ water, so we may stay true to:
 									- "We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)"
-							- Static factor to damp air transfer to prevent oscillations: 
+							- Static factor to damp air transfer to prevent oscillations (AirPressureEqualizationSpeed): 
 								= Option 1: 0.15
 									- Split WaterDiffusionSpeedAdjustment into AirPressureDiffusionSpeedAdjustment
 								- Option 2: technically should be exponential, so speed depends on deltaP - need to move speed (scaling) calc'n at spring
@@ -2158,6 +2162,7 @@
 						- Comments
 						- Code
 							- See if can simplify math by having Formulae directly in equivalent water height's
+						- Points.h: commented-out GetCumulatedOutflownAirPressure
 
 				- Cleanup:
 					- If air pressure ended up being moles (depends on squeezeness and egress/ingress), change all names
