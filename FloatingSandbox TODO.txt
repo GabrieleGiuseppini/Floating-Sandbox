@@ -2108,41 +2108,32 @@
 				+ Duplicate UpdateWaterVelocitiesXYZ: UpdateWaterAndAirPressure
 				= UpdateWaterAndAirPressure
 					+ Review old water: why normalization factor ensures all water at the point moves?
-					+ Comments with gist
-					+ Gist implementation
-					= Fix: water level is oblique
-						x See if it's velocities - damp a lot
-						X See if it's air diffusion speed
-							+ At 1.0 speed it's flat! But shaky
-						X See if it's lack of factory rest length for air diffusion?
-						~ See if it's directional biases
-							+ Removing water bias improves it
-							+ Removing water + air bias eliminates it
-							+ Removing air bias slightly improves it
-						X See if it's because we're using linearstep(cos(angle)) for upness: try step
-						= FIXED with upness being n.y
-							- Finalize
-					= Things to try:
-						X Points::UpdateWaterVelocitiesFromMomenta and other:
-							+ Use max water mass, not whole water
-						- Up/down interface
-							+ Option 1: linearstep 0.1 centered around 0
-							- Option 2: pure step
-						- Air volume:
-							+ Option 1: simple asymptote
-							- Option 2: discontinuous
-						- Water and/or air reading (and writing) from _new_
-							- Option 1: air reads from _new_ water, so we may stay true to:
-								- "We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)"
-						- Static factor to damp air transfer to prevent oscillations: 
-							= Option 1: 0.15
-								- Split WaterDiffusionSpeedAdjustment into AirPressureDiffusionSpeedAdjustment
-							- Option 2: technically should be exponential, so speed depends on deltaP - need to move speed (scaling) calc'n at spring
-						= Water velocity damping:
-							= Option 1: static factor
-								- See if can optimize by not requiring loop
-							- Option 2: based on other water and resistance
-								- TODO: research
+					- Plot cross-cut
+					= Gist implementation
+						= Things to try:
+							- Squeezeness fine-tuning: multiplier or pow
+							- Water and/or air reading (and writing) from _new_
+								- Option 1: air reads from _new_ water, so we may stay true to:
+									- "We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)"
+							- Static factor to damp air transfer to prevent oscillations: 
+								= Option 1: 0.15
+									- Split WaterDiffusionSpeedAdjustment into AirPressureDiffusionSpeedAdjustment
+								- Option 2: technically should be exponential, so speed depends on deltaP - need to move speed (scaling) calc'n at spring
+							= Water velocity damping:
+								= Option 1: static factor
+									- See if can optimize by not requiring loop
+
+					- Test goals:
+						- Water level stops in bell
+							- At right height
+						- Water level reaching ocean 
+						- Water level obliqueness (was fixed with upness being n.y instead of being step-like)
+						- Water interface ugly flatness
+
+					- Cleanup:
+						- Comments
+						- Code
+						- Remove cross-cut
 
 				= Ingress/Egress and bubbles
 					+ Water: enters or leaves based on internal total pressure <-> total external pressure differential
@@ -2162,8 +2153,16 @@
 						- Note that now we increase pressure lost also when above ground, but that shouldn't result in bubbles
 							- Decide: count anyway and no spawn, or no count
 					- Water pump
-					- See if can simplify math by having Formulae directly in equivalent water height's
+
+					- Cleanup
+						- Comments
+						- Code
+							- See if can simplify math by having Formulae directly in equivalent water height's
+
+				- Cleanup:
+					- If air pressure ended up being moles (depends on squeezeness and egress/ingress), change all names
 				- Temperature <-> Air Pressure
+					- A new step, before pressure, makes EffectiveAirPressure from AirPressure and Temperature
 				+ Finalize unit of AirPressure
 					+ Also @ Points buffer comment
 				- Air Pressure <-> forces on "walls"

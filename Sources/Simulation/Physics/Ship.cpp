@@ -2602,17 +2602,59 @@ void Ship::UpdatePressureAndWaterInflow(
                     //  v = +/- sqrt(2*g*|Dh|)
                     //
 
+                    // TODOTEST
+                    //float incomingWaterVelocity_Structural;
+                    //if (externalWaterHeight >= internalWaterHeight)
+                    //{
+                    //    // Incoming water
+                    //    incomingWaterVelocity_Structural = sqrtf(2.0f * SimulationParameters::GravityMagnitude * (externalWaterHeight - internalWaterHeight));
+                    //}
+                    //else
+                    //{
+                    //    // Outgoing water
+                    //    incomingWaterVelocity_Structural = -sqrtf(2.0f * SimulationParameters::GravityMagnitude * (internalWaterHeight - externalWaterHeight));
+                    //}
+
+
+
+                    float const externalTotalPressure =
+                        Formulae::PressureToEquivalentWaterHeight(
+                            Formulae::CalculateTotalPressureAt(
+                                mPoints.GetPosition(pointIndex).y,
+                                mPoints.GetPosition(pointIndex).y + pointDepth, // oceanSurfaceY
+                                effectiveAirDensity,
+                                effectiveWaterDensity,
+                                simulationParameters),
+                            effectiveWaterDensity);
+
+                    float const internalTotalPressure = mPoints.GetWater(pointIndex) + mPoints.GetAirPressure(pointIndex);
+
                     float incomingWaterVelocity_Structural;
-                    if (externalWaterHeight >= internalWaterHeight)
+                    if (externalTotalPressure >= internalTotalPressure)
                     {
                         // Incoming water
-                        incomingWaterVelocity_Structural = sqrtf(2.0f * SimulationParameters::GravityMagnitude * (externalWaterHeight - internalWaterHeight));
+                        if (pointDepth > 0.0f)
+                            incomingWaterVelocity_Structural = sqrtf(2.0f * SimulationParameters::GravityMagnitude * (externalTotalPressure - internalTotalPressure));
+                        else
+                            incomingWaterVelocity_Structural = 0.0f;
                     }
                     else
                     {
                         // Outgoing water
-                        incomingWaterVelocity_Structural = -sqrtf(2.0f * SimulationParameters::GravityMagnitude * (internalWaterHeight - externalWaterHeight));
+                        incomingWaterVelocity_Structural = -sqrtf(2.0f * SimulationParameters::GravityMagnitude * (internalTotalPressure - externalTotalPressure));
                     }
+
+
+
+
+
+
+
+
+
+
+
+
 
                     //
                     // 1.2) In/Outtake water according to velocity:
@@ -3326,12 +3368,14 @@ void Ship::UpdateWaterAndAirPressure(
         float const alphaCrazyness = 1.0f + simulationParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
 
         // Total pressure at bottom of this point/tank
-        float const oldThisPointTotalPressureAtBottom = oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex];
+        // TODOTEST
+        //float const oldThisPointTotalPressureAtBottom = oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex];
 
         // Volume at this tank that is available for air;
         // given that plain water would cause non-linearities, we make
         // air volume go to zero only asymptotically
-        float const oldThisPointAvailableAirVolume = 1.0f / (1.0f + oldPointWaterBufferData[pointIndex]);
+        // TODOTEST
+        //float const oldThisPointAvailableAirVolume = 1.0f / (1.0f + oldPointWaterBufferData[pointIndex]);
 
 #if !FS_IS_PLATFORM_MOBILE()
         pointSplashNeighbors = 0.0f;
@@ -3351,12 +3395,11 @@ void Ship::UpdateWaterAndAirPressure(
                 ? mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex)
                 : -mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex);
 
-            // Upness: 1.0 when up, 0.0 when down - with smoothing as nature abhors discontinuities
+            // Upness: 1.0 when up, -1.0 when down - it's cos(alpha) with alpha being angle with upward vector
             // TODOTEST
-            //float constexpr UpnessSmoothingHalfWidth = 0.1f;
-            //float const springUpness = LinearStep(-UpnessSmoothingHalfWidth, UpnessSmoothingHalfWidth, springNormalizedVector.y);
-            //float const springUpness = Step(0.0f, springNormalizedVector.y);
-            float const springUpness = springNormalizedVector.y;
+            //float const springUpness = springNormalizedVector.y;
+            float const springUpness = Step(0.0f, springNormalizedVector.y);
+            float const springDownness = 1.0f - springUpness;
 
             //
             // Water
@@ -3365,7 +3408,7 @@ void Ship::UpdateWaterAndAirPressure(
             //    - Source pressure is water pressure + air pressure
             //    - Destination pressure:
             //      - When diffusing up: water pressure + air pressure
-            //      - When diffusing down: water pressure only (Rayleigh–Taylor instability: water is not stopped by air below)
+            //      - When diffusing down: water pressure - air pressure (Rayleigh–Taylor instability: water is not stopped by air below - actually drawn down)
             //
 
             // Component of the point's own water velocity along the spring
@@ -3378,13 +3421,22 @@ void Ship::UpdateWaterAndAirPressure(
             // the other endpoint
             //
 
+            // TODOOLD
             // Pressure difference (positive implies point -> other endpoint flow)
-            // Bias: ignore air below (Rayleigh–Taylor instability):
+            // Bias with air below (Rayleigh–Taylor instability):
             //  - Going up: this total_pressure - other total_pressure
-            //  - Going down: this total_pressure - other water_pressure
-            float const dw =
-                oldThisPointTotalPressureAtBottom
-                - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness);
+            //  - Going down: this total_pressure - (other water_pressure - other air_pressure)
+            //float const dw =
+            //    oldThisPointTotalPressureAtBottom
+            //    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness);
+
+
+            // TODOTEST
+            float const dwUp = oldPointWaterBufferData[pointIndex] - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]);
+            float const dwDown = (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex]) - oldPointWaterBufferData[cs.OtherEndpointIndex];
+            float const dw = dwUp * springUpness + dwDown * springDownness;
+
+
 
             // Gravity potential difference (positive implies point -> other endpoint flow)
             float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(cs.OtherEndpointIndex).y;
@@ -3446,26 +3498,59 @@ void Ship::UpdateWaterAndAirPressure(
             //    - Air-Air: moves to reach average air pressure
             //    - Water at this squeezes more air out
             //    - When traveling down, encounters resistance from water at other
+            //    - When traveling up, TODOHERE
             //
             // Simple air pressure increase at a tank should force water to move out of it at water's turn
             //    - Hopefully downward because of Bernoulli/gravity and Rayleigh–Taylor
             //
 
-            float const equilibriumAirPressure = (oldPointAirPressureBufferData[pointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]) / 2.0f;
+            // TODOTEST
+            //float const equilibriumAirPressure = (oldPointAirPressureBufferData[pointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]) / 2.0f;
 
-            float constexpr SqueezeFactor = 0.05f;
-            float airPressureMoved =
-                oldPointAirPressureBufferData[pointIndex]
-                - equilibriumAirPressure * ((1.0f - SqueezeFactor) + SqueezeFactor * oldThisPointAvailableAirVolume); // Move it more if current tank has little volume left (squeeze effect)
+            //float constexpr SqueezeFactor = 0.05f;
+            //float airPressureMoved =
+            //    oldPointAirPressureBufferData[pointIndex]
+            //    - equilibriumAirPressure * ((1.0f - SqueezeFactor) + SqueezeFactor * oldThisPointAvailableAirVolume); // Move it more if current tank has little volume left (squeeze effect)
 
-            // If going down, encounter resistance from water at destination (inverse squeezing)
-            float const oldOtherPointAvailableAirVolume = 1.0f / (1.0f + oldPointWaterBufferData[cs.OtherEndpointIndex]);
-            airPressureMoved = airPressureMoved * (1.0f - (1.0f - oldOtherPointAvailableAirVolume) * (1.0f - springUpness));
+            //// If going down, encounter resistance from water at destination (inverse squeezing)
+            //// If going up, TODOHERE
+            //float const oldOtherPointAvailableAirVolume = 1.0f / (1.0f + oldPointWaterBufferData[cs.OtherEndpointIndex]);
+            //airPressureMoved = airPressureMoved * (1.0f - (1.0f - oldOtherPointAvailableAirVolume) * (1.0f - springUpness));
 
-            // Only outbound; if inbound, it will be done by other endpoint
-            springOutboundAirFlowWeights[s] = std::max(0.0f,
-                airPressureMoved
-                * mSprings.GetWaterPermeability(cs.SpringIndex)); // Only along permeable springs
+
+
+
+            // TODOHERE: come up with formula for delta_pressure => pressure move, and then calc delta_pressure based on squeezes (*)
+            // - Orifice Flow Equation (v = C \sqrt{\frac{2 \Delta P}{\rho}}\)
+            // - Make sure no air pressure is consumed/created; publish total
+
+            float const thisPointAvailableAirVolume = 1.0f / (1.0f + oldPointWaterBufferData[pointIndex]);
+            float const thisAirPSqueezed = oldPointAirPressureBufferData[pointIndex] / thisPointAvailableAirVolume;
+            float const dAirUp = thisAirPSqueezed - oldPointAirPressureBufferData[cs.OtherEndpointIndex];
+
+            float const otherPointAvailableAirVolume = 1.0f / (1.0f + oldPointWaterBufferData[cs.OtherEndpointIndex]);
+            float const otherAirPSqueezed = oldPointAirPressureBufferData[cs.OtherEndpointIndex] / otherPointAvailableAirVolume;
+            float const dAirDown = oldPointAirPressureBufferData[pointIndex] - otherAirPSqueezed;
+
+            float const dAir = dAirUp * springUpness + dAirDown * springDownness;
+
+            float airV;
+            if (dAir >= 0.0f)
+            {
+                airV = sqrtf(2.0f * dAir / SimulationParameters::AirMass);
+            }
+            else
+            {
+                // Not its turn
+                airV = 0.0f;
+            }
+
+            // Store weight along spring, scaling for the greater distance traveled along
+            // diagonal springs
+            springOutboundAirFlowWeights[s] =
+                airV
+                / mSprings.GetFactoryRestLength(cs.SpringIndex)
+                * mSprings.GetWaterPermeability(cs.SpringIndex); // Only along permeable springs
 
             // Update total outbound flow weight
             totalOutboundAirFlowWeight += springOutboundAirFlowWeights[s];
@@ -3502,7 +3587,8 @@ void Ship::UpdateWaterAndAirPressure(
         {
             // TODOTEST
             //float constexpr AirPressureEqualizationSpeed = 0.15f; // Controls convergence rate
-            float const AirPressureEqualizationSpeed = simulationParameters.AntiMatterBombImplosionStrength / 10.0f;
+            float constexpr AirPressureEqualizationSpeed = 0.5f; // Controls convergence rate
+            //float const AirPressureEqualizationSpeed = simulationParameters.AntiMatterBombImplosionStrength / 10.0f;
             airPressureQuantityNormalizationFactor = std::min(
                 (oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * (AirPressureEqualizationSpeed * simulationParameters.WaterDiffusionSpeedAdjustment),
                 1.0f);
@@ -3673,10 +3759,20 @@ void Ship::UpdateWaterAndAirPressure(
     // Damp water velocities
     //
 
+    // TODOTEST
+    float todoTotalAir = 0.0f;
+
     for (auto pointIndex : mPoints.RawShipPoints())
     {
-        newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
+        // TODOTEST
+        //newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
+
+        newPointWaterMomentumBufferData[pointIndex] *= 0.5f;
+        if (!mPoints.IsDamaged(pointIndex))
+            todoTotalAir += newPointAirPressureBufferData[pointIndex];
     }
+
+    mSimulationEventHandler.OnCustomProbe("TotalAir", todoTotalAir);
 
     //
     // Transforming momenta into velocities
