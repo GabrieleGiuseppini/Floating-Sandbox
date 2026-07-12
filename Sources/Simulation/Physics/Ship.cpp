@@ -3484,8 +3484,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
             // diagonal springs
             springOutboundWaterFlowWeights[s] =
                 // TODOTEST
-                //springOutboundScalarWaterVelocity
-                springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> * oldPointWaterBufferData[pointIndex]
+                springOutboundScalarWaterVelocity
+                //springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> * oldPointWaterBufferData[pointIndex]
                 / mSprings.GetFactoryRestLength(cs.SpringIndex);
 
             // Resultant outbound velocity along spring

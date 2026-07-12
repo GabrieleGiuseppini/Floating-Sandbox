@@ -2115,20 +2115,28 @@
 								! 0.125 diffusion speed is stable, rises exactly at sea level, but slow
 								! 0.625 is chaotic, rises more (more water inflow) - also above sea level, but speed is ok-ish
 								! 0.094/0.281: air little oscillating bug converging, water is chaotic, rises to -48 (high-ish, because of more water inflow?), but reaches sea level, visual speed is ok-ish
-							= Gauss-Seidel 1 (for each point, water and air on _new_ buffers):
-								! No more oscillations! But very direction-sensitive, unless very slow speed
+									! Sea-level test: airtight: -20; after holes: 
+
+								! Water converted to mass (dt, etc.): no real difference
+									! Without conversion:
+										! Speed=0.5  : bell: -46; sea-level: -18; after holes: -1.6 (so slowly)
+										! Speed=0.562: bell: -46; sea-level: -17; after holes: 0.0 (so slowly)
+								! Air converted to mass (dt, etc.): air diffusion speed is unbearably slow
+
+								! Best so far:
+									! Diffusion speeds: 0.094/0.562
+									! Neither water nor air converted to mass
+							- Gauss-Seidel 1 (for each point, water and air on _new_ buffers):
+								- Implement with template args -- get rid of restrict
+								! WAS: No more oscillations! But very direction-sensitive, unless very slow speed
 							= Gauss-Seidel 2 (water first, then air - on _old_ buffers):
 								! Still chaotic; doesn't reach sea level - water ingress stops
 
-							= Separate diffusion speeds for water and air
-								- Re-evaluate three finding sweet speeds
-							
-							= Convert velocities to mass using dt
-								= Water
-									- Try again without
-								- Air
-								+ Normalizations: do not use constant adjustments, but keep material diffusion speed 
+							- Try ignoring water restitution @ water egress: should make for balanced in/out flow, without fattening
 
+							= Separate diffusion speeds for water and air
+								- Re-evaluate three, finding sweet speeds
+							
 							= Water pressure after air is low
 								= Opt 1: use squeeze for air @ water
 							- Squeezeness fine-tuning: multiplier or pow
@@ -2151,7 +2159,8 @@
 					- Cleanup:
 						- Comments
 						- Code
-						- Remove cross-cut
+							- Put back restrict pointers where needed
+						- Remove cross-cut readings
 
 				= Ingress/Egress and bubbles
 					+ Water: enters or leaves based on internal total pressure <-> total external pressure differential
