@@ -2126,16 +2126,27 @@
 								! Best so far:
 									! Diffusion speeds: 0.094/0.562
 									! Neither water nor air converted to mass
-							- Gauss-Seidel 1 (for each point, water and air on _new_ buffers):
-								- Implement with template args -- get rid of restrict
-								! WAS: No more oscillations! But very direction-sensitive, unless very slow speed
-							= Gauss-Seidel 2 (water first, then air - on _old_ buffers):
+							X Gauss-Seidel 1 (for each point, water and air on _new_ buffers):
+								+ Implement as separate func
+									+ Point velocities recalc'd for each point, after outflow through all springs
+								! No more oscillations! But very direction-sensitive, unless very slow speed
+								- 0.094/0.094: no oscillations, directional bias at times, slower than NR; bell: -63; sea-level: -34; after holes: stays put!								
+							X Gauss-Seidel 2 (water first, then air - on _old_ buffers):
 								! Still chaotic; doesn't reach sea level - water ingress stops
 
-							- Try ignoring water restitution @ water egress: should make for balanced in/out flow, without fattening
+							X Try ignoring water restitution @ water egress: should make for balanced in/out flow, without fattening
+								= NR: bell: -46; sea-level: -17; after holes:  ...  
+								X Doesn't change anything
+							+ Separate diffusion speeds for water and air
+								+ Re-evaluate three, finding sweet speeds
 
-							= Separate diffusion speeds for water and air
-								- Re-evaluate three, finding sweet speeds
+							- Obliquity
+								- Option 1: 0->1
+
+							- Fighting for higher speed:
+								- Water pressure under air is quite high: why doesn't it equalize with air at top?
+									- Point above has high squeeze though
+									- Should lower squeezing for water->air (up)?
 							
 							= Water pressure after air is low
 								= Opt 1: use squeeze for air @ water
@@ -2206,6 +2217,8 @@
 			- Test:
 				- Flotsam: water intake
 				- Rain: water intake
+				- Cloth, ropes: retention (and air)
+				- Kinetic energy->Splash sounds
 				- Default water crazyness
 				- Flooding speeds compared with previous version
 				- Water diffusion speed
@@ -2229,6 +2242,7 @@
 					- Material properties: code + json
 					- SimulationParameters setting
 					- UI
+						- Do we want to lock down diffusion speeds?
 						- Whole section becomes Pressure?
 				- Cleanup upload of internal pressure
 
