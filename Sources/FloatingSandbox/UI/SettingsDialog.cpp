@@ -1253,6 +1253,32 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Air Diffusion Speed
+            {
+                mAirDiffusionSpeedSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Air Diffusion Speed"),
+                    _("Adjusts the speed with which air propagates within a physical body."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirDiffusionSpeedAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinAirDiffusionSpeedAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxAirDiffusionSpeedAdjustment()));
+
+                sizer->Add(
+                    mAirDiffusionSpeedSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             // Water Diffusion Speed
             {
                 mWaterDiffusionSpeedSlider = new SliderControl<float>(
@@ -1260,7 +1286,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Diffusion Speed"),
+                    _("Water Diffusion Speed"),
                     _("Adjusts the speed with which water propagates within a physical body."),
                     [this](float value)
                     {
@@ -1273,7 +1299,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
 
                 sizer->Add(
                     mWaterDiffusionSpeedSlider,
-                    wxGBPosition(0, 1),
+                    wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -1299,7 +1325,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
 
                 sizer->Add(
                     mWaterCrazynessSlider,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -6847,6 +6873,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mWaterImpactForceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterImpactForceAdjustment));
     mWaterIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
     mWaterCrazynessSlider->SetValue(settings.GetValue<float>(GameSettings::WaterCrazyness));
+    mAirDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::AirDiffusionSpeedAdjustment));
     mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
     mWaterTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::WaterTemperature));
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));

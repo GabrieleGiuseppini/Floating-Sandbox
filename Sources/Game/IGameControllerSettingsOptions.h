@@ -95,6 +95,9 @@ struct IGameControllerSettingsOptions
     virtual float GetMinWaterIntakeAdjustment() const = 0;
     virtual float GetMaxWaterIntakeAdjustment() const = 0;
 
+    virtual float GetMinAirDiffusionSpeedAdjustment() const = 0;
+    virtual float GetMaxAirDiffusionSpeedAdjustment() const = 0;
+
     virtual float GetMinWaterDiffusionSpeedAdjustment() const = 0;
     virtual float GetMaxWaterDiffusionSpeedAdjustment() const = 0;
 

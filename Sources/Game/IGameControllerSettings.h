@@ -103,6 +103,9 @@ struct IGameControllerSettings
     virtual float GetWaterIntakeAdjustment() const = 0;
     virtual void SetWaterIntakeAdjustment(float value) = 0;
 
+    virtual float GetAirDiffusionSpeedAdjustment() const = 0;
+    virtual void SetAirDiffusionSpeedAdjustment(float value) = 0;
+
     virtual float GetWaterDiffusionSpeedAdjustment() const = 0;
     virtual void SetWaterDiffusionSpeedAdjustment(float value) = 0;
 

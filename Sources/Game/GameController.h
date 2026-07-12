@@ -541,6 +541,11 @@ public:
     float GetMinWaterIntakeAdjustment() const override { return SimulationParameters::MinWaterIntakeAdjustment; }
     float GetMaxWaterIntakeAdjustment() const override { return SimulationParameters::MaxWaterIntakeAdjustment; }
 
+    float GetAirDiffusionSpeedAdjustment() const override { return mSimulationParameters.AirDiffusionSpeedAdjustment; }
+    void SetAirDiffusionSpeedAdjustment(float value) override { mSimulationParameters.AirDiffusionSpeedAdjustment = value; }
+    float GetMinAirDiffusionSpeedAdjustment() const override { return SimulationParameters::MinAirDiffusionSpeedAdjustment; }
+    float GetMaxAirDiffusionSpeedAdjustment() const override { return SimulationParameters::MaxAirDiffusionSpeedAdjustment; }
+
     float GetWaterDiffusionSpeedAdjustment() const override { return mSimulationParameters.WaterDiffusionSpeedAdjustment; }
     void SetWaterDiffusionSpeedAdjustment(float value) override { mSimulationParameters.WaterDiffusionSpeedAdjustment = value; }
     float GetMinWaterDiffusionSpeedAdjustment() const override { return SimulationParameters::MinWaterDiffusionSpeedAdjustment; }

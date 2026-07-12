@@ -2111,32 +2111,35 @@
 					+ Plot cross-cut
 					= Gist implementation
 						= Things to try/tune:
+							= Newton-Rhapson (orig: for each point, water and air on _old_ buffers):
+								! 0.125 diffusion speed is stable, rises exactly at sea level, but slow
+								! 0.625 is chaotic, rises more (more water inflow) - also above sea level, but speed is ok-ish
+								! 0.094/0.281: air little oscillating bug converging, water is chaotic, rises to -48 (high-ish, because of more water inflow?), but reaches sea level, visual speed is ok-ish
+							= Gauss-Seidel 1 (for each point, water and air on _new_ buffers):
+								! No more oscillations! But very direction-sensitive, unless very slow speed
+							= Gauss-Seidel 2 (water first, then air - on _old_ buffers):
+								! Still chaotic; doesn't reach sea level - water ingress stops
+
+							= Separate diffusion speeds for water and air
+								- Re-evaluate three finding sweet speeds
+							
 							= Convert velocities to mass using dt
 								= Water
+									- Try again without
 								- Air
-								+ Normalizations: do not use adjustments, but keep material diffusion speed 
-							= Oscillations
-								! Newton-Rhapson: 
-									! 0.125 diffusion speed is stable, rises exactly at sea level, but slow
-									! 0.625 is chaotic, rises more (more water inflow) - also above sea level, but speed is ok-ish
-								- Opt 1: Try gauss-seidel
-									+ No more oscillations! But very direction-sensitive, unless very slow speed
-								- Opt 2: Water -> Air simulation
-									! "We don't change air pressure here; we let it escape at its turn based on the new pressure at the tank (addition of water pressure)"
-									- Split func in two
-										- Call both
-									- Water: only water									
-									- Air: only air
+								+ Normalizations: do not use constant adjustments, but keep material diffusion speed 
+
 							= Water pressure after air is low
 								= Opt 1: use squeeze for air @ water
 							- Squeezeness fine-tuning: multiplier or pow
 							- Static factor to damp air transfer to prevent oscillations (AirPressureEqualizationSpeed): 
-								= Option 1: 0.15
-									- Split WaterDiffusionSpeedAdjustment into AirPressureDiffusionSpeedAdjustment
+								+ Option 1: split WaterDiffusionSpeedAdjustment into AirPressureDiffusionSpeedAdjustment
 								- Option 2: technically should be exponential, so speed depends on deltaP - need to move speed (scaling) calc'n at spring
 							= Water velocity damping:
 								= Option 1: static factor
 									- See if can optimize by not requiring loop
+								- Check if really needed, especially now that we've fixed momenta bounces (no delta-pressure at walls)
+								- Setting?
 
 					- Test goals:
 						- Water level stops in bell
@@ -2213,7 +2216,7 @@
 					- DebugShipRenderModeType::InternalPressure
 						- Shader
 					- Internal pressure view: code and UI
-				- Rename: water diffusion -> water & air diffusion
+				- Rename: water diffusion speed -> water & air diffusion speed
 					- Material properties: code + json
 					- SimulationParameters setting
 					- UI
