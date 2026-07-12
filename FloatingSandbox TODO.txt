@@ -2111,6 +2111,9 @@
 					+ Plot cross-cut
 					= Gist implementation
 						= Things to try/tune:
+
+							! Scorecard: bell: ; sea-level: ; after holes: (so slowly)
+
 							= Newton-Rhapson (orig: for each point, water and air on _old_ buffers):
 								! 0.125 diffusion speed is stable, rises exactly at sea level, but slow
 								! 0.625 is chaotic, rises more (more water inflow) - also above sea level, but speed is ok-ish
@@ -2140,8 +2143,17 @@
 							+ Separate diffusion speeds for water and air
 								+ Re-evaluate three, finding sweet speeds
 
-							- Obliquity
-								- Option 1: 0->1
+							= Obliquity
+								= Option 1: 0->+1
+									+ Obliquity: still oblique, but converges
+									= Scorecard: bell: -47; sea-level: -17; after holes: 0.0 (so slowly)
+										! Doesn't reach sea level
+									+ Better water-air interface: moves more
+								X Option 2: -1->+1
+									! FREEZES! Nothing moves
+								X Option 3: no direction for water (W1+Asq1 - W2+Asq2)
+									! FREEZES! Nothing moves
+								- Option 4: option 1 w/out rest length
 
 							- Fighting for higher speed:
 								- Water pressure under air is quite high: why doesn't it equalize with air at top?

@@ -3407,11 +3407,22 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 ? mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex)
                 : -mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex);
 
-            // Upness: 1.0 when up, -1.0 when down - it's cos(alpha) with alpha being angle with upward vector
+            // Upness: TODOHERE -- 1.0 when up, -1.0 when down - it's cos(alpha) with alpha being angle with upward vector
+
             // TODOTEST
             //float const springUpness = springNormalizedVector.y;
-            float const springUpness = Step(0.0f, springNormalizedVector.y);
+
+            // TODOTEST: step
+            //float const springUpness = Step(0.0f, springNormalizedVector.y);
+            //float const springDownness = 1.0f - springUpness;
+
+            //// TODOTEST: 0->1 smooth
+            float const springUpness = (1.0f + springNormalizedVector.y) / 2.0f;
             float const springDownness = 1.0f - springUpness;
+
+            // TODOTEST: -1->1 smooth
+            //float const springUpness = springNormalizedVector.y;
+            //float const springDownness = -springUpness;
 
             //
             // Water
@@ -3446,6 +3457,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
             // TODOTEST
             //float const dwUp = oldPointWaterBufferData[pointIndex] - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]);
             //float const dwDown = (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex]) - oldPointWaterBufferData[cs.OtherEndpointIndex];
+
             float const dwUp = oldPointWaterBufferData[pointIndex] - (oldPointWaterBufferData[cs.OtherEndpointIndex] + squeezeAir(oldPointAirPressureBufferData[cs.OtherEndpointIndex], oldPointWaterBufferData[cs.OtherEndpointIndex]));
             float const dwDown = (oldPointWaterBufferData[pointIndex] + squeezeAir(oldPointAirPressureBufferData[pointIndex], oldPointWaterBufferData[pointIndex])) - oldPointWaterBufferData[cs.OtherEndpointIndex];
             float const dw =
