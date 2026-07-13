@@ -3614,10 +3614,6 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
             waterQuantityNormalizationFactor = std::min(
                 (oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
                 1.0f);
-
-            // TODOTEST
-            if (pointIndex == 1715)
-                LogMessage(waterQuantityNormalizationFactor);
         }
 
         //

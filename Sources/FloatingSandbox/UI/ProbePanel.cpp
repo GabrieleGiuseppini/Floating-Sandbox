@@ -18,10 +18,6 @@ ProbePanel::ProbePanel(wxWindow* parent)
         parent,
         wxBORDER_SIMPLE | wxCLIP_CHILDREN)
 {
-#ifdef __WXMSW__
-    SetDoubleBuffered(true);
-#endif
-
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
 
@@ -146,6 +142,7 @@ void ProbePanel::OnCustomProbe(
     {
         probe = AddProbe<ScalarTimeSeriesProbeControl>(name, 100);
         mProbesSizer->Layout();
+        SetSizerAndFit(mProbesSizer);
     }
 
     probe->RegisterSample(value);
