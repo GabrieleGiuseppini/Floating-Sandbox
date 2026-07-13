@@ -3802,7 +3802,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 
     for (auto pointIndex : mPoints.RawShipPoints())
     {
-        newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
+        // TODOTEST
+        //newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
 
         // Update total air
         if (!mPoints.IsDamaged(pointIndex))

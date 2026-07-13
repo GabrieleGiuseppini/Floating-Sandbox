@@ -2124,9 +2124,9 @@
 										! Speed=0.562: bell: -46; sea-level: -17; after holes: 0.0 (so slowly)
 								! Air converted to mass (dt, etc.): air diffusion speed is unbearably slow
 								! Best so far:
-									! Diffusion speeds: 0.094/0.562
 									! Water outflow using dt; air not
-									! Diffusion speeds: 0.094/0.438: scorecard: bell: -46; sea-level: -18.7; after holes: 0.0 (so slowly)
+									! No water velocity damping
+									! Diffusion speeds: 0.094/0.375: scorecard: bell: -46.6; sea-level: -17.8; after holes: 0.0 (so slowly)
 							X Gauss-Seidel 1 (for each point, water and air on _new_ buffers):
 								+ Implement as separate func
 									+ Point velocities recalc'd for each point, after outflow through all springs
@@ -2185,7 +2185,7 @@
 													+ Some air survives underneat water level
 													+ Flat interface
 													+ Scorecard: bell: -46.7; sea level: -18; after holes: 0.0 (so slowly)
-												- However, this one requires a division now - should we got back to previous one?
+												- However, this one requires a division now - should we go back to previous one?
 							+ Flat interface:
 								+ Shader: 0.2 needs to show more, and so does 0.05
 								+ Try with linear param
@@ -2195,12 +2195,23 @@
 									+ If ok:
 										+ Rename shader param
 
-							= Water velocity damping:
-								= Option 1: static factor
+							+ Water velocity damping:
+								X Option 1: static factor
 									- See if can optimize by not requiring loop
-								- Check if really needed, especially now that we've fixed momenta bounces (no delta-pressure at walls)
-									- Scorecard without: 
-								- If stays: setting?
+								+ Check if really needed, especially now that we've fixed momenta bounces (no delta-pressure at walls)
+									+ Scorecard without: 0.375: bell: -46.6; sea-level: -17.8; after holes: 0.0 (so slowly)
+									+ If ok: update scorecard of best
+
+							= Water not rising in complex ship (default ship)
+								+ See if it's air diffusion speed
+									! Improves
+									+ 0.688: rises more; overshoots sea level
+								- See if everything improves with multiple runs
+									- Try rough one here, taking into account # of iterations
+									- Experiment with speed vs # of iterations
+
+
+
 
 					- Test goals:
 						- Water level stops in bell
