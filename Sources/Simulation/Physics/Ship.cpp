@@ -3471,6 +3471,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 
             // Calculate gained water velocity along this spring, from point to other endpoint
             // (Bernoulli, 1738)
+            //
+            // We add pressure and heights as pressure is in "height equivalent units"
             float bernoulliVelocityAlongSpring;
             float const dwy = dw + dy;
             if (dwy >= 0.0f)
@@ -3614,6 +3616,10 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
             waterQuantityNormalizationFactor = std::min(
                 (oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
                 1.0f);
+
+            // TODOTEST
+            if (pointIndex == 1715)
+                LogMessage(waterQuantityNormalizationFactor);
         }
 
         //
