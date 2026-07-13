@@ -3562,7 +3562,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 
             float const dAir = dAirUp * springUpness + dAirDown * springDownness;
 
-            float airV;
+            float airMoved;
 
             // TODOTEST
             ////if (dAir >= 0.0f)
@@ -3578,20 +3578,18 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
             if (dAir >= 0.0f)
             {
                 // Outbound
-                airV = dAir / 2.0f;
+                airMoved = dAir / 2.0f;
             }
             else
             {
                 // Not its turn
-                airV = 0.0f;
+                airMoved = 0.0f;
             }
 
             // Store weight along spring, scaling for the greater distance traveled along
             // diagonal springs
             springOutboundAirFlowWeights[s] =
-                // TODOTEST
-                airV
-                //airV * SimulationParameters::SimulationStepTimeDuration<float> * oldPointAirPressureBufferData[pointIndex]
+                airMoved
                 / mSprings.GetFactoryRestLength(cs.SpringIndex)
                 * mSprings.GetWaterPermeability(cs.SpringIndex); // Only along permeable springs
 
