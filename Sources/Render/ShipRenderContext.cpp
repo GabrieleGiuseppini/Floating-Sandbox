@@ -3196,30 +3196,27 @@ void ShipRenderContext::ApplyWaterLevelOfDetailChanges(RenderParameters const & 
     // Set parameter in all affected programs
     //
 
-    // Transform: 0->1 == 2.0->0.01
-    float const waterLevelThreshold = 2.0f + renderParameters.ShipWaterLevelOfDetail * (-2.0f + 0.01f);
-
     if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
     {
         mShaderManager.ActivateProgram(mShipPointsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelThreshold>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelOfDetail>(
             mShipPointsProgram,
-            waterLevelThreshold);
+            renderParameters.ShipWaterLevelOfDetail);
 
         mShaderManager.ActivateProgram(mShipRopesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelThreshold>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelOfDetail>(
             mShipRopesProgram,
-            waterLevelThreshold);
+            renderParameters.ShipWaterLevelOfDetail);
 
         mShaderManager.ActivateProgram(mShipSpringsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelThreshold>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelOfDetail>(
             mShipSpringsProgram,
-            waterLevelThreshold);
+            renderParameters.ShipWaterLevelOfDetail);
 
         mShaderManager.ActivateProgram(mShipTrianglesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelThreshold>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelOfDetail>(
             mShipTrianglesProgram,
-            waterLevelThreshold);
+            renderParameters.ShipWaterLevelOfDetail);
     }
 }
 

@@ -3314,10 +3314,11 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
     auto const squeezeAir = [&](float air, float water)
         {
             // TODOTEST: original
-            float const availableAirVolume = 1.0f / (1.0f + water);
+            //float const availableAirVolume = 1.0f / (1.0f + water);
 
-            // TODOTEST: harder, multiplied
-            //float const availableAirVolume = 1.0f / (1.0f + water * 0.1f);
+            // TODOTEST: capped
+            float const availableAirVolume = std::max(1.0f - water, 0.1f);
+
             return air / availableAirVolume;
         };
 

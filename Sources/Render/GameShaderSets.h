@@ -171,7 +171,7 @@ enum class ProgramParameterKind : std::uint8_t
     ViewportSize,
     WaterColor,
     WaterContrast,
-    WaterLevelThreshold,
+    WaterLevelOfDetail,
     WidthNdc,
     WindDirection,
     WorldPerPixel,

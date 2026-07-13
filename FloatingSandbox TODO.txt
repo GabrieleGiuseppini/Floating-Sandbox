@@ -2166,23 +2166,41 @@
 								X Option 4: option 1 w/out rest length @ air
 									! No change
 
-							- Fighting for higher speed:
-								- Water pressure under air is quite high: why doesn't it equalize with air at top?
-									- Point above has high squeeze though
-									- Should lower squeezing for water->air (up)?							
-										- Squeezeness fine-tuning: multiplier or pow
-											- 0: use ideal gas formula
-											- 1: try with multiplier for volume (steal UI scaler)
-											- 2: try with exponent (steal UI scaler)
+							= Fighting for higher speed:
+								= Water pressure under air is quite high: why doesn't it equalize with air at top?
+									! Point above has high squeeze though
+									= Should lower squeezing for water->air (up)?							
+										= Squeezeness fine-tuning: multiplier or pow
+											+ 1: try with multiplier for volume (steal UI scaler)
+												+ Steepness analysis: higher value of slider makes for less steepness (~continuous)
+												+ With 0.094/0.438: @ factor=10 overshoots ocean level; needs lower water diffusion speed (0.188)
+											= 2: try with fixed bottom cap of avail volume
+												+ std::max(1.0f - water, 0.001f):
+													+ Very steep air->water step
+													+ Air is zero immediately after water starts
+													+ Nice non-flat interface
+													+ Scorecard: bell: TODO; sea level: -41; after holes: VERY SLOW
+												+ std::max(1.0f - water, 0.1f): <-- WINNER!
+													+ Less steep air->water step
+													+ Some air survives underneat water level
+													+ Flat interface
+													+ Scorecard: bell: -46.7; sea level: -18; after holes: 0.0 (so slowly)
+												- However, this one requires a division now - should we got back to previous one?
+							+ Flat interface:
+								+ Shader: 0.2 needs to show more, and so does 0.05
+								+ Try with linear param
+									+ Set default as 0.625
+									+ Change formula @ ShipRenderContext
+									+ Test
+									+ If ok:
+										+ Rename shader param
 
-							- Static factor to damp air transfer to prevent oscillations (AirPressureEqualizationSpeed): 
-								+ Option 1: split WaterDiffusionSpeedAdjustment into AirPressureDiffusionSpeedAdjustment
-								- Option 2: technically should be exponential, so speed depends on deltaP - need to move speed (scaling) calc'n at spring
 							= Water velocity damping:
 								= Option 1: static factor
 									- See if can optimize by not requiring loop
 								- Check if really needed, especially now that we've fixed momenta bounces (no delta-pressure at walls)
-								- Setting?
+									- Scorecard without: 
+								- If stays: setting?
 
 					- Test goals:
 						- Water level stops in bell
@@ -2227,8 +2245,6 @@
 							- See if can simplify math by having Formulae directly in equivalent water height's
 						- Points.h: commented-out GetCumulatedOutflownAirPressure
 
-				- Cleanup:
-					- If air pressure ended up being moles (depends on squeezeness and egress/ingress), change all names
 				- Temperature <-> Air Pressure
 					- A new step, before pressure, makes EffectiveAirPressure from AirPressure and Temperature
 				+ Finalize unit of AirPressure
@@ -2242,14 +2258,30 @@
 				- Tools:
 					- Flood
 					- Internal Pressure
-			- Test:
+			- Tests:
 				- Flotsam: water intake
 				- Rain: water intake
 				- Cloth, ropes: retention (and air)
 				- Kinetic energy->Splash sounds
 				- Default water crazyness
 				- Flooding speeds compared with previous version
-				- Water diffusion speed
+
+
+			- Decide if need to change Air to "moles"
+				- Quantity is multiplier of number of moles in 1m3 which make pressure == bottom of 1m water column
+				- Update actions below based on this
+
+			- Multiple runs of moves:
+				- Do perf baseline with prev release
+				- Don't forget to account for # of iterations @ moves
+					- Diffusion speeds: lock them down
+						- Local values from optimals found, obviously adjusted for # iterations
+						- Nuke SimulationParams
+				- Reading @ end of all
+
+				- Optimizations:
+					- See if can calc kinetic/splashes simply by looking @ before and after
+					- At each pass, calculate air pressures in local buffer - based on T and W
 
 			- Cleanup:
 				- Nuke InternalPressure concept

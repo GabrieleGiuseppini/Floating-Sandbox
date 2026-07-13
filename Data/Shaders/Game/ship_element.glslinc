@@ -82,7 +82,7 @@ uniform float paramOceanDepthDarkeningRate;
 uniform float paramShipDepthDarkeningSensitivity;
 uniform vec3 paramWaterColor;
 uniform float paramWaterContrast;
-uniform float paramWaterLevelThreshold;
+uniform float paramWaterLevelOfDetail;
 #endif
 uniform vec3 paramLampLightColor;
 uniform vec2 paramShipEnhancementsTextureSpaceMagnificationFactor;
@@ -148,7 +148,7 @@ void main()
 #else
     float vertexWater = vertexAttributes1.y;
 #endif
-    float vertexColorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
+    float vertexColorWetness = min(pow(vertexWater, paramWaterLevelOfDetail), 1.0) * paramWaterContrast;
     fragColour = mix(fragColour, paramWaterColor, vertexColorWetness);
 
     // Complement missing ambient light with point's light

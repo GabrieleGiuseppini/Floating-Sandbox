@@ -521,8 +521,8 @@ ProgramParameterKind StrToProgramParameterKind(std::string const & str)
         return ProgramParameterKind::WaterColor;
     else if (str == "WaterContrast")
         return ProgramParameterKind::WaterContrast;
-    else if (str == "WaterLevelThreshold")
-        return ProgramParameterKind::WaterLevelThreshold;
+    else if (str == "WaterLevelOfDetail")
+        return ProgramParameterKind::WaterLevelOfDetail;
     else if (str == "WidthNdc")
         return ProgramParameterKind::WidthNdc;
     else if (str == "WindDirection")
@@ -650,8 +650,8 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
             return "WaterColor";
         case ProgramParameterKind::WaterContrast:
             return "WaterContrast";
-        case ProgramParameterKind::WaterLevelThreshold:
-            return "WaterLevelThreshold";
+        case ProgramParameterKind::WaterLevelOfDetail:
+            return "WaterLevelOfDetail";
         case ProgramParameterKind::WidthNdc:
             return "WidthNdc";
         case ProgramParameterKind::WindDirection:
