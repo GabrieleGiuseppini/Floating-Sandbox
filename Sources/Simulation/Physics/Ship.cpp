@@ -3495,12 +3495,10 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 pointWaterVelocityAlongSpring + bernoulliVelocityAlongSpring * alphaCrazyness,
                 0.0f);
 
-            // Store weight along spring, scaling for the greater distance traveled along
-            // diagonal springs
+            // Store weight along spring, as quantity of water (& pressure) moved by velocity;
+            // scaling for the greater distance traveled along diagonal springs
             springOutboundWaterFlowWeights[s] =
-                // TODOTEST
-                springOutboundScalarWaterVelocity
-                //springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> * oldPointWaterBufferData[pointIndex]
+                springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> * oldPointWaterBufferData[pointIndex]
                 / mSprings.GetFactoryRestLength(cs.SpringIndex);
 
             // Resultant outbound velocity along spring
@@ -3752,20 +3750,6 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 #endif
             }
 
-
-            //
-            //if (newPointWaterBufferData[pointIndex] != 0.0f)
-            //{
-            //    newPointWaterVelocityBufferData[pointIndex] =
-            //        newPointWaterMomentumBufferData[pointIndex]
-            //        / newPointWaterBufferData[pointIndex];
-            //}
-            //else
-            //{
-            //    // No mass, no velocity
-            //    newPointWaterVelocityBufferData[pointIndex] = vec2f::zero();
-            //}
-
             //
             // Air
             //
@@ -3824,6 +3808,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
     for (auto pointIndex : mPoints.RawShipPoints())
     {
         newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
+
+        // Update total air
         if (!mPoints.IsDamaged(pointIndex))
             todoTotalAir += newPointAirPressureBufferData[pointIndex];
     }

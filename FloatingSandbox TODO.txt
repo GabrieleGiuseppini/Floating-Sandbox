@@ -2114,26 +2114,24 @@
 
 							! Scorecard: bell: ; sea-level: ; after holes: (so slowly)
 
-							= Newton-Rhapson (orig: for each point, water and air on _old_ buffers):
+							+ Newton-Rhapson (orig: for each point, water and air on _old_ buffers):
 								! 0.125 diffusion speed is stable, rises exactly at sea level, but slow
 								! 0.625 is chaotic, rises more (more water inflow) - also above sea level, but speed is ok-ish
 								! 0.094/0.281: air little oscillating bug converging, water is chaotic, rises to -48 (high-ish, because of more water inflow?), but reaches sea level, visual speed is ok-ish
-									! Sea-level test: airtight: -20; after holes: 
-
 								! Water converted to mass (dt, etc.): no real difference
 									! Without conversion:
 										! Speed=0.5  : bell: -46; sea-level: -18; after holes: -1.6 (so slowly)
 										! Speed=0.562: bell: -46; sea-level: -17; after holes: 0.0 (so slowly)
 								! Air converted to mass (dt, etc.): air diffusion speed is unbearably slow
-
 								! Best so far:
 									! Diffusion speeds: 0.094/0.562
-									! Neither water nor air converted to mass
+									! Water outflow using dt; air not
+									! Diffusion speeds: 0.094/0.438: scorecard: bell: -46; sea-level: -18.7; after holes: 0.0 (so slowly)
 							X Gauss-Seidel 1 (for each point, water and air on _new_ buffers):
 								+ Implement as separate func
 									+ Point velocities recalc'd for each point, after outflow through all springs
 								! No more oscillations! But very direction-sensitive, unless very slow speed
-								- 0.094/0.094: no oscillations, directional bias at times, slower than NR; bell: -63; sea-level: -34; after holes: stays put!								
+								+ 0.094/0.094: no oscillations, directional bias at times, slower than NR; bell: -63; sea-level: -34; after holes: stays put!								
 							X Gauss-Seidel 2 (water first, then air - on _old_ buffers):
 								! Still chaotic; doesn't reach sea level - water ingress stops
 
@@ -2142,27 +2140,40 @@
 								X Doesn't change anything
 							+ Separate diffusion speeds for water and air
 								+ Re-evaluate three, finding sweet speeds
+							+ Fix dimensions (prepare for multiple iterations):
+								+ 1: Bernoulli: do we use it right? We're adding delta_h and delta_p
+									! Remember: water (and air) P are in "height terms"
+									+ @ Ingress/Egress
+									+ @ Water moves
+								+ 2: ingress uses V*dt, so use dt also @ water moves
+									+ Units of springOutboundWaterFlowWeights becomes water (i.e. equivalent height)
+									+ Before: factor @ 1715: 0.1/0.4
+									+ After: factor @ 1715: 0.1/0.4
+									+ Will require diffusion speed value changes
+									! Diffusion speeds: 0.094/0.5: scorecard: bell: -45; sea-level: -16.7; after holes: overshoots
+									! Diffusion speeds: 0.094/0.438: scorecard: bell: -46; sea-level: -18.7; after holes: 0.0 (so slowly)
 
 							= Obliquity
-								= Option 1: 0->+1
+								+ Option 1: 0->+1
 									+ Obliquity: still oblique, but converges
-									= Scorecard: bell: -47; sea-level: -17; after holes: 0.0 (so slowly)
+									+ Scorecard: bell: -47; sea-level: -17; after holes: 0.0 (so slowly)
 										! Doesn't reach sea level
 									+ Better water-air interface: moves more
 								X Option 2: -1->+1
 									! FREEZES! Nothing moves
 								X Option 3: no direction for water (W1+Asq1 - W2+Asq2)
 									! FREEZES! Nothing moves
-								- Option 4: option 1 w/out rest length
+								- Option 4: option 1 w/out rest length @ air
 
 							- Fighting for higher speed:
 								- Water pressure under air is quite high: why doesn't it equalize with air at top?
 									- Point above has high squeeze though
-									- Should lower squeezing for water->air (up)?
-							
-							= Water pressure after air is low
-								= Opt 1: use squeeze for air @ water
-							- Squeezeness fine-tuning: multiplier or pow
+									- Should lower squeezing for water->air (up)?							
+										- Squeezeness fine-tuning: multiplier or pow
+											- 0: use ideal gas formula
+											- 1: try with multiplier for volume (steal UI scaler)
+											- 2: try with exponent (steal UI scaler)
+
 							- Static factor to damp air transfer to prevent oscillations (AirPressureEqualizationSpeed): 
 								+ Option 1: split WaterDiffusionSpeedAdjustment into AirPressureDiffusionSpeedAdjustment
 								- Option 2: technically should be exponential, so speed depends on deltaP - need to move speed (scaling) calc'n at spring
@@ -2186,16 +2197,18 @@
 						- Remove cross-cut readings
 
 				= Ingress/Egress and bubbles
-					+ Water: enters or leaves based on internal total pressure <-> total external pressure differential
-						+ To discount intake because of exhaggerated air compressibility, however, we only consider
-						  external water pressure, and thus only internal water pressure
-						+ So stays as old
+					= Water: enters or leaves based on internal total pressure <-> total external pressure differential
+						+ Consider total external and total internal pressures - thus including air
+
+						- Things to try/tune:
+							- Use squeezed air pressure for calculation of internal pressure
 					= Air:
 						+ Leaves all if underwater
 						+ Enters iff above-water and (air/total) pressure outside > air pressure inside
-						- TODO: rate of air pressure, cannot use bernoulli
-							- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
-						- Add SimulationParameters::AirIntakeAdjustment?
+						- Things to try/tune:
+							- Rate of air pressure, cannot use bernoulli
+								- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
+							- Add SimulationParameters::AirIntakeAdjustment?
 					= Air Bubbles
 						+ Rename cumulation members
 						+ Bubble contribution proportional _only_ to air pressure that left point
@@ -2203,6 +2216,8 @@
 						- Note that now we increase pressure lost also when above ground, but that shouldn't result in bubbles
 							- Decide: count anyway and no spawn, or no count
 					- Water pump
+
+					- Rain
 
 					- Cleanup
 						- Comments
@@ -2225,7 +2240,6 @@
 				- Tools:
 					- Flood
 					- Internal Pressure
-
 			- Test:
 				- Flotsam: water intake
 				- Rain: water intake
@@ -2240,7 +2254,9 @@
 					- Points
 					- ...
 				- Nuke Ship::UpdateWaterVelocities
-				- Ship::UpdatePressureAndWaterInflow
+				- Keep only winner of Ship::UpdatePressureAndWaterInflow: Newton-Rhapson
+				- TODO: are we changing Air to "moles"?
+					- Quantity we keep is moles in 1m3 at 1m3 water pressure
 				- Renames (Internal Pressure -> Air Pressure):
 					- PhysicsData
 						- PhysicsData struct
