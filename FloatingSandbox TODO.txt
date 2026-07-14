@@ -2206,9 +2206,38 @@
 								+ See if it's air diffusion speed
 									! Improves
 									+ 0.688: rises more; overshoots sea level
-								- See if everything improves with multiple runs
-									- Try rough one here, taking into account # of iterations
-									- Experiment with speed vs # of iterations
+								= See if everything improves with multiple runs
+									+ Try rough one here, taking into account # of iterations
+									= Experiment with speed vs # of iterations
+									= Try both options:
+										= Number of iterations doesn't change increments											
+											= 4 iterations: 
+												! Definitely smoother cross-cut readings, and definitely faster
+												- Scorecard: bell: TODO; sea level: -18; after holes: overshoots by a little bit (less slowly!)
+										= Number of iterations lowers increments
+											= 4 iterations:
+												! WAY SMOOTHER cross-cut readings, and definitely faster
+												+ Air speed 0.281, water 0.5 still looks smooth
+												= Air/water speeds 1.0: still looks smooth, and helps default ship! But overshoots
+													- Try to fight overshooting with squeezing func
+														- Make it with a slider
+											= 2 iterations:
+												= FIX: Air is frozen in square wave: fix air diffusion, clearly wrong
+													+ ...and something similar also applies to water
+													+ Follow 6715
+													= Opt 1: norm = 1/sum * min(1, air * diff_speed)
+														+ Air only:
+															+ 1 iter: decently low air oscillations; slow convergence though - top stays at 1atm for long, but grows (slowly)
+															- 2 iters: 
+														+ Air + Water:
+															+ 1 iter: decently low water oscillations; chaos at interface, with air recoiling down in the short term - but it makes for nice non-flat interface
+																+ Scorecard: bell: -49.8; sea level: -20.7; after holes: stops at -7.8, with steep air->water step
+																+ default_ship: disappointing: water doesn't rise as it should
+															+ 2 iters: water VERY smooth, air oscillates as before; air escapes quicker from holes
+																+ Scorecard: bell: TODO; sea level: TODO; after holes: -7.6
+														- Recheck norm factor
+														- Try to adjust squeezing, hoping that water doesn't rise to sea level because of step
+															- Add slider to squeezing
 
 
 

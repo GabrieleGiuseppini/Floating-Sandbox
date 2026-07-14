@@ -62,7 +62,8 @@ PressureCrossCutReadingsProbeControl::PressureCrossCutReadingsProbeControl(
 
 void PressureCrossCutReadingsProbeControl::RegisterReadings(std::vector<PressureReading> const & readings)
 {
-    if (mReadings.empty())
+    // TODOTEST
+    //if (mReadings.empty())
     {
         RecalculateReadingsStatistics(readings);
     }
@@ -89,6 +90,8 @@ void PressureCrossCutReadingsProbeControl::OnLeftMouseClick(wxMouseEvent & /*eve
     mViewZoom = 1;
     mViewLeftSampleI = 0;
 
+    mMaxValue = std::numeric_limits<float>::lowest();
+    mMinValue = std::numeric_limits<float>::max();
     RecalculateReadingsStatistics(mReadings);
 
     Refresh();
@@ -211,8 +214,6 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
 
 void PressureCrossCutReadingsProbeControl::RecalculateReadingsStatistics(std::vector<PressureReading> const & readings)
 {
-    mMaxValue = std::numeric_limits<float>::lowest();
-    mMinValue = std::numeric_limits<float>::max();
     for (auto const & r : readings)
     {
         mMaxValue = std::max(mMaxValue, r.AirPressure + r.WaterPressure);
