@@ -3311,6 +3311,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 
     // Total air flow weight
     float totalOutboundAirFlowWeight;
+    float totalOutboundAirFlowWeightSquared = 0.0f;
 
     auto const squeezeAir = [&](float air, float water)
         {
@@ -3427,6 +3428,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 
             totalOutboundWaterFlowWeight = 0.0f;
             totalOutboundAirFlowWeight = 0.0f;
+            totalOutboundAirFlowWeightSquared = 0.0f;
 
             size_t const connectedSpringCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
             for (size_t s = 0; s < connectedSpringCount; ++s)
@@ -3529,7 +3531,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 // Store weight along spring, as quantity of water (& pressure) moved by velocity;
                 // scaling for the greater distance traveled along diagonal springs
                 springOutboundWaterFlowWeights[s] =
-                    springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> *oldPointWaterBufferData[pointIndex]
+                    springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> * oldPointWaterBufferData[pointIndex]
                     / mSprings.GetFactoryRestLength(cs.SpringIndex);
 
                 // Resultant outbound velocity along spring
@@ -3626,6 +3628,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 
                 // Update total outbound flow weight
                 totalOutboundAirFlowWeight += springOutboundAirFlowWeights[s];
+                totalOutboundAirFlowWeightSquared += springOutboundAirFlowWeights[s] * springOutboundAirFlowWeights[s];
             }
 
             //
@@ -3670,9 +3673,16 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 //    (oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * (simulationParameters.AirDiffusionSpeedAdjustment),
                 //    1.0f);
 
+                // TODOTEST
+                //airPressureQuantityNormalizationFactor =
+                //    std::min(1.0f, oldPointAirPressureBufferData[pointIndex] * simulationParameters.AirDiffusionSpeedAdjustment)
+                //    / totalOutboundAirFlowWeight;
+
+                // TODOTEST: quadratic
                 airPressureQuantityNormalizationFactor =
-                    std::min(1.0f, oldPointAirPressureBufferData[pointIndex] * simulationParameters.AirDiffusionSpeedAdjustment)
-                    / totalOutboundAirFlowWeight;
+                    std::min(
+                        1.0f / totalOutboundAirFlowWeight,
+                        oldPointAirPressureBufferData[pointIndex] * simulationParameters.AirDiffusionSpeedAdjustment / totalOutboundAirFlowWeightSquared);
             }
 
             // TODOTEST
@@ -3798,7 +3808,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 // Calculate quantity of air pressure directed outwards,
                 // being careful not to overdrain the point
                 float const springOutboundQuantityOfAirPressure = std::min(
-                    springOutboundAirFlowWeights[s] * airPressureQuantityNormalizationFactor,
+                    springOutboundAirFlowWeights[s] * springOutboundAirFlowWeights[s] * airPressureQuantityNormalizationFactor,
                     newPointAirPressureBufferData[pointIndex]);
 
                 assert(springOutboundQuantityOfAirPressure >= 0.0f);

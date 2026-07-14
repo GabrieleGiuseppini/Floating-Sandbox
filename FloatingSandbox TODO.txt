@@ -2236,6 +2236,14 @@
 															+ 2 iters: water VERY smooth, air oscillates as before; air escapes quicker from holes
 																+ Scorecard: bell: TODO; sea level: TODO; after holes: -7.6
 														- Recheck norm factor
+															= Quadratic one:
+																= Air only:
+																	+ 1 iter: super smooth, air is flat line! And perfect air/water continuity, no step
+																	+ Scorecard: sea level: -14; after holes: alsmot reaches sea level!
+																	+ default_ship: slightly better
+																- Air + Water:
+																	- 1 iter: 
+
 														- Try to adjust squeezing, hoping that water doesn't rise to sea level because of step
 															- Add slider to squeezing
 
