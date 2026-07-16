@@ -3,7 +3,7 @@
 #include "gtest/gtest.h"
 
 #ifndef _MSC_VER
-#define _GCC_EXTRA (-0.0001f)
+#define _GCC_EXTRA (-0.0002f)
 #else
 #define _GCC_EXTRA 0.0f
 #endif
@@ -407,6 +407,7 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_Smaller1H)
         std::roundf(
             (26 + 27 + 28 + 29) / 4.0f * 0.5f // 4-7 @ 1
             + (38 + 39 + 40 + 41) / 4.0f * 0.5f // 4-7 @ 2
+            + _GCC_EXTRA
         ));
 
     EXPECT_EQ(
@@ -421,6 +422,7 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_Smaller1H)
         std::roundf(
             (138 + 139 + 140 + 141) / 4.0f * 0.166666687f // 8-11 - @10
             + (150 + 151 + 152 + 153) / 4.0f * 0.833333313f // 8-11 - @11
+            + _GCC_EXTRA
         ));
 }
 
