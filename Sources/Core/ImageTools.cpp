@@ -7,6 +7,9 @@
 
 #include "Algorithms.h" // Picks up specialization for vec4f
 
+// TODOTEST
+#include <iostream>
+
 #include <memory>
 
 template<typename TImageData>
@@ -207,6 +210,9 @@ TImageData ImageTools::Resize(
                     },
                     [&](int tgtY, f_color_type const & c)
                     {
+                        if (srcX == 1 && tgtY == 22)
+                            std::cout << c.x << std::endl;
+
                         assert(tgtY >= 0 && tgtY < newSize.height);
                         (*hOutputImageFPtr)[{srcX, tgtY}] = c;
                     });
