@@ -9,6 +9,7 @@
 
 // TODOTEST
 #include <iostream>
+#include <iomanip>
 
 #include <memory>
 
@@ -654,7 +655,7 @@ TImageData ImageTools::InternalFromFloat(Buffer2D<typename TImageData::element_t
         *(trg + i) = typename TImageData::element_type(*(src + i));
 
 
-        std::cout << "conv: " << ((*(src + i)).x) << " " << int((*(trg + i)).r) << std::endl;
+        std::cout << std::scientific << "conv: " << ((*(src + i)).x) << " " << int((*(trg + i)).r) << std::endl;
     }
 
     return result;
