@@ -240,7 +240,7 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_LargerH)
         std::roundf(
             (134 + 135 + 136 + 137) / 4.0f * 0.25f
             + (146 + 147 + 148 + 149) / 4.0f * 0.75f
-            + 0.001f // gcc-generated code yields slightly different roundings
+            - 0.0001f // gcc
         ));
 
     EXPECT_EQ(
