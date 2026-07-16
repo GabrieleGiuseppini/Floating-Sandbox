@@ -1882,7 +1882,7 @@
 		+ PC
 		+ Android
 
-	- Rot exposure: faster than rust (or equal)
+	+ Rot exposure: faster than rust (or equal)
 
 	= Localization
 		+ IT

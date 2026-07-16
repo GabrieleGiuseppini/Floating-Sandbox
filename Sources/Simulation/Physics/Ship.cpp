@@ -3537,7 +3537,7 @@ void Ship::DecayPoints(
     {
         if (simulationParameters.RotAcceler8r >= 0.01f)
         {
-            float constexpr NsExposed = 40.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            float constexpr NsExposed = 30.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
             mDecayRotExposedDryAlpha = powf(0.85f, simulationParameters.RotAcceler8r / NsExposed);
             mDecayRotExposedWetAlpha = powf(0.25f, simulationParameters.RotAcceler8r / NsExposed);
 

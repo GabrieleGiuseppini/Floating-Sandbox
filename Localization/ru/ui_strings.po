@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-28 16:36+0200\n"
+"PO-Revision-Date: 2026-07-16 19:26+0200\n"
 "Last-Translator: matheusvhs\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -55,10 +55,8 @@ msgid "(Structure View)"
 msgstr "(Просмотр структуры)"
 
 #: ..\Sources\FloatingSandbox\UI\CreditsPanel.cpp:73
-#, fuzzy
-#| msgid "(c) Gabriele Giuseppini (G2-Labs) 2018-2025"
 msgid "(c) Gabriele Giuseppini (G2-Labs) 2018-2026"
-msgstr "(c) Gabriele Giuseppini (G2-Labs) 2018-2025"
+msgstr "(c) Gabriele Giuseppini (G2-Labs) 2018-2026"
 
 #: ..\Sources\FloatingSandbox\UI\CreditsPanel.cpp:171
 msgid "3RD-PARTY SOFTWARE"
@@ -131,10 +129,9 @@ msgstr ""
 "Регулирует, насколько детализированной выглядит вода внутри физического тела."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2237
-#, fuzzy
-#| msgid "Adjusts how long silt clouds take to settle when underwater."
 msgid "Adjusts how long foam takes to settle."
-msgstr "Регулирует, сколько времени потребуется для очитски океанической пыли."
+msgstr ""
+"Регулирует, сколько времени потребуется для очистски океанической пены."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2646
 msgid "Adjusts how long it takes for smoke emitted by fire to vanish."
@@ -148,7 +145,8 @@ msgstr ""
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1808
 msgid "Adjusts how long silt clouds take to settle when underwater."
-msgstr "Регулирует, сколько времени потребуется для очитски океанической пыли."
+msgstr ""
+"Регулирует, сколько времени потребуется для очистски океанической пыли."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1544
 msgid "Adjusts how much the bedrock surface rolls up and down."
@@ -389,28 +387,20 @@ msgid "Adjusts the rate with which materials consume when burning."
 msgstr "Регулирует скорость, с которой материалы уничтожаются при горении."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2210
-#, fuzzy
-#| msgid ""
-#| "Adjusts the sensitivity of dust in forming clouds upon impact. Set to "
-#| "zero to disable dust clouds altogether."
 msgid ""
 "Adjusts the sensitivity for creating foam on the ocean surface upon "
 "disturbances. Set to zero to disable foam altogether."
 msgstr ""
-"Регулирует чуствительнось пыли при столкновении. Установите на ноль, чтобы "
-"полностью отключить океаническую пыль."
+"Регулирует чуствительнось океанической пены при погружении в воду. "
+"Установите на ноль, чтобы полностью отключить океаническую пену."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2263
-#, fuzzy
-#| msgid ""
-#| "Adjusts the sensitivity of dust in forming clouds upon impact. Set to "
-#| "zero to disable dust clouds altogether."
 msgid ""
 "Adjusts the sensitivity for creating splashes on the ocean surface upon "
 "disturbances. Set to zero to disable splashes altogether."
 msgstr ""
-"Регулирует чуствительнось пыли при столкновении. Установите на ноль, чтобы "
-"полностью отключить океаническую пыль."
+"Регулирует чуствительнось всплекса при столкновении с водой. Установите на "
+"ноль, чтобы полностью отключить океанический всплекс."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1782
 msgid ""
@@ -1119,10 +1109,8 @@ msgid "Debug"
 msgstr "Откладка"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1330
-#, fuzzy
-#| msgid "Draw Decay"
 msgid "Decay"
-msgstr "Показывать Распад"
+msgstr "Распад"
 
 #: ..\Sources\FloatingSandbox\UI\BootSettingsDialog.cpp:55
 #: ..\Sources\FloatingSandbox\UI\BootSettingsDialog.cpp:100
@@ -1966,16 +1954,12 @@ msgid "Fluid Crazyness"
 msgstr "Водное безумие"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2236
-#, fuzzy
-#| msgid "Game Preferences"
 msgid "Foam Persistence"
-msgstr "Игровые Предпочтения"
+msgstr "Упорство Пены"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2209
-#, fuzzy
-#| msgid "Cloud Sensitivity"
 msgid "Foam Sensitivity"
-msgstr "Чувствительность Облаков"
+msgstr "Чувствительность Пены"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:650
 msgid "Follow NPC"
@@ -1994,10 +1978,8 @@ msgid "Force no glFinish()"
 msgstr "Не принудительно использовать glFinish ()"
 
 #: ..\Sources\FloatingSandbox\UI\BootSettingsDialog.cpp:138
-#, fuzzy
-#| msgid "Force no multithreaded rendering"
 msgid "Force no multi-sampling"
-msgstr "Запрещать многопоточный рендеринг"
+msgstr "Запрещать многовой самплинг"
 
 #: ..\Sources\FloatingSandbox\UI\BootSettingsDialog.cpp:93
 msgid "Force no multithreaded rendering"
@@ -2205,11 +2187,9 @@ msgstr ""
 "Сколько воды закачивается или сливается устройством для затопления (м³)."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4468
-#, fuzzy
-#| msgid "How wide an area is affected by the scrub/rot tool (m)."
 msgid "How wide an area is affected by the scrub/rust tool (m)."
 msgstr ""
-"Насколько широкую область воздействует инструмент для чистки/гниения (м)."
+"Насколько широкую область воздействует инструмент для чистки/ржавения (м)."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4107
 msgid "How wide an area is flooded or drained by the flood tool (m)."
@@ -3270,15 +3250,11 @@ msgstr ""
 "вычислительных ресурсов)."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:5209
-#, fuzzy
-#| msgid ""
-#| "Renders the ocean with additional details. Requires more computational "
-#| "resources."
 msgid ""
 "Renders the ship with additional details. Requires more computational "
 "resources."
 msgstr ""
-"Отображает океан с дополнительными деталями. (Требуется больше "
+"Отображает корабль с дополнительными деталями. (Требуется больше "
 "вычислительных ресурсов)."
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:538
@@ -3416,16 +3392,12 @@ msgid "Rotate the ship 90 degrees clockwise."
 msgstr "Поверните корабль на 90 градусов на право."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1369
-#, fuzzy
-#| msgid "Rot Acceler8r"
 msgid "Rust Acceler8r"
-msgstr "Ускоритель гниения"
+msgstr "Ускоритель ржавения"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1396
-#, fuzzy
-#| msgid "Combustion Heat Adjust"
 msgid "Rust Decay Adjust"
-msgstr "Температура горения"
+msgstr "Ускоритель гниения (ржавчина)"
 
 #: ..\Sources\ShipBuilderLib\UI\MaterialPalette.cpp:618
 msgid "Rust Receptivity"
@@ -3534,16 +3506,12 @@ msgid "Screenshot directory:"
 msgstr "Каталог снимков экрана:"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:543
-#, fuzzy
-#| msgid "Scrub/Rot"
 msgid "Scrub/Rust"
-msgstr "Губка/Гниение"
+msgstr "Губка/Ржавитель"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4437
-#, fuzzy
-#| msgid "Scrub/Rot Tool"
 msgid "Scrub/Rust Tool"
-msgstr "Инструмент Губка / Гниение"
+msgstr "Инструмент Губка / Ржавитель"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4631
 msgid "Sea"
@@ -3923,10 +3891,8 @@ msgid "Speed Adjust"
 msgstr "Настройка скорости"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2262
-#, fuzzy
-#| msgid "Cloud Sensitivity"
 msgid "Splash Sensitivity"
-msgstr "Чувствительность Облаков"
+msgstr "Чувствительность Всплевсков"
 
 #: ..\Sources\ShipBuilderLib\UI\MaterialPalette.cpp:857
 msgid "Spread"
