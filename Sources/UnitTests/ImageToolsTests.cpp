@@ -240,6 +240,10 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_LargerH)
         + (146 + 147 + 148 + 149) / 4.0f * 0.75f
         );
     std::cout << "foo1=" << foo1 << " " << std::roundf(foo1) << std::endl;
+    std::cout << std::roundf(
+        (134 + 135 + 136 + 137) / 4.0f * 0.25f
+        + (146 + 147 + 148 + 149) / 4.0f * 0.75f
+    ) << std::endl;
 
     vec4f cacca(0.566667f, 0.566667f, 0.566667f, 0.566667f);
     rgbaColor cacca2(cacca);

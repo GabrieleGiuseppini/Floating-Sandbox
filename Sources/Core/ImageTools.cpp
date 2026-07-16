@@ -652,6 +652,9 @@ TImageData ImageTools::InternalFromFloat(Buffer2D<typename TImageData::element_t
     for (size_t i = 0; i < sz; ++i)
     {
         *(trg + i) = typename TImageData::element_type(*(src + i));
+
+
+        std::cout << "conv: " << ((*(src + i)).x) << " " << int((*(trg + i)).r) << std::endl;
     }
 
     return result;
