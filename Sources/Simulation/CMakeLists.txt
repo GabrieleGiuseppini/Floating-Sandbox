@@ -40,6 +40,7 @@ set  (SIMULATION_SOURCES
 	ShipOverlays.cpp
 	ShipOverlays.h
 	ShipPhysicsData.h
+	ShipPreviewData.cpp
 	ShipPreviewData.h
 	ShipStrengthRandomizer.cpp
 	ShipStrengthRandomizer.h
