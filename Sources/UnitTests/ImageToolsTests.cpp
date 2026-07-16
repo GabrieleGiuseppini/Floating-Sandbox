@@ -2,6 +2,7 @@
 
 #include "gtest/gtest.h"
 
+// GCC comes up with slightly different roundings
 #ifndef _MSC_VER
 #define _GCC_EXTRA (-0.0001f)
 #else
