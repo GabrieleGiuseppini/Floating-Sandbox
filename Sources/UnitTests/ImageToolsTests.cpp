@@ -216,35 +216,35 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_LargerH)
 
     EXPECT_EQ(
         int(destImage[ImageCoordinates(0, 0)].r),
-        std::roundf(
+        (
             (10 + 11 + 12 + 13) / 4.0f * 0.75f
             + (10 + 11 + 12 + 13) / 4.0f * 0.25f
         ));
 
     EXPECT_EQ(
         int(destImage[ImageCoordinates(1, 0)].r),
-        std::roundf(
+        (
             (14 + 15 + 16 + 17) / 4.0f * 0.75f
             + (14 + 15 + 16 + 17) / 4.0f * 0.25f
         ));
 
     EXPECT_EQ(
         int(destImage[ImageCoordinates(1, 1)].r),
-        std::roundf(
+        (
             (14 + 15 + 16 + 17) / 4.0f * 0.75f
             + (26 + 27 + 28 + 29) / 4.0f * 0.25f
         ));
 
     EXPECT_EQ(
         int(destImage[ImageCoordinates(1, 22)].r),
-        std::roundf(
-            (134.0f + 135.0f + 136.0f + 137.0f) / 4.0f * 0.25f
-            + (146.0f + 147.0f + 148.0f + 149.0f) / 4.0f * 0.75f
+        (
+            (134 + 135 + 136 + 137) / 4.0f * 0.25f
+            + (146 + 147 + 148 + 149) / 4.0f * 0.75f
         ));
 
     EXPECT_EQ(
         int(destImage[ImageCoordinates(2, 23)].r),
-        std::roundf(
+        (
             (150 + 151 + 152 + 153) / 4.0f * 0.75f
             + (150 + 151 + 152 + 153) / 4.0f * 0.25f
         ));
