@@ -241,6 +241,10 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_LargerH)
         );
     std::cout << "foo1=" << foo1 << " " << std::roundf(foo1) << std::endl;
 
+    vec4f cacca(0.566667f, 0.566667f, 0.566667f, 0.566667f);
+    rgbaColor cacca2(cacca);
+    std::cout << "cacca=" << int(cacca2.r) << std::endl;
+
     EXPECT_EQ(
         int(destImage[ImageCoordinates(1, 22)].r),
         std::roundf(
