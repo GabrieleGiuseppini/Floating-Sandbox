@@ -235,25 +235,12 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_LargerH)
             + (26 + 27 + 28 + 29) / 4.0f * 0.25f
         ));
 
-    float foo1 = (
-        (134 + 135 + 136 + 137) / 4.0f * 0.25f
-        + (146 + 147 + 148 + 149) / 4.0f * 0.75f
-        );
-    std::cout << "foo1=" << foo1 << " " << std::roundf(foo1) << std::endl;
-    std::cout << std::roundf(
-        (134 + 135 + 136 + 137) / 4.0f * 0.25f
-        + (146 + 147 + 148 + 149) / 4.0f * 0.75f
-    ) << std::endl;
-
-    vec4f cacca(0.566667f, 0.566667f, 0.566667f, 0.566667f);
-    rgbaColor cacca2(cacca);
-    std::cout << "cacca=" << int(cacca2.r) << std::endl;
-
     EXPECT_EQ(
         int(destImage[ImageCoordinates(1, 22)].r),
         std::roundf(
             (134 + 135 + 136 + 137) / 4.0f * 0.25f
             + (146 + 147 + 148 + 149) / 4.0f * 0.75f
+            + 0.001f // gcc-generated code yields slightly different roundings
         ));
 
     EXPECT_EQ(

@@ -7,10 +7,6 @@
 
 #include "Algorithms.h" // Picks up specialization for vec4f
 
-// TODOTEST
-#include <iostream>
-#include <iomanip>
-
 #include <memory>
 
 template<typename TImageData>
@@ -211,9 +207,6 @@ TImageData ImageTools::Resize(
                     },
                     [&](int tgtY, f_color_type const & c)
                     {
-                        if (srcX == 1 && tgtY == 22)
-                            std::cout << c.x << std::endl;
-
                         assert(tgtY >= 0 && tgtY < newSize.height);
                         (*hOutputImageFPtr)[{srcX, tgtY}] = c;
                     });
@@ -653,9 +646,6 @@ TImageData ImageTools::InternalFromFloat(Buffer2D<typename TImageData::element_t
     for (size_t i = 0; i < sz; ++i)
     {
         *(trg + i) = typename TImageData::element_type(*(src + i));
-
-
-        std::cout << std::scientific << "conv: " << ((*(src + i)).x) << " " << int((*(trg + i)).r) << std::endl;
     }
 
     return result;
