@@ -1144,9 +1144,6 @@ private:
     // repair process
     float mRepairGracePeriodMultiplier;
 
-    // Index of last-queried point - used as an aid to debugging
-    ElementIndex mutable mLastQueriedPointIndex;
-
     // Counter of created bubble ephemeral particles
     std::uint64_t mAirBubblesCreatedCount;
 
@@ -1305,6 +1302,9 @@ private:
     //
     // Debug
     //
+
+    // Index of last-queried point - used as an aid to debugging
+    ElementIndex mutable mLastQueriedPointIndex;
 
     std::vector<std::tuple<vec2f, vec2f>> mDebugVectors;
 

@@ -2208,44 +2208,79 @@
 									+ 0.688: rises more; overshoots sea level
 								= See if everything improves with multiple runs
 									+ Try rough one here, taking into account # of iterations
-									= Experiment with speed vs # of iterations
-									= Try both options:
-										= Number of iterations doesn't change increments											
-											= 4 iterations: 
+									= Try options:
+										+ Number of iterations doesn't change increments											
+											+ 4 iterations: 
 												! Definitely smoother cross-cut readings, and definitely faster
-												- Scorecard: bell: TODO; sea level: -18; after holes: overshoots by a little bit (less slowly!)
+												+ Scorecard: bell: TODO; sea level: -18; after holes: overshoots by a little bit (less slowly!)
 										= Number of iterations lowers increments
-											= 4 iterations:
+											+ 4 iterations:
 												! WAY SMOOTHER cross-cut readings, and definitely faster
 												+ Air speed 0.281, water 0.5 still looks smooth
-												= Air/water speeds 1.0: still looks smooth, and helps default ship! But overshoots
-													- Try to fight overshooting with squeezing func
-														- Make it with a slider
+												+ Air/water speeds 1.0: still looks smooth, and helps default ship! But overshoots
 											= 2 iterations:
+												--- NORM FACTOR MATRIX ---
 												= FIX: Air is frozen in square wave: fix air diffusion, clearly wrong
 													+ ...and something similar also applies to water
-													+ Follow 6715
-													= Opt 1: norm = 1/sum * min(1, air * diff_speed)
+													! Follow 6715 (air), 2990 (water)
+														! Orig norm factors:
+															! Allows flows as they come out of calcn's, but require alpha's to not explode
+															! W: Start=35.5; outw: 4,2,0.7,...tot=9.9842; alpha=0.1875 => norm=0.667; total out: 6.66
+																! Total gross water out < point's, but alpha makes norm=0.667 => total net water out << point's
+															! A: Start=13.05; outa: 0.05,0.05,0.02,...tot=0.136509; alpha=0.094 => norm=1.0; total out: 0.136509
+																! Total gross air out << point's, hence norm=1.0 => total net air out == gross << point's
+														! First norm factors:
+															! Fixes flows at 1.0 per-step
+															! W: Start=40; outw: 4,2,0.7,...tot=13.31; alpha=0.5 => norm=0.0751; total out: 1.0
+																! Norm factor enforces only 1 water out at a time, so fixed-speed diffusion
+															! A: Start=13.48; outa: 0.133,...tot=0.133; alpha=1.0 => norm=7.48416; total out: 1.0
+																! Norm factor enforces only 1 air out at a time, so fixed-speed diffusion
+														! Quadratic norm factor for air:
+															! Reduces flows more when flows < 1, amplifies flows when flows > 1
+															! A: Start=12; outa: 0.04,0.06,...tot=0.165; alpha=1.0 => norm=6.05; total out: 0.0557857
+																! Given low values of A, quadratic relations make for even slower diffusion
+
+													+ Opt 1: norm = 1/sum * min(1, air * diff_speed) (fixes flows at 1.0 per-step)
 														+ Air only:
-															+ 1 iter: decently low air oscillations; slow convergence though - top stays at 1atm for long, but grows (slowly)
-															- 2 iters: 
+															+ 1 iter: decently low air oscillations; good step
+																+ Scorecard (1.0,0.375): bell: TODO; sea level: -15.77; after holes: overshoots (3.0)
+															+ 2 iters lowering norm with # iters: smooth air; larger step than with 1 iter
+																+ Scorecard (1.0,0.375): bell: TODO; sea level: -18.7; after holes: -1.88
+															+ 2 iters not lowering norm with # iters:
+																! Faster, obviously
+																+ Scorecard (1.0,0.375): bell: TODO; sea level: say -14; after holes: overshoots (3.13)
 														+ Air + Water:
-															+ 1 iter: decently low water oscillations; chaos at interface, with air recoiling down in the short term - but it makes for nice non-flat interface
-																+ Scorecard: bell: -49.8; sea level: -20.7; after holes: stops at -7.8, with steep air->water step
+															+ 1 iter: decently low water oscillations; chaos at interface, which has steep step - but it makes for nice non-flat and lively interface
+																+ Scorecard (1.0,1.0): bell: -49.8; sea level: -20.7; after holes: stops at -7.8, with steep air->water step
 																+ default_ship: disappointing: water doesn't rise as it should
 															+ 2 iters: water VERY smooth, air oscillates as before; air escapes quicker from holes
 																+ Scorecard: bell: TODO; sea level: TODO; after holes: -7.6
-														- Recheck norm factor
-															= Quadratic one:
-																= Air only:
-																	+ 1 iter: super smooth, air is flat line! And perfect air/water continuity, no step
-																	+ Scorecard: sea level: -14; after holes: alsmot reaches sea level!
-																	+ default_ship: slightly better
-																- Air + Water:
-																	- 1 iter: 
+													+ Opt 2: norm = quadratic (reduces flows more when flows < 1, amplifies flows when flows > 1)
+														+ Quadratic one:
+															+ Air only:
+																+ 1 iter: super smooth, air is flat line! And perfect air/water continuity, no step
+																+ Scorecard: sea level: -14; after holes: almost reaches sea level!
+																+ default_ship: slightly better
+															X Air + Water: overdrains water, water explodes
 
-														- Try to adjust squeezing, hoping that water doesn't rise to sea level because of step
-															- Add slider to squeezing
+													- Try: norm 1, fixing not at 1 but at diffusion speed (capped to point though)
+
+
+					= Fight: overshooting when more chaos, which (probably) is because of irreversibility of water gone up
+						- Quadrant: 1 iter, orig water norm (water speed: 0.375), linear water norm (thus 1) (air speed: 1.0)
+							+ Test 2*air: overshoots, but by very little!
+							+ Test air injection
+								+ Need orign norm in order to drain too much air out
+								+ Air does indeed go up decently (with orig air norm & ~3 air speed)
+									! But this quadrant is same as default_ship
+									+ Problem seems to be speed of air diffusion
+										+ IMPROVEMENT with air speed @ 0.938, but then overshoots
+										X Verify it's really this, with N-iters for air only
+							X Test squeeze tuning (*)
+								! Quadrant: 4 iters (both scaling), 1.0/1.0, orig norms
+								+ default_ship still blocks
+							- Test: skew upness to change shape of air escape (bubble: 103, 223, 393
+						
 
 
 
@@ -2256,6 +2291,7 @@
 						- Water level reaching ocean 
 						- Water level obliqueness (was fixed with upness being n.y instead of being step-like)
 						- Water interface ugly flatness
+							- Depends on step: the steeper and chaotic, the more lively the interface is
 
 					- Cleanup:
 						- Comments

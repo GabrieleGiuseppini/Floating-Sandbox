@@ -1379,6 +1379,14 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
             bestPointIndex,
             std::max(mPoints.GetInternalPressure(bestPointIndex) + quantityOfPressureDelta, 0.0f));
 
+        // TODOTEST
+        mPoints.SetAirPressure(
+            bestPointIndex,
+            std::max(
+                mPoints.GetAirPressure(bestPointIndex) + Formulae::PressureToEquivalentWaterHeight(SimulationParameters::AirPressureAtSeaLevel, SimulationParameters::WaterMass) * pressureQuantityMultiplier,
+                0.0f));
+            //std::max(mPoints.GetAirPressure(bestPointIndex) + quantityOfPressureDelta, 0.0f));
+
         return (mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(bestPointIndex))
             ? ToolApplicationLocus::UnderWater
             : ToolApplicationLocus::AboveWater)

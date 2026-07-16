@@ -123,7 +123,6 @@ Ship::Ship(
     , mWaterSplashedRunningAverage()
     , mIsLightBufferPopulated(false)
     , mRepairGracePeriodMultiplier(1.0f)
-    , mLastQueriedPointIndex(NoneElementIndex)
     , mAirBubblesCreatedCount(0)
     , mCurrentSimulationParallelism(0) // We'll detect a difference on first run
     , mCurrentSpringRelaxationParallelComputationMode() // We'll detect a difference on first run
@@ -137,6 +136,8 @@ Ship::Ship(
     , mCurrentRotAcceler8r(std::numeric_limits<float>::lowest())
     , mCurrentRustAcceler8r(std::numeric_limits<float>::lowest())
     , mCurrentAlgaeGrowthAcceler8r(std::numeric_limits<float>::lowest())
+    // Debug
+    , mLastQueriedPointIndex(NoneElementIndex)
     // Render
     , mLastUploadedDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
@@ -3319,7 +3320,10 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
             //float const availableAirVolume = 1.0f / (1.0f + water);
 
             // TODOTEST: capped
-            float const availableAirVolume = std::max(1.0f - water, 0.1f);
+            //float const availableAirVolume = std::max(1.0f - water, 0.1f);
+
+            // TODOTEST: with slider
+            float const availableAirVolume = 1.0f / (1.0f + water * simulationParameters.AntiMatterBombImplosionStrength);
 
             return air / availableAirVolume;
         };
@@ -3365,15 +3369,18 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
     //
 
     // TODOTEST
+    int constexpr NumberOfIterations = 4;
     //int constexpr NumberOfIterations = 2;
-    int constexpr NumberOfIterations = 1;
+    //int constexpr NumberOfIterations = 1;
     for (int iter = 0; iter < NumberOfIterations; ++iter)
     {
 
 
-        // TODOTEST: move from outside into loop
+        // TODOTEST: moved from outside into loop
         // Calculate water momenta
         mPoints.UpdateWaterMomentaFromVelocities();
+
+
 
         // Source and result water buffers
         auto oldPointWaterBuffer = mPoints.MakeWaterBufferCopy();
@@ -3390,7 +3397,14 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
         float * newPointAirPressureBufferData = mPoints.GetAirPressureBufferAsFloat();
 
 
-
+        // TODOTEST
+        if (mLastQueriedPointIndex != NoneElementIndex)
+        {
+            LogMessage("================");
+            LogMessage("Start W: ", oldPointWaterBufferData[mLastQueriedPointIndex], "  Start A: ", oldPointAirPressureBufferData[mLastQueriedPointIndex]);
+        }
+        float todoTotalWOut = 0.0f;
+        float todoTotalAOut = 0.0f;
 
 
         for (auto pointIndex : mPoints.RawShipPoints())
@@ -3492,7 +3506,9 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 //float const dwDown = (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex]) - oldPointWaterBufferData[cs.OtherEndpointIndex];
 
                 float const dwUp = oldPointWaterBufferData[pointIndex] - (oldPointWaterBufferData[cs.OtherEndpointIndex] + squeezeAir(oldPointAirPressureBufferData[cs.OtherEndpointIndex], oldPointWaterBufferData[cs.OtherEndpointIndex]));
+                // TODOTEST
                 float const dwDown = (oldPointWaterBufferData[pointIndex] + squeezeAir(oldPointAirPressureBufferData[pointIndex], oldPointWaterBufferData[pointIndex])) - oldPointWaterBufferData[cs.OtherEndpointIndex];
+                //float const dwDown = (oldPointWaterBufferData[pointIndex] + 2.0f * squeezeAir(oldPointAirPressureBufferData[pointIndex], oldPointWaterBufferData[pointIndex])) - oldPointWaterBufferData[cs.OtherEndpointIndex];
                 float const dw =
                     (dwUp * springUpness + dwDown * springDownness)
                     * mSprings.GetWaterPermeability(cs.SpringIndex); // Enforce no delta-pressure with (dry) wall
@@ -3541,6 +3557,12 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 
                 // Update total outbound flow weight
                 totalOutboundWaterFlowWeight += springOutboundWaterFlowWeights[s];
+
+                // TODOTEST
+                if (pointIndex == mLastQueriedPointIndex)
+                {
+                    LogMessage("  W Out: springOutboundWaterFlowWeights=", springOutboundWaterFlowWeights[s]);
+                }
 
 #if !FS_IS_PLATFORM_MOBILE()
                 //
@@ -3629,6 +3651,13 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 // Update total outbound flow weight
                 totalOutboundAirFlowWeight += springOutboundAirFlowWeights[s];
                 totalOutboundAirFlowWeightSquared += springOutboundAirFlowWeights[s] * springOutboundAirFlowWeights[s];
+
+
+                // TODOTEST
+                if (pointIndex == mLastQueriedPointIndex)
+                {
+                    LogMessage("  A Out: springUpness=", springUpness, " springDownness=", springDownness," dAirUp=", dAirUp, " dAirDown=", dAirDown, " springOutboundAirFlowWeights=", springOutboundAirFlowWeights[s]);
+                }
             }
 
             //
@@ -3643,14 +3672,21 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
             float waterQuantityNormalizationFactor = 0.0f;
             if (totalOutboundWaterFlowWeight != 0.0f)
             {
-                // TODOTEST: new norm facor
-                //waterQuantityNormalizationFactor = std::min(
-                //    (oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
-                //    1.0f);
+                // TODOTEST: orig
+                waterQuantityNormalizationFactor = std::min(
+                    (oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
+                    1.0f);
 
-                waterQuantityNormalizationFactor =
-                    std::min(1.0f, oldPointWaterBufferData[pointIndex] * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment)
-                    / totalOutboundWaterFlowWeight;
+                // TODOTEST: new norm factor
+                //waterQuantityNormalizationFactor =
+                //    std::min(1.0f, oldPointWaterBufferData[pointIndex] * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment)
+                //    / totalOutboundWaterFlowWeight;
+
+                // TODOTEST
+                if (pointIndex == mLastQueriedPointIndex)
+                {
+                    LogMessage("W: normFactor=", waterQuantityNormalizationFactor, " (oldWater=", oldPointWaterBufferData[pointIndex], " alpha=", (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment), " tot=", totalOutboundWaterFlowWeight, ")");
+                }
             }
 
             // TODOTEST
@@ -3668,10 +3704,10 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
             float airPressureQuantityNormalizationFactor = 0.0f;
             if (totalOutboundAirFlowWeight != 0.0f)
             {
-                // TODOTEST: new norm facor
-                //airPressureQuantityNormalizationFactor = std::min(
-                //    (oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * (simulationParameters.AirDiffusionSpeedAdjustment),
-                //    1.0f);
+                // TODOTEST: orig norm factor
+                airPressureQuantityNormalizationFactor = std::min(
+                    (oldPointAirPressureBufferData[pointIndex] / totalOutboundAirFlowWeight) * (simulationParameters.AirDiffusionSpeedAdjustment),
+                    1.0f);
 
                 // TODOTEST
                 //airPressureQuantityNormalizationFactor =
@@ -3679,10 +3715,17 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 //    / totalOutboundAirFlowWeight;
 
                 // TODOTEST: quadratic
-                airPressureQuantityNormalizationFactor =
-                    std::min(
-                        1.0f / totalOutboundAirFlowWeight,
-                        oldPointAirPressureBufferData[pointIndex] * simulationParameters.AirDiffusionSpeedAdjustment / totalOutboundAirFlowWeightSquared);
+                //airPressureQuantityNormalizationFactor =
+                //    std::min(
+                //        1.0f / totalOutboundAirFlowWeight,
+                //        oldPointAirPressureBufferData[pointIndex] * simulationParameters.AirDiffusionSpeedAdjustment / totalOutboundAirFlowWeightSquared);
+
+
+                // TODOTEST
+                if (pointIndex == mLastQueriedPointIndex)
+                {
+                    LogMessage("A: normFactor=", airPressureQuantityNormalizationFactor, " (oldAir=", oldPointAirPressureBufferData[pointIndex], " alpha=", simulationParameters.AirDiffusionSpeedAdjustment, " tot=", totalOutboundAirFlowWeight, ")");
+                }
             }
 
             // TODOTEST
@@ -3702,6 +3745,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
             {
                 auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
 
+
                 //
                 // Water
                 //
@@ -3713,11 +3757,22 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 
                 assert(springOutboundQuantityOfWater >= 0.0f);
 
+
+
                 if (mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
                 {
                     //
                     // Water - and momentum - move from point to endpoint
                     //
+
+
+
+                    // TODOTEST
+                    if (pointIndex == mLastQueriedPointIndex)
+                    {
+                        LogMessage("  W: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " (w=", springOutboundWaterFlowWeights[s], " norm=", waterQuantityNormalizationFactor, ")");
+                        todoTotalWOut += springOutboundQuantityOfWater;
+                    }
 
                     // Move water quantity
                     newPointWaterBufferData[pointIndex] -= springOutboundQuantityOfWater;
@@ -3801,6 +3856,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 #endif
                 }
 
+
                 //
                 // Air
                 //
@@ -3808,8 +3864,17 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 // Calculate quantity of air pressure directed outwards,
                 // being careful not to overdrain the point
                 float const springOutboundQuantityOfAirPressure = std::min(
-                    springOutboundAirFlowWeights[s] * springOutboundAirFlowWeights[s] * airPressureQuantityNormalizationFactor,
+                    // TODOTEST
+                    springOutboundAirFlowWeights[s] * airPressureQuantityNormalizationFactor,
+                    //springOutboundAirFlowWeights[s] * springOutboundAirFlowWeights[s] * airPressureQuantityNormalizationFactor,
                     newPointAirPressureBufferData[pointIndex]);
+
+                // TODOTEST
+                if (pointIndex == mLastQueriedPointIndex)
+                {
+                    LogMessage("  A: springOutboundQuantityOfAirPressure=", springOutboundQuantityOfAirPressure, " (w=", springOutboundAirFlowWeights[s], " norm=", airPressureQuantityNormalizationFactor, ")");
+                    todoTotalAOut += springOutboundQuantityOfAirPressure;
+                }
 
                 assert(springOutboundQuantityOfAirPressure >= 0.0f);
                 assert(springOutboundQuantityOfAirPressure <= newPointAirPressureBufferData[pointIndex]);
@@ -3849,6 +3914,10 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
         //
 
         mPoints.UpdateWaterVelocitiesFromMomenta();
+
+
+        // TODOTEST
+        LogMessage("Total W Out: ", todoTotalWOut, "   Total A Out: ", todoTotalAOut);
 
     } // Iter loop
 
