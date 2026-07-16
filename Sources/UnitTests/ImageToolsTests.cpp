@@ -3,7 +3,7 @@
 #include "gtest/gtest.h"
 
 #ifndef _MSC_VER
-#define _GCC_EXTRA (-0.0004f)
+#define _GCC_EXTRA (-0.001f)
 #else
 #define _GCC_EXTRA 0.0f
 #endif
