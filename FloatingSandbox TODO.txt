@@ -1884,7 +1884,7 @@
 
 	+ Rot exposure: faster than rust (or equal)
 
-	= Localization
+	+ Localization
 		+ IT
 			+ Do
 		+ ES
@@ -1893,8 +1893,9 @@
 		+ PT_BR
 			+ Send (Kiko)
 			+ Got it
-		= RU
+		+ RU
 			+ Send
+			+ Got it
 		+ UK
 			+ Send (denis)
 			+ Got it

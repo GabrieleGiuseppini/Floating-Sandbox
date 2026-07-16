@@ -2,16 +2,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-16 19:26+0200\n"
+"PO-Revision-Date: 2026-07-16 20:49+0300\n"
 "Last-Translator: matheusvhs\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 2.4\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Generator: Poedit 3.8\n"
 "X-Poedit-Basepath: .\n"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:389
@@ -435,16 +435,12 @@ msgid "Adjusts the speed of the camera movements."
 msgstr "Регулирует скорость движения камеры."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1424
-#, fuzzy
-#| msgid ""
-#| "Adjusts the speed with which materials rot when exposed to sea water. Set "
-#| "to zero to disable rotting altogether."
 msgid ""
 "Adjusts the speed with which algae grow over structures when these are "
 "exposed to sea water. Set to zero to disable algae growth altogether."
 msgstr ""
-"Регулирует скорость, с которой материалы гниют под воздействием морской "
-"воды. Установите на ноль, чтобы полностью отключить гниение."
+"Регулирует скорость роста водорослей на конструкциях при их контакте с "
+"морской водой. Установите на ноль, чтобы полностью отключить рост водорослей."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:984
 msgid "Adjusts the speed with which heat propagates along materials."
@@ -467,16 +463,12 @@ msgstr ""
 "воды. Установите на ноль, чтобы полностью отключить гниение."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1370
-#, fuzzy
-#| msgid ""
-#| "Adjusts the speed with which materials rot when exposed to sea water. Set "
-#| "to zero to disable rotting altogether."
 msgid ""
 "Adjusts the speed with which materials rust when exposed to sea water. Set "
 "to zero to disable rusting altogether."
 msgstr ""
-"Регулирует скорость, с которой материалы гниют под воздействием морской "
-"воды. Установите на ноль, чтобы полностью отключить гниение."
+"Регулирует скорость ржавления материалов под воздействием морской воды. "
+"Установите на ноль, чтобы полностью отключить ржавление."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1237
 msgid ""
@@ -486,16 +478,12 @@ msgstr ""
 "физического тела."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1397
-#, fuzzy
-#| msgid ""
-#| "Adjusts the speed with which materials rot when exposed to sea water. Set "
-#| "to zero to disable rotting altogether."
 msgid ""
 "Adjusts the speed with which structures weaken when rusted. Set to zero to "
 "prevent rust from weakening structures altogether."
 msgstr ""
-"Регулирует скорость, с которой материалы гниют под воздействием морской "
-"воды. Установите на ноль, чтобы полностью отключить гниение."
+"Регулирует скорость ослабления конструкций под воздействием ржавчины. "
+"Установите на ноль, чтобы ржавчина не ослабляла конструкции."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4397
 msgid ""
@@ -593,10 +581,8 @@ msgid "Air and Sky"
 msgstr "Воздух и небо"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1423
-#, fuzzy
-#| msgid "Rot Acceler8r"
 msgid "Algae Growth Acceler8r"
-msgstr "Ускоритель гниения"
+msgstr "Ускоритель роста водоросли"
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:2686
 msgid "All Layers:"
@@ -1758,8 +1744,8 @@ msgstr "Стереть конечные точки каната."
 msgid ""
 "Erase the specified region and copy its content to the clipboard (Ctrl+X)."
 msgstr ""
-"Стереть указанную область и скопировать ее содержимое в буфер обмена (Ctrl"
-"+X)."
+"Стереть указанную область и скопировать ее содержимое в буфер обмена "
+"(Ctrl+X)."
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:2015
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:2069
@@ -3038,7 +3024,7 @@ msgstr "Монитор питания"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:224
 msgid "Power Tools and Phenomena"
-msgstr ""
+msgstr "Инструменты и явления"
 
 #: ..\Sources\ShipBuilderLib\UI\ShipNameSuggestionDialog.cpp:22
 msgid "Prefer This Ship Name?"
@@ -4557,7 +4543,7 @@ msgstr "Громкость инструментов"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:513
 msgid "Tornado"
-msgstr ""
+msgstr "Вихрь"
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:4575
 msgid "Trace a structure covering the texture layer."
