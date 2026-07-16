@@ -1904,6 +1904,9 @@
 		- Ryanair's flying planes
 		- Also from beta server's Ship Suggestions
 
+	- Fix those unit tests (image resize) that fail on Ubuntu
+		- Just use approx equals
+
 	- Release template here!!!
 
 
