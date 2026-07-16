@@ -235,6 +235,12 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_LargerH)
             + (26 + 27 + 28 + 29) / 4.0f * 0.25f
         ));
 
+    float foo1 = (
+        (134 + 135 + 136 + 137) / 4.0f * 0.25f
+        + (146 + 147 + 148 + 149) / 4.0f * 0.75f
+        );
+    std::cout << "foo1=" << foo1 << " " << std::roundf(foo1) << std::endl;
+
     EXPECT_EQ(
         int(destImage[ImageCoordinates(1, 22)].r),
         std::roundf(
