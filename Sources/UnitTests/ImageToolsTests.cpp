@@ -2,6 +2,13 @@
 
 #include "gtest/gtest.h"
 
+#ifndef _MSC_VER
+#define _GCC_EXTRA ()-0.0001f)
+#else
+#define _GCC_EXTRA 0.0f
+#endif
+
+
 TEST(ImageToolsTests, ResizeNicer_IdempotentBothDirs)
 {
     RgbImageData sourceImage(4, 4);
@@ -240,7 +247,7 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_LargerH)
         std::roundf(
             (134 + 135 + 136 + 137) / 4.0f * 0.25f
             + (146 + 147 + 148 + 149) / 4.0f * 0.75f
-            - 0.0001f // gcc
+            + _GCC_EXTRA
         ));
 
     EXPECT_EQ(
@@ -248,6 +255,7 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_LargerH)
         std::roundf(
             (150 + 151 + 152 + 153) / 4.0f * 0.75f
             + (150 + 151 + 152 + 153) / 4.0f * 0.25f
+            + _GCC_EXTRA
         ));
 }
 
@@ -533,6 +541,7 @@ TEST(ImageToolsTests, ResizeNicer_Smaller1W_Smaller2H)
             + (71 * 0.5f + 72 * 0.5f)
             + (83 * 0.5f + 84 * 0.5f)
             + (95 * 0.5f + 96 * 0.5f)) / 4.0f
+            + _GCC_EXTRA
         ));
 
     // (9 * 0.5f + 10 * 0.5f) @ 4-7
@@ -543,6 +552,7 @@ TEST(ImageToolsTests, ResizeNicer_Smaller1W_Smaller2H)
             + (79 * 0.5f + 80 * 0.5f)
             + (91 * 0.5f + 92 * 0.5f)
             + (103 * 0.5f + 104 * 0.5f)) / 4.0f
+            + _GCC_EXTRA
         ));
 
     // (10 * 0.166666687f + 11 * 0.833333313f) @ 8-11
@@ -583,6 +593,7 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_Smaller2H)
             + (22 + 23 + 24 + 25) / 4.0f
             + (34 + 35 + 36 + 37) / 4.0f
             + (46 + 47 + 48 + 49) / 4.0f) / 4.0f
+            + _GCC_EXTRA
         ));
 
     // 4-7 @ 0-3
@@ -593,6 +604,7 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_Smaller2H)
             + (26 + 27 + 28 + 29) / 4.0f
             + (38 + 39 + 40 + 41) / 4.0f
             + (50 + 51 + 52 + 53) / 4.0f) / 4.0f
+            + _GCC_EXTRA
         ));
 
     // 4-7 @ 4-7
@@ -603,6 +615,7 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_Smaller2H)
             + (74 + 75 + 76 + 77) / 4.0f
             + (86 + 87 + 88 + 89) / 4.0f
             + (98 + 99 + 100 + 101) / 4.0f) / 4.0f
+            + _GCC_EXTRA
         ));
 
     // 8-11 @ 8-11
@@ -613,5 +626,6 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_Smaller2H)
             + (126 + 127 + 128 + 129) / 4.0f
             + (138 + 139 + 140 + 141) / 4.0f
             + (150 + 151 + 152 + 153) / 4.0f) / 4.0f
+            + _GCC_EXTRA
         ));
 }
