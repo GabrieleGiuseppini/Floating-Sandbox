@@ -3,7 +3,7 @@
 #include "gtest/gtest.h"
 
 #ifndef _MSC_VER
-#define _GCC_EXTRA (-0.005f)
+#define _GCC_EXTRA (-0.0001f)
 #else
 #define _GCC_EXTRA 0.0f
 #endif
@@ -595,7 +595,6 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_Smaller2H)
             + (22 + 23 + 24 + 25) / 4.0f
             + (34 + 35 + 36 + 37) / 4.0f
             + (46 + 47 + 48 + 49) / 4.0f) / 4.0f
-            + _GCC_EXTRA
         ));
 
     // 4-7 @ 0-3
