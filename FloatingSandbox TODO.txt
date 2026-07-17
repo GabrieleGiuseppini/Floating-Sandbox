@@ -2280,6 +2280,8 @@
 								! Quadrant: 4 iters (both scaling), 1.0/1.0, orig norms
 								+ default_ship still blocks
 							- Test: skew upness to change shape of air escape (bubble: 103, 223, 393
+								+ Quadrant: 1 iter, orig water norm, orig air norm, no material speed, air/water speed: 0.94/0.25
+								- New downness/upness (1-1->0), new formula for dw and da
 						
 
 
