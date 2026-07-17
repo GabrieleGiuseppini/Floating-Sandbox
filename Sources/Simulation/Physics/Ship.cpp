@@ -3323,7 +3323,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
             //float const availableAirVolume = std::max(1.0f - water, 0.1f);
 
             // TODOTEST: with slider
-            float const availableAirVolume = 1.0f / (1.0f + water * simulationParameters.AntiMatterBombImplosionStrength);
+            float const availableAirVolume = 1.0f / (1.0f + water * simulationParameters.ElectricalElementHeatProducedAdjustment);
 
             return air / availableAirVolume;
         };
@@ -3370,8 +3370,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 
     // TODOTEST
     //int constexpr NumberOfIterations = 4;
-    //int constexpr NumberOfIterations = 2;
-    int constexpr NumberOfIterations = 1;
+    int constexpr NumberOfIterations = 2;
+    //int constexpr NumberOfIterations = 1;
     for (int iter = 0; iter < NumberOfIterations; ++iter)
     {
 
@@ -3463,13 +3463,17 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 //float const springUpness = Step(0.0f, springNormalizedVector.y);
                 //float const springDownness = 1.0f - springUpness;
 
-                //// TODOTEST: 0->1 smooth
-                float const springUpness = (1.0f + springNormalizedVector.y) / 2.0f;
-                float const springDownness = 1.0f - springUpness;
+                // TODOTEST: 0->1 smooth
+                //float const springUpness = (1.0f + springNormalizedVector.y) / 2.0f;
+                //float const springDownness = 1.0f - springUpness;
 
                 // TODOTEST: -1->1 smooth
                 //float const springUpness = springNormalizedVector.y;
                 //float const springDownness = -springUpness;
+
+                // TODOTEST: 0->1->1 smooth
+                float const springUpness = std::min(springNormalizedVector.y + 1.0f, 1.0f);
+                float const springDownness = std::min(1.0f - springNormalizedVector.y, 1.0f);
 
                 //
                 // Water
@@ -3505,11 +3509,21 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 //float const dwUp = oldPointWaterBufferData[pointIndex] - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]);
                 //float const dwDown = (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex]) - oldPointWaterBufferData[cs.OtherEndpointIndex];
 
-                float const dwUp = oldPointWaterBufferData[pointIndex] - (oldPointWaterBufferData[cs.OtherEndpointIndex] + squeezeAir(oldPointAirPressureBufferData[cs.OtherEndpointIndex], oldPointWaterBufferData[cs.OtherEndpointIndex]));
-                float const dwDown = (oldPointWaterBufferData[pointIndex] + squeezeAir(oldPointAirPressureBufferData[pointIndex], oldPointWaterBufferData[pointIndex])) - oldPointWaterBufferData[cs.OtherEndpointIndex];
+
+                // TODOTEST
+                //float const dwUp = oldPointWaterBufferData[pointIndex] - (oldPointWaterBufferData[cs.OtherEndpointIndex] + squeezeAir(oldPointAirPressureBufferData[cs.OtherEndpointIndex], oldPointWaterBufferData[cs.OtherEndpointIndex]));
+                //float const dwDown = (oldPointWaterBufferData[pointIndex] + squeezeAir(oldPointAirPressureBufferData[pointIndex], oldPointWaterBufferData[pointIndex])) - oldPointWaterBufferData[cs.OtherEndpointIndex];
+                //float const dw =
+                //    (dwUp * springUpness + dwDown * springDownness)
+                //    * mSprings.GetWaterPermeability(cs.SpringIndex); // Enforce no delta-pressure with (dry) wall
+
+                // New factor 1: elegant
                 float const dw =
-                    (dwUp * springUpness + dwDown * springDownness)
+                    (oldPointWaterBufferData[pointIndex] - oldPointWaterBufferData[cs.OtherEndpointIndex]
+                        + squeezeAir(oldPointAirPressureBufferData[pointIndex], oldPointWaterBufferData[pointIndex]) * springDownness
+                        - squeezeAir(oldPointAirPressureBufferData[cs.OtherEndpointIndex], oldPointWaterBufferData[cs.OtherEndpointIndex]) * springUpness)
                     * mSprings.GetWaterPermeability(cs.SpringIndex); // Enforce no delta-pressure with (dry) wall
+
 
 
 
@@ -3607,13 +3621,37 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 // - Orifice Flow Equation (v = C \sqrt{\frac{2 \Delta P}{\rho}}\)
                 // - Make sure no air pressure is consumed/created; publish total
 
-                float const thisAirPSqueezed = squeezeAir(oldPointAirPressureBufferData[pointIndex], oldPointWaterBufferData[pointIndex]);
-                float const dAirUp = thisAirPSqueezed - oldPointAirPressureBufferData[cs.OtherEndpointIndex];
 
-                float const otherAirPSqueezed = squeezeAir(oldPointAirPressureBufferData[cs.OtherEndpointIndex], oldPointWaterBufferData[cs.OtherEndpointIndex]);
-                float const dAirDown = oldPointAirPressureBufferData[pointIndex] - otherAirPSqueezed;
+                // TODOTEST
+                //float const thisAirPSqueezed = squeezeAir(oldPointAirPressureBufferData[pointIndex], oldPointWaterBufferData[pointIndex]);
+                //float const dAirUp = thisAirPSqueezed - oldPointAirPressureBufferData[cs.OtherEndpointIndex];
 
-                float const dAir = dAirUp * springUpness + dAirDown * springDownness;
+                //float const otherAirPSqueezed = squeezeAir(oldPointAirPressureBufferData[cs.OtherEndpointIndex], oldPointWaterBufferData[cs.OtherEndpointIndex]);
+                //float const dAirDown = oldPointAirPressureBufferData[pointIndex] - otherAirPSqueezed;
+
+                //float const dAir = dAirUp * springUpness + dAirDown * springDownness;
+
+
+                // New factor 1: inelegant
+                //float const dAir1 =
+                //    squeezeAir(oldPointAirPressureBufferData[pointIndex], oldPointWaterBufferData[pointIndex])
+                //    - Mix(
+                //        squeezeAir(oldPointAirPressureBufferData[cs.OtherEndpointIndex], oldPointWaterBufferData[cs.OtherEndpointIndex]),
+                //        oldPointAirPressureBufferData[cs.OtherEndpointIndex],
+                //        std::max(springNormalizedVector.y, 0.0f));
+                //float const dAir =
+                //    dAir1
+                //    * Mix(
+                //        1.0f,
+                //        std::max(1.0f - oldPointWaterBufferData[cs.OtherEndpointIndex], 0.0f),
+                //        std::max(-springNormalizedVector.y, 0.0f));
+
+                // New factor 2: elegant
+                float const dAir =
+                    squeezeAir(oldPointAirPressureBufferData[pointIndex], oldPointWaterBufferData[pointIndex] * springUpness)
+                    - squeezeAir(oldPointAirPressureBufferData[cs.OtherEndpointIndex], oldPointWaterBufferData[cs.OtherEndpointIndex] * springDownness);
+
+
 
                 float airMoved;
 
@@ -3654,7 +3692,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 // TODOTEST
                 if (pointIndex == mLastQueriedPointIndex)
                 {
-                    LogMessage("  A Out: springUpness=", springUpness, " springDownness=", springDownness," dAirUp=", dAirUp, " dAirDown=", dAirDown, " springOutboundAirFlowWeights=", springOutboundAirFlowWeights[s]);
+                    //LogMessage("  A Out: springUpness=", springUpness, " springDownness=", springDownness," dAirUp=", dAirUp, " dAirDown=", dAirDown, " springOutboundAirFlowWeights=", springOutboundAirFlowWeights[s]);
+                    LogMessage("  A Out: springOutboundAirFlowWeights=", springOutboundAirFlowWeights[s]);
                 }
             }
 
@@ -3934,6 +3973,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
     {
         // TODOTEST
         //newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
+        mPoints.SetWaterVelocity(pointIndex, mPoints.GetWaterVelocity(pointIndex) * std::min(0.975f * simulationParameters.AntiMatterBombImplosionStrength, 1.0f) );
 
         // Update total air
         if (!mPoints.IsDamaged(pointIndex))

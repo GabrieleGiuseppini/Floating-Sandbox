@@ -2279,9 +2279,37 @@
 							X Test squeeze tuning (*)
 								! Quadrant: 4 iters (both scaling), 1.0/1.0, orig norms
 								+ default_ship still blocks
-							- Test: skew upness to change shape of air escape (bubble: 103, 223, 393
+							= Test: skew upness to change shape of air escape (bubble: 103, 223, 393
 								+ Quadrant: 1 iter, orig water norm, orig air norm, no material speed, air/water speed: 0.94/0.25
-								- New downness/upness (1-1->0), new formula for dw and da
+								= New downness/upness (1-1->0), new formula for dw and da
+									+ Formula 1 (elegant water, unelegant air): 
+										+ Slightly better default_ship
+										+ Scorecard: sea level: after holes: overshoots by a little
+									= Formula 2 (elegant water, elegant air): 
+										! Lively interface
+										! Chaotic (but after all we've raised all speeds)
+										+ Scorecard: sea level: -13.0; after holes: overshoots a little (could be fixed with lower speeds)
+										+ default_ship: better, good with both speeds @ 0.281
+										+ Obliquity: worse, but tends to converge
+
+										= Scorecard improvements:
+											 + 0.281, 0.281: sea level: -11.7; after holes: overshoots a lot
+											 + Squeeze @ 4: overshoots more
+											 = 2 iters: sea level (squeeze back to 1; 0.281/0.281)
+												+ Scorecard: -17.9; after holes: slight overshoot, but ondulated interface [slow to become uniform]
+													+ water 0.375: sticks undulated, shoots up when holes up
+													+ with vel damping: 
+														! air/water speed: 0.281, 0.375; vel damping slider: 0.75; squeeze slider: 120.679
+														! No ondulations (eddies mostly gone)
+														+ Scorecard: -15.7; after holes: perfectly level!
+														+ default_ship: good
+														+ Obliquity: converges to flat!
+
+														- What causes velocity of water @ top to shoot up with higher squeeze?
+															- Not that it's not good, it helps liveliness; just curious
+
+														- Retry this with 1 iter
+
 						
 
 
