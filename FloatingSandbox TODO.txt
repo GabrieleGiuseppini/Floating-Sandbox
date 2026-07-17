@@ -2299,16 +2299,31 @@
 												+ Scorecard: -17.9; after holes: slight overshoot, but ondulated interface [slow to become uniform]
 													+ water 0.375: sticks undulated, shoots up when holes up
 													+ with vel damping: 
-														! air/water speed: 0.281, 0.375; vel damping slider: 0.75; squeeze slider: 120.679
+														=== GOOD CONFIG == 
+														! 2 iters; air/water speed: 0.281, 0.375; vel damping slider: 0.75; squeeze slider: 120.679
 														! No ondulations (eddies mostly gone)
 														+ Scorecard: -15.7; after holes: perfectly level!
 														+ default_ship: good
 														+ Obliquity: converges to flat!
 
+														+ Retry this with 1 iter
+															+ Scorecard: -10.3; after holes: overshoots
+															+ Squeeze @ 60 (less): -11.11; after holes: overshoots
+															+ Squeeze @ 30: -12.6; after holes: overshoots, less
+														+ Retry with 4 iters
+															+ Scorecard: -17.8; after holes: falls short at -3
+															+ Squeeze @ 655 (more): ~level
+															+ Squeeze @ 1000: -17; after holes: ~level
+																+ But too wavy at top, obviously
+														+ Retry with higher air speed
+															+ 0.469: 
+																+ Scorecard: -9.9; after holes: overshoots
+																+ default_ship: similar
+																- Obliquity:
+														
 														- What causes velocity of water @ top to shoot up with higher squeeze?
 															- Not that it's not good, it helps liveliness; just curious
 
-														- Retry this with 1 iter
 
 						
 
@@ -2372,6 +2387,8 @@
 				- Tools:
 					- Flood
 					- Internal Pressure
+
+			- See why rightmost point does not get flooded
 			- Tests:
 				- Flotsam: water intake
 				- Rain: water intake

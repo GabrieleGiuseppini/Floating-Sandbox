@@ -3573,7 +3573,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
                 // TODOTEST
                 if (pointIndex == mLastQueriedPointIndex)
                 {
-                    LogMessage("  W Out: springOutboundWaterFlowWeights=", springOutboundWaterFlowWeights[s]);
+                    LogMessage("  W Out: springOutboundWaterFlowWeights=", springOutboundWaterFlowWeights[s], "dw=", dw, " springUpness=", springUpness, " springDownness=", springDownness);
                 }
 
 #if !FS_IS_PLATFORM_MOBILE()
@@ -3950,7 +3950,10 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 
 
         // TODOTEST
-        LogMessage("Total W Out: ", todoTotalWOut, "   Total A Out: ", todoTotalAOut);
+        if (mLastQueriedPointIndex != NoneElementIndex)
+        {
+            LogMessage("Total W Out: ", todoTotalWOut, "   Total A Out: ", todoTotalAOut);
+        }
 
     } // Iter loop
 
