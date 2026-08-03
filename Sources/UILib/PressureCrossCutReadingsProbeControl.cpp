@@ -17,7 +17,7 @@
 #include <numeric>
 #include <sstream>
 
-static constexpr int Height = 160;
+static constexpr int Height = 260;
 
 PressureCrossCutReadingsProbeControl::PressureCrossCutReadingsProbeControl(
     wxWindow * parent,

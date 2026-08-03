@@ -3323,9 +3323,9 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
             //float const availableAirVolume = std::max(1.0f - water, 0.1f);
 
             // TODOTEST: with slider
-            float const availableAirVolume = 1.0f / (1.0f + water * simulationParameters.ElectricalElementHeatProducedAdjustment);
-
-            return air / availableAirVolume;
+            //float const availableAirVolume = 1.0f / (1.0f + water * simulationParameters.ElectricalElementHeatProducedAdjustment);
+            //return air / availableAirVolume;
+            return air * (1.0f + water * simulationParameters.ElectricalElementHeatProducedAdjustment);
         };
 
     //
@@ -3370,8 +3370,9 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
 
     // TODOTEST
     //int constexpr NumberOfIterations = 4;
-    int constexpr NumberOfIterations = 2;
+    //int constexpr NumberOfIterations = 2;
     //int constexpr NumberOfIterations = 1;
+    int constexpr NumberOfIterations = 32;
     for (int iter = 0; iter < NumberOfIterations; ++iter)
     {
 

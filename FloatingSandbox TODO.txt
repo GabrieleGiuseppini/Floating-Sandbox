@@ -2321,8 +2321,19 @@
 																+ default_ship: similar
 																- Obliquity:
 														
-														- What causes velocity of water @ top to shoot up with higher squeeze?
-															- Not that it's not good, it helps liveliness; just curious
+														- Analyze in depth:
+															- Try with 32 iters, super-smooth and thus removes chaos, better for studying
+																- Reason for stepwise rising: once enough water enters a cell to push all
+																  air out, that cell's pressure falls (the squeeze goes away) and thus more
+																  water may enter
+																	- A bit of water enters cell above
+																	- Its air drops (but its squeezed pressure stays)
+																	- For some reason, more water is able to enter afterwards
+																		- Investigate: equation should show continuity
+																- Air-water step height is inv prop with squeeze
+																	- Higher squeeze => less step; why?
+																		- Try: write equlibrium equation for a cell with one above and one below,
+																		  and then add dw
 
 
 						
