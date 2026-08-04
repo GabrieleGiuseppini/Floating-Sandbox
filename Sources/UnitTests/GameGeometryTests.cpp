@@ -509,7 +509,7 @@ TEST(GeometryTests, GenerateSegmentedLandQuad_TriangleAboveOnly_Orientation1)
         2.0f,
         vertexBuffer);
 
-    ASSERT_EQ(vertexBuffer.size(), 3 + 2 * 3);
+    ASSERT_EQ(vertexBuffer.size(), static_cast<size_t>(3 + 2 * 3));
 
     {
         // D-D'-A'
