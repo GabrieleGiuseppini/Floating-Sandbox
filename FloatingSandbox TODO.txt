@@ -1900,10 +1900,9 @@
 			+ Send (denis)
 			+ Got it
 
-	- Ships:
-		- Those @ TO_TAKE
+	= Ships:
+		+ Those @ TO_TAKE
 		- Ryanair's flying planes
-		- Also from beta server's Ship Suggestions
 
 	- Release template here!!!
 
