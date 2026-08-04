@@ -114,6 +114,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("Damien"), 0},
         {1, wxS("Longhorn"), 0},
         {1, wxS("Mattytitanic"), 0},
+        {1, wxS("M2L"), 0},
         {1, wxS("Dario Bazzichetto"), VMargin3},
 
         {0, _("BUILD ENGINEERING"), 0},

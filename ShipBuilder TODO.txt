@@ -1,6 +1,7 @@
 - Material palette takes forever to open (*)
 	! problem is Freeze/Thaw: wx visits the entire graph
-	- Option 1: rewrite by not using buttons but custom rendering, w/mouse events and code to translate into actions
+	- Option 1: Do only current page on-demand, not all pages
+	- Option 2: Rewrite by not using buttons but custom rendering, w/mouse events and code to translate into actions
 
 - Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
 
