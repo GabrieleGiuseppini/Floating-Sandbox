@@ -3581,7 +3581,7 @@ void Ship::DecayPoints(
             mDecayRustExposedDryAlpha = std::max(powf(0.85f, simulationParameters.RustAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
             mDecayRustExposedWetAlpha = std::max(powf(0.75f, simulationParameters.RustAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
 
-            float constexpr NsDamage = 4.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            float constexpr NsDamage = 4.25f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
             mDecayRustDamageDryAlpha = std::max(powf(0.50f, simulationParameters.RustAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
             mDecayRustDamageWetAlpha = std::max(powf(0.0009765625f, simulationParameters.RustAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
 
@@ -3624,7 +3624,7 @@ void Ship::DecayPoints(
 
     if (simulationParameters.AlgaeGrowthAcceler8r != mCurrentAlgaeGrowthAcceler8r)
     {
-        float constexpr Ns = 30.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+        float constexpr Ns = 32.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
         mDecayAlgaeGrowthAlpha = simulationParameters.AlgaeGrowthAcceler8r != 0.0f
             ? powf(0.25f, simulationParameters.AlgaeGrowthAcceler8r / Ns)
