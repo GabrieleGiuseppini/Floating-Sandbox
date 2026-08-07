@@ -18,20 +18,9 @@
 
 namespace ShipBuilder {
 
-struct IMaterialPalettePanel : public wxPanel
-{
-public:
-
-    IMaterialPalettePanel(wxWindow * parent)
-        : wxPanel(parent)
-    { }
-
-    virtual ~IMaterialPalettePanel() = default;
-};
-
 template<LayerType TLayer>
-class MaterialPalettePanel final :
-    public IMaterialPalettePanel
+class MaterialPalettePanel :
+    public wxPanel
 {
 public:
 
@@ -47,11 +36,19 @@ public:
     void AddSeparator();
     void EndBuild();
 
+    void SetSelected(TMaterial const * material);
+
 private:
 
     void OnPaint(wxPaintEvent & event);
 
     void RenderPanel(wxDC & dc, wxSize const & size);
+
+    wxSize RenderMaterialCell(
+        TMaterial const * material,
+        wxDC & dc,
+        wxPoint const & origin,
+        bool isSelected);
 
 private:
 
@@ -59,6 +56,62 @@ private:
     GameAssetManager const & mGameAssetManager;
 
     std::unique_ptr<wxBitmap> mRenderBuffer;
+
+    //
+    // Grid structure
+    //
+
+    struct Cell
+    {
+        enum class KindType
+        {
+            Material
+        };
+
+        KindType Kind;
+        // TODO: geometry
+
+        // Iff Kind==Material
+        TMaterial const * Material;
+
+        Cell(TMaterial const * material)
+            : Kind(KindType::Material)
+            , Material(material)
+        {
+        }
+    };
+
+    struct Row
+    {
+        enum class KindType
+        {
+            Cells,
+            Separator
+        };
+
+        KindType Kind;
+        int YTop;
+        int Height;
+
+        // Iff Kind==Cells
+        std::vector<Cell> Cells;
+
+        Row(KindType kind, int yTop)
+            : Kind(kind)
+            , YTop(yTop)
+            , Height(0)
+            , Cells()
+        { }
+    };
+
+    std::vector<Row> mRows;
+
+    //
+    // Render style
+    //
+
+    wxFont mNameFont;
+    wxFont mDataFont;
 };
 
 }

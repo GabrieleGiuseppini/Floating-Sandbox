@@ -204,7 +204,7 @@ MaterialPaletteBrowser_NEW<TLayer>::MaterialPaletteBrowser_NEW(
             {
                 auto const & category = materialPalette.Categories[c];
 
-                IMaterialPalettePanel * categoryPanel = CreateCategoryPanel(
+                auto * categoryPanel = CreateCategoryPanel(
                     mCategoryPanelsContainer,
                     category,
                     shipTexturizer,
@@ -310,15 +310,12 @@ void MaterialPaletteBrowser_NEW<TLayer>::Close()
 }
 
 template<LayerType TLayer>
-IMaterialPalettePanel * MaterialPaletteBrowser_NEW<TLayer>::CreateCategoryPanel(
+MaterialPalettePanel<TLayer> * MaterialPaletteBrowser_NEW<TLayer>::CreateCategoryPanel(
     wxWindow * parent,
     typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
     ShipTexturizer const & shipTexturizer,
     GameAssetManager const & gameAssetManager)
 {
-    // Make sure we have room for this category in the list of material buttons
-    mMaterialButtons.resize(mMaterialButtons.size() + 1);
-
     //
     // Create and build panel
     //
@@ -841,7 +838,7 @@ void MaterialPaletteBrowser_NEW<TLayer>::SetMaterialSelected(TMaterial const * m
     // Select category panel, its material, and unselect all other materials
     //
 
-    wxPanel * selectedCategoryPanel = nullptr;
+    MaterialPalettePanel<TLayer> * selectedCategoryPanel = nullptr;
 
     for (size_t i = 0; i < mCategoryPanels.size(); ++i)
     {
@@ -854,12 +851,8 @@ void MaterialPaletteBrowser_NEW<TLayer>::SetMaterialSelected(TMaterial const * m
             // Make it visible
             mCategoryPanelsContainerSizer->Show(selectedCategoryPanel, true);
 
-            // Deselect all the material buttons of this panel, except
-            // for the selected material's
-            for (auto * button : mMaterialButtons[iCategorySelected])
-            {
-                button->SetValue(button->GetClientData() == material);
-            }
+            // Set selection on the material
+            selectedCategoryPanel->SetSelected(material);
         }
         else
         {

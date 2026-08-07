@@ -3,36 +3,39 @@
 	! Fix gist:
 		! User-drawn panel
 		! As a reusable class, that we'll use also for selecting materials for import/export
-		! Class/panel supports refreshing region, so we may save on just clicking "checkboxes" and "buttons"
 		! Two users: palette browsing, and multi-selection for import
 			! Palette browing: operations on a material are: Mark (-> ClearAll, SelectAll, DeleteMarked @ user), Edit
 			! Multi-selection: operations on a material are: Mark (-> ClearAll, SelectAll @ user)
 		! Pallete browsing user also adds "add" meta-material "buttons"
 	- Impl:		
 		- "MaterialPalettePanel" class: wxPanel; is given shape and exposes methods to add entries
-			! Builds internal buffer for DC all rendered, using method that draws within a clipping rect
-				- Updates (e.g. for checkbox, button, or added/modified material): clipping rect == as_appropriate
+			! Builds internal buffer for DC all rendered, using method that draws on a DC
 
 			- Electrical vs structural vs xyz: hierarchy with template args for internal types (and behaviors)
 				- Base: has:
-					- Grid-lie data structure to hold them all
+					- Grid-like data structure to hold them all
 				- Derived: has:
-					- Render
+					- RenderMaterialCell(dc, origin, isSelected) -> wxSize
+						- Clear first 
+						- Returns size
 			+ cctor:
 				+ Invokes wxPanel cctor
 			- StartBuild()
 			- Add(TMaterial const * material, bool startNewRow)
 			- AddSeparator()
 			- EndBuild()
-				- Calculates size (stores in member)
-				- Sets size on self
-				- Creates DC buffer
-				- Renders DC buffer, using method that draws within a clipping rect
+				- Calculates size
+				+ Sets size on self
+				+ Creates DC buffer
+				- Renders DC buffer
 					- In here, clipping rect == whole
+			- SetSelected(material *)
+				- Visit all cells, deselect non-matching and select matching
+				- Force redraw of two quads into buffer (call RenderMaterialCell)
 			- <Derived>::InternalRender(TODO)
 				- Renders into DC buffer
 
-			- Paint event: blit from DC buffer
+			+ Paint event: blit from DC buffer
 
 			- Exposes events:
 				- MouseHoverIn/Out
@@ -49,7 +52,8 @@
 				- OnAddNew
 		! "MaterialPaletteBrowser" class: wxWhateveNow; use MaterialPalettePanel and has logic for its shape and building of it
 			+ Category buttons
-			- Scrollable window
+			= Scrollable window
+				- Finalize blitting only visible portion of panel
 			+ Property grid
 
 		- Cleanup:

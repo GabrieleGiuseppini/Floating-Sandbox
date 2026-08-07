@@ -17,15 +17,18 @@
 
 namespace ShipBuilder {
 
+ImageSize constexpr MaterialSampleSize(80, 60);
+
 template<LayerType TLayer>
 MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     wxWindow * parent,
     ShipTexturizer const & shipTexturizer,
     GameAssetManager const & gameAssetManager)
-    : IMaterialPalettePanel(parent)
+    : wxPanel(parent)
     , mShipTexturizer(shipTexturizer)
     , mGameAssetManager(gameAssetManager)
     , mRenderBuffer() // Start empty
+    , mRows() // Start empty
 {
 #ifdef __WXMSW__
     SetDoubleBuffered(true);
@@ -33,15 +36,15 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
 
     SetBackgroundColour(wxColour("WHITE"));
 
-    {
-        auto font = GetFont();
-        font.SetPointSize(font.GetPointSize() - 2);
+    // Make name font
+    mNameFont = GetFont();
 
-        SetFont(font);
-    }
+    // Make data font
+    mDataFont = GetFont();
+    mDataFont.SetPointSize(mDataFont.GetPointSize() - 1);
 
+    // Connect events
     using PanelClass = MaterialPalettePanel<TLayer>;
-
     Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&PanelClass::OnPaint);
 }
 
@@ -49,7 +52,7 @@ template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::StartBuild()
 {
     mRenderBuffer.reset();
-    // TODOHERE
+    mRows.clear();
 }
 
 template<LayerType TLayer>
@@ -71,6 +74,8 @@ void MaterialPalettePanel<TLayer>::AddSeparator()
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::EndBuild()
 {
+    assert(!mRows.empty());
+
     //
     // Calculate size
     //
@@ -102,6 +107,14 @@ void MaterialPalettePanel<TLayer>::EndBuild()
     SetMinSize(size);
 }
 
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::SetSelected(TMaterial const * material)
+{
+    // TODO: visit all cells, deselect non-matching and select matching;
+    // force redraw of two quads into buffer(call RenderMaterialCell)
+    (void)material;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer>
@@ -117,15 +130,53 @@ void MaterialPalettePanel<TLayer>::OnPaint(wxPaintEvent & /*event*/)
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::RenderPanel(wxDC & dc, wxSize const & size)
 {
-    // Make data font
-    auto dataFont = GetFont();
-    dataFont.SetPointSize(dataFont.GetPointSize() - 1);
-
     // TODOTEST
     dc.Clear();
     auto pen = wxPen(wxColor(0x20, 0x20, 0x20), 1, wxPENSTYLE_SOLID);
     dc.SetPen(pen);
     dc.DrawLine(0, 0, size.GetWidth(), size.GetHeight());
+}
+
+template<LayerType TLayer>
+wxSize MaterialPalettePanel<TLayer>::RenderMaterialCell(
+    TMaterial const * material,
+    wxDC & dc,
+    wxPoint const & origin,
+    bool isSelected)
+{
+    //
+    // Make material sample
+    //
+
+    wxBitmap materialSampleBitmap;
+
+    if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+    {
+        ShipAutoTexturizationSettings texturizationSettings;
+        texturizationSettings.MaterialTextureMagnification = 0.5f;
+
+        materialSampleBitmap = WxHelpers::MakeBitmap(
+            mShipTexturizer.MakeMaterialTextureSample(
+                texturizationSettings,
+                MaterialSampleSize,
+                *material,
+                mGameAssetManager));
+    }
+    else
+    {
+        static_assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+
+        materialSampleBitmap = WxHelpers::MakeMatteBitmap(
+            rgbaColor(material->RenderColor, 255),
+            MaterialSampleSize);
+    }
+
+    // TODOHERE
+    (void)dc;
+    (void)origin;
+    (void)isSelected;
+
+    return wxSize(80, 200);
 }
 
 //

@@ -130,7 +130,7 @@ public:
 
 private:
 
-    IMaterialPalettePanel * CreateCategoryPanel(
+    MaterialPalettePanel<TLayer> * CreateCategoryPanel(
         wxWindow * parent,
         typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
         ShipTexturizer const & shipTexturizer,
@@ -173,10 +173,7 @@ private:
     wxSizer * mCategoryPanelsContainerSizer;
 
     // Category panels; one for each category
-    std::vector<IMaterialPalettePanel *> mCategoryPanels;
-
-    // Material buttons for each category panel
-    std::vector<std::vector<wxToggleButton *>> mMaterialButtons;
+    std::vector<MaterialPalettePanel<TLayer> *> mCategoryPanels;
 
     //
     // Material properties
