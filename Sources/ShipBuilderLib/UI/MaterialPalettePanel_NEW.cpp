@@ -117,6 +117,10 @@ void MaterialPalettePanel<TLayer>::OnPaint(wxPaintEvent & /*event*/)
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::RenderPanel(wxDC & dc, wxSize const & size)
 {
+    // Make data font
+    auto dataFont = GetFont();
+    dataFont.SetPointSize(dataFont.GetPointSize() - 1);
+
     // TODOTEST
     dc.Clear();
     auto pen = wxPen(wxColor(0x20, 0x20, 0x20), 1, wxPENSTYLE_SOLID);

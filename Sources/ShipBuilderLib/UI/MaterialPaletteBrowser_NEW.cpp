@@ -319,15 +319,10 @@ IMaterialPalettePanel * MaterialPaletteBrowser_NEW<TLayer>::CreateCategoryPanel(
     // Make sure we have room for this category in the list of material buttons
     mMaterialButtons.resize(mMaterialButtons.size() + 1);
 
-    // Make data font
-    auto dataFont = GetFont();
-    dataFont.SetPointSize(dataFont.GetPointSize() - 1);
-
     //
-    // Create panel
+    // Create and build panel
     //
 
-    // Create panel
     MaterialPalettePanel<TLayer> * categoryPanel = new MaterialPalettePanel<TLayer>(
         parent,
         shipTexturizer,
@@ -335,8 +330,31 @@ IMaterialPalettePanel * MaterialPaletteBrowser_NEW<TLayer>::CreateCategoryPanel(
 
     categoryPanel->StartBuild();
 
-    // TODOHERE
-    (void)materialCategory;
+    std::optional<typename MaterialDatabase::Palette<TMaterial>::Category::SubCategory::Group> currentGroup;
+    bool isFirstInRow = false;
+    for (size_t iSubCategory = 0; iSubCategory < materialCategory.SubCategories.size(); ++iSubCategory) // Rows
+    {
+        auto const & subCategory = materialCategory.SubCategories[iSubCategory];
+
+        // Check if a group change
+        if (currentGroup.has_value() && subCategory.ParentGroup.UniqueId != currentGroup->UniqueId)
+        {
+            categoryPanel->AddSeparator();
+            isFirstInRow = true;
+        }
+
+        // Remember this group
+        currentGroup = subCategory.ParentGroup;
+
+        // Materials
+        for (size_t iMaterial = 0; iMaterial < subCategory.Materials.size(); ++iMaterial) // Cols
+        {
+            TMaterial const * material = (&subCategory.Materials[iMaterial].get());
+            categoryPanel->Add(material, isFirstInRow);
+
+            isFirstInRow = false;
+        }
+    }
 
     categoryPanel->EndBuild();
 
