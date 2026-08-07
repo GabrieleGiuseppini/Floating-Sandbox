@@ -25,7 +25,7 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     : IMaterialPalettePanel(parent)
     , mShipTexturizer(shipTexturizer)
     , mGameAssetManager(gameAssetManager)
-    , mBufferedDCBitmap() // Start empty
+    , mRenderBuffer() // Start empty
 {
 #ifdef __WXMSW__
     SetDoubleBuffered(true);
@@ -43,11 +43,11 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     using PanelClass = MaterialPalettePanel<TLayer>;
 
     Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&PanelClass::OnPaint);
-    Connect(this->GetId(), wxEVT_ERASE_BACKGROUND, (wxObjectEventFunction)&PanelClass::OnEraseBackground);
 
     // TODOHERE
     SetSize(100, 100);
     SetMinSize(wxSize(100, 100));
+    RenderPanel();
 }
 
 template<LayerType TLayer>
@@ -83,31 +83,30 @@ void MaterialPalettePanel<TLayer>::EndBuild()
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::OnPaint(wxPaintEvent & /*event*/)
 {
-    // TODO: move to EndBuild, w/reset at StartBuild
-    if (!mBufferedDCBitmap || mBufferedDCBitmap->GetSize() != this->GetSize())
-    {
-        mBufferedDCBitmap = std::make_unique<wxBitmap>(this->GetSize());
-    }
+    assert(mRenderBuffer);
 
-    wxBufferedPaintDC bufDc(this, *mBufferedDCBitmap);
-
-    Render(bufDc);
+    // TODO: see client size/scroll and blitting only needed portion
+    wxPaintDC dc(this);
+    dc.DrawBitmap(*mRenderBuffer, 0, 0);
 }
 
 template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::OnEraseBackground(wxPaintEvent & /*event*/)
+void MaterialPalettePanel<TLayer>::RenderPanel()
 {
-    // Do nothing, eat event
-}
+    assert(!mRenderBuffer);
 
-template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::Render(wxDC& dc)
-{
+    wxSize const size = GetSize();
+    mRenderBuffer = std::make_unique<wxBitmap>(size);
+
+    // Create DC for rendering into buffer
+    wxBufferedDC dc(nullptr, *mRenderBuffer, wxBUFFER_VIRTUAL_AREA);
+
+    // Render
     // TODOTEST
     dc.Clear();
     auto pen = wxPen(wxColor(0x20, 0x20, 0x20), 1, wxPENSTYLE_SOLID);
     dc.SetPen(pen);
-    dc.DrawLine(0, 0, 10, 10);
+    dc.DrawLine(0, 0, 100, 100);
 }
 
 //

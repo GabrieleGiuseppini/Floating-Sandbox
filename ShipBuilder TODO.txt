@@ -32,7 +32,6 @@
 			- <Derived>::InternalRender(TODO)
 				- Renders into DC buffer
 
-			- Erase event: nop
 			- Paint event: blit from DC buffer
 
 			- Exposes events:
@@ -49,13 +48,14 @@
 				- OnEdit
 				- OnAddNew
 		! "MaterialPaletteBrowser" class: wxWhateveNow; use MaterialPalettePanel and has logic for its shape and building of it
-			- Category buttons
+			+ Category buttons
 			- Scrollable window
-			- Property grid
+			+ Property grid
 
 		- Cleanup:
 			- Remove _NEW from names X 2
 			- See if browser still needs sstream
+			- See if panel still needs double buffering (needs to test with scrolling)
 
 
 

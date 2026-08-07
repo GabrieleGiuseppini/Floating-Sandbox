@@ -50,16 +50,15 @@ public:
 private:
 
     void OnPaint(wxPaintEvent & event);
-    void OnEraseBackground(wxPaintEvent & event);
 
-    void Render(wxDC& dc);
+    void RenderPanel();
 
 private:
 
     ShipTexturizer const & mShipTexturizer;
     GameAssetManager const & mGameAssetManager;
 
-    std::unique_ptr<wxBitmap> mBufferedDCBitmap;
+    std::unique_ptr<wxBitmap> mRenderBuffer;
 };
 
 }
