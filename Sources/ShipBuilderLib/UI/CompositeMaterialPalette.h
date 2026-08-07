@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
-#include "MaterialPalette.h"
+#include "MaterialPaletteBrowser_NEW.h"
 
 #include <Game/GameAssetManager.h>
 #include <Game/ISoundController.h>
@@ -47,32 +47,32 @@ public:
     {
         if constexpr (TLayer == LayerType::Structural)
         {
-            mStructuralMaterialPalette->Open(
+            mStructuralMaterialPaletteBrowser->Open(
                 referenceArea,
                 materialPlane,
                 initialMaterial);
 
-            mLastOpenedPalette = mStructuralMaterialPalette.get();
+            mLastOpenedPalette = mStructuralMaterialPaletteBrowser.get();
         }
         else if constexpr (TLayer == LayerType::Electrical)
         {
-            mElectricalMaterialPalette->Open(
+            mElectricalMaterialPaletteBrowser->Open(
                 referenceArea,
                 materialPlane,
                 initialMaterial);
 
-            mLastOpenedPalette = mElectricalMaterialPalette.get();
+            mLastOpenedPalette = mElectricalMaterialPaletteBrowser.get();
         }
         else
         {
             assert(TLayer == LayerType::Ropes);
 
-            mRopesMaterialPalette->Open(
+            mRopesMaterialPaletteBrowser->Open(
                 referenceArea,
                 materialPlane,
                 initialMaterial);
 
-            mLastOpenedPalette = mRopesMaterialPalette.get();
+            mLastOpenedPalette = mRopesMaterialPaletteBrowser.get();
         }
     }
 
@@ -84,9 +84,9 @@ private:
     std::function<void(fsElectricalMaterialSelectedEvent const & event)> const mOnElectricalLayerMaterialSelected;
     std::function<void(fsStructuralMaterialSelectedEvent const & event)> const mOnRopeLayerMaterialSelected;
 
-    std::unique_ptr<MaterialPalette<LayerType::Structural>> mStructuralMaterialPalette;
-    std::unique_ptr<MaterialPalette<LayerType::Electrical>> mElectricalMaterialPalette;
-    std::unique_ptr<MaterialPalette<LayerType::Ropes>> mRopesMaterialPalette;
+    std::unique_ptr<MaterialPaletteBrowser_NEW<LayerType::Structural>> mStructuralMaterialPaletteBrowser;
+    std::unique_ptr<MaterialPaletteBrowser_NEW<LayerType::Electrical>> mElectricalMaterialPaletteBrowser;
+    std::unique_ptr<MaterialPaletteBrowser_NEW<LayerType::Ropes>> mRopesMaterialPaletteBrowser;
 
     IMaterialPalette const * mLastOpenedPalette;
 };

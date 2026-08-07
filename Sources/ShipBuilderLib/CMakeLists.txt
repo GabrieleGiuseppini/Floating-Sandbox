@@ -55,6 +55,10 @@ set (UI_SOURCES
 	UI/ElectricalPanelLayoutControl.h
 	UI/MaterialPalette.cpp
 	UI/MaterialPalette.h
+	UI/MaterialPaletteBrowser_NEW.cpp
+	UI/MaterialPaletteBrowser_NEW.h
+	UI/MaterialPalettePanel_NEW.cpp
+	UI/MaterialPalettePanel_NEW.h
 	UI/ModelValidationDialog.cpp
 	UI/ModelValidationDialog.h
 	UI/NewPasswordDialog.cpp

@@ -22,7 +22,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
     , mOnRopeLayerMaterialSelected(std::move(onRopeLayerMaterialSelected))
     , mLastOpenedPalette(nullptr)
 {
-    mStructuralMaterialPalette = std::make_unique<MaterialPalette<LayerType::Structural>>(
+    mStructuralMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser_NEW<LayerType::Structural>>(
         parent,
         materialDatabase.GetStructuralMaterialPalette(),
         shipTexturizer,
@@ -30,14 +30,14 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         gameAssetManager,
         progressCallback.MakeSubCallback(0.0f, 0.33f));
 
-    mStructuralMaterialPalette->Bind(
+    mStructuralMaterialPaletteBrowser->Bind(
         fsEVT_STRUCTURAL_MATERIAL_SELECTED,
         [this](fsStructuralMaterialSelectedEvent & event)
         {
             mOnStructuralLayerMaterialSelected(event);
         });
 
-    mElectricalMaterialPalette = std::make_unique<MaterialPalette<LayerType::Electrical>>(
+    mElectricalMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser_NEW<LayerType::Electrical>>(
         parent,
         materialDatabase.GetElectricalMaterialPalette(),
         shipTexturizer,
@@ -45,14 +45,14 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         gameAssetManager,
         progressCallback.MakeSubCallback(0.33f, 0.33f));
 
-    mElectricalMaterialPalette->Bind(
+    mElectricalMaterialPaletteBrowser->Bind(
         fsEVT_ELECTRICAL_MATERIAL_SELECTED,
         [this](fsElectricalMaterialSelectedEvent & event)
         {
             mOnElectricalLayerMaterialSelected(event);
         });
 
-    mRopesMaterialPalette = std::make_unique<MaterialPalette<LayerType::Ropes>>(
+    mRopesMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser_NEW<LayerType::Ropes>>(
         parent,
         materialDatabase.GetRopeMaterialPalette(),
         shipTexturizer,
@@ -60,7 +60,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         gameAssetManager,
         progressCallback.MakeSubCallback(0.66f, 0.33f));
 
-    mRopesMaterialPalette->Bind(
+    mRopesMaterialPaletteBrowser->Bind(
         fsEVT_STRUCTURAL_MATERIAL_SELECTED,
         [this](fsStructuralMaterialSelectedEvent & event)
         {
