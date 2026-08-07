@@ -43,16 +43,12 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     using PanelClass = MaterialPalettePanel<TLayer>;
 
     Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&PanelClass::OnPaint);
-
-    // TODOHERE
-    SetSize(100, 100);
-    SetMinSize(wxSize(100, 100));
-    RenderPanel();
 }
 
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::StartBuild()
 {
+    mRenderBuffer.reset();
     // TODOHERE
 }
 
@@ -75,7 +71,35 @@ void MaterialPalettePanel<TLayer>::AddSeparator()
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::EndBuild()
 {
+    //
+    // Calculate size
+    //
+
     // TODOHERE
+    wxSize const size(100, 100);
+
+    //
+    // Create buffer
+    //
+
+    assert(!mRenderBuffer);
+    mRenderBuffer = std::make_unique<wxBitmap>(size);
+
+    // Create DC for rendering into buffer
+    wxBufferedDC dc(nullptr, *mRenderBuffer, wxBUFFER_VIRTUAL_AREA);
+
+    //
+    // Render panel
+    //
+
+    RenderPanel(dc, size);
+
+    //
+    // Set our size
+    //
+
+    SetSize(size);
+    SetMinSize(size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,22 +115,13 @@ void MaterialPalettePanel<TLayer>::OnPaint(wxPaintEvent & /*event*/)
 }
 
 template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::RenderPanel()
+void MaterialPalettePanel<TLayer>::RenderPanel(wxDC & dc, wxSize const & size)
 {
-    assert(!mRenderBuffer);
-
-    wxSize const size = GetSize();
-    mRenderBuffer = std::make_unique<wxBitmap>(size);
-
-    // Create DC for rendering into buffer
-    wxBufferedDC dc(nullptr, *mRenderBuffer, wxBUFFER_VIRTUAL_AREA);
-
-    // Render
     // TODOTEST
     dc.Clear();
     auto pen = wxPen(wxColor(0x20, 0x20, 0x20), 1, wxPENSTYLE_SOLID);
     dc.SetPen(pen);
-    dc.DrawLine(0, 0, 100, 100);
+    dc.DrawLine(0, 0, size.GetWidth(), size.GetHeight());
 }
 
 //

@@ -328,13 +328,17 @@ IMaterialPalettePanel * MaterialPaletteBrowser_NEW<TLayer>::CreateCategoryPanel(
     //
 
     // Create panel
-    IMaterialPalettePanel * categoryPanel = new MaterialPalettePanel<TLayer>(
+    MaterialPalettePanel<TLayer> * categoryPanel = new MaterialPalettePanel<TLayer>(
         parent,
         shipTexturizer,
         gameAssetManager);
 
+    categoryPanel->StartBuild();
+
     // TODOHERE
     (void)materialCategory;
+
+    categoryPanel->EndBuild();
 
     return categoryPanel;
 }

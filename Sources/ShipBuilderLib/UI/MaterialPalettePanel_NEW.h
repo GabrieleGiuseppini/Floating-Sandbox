@@ -51,7 +51,7 @@ private:
 
     void OnPaint(wxPaintEvent & event);
 
-    void RenderPanel();
+    void RenderPanel(wxDC & dc, wxSize const & size);
 
 private:
 
