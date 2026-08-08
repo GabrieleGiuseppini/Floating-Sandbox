@@ -51,6 +51,7 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
 #endif
 
     SetBackgroundColour(wxColour("WHITE"));
+    mBackgroundBrush = wxBrush(wxColour("WHITE"), wxBRUSHSTYLE_SOLID);
 
     // Make name font
     mNameFont = GetFont();
@@ -104,7 +105,7 @@ void MaterialPalettePanel<TLayer>::Add(
     Cell & cell = row.Cells.emplace_back(
         Cell::KindType::Material,
         material,
-        sampleBitmap.GetSize()); // TODOTEST
+        sampleBitmap.GetSize()); // TODOTEST; needs to include text above
 
     cell.CellBitmap = sampleBitmap;
 }
@@ -251,6 +252,17 @@ void MaterialPalettePanel<TLayer>::OnPaint(wxPaintEvent & /*event*/)
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::RenderPanel(wxDC & dc, wxRect const & region)
 {
+    // Clear
+    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetBrush(mBackgroundBrush);
+    dc.DrawRectangle(region);
+
+    // Visit all rows intersecting region
+    for (Row const & row : mRows)
+    {
+        // TODOHERE
+    }
+
     // TODOTEST
     dc.Clear();
     auto pen = wxPen(wxColor(0x20, 0x20, 0x20), 1, wxPENSTYLE_SOLID);

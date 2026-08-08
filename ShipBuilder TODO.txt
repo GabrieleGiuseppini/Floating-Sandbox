@@ -40,8 +40,8 @@
 				- Visit all cells, deselect non-matching and select matching
 				- Force redraw of two quads into buffer (call RenderMaterialCell)
 
-			- RenderPanel(region, ...)
-				- Clear region
+			= RenderPanel(region, ...)
+				+ Clear region
 				- For each row/cell intersecting region:
 					- Cells: via RenderMaterialCell(dc, origin, isSelected)
 						- Just draws bitmaps, text
@@ -55,6 +55,9 @@
 			- Try with MemoryDC https://docs.wxwidgets.org/3.3/classwx_memory_d_c.html
 
 			- Exposes events:
+				- Hook mouse events
+					- Leave: send signal for deselect (MouseHoverOut) if any selected
+						- Requires remembering if anything selected
 				- MouseHoverIn/Out
 				- OnClick
 				- TODO: based on ops above

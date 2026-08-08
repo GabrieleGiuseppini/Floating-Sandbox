@@ -129,6 +129,7 @@ private:
     // Render style
     //
 
+    wxBrush mBackgroundBrush;
     wxFont mNameFont;
     wxFont mDataFont;
 };
