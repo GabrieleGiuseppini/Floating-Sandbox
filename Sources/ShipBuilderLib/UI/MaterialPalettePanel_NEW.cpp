@@ -149,7 +149,7 @@ void MaterialPalettePanel<TLayer>::EndBuild()
             currentY += CellVMargin;
         }
 
-        row.Origin = wxPoint(currentX, currentY);
+        row.Rect.SetPosition(wxPoint(currentX, currentY));
 
         int rowHeight = 0;
         switch (row.Kind)
@@ -165,11 +165,11 @@ void MaterialPalettePanel<TLayer>::EndBuild()
                         currentX += CellHMargin;
                     }
 
-                    cell.Origin = wxPoint(currentX, currentY);
+                    cell.Rect.SetPosition(wxPoint(currentX, currentY));
 
-                    currentX += cell.Size.GetWidth();
+                    currentX += cell.Rect.GetWidth();
 
-                    rowHeight = std::max(rowHeight, cell.Size.GetHeight());
+                    rowHeight = std::max(rowHeight, cell.Rect.GetHeight());
                 }
 
                 break;
@@ -185,10 +185,10 @@ void MaterialPalettePanel<TLayer>::EndBuild()
         currentX += InternalWindowMargin;
 
         // Set row size
-        row.Size = wxSize(currentX, rowHeight);
+        row.Rect.SetSize(wxSize(currentX, rowHeight));
 
         // Maintain max row width
-        maxRowWidth = std::max(maxRowWidth, row.Size.GetWidth());
+        maxRowWidth = std::max(maxRowWidth, row.Rect.GetWidth());
 
         currentY += rowHeight;
     }
@@ -199,7 +199,7 @@ void MaterialPalettePanel<TLayer>::EndBuild()
     wxSize const size(maxRowWidth, currentY);
 
     // Set panel size
-    //SetSize(size);
+    SetSize(size);
     SetMinSize(size);
 
     // Finalize separators' layouts
@@ -207,7 +207,7 @@ void MaterialPalettePanel<TLayer>::EndBuild()
     {
         if (row.Kind == Row::KindType::Separator)
         {
-            row.Size = wxSize(size.GetWidth() - 2 * InternalWindowMargin, SeparatorThickness);
+            row.Rect.SetSize(wxSize(size.GetWidth() - 2 * InternalWindowMargin, SeparatorThickness));
         }
     }
 
@@ -260,14 +260,16 @@ void MaterialPalettePanel<TLayer>::RenderPanel(wxDC & dc, wxRect const & region)
     // Visit all rows intersecting region
     for (Row const & row : mRows)
     {
-        // TODOHERE
-    }
+        if (region.Intersects(row.Rect))
+        {
+            // TODOHERE
 
-    // TODOTEST
-    dc.Clear();
-    auto pen = wxPen(wxColor(0x20, 0x20, 0x20), 1, wxPENSTYLE_SOLID);
-    dc.SetPen(pen);
-    dc.DrawLine(0, 0, region.GetSize().GetWidth(), region.GetSize().GetHeight());
+            // TODOTEST
+            auto pen = wxPen(wxColor(0x20, 0x20, 0x20), 1, wxPENSTYLE_SOLID);
+            dc.SetPen(pen);
+            dc.DrawLine(row.Rect.x, row.Rect.y, row.Rect.x + row.Rect.width, row.Rect.y + row.Rect.height);
+        }
+    }
 }
 
 template<LayerType TLayer>

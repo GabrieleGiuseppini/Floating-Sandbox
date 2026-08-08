@@ -81,8 +81,7 @@ private:
         bool IsSelected;
 
         // Layout
-        wxPoint Origin; // Set at Layout
-        wxSize Size; // Set at cctor
+        wxRect Rect; // Origin set at Layout, Size set at cctor
 
         Cell(
             KindType kind,
@@ -92,8 +91,7 @@ private:
             , Material(material)
             , CellBitmap()
             , IsSelected(false)
-            , Origin(0, 0)
-            , Size(size)
+            , Rect(wxPoint(0, 0), size)
         {
         }
     };
@@ -112,14 +110,12 @@ private:
         std::vector<Cell> Cells;
 
         // Layout
-        wxPoint Origin; // Set at Layout
-        wxSize Size; // Set at Layout
+        wxRect Rect; // Origin set at Layout, Size set at Layout
 
         Row(KindType kind)
             : Kind(kind)
             , Cells()
-            , Origin(0, 0)
-            , Size(0, 0)
+            , Rect(wxPoint(0, 0), wxSize(0, 0))
         { }
     };
 
