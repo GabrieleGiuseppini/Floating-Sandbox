@@ -17,7 +17,23 @@
 
 namespace ShipBuilder {
 
+//
+// Geometry
+//
+
+// Margin around the interior of the panel
+int constexpr InternalWindowMargin = 4;
+
+int constexpr CellHMargin = 0;
+int constexpr CellVMargin = 0;
+
 ImageSize constexpr MaterialSampleSize(80, 60);
+int constexpr MaterialCellInnerMargin = 8;
+int constexpr MateralSelectionFrameThickness = 2;
+
+int constexpr SeparatorThickness = 4;
+
+////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer>
 MaterialPalettePanel<TLayer>::MaterialPalettePanel(
@@ -60,15 +76,52 @@ void MaterialPalettePanel<TLayer>::Add(
     TMaterial const * material,
     bool startNewRow)
 {
+    //
+    // Select row
+    //
+
+    if (startNewRow || mRows.empty())
+    {
+        mRows.emplace_back(Row::KindType::Cells);
+    }
+
+    Row & row = mRows.back();
+
+    //
+    // Create cell
+    //
+
+    // Sample bitmap
+
+    wxBitmap sampleBitmap = MakeMaterialSample(material);
+
+    // Text
+
     // TODOHERE
-    (void)material;
-    (void)startNewRow;
+
+    // Store cell
+
+    Cell & cell = row.Cells.emplace_back(
+        Cell::KindType::Material,
+        material,
+        sampleBitmap.GetSize()); // TODOTEST
+
+    cell.CellBitmap = sampleBitmap;
 }
 
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::AddSeparator()
 {
-    // TODOHERE
+    assert(!mRows.empty()); // Ugly otherwise
+
+    mRows.emplace_back(Row::KindType::Separator);
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::AddCreateNewButton(TMaterial const * parentMaterial)
+{
+    // TODO
+    (void)parentMaterial;
 }
 
 template<LayerType TLayer>
@@ -77,11 +130,85 @@ void MaterialPalettePanel<TLayer>::EndBuild()
     assert(!mRows.empty());
 
     //
-    // Calculate size
+    // Layout and calculate size
     //
 
-    // TODOHERE
-    wxSize const size(100, 100);
+    int currentY = InternalWindowMargin;
+
+    int maxRowWidth = 0;
+
+    for (size_t iRow = 0; iRow < mRows.size(); ++iRow)
+    {
+        Row & row = mRows[iRow];
+
+        int currentX = InternalWindowMargin;
+
+        if (iRow > 0)
+        {
+            currentY += CellVMargin;
+        }
+
+        row.Origin = wxPoint(currentX, currentY);
+
+        int rowHeight = 0;
+        switch (row.Kind)
+        {
+            case Row::KindType::Cells:
+            {
+                for (size_t iCell = 0; iCell < row.Cells.size(); ++iCell)
+                {
+                    Cell & cell = row.Cells[iCell];
+
+                    if (iCell > 0)
+                    {
+                        currentX += CellHMargin;
+                    }
+
+                    cell.Origin = wxPoint(currentX, currentY);
+
+                    currentX += cell.Size.GetWidth();
+
+                    rowHeight = std::max(rowHeight, cell.Size.GetHeight());
+                }
+
+                break;
+            }
+
+            case Row::KindType::Separator:
+            {
+                // We'll calculate size later
+                break;
+            }
+        }
+
+        currentX += InternalWindowMargin;
+
+        // Set row size
+        row.Size = wxSize(currentX, rowHeight);
+
+        // Maintain max row width
+        maxRowWidth = std::max(maxRowWidth, row.Size.GetWidth());
+
+        currentY += rowHeight;
+    }
+
+    currentY += InternalWindowMargin;
+
+    // Calculate total panel size
+    wxSize const size(maxRowWidth, currentY);
+
+    // Set panel size
+    //SetSize(size);
+    SetMinSize(size);
+
+    // Finalize separators' layouts
+    for (auto & row : mRows)
+    {
+        if (row.Kind == Row::KindType::Separator)
+        {
+            row.Size = wxSize(size.GetWidth() - 2 * InternalWindowMargin, SeparatorThickness);
+        }
+    }
 
     //
     // Create buffer
@@ -91,6 +218,7 @@ void MaterialPalettePanel<TLayer>::EndBuild()
     mRenderBuffer = std::make_unique<wxBitmap>(size);
 
     // Create DC for rendering into buffer
+    // TODO: try with wxMemoryDC
     wxBufferedDC dc(nullptr, *mRenderBuffer, wxBUFFER_VIRTUAL_AREA);
 
     //
@@ -98,13 +226,6 @@ void MaterialPalettePanel<TLayer>::EndBuild()
     //
 
     RenderPanel(dc, size);
-
-    //
-    // Set our size
-    //
-
-    SetSize(size);
-    SetMinSize(size);
 }
 
 template<LayerType TLayer>
@@ -128,34 +249,34 @@ void MaterialPalettePanel<TLayer>::OnPaint(wxPaintEvent & /*event*/)
 }
 
 template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::RenderPanel(wxDC & dc, wxSize const & size)
+void MaterialPalettePanel<TLayer>::RenderPanel(wxDC & dc, wxRect const & region)
 {
     // TODOTEST
     dc.Clear();
     auto pen = wxPen(wxColor(0x20, 0x20, 0x20), 1, wxPENSTYLE_SOLID);
     dc.SetPen(pen);
-    dc.DrawLine(0, 0, size.GetWidth(), size.GetHeight());
+    dc.DrawLine(0, 0, region.GetSize().GetWidth(), region.GetSize().GetHeight());
 }
 
 template<LayerType TLayer>
-wxSize MaterialPalettePanel<TLayer>::RenderMaterialCell(
-    TMaterial const * material,
-    wxDC & dc,
-    wxPoint const & origin,
-    bool isSelected)
+void MaterialPalettePanel<TLayer>::RenderMaterialCell(
+    Cell const & cell,
+    wxDC & dc)
 {
-    //
-    // Make material sample
-    //
+    // TODOHERE
+    (void)cell;
+    (void)dc;
+}
 
-    wxBitmap materialSampleBitmap;
-
+template<LayerType TLayer>
+wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(TMaterial const * material)
+{
     if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
     {
         ShipAutoTexturizationSettings texturizationSettings;
         texturizationSettings.MaterialTextureMagnification = 0.5f;
 
-        materialSampleBitmap = WxHelpers::MakeBitmap(
+        return WxHelpers::MakeBitmap(
             mShipTexturizer.MakeMaterialTextureSample(
                 texturizationSettings,
                 MaterialSampleSize,
@@ -166,17 +287,10 @@ wxSize MaterialPalettePanel<TLayer>::RenderMaterialCell(
     {
         static_assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
 
-        materialSampleBitmap = WxHelpers::MakeMatteBitmap(
+        return WxHelpers::MakeMatteBitmap(
             rgbaColor(material->RenderColor, 255),
             MaterialSampleSize);
     }
-
-    // TODOHERE
-    (void)dc;
-    (void)origin;
-    (void)isSelected;
-
-    return wxSize(80, 200);
 }
 
 //

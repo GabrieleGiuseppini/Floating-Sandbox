@@ -51,8 +51,8 @@ MaterialPaletteBrowser_NEW<TLayer>::MaterialPaletteBrowser_NEW(
     // Build UI
     //
     //               |
-    // Category List |   Category Panels Container
-    //               |     Material Properties
+    // Category List | Category Panels Container
+    //               |   Material Properties
     //
 
     mRootHSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -328,7 +328,6 @@ MaterialPalettePanel<TLayer> * MaterialPaletteBrowser_NEW<TLayer>::CreateCategor
     categoryPanel->StartBuild();
 
     std::optional<typename MaterialDatabase::Palette<TMaterial>::Category::SubCategory::Group> currentGroup;
-    bool isFirstInRow = false;
     for (size_t iSubCategory = 0; iSubCategory < materialCategory.SubCategories.size(); ++iSubCategory) // Rows
     {
         auto const & subCategory = materialCategory.SubCategories[iSubCategory];
@@ -337,7 +336,6 @@ MaterialPalettePanel<TLayer> * MaterialPaletteBrowser_NEW<TLayer>::CreateCategor
         if (currentGroup.has_value() && subCategory.ParentGroup.UniqueId != currentGroup->UniqueId)
         {
             categoryPanel->AddSeparator();
-            isFirstInRow = true;
         }
 
         // Remember this group
@@ -347,9 +345,7 @@ MaterialPalettePanel<TLayer> * MaterialPaletteBrowser_NEW<TLayer>::CreateCategor
         for (size_t iMaterial = 0; iMaterial < subCategory.Materials.size(); ++iMaterial) // Cols
         {
             TMaterial const * material = (&subCategory.Materials[iMaterial].get());
-            categoryPanel->Add(material, isFirstInRow);
-
-            isFirstInRow = false;
+            categoryPanel->Add(material, iMaterial == 0);
         }
     }
 

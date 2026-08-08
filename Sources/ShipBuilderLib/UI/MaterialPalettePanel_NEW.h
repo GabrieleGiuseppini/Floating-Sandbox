@@ -34,6 +34,7 @@ public:
     void StartBuild();
     void Add(TMaterial const * material, bool startNewRow);
     void AddSeparator();
+    void AddCreateNewButton(TMaterial const * parentMaterial);
     void EndBuild();
 
     void SetSelected(TMaterial const * material);
@@ -42,13 +43,14 @@ private:
 
     void OnPaint(wxPaintEvent & event);
 
-    void RenderPanel(wxDC & dc, wxSize const & size);
+    void RenderPanel(wxDC & dc, wxRect const & region);
 
-    wxSize RenderMaterialCell(
-        TMaterial const * material,
-        wxDC & dc,
-        wxPoint const & origin,
-        bool isSelected);
+    struct Cell;
+    void RenderMaterialCell(
+        Cell const & cell,
+        wxDC & dc);
+
+    wxBitmap MakeMaterialSample(TMaterial const * material);
 
 private:
 
@@ -60,23 +62,38 @@ private:
     //
     // Grid structure
     //
+    // Layout absolute sizes are exclusive of margins
 
     struct Cell
     {
         enum class KindType
         {
+            CreateNewButton,
             Material
         };
 
         KindType Kind;
-        // TODO: geometry
 
-        // Iff Kind==Material
+        // Iff Kind==CreateNewButton|Material
         TMaterial const * Material;
+        wxBitmap CellBitmap; // Sample or whole
+        // Iff Kind==Material
+        bool IsSelected;
 
-        Cell(TMaterial const * material)
-            : Kind(KindType::Material)
+        // Layout
+        wxPoint Origin; // Set at Layout
+        wxSize Size; // Set at cctor
+
+        Cell(
+            KindType kind,
+            TMaterial const * material,
+            wxSize size)
+            : Kind(kind)
             , Material(material)
+            , CellBitmap()
+            , IsSelected(false)
+            , Origin(0, 0)
+            , Size(size)
         {
         }
     };
@@ -90,17 +107,19 @@ private:
         };
 
         KindType Kind;
-        int YTop;
-        int Height;
 
         // Iff Kind==Cells
         std::vector<Cell> Cells;
 
-        Row(KindType kind, int yTop)
+        // Layout
+        wxPoint Origin; // Set at Layout
+        wxSize Size; // Set at Layout
+
+        Row(KindType kind)
             : Kind(kind)
-            , YTop(yTop)
-            , Height(0)
             , Cells()
+            , Origin(0, 0)
+            , Size(0, 0)
         { }
     };
 

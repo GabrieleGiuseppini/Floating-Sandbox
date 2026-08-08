@@ -11,31 +11,48 @@
 		- "MaterialPalettePanel" class: wxPanel; is given shape and exposes methods to add entries
 			! Builds internal buffer for DC all rendered, using method that draws on a DC
 
-			- Electrical vs structural vs xyz: hierarchy with template args for internal types (and behaviors)
-				- Base: has:
-					- Grid-like data structure to hold them all
-				- Derived: has:
-					- RenderMaterialCell(dc, origin, isSelected) -> wxSize
-						- Clear first 
-						- Returns size
+			- Row, Cell contain Layout info, which is calc'd at EndBuild
+				- Absolute vals (origin and size) for rect containing anything inside - used to determine overlaps with dirty regions
+				- Private layout info for e.g. text, checkboxes, etc.
+					- In relative coords
+
 			+ cctor:
 				+ Invokes wxPanel cctor
-			- StartBuild()
-			- Add(TMaterial const * material, bool startNewRow)
-			- AddSeparator()
-			- EndBuild()
-				- Calculates size
+			+ StartBuild()
+			- Add(TMaterial const * material, bool startNewRow): create:
+				+ wxBitmap with material sample (via MakeMaterialSample)
+				- All pieces of text, already snipped
+					- Heuristics based on size.width constant, and font sizes
+				- Layout info: only private relative's, no absolute's 
+			+ AddSeparator()
+			- AddCreateNewButton()
+			+ EndBuild()
+				+ Layout:
+					+ Calculates size
+					+ Assign absolute coords, etc. to cells
+						+ Margins here
+					+ Set size in all separators
 				+ Sets size on self
 				+ Creates DC buffer
-				- Renders DC buffer
-					- In here, clipping rect == whole
+				+ Renders DC buffer: RenderPanel(region == whole, ...)
+					+ In here, clipping rect == whole
 			- SetSelected(material *)
 				- Visit all cells, deselect non-matching and select matching
 				- Force redraw of two quads into buffer (call RenderMaterialCell)
-			- <Derived>::InternalRender(TODO)
-				- Renders into DC buffer
+
+			- RenderPanel(region, ...)
+				- Clear region
+				- For each row/cell intersecting region:
+					- Cells: via RenderMaterialCell(dc, origin, isSelected)
+						- Just draws bitmaps, text
+						- ...and selection
+					- Separators
+					- CreateNewButton
+
 
 			+ Paint event: blit from DC buffer
+
+			- Try with MemoryDC https://docs.wxwidgets.org/3.3/classwx_memory_d_c.html
 
 			- Exposes events:
 				- MouseHoverIn/Out
@@ -50,6 +67,7 @@
 				- OnDelete 
 				- OnEdit
 				- OnAddNew
+
 		! "MaterialPaletteBrowser" class: wxWhateveNow; use MaterialPalettePanel and has logic for its shape and building of it
 			+ Category buttons
 			= Scrollable window
