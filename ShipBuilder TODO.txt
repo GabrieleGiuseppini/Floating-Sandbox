@@ -43,12 +43,12 @@
 			= RenderPanel(region, ...)
 				+ Clear region
 				= For each row/cell intersecting region:
-					- Cells: 
-						- Material: via RenderMaterialCell(dc, origin, isSelected)
-							- Just draws bitmaps, text
-							- ...and selection
-						- CreateNewButton
-					- Separators
+					= Cells: 
+						= Material: via RenderMaterialCell(cell, dc)
+							= Just draws bitmaps, text
+							= ...and selection
+						- CreateNewButton: via RenderNewButton(cell, dc)
+					+ Separators
 
 
 			+ Paint event: blit from DC buffer

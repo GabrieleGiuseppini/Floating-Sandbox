@@ -76,7 +76,7 @@ private:
 
         // Iff Kind==CreateNewButton|Material
         TMaterial const * Material;
-        wxBitmap CellBitmap; // Sample or whole
+        wxBitmap Bitmap; // Sample or whole
         // Iff Kind==Material
         bool IsSelected;
 
@@ -89,7 +89,7 @@ private:
             wxSize size)
             : Kind(kind)
             , Material(material)
-            , CellBitmap()
+            , Bitmap()
             , IsSelected(false)
             , Rect(wxPoint(0, 0), size)
         {
@@ -126,6 +126,7 @@ private:
     //
 
     wxBrush mBackgroundBrush;
+    wxBrush mSeparatorBrush;
     wxFont mNameFont;
     wxFont mDataFont;
 };

@@ -31,7 +31,7 @@ ImageSize constexpr MaterialSampleSize(80, 60);
 int constexpr MaterialCellInnerMargin = 8;
 int constexpr MateralSelectionFrameThickness = 2;
 
-int constexpr SeparatorThickness = 4;
+int constexpr SeparatorThickness = 1;
 
 ////////////////////////////////////////////////////////////////
 
@@ -53,6 +53,12 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     SetBackgroundColour(wxColour("WHITE"));
     mBackgroundBrush = wxBrush(wxColour("WHITE"), wxBRUSHSTYLE_SOLID);
 
+    //
+    // Build style
+    //
+
+    mSeparatorBrush = wxBrush(wxColor(0xa0, 0xa0, 0xa0), wxBRUSHSTYLE_SOLID);
+
     // Make name font
     mNameFont = GetFont();
 
@@ -60,7 +66,10 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     mDataFont = GetFont();
     mDataFont.SetPointSize(mDataFont.GetPointSize() - 1);
 
+    //
     // Connect events
+    //
+
     using PanelClass = MaterialPalettePanel<TLayer>;
     Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&PanelClass::OnPaint);
 }
@@ -81,7 +90,7 @@ void MaterialPalettePanel<TLayer>::Add(
     // Select row
     //
 
-    if (startNewRow || mRows.empty())
+    if (startNewRow || mRows.empty() || mRows.back().Kind == Row::KindType::Separator)
     {
         mRows.emplace_back(Row::KindType::Cells);
     }
@@ -94,7 +103,7 @@ void MaterialPalettePanel<TLayer>::Add(
 
     // Sample bitmap
 
-    wxBitmap sampleBitmap = MakeMaterialSample(material);
+    wxBitmap const sampleBitmap = MakeMaterialSample(material);
 
     // Text
 
@@ -102,12 +111,16 @@ void MaterialPalettePanel<TLayer>::Add(
 
     // Store cell
 
+    wxSize const cellSize = wxSize(
+        MaterialCellInnerMargin + sampleBitmap.GetSize().GetWidth() + MaterialCellInnerMargin,
+        MaterialCellInnerMargin + sampleBitmap.GetSize().GetHeight() + MaterialCellInnerMargin); // TODO: include text
+
     Cell & cell = row.Cells.emplace_back(
         Cell::KindType::Material,
         material,
-        sampleBitmap.GetSize()); // TODOTEST; needs to include text above
+        cellSize);
 
-    cell.CellBitmap = sampleBitmap;
+    cell.Bitmap = sampleBitmap;
 }
 
 template<LayerType TLayer>
@@ -262,12 +275,46 @@ void MaterialPalettePanel<TLayer>::RenderPanel(wxDC & dc, wxRect const & region)
     {
         if (region.Intersects(row.Rect))
         {
-            // TODOHERE
+            //
+            // Draw row
+            //
 
-            // TODOTEST
-            auto pen = wxPen(wxColor(0x20, 0x20, 0x20), 1, wxPENSTYLE_SOLID);
-            dc.SetPen(pen);
-            dc.DrawLine(row.Rect.x, row.Rect.y, row.Rect.x + row.Rect.width, row.Rect.y + row.Rect.height);
+            switch (row.Kind)
+            {
+                case Row::KindType::Cells:
+                {
+                    for (Cell const & cell : row.Cells)
+                    {
+                        switch (cell.Kind)
+                        {
+                            case Cell::KindType::CreateNewButton:
+                            {
+                                // TODO
+
+                                break;
+                            }
+
+                            case Cell::KindType::Material:
+                            {
+                                RenderMaterialCell(cell, dc);
+
+                                break;
+                            }
+                        }
+                    }
+
+                    break;
+                }
+
+                case Row::KindType::Separator:
+                {
+                    dc.SetPen(*wxTRANSPARENT_PEN);
+                    dc.SetBrush(mSeparatorBrush);
+                    dc.DrawRectangle(row.Rect);
+
+                    break;
+                }
+            }
         }
     }
 }
@@ -277,9 +324,30 @@ void MaterialPalettePanel<TLayer>::RenderMaterialCell(
     Cell const & cell,
     wxDC & dc)
 {
+    assert(cell.Kind == Cell::KindType::Material);
+
+    int const leftX = cell.Rect.GetX() + MaterialCellInnerMargin;
+    int topY = cell.Rect.GetY() + MaterialCellInnerMargin;
+
+    // Material sample
+
+    dc.DrawBitmap(cell.Bitmap, leftX, topY);
+
+    topY += cell.Bitmap.GetSize().GetHeight();
+
+    // Text
+
     // TODOHERE
-    (void)cell;
-    (void)dc;
+
+    // Selection
+
+    if (cell.IsSelected)
+    {
+        // TODOTEST
+        auto pen = wxPen(wxColor(0x20, 0x20, 0x20), 1, wxPENSTYLE_SOLID);
+        dc.SetPen(pen);
+        dc.DrawLine(cell.Rect.x, cell.Rect.y, cell.Rect.x + cell.Rect.width, cell.Rect.y + cell.Rect.height);
+    }
 }
 
 template<LayerType TLayer>
