@@ -94,7 +94,6 @@
 					+ Impl
 					+ Subscribe
 				+ See if browser's mCurrrentlyHoveredOn is needed
-				- TODO: fix layout
 
 				- TODO: based on ops above
 					- Palette browsing:

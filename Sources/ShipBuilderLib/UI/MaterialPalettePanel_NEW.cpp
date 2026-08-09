@@ -315,7 +315,10 @@ void MaterialPalettePanel<TLayer>::EndBuild()
 
             case Row::KindType::Separator:
             {
-                // We'll calculate size later
+                // We'll calculate width later
+
+                rowHeight = SeparatorThickness;
+
                 break;
             }
         }
