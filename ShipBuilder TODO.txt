@@ -38,6 +38,8 @@
 				+ Visit all cells, deselect non-matching and select matching
 				+ Force redraw of two quads into buffer
 				- Cleanup implementations of selection kung-fu
+					- FindCell might return any kind cell, hence handle at caller
+					- InternalSetSelectedCell(Cell &)
 
 			+ RenderPanel(region, ...)
 				+ Clear region

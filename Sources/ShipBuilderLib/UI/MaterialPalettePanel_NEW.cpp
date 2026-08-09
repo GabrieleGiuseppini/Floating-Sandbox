@@ -28,7 +28,7 @@ int constexpr CellVMargin = 0;
 ImageSize constexpr MaterialSampleSize(80, 60);
 int constexpr MaterialCellInnerMargin = 8;
 
-int constexpr SelectionFrameThickness = 2;
+int constexpr SelectionFrameThickness = 1;
 
 int constexpr SeparatorThickness = 1;
 
@@ -778,8 +778,8 @@ void MaterialPalettePanel<TLayer>::RenderMaterialCell(
         dc.DrawRectangle(
             cell.Rect.GetX() + MaterialCellInnerMargin / 2 - SelectionFrameThickness / 2,
             cell.Rect.GetY() + MaterialCellInnerMargin / 2 - SelectionFrameThickness / 2,
-            cell.Rect.GetWidth() - MaterialCellInnerMargin + SelectionFrameThickness + 1,
-            cell.Rect.GetHeight() - MaterialCellInnerMargin + SelectionFrameThickness + 1);
+            cell.Rect.GetWidth() - MaterialCellInnerMargin + SelectionFrameThickness - 1,
+            cell.Rect.GetHeight() - MaterialCellInnerMargin + SelectionFrameThickness - 1);
     }
 }
 
