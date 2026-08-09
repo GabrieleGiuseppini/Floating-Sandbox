@@ -210,6 +210,7 @@ private:
 
     wxBrush mBackgroundBrush;
     wxBrush mSeparatorBrush;
+    wxPen mSelectionPen;
     wxFont mNameFont;
     wxFont mDataFont;
     wxColor mTextForegroundColor;

@@ -27,7 +27,8 @@ int constexpr CellVMargin = 0;
 
 ImageSize constexpr MaterialSampleSize(80, 60);
 int constexpr MaterialCellInnerMargin = 8;
-int constexpr MateralSelectionFrameThickness = 2;
+
+int constexpr SelectionFrameThickness = 2;
 
 int constexpr SeparatorThickness = 1;
 
@@ -70,6 +71,7 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     //
 
     mSeparatorBrush = wxBrush(wxColor(0xa0, 0xa0, 0xa0), wxBRUSHSTYLE_SOLID);
+    mSelectionPen = wxPen(wxColor(0x00, 0x78, 0xd4), SelectionFrameThickness, wxPENSTYLE_SOLID);
 
     // Make name font
     mNameFont = GetFont();
@@ -369,8 +371,7 @@ void MaterialPalettePanel<TLayer>::EndBuild()
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::SetSelected(TMaterial const * material)
 {
-    // TODO: visit all cells, deselect non-matching and select matching;
-    // force redraw of two quads into buffer(call RenderMaterialCell)
+    // TODOHERE: as in MouseMove
     (void)material;
 }
 
@@ -515,28 +516,42 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
     auto const * cell = FindCellAt(event.GetPosition());
     if (cell != nullptr && cell->Kind == Cell::KindType::Material)
     {
-        assert(cell->Material != nullptr);
-
-        // Fire clicked event
-        if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+        switch (cell->Kind)
         {
-            auto eventToFire = fsStructuralMaterialPaletteEvent(
-                fsEVT_STRUCTURAL_MATERIAL_PALETTE_CLICKED,
-                this->GetId(),
-                cell->Material);
+            case Cell::KindType::CreateNewButton:
+            {
+                // TODO
+                break;
+            }
 
-            ProcessWindowEvent(eventToFire);
-        }
-        else
-        {
-            assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+            case Cell::KindType::Material:
+            {
+                assert(cell->Material != nullptr);
 
-            auto eventToFire = fsElectricalMaterialPaletteEvent(
-                fsEVT_ELECTRICAL_MATERIAL_PALETTE_CLICKED,
-                this->GetId(),
-                cell->Material);
+                // Fire clicked event
+                if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+                {
+                    auto eventToFire = fsStructuralMaterialPaletteEvent(
+                        fsEVT_STRUCTURAL_MATERIAL_PALETTE_CLICKED,
+                        this->GetId(),
+                        cell->Material);
 
-            ProcessWindowEvent(eventToFire);
+                    ProcessWindowEvent(eventToFire);
+                }
+                else
+                {
+                    assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+
+                    auto eventToFire = fsElectricalMaterialPaletteEvent(
+                        fsEVT_ELECTRICAL_MATERIAL_PALETTE_CLICKED,
+                        this->GetId(),
+                        cell->Material);
+
+                    ProcessWindowEvent(eventToFire);
+                }
+
+                break;
+            }
         }
     }
 }
@@ -544,9 +559,8 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::OnMouseLeftUp(wxMouseEvent & event)
 {
-    // TODOHERE
+    // TODOHERE: button feedback if any, otherwise nuke
     (void)event;
-    LogMessage("MouseLeftUp");
 }
 
 template<LayerType TLayer>
@@ -682,10 +696,13 @@ void MaterialPalettePanel<TLayer>::RenderMaterialCell(
 
     if (cell.Material == mCurrentSelectedMaterial)
     {
-        // TODOTEST
-        auto pen = wxPen(wxColor(0x20, 0x20, 0x20), 1, wxPENSTYLE_SOLID);
-        dc.SetPen(pen);
-        dc.DrawLine(cell.Rect.x, cell.Rect.y, cell.Rect.x + cell.Rect.width, cell.Rect.y + cell.Rect.height);
+        dc.SetPen(mSelectionPen);
+        dc.SetBrush(*wxTRANSPARENT_BRUSH);
+        dc.DrawRectangle(
+            cell.Rect.GetX() + MaterialCellInnerMargin / 2 - SelectionFrameThickness / 2,
+            cell.Rect.GetY() + MaterialCellInnerMargin / 2 - SelectionFrameThickness / 2,
+            cell.Rect.GetWidth() - MaterialCellInnerMargin + SelectionFrameThickness + 1,
+            cell.Rect.GetHeight() - MaterialCellInnerMargin + SelectionFrameThickness + 1);
     }
 }
 

@@ -55,7 +55,7 @@
 								+ Store what needs to be stored
 
 								+ Change Render()
-							- ...and selection
+							= ...and selection
 						- CreateNewButton: via RenderNewButton(cell, dc)
 					+ Separators
 
