@@ -145,6 +145,8 @@ private:
     void SetMaterialSelected(TMaterial const * material);
 
     void OnMaterialClicked(TMaterial const * material);
+    void OnMaterialHoveredIn(TMaterial const * material);
+    void OnMaterialHoveredOut();
 
 private:
 
@@ -188,8 +190,6 @@ private:
     //
 
     std::optional<MaterialPlaneType> mCurrentPlane;
-
-    TMaterial const * mCurrentMaterialHoveredOn;
 };
 
 }

@@ -7,7 +7,7 @@
 			! Palette browing: operations on a material are: Mark (-> ClearAll, SelectAll, DeleteMarked @ user), Edit
 			! Multi-selection: operations on a material are: Mark (-> ClearAll, SelectAll @ user)
 		! Pallete browsing user also adds "add" meta-material "buttons"
-	- Impl:		
+	- Impl phase I:		
 		- "MaterialPalettePanel" class: wxPanel; is given shape and exposes methods to add entries
 			! Builds internal buffer for DC all rendered, using method that draws on a DC
 
@@ -19,11 +19,11 @@
 			+ cctor:
 				+ Invokes wxPanel cctor
 			+ StartBuild()
-			- Add(TMaterial const * material, bool startNewRow): create:
+			+ Add(TMaterial const * material, bool startNewRow): create:
 				+ wxBitmap with material sample (via MakeMaterialSample)
-				- All pieces of text, already snipped
-					- Heuristics based on size.width constant, and font sizes
-				- Layout info: only private relative's, no absolute's 
+				+ All pieces of text, already snipped
+					+ Heuristics based on size.width constant, and font sizes
+				+ Layout info: only private relative's, no absolute's 
 			+ AddSeparator()
 			- AddCreateNewButton()
 			+ EndBuild()
@@ -76,19 +76,26 @@
 			- Try with MemoryDC https://docs.wxwidgets.org/3.3/classwx_memory_d_c.html
 
 			= Exposes events:
-				= Hook mouse events
-					- Leave:
+				+ Hook mouse events
+					+ Leave:
 						+ Selection feedback
-						- Send MouseHoveredOut
-					- Move:
+						+ Send MouseHoveredOut
+					+ Move:
 						+ Selection feedback
-						- Send MaterialHoveredOut (eventually)
-						- Send MaterialHoveredIn (eventually)
-					- LeftDown:
-						- Find
-						- Send selected
-				- MaterialHoveredIn/Out (material)
-				- MaterialSelected (material)
+						+ Send MaterialHoveredOut (eventually)
+						+ Send MaterialHoveredIn (eventually)
+					+ LeftDown:
+						+ Find
+						+ Send MaterialClicked (eventually)
+				+ MaterialHoveredIn/Out (material)
+					+ Impl
+					+ Subscribe
+				+ MaterialClicked (material)
+					+ Impl
+					+ Subscribe
+				+ See if browser's mCurrrentlyHoveredOn is needed
+				- TODO: fix layout
+
 				- TODO: based on ops above
 					- Palette browsing:
 						- Edit
@@ -106,6 +113,10 @@
 				- Finalize blitting only visible portion of panel
 			+ Property grid
 
+		- Tests:
+			- Click on non-material
+			- Hover on non-material
+
 		- Test with Longhorn's
 			- Before and after
 
@@ -114,7 +125,8 @@
 			- See if browser still needs sstream
 			- See if panel still needs double buffering (needs to test with scrolling)
 
-
+	- Impl phase 2:
+		- TODO: copy ad//remove from above
 
 - Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
 

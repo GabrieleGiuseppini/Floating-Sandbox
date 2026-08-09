@@ -37,6 +37,13 @@ int constexpr NameToDataGapHeight = 2;
 
 ////////////////////////////////////////////////////////////////
 
+wxDEFINE_EVENT(fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_OUT, fsStructuralMaterialPaletteEvent);
+wxDEFINE_EVENT(fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_IN, fsStructuralMaterialPaletteEvent);
+wxDEFINE_EVENT(fsEVT_STRUCTURAL_MATERIAL_PALETTE_CLICKED, fsStructuralMaterialPaletteEvent);
+wxDEFINE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_OUT, fsElectricalMaterialPaletteEvent);
+wxDEFINE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_IN, fsElectricalMaterialPaletteEvent);
+wxDEFINE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_CLICKED, fsElectricalMaterialPaletteEvent);
+
 template<LayerType TLayer>
 MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     wxWindow * parent,
@@ -389,6 +396,28 @@ void MaterialPalettePanel<TLayer>::OnMouseLeave()
         {
             RenderMaterialCell(*oldSelectedCell);
             Refresh(false);
+
+            // Fire hovered-out event
+            if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+            {
+                auto eventToFire = fsStructuralMaterialPaletteEvent(
+                    fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_OUT,
+                    this->GetId(),
+                    nullptr);
+
+                ProcessWindowEvent(eventToFire);
+            }
+            else
+            {
+                assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+
+                auto eventToFire = fsElectricalMaterialPaletteEvent(
+                    fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_OUT,
+                    this->GetId(),
+                    nullptr);
+
+                ProcessWindowEvent(eventToFire);
+            }
         }
     }
 }
@@ -397,7 +426,6 @@ template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::OnMouseMoved(wxMouseEvent & event)
 {
     auto const * cell = FindCellAt(event.GetPosition());
-
     if (cell != nullptr)
     {
         if (cell->Material != mCurrentSelectedMaterial)
@@ -417,6 +445,28 @@ void MaterialPalettePanel<TLayer>::OnMouseMoved(wxMouseEvent & event)
 
             RenderMaterialCell(*cell);
             Refresh(false);
+
+            // Fire hovered-in event
+            if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+            {
+                auto eventToFire = fsStructuralMaterialPaletteEvent(
+                    fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_IN,
+                    this->GetId(),
+                    mCurrentSelectedMaterial);
+
+                ProcessWindowEvent(eventToFire);
+            }
+            else
+            {
+                assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+
+                auto eventToFire = fsElectricalMaterialPaletteEvent(
+                    fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_IN,
+                    this->GetId(),
+                    mCurrentSelectedMaterial);
+
+                ProcessWindowEvent(eventToFire);
+            }
         }
     }
     else if (mCurrentSelectedMaterial != nullptr)
@@ -430,6 +480,28 @@ void MaterialPalettePanel<TLayer>::OnMouseMoved(wxMouseEvent & event)
         {
             RenderMaterialCell(*oldSelectedCell);
             Refresh(false);
+
+            // Fire hovered-out event
+            if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+            {
+                auto eventToFire = fsStructuralMaterialPaletteEvent(
+                    fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_OUT,
+                    this->GetId(),
+                    nullptr);
+
+                ProcessWindowEvent(eventToFire);
+            }
+            else
+            {
+                assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+
+                auto eventToFire = fsElectricalMaterialPaletteEvent(
+                    fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_OUT,
+                    this->GetId(),
+                    nullptr);
+
+                ProcessWindowEvent(eventToFire);
+            }
         }
     }
 }
@@ -437,10 +509,33 @@ void MaterialPalettePanel<TLayer>::OnMouseMoved(wxMouseEvent & event)
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
 {
-    // TODOHERE
-    (void)event;
-    LogMessage("MouseLeftDown");
+    auto const * cell = FindCellAt(event.GetPosition());
+    if (cell != nullptr && cell->Kind == Cell::KindType::Material)
+    {
+        assert(cell->Material != nullptr);
 
+        // Fire clicked event
+        if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+        {
+            auto eventToFire = fsStructuralMaterialPaletteEvent(
+                fsEVT_STRUCTURAL_MATERIAL_PALETTE_CLICKED,
+                this->GetId(),
+                cell->Material);
+
+            ProcessWindowEvent(eventToFire);
+        }
+        else
+        {
+            assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+
+            auto eventToFire = fsElectricalMaterialPaletteEvent(
+                fsEVT_ELECTRICAL_MATERIAL_PALETTE_CLICKED,
+                this->GetId(),
+                cell->Material);
+
+            ProcessWindowEvent(eventToFire);
+        }
+    }
 }
 
 template<LayerType TLayer>

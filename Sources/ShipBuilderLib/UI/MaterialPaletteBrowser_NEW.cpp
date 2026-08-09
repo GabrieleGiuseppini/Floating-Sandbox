@@ -36,7 +36,6 @@ MaterialPaletteBrowser_NEW<TLayer>::MaterialPaletteBrowser_NEW(
     , mMaterialPalette(materialPalette)
     , mSoundController(soundController)
     , mCurrentPlane()
-    , mCurrentMaterialHoveredOn(nullptr)
 {
     SetBackgroundColour(wxColour("WHITE"));
 
@@ -209,6 +208,66 @@ MaterialPaletteBrowser_NEW<TLayer>::MaterialPaletteBrowser_NEW(
                     category,
                     shipTexturizer,
                     gameAssetManager);
+
+                // Bind click
+                if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+                {
+                    categoryPanel->Bind(
+                        fsEVT_STRUCTURAL_MATERIAL_PALETTE_CLICKED,
+                        [this](fsStructuralMaterialPaletteEvent & event)
+                        {
+                            OnMaterialClicked(event.GetMaterial());
+                        });
+                }
+                else
+                {
+                    categoryPanel->Bind(
+                        fsEVT_ELECTRICAL_MATERIAL_PALETTE_CLICKED,
+                        [this](fsElectricalMaterialPaletteEvent & event)
+                        {
+                            OnMaterialClicked(event.GetMaterial());
+                        });
+                }
+
+                // Bind hover-in
+                if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+                {
+                    categoryPanel->Bind(
+                        fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_IN,
+                        [this](fsStructuralMaterialPaletteEvent & event)
+                        {
+                            OnMaterialHoveredIn(event.GetMaterial());
+                        });
+                }
+                else
+                {
+                    categoryPanel->Bind(
+                        fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_IN,
+                        [this](fsElectricalMaterialPaletteEvent & event)
+                        {
+                            OnMaterialHoveredIn(event.GetMaterial());
+                        });
+                }
+
+                // Bind hover-out
+                if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+                {
+                    categoryPanel->Bind(
+                        fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_OUT,
+                        [this](fsStructuralMaterialPaletteEvent & /*event*/)
+                        {
+                            OnMaterialHoveredOut();
+                        });
+                }
+                else
+                {
+                    categoryPanel->Bind(
+                        fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_OUT,
+                        [this](fsElectricalMaterialPaletteEvent & /*event*/)
+                        {
+                            OnMaterialHoveredOut();
+                        });
+                }
 
                 mCategoryPanelsContainerSizer->Add(
                     categoryPanel,
@@ -914,6 +973,36 @@ void MaterialPaletteBrowser_NEW<TLayer>::OnMaterialClicked(TMaterial const * mat
 
     // Close ourselves
     Dismiss();
+}
+
+template<LayerType TLayer>
+void MaterialPaletteBrowser_NEW<TLayer>::OnMaterialHoveredIn(TMaterial const * material)
+{
+    PopulateMaterialProperties(material);
+
+    if constexpr (TLayer == LayerType::Electrical)
+    {
+        if (material != nullptr
+            && material->ElectricalType == ElectricalMaterial::ElectricalElementType::ShipSound
+            && mSoundController != nullptr)
+        {
+            mSoundController->PlayOneShotShipSound(material->ShipSoundType);
+        }
+    }
+}
+
+template<LayerType TLayer>
+void MaterialPaletteBrowser_NEW<TLayer>::OnMaterialHoveredOut()
+{
+    PopulateMaterialProperties(nullptr);
+
+    if constexpr (TLayer == LayerType::Electrical)
+    {
+        if (mSoundController != nullptr)
+        {
+            mSoundController->PlayOneShotShipSound(std::nullopt);
+        }
+    }
 }
 
 //

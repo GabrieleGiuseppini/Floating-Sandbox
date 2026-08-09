@@ -21,6 +21,58 @@
 
 namespace ShipBuilder {
 
+/*
+ * Event fired for a structural|electrical|ropes material.
+ */
+template<typename TMaterial>
+class _fsMaterialPaletteEvent : public wxEvent
+{
+public:
+
+    _fsMaterialPaletteEvent(
+        wxEventType eventType,
+        int winid,
+        TMaterial const * material)
+        : wxEvent(winid, eventType)
+        , mMaterial(material)
+    {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+    }
+
+    _fsMaterialPaletteEvent(_fsMaterialPaletteEvent  const & other)
+        : wxEvent(other)
+        , mMaterial(other.mMaterial)
+    {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+    }
+
+    virtual wxEvent * Clone() const override
+    {
+        return new _fsMaterialPaletteEvent(*this);
+    }
+
+    TMaterial const * GetMaterial() const
+    {
+        return mMaterial;
+    }
+
+private:
+
+    TMaterial const * const mMaterial;
+};
+
+using fsStructuralMaterialPaletteEvent = _fsMaterialPaletteEvent<StructuralMaterial>;
+using fsElectricalMaterialPaletteEvent = _fsMaterialPaletteEvent<ElectricalMaterial>;
+
+wxDECLARE_EVENT(fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_OUT, fsStructuralMaterialPaletteEvent);
+wxDECLARE_EVENT(fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_IN, fsStructuralMaterialPaletteEvent);
+wxDECLARE_EVENT(fsEVT_STRUCTURAL_MATERIAL_PALETTE_CLICKED, fsStructuralMaterialPaletteEvent);
+wxDECLARE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_OUT, fsElectricalMaterialPaletteEvent);
+wxDECLARE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_IN, fsElectricalMaterialPaletteEvent);
+wxDECLARE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_CLICKED, fsElectricalMaterialPaletteEvent);
+
+///////////////////////////////////////////////////////////////////
+
 template<LayerType TLayer>
 class MaterialPalettePanel :
     public wxPanel
