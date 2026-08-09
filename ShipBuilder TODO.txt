@@ -45,10 +45,34 @@
 				= For each row/cell intersecting region:
 					= Cells: 
 						= Material: via RenderMaterialCell(cell, dc)
-							= Just draws bitmaps, text
-							= ...and selection
+							+ Just draws bitmaps, text
+								+ Do calculation of cell size @ material cell creation, to include real text
+								+ And since you're doing this, also do name ellipsis at cell creation
+								+ And since you're doing this, also store labels' widths and (cell-relative) topY
+
+								+ Remove font size stuff and go back to original code
+								+ Use wxWindow::GetTextExtent @ cell creation, setting fonts
+								+ Store what needs to be stored
+
+								+ Change Render()
+							- ...and selection
 						- CreateNewButton: via RenderNewButton(cell, dc)
 					+ Separators
+
+			- Replace wxBitmap's (they are still GDI objects) with wxImageList and its DrawTo
+				- TODO: Need to maintain Cell->ImageList index, also after deleting cell which deleted image from image list
+					- Better write Remove now; Remove(TMaterial const *)
+						- Re-layout all
+						- Manage image list and its index
+
+			- Remove and Add workflows
+				- Remove/Add does all bookkeeping inline (image list, )
+				- Then registers invalid rect (optional wxRect, eventually unioned)
+				- @Paint: if invalid rect exists:
+					- Call Layout
+					- If size very less or just more: nuke render buffer and nuke invalid rect
+					- If !rnder buffer: allocate it
+					- Render into it using invalid rect | whole
 
 
 			+ Paint event: blit from DC buffer
@@ -77,6 +101,9 @@
 			= Scrollable window
 				- Finalize blitting only visible portion of panel
 			+ Property grid
+
+		- Test with Longhorn's
+			- Before and after
 
 		- Cleanup:
 			- Remove _NEW from names X 2

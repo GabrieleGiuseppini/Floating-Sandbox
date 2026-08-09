@@ -46,11 +46,12 @@ private:
     void RenderPanel(wxDC & dc, wxRect const & region);
 
     struct Cell;
-    void RenderMaterialCell(
-        Cell const & cell,
-        wxDC & dc);
+    void RenderMaterialCell(Cell const & cell, wxDC & dc);
 
     wxBitmap MakeMaterialSample(TMaterial const * material);
+
+    // Requires font to be set
+    wxString TruncateAsNeeded(std::string const & input, int maxWidth);
 
 private:
 
@@ -77,7 +78,17 @@ private:
         // Iff Kind==CreateNewButton|Material
         TMaterial const * Material;
         wxBitmap Bitmap; // Sample or whole
+        int BitmapYTopOffset; // Relative to cell
         // Iff Kind==Material
+        wxString Name1;
+        int Name1Width;
+        int Name1YTopOffset; // Relative to cell
+        wxString Name2;
+        int Name2Width;
+        int Name2YTopOffset; // Relative to cell
+        wxString Data;
+        int DataWidth;
+        int DataYTopOffset; // Relative to cell
         bool IsSelected;
 
         // Layout
@@ -89,7 +100,13 @@ private:
             wxSize size)
             : Kind(kind)
             , Material(material)
-            , Bitmap()
+            , BitmapYTopOffset(0)
+            , Name1Width(0)
+            , Name1YTopOffset(0)
+            , Name2Width(0)
+            , Name2YTopOffset(0)
+            , DataWidth(0)
+            , DataYTopOffset(0)
             , IsSelected(false)
             , Rect(wxPoint(0, 0), size)
         {
@@ -129,6 +146,7 @@ private:
     wxBrush mSeparatorBrush;
     wxFont mNameFont;
     wxFont mDataFont;
+    wxColor mTextForegroundColor;
 };
 
 }

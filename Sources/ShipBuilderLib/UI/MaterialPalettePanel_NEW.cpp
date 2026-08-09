@@ -33,6 +33,10 @@ int constexpr MateralSelectionFrameThickness = 2;
 
 int constexpr SeparatorThickness = 1;
 
+int constexpr MaterialSampleToNameGapHeight = 2;
+int constexpr NameToNameGapHeight = 0;
+int constexpr NameToDataGapHeight = 2;
+
 ////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer>
@@ -61,10 +65,13 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
 
     // Make name font
     mNameFont = GetFont();
+    mNameFont.SetPointSize(mNameFont.GetPointSize());
 
     // Make data font
     mDataFont = GetFont();
     mDataFont.SetPointSize(mDataFont.GetPointSize() - 1);
+
+    mTextForegroundColor = wxColour("BLACK");
 
     //
     // Connect events
@@ -87,7 +94,7 @@ void MaterialPalettePanel<TLayer>::Add(
     bool startNewRow)
 {
     //
-    // Select row
+    // Prepare row
     //
 
     if (startNewRow || mRows.empty() || mRows.back().Kind == Row::KindType::Separator)
@@ -101,19 +108,19 @@ void MaterialPalettePanel<TLayer>::Add(
     // Create cell
     //
 
+    int currentTopYOffset = MaterialCellInnerMargin;
+
     // Sample bitmap
 
     wxBitmap const sampleBitmap = MakeMaterialSample(material);
 
-    // Text
-
-    // TODOHERE
-
     // Store cell
 
+    int const innerCellWidth = sampleBitmap.GetSize().GetWidth();
+
     wxSize const cellSize = wxSize(
-        MaterialCellInnerMargin + sampleBitmap.GetSize().GetWidth() + MaterialCellInnerMargin,
-        MaterialCellInnerMargin + sampleBitmap.GetSize().GetHeight() + MaterialCellInnerMargin); // TODO: include text
+        MaterialCellInnerMargin + innerCellWidth + MaterialCellInnerMargin,
+        0); // Recalculated later
 
     Cell & cell = row.Cells.emplace_back(
         Cell::KindType::Material,
@@ -121,6 +128,111 @@ void MaterialPalettePanel<TLayer>::Add(
         cellSize);
 
     cell.Bitmap = sampleBitmap;
+    cell.BitmapYTopOffset = currentTopYOffset;
+
+    currentTopYOffset +=
+        sampleBitmap.GetSize().GetHeight()
+        + MaterialSampleToNameGapHeight;
+
+    //
+    // Text
+    //
+    // Assumption: text is normalized (wrt whitespaces, etc.)
+    //
+
+    auto const previousFont = GetFont();
+
+    // Name
+
+    SetFont(mNameFont);
+
+    auto nameSizeWidth = GetTextExtent(material->Name).GetWidth();
+    if (nameSizeWidth > innerCellWidth)
+    {
+        int lastSpaceIndex = -1;
+        while (true)
+        {
+            auto const nextSpace = material->Name.find(' ', lastSpaceIndex + 1);
+            if (nextSpace == std::string::npos
+                || GetTextExtent(material->Name.substr(0, nextSpace)).GetWidth() > innerCellWidth)
+            {
+                // Use up to last space
+                if (lastSpaceIndex > 0)
+                {
+                    cell.Name1 = material->Name.substr(0, lastSpaceIndex);
+                    cell.Name2 = TruncateAsNeeded(material->Name.substr(lastSpaceIndex + 1), innerCellWidth);
+                }
+                else
+                {
+                    // Single string, too long though
+                    cell.Name1 = TruncateAsNeeded(material->Name, innerCellWidth);
+                    cell.Name2 = "";
+                }
+
+                break;
+            }
+            else
+            {
+                // Up to this space would be good, continue searching
+                lastSpaceIndex = nextSpace;
+            }
+        }
+    }
+    else
+    {
+        // Fits all
+        cell.Name1 = material->Name;
+        cell.Name2 = "";
+    }
+
+    auto const name1Size = GetTextExtent(cell.Name1);
+    cell.Name1Width = name1Size.GetWidth();
+    cell.Name1YTopOffset = currentTopYOffset;
+
+    currentTopYOffset += name1Size.GetHeight();
+
+    if (!cell.Name2.IsEmpty())
+    {
+        currentTopYOffset += NameToNameGapHeight;
+
+        auto const name2Size = GetTextExtent(cell.Name2);
+        cell.Name2Width = name2Size.GetWidth();
+        cell.Name2YTopOffset = currentTopYOffset;
+
+        currentTopYOffset += name2Size.GetHeight();
+    }
+
+    // Data
+
+    if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+    {
+        SetFont(mDataFont);
+
+        std::stringstream ss;
+
+        ss << std::fixed << std::setprecision(2)
+            << "M:" << material->GetMass()
+            << "    "
+            << "S:" << material->Strength;
+
+        cell.Data = ss.str();
+
+        currentTopYOffset += NameToDataGapHeight;
+
+        auto const dataSize = GetTextExtent(cell.Data);
+        cell.DataWidth = dataSize.GetWidth();
+        cell.DataYTopOffset = currentTopYOffset;
+
+        currentTopYOffset += dataSize.GetHeight();
+    }
+
+    currentTopYOffset += MaterialCellInnerMargin;
+
+    //
+    // Store final height
+    //
+
+    cell.Rect.SetHeight(currentTopYOffset);
 }
 
 template<LayerType TLayer>
@@ -270,6 +382,9 @@ void MaterialPalettePanel<TLayer>::RenderPanel(wxDC & dc, wxRect const & region)
     dc.SetBrush(mBackgroundBrush);
     dc.DrawRectangle(region);
 
+    // Setup
+    dc.SetTextForeground(mTextForegroundColor);
+
     // Visit all rows intersecting region
     for (Row const & row : mRows)
     {
@@ -327,17 +442,32 @@ void MaterialPalettePanel<TLayer>::RenderMaterialCell(
     assert(cell.Kind == Cell::KindType::Material);
 
     int const leftX = cell.Rect.GetX() + MaterialCellInnerMargin;
-    int topY = cell.Rect.GetY() + MaterialCellInnerMargin;
+    int const centerX = cell.Rect.GetX() + cell.Rect.GetWidth() / 2;
 
     // Material sample
 
-    dc.DrawBitmap(cell.Bitmap, leftX, topY);
+    dc.DrawBitmap(cell.Bitmap, leftX, cell.Rect.GetY() + cell.BitmapYTopOffset);
 
-    topY += cell.Bitmap.GetSize().GetHeight();
+    // Name
 
-    // Text
+    int nameX = centerX - cell.Name1Width / 2;
+    dc.SetFont(mNameFont);
+    dc.DrawText(cell.Name1, nameX, cell.Rect.GetY() + cell.Name1YTopOffset);
 
-    // TODOHERE
+    if (!cell.Name2.IsEmpty())
+    {
+        nameX = centerX - cell.Name2Width / 2;
+        dc.DrawText(cell.Name2, nameX, cell.Rect.GetY() + cell.Name2YTopOffset);
+    }
+
+    // Data
+
+    if (!cell.Data.IsEmpty())
+    {
+        int const dataX = centerX - cell.DataWidth / 2;
+        dc.SetFont(mDataFont);
+        dc.DrawText(cell.Data, dataX, cell.Rect.GetY() + cell.DataYTopOffset);
+    }
 
     // Selection
 
@@ -373,6 +503,24 @@ wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(TMaterial const * mate
             rgbaColor(material->RenderColor, 255),
             MaterialSampleSize);
     }
+}
+
+template<LayerType TLayer>
+wxString MaterialPalettePanel<TLayer>::TruncateAsNeeded(std::string const & input, int maxWidth)
+{
+    wxString wxText = wxString(input);
+    wxSize textSize = GetTextExtent(wxText);
+    while (textSize.GetWidth() > maxWidth
+        && wxText.Len() > 3)
+    {
+        // Make ellipsis
+        wxText.Truncate(wxText.Len() - 4).Append("...");
+
+        // Recalc width now
+        textSize = GetTextExtent(wxText);
+    }
+
+    return wxText;
 }
 
 //
