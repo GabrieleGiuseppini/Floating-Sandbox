@@ -371,8 +371,85 @@ void MaterialPalettePanel<TLayer>::EndBuild()
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::SetSelected(TMaterial const * material)
 {
-    // TODOHERE: as in MouseMove
-    (void)material;
+    auto const * cell = FindCellFor(material);
+    if (cell != nullptr)
+    {
+        if (cell->Material != mCurrentSelectedMaterial)
+        {
+            if (mCurrentSelectedMaterial != nullptr)
+            {
+                Cell * oldSelectedCell = FindCellFor(mCurrentSelectedMaterial);
+                assert(oldSelectedCell != nullptr);
+                if (oldSelectedCell)
+                {
+                    mCurrentSelectedMaterial = nullptr;
+                    RenderMaterialCell(*oldSelectedCell);
+                }
+            }
+
+            mCurrentSelectedMaterial = cell->Material;
+
+            RenderMaterialCell(*cell);
+            Refresh(false);
+
+            // Fire hovered-in event
+            if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+            {
+                auto eventToFire = fsStructuralMaterialPaletteEvent(
+                    fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_IN,
+                    this->GetId(),
+                    mCurrentSelectedMaterial);
+
+                ProcessWindowEvent(eventToFire);
+            }
+            else
+            {
+                assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+
+                auto eventToFire = fsElectricalMaterialPaletteEvent(
+                    fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_IN,
+                    this->GetId(),
+                    mCurrentSelectedMaterial);
+
+                ProcessWindowEvent(eventToFire);
+            }
+        }
+    }
+    else if (mCurrentSelectedMaterial != nullptr)
+    {
+        Cell * oldSelectedCell = FindCellFor(mCurrentSelectedMaterial);
+        assert(oldSelectedCell != nullptr);
+
+        mCurrentSelectedMaterial = nullptr;
+
+        if (oldSelectedCell)
+        {
+            RenderMaterialCell(*oldSelectedCell);
+            Refresh(false);
+
+            // Fire hovered-out event
+            if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+            {
+                auto eventToFire = fsStructuralMaterialPaletteEvent(
+                    fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_OUT,
+                    this->GetId(),
+                    nullptr);
+
+                ProcessWindowEvent(eventToFire);
+            }
+            else
+            {
+                assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+
+                auto eventToFire = fsElectricalMaterialPaletteEvent(
+                    fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_OUT,
+                    this->GetId(),
+                    nullptr);
+
+                ProcessWindowEvent(eventToFire);
+            }
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

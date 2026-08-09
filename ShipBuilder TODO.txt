@@ -7,15 +7,13 @@
 			! Palette browing: operations on a material are: Mark (-> ClearAll, SelectAll, DeleteMarked @ user), Edit
 			! Multi-selection: operations on a material are: Mark (-> ClearAll, SelectAll @ user)
 		! Pallete browsing user also adds "add" meta-material "buttons"
-	- Impl phase I:		
-		- "MaterialPalettePanel" class: wxPanel; is given shape and exposes methods to add entries
+	= Impl phase I:		
+		= "MaterialPalettePanel" class: wxPanel; is given shape and exposes methods to add entries
 			! Builds internal buffer for DC all rendered, using method that draws on a DC
-
-			- Row, Cell contain Layout info, which is calc'd at EndBuild
-				- Absolute vals (origin and size) for rect containing anything inside - used to determine overlaps with dirty regions
-				- Private layout info for e.g. text, checkboxes, etc.
-					- In relative coords
-
+			+ Row, Cell contain Layout info, which is calc'd at EndBuild
+				+ Absolute vals (origin and size) for rect containing anything inside - used to determine overlaps with dirty regions
+				+ Private layout info for e.g. text, checkboxes, etc.
+					+ In relative coords
 			+ cctor:
 				+ Invokes wxPanel cctor
 			+ StartBuild()
@@ -25,7 +23,7 @@
 					+ Heuristics based on size.width constant, and font sizes
 				+ Layout info: only private relative's, no absolute's 
 			+ AddSeparator()
-			- AddCreateNewButton()
+			+ AddCreateNewButton() -- empty noe
 			+ EndBuild()
 				+ Layout:
 					+ Calculates size
@@ -36,15 +34,16 @@
 				+ Creates DC buffer
 				+ Renders DC buffer: RenderPanel(region == whole, ...)
 					+ In here, clipping rect == whole
-			- SetSelected(material *)
-				- Visit all cells, deselect non-matching and select matching
-				- Force redraw of two quads into buffer (call RenderMaterialCell)
+			= SetSelected(material *)
+				+ Visit all cells, deselect non-matching and select matching
+				+ Force redraw of two quads into buffer
+				- Cleanup implementations of selection kung-fu
 
-			= RenderPanel(region, ...)
+			+ RenderPanel(region, ...)
 				+ Clear region
-				= For each row/cell intersecting region:
-					= Cells: 
-						= Material: via RenderMaterialCell(cell, dc)
+				+ For each row/cell intersecting region:
+					+ Cells: 
+						+ Material: via RenderMaterialCell(cell, dc)
 							+ Just draws bitmaps, text
 								+ Do calculation of cell size @ material cell creation, to include real text
 								+ And since you're doing this, also do name ellipsis at cell creation
@@ -55,27 +54,17 @@
 								+ Store what needs to be stored
 
 								+ Change Render()
-							= ...and selection
-						- CreateNewButton: via RenderNewButton(cell, dc)
+							+ ...and selection
+						+ CreateNewButton: (empty stub now)
 					+ Separators
 
 			+ Replace wxBitmap's (they are still GDI objects) with wxImageList and its DrawTo
-
-			- Remove and Add workflows
-				- Remove/Add does all bookkeeping inline (image list, mCurrentlySelected (if it's the one being removed), ...)
-				- Then registers invalid rect (optional wxRect, eventually unioned)
-				- @Paint: if invalid rect exists:
-					- Call Layout
-					- If size very less or just more: nuke render buffer and nuke invalid rect
-					- If !rnder buffer: allocate it
-					- Render into it using invalid rect | whole
-
 
 			+ Paint event: blit from DC buffer
 
 			- Try with MemoryDC https://docs.wxwidgets.org/3.3/classwx_memory_d_c.html
 
-			= Exposes events:
+			+ Exposes events:
 				+ Hook mouse events
 					+ Leave:
 						+ Selection feedback
@@ -94,17 +83,6 @@
 					+ Impl
 					+ Subscribe
 				+ See if browser's mCurrrentlyHoveredOn is needed
-
-				- TODO: based on ops above
-					- Palette browsing:
-						- Edit
-						- TODO: mark+delete vs mark and delete_all
-					- Multi-selection for import:
-						- TODO: 
-				- OnMark(bool) [for selection checkboxes]
-				- OnDelete 
-				- OnEdit
-				- OnAddNew
 
 		! "MaterialPaletteBrowser" class: wxWhateveNow; use MaterialPalettePanel and has logic for its shape and building of it
 			+ Category buttons
@@ -125,7 +103,28 @@
 			- See if panel still needs double buffering (needs to test with scrolling)
 
 	- Impl phase 2:
-		- TODO: copy ad//remove from above
+		- Finish CreateNewButton cell type
+		- Remove and Add workflows
+			- Remove/Add does all bookkeeping inline (image list, mCurrentlySelected (if it's the one being removed), ...)
+			- TODOHERE: double-check all the below
+			- Then registers invalid rect (optional wxRect, eventually unioned)
+			- @Paint: if invalid rect exists:
+				- Call Layout (i.e. total)
+				- If size very less or just more: nuke render buffer and nuke invalid rect
+				- If !rnder buffer: allocate it
+				- Render into it using invalid rect | whole
+		- Events:
+			- TODO: based on ops @ gist above
+				- Palette browsing:
+					- Edit
+					- TODO: mark+delete vs mark and delete_all
+				- Multi-selection for import:
+					- TODO: 
+			- OnMark(bool) [for selection checkboxes]
+			- OnDelete 
+			- OnEdit
+			- OnAddNew
+
 
 - Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
 
