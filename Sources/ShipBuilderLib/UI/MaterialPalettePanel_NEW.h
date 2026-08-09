@@ -13,8 +13,10 @@
 #include <Simulation/ShipTexturizer.h>
 
 #include <wx/wx.h>
+#include <wx/dcbuffer.h>
 #include <wx/imaglist.h>
 
+#include <memory>
 #include <vector>
 
 namespace ShipBuilder {
@@ -43,16 +45,26 @@ public:
 private:
 
     void OnPaint(wxPaintEvent & event);
+    void OnMouseLeave();
+    void OnMouseMoved(wxMouseEvent & event);
+    void OnMouseLeftDown(wxMouseEvent & event);
+    void OnMouseLeftUp(wxMouseEvent & event);
 
-    void RenderPanel(wxDC & dc, wxRect const & region);
+    std::unique_ptr<wxBufferedDC> MakeDc();
+
+    void RenderPanel(wxRect const & region);
 
     struct Cell;
+    void RenderMaterialCell(Cell const & cell);
     void RenderMaterialCell(Cell const & cell, wxDC & dc);
 
-    wxBitmap MakeMaterialSample(TMaterial const * material);
+    wxBitmap MakeMaterialSample(TMaterial const * material) const;
+
+    Cell * FindCellAt(wxPoint const & position);
+    Cell * FindCellFor(TMaterial const * material);
 
     // Requires font to be set
-    wxString TruncateAsNeeded(std::string const & input, int maxWidth);
+    wxString TruncateAsNeeded(std::string const & input, int maxWidth) const;
 
 private:
 
@@ -89,7 +101,6 @@ private:
         wxString Data;
         int DataWidth;
         int DataYTopOffset; // Relative to cell
-        bool IsSelected;
 
         // Layout
         wxRect Rect; // Origin set at Layout, Size set at cctor
@@ -108,7 +119,6 @@ private:
             , Name2YTopOffset(0)
             , DataWidth(0)
             , DataYTopOffset(0)
-            , IsSelected(false)
             , Rect(wxPoint(0, 0), size)
         {
         }
@@ -151,6 +161,12 @@ private:
     wxFont mNameFont;
     wxFont mDataFont;
     wxColor mTextForegroundColor;
+
+    //
+    // State
+    //
+
+    TMaterial const * mCurrentSelectedMaterial;
 };
 
 }

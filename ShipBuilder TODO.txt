@@ -62,7 +62,7 @@
 			+ Replace wxBitmap's (they are still GDI objects) with wxImageList and its DrawTo
 
 			- Remove and Add workflows
-				- Remove/Add does all bookkeeping inline (image list, )
+				- Remove/Add does all bookkeeping inline (image list, mCurrentlySelected (if it's the one being removed), ...)
 				- Then registers invalid rect (optional wxRect, eventually unioned)
 				- @Paint: if invalid rect exists:
 					- Call Layout
@@ -75,14 +75,20 @@
 
 			- Try with MemoryDC https://docs.wxwidgets.org/3.3/classwx_memory_d_c.html
 
-			- Exposes events:
-				- Hook mouse events
-					- Leave: send signal for deselect (MouseHoverOut) if any selected
-						- Requires remembering if anything selected
+			= Exposes events:
+				= Hook mouse events
+					- Leave:
+						+ Selection feedback
+						- Send MouseHoveredOut
 					- Move:
-					- LeftDown
-				- MouseHoverIn/Out
-				- OnClick
+						+ Selection feedback
+						- Send MaterialHoveredOut (eventually)
+						- Send MaterialHoveredIn (eventually)
+					- LeftDown:
+						- Find
+						- Send selected
+				- MaterialHoveredIn/Out (material)
+				- MaterialSelected (material)
 				- TODO: based on ops above
 					- Palette browsing:
 						- Edit

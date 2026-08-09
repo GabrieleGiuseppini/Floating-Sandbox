@@ -9,8 +9,6 @@
 
 #include <Core/Log.h>
 
-#include <wx/dcbuffer.h>
-
 #include <cassert>
 #include <iomanip>
 #include <sstream>
@@ -50,6 +48,8 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     , mRenderBuffer() // Start empty
     , mRows() // Start empty
     , mMaterialSampleBitmaps(MaterialSampleSize.width, MaterialSampleSize.height, false)
+    // State
+    , mCurrentSelectedMaterial(nullptr)
 {
 #ifdef __WXMSW__
     SetDoubleBuffered(true);
@@ -80,6 +80,10 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
 
     using PanelClass = MaterialPalettePanel<TLayer>;
     Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&PanelClass::OnPaint);
+    Connect(this->GetId(), wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&PanelClass::OnMouseLeave);
+    Connect(this->GetId(), wxEVT_MOTION, (wxObjectEventFunction)&PanelClass::OnMouseMoved);
+    Connect(this->GetId(), wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PanelClass::OnMouseLeftDown);
+    Connect(this->GetId(), wxEVT_LEFT_UP, (wxObjectEventFunction)&PanelClass::OnMouseLeftUp);
 }
 
 template<LayerType TLayer>
@@ -345,15 +349,11 @@ void MaterialPalettePanel<TLayer>::EndBuild()
     assert(!mRenderBuffer);
     mRenderBuffer = std::make_unique<wxBitmap>(size);
 
-    // Create DC for rendering into buffer
-    // TODO: try with wxMemoryDC
-    wxBufferedDC dc(nullptr, *mRenderBuffer, wxBUFFER_VIRTUAL_AREA);
-
     //
     // Render panel
     //
 
-    RenderPanel(dc, size);
+    RenderPanel(size);
 }
 
 template<LayerType TLayer>
@@ -371,14 +371,100 @@ void MaterialPalettePanel<TLayer>::OnPaint(wxPaintEvent & /*event*/)
 {
     assert(mRenderBuffer);
 
-    // TODO: see client size/scroll and blitting only needed portion
     wxPaintDC dc(this);
     dc.DrawBitmap(*mRenderBuffer, 0, 0);
 }
 
 template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::RenderPanel(wxDC & dc, wxRect const & region)
+void MaterialPalettePanel<TLayer>::OnMouseLeave()
 {
+    if (mCurrentSelectedMaterial != nullptr)
+    {
+        Cell * oldSelectedCell = FindCellFor(mCurrentSelectedMaterial);
+        assert(oldSelectedCell != nullptr);
+
+        mCurrentSelectedMaterial = nullptr;
+
+        if (oldSelectedCell)
+        {
+            RenderMaterialCell(*oldSelectedCell);
+            Refresh(false);
+        }
+    }
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::OnMouseMoved(wxMouseEvent & event)
+{
+    auto const * cell = FindCellAt(event.GetPosition());
+
+    if (cell != nullptr)
+    {
+        if (cell->Material != mCurrentSelectedMaterial)
+        {
+            if (mCurrentSelectedMaterial != nullptr)
+            {
+                Cell * oldSelectedCell = FindCellFor(mCurrentSelectedMaterial);
+                assert(oldSelectedCell != nullptr);
+                if (oldSelectedCell)
+                {
+                    mCurrentSelectedMaterial = nullptr;
+                    RenderMaterialCell(*oldSelectedCell);
+                }
+            }
+
+            mCurrentSelectedMaterial = cell->Material;
+
+            RenderMaterialCell(*cell);
+            Refresh(false);
+        }
+    }
+    else if (mCurrentSelectedMaterial != nullptr)
+    {
+        Cell * oldSelectedCell = FindCellFor(mCurrentSelectedMaterial);
+        assert(oldSelectedCell != nullptr);
+
+        mCurrentSelectedMaterial = nullptr;
+
+        if (oldSelectedCell)
+        {
+            RenderMaterialCell(*oldSelectedCell);
+            Refresh(false);
+        }
+    }
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
+{
+    // TODOHERE
+    (void)event;
+    LogMessage("MouseLeftDown");
+
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::OnMouseLeftUp(wxMouseEvent & event)
+{
+    // TODOHERE
+    (void)event;
+    LogMessage("MouseLeftUp");
+}
+
+template<LayerType TLayer>
+std::unique_ptr<wxBufferedDC> MaterialPalettePanel<TLayer>::MakeDc()
+{
+    // TODO: try with wxMemoryDC
+    return std::make_unique<wxBufferedDC>(nullptr, *mRenderBuffer, wxBUFFER_VIRTUAL_AREA);
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::RenderPanel(wxRect const & region)
+{
+    // Create DC for rendering into buffer
+    auto dc_ptr = MakeDc();
+    auto & dc = *dc_ptr;
+
     // Clear
     dc.SetPen(*wxTRANSPARENT_PEN);
     dc.SetBrush(mBackgroundBrush);
@@ -437,6 +523,22 @@ void MaterialPalettePanel<TLayer>::RenderPanel(wxDC & dc, wxRect const & region)
 }
 
 template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::RenderMaterialCell(Cell const & cell)
+{
+    // Create DC for rendering into buffer
+    auto dc_ptr = MakeDc();
+    auto & dc = *dc_ptr;
+
+    // Clear
+    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetBrush(mBackgroundBrush);
+    dc.DrawRectangle(cell.Rect);
+
+    // Render cell
+    RenderMaterialCell(cell, dc);
+}
+
+template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::RenderMaterialCell(
     Cell const & cell,
     wxDC & dc)
@@ -454,7 +556,7 @@ void MaterialPalettePanel<TLayer>::RenderMaterialCell(
         dc,
         leftX,
         cell.Rect.GetY() + cell.MaterialSampleBitmapYTopOffset,
-        cell.IsSelected ? wxIMAGELIST_DRAW_SELECTED : wxIMAGELIST_DRAW_NORMAL,
+        wxIMAGELIST_DRAW_NORMAL,
         true);
 
     // Name
@@ -480,7 +582,7 @@ void MaterialPalettePanel<TLayer>::RenderMaterialCell(
 
     // Selection
 
-    if (cell.IsSelected)
+    if (cell.Material == mCurrentSelectedMaterial)
     {
         // TODOTEST
         auto pen = wxPen(wxColor(0x20, 0x20, 0x20), 1, wxPENSTYLE_SOLID);
@@ -490,7 +592,7 @@ void MaterialPalettePanel<TLayer>::RenderMaterialCell(
 }
 
 template<LayerType TLayer>
-wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(TMaterial const * material)
+wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(TMaterial const * material) const
 {
     if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
     {
@@ -515,7 +617,59 @@ wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(TMaterial const * mate
 }
 
 template<LayerType TLayer>
-wxString MaterialPalettePanel<TLayer>::TruncateAsNeeded(std::string const & input, int maxWidth)
+typename MaterialPalettePanel<TLayer>::Cell * MaterialPalettePanel<TLayer>::FindCellAt(wxPoint const & position)
+{
+    for (auto & row : mRows)
+    {
+        if (row.Rect.Contains(position))
+        {
+            if (row.Kind == Row::KindType::Cells)
+            {
+                for (auto & cell : row.Cells)
+                {
+                    if (cell.Rect.Contains(position))
+                    {
+                        if (cell.Kind == Cell::KindType::Material)
+                        {
+                            return &cell;
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            break;
+        }
+    }
+
+    return nullptr;
+}
+
+template<LayerType TLayer>
+typename MaterialPalettePanel<TLayer>::Cell * MaterialPalettePanel<TLayer>::FindCellFor(TMaterial const * material)
+{
+    assert(material != nullptr);
+
+    for (auto & row : mRows)
+    {
+        if (row.Kind == Row::KindType::Cells)
+        {
+            for (auto & cell : row.Cells)
+            {
+                if (cell.Kind == Cell::KindType::Material && cell.Material == material)
+                {
+                    return &cell;
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+template<LayerType TLayer>
+wxString MaterialPalettePanel<TLayer>::TruncateAsNeeded(std::string const & input, int maxWidth) const
 {
     wxString wxText = wxString(input);
     wxSize textSize = GetTextExtent(wxText);
