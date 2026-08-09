@@ -13,6 +13,7 @@
 #include <Simulation/ShipTexturizer.h>
 
 #include <wx/wx.h>
+#include <wx/imaglist.h>
 
 #include <vector>
 
@@ -63,7 +64,6 @@ private:
     //
     // Grid structure
     //
-    // Layout absolute sizes are exclusive of margins
 
     struct Cell
     {
@@ -77,9 +77,9 @@ private:
 
         // Iff Kind==CreateNewButton|Material
         TMaterial const * Material;
-        wxBitmap Bitmap; // Sample or whole
-        int BitmapYTopOffset; // Relative to cell
         // Iff Kind==Material
+        int MaterialSampleBitmapIndex;
+        int MaterialSampleBitmapYTopOffset; // Relative to cell
         wxString Name1;
         int Name1Width;
         int Name1YTopOffset; // Relative to cell
@@ -100,7 +100,8 @@ private:
             wxSize size)
             : Kind(kind)
             , Material(material)
-            , BitmapYTopOffset(0)
+            , MaterialSampleBitmapIndex(-1)
+            , MaterialSampleBitmapYTopOffset(0)
             , Name1Width(0)
             , Name1YTopOffset(0)
             , Name2Width(0)
@@ -137,6 +138,9 @@ private:
     };
 
     std::vector<Row> mRows;
+
+    // Images are stored here, in order to limit number of GDI objects
+    wxImageList mMaterialSampleBitmaps;
 
     //
     // Render style

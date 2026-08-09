@@ -59,11 +59,7 @@
 						- CreateNewButton: via RenderNewButton(cell, dc)
 					+ Separators
 
-			- Replace wxBitmap's (they are still GDI objects) with wxImageList and its DrawTo
-				- TODO: Need to maintain Cell->ImageList index, also after deleting cell which deleted image from image list
-					- Better write Remove now; Remove(TMaterial const *)
-						- Re-layout all
-						- Manage image list and its index
+			+ Replace wxBitmap's (they are still GDI objects) with wxImageList and its DrawTo
 
 			- Remove and Add workflows
 				- Remove/Add does all bookkeeping inline (image list, )
@@ -83,6 +79,8 @@
 				- Hook mouse events
 					- Leave: send signal for deselect (MouseHoverOut) if any selected
 						- Requires remembering if anything selected
+					- Move:
+					- LeftDown
 				- MouseHoverIn/Out
 				- OnClick
 				- TODO: based on ops above

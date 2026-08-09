@@ -49,6 +49,7 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     , mGameAssetManager(gameAssetManager)
     , mRenderBuffer() // Start empty
     , mRows() // Start empty
+    , mMaterialSampleBitmaps(MaterialSampleSize.width, MaterialSampleSize.height, false)
 {
 #ifdef __WXMSW__
     SetDoubleBuffered(true);
@@ -86,6 +87,7 @@ void MaterialPalettePanel<TLayer>::StartBuild()
 {
     mRenderBuffer.reset();
     mRows.clear();
+    mMaterialSampleBitmaps.RemoveAll();
 }
 
 template<LayerType TLayer>
@@ -112,11 +114,11 @@ void MaterialPalettePanel<TLayer>::Add(
 
     // Sample bitmap
 
-    wxBitmap const sampleBitmap = MakeMaterialSample(material);
+    int const materialSampleBitmapIndex = mMaterialSampleBitmaps.Add(MakeMaterialSample(material));
 
     // Store cell
 
-    int const innerCellWidth = sampleBitmap.GetSize().GetWidth();
+    int const innerCellWidth = MaterialSampleSize.width;
 
     wxSize const cellSize = wxSize(
         MaterialCellInnerMargin + innerCellWidth + MaterialCellInnerMargin,
@@ -127,11 +129,11 @@ void MaterialPalettePanel<TLayer>::Add(
         material,
         cellSize);
 
-    cell.Bitmap = sampleBitmap;
-    cell.BitmapYTopOffset = currentTopYOffset;
+    cell.MaterialSampleBitmapIndex = materialSampleBitmapIndex;
+    cell.MaterialSampleBitmapYTopOffset = currentTopYOffset;
 
     currentTopYOffset +=
-        sampleBitmap.GetSize().GetHeight()
+        MaterialSampleSize.height
         + MaterialSampleToNameGapHeight;
 
     //
@@ -446,7 +448,14 @@ void MaterialPalettePanel<TLayer>::RenderMaterialCell(
 
     // Material sample
 
-    dc.DrawBitmap(cell.Bitmap, leftX, cell.Rect.GetY() + cell.BitmapYTopOffset);
+    assert(cell.MaterialSampleBitmapIndex < mMaterialSampleBitmaps.GetImageCount());
+    mMaterialSampleBitmaps.Draw(
+        cell.MaterialSampleBitmapIndex,
+        dc,
+        leftX,
+        cell.Rect.GetY() + cell.MaterialSampleBitmapYTopOffset,
+        cell.IsSelected ? wxIMAGELIST_DRAW_SELECTED : wxIMAGELIST_DRAW_NORMAL,
+        true);
 
     // Name
 
