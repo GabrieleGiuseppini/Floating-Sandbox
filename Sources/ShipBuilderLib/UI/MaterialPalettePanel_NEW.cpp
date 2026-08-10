@@ -383,18 +383,13 @@ void MaterialPalettePanel<TLayer>::SetSelected(TMaterial const * material)
         {
             if (mCurrentSelectedCellId != NoneCellId)
             {
-                Cell * oldSelectedCell = FindCell(mCurrentSelectedCellId);
-                assert(oldSelectedCell != nullptr);
-                if (oldSelectedCell)
-                {
-                    mCurrentSelectedCellId = NoneCellId;
-                    RenderCell(*oldSelectedCell);
-                }
+                ToggleSelectionToNone();
             }
 
             mCurrentSelectedCellId = cell->Id;
 
             RenderCell(*cell);
+
             Refresh(false);
 
             // Fire hovered-in event
@@ -422,41 +417,9 @@ void MaterialPalettePanel<TLayer>::SetSelected(TMaterial const * material)
     }
     else if (mCurrentSelectedCellId != NoneCellId)
     {
-        Cell * oldSelectedCell = FindCell(mCurrentSelectedCellId);
-        assert(oldSelectedCell != nullptr);
+        ToggleSelectionToNone();
 
-        mCurrentSelectedCellId = NoneCellId;
-
-        if (oldSelectedCell)
-        {
-            RenderCell(*oldSelectedCell);
-            Refresh(false);
-
-            if (oldSelectedCell->Kind == Cell::KindType::Material)
-            {
-                // Fire hovered-out event
-                if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
-                {
-                    auto eventToFire = fsStructuralMaterialPaletteEvent(
-                        fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_OUT,
-                        this->GetId(),
-                        nullptr);
-
-                    ProcessWindowEvent(eventToFire);
-                }
-                else
-                {
-                    assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
-
-                    auto eventToFire = fsElectricalMaterialPaletteEvent(
-                        fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_OUT,
-                        this->GetId(),
-                        nullptr);
-
-                    ProcessWindowEvent(eventToFire);
-                }
-            }
-        }
+        Refresh(false);
     }
 }
 
@@ -476,41 +439,9 @@ void MaterialPalettePanel<TLayer>::OnMouseLeave()
 {
     if (mCurrentSelectedCellId != NoneCellId)
     {
-        Cell * oldSelectedCell = FindCell(mCurrentSelectedCellId);
-        assert(oldSelectedCell != nullptr);
+        ToggleSelectionToNone();
 
-        mCurrentSelectedCellId = NoneCellId;
-
-        if (oldSelectedCell)
-        {
-            RenderCell(*oldSelectedCell);
-            Refresh(false);
-
-            if (oldSelectedCell->Kind == Cell::KindType::Material)
-            {
-                // Fire hovered-out event
-                if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
-                {
-                    auto eventToFire = fsStructuralMaterialPaletteEvent(
-                        fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_OUT,
-                        this->GetId(),
-                        nullptr);
-
-                    ProcessWindowEvent(eventToFire);
-                }
-                else
-                {
-                    assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
-
-                    auto eventToFire = fsElectricalMaterialPaletteEvent(
-                        fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_OUT,
-                        this->GetId(),
-                        nullptr);
-
-                    ProcessWindowEvent(eventToFire);
-                }
-            }
-        }
+        Refresh(false);
     }
 }
 
@@ -524,18 +455,13 @@ void MaterialPalettePanel<TLayer>::OnMouseMoved(wxMouseEvent & event)
         {
             if (mCurrentSelectedCellId != NoneCellId)
             {
-                Cell * oldSelectedCell = FindCell(mCurrentSelectedCellId);
-                assert(oldSelectedCell != nullptr);
-                if (oldSelectedCell)
-                {
-                    mCurrentSelectedCellId = NoneCellId;
-                    RenderCell(*oldSelectedCell);
-                }
+                ToggleSelectionToNone();
             }
 
             mCurrentSelectedCellId = cell->Id;
 
             RenderCell(*cell);
+
             Refresh(false);
 
             if (cell->Kind == Cell::KindType::Material)
@@ -566,41 +492,9 @@ void MaterialPalettePanel<TLayer>::OnMouseMoved(wxMouseEvent & event)
     }
     else if (mCurrentSelectedCellId != NoneCellId)
     {
-        Cell * oldSelectedCell = FindCell(mCurrentSelectedCellId);
-        assert(oldSelectedCell != nullptr);
+        ToggleSelectionToNone();
 
-        mCurrentSelectedCellId = NoneCellId;
-
-        if (oldSelectedCell)
-        {
-            RenderCell(*oldSelectedCell);
-            Refresh(false);
-
-            if (oldSelectedCell->Kind == Cell::KindType::Material)
-            {
-                // Fire hovered-out event
-                if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
-                {
-                    auto eventToFire = fsStructuralMaterialPaletteEvent(
-                        fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_OUT,
-                        this->GetId(),
-                        nullptr);
-
-                    ProcessWindowEvent(eventToFire);
-                }
-                else
-                {
-                    assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
-
-                    auto eventToFire = fsElectricalMaterialPaletteEvent(
-                        fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_OUT,
-                        this->GetId(),
-                        nullptr);
-
-                    ProcessWindowEvent(eventToFire);
-                }
-            }
-        }
+        Refresh(false);
     }
 }
 
@@ -890,6 +784,54 @@ typename MaterialPalettePanel<TLayer>::Cell * MaterialPalettePanel<TLayer>::Find
     }
 
     return nullptr;
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::ToggleSelectionTo(Cell const & cell)
+{
+    // TODOHERE
+    (void)cell;
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::ToggleSelectionToNone()
+{
+    assert(mCurrentSelectedCellId != NoneCellId);
+
+    Cell * oldSelectedCell = FindCell(mCurrentSelectedCellId);
+    assert(oldSelectedCell != nullptr);
+
+    mCurrentSelectedCellId = NoneCellId;
+
+    if (oldSelectedCell) // For safety
+    {
+        RenderCell(*oldSelectedCell);
+
+        if (oldSelectedCell->Kind == Cell::KindType::Material)
+        {
+            // Fire hovered-out event
+            if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+            {
+                auto eventToFire = fsStructuralMaterialPaletteEvent(
+                    fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_OUT,
+                    this->GetId(),
+                    nullptr);
+
+                ProcessWindowEvent(eventToFire);
+            }
+            else
+            {
+                assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+
+                auto eventToFire = fsElectricalMaterialPaletteEvent(
+                    fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_OUT,
+                    this->GetId(),
+                    nullptr);
+
+                ProcessWindowEvent(eventToFire);
+            }
+        }
+    }
 }
 
 template<LayerType TLayer>

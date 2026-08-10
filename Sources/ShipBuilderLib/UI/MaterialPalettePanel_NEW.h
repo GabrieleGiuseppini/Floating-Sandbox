@@ -120,6 +120,10 @@ private:
     Cell * FindCellAt(wxPoint const & position);
     Cell * FindCellFor(TMaterial const * material);
 
+    // These two do _not_ invoke Refresh(), but they take care of events
+    void ToggleSelectionTo(Cell const & cell);
+    void ToggleSelectionToNone();
+
     // Requires font to be set
     wxString TruncateAsNeeded(std::string const & input, int maxWidth) const;
 
