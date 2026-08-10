@@ -34,7 +34,7 @@
 				+ Creates DC buffer
 				+ Renders DC buffer: RenderPanel(region == whole, ...)
 					+ In here, clipping rect == whole
-			= SetSelected(material *)
+			+ SetSelected(material *)
 				+ Visit all cells, deselect non-matching and select matching
 				+ Force redraw of two quads into buffer
 				+ Any cell may be selected
@@ -47,12 +47,10 @@
 					+ Move, Leave:
 						+ Can be any cell
 							+ Careful at calling render - make it RenderCell
-
-				- Cleanup implementations of selection kung-fu
-					- ToggleSelectionTo(Cell &)
+				+ Cleanup implementations of selection kung-fu
+					+ ToggleSelectionTo(Cell &)
 					+ ToggleSelectionToNone()
 					
-
 			+ RenderPanel(region, ...)
 				+ Clear region
 				+ For each row/cell intersecting region:
