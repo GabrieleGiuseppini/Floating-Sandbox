@@ -37,9 +37,21 @@
 			= SetSelected(material *)
 				+ Visit all cells, deselect non-matching and select matching
 				+ Force redraw of two quads into buffer
+
+				TODO: REDO:
+				- Any cell may be selected
+					= FindCellAt might return any kind cell, hence handle at caller
+						- FindCell(material) only returns Material cells
+					- mCurrentlySelected cannot be TMaterial but rather cell - which is dangerous; introduce CellID
+
+					- SetSelected(material)
+						- Guaranteed by def'n to only select Material cells; finds by Material and returns Cell *
+					- Move, Lave:
+						- Can be any cell
+
 				- Cleanup implementations of selection kung-fu
-					- FindCell might return any kind cell, hence handle at caller
 					- InternalSetSelectedCell(Cell &)
+					
 
 			+ RenderPanel(region, ...)
 				+ Clear region

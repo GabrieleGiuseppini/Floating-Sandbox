@@ -507,7 +507,7 @@ template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::OnMouseMoved(wxMouseEvent & event)
 {
     auto const * cell = FindCellAt(event.GetPosition());
-    if (cell != nullptr)
+    if (cell != nullptr && cell->Kind == Cell::KindType::Material)
     {
         if (cell->Material != mCurrentSelectedMaterial)
         {
@@ -821,16 +821,12 @@ typename MaterialPalettePanel<TLayer>::Cell * MaterialPalettePanel<TLayer>::Find
                 {
                     if (cell.Rect.Contains(position))
                     {
-                        if (cell.Kind == Cell::KindType::Material)
-                        {
-                            return &cell;
-                        }
-
-                        break;
+                        return &cell;
                     }
                 }
             }
 
+            // In this row, but no cell found
             break;
         }
     }
