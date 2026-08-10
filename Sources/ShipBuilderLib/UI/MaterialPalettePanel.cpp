@@ -61,10 +61,6 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     , mCurrentSelectedCellId(NoneCellId)
     , mNextCellId(0)
 {
-#ifdef __WXMSW__
-    SetDoubleBuffered(true);
-#endif
-
     SetBackgroundColour(wxColour("WHITE"));
     mBackgroundBrush = wxBrush(wxColour("WHITE"), wxBRUSHSTYLE_SOLID);
 

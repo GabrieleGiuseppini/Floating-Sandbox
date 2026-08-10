@@ -106,10 +106,10 @@
 		+ Test with Longhorn's
 			+ Before and after
 
-		= Cleanup:
+		+ Cleanup:
 			+ Remove _NEW from names X 2
 			+ See if browser still needs sstream
-			- See if panel still needs double buffering (needs to test with scrolling)
+			+ See if panel still needs double buffering (needs to test with scrolling)
 
 		- Test on Ubuntu
 		- Test on old Dell
