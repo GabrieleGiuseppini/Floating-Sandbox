@@ -75,11 +75,20 @@ StructuralMaterial StructuralMaterial::Create(
         float const waterDiffusionSpeed = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_diffusion_speed", 0.5f);
         float const waterRetention = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_retention", 0.05f);
         float const rotReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rot_receptivity", 1.0);
-        assert(rotReceptivity <= 1.0f);
+        if (rotReceptivity > 1.0f)
+        {
+            throw GameException(std::string("Material \"") + name + "\" has \"rot_receptivity\" outside of the valid [0.0, 1.0] range");
+        }
         float const rustReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rust_receptivity", 0.0);
-        assert(rustReceptivity <= 1.0f);
+        if (rustReceptivity > 1.0f)
+        {
+            throw GameException(std::string("Material \"") + name + "\" has \"rust_receptivity\" outside of the valid [0.0, 1.0] range");
+        }
         float const waterSolubility = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_solubility", 0.0);
-        assert(waterSolubility <= 1.0f);
+        if (waterSolubility > 1.0f)
+        {
+            throw GameException(std::string("Material \"") + name + "\" has \"water_solubility\" outside of the valid [0.0, 1.0] range");
+        }
 
         // Heat
 
