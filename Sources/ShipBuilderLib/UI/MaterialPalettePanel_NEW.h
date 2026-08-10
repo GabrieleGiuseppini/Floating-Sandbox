@@ -13,7 +13,7 @@
 #include <Simulation/ShipTexturizer.h>
 
 #include <wx/wx.h>
-#include <wx/dcbuffer.h>
+#include <wx/dcmemory.h>
 #include <wx/imaglist.h>
 
 #include <cstdint>
@@ -106,7 +106,7 @@ private:
     void OnMouseLeftDown(wxMouseEvent & event);
     void OnMouseLeftUp(wxMouseEvent & event);
 
-    std::unique_ptr<wxBufferedDC> MakeDc();
+    std::unique_ptr<wxMemoryDC> MakeDc();
 
     void RenderPanel(wxRect const & region);
 

@@ -489,10 +489,9 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftUp(wxMouseEvent & event)
 }
 
 template<LayerType TLayer>
-std::unique_ptr<wxBufferedDC> MaterialPalettePanel<TLayer>::MakeDc()
+std::unique_ptr<wxMemoryDC> MaterialPalettePanel<TLayer>::MakeDc()
 {
-    // TODO: try with wxMemoryDC
-    return std::make_unique<wxBufferedDC>(nullptr, *mRenderBuffer, wxBUFFER_VIRTUAL_AREA);
+    return std::make_unique<wxMemoryDC>(*mRenderBuffer);
 }
 
 template<LayerType TLayer>

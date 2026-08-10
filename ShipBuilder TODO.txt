@@ -8,7 +8,7 @@
 			! Multi-selection: operations on a material are: Mark (-> ClearAll, SelectAll @ user)
 		! Pallete browsing user also adds "add" meta-material "buttons"
 	= Impl phase I:		
-		= "MaterialPalettePanel" class: wxPanel; is given shape and exposes methods to add entries
+		+ "MaterialPalettePanel" class: wxPanel; is given shape and exposes methods to add entries
 			! Builds internal buffer for DC all rendered, using method that draws on a DC
 			+ Row, Cell contain Layout info, which is calc'd at EndBuild
 				+ Absolute vals (origin and size) for rect containing anything inside - used to determine overlaps with dirty regions
@@ -71,11 +71,8 @@
 					+ Separators
 
 			+ Replace wxBitmap's (they are still GDI objects) with wxImageList and its DrawTo
-
 			+ Paint event: blit from DC buffer
-
-			- Try with MemoryDC https://docs.wxwidgets.org/3.3/classwx_memory_d_c.html
-
+			+ Try with MemoryDC https://docs.wxwidgets.org/3.3/classwx_memory_d_c.html
 			+ Exposes events:
 				+ Hook mouse events
 					+ Leave:
@@ -102,9 +99,9 @@
 				- Finalize blitting only visible portion of panel
 			+ Property grid
 
-		- Tests:
-			- Click on non-material
-			- Hover on non-material
+		+ Tests:
+			+ Click on non-material
+			+ Hover on non-material
 
 		- Test with Longhorn's
 			- Before and after
