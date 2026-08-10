@@ -16,6 +16,7 @@
 #include <wx/dcbuffer.h>
 #include <wx/imaglist.h>
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -96,6 +97,9 @@ public:
 
 private:
 
+    using CellIdType = std::uint64_t;
+    static CellIdType constexpr NoneCellId = std::numeric_limits<CellIdType>::max();
+
     void OnPaint(wxPaintEvent & event);
     void OnMouseLeave();
     void OnMouseMoved(wxMouseEvent & event);
@@ -107,16 +111,19 @@ private:
     void RenderPanel(wxRect const & region);
 
     struct Cell;
-    void RenderMaterialCell(Cell const & cell);
-    void RenderMaterialCell(Cell const & cell, wxDC & dc);
+    void RenderCell(Cell const & cell);
+    void RenderCell(Cell const & cell, wxDC & dc);
 
     wxBitmap MakeMaterialSample(TMaterial const * material) const;
 
+    Cell * FindCell(CellIdType const & id);
     Cell * FindCellAt(wxPoint const & position);
     Cell * FindCellFor(TMaterial const * material);
 
     // Requires font to be set
     wxString TruncateAsNeeded(std::string const & input, int maxWidth) const;
+
+    CellIdType MakeNextCellId();
 
 private:
 
@@ -131,13 +138,15 @@ private:
 
     struct Cell
     {
+        CellIdType const Id;
+
         enum class KindType
         {
             CreateNewButton,
             Material
         };
 
-        KindType Kind;
+        KindType const Kind;
 
         // Iff Kind==CreateNewButton|Material
         TMaterial const * Material;
@@ -158,10 +167,12 @@ private:
         wxRect Rect; // Origin set at Layout, Size set at cctor
 
         Cell(
+            CellIdType id,
             KindType kind,
             TMaterial const * material,
             wxSize size)
-            : Kind(kind)
+            : Id(id)
+            , Kind(kind)
             , Material(material)
             , MaterialSampleBitmapIndex(-1)
             , MaterialSampleBitmapYTopOffset(0)
@@ -219,7 +230,8 @@ private:
     // State
     //
 
-    TMaterial const * mCurrentSelectedMaterial;
+    CellIdType mCurrentSelectedCellId;
+    CellIdType mNextCellId;
 };
 
 }
