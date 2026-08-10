@@ -111,7 +111,7 @@
 			+ See if browser still needs sstream
 			+ See if panel still needs double buffering (needs to test with scrolling)
 
-		- Test on Ubuntu
+		+ Test on Ubuntu
 		- Test on old Dell
 
 		- Merge back into master
