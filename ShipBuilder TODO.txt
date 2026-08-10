@@ -103,13 +103,15 @@
 			+ Click on non-material
 			+ Hover on non-material
 
-		- Test with Longhorn's
-			- Before and after
+		+ Test with Longhorn's
+			+ Before and after
 
 		- Cleanup:
 			- Remove _NEW from names X 2
 			- See if browser still needs sstream
 			- See if panel still needs double buffering (needs to test with scrolling)
+
+		- Release
 
 	- Impl phase 2:
 		- Finish CreateNewButton cell type
