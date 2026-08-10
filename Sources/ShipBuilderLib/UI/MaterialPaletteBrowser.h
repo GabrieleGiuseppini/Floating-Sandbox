@@ -1,13 +1,13 @@
 /***************************************************************************************
 * Original Author:		Gabriele Giuseppini
-* Created:				2021-08-29
+* Created:				2026-08-07
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
 
 #include "../ShipBuilderTypes.h"
 
-#include "MaterialPalettePanel_NEW.h"
+#include "MaterialPalettePanel.h"
 
 #include <Game/GameAssetManager.h>
 #include <Game/ISoundController.h>
@@ -100,7 +100,7 @@ public:
 };
 
 template<LayerType TLayer>
-class MaterialPaletteBrowser_NEW final :
+class MaterialPaletteBrowser final :
     public wxPopupTransientWindow,
     public IMaterialPalette
 {
@@ -108,7 +108,7 @@ public:
 
     using TMaterial = typename LayerTypeTraits<TLayer>::material_type;
 
-    MaterialPaletteBrowser_NEW(
+    MaterialPaletteBrowser(
         wxWindow * parent,
         MaterialDatabase::Palette<TMaterial> const & materialPalette,
         ShipTexturizer const & shipTexturizer,

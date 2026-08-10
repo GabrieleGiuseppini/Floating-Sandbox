@@ -1,9 +1,9 @@
 /***************************************************************************************
 * Original Author:      Gabriele Giuseppini
-* Created:              2021-08-29
+* Created:              2026-08-07
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "MaterialPalettePanel_NEW.h"
+#include "MaterialPalettePanel.h"
 
 #include <UILib/WxHelpers.h>
 

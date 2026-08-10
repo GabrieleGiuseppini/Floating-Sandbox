@@ -1,9 +1,9 @@
 /***************************************************************************************
 * Original Author:      Gabriele Giuseppini
-* Created:              2021-08-29
+* Created:              2026-08-07
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "MaterialPaletteBrowser_NEW.h"
+#include "MaterialPaletteBrowser.h"
 
 #include <UILib/WxHelpers.h>
 
@@ -12,8 +12,6 @@
 #include <wx/wupdlock.h>
 
 #include <cassert>
-#include <iomanip>
-#include <sstream>
 
 namespace ShipBuilder {
 
@@ -25,7 +23,7 @@ ImageSize constexpr CategoryButtonSize(80, 60);
 ImageSize constexpr PaletteButtonSize(80, 60);
 
 template<LayerType TLayer>
-MaterialPaletteBrowser_NEW<TLayer>::MaterialPaletteBrowser_NEW(
+MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
     wxWindow * parent,
     MaterialDatabase::Palette<TMaterial> const & materialPalette,
     ShipTexturizer const & shipTexturizer,
@@ -333,7 +331,7 @@ MaterialPaletteBrowser_NEW<TLayer>::MaterialPaletteBrowser_NEW(
 }
 
 template<LayerType TLayer>
-void MaterialPaletteBrowser_NEW<TLayer>::Open(
+void MaterialPaletteBrowser<TLayer>::Open(
     wxRect const & referenceArea,
     MaterialPlaneType planeType,
     TMaterial const * initialMaterial)
@@ -363,13 +361,13 @@ void MaterialPaletteBrowser_NEW<TLayer>::Open(
 }
 
 template<LayerType TLayer>
-void MaterialPaletteBrowser_NEW<TLayer>::Close()
+void MaterialPaletteBrowser<TLayer>::Close()
 {
     Dismiss();
 }
 
 template<LayerType TLayer>
-MaterialPalettePanel<TLayer> * MaterialPaletteBrowser_NEW<TLayer>::CreateCategoryPanel(
+MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPanel(
     wxWindow * parent,
     typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
     ShipTexturizer const & shipTexturizer,
@@ -487,7 +485,7 @@ wxPGProperty * AddStringProperty(
 }
 
 template<LayerType TLayer>
-std::array<wxPropertyGrid *, 2> MaterialPaletteBrowser_NEW<TLayer>::CreateStructuralMaterialPropertyGrids(wxWindow * parent)
+std::array<wxPropertyGrid *, 2> MaterialPaletteBrowser<TLayer>::CreateStructuralMaterialPropertyGrids(wxWindow * parent)
 {
     std::array<wxPropertyGrid *, 2> pgs;
 
@@ -516,7 +514,7 @@ std::array<wxPropertyGrid *, 2> MaterialPaletteBrowser_NEW<TLayer>::CreateStruct
 }
 
 template<LayerType TLayer>
-std::array<wxPropertyGrid *, 2> MaterialPaletteBrowser_NEW<TLayer>::CreateElectricalMaterialPropertyGrids(wxWindow * parent)
+std::array<wxPropertyGrid *, 2> MaterialPaletteBrowser<TLayer>::CreateElectricalMaterialPropertyGrids(wxWindow * parent)
 {
     std::array<wxPropertyGrid *, 2> pgs;
 
@@ -538,7 +536,7 @@ std::array<wxPropertyGrid *, 2> MaterialPaletteBrowser_NEW<TLayer>::CreateElectr
 }
 
 template<LayerType TLayer>
-void MaterialPaletteBrowser_NEW<TLayer>::PopulateMaterialProperties(TMaterial const * material)
+void MaterialPaletteBrowser<TLayer>::PopulateMaterialProperties(TMaterial const * material)
 {
     if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
     {
@@ -851,7 +849,7 @@ void MaterialPaletteBrowser_NEW<TLayer>::PopulateMaterialProperties(TMaterial co
 }
 
 template<LayerType TLayer>
-void MaterialPaletteBrowser_NEW<TLayer>::SetMaterialSelected(TMaterial const * material)
+void MaterialPaletteBrowser<TLayer>::SetMaterialSelected(TMaterial const * material)
 {
     wxWindowUpdateLocker locker(this);
 
@@ -943,7 +941,7 @@ void MaterialPaletteBrowser_NEW<TLayer>::SetMaterialSelected(TMaterial const * m
 }
 
 template<LayerType TLayer>
-void MaterialPaletteBrowser_NEW<TLayer>::OnMaterialClicked(TMaterial const * material)
+void MaterialPaletteBrowser<TLayer>::OnMaterialClicked(TMaterial const * material)
 {
     assert(mCurrentPlane.has_value());
 
@@ -976,7 +974,7 @@ void MaterialPaletteBrowser_NEW<TLayer>::OnMaterialClicked(TMaterial const * mat
 }
 
 template<LayerType TLayer>
-void MaterialPaletteBrowser_NEW<TLayer>::OnMaterialHoveredIn(TMaterial const * material)
+void MaterialPaletteBrowser<TLayer>::OnMaterialHoveredIn(TMaterial const * material)
 {
     PopulateMaterialProperties(material);
 
@@ -992,7 +990,7 @@ void MaterialPaletteBrowser_NEW<TLayer>::OnMaterialHoveredIn(TMaterial const * m
 }
 
 template<LayerType TLayer>
-void MaterialPaletteBrowser_NEW<TLayer>::OnMaterialHoveredOut()
+void MaterialPaletteBrowser<TLayer>::OnMaterialHoveredOut()
 {
     PopulateMaterialProperties(nullptr);
 
@@ -1009,8 +1007,8 @@ void MaterialPaletteBrowser_NEW<TLayer>::OnMaterialHoveredOut()
 // Explicit specializations for all material layers
 //
 
-template class MaterialPaletteBrowser_NEW<LayerType::Structural>;
-template class MaterialPaletteBrowser_NEW<LayerType::Electrical>;
-template class MaterialPaletteBrowser_NEW<LayerType::Ropes>;
+template class MaterialPaletteBrowser<LayerType::Structural>;
+template class MaterialPaletteBrowser<LayerType::Electrical>;
+template class MaterialPaletteBrowser<LayerType::Ropes>;
 
 }

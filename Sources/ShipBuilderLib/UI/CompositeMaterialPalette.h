@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
-#include "MaterialPaletteBrowser_NEW.h"
+#include "MaterialPaletteBrowser.h"
 
 #include <Game/GameAssetManager.h>
 #include <Game/ISoundController.h>
@@ -84,9 +84,9 @@ private:
     std::function<void(fsElectricalMaterialSelectedEvent const & event)> const mOnElectricalLayerMaterialSelected;
     std::function<void(fsStructuralMaterialSelectedEvent const & event)> const mOnRopeLayerMaterialSelected;
 
-    std::unique_ptr<MaterialPaletteBrowser_NEW<LayerType::Structural>> mStructuralMaterialPaletteBrowser;
-    std::unique_ptr<MaterialPaletteBrowser_NEW<LayerType::Electrical>> mElectricalMaterialPaletteBrowser;
-    std::unique_ptr<MaterialPaletteBrowser_NEW<LayerType::Ropes>> mRopesMaterialPaletteBrowser;
+    std::unique_ptr<MaterialPaletteBrowser<LayerType::Structural>> mStructuralMaterialPaletteBrowser;
+    std::unique_ptr<MaterialPaletteBrowser<LayerType::Electrical>> mElectricalMaterialPaletteBrowser;
+    std::unique_ptr<MaterialPaletteBrowser<LayerType::Ropes>> mRopesMaterialPaletteBrowser;
 
     IMaterialPalette const * mLastOpenedPalette;
 };

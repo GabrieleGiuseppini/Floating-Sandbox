@@ -22,7 +22,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
     , mOnRopeLayerMaterialSelected(std::move(onRopeLayerMaterialSelected))
     , mLastOpenedPalette(nullptr)
 {
-    mStructuralMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser_NEW<LayerType::Structural>>(
+    mStructuralMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Structural>>(
         parent,
         materialDatabase.GetStructuralMaterialPalette(),
         shipTexturizer,
@@ -37,7 +37,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
             mOnStructuralLayerMaterialSelected(event);
         });
 
-    mElectricalMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser_NEW<LayerType::Electrical>>(
+    mElectricalMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Electrical>>(
         parent,
         materialDatabase.GetElectricalMaterialPalette(),
         shipTexturizer,
@@ -52,7 +52,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
             mOnElectricalLayerMaterialSelected(event);
         });
 
-    mRopesMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser_NEW<LayerType::Ropes>>(
+    mRopesMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Ropes>>(
         parent,
         materialDatabase.GetRopeMaterialPalette(),
         shipTexturizer,
