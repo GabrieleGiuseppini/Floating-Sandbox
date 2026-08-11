@@ -2300,40 +2300,51 @@
 													+ water 0.375: sticks undulated, shoots up when holes up
 													+ with vel damping: 
 														=== GOOD CONFIG == 
-														! 2 iters; air/water speed: 0.281, 0.375; vel damping slider: 0.75; squeeze slider: 120.679
+														! 2 iters; air/water speed: 0.281, 0.375; vel damping slider (AM): 0.75; squeeze slider (heat): 120.679
 														! No ondulations (eddies mostly gone)
 														+ Scorecard: -15.7; after holes: perfectly level!
 														+ default_ship: good
 														+ Obliquity: converges to flat!
 
-														+ Retry this with 1 iter
+														X Retry this with 1 iter
 															+ Scorecard: -10.3; after holes: overshoots
 															+ Squeeze @ 60 (less): -11.11; after holes: overshoots
 															+ Squeeze @ 30: -12.6; after holes: overshoots, less
-														+ Retry with 4 iters
+														X Retry with 4 iters
 															+ Scorecard: -17.8; after holes: falls short at -3
 															+ Squeeze @ 655 (more): ~level
 															+ Squeeze @ 1000: -17; after holes: ~level
 																+ But too wavy at top, obviously
-														+ Retry with higher air speed
+														X Retry with higher air speed
 															+ 0.469: 
 																+ Scorecard: -9.9; after holes: overshoots
 																+ default_ship: similar
-																- Obliquity:
-														
-														- Analyze in depth:
-															- Try with 32 iters, super-smooth and thus removes chaos, better for studying
-																- Reason for stepwise rising: once enough water enters a cell to push all
-																  air out, that cell's pressure falls (the squeeze goes away) and thus more
-																  water may enter
-																	- A bit of water enters cell above
-																	- Its air drops (but its squeezed pressure stays)
-																	- For some reason, more water is able to enter afterwards
-																		- Investigate: equation should show continuity
-																- Air-water step height is inv prop with squeeze
-																	- Higher squeeze => less step; why?
-																		- Try: write equlibrium equation for a cell with one above and one below,
-																		  and then add dw
+																X Obliquity:
+
+														+ Good like that, also default_ship
+
+														X Squeeze slider @ 1:
+															+ Back to default_ship problems
+
+														+ Scorecard:
+															+ above sea level: -16; after holes: almost-level
+															+ default_ship: reasonable, but could be better
+																+ Was better with crazyness!
+															+ pressure profile though is a bit chaotic (water) and square wave (air)
+															+ profile shows water pressure matching air pressure
+															+ Obliquity: begins oblique but then converges!
+
+														- Try with "fixed" upness/downness
+														- Try with "max" norm factor
+
+														- Experiment with crazyness=default
+															+ profile shows water pressure lower than air pressure
+
+														- Figure out why air-water step height is inv prop with squeeze
+															- Higher squeeze => less step; why?
+																- Try: write equlibrium equation for a cell with one above and one below,
+																  and then add dw
+
 
 
 						
