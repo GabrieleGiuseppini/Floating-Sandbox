@@ -2334,8 +2334,55 @@
 															+ profile shows water pressure matching air pressure
 															+ Obliquity: begins oblique but then converges!
 
-														- Try with "fixed" upness/downness
-														- Try with "max" norm factor
+														= Try with "fixed" upness/downness
+															+ Obliquity is more pronounced at beginning, but still converges
+															+ raise is more step-wise
+															- After holes: falls short!
+																- Think if need different upness/downness for air & water
+
+														+ Try with "max" norm factor, to control chaos/square waves
+															+ Think norm factor formula through: it must cap removed by max
+															+ a/w diff speed=1.0/0.5, damp=1.0
+																+ 0.5 for water required or else waves; also < 1.0 for damping fixes
+															+ Remove square wave; minimal water oscillations
+															+ Nice interface
+															+ Scorecard: decent; after holes: way short
+															+ default_ship: poor
+
+														! Found problem!
+															! Remaining air in layer of water generates a high total "pressure above"
+															  preventing underlying layer from coming up 
+															  (underlying's pressure: water only; above pressure: water + squeezed)
+																! This causes steps, and explains why step is inv proportional to squeezing factor:
+																  a larger squeezing factor expels more air lowering above pressure seen by wet point
+																  underneath)
+														= How to solve?: 
+															- Air trapped in water should go up anyway, not stay there
+																- Or: should not prevent underlying layer that much, though squeeze for air
+																  flows must be high
+															- Study equilibrium at point and at interface
+
+															- Asymmetric squeeze: one seen by water should be less than that seen by air
+																- That seen by air should make it escape all
+																- That seen by water should allow for smooth interface
+																	- Possible direction: pressure seen from below should be
+																	  sum of air & water pressures, weighted by volume
+																		- Or something like that, study equilibrium at point and at interface
+
+															= Try:
+																+ 1: deltaAir based on both squeezed == deltaAirSq
+																	+ Air stays in water a lot, causing steep steps; need 2
+																= 2: omega introduction, w/ up/down
+																	! squuezedThis-squeezedDown when only Down has water seems to 
+																	  inject too much air down when down is only layer w/water
+																	- Are we doing the right thing at water flow wrt squueze seen up? we go back
+																	  to squeezed(up, middle layer w/ a & w) being too much for water(this, lower) to overcome
+																- 3: deltaA calculated from deltaAirSq
+																	- Then see if can up air diffusion speed
+
+														- Restore settings
+
+														- TODO: we remove squeezed w/elegant formula!
 
 														- Experiment with crazyness=default
 															+ profile shows water pressure lower than air pressure
@@ -2350,6 +2397,40 @@
 						
 
 
+
+					! REVOLUTION!
+					= New PoV: air and water coexist in same space
+						+ No more squeezing
+						+ Pressure at point is W+A
+							+ This W,A combination is stable: 40,0 - 30,10 - 0,40
+						+ But, this would prevent air from escaping, so...
+						+ ...we add gravity pressure, superimposed to deltaP, using upness
+							+ ...conditioned to air being "submerged"
+								+ Submerged: if:
+									+ Water above
+									- For now we ignore water at point, as we want combination above
+									  to be stable and not cause air to escape if no water
+									  above
+							+ Calculation of gravity pressure, remember it's in 13m water cube terms
+								- Archimede's: F=rho*g, upwards - so spring.dot.vertical
+								- A=1 => P=rho*g
+								- P in our terms: g
+								- Including projection onto spring: g*upness
+							+ This buoyancy is superimposed to deltaAirMoved
+								+ Speed: 0.25/0.45 m/s
+
+						+ Results: (a/w: 1/0.406 damping: 0.75)
+							- Scorecard: above water: -12.9; after holes: 0.0 perfect!
+							- Obliquity: Okish, converges - only problem is horizontally-moving water
+							- default_ship: decent (better than before), only problem is horizontally-moving water
+
+						+ If revolution is worth it, move this to new section in TODO file
+
+						- To fix:
+							- water moving horizontally: doesn't move as target pressure matches
+				
+
+					- Render full water range
 
 
 					- Test goals:

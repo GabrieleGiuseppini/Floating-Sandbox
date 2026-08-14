@@ -175,8 +175,8 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
             int const airY = MapValueToY(airSum / static_cast<float>(rightSampleI - leftSampleI + 1));
             int const squeezedAirY = MapValueToY(squeezedAirSum / static_cast<float>(rightSampleI - leftSampleI + 1));
             int const waterY = MapValueToY(waterSum / static_cast<float>(rightSampleI - leftSampleI + 1));
-            //lastTotalValue = (airSum + waterSum) / static_cast<float>(rightSampleI - leftSampleI + 1);
-            lastTotalValue = (squeezedAirSum + waterSum) / static_cast<float>(rightSampleI - leftSampleI + 1);
+            lastTotalValue = (airSum + waterSum) / static_cast<float>(rightSampleI - leftSampleI + 1);
+            //lastTotalValue = (squeezedAirSum + waterSum) / static_cast<float>(rightSampleI - leftSampleI + 1);
             int const totalY = MapValueToY(lastTotalValue);
 
             if (x > 0)
@@ -184,8 +184,8 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
                 dc.SetPen(mTotalPressurePen);
                 dc.DrawLine(x - 1, prevTotalY, x, totalY);
 
-                dc.SetPen(mSqueezedAirPressurePen);
-                dc.DrawLine(x - 1, prevSqueezedAirY, x, squeezedAirY);
+                //dc.SetPen(mSqueezedAirPressurePen);
+                //dc.DrawLine(x - 1, prevSqueezedAirY, x, squeezedAirY);
 
                 dc.SetPen(mAirPressurePen);
                 dc.DrawLine(x-1, prevAirY, x, airY);

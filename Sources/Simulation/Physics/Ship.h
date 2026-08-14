@@ -765,6 +765,10 @@ private:
         SimulationParameters const & simulationParameters,
         float & waterSplashed);
 
+    void UpdateWaterAndAirPressure_NewtonRhapson_2(
+        SimulationParameters const & simulationParameters,
+        float & waterSplashed);
+
     void UpdateWaterAndAirPressure_GaussSeidel_1(
         SimulationParameters const & simulationParameters,
         float & waterSplashed);
