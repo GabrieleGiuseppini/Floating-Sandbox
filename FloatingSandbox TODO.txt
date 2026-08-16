@@ -2469,6 +2469,9 @@
 
 							! TODOHERE: overshoot is due to laterals! Without laterals there's no overshoot
 								! Also: why doesn't go back down once it's gone via laterals?
+									! Air trapped underneath should feel the urge to go up
+										! Is it because once it goes up, there's no obstacle to air going down again?
+									! Also hit known problem: more squeeze up causes pressure drop
 										
 
 

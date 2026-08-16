@@ -148,7 +148,12 @@ void main()
 #else
     float vertexWater = vertexAttributes1.y;
 #endif
-    float vertexColorWetness = min(pow(vertexWater, paramWaterLevelOfDetail), 1.0) * paramWaterContrast;
+    //float vertexColorWetness = min(pow(vertexWater, paramWaterLevelOfDetail), 1.0) * paramWaterContrast;
+    // TODOTEST
+    // 0.4 @ 1, 1 @ 10
+    // y = 0.4*x^0.39794
+    float vertexColorWetness = min(0.4 * pow(vertexWater, paramWaterLevelOfDetail), 1.0) * paramWaterContrast;
+
     fragColour = mix(fragColour, paramWaterColor, vertexColorWetness);
 
     // Complement missing ambient light with point's light
