@@ -1,3 +1,6 @@
+1.21.1
+- Rewritten the ShipBuilder's material palette UI to support a humongous number of materials
+
 1.21.0
 - ...the Rust'N'Gust update!
 - Added new Tornado tool

@@ -1944,56 +1944,26 @@
 			+ Verify Windows Defender
 			+ Post
 
+	+ Fix materials palette
+
 	+ Branch is merged into master (if applicable)
-	- Windows
+	= Windows
 		+ MSI variable
-		- Commit & push
-		- 64-bit MSI
+		+ Commit & push
+		+ 64-bit MSI
 			+ Start SimplySign
 			+ Cleanup Install
 			+ Build Release Install (after clean)
 				+ Sign two exes
-			- Make MSI
-				- Sign MSI
-			- Rename MSI (e.g. Floating-Sandbox-1.19.2-x64)
-			- Test upgrade from previous version
-		- 32-bit MSI
-			- Start SimplySign
-			- Cleanup Install
-			- Build Release Install (after clean)
-				- Sign two exes
-			- Make MSI
-				- Sign MSI
-			- Rename MSI (e.g. Floating-Sandbox-1.19.2-x86)
-			- Test clean install
-				- Verify it's a 32-bit process
-	- Ubuntu
-		- rm -rf ~/floating-sandbox
-		- export GDK_BACKEND=x11
-		- pull 
-		- rm -rf build; mkdir build; cd build
-		- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-		- make install
-		- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd ..")
-		- Zip tar ("gzip Floating-Sandbox*.tar")
-		- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-	- Send 3 installers to dev server for final smoke test
-	- Wait for test results
-	*******
+			+ Make MSI
+				+ Sign MSI
+			+ Rename MSI (e.g. Floating-Sandbox-1.19.2-x64)
+			+ Copy to desktop
+			+ Test upgrade from previous version
 	- Cut tag on github
-	- Copy binaries to Prev
 	- Copy MSIs to scratch and GoogleDrive
-	- Upload packages to GameJolt
-		- Verify Windows Defender
-			- Report file as safe (https://gamejolt.com/privacy)
-		- Post
 	- www.floatingsandbox.com:
-		- Update current version in FAQ
-		- Wait a day or two, to exclude disastrous bugs
-		- Upload changes2.txt
-			- Test w/old FS
-	- Bump up version
-
+		- Update current version in FAQ (1.20.0)
 	- Bump up version
 	- Move this section at bottom of plan
 
