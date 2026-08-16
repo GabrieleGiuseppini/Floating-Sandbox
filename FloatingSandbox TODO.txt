@@ -2420,17 +2420,82 @@
 								+ Speed: 0.25/0.45 m/s
 
 						+ Results: (a/w: 1/0.406 damping: 0.75)
-							- Scorecard: above water: -12.9; after holes: 0.0 perfect!
+							- Scorecard: -40; above water: -12.9; after holes: 0.0 perfect!
 							- Obliquity: Okish, converges - only problem is horizontally-moving water
 							- default_ship: decent (better than before), only problem is horizontally-moving water
 
 						+ If revolution is worth it, move this to new section in TODO file
 
-						- To fix:
-							- water moving horizontally: doesn't move as target pressure matches
+						+ Go back to released behavior
+							+ Damping 0 when 1
+							+ Remove air pressure (temporarily)
+							+ Go to orig norm factor (temporarily)
+							+ Ingress (temporarily)
+							+ OutboundWaterWeights: just velocity (not with dt and orig mass as in new) (temporarily)
+							+ Verify original behavior, changing sliders to 1-1-1
+									
+						= Reintroduce one by one
+							+ Ingress: still OK, like released version
+							+ Air pressure for water, with upness
+								+ Becomes very directional, interface doesn't become flat
+								! dt * orig_mass doesn't help
+								! Overshoots
+								! Very crazy oscillations for both water and ir
+								X Water speed 0.219:
+									+ Less oscillations
+									+ Still uneven surface
+							+ Max norm factor
+								! Very crazy now!
+								! Probably because lack of dt+old_water makes max >> old, so we over-drain
+								X dt * orig_mass: still doesn't help, very crazy
+								- dt * orig_mass, damping @ 0.75: no more crazy, interface flattens out eventually, but slower
+									- Scorecard: above water: >-8; after holes: overshoots
+									= Overshoot:
+										+ No retention @ egress: still overshoots
+										X Oscilllations - via water speed @ 0.562: less overshoot, but still much
+										X No add air buoyancy but replace, with depth being omega*upness: still overshoots
+											! Squeeze more air out?
+											- With slider for expelling more air @ 0.576:
+												- After removing st * old_air: better squeezed, but overshoots
+											! Replacement causes pressure dip at interface - NOT, it's too much squeeze
+										+ With slider for expelling more air @ 0.576:
+											X Scorecard: -6.7; after holes: overshoots
+										= With slider for expelling more air @ 0.0:
+											+ Scorecard: after holes: overshoots
+											= With water speed @ 0.5: slightly better dynamics, still overshoots
+											! Overshoot is due to water being splattered over layers above reaching equilibrium
+							+ Repro scorecard above:
+								+ a/w: 1/0.406; damping: 0.75; buoyancy vel: 0.3, no laterals: PERFECT LEVEL
+
+							! TODOHERE: overshoot is due to laterals! Without laterals there's no overshoot
+								! Also: why doesn't go back down once it's gone via laterals?
+										
+
+
+
+
+
+						= To fix:
+							- More water velocity
+								= Try: lower damping
+									- 1.0: spectacular waves, but also jumping high
+								- Try: higher diffusion speed
+									+ A/W 1/1, Damping @ 0.75
+									- Scorecard: above water: -9; after holes: overshoot
+										- Why overshoot? no overshoot with 0.469 and no upness
+									- Also overshoots without upness
+								- Try: norm factor
+								+ Try: comment out water retention @ egress
+							= water moving horizontally: doesn't move as target pressure matches
+								= Try: multiply air by upness
+									- Causes water to splatter across multiple levels
+										- WAIT: is it really so? Also without upness
+										! Why? diagonal-up see lower air pressure up and thus raise, populating upper layer
+										- Try: do not superimpose buoyancy, just replace with it
+									- Try: stepwise upness (1.0 if normalized.y > 0.0f)
 				
 
-					- Render full water range
+					= Render full water range
 
 
 					- Test goals:

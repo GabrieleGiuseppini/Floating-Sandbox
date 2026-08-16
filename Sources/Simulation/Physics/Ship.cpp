@@ -2606,7 +2606,10 @@ void Ship::UpdatePressureAndWaterInflow(
                     //  v = +/- sqrt(2*g*|Dh|)
                     //
 
-                    // TODOTEST
+
+
+
+                    // TODOTEST: ORIG
                     //float incomingWaterVelocity_Structural;
                     //if (externalWaterHeight >= internalWaterHeight)
                     //{
@@ -2620,7 +2623,7 @@ void Ship::UpdatePressureAndWaterInflow(
                     //}
 
 
-
+                    // TODOTEST: NEW
                     float const externalTotalPressure =
                         Formulae::PressureToEquivalentWaterHeight(
                             Formulae::CalculateTotalPressureAt(
@@ -2669,7 +2672,8 @@ void Ship::UpdatePressureAndWaterInflow(
                     float deltaWater_Structural =
                         incomingWaterVelocity_Structural
                         * SimulationParameters::SimulationStepTimeDuration<float>
-                        * mPoints.GetMaterialWaterIntake(pointIndex)
+                        // TODOTEST
+                        //* mPoints.GetMaterialWaterIntake(pointIndex)
                         * simulationParameters.WaterIntakeAdjustment;
 
                     //
@@ -4210,16 +4214,6 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2(
             // WaterCrazyness=1   -> alpha=Wh
             float const alphaCrazyness = 1.0f + simulationParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
 
-            // Total pressure at bottom of this point/tank
-            // TODOTEST
-            //float const oldThisPointTotalPressureAtBottom = oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex];
-
-            // Volume at this tank that is available for air;
-            // given that plain water would cause non-linearities, we make
-            // air volume go to zero only asymptotically
-            // TODOTEST
-            //float const oldThisPointAvailableAirVolume = 1.0f / (1.0f + oldPointWaterBufferData[pointIndex]);
-
 #if !FS_IS_PLATFORM_MOBILE()
             pointSplashNeighbors = 0.0f;
             pointSplashFreeNeighbors = 0.0f;
@@ -4286,9 +4280,20 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2(
                 // the other endpoint
                 //
 
+                // TODOTEST: ORIG (no air pressure)
+                //float const dw =
+                //    (oldPointWaterBufferData[pointIndex])
+                //    - (oldPointWaterBufferData[cs.OtherEndpointIndex]);
+
+                // TODOTEST: NEW-WRONG (with air pressure, but no laterals)
+                //float const dw =
+                //    (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex])
+                //    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]);
+
+                // TODOTEST: NEW (with air pressure, and upness)
                 float const dw =
                     (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex])
-                    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]);
+                    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness);
 
                 // Gravity potential difference (positive implies point -> other endpoint flow)
                 float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(cs.OtherEndpointIndex).y;
@@ -4322,7 +4327,10 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2(
                 // Store weight along spring, as quantity of water (& pressure) moved by velocity;
                 // scaling for the greater distance traveled along diagonal springs
                 springOutboundWaterFlowWeights[s] =
-                    springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> *oldPointWaterBufferData[pointIndex]
+                    // TODOTEST: orig
+                    //springOutboundScalarWaterVelocity
+                    // TODOTEST: this was new, but behaves very differently
+                    springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> * oldPointWaterBufferData[pointIndex]
                     / mSprings.GetFactoryRestLength(cs.SpringIndex);
 
                 // Resultant outbound velocity along spring
@@ -4393,11 +4401,19 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2(
 
                 // Velocity along spring (only exists when going "up", and already projected onto vertical)
                 float const upwardVelocity =
-                    0.3f // Magic: bubble goes up at 0.25/0.40 m/s
+                    //0.3f // Magic: bubble goes up at 0.25/0.40 m/s
+                    simulationParameters.ElectricalElementHeatProducedAdjustment
                     * omega
                     * springUpness;
 
+                // TODOTEST: sum of air moved
                 airMoved += upwardVelocity * SimulationParameters::SimulationStepTimeDuration<float> *oldPointAirPressureBufferData[pointIndex];
+
+                // TODOTEST: replacement of air moved
+                //airMoved =
+                //    Mix(airMoved, simulationParameters.ElectricalElementHeatProducedAdjustment, omega * springUpness)
+                //    //* SimulationParameters::SimulationStepTimeDuration<float> *oldPointAirPressureBufferData[pointIndex];
+                //    ;
 
                 // Store weight along spring, scaling for the greater distance traveled along
                 // diagonal springs
@@ -4434,8 +4450,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2(
                 //// TODOTEST: orig norm factor
                 //waterQuantityNormalizationFactor = std::min(
                 //    // TODOTEST
-                //    //(oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
-                //    (oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (simulationParameters.WaterDiffusionSpeedAdjustment),
+                //    (oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
+                //    //(oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (simulationParameters.WaterDiffusionSpeedAdjustment),
                 //    1.0f);
 
                 // TODOTEST: new norm factor
@@ -4710,7 +4726,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2(
     {
         // TODOTEST
         //newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
-        mPoints.SetWaterVelocity(pointIndex, mPoints.GetWaterVelocity(pointIndex) * std::min(0.975f * simulationParameters.AntiMatterBombImplosionStrength, 1.0f));
+        mPoints.SetWaterVelocity(pointIndex, mPoints.GetWaterVelocity(pointIndex) * std::min(simulationParameters.AntiMatterBombImplosionStrength, 1.0f));
 
         // Update total air
         if (!mPoints.IsDamaged(pointIndex))
