@@ -6,1984 +6,6 @@
 
 - Roadmap:
 
-	+ Tornadoes:
-		! Gist
-			! Once tool is selected, user clicks down and tornado spawns there, or an existing tornado there is picked
-			! MouseMove:
-				! X: update target X
-				! Up: update force
-				! Down: update heat ~ TODOHERE
-			! MouseUp: tornado smooths towards target
-			! Update(Ship &) changes into Update(Ships, Npcs)
-				- First applies
-				- Then updates
-		+ Impl:
-			+ "GlobalForceFields" -> "InteractiveBodies"
-				+ Tornado:
-					- CurrentX, TargetX
-					- CurrentVelocityX, TargetVelocityX
-					- CurrentBaseY
-					- CurrentVisibilityAlpha, TargetVisibilityAlpha
-					- CurrentForceMultiplier, TargetForceMultiplier
-					- CurrentHeatMultiplier, TargetHeatMultiplier
-					- float LastActivitySimulationTimestamp
-						- Updated each time "Current" status changes (except for viz)
-						- After some time after this, starts TargetVisibilityAlpha=0
-				+ ElementIndex BeginPlaceTornado(x, searchRadius)
-					+ Search for nearest existing tornado
-						+ Use max(width of tornado, search radius)
-							+ via FloatSize Formulae::CalculateEffectiveTornadoSize(....)
-								+ Use also @ RenderUpload, takes FloatSize
-					+ If found:
-						+ Refresh its state (Tornado::ResetToBegin)
-							+ LastActivitySimulationTimestamp = now
-					+ Else:
-						+ Create new one
-				+ UpdateTornado(...)
-				+ EndUpdateTornado(...)
-				+ Update(Ships &, Npcs &, OceanSurface const &, ...):
-					+ Update TargetVelocityX w/Hooke force: vX=min(k*(targetX-curX), some_constant)
-					+ Converge CurrentVelocityX to target - with destination check
-					+ Calculate newCurrentX based on CurrentVelocityX
-					+ If different than CurrentX:
-						+ CurrentX = newCurrentX
-						+ CurrentBaseY = <calc>
-						+ Update LastActivitySimulationTimestamp
-						+ Update DirtyForRendering
-					+ Converge others by convergence, with destination check
-						+ Update DirtyForRendering if anything had not reached target yet
-						+ Update LastActivitySimulationTimestamp if anything had not reached target yet
-							+ Not with viz					
-					+ If currentSimulationTime > LastActivitySimulationTimestamp + IdleTimeout:
-						+ TargetVisibilityAlpha=0.0
-							+ Only place
-					+ If CurrentVisibilityAlpha==TargetVisibilityAlpha && TargetVisibilityAlpha==0.0:
-						+ assert currentSimulationTime > LastActivitySimulationTimestamp + IdleTimeout // Dangerous, might be in-use
-						+ Remove
-					+ Else:
-						+ // Apply						
-						+ For each ship:
-							+ ApplyTornado(...)
-								+ ForceMultiplier is multiplied by viz
-								+ Try orbital redesign also here
-									+ Driving a ilttle with attractor
-							+ Test UV mode
-						+ Npcs::ApplyTornado(...)
-							! Only free NPCs!
-							+ ForceMultiplier is multiplied by viz
-							+ Forces
-								+ Redesign orbital forces
-								+ Randomize npcs
-								+ Test furniture
-							+ Heat
-							+ Nuke SimulationParameter for OrbitalBaseForce
-							+ Test UV mode
-						+ OceanSurface
-							X Ugly if continuous, should pulse?
-							+ Beware of feedback loops
-						X Fishes? Would be:
-							+ Freefall becomes "Free", and since we're doing this, becomes "Regime"
-							+ Need force buffer for external forces
-								+ Used next to gravity, then cleared @ end of Update()
-							+ Analyze:
-								! gravity multiplier not needed
-								! Out-of-water multiplier needed for falling
-								X PROBLEM: TargetVelocity is constantly messed with (e.g. shoaling, etc.)
-								X PROBLEM: fish is wary of ocean-air interface
-							+ External forces: from ApplyTornado(...)
-						+ rn/abs fix
-							+ Ship
-							+ Npc
-				+ RenderUpload
-			+ Physics (ApplyTornado @Ship, @NPCs)
-				+ 1. Calculate strength (closed region around x)
-					+ Takes tornado size from Tornado
-				+ 2. Weaken strength of springs (goal: weak parts detach sooner or later)
-					+ Make separate facility for AdditionalWeakness
-						+ And Points::m/Strength/Buffer becomes FactoryStrength
-						+ Make sure Repair can fix it
-						+ Make sure anything else that "adjusts" (changes decay up, but not scrub) fixes it
-					+ Test:
-						+ Repair fixes it
-					X Try: not on ropes (# factory triangles=0)
-				+ 3. Apply forces 
-					! The particle must rotate around the axis of the vortex, in a horizontal plane perpendicular to the screen
-					! The magnitude V of its velocity is of our choice (synced to rendering/shader), depending on r (max at r=VortexWidth/2, 0 at r=0)
-					! Velocity projection along X axis is max at x=0 and 0 at x=+/-VortexWidth/2 - i.e. V*sin(x)
-					! Also need centripetal force: a=V^2/r, also projected along x axis
-						- Projection: 0 at x=0, V^2/r at x=+/-VortexWidth => V^2/r*cos(x)
-					+ X: m * V^2/r*cos(x)
-					+ Y: upwards, a bit
-					+ Cleanup (precalc, etc.)
-						+ Check assembly
-					+ Make cone!
-						+ Bottom width conjured up by Tornado (as a func of viz), 0..1 ("BottomWidthFraction")
-						+ Must be passed in args to interaction
-						+ Also uploaded, goes into vertex attribs
-						+ Interaction:
-							+ Still use AABB as a check, but recalc width for each particle (y)
-					+ Write all the above as comments
-					+ Apply ultra-violent mode for both x and y forces, and heat
-						+ Incorporate in effective's
-				+ 4. Apply heat
-					+ Application area should be larger
-					+ Don't give infinite heat: have a target temperature instead of giving heat
-						+ Option 1:
-							! Bring slowly to fixed temperature, which depends on HeatDepth
-								! HeatDepth=1: 2000K
-								! Multiply with UltraViolentMode
-							+ HeatDepth=0 => no temp delta
-								+ So: temp delta = (2000K - temp[p]) * HeatDepth * ConvergenceRate
-									+ 2000K does _not_ depend on HeatDepth
-						X Option 2:
-							X With heat quantity again
-
-						+ Test modulation
-						+ Test UV mode
-
-				X 5. Enlarge bottom of cone with strength multiplier (@Tornado)
-					X Both @ application and @ RenderUpload
-			+ WorldRenderContext:
-				+ VertexAttributes:
-					+ Geometry + v-space
-					+ VisibilityAlpha (0..1)
-					+ RotationSpeed (multiplier)
-					+ HeatDepth (0..1)
-				+ Upload:
-					+ Calculate simple quad, width and height fixed
-						+ Width and height are in SimulationParameters, so can be used by physics
-						+ For height, take into account Perlin - try to avoid repetitions
-						+ Will have to adjust smoke and fire resolution in shader
-				+ Shader
-					+ Pass coords of fire atlas frame in params
-					+ EffectiveAmbientLightIntensity
-					+ Unrelated: see if Ship::ApplySkyChanges is even needed, given that we set param in all shaders
-
-				+ Draw 2 passes
-					+ Second time around shader gets IsSecondaryRendering parameter set to 1.0
-						+ And lighter areas are more transparent
-						+ IsSecondaryRendering=1.0:
-							finalAlpha = whateverAlpha * smokeDarkness * 0.85 // Experiment
-						+ IsSecondaryRendering=0.0:
-							finalAlpha = whateverAlpha
-
-				+ Test:
-					+ Ambient light
-					+ Lamp
-					+ Moonlight
-					+ Land
-
-			+ Soften jumping up and down with OceanSurface
-
-			+ Do rotation
-				+ New "phase" member of tornado
-					+ Only proportional to Force/StrengthMultiplier
-					+ NOT proportional to viz
-
-			+ Tool
-				+ Cursor (up, down)
-					+ Anchors
-				+ Rethink dynamics of tool:
-					+ Up: StrengthMultiplier
-					+ Down: HeatDepth
-					+ Zero-click?					
-				+ Notification @ yLevel=0 (StartY)
-					+ Split Multi-notif: _world and _ndc
-					+ Colored vertical bar, x=mouseX, ytop/bottom = mouseY, ybottom/top=startY
-						+ New multi-notification type
-						+ Driven by tool
-
-			+ Sound
-				+ Handlers: onTornadoUpdated(float normalizedEvolution, float normalizedStrength) // normalizedEvolution !=/=0 is signal to start/end
-				+ Invoke from Tornado::Update
-					+ Send 0 when gone
-				+ Handle at SoundController
-					+ New sound type
-					+ Play/Stop depending on normalizedEvolution
-					+ Reset
-					+ Play with pitch?
-
-			+ Add one or two new stress_medium_cable sounds
-				+ Have them at C:\Users\Neurodancer\Desktop\FS Scratch\Ship Scratch\Sounds\Cable\Stress
-				+ Port to Android
-
-			+ If we decide to stay with 1 tornado, change BeginPlace algo to always pick it if alive
-
-			+ Test:
-				+ BeginPlaceAntiGravityField: we've changed to closest
-				+ Boundaries
-
-			+ Ship::ApplyTornado: upForceY: try with small mass still contributing a bit, not 30
-				X Try first without
-				+ Try: normal mass & windReceptivity: mass * (1.0 + windReceptivity) = materialFactor
-					+ Also @ forceX
-				+ Do linear
-
-			+ Test NPCs at scale
-
-			+ Try inverse weakness mask
-
-			+ Smoke: add distance traveled next to expiry time
-				+ State:
-					+ PreviousPosition
-						+ Initd with start pos
-					+ TotalSquareDistanceTraveled
-						+ 0.0
-					+ MaxTotalSquareDistanceTraveled
-						+ Phase II: calculate
-				+ Update:
-					+ Phase I. Maintain TotalSquareDistanceTraveled
-						+ Then print total distance @ expiry, so we may calc (current) max distance from time
-						! Black: 9-26 (heavier)
-						! White: 1.0: 27-38 (lighter)   2.5: 450-945    0.1: 0.01-0.085
-							- 0.1	0.047
-							- 1.0	32
-							- 2.5	700
-							- BUT: use a multiplier, so normally time always wins; use 1.5
-
-						! White:	MaxTime		Distance		Theo factor
-							- 0.1	0.37/0.51	0.02/0.048
-							- 1.0	3.5/4.1/5.7	9.2/12.5/28.9		2.62
-							- 2.5	9.2/12.7/14.5	83.6/149.0/188.2
-
-							0.37	0.02
-							0.51	0.048
-							3.5	9.2
-							4.1	12.5
-							5.7	28.9
-							9.2	83.6
-							12.7	149.0
-							14.5	188.2
-							y = -2.019994 + 0.8145161*x + 0.8616222*x^2
-					+ Phase II. Expire with both
-						+ Calc MaxTotalSquareDistanceTraveled
-							- 0.1	0.0705
-							- 1.0	48.0
-							- 2.5	1050.0
-							+ Make sure to incorporate randomization
-								+ We do so by means of using maxSimulationTime as our basis
-						+ Expire with max(elapsedTime, elapsedDistanceTraveled) ON NORMALIZED!
-							+ Use normalized, so can use max
-						+ Fix render:
-							! scale can still depend on time only
-								- Verify first: emitter (both) should be fine
-							+ alpha needs to depend on both
-							+ Then, bump max distance to ensure it kicks-in only when we really need it
-						+ Remove log
-		+ Send to Discord
-
-		+ Faster convergence of tool's changes
-		+ Try changing shape with strength
-		+ Slider height: fixed
-		+ Resend beta
-		+ Cleanup tool slider (server decided fixed-height, i.e. new one)
-		+ Send beta with wild masts + DKuz bug
-		+ Bump up version
-
-		+ FIX:
-			+ Ocean waves (wind = 0, high waves) "only on one half"
-				+ Option 1: ensure all positive (like now), then scale back if > 1.0f
-					+ Limits large numbers
-					+ Change meaning of bool @ interpol (search usages), and skip wrap check
-						+ Unit tests
-				- Option 2: back to where we were
-				+ Changelist (PC only)
-			+ Silt stripe
-
-		+ Fix nVidia RTX bug
-			+ Note: Longhorn didn't see it in 19.0, so it's either TRIANGLES vs TRIANGLE_STRIP, or alpha
-				+ Send him a beta for the alpha - with alpha=1
-				+ Undo shader & bump up version
-				+ Check feedback
-			+ 1. Try strip for two bedrock layers, w/ 1 degenerate
-				+ Strip (x3)
-				+ Send to Discord, bump up version
-				X Degenerate (x2)
-			+ 2. Just split those vertical quads
-				! Old # vertices: 28674=458,784B=0.5MB
-				! New # vertices: LandVertexBuffer.size=146703 allocatedSize=286722=4,587,552B=4.5MB
-				+ Basic
-				+ With whole delta Y constrain
-					+ 2/3
-					+ Send to Discord
-					+ Code
-						+ Can avoid interpolating when we know we're hitting end vertex?
-							+ newScanLineVertices[2]' populate each in turn
-							+ Then see if we still need to reset scan line vertices
-					+ Unit tests
-					+ Incorporate in WorldRenderContext
-				+ Change smoothers to last shorter
-				+ Test perf with test floor:
-					+ Before UHD 3.8
-					+ After UHD 3.3/3.8
-					+ Before nVidia 1.2/1.3
-					+ After nVidia 1.9/2.0
-				+ Tests in Debug:
-					+ Test whole screen being floor
-					+ Load+Exit (try to reproduce that "not responding")
-				+ Make WorldRenderContext::UploadLand(slice) inline again
-					+ Remove print @ UploadEnd
-				+ Send to testers
-				+ Do it only for nVidia
-					+ OpenGL init: store IsNvidia and RequiresTODO
-						! 15:01:44.395045:GL_VENDOR=NVIDIA Corporation
-						  15:01:44.395049:GL_RENDERER=NVIDIA GeForce RTX 3060/PCIe/SSE2
-						! 17:27:41.248221:GL_VENDOR=NVIDIA Corporation
-						  17:27:41.248225:GL_RENDERER=Quadro RTX 3000/PCIe/SSE2
-						+ Log
-					+ Use @ UploadOcean
-					+ Use @ count init - 12*slices
-
-				X Quest for optimal:
-					- Try with changing triangle sizes so not to overlap
-					- Might be nice to incorporate adjacent ones, so to lower @ of triangles
-
-		+ More tornado shapes
-			+ Add mid width
-				+ @ all physics
-					+ Ship
-					+ NPCs
-				+ @ quad render
-			+ 3 arrays of widths (top, mid, bottom), as many elements as the number of shapes
-			+ New quantity for shape, 0->1, whose bucketization onto number of shapes dictates shape widths; driven by strengthMultiplier, but slower convergence
-				X BUT first: try without it, may be strength multiplier is already ok
-				+ Used @ Apply and Render
-		+ Send beta, bump up version
-		+ At strongest should be wedge: almost vertical @ top, then restricts like cone (https://cajunnavy2016.org/tornado/what-is-a-wedge-tornado/)
-			+ Sacrifice cylinder, and redo sequence
-		        //vec3f(0.55f, 0.55f, 0.55f), // Cylinder
-		+ Send beta, bump up version
-		+ Don't commit until feedback
-		X Storm supercell above it
-			X Option 1: InteractiveBodies uploads straight to World/RenderContext
-				- ...which does parallax
-
-				- Buffer:
-					+ UploadCloudsStart adds + 1 to max size
-					- UploadAdditionalCloud - which may be invoked outside start/end but after start - appends 
-				- Draw above tornado
-					! Z won't work as clouds are mostly transparent, so needs to be drawn afterwards
-					- Requires a second batch, invoked after tornado
-				- NDCx: fixed, 0.0, with some lateral parallax depending on CamX
-				- NDCy: non-linear:
-					- If cloudBottomWorldY (~= tornado top) >= visibleWorldBottom: just it (but in NDC coords)
-					- Else: vertical parallax: extent is TODOHERE until visibleWorldBottom is at max top
-
-				- TODO: graded appear/dissolve, with max of all visibilityAlpha's
-				- TODO: volumetric growth progress: calc at Upload
-
-				- Tests:
-					- With zero clouds
-					- During storm
-
-			X Option 2: new shader & betch, parallel to tornado
-				= WorldRenderContext: 
-					+ New buffer & VBO, "tornadoCloud"
-					+ OrthoMatrix, & Time
-					+ UploadTornadoes() populates both
-						+ WorldWidth = 2 * MaxWorldWidth
-						+ WorldHeight = HalfMaxWorldHeight
-						+ Res | visible vCoords * Res gives 0...R in texture coords
-							+ Res = visibleWorldSize / cloudWorldSize (TODO: check v-coords ranges)
-							+ But also include aspect ratio: squares need to stay as squares
-						+ Populate vertices
-					+ RenderPrep/Draw does both
-					= Improvements:
-						+ Rez: why < 1.0?
-							! Because of tornado top
-						+ Scaled rez
-						+ Bottom overlap with flanges
-							+ Bottom
-							+ Sides
-						- Rez: different curve
-				- Shader
-					+ Shape: more rounded
-						+ Don't make it go all the way up: max width is 2 or more
-					= See if can fix detachment
-						+ Just reduce "red" band (pure zeroing)
-						= Now translate to real code
-							- Try to keep width of green band independent from zoom
-							+ Simplify: if we multiplt y's by scaling everywhere in smoothstep, then we don't need it
-						+ Taller tornado (and thus wider) - and thus raise cloud
-					
-					- Just flat bottom?
-						- If so, can simplify a) side flanges, and b) width altogether
-					- Dynamic smoke - bubbling
-					- Visibility dynamics: cloud visible earlier
-					= Double-side transparency
-					- Width fractions hardcoded
-
-					
-				- Darkening
-					- Using min among all sources
-				- Decide on heat/flame & thus also flame params (also @ GlobalRenderContext)
-				- Decide on time
-				- Decide on vertexStrengthMultiplier
-
-
-				- Put WorldRenderContext::UploadTornadoes() back as inline
-					
-
-			- If works:
-				- Add to Android port plan: rendering of cloud
-		X Alternatives to cloud:
-			- Cluster of clouds above tornado
-				- Option 1: actual clouds, fully dark
-					- Ad-hoc upload (i.e. outside of Clouds container) as we have to calc our own NDC coords
-				- Option 2: using the same shader - but how to make shape?
-			- Storm clouds rolling
-				- In background might be enough
-				- Via Clouds container
-
-			- Darkening
-				- Using min among all sources
-
-			- If works:
-				- Add to Android port plan: TODO
-
-	+ Fix: ShaderManager: infoLog: null-terminate strings
-
-	+ See ocean glitch: bulkyness to minimum, then wavemaker waterline
-		! Actual sim param value is 1/UI_param, thus 0.3333 => 3.0
-		+ Change max: 3->2
-			+ Then clamp @ GameController::Setter for settings loading
-		+ Fix sin args: when 1.0-mod can be 1.0
-		+ Default smoothing: 0.016
-		+ Port to Android
-
-	+ Fix Mia's crash
-		+ ImageTools::InternalResizeDimension_BoxFilter
-			! With a 11-k ship: Willem Ruys
-			! Image width: 11353
-			! Target width: 200
-			! widthScaleFactor = 0.0176164899
-			! widthScaleFactorInverse = 56.7649994
-			! In loop:
-				- srcToTgt = 0.0176164899
-				- tgtF = 200.011139
-				- srcI == latSize (11352)
-		+ Port to Android
-			+ Just ImageTools.cpp/.h
-
-	X Look into stutter:
-		+ See if mouse moves: it does :-(
-		+ Add probes
-		    // TODOTEST
-		    auto now = GameChronometer::Now();
-		    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTimestamp);
-		    if (elapsed.count() > 70)
-		    {
-			LogMessage("!!! Step 1: Actual=", elapsed.count());
-		    }
-		    auto previousTimestamp = now;
-
-		! Findings
-			! It's RunGameIteration step for sure, NOT the wxTimer
-			! It's mGameController->RunGameIteration() for sure, not anything else in MainFrame
-			! It's mRenderContext->UploadStart() (174/190ms)
-			! It's NOT glSwapBuffers
-			! It's glFinish
-			! Doesn't happen with nVidia
-
-		X To try:
-			X All threads prio
-				X Read well about prio's
-				- Remove
-			X Power settings
-			X Swap glFinish & swapBuffers
-			+ Add comment to glFinish on paying for it anyway at first draw calls
-			- VSync: https://community.khronos.org/t/odd-intermittent-frame-time-spike-that-resolves-when-enabling-debug-context/107622/4
-
-	+ Fix crash at exit on nVidia
-		+ Changelist
-		+ Port to Android plan
-			+ Also checks for element buffers in ShipRenderContext
-		+ Revert to non-nVidia
-
-	X Try modulating smoke quad shape with its velocity
-
-	+ Look into masts on seafloor colliding over and over again
-		! It's Iron Hull (743Kg) @ 5K depth, going at 0.5/0.9 m/s
-			kevc=395.549 thr=57.1429
-			kevc=96.1035 thr=57.1429
-			kevc=130.007 thr=57.1429
-			kevc=271.74 thr=57.1429
-			kevc=92.6388 thr=57.1429
-			kevc=137.815 thr=57.1429
-			kevc=408.053 thr=57.1429
-			kevc=445.538 thr=57.1429
-			kevc=100.046 thr=57.1429
-			kevc=139.107 thr=57.1429
-			kevc=89.2419 thr=57.1429
-			kevc=91.5449 thr=57.1429
-			kevc=125.156 thr=57.1429
-			kevc=166.572 thr=57.1429
-			kevc=91.8853 thr=57.1429
-			kevc=127.652 thr=57.1429
-			kevc=177.66 thr=57.1429
-			kevc=84.9339 thr=57.1429
-			kevc=115.057 thr=57.1429
-			kevc=137.064 thr=57.1429
-		+ Due to pressure - doesn't happen with 1K but it does with 2K
-		+ It's hull, so no counterpressure
-		! Due to static pressure forces, verified
-		+ Try with a mesh-based visit to gauge thickness
-			! Along springs with triangles, in direction of force vector
-			+ 1: distance to next edge
-				+ Make sure outward pressure works fine
-				+ Test perf
-					! Red October
-					! UPD without: 2.04/2.16
-					! UPD with: 2.04/2.15
-				+ Check assembly
-				! Problem: doesn't quell; larger structures exhibit same behavior
-					! Max residuals: torque=0.27
-						! But small annoying piece: 4.9
-						! But torque as low as 0.13 causes havoc
-				+ Keep, and add comments
-			+ 2: modulate pressure forces based on frontier size
-				! Facts:
-					! default_ship: 529
-					! ball: 100
-					! wild mast: 376
-					! Triton: 235
-					! Titanic: 807
-					! Small pieces: largest is 88
-					! Annoying pieces:
-						! 47
-						! 13 - VERY!
-				+ Scale:
-					- 235=1
-					- 180=1
-					-  47~=0
-					-  13=0
-				! Problem: big pieces still do it
-				+ Keep
-			+ 3: just limit total pressure force, regardless of frontier size
-				+ Just cap final force_vector's forceMultiplier to value it would have at a depth that we deem reasonable
-					! Facts:
-						- @ 3000m without frontier-size based: repro
-						- @ 3000m with frontier-size based: no repro
-						- @ 4000m without frontier-size based: repro
-						- @ 4000m with frontier-size based: no repro
-						- @ 5000m with frontier-size based: repro
-						- @ 6000m with frontier-size based: repro
-						- @ 7500m with frontier-size based: repro
-						- @ 10000m with frontier-size based: repro
-				+ 4000
-				+ Uhmmm...once done, repro's at 10k - sub at 2.5k
-					+ Problem is counterbalance adj factor: at real 4K it's around 0.3; at real 10K it's around 0.98
-					+ Was bug in "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, but when fixed it's even worse - unbalanced forces are huge
-						! Root of the problem is fully-hull structures, where differential is max
-						X Due to forces being dyn?
-							X Try 1: try with static (divide by num iterations though)
-								X No: even with static forces, at 10K (where sub doesn't even break) forces are big enough to cause it
-							- Try 2: skip first iter for clouds
-						X Try with not applying force when under silt
-							+ In edge loop
-							X NOPE: Even with static_pressure_adj=0, at 10K something happens that doesn't happen at 2.5K
-				! CONFIRMED: it's the floating point precision loss at -10K
-				+ Try 1: increase sensitivity with abs value of y
-					! Build empirical table for sensitivity: max value < 1 before repro's w/out pressure, maintaining clouds at impact; + see if global cap still needed
-						- @2500 (2): 1.0
-						- @5100 (3): 0.938
-						- @7500 (3): 0.938
-						- @8500 (4): 0.4
-						- @10000 (4): 0.375
-					+ Do formula:
-						< 4096: 1.0
-						< 8192: 0.938 // a bit less! 0.906
-						< 16K: 0.375
-						+ Better implementation
-							+ Rewrite scaling down k
-							+ Do first if for < -4096
-
-			+ When done: undo all changes one by one and only keep if needed
-				+ "Turn off under silt": (with bulkiness, without global cap, with thickness adjustment)
-					+ Nice at 5K
-					+ Nice at 10K
-				+ "Turn off under silt": (without bulkiness, without global cap, with thickness adjustment)
-					+ Nice at 5K
-					+ Nice at 10K
-				+ Above, but without thickness adjustment
-					X Nope, 2-px mast is crazy
-					+ TODOHERE: WITH thickness adjustment, a 4-pixel mast is crazy @ 2500
-						+ Try with smoother silt/non-silt transition
-							+ Turnoff begins at silt+0.2 and ends at silt
-						+ Then see if the 2-px mast crazyness was due to discontinuity
-				+ WITHOUT bulkiness, with silt-depth smoothing, WITHOUT thickness (distance) adjustment, WITHOUT global cap:
-					+ 2px mast ok @ 10000
-					X Titanic not ok @ 2500
-				+ With bulkiness, with silt-depth smoothing, WITHOUT thickness (distance) adjustment, WITHOUT global cap:
-					+ Titanic OK @ 10k
-					+ Triton OK @ 10k
-			+ Cleanup code after decided what to keep
-				+ Rewrite silt-depth check
-				+ Revisit big comment afterwards
-				+ Check assembly:
-					+ Silt damping factors: mParent.GetOceanFloor
-					+ prev=this, this=next
-
-			+ Remember to fix "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, that was broken anyway
-				+ Need to re-include depth non-linearity
-				+ Nuke setting
-					+ Also SettingsDialog
-				+ Cleanup remaining code
-
-			+ With final look'n'feel:
-				+ Check outward pressure
-				+ Check sub & triton still implode
-
-			+ Cut early if bulkiness check (frontier size) would be zero
-
-			+ Changelist X 2
-
-			+ See what's going on with Base 3/complexity
-				! Loops for all iterations, as lambda's are basically 1 and reduction is super slow
-				+ Stop loop if lambda which provides most reduction is very close to 1
-			+ merge back into tornadoes
-			+ Test on old Dell
-				+ See if might want to turn it off on slow machines
-			+ Check sudden breakage
-
-	+ GameController::PickObjectToMove: must also do radius like Pick(connected component)
-		+ See if needs to be ported to Android
-
-	X Look into "I tried to make a small gravity field and it crashed"
-		+ Alex Cooper's crash dump
-			! 48 8B 75 A8 48 8B 7D 90 4C 8B 75 C0 44 8B 64 24 58
-		X It's OpenAL
-
-	+ Look into DKUZ's bug
-		! It's shader with high-derivative depth slopes
-		! Even with multisample and without derivatives, still silt-bedrock transparency shows
-			! Now it's any quantity that lowers with y: multisample interpolation generates value outside of range
-			+ Try centroid
-				= It works!
-					- Try real shader
-				+ Perf:
-					+ Pre: 5.80 (whole world) 3.60 (ship)
-					+ Post: 5.30 (whole world) 3.60 (ship)
-				= Test on nVidia
-					! Problem! Now there are seams between triangles, not due to centroid
-				- Comment in shader
-			X Try without strip
-				= Without multisampling
-					X nVidia
-						X Seam issue
-							! STILL PRESENT!
-								= Only when really close though
-									- Can we live with it? It's super-ugly...								
-								+ See if multisample+centroid was also when really close
-							X Test with squares (so just one long diagonal)
-								X Still happens
-							X Try exact same x @ OceanFloor
-							X Try normalizing coords							
-								X Isn't it the same once we run the vertex shader and transform to NDC?
-						+ Interp issue
-							+ With only alpha-silt: OK
-							X With alpha-silt + anti-alias: WRONG
-					+ Intel UHD
-						+ Seam issue: OK
-						+ Interp issue
-							+ With only alpha-silt: OK
-							X With alpha-silt + anti-alias: WRONG
-			! Recap:
-				! nVidia shows ghost lines (though only when really close) from day 0
-					! Didn't help: GL_DEPTH_CLAMP, glDisable(GL_CULL_FACE), glDisable(GL_POLYGON_SMOOTH)
-					! Didn't help: just squares
-					! With not-too-tall triangles (i.e. with not-tall floor, i.e. a bit above world bottom), lines are red
-				! Multi-sample fixes anti-aliasing but not ghost lines
-				! Multi-sample+centroid fixes anti-aliasing and ghost lines
-					+ centroid required or else MS introduces out-of-range samples, which generate ghost lines
-				! Multi-sample doesn't work on old Dell
-			+ Plan A: Multisample+centroid (fixes anti-aliasing and ghost lines), but we accept nVidia's "close-by" seams
-				+ Multisample+Centroid:
-					+ Detect failure @ OpenGL context creation on old Dell and revert to single-sampled
-						+ Use Create() -> bool
-						+ GameGLCanvas:
-							+ Rename
-							+ static Create() -> GameGLCanvas *
-					+ RenderDeviceProperties has bool for whether MS is supported
-					+ RenderContext:
-						+ cctor stores flag
-						+ Initialization: if supported, turn off
-							+ Do LINE_SMOOTH iff not MS
-						+ Test on old Dell
-						+ ShaderManager::CreateInstance() takes flag
-							+ Passes to SplitSource (->"PreProcessSource") which uses it to inject "#define " for centroid
-								+ Pre-build injected header, with #define IS_MULTISAMPLING_SUPPORTED
-								+ Unit tests								
-						+ Test: ugly lines and edges, NVidia close-by lines 
-						+ DrawOceanFloor: if supported: enable; disable
-						+ Draw[Ropes, Springs]: if supported: enable; disable
-					+ Shader: 
-						+ #define _centroid based on IS_MULTISAMPLING_SUPPORTED
-						+ Add _centroid
-						+ Keep vec4 vertex attrib split (for centroid)
-						+ Fragment:
-							+ Keep anti-aliasing only for not IS_MS_SUPPORTED
-							+ Revert everything else in fragment shader
-						+ Final cleanup
-					+ Test anti-aliasing and ghost lines on Intel UHD
-						+ OceanFloor (with and without silt): 
-							+ Anti-aliasing w/peaks: OK
-							+ Ghost lines: WRONG, NEW KIND - also on nVidia, and on nVidia seams are worse
-								+ Try with new segmentation
-									+ Fix lip: depth at yDE is not necessarily dummy
-										+ Now we've introduced NEW KIND again
-											X Need another slice? 
-											+ Or should we change DE to be at "bottom" of depth (i.e. after all lips and AA are over)?
-											X Try centroid for depth first
-
-									+ 5 tri's -> 4 tri's
-									+ See RND perf on UHD
-									X nVidia close-by lines: try with centroid on vertex coords as well (if it is a texture sampling issue?)
-									+ Cleanup all
-										+ incl. OceanFloor comment on slices+1
-						+ Ropes, edges
-							+ Segmentation: OK
-							+ Anti-aliasing: OK
-				+ Revert other changes, one at a time
-					+ WorldRenderContext::UploadLand
-
-				+ Test on new Dell, Intel UHD
-					+ AA on UHD with manually-induced SS
-						+ Add boot setting
-						+ Ocean floor peaks
-							! New ghost lines!
-							+ Nuke AA altogether
-							+ WE HAVE ALIASING
-						+ Ropes, ship edges: WE HAVE ALIASING
-						+ NPCs: OK
-					+ AA on nVidia with manually-induced SS
-						+ FIX: glad initialization failure - GDI renderer!
-							+ See if need HW accel (i.e. Platform defaults)
-						+ Ocean floor peaks
-							+ WE HAVE ALIASING
-							+ WE HAVE CLOSE-BY nVidia LINES
-						+ Ropes, ship edges: OK
-						+ NPCs: OK
-					+ Cleanup boot settings X 2 (Debug, RelWithDebInfo)
-					+ nVidia, with default MS:
-						+ AA:
-							+ Ocean floor peaks: OK
-							+ Ropes, ship edges
-						+ Ocean floor ghost lines
-							+ With Silt
-							+ Without Silt
-						+ ShipBuilder
-						+ nVidia close-by lines (expected to still exist): EXIST
-					+ UHD, with default MS:
-						+ AA:
-							+ Ocean floor peaks
-							+ Ropes, ship edges
-						+ Ocean floor ghost lines
-							+ With Silt
-							+ Without Silt
-						+ ShipBuilder
-				+ Test on old Dell
-					+ AA ship
-					+ AA ocean floor peaks
-					+ Ghost lines ocean floor peaks
-					+ Perf
-				+ Test on Ubuntu
-					! ULTRA GHOST LINES!
-					+ Try with round OceanFloor Dx (samples=2049)
-					+ Test Mariana
-					+ Test the heck out of it
-						+ Test impacts
-
-				X nVidia close-by seams issue:
-					X Try optimization step?
-					+ Regardless: OceanFloor::Upload should upload nSamples - 1 slices
-					X Try with further segmentation for nVidia
-						+ Test: see using Lip for test:
-							+ 1K: OK
-							X 4K: generates lines (and lip starts ghosting)
-
-				X See if edge springs are still required
-					X ROPES ARE DISCONNECTED FROM STRUCTURES
-					- Move enabling of GL_MULTISAMPLE before triangles
-					- Spings::Upload decides based on RenderContext::IsMultisamplingEnabled/Supported
-					- New Dell UHD
-					- New Dell nVidia
-					- Old Dell
-					- Ubuntu
-
-				+ Changelist
-				+ merge back into tornadoes..._wild_mast_experiments, with PR
-				+ Remove nVidia for all binaries				
-		+ Add to Android plan
-
-	X Attempt steep triangle fix with coords scaling
-		X FIRST: try on Android: highp precision also @ vertex shader
-		+ Comment-out nVidia case at UploadLand()
-		+ Verify repro on nVidia
-		+ Make orthomatrix building method @ View ("CalculateNormalizedGlobalOrthoMatrix")
-			+ Just rescale proper kernel cells after copying, by 16384.0f
-		+ Use orthomatrix building method
-		+ Scale coords at UploadLand()
-		+ Adjust scaling coords param 
-		+ Shader: world coords are also needed for others; multiply before sending
-		+ Evaluate
-			X New Dell Nvidia: still occurs :-(
-		X Attempt floating origin
-		X If works:
-			X Figure out where the scaling factor lives - also needed by shader		
-		X Port to Android if works
-	+ Check flat rendering - shader is still old one
-		! AA leak plus lines
-		+ See if AA needed
-			+ With MS: not needed
-			+ Without MS (old Dell)
-				+ Aliasing is present; we'll live with it
-		+ See if centroid needed
-			+ With MS: Needed
-		+ Test on:
-			+ UHD
-			+ nVidia
-			+ Old Dell
-		+ Port changes to Android
-			+ Just flat shader
-
-	+ Splashes and Foam
-		+ Splashes:
-			! Same concept as silt dust
-			+ Textures
-			+ Eph particles
-			+ Spawning of eph particles
-			+ Fine-tune:
-				+ Must not sink and must not remain underwater -- must always go to surface
-					+ Change props so it floats
-				+ Less-dense texture
-					+ Try without that one
-				+ PlaneID
-				+ Multiple particles, random dir
-				+ Particles still sink: constrain position by cachedDepth
-					+ Update cachedDepth
-					+ NO zero out y velocity
-				+ See if scale grows
-				+ Multiple particle randomness loop moves to Ship::InternalSpawnWaterSplash()
-				+ Impact direction from ocean surface normal
-
-				+ Shade texture depending on flat/depth color and texture
-					+ GameOpenGL: upload mipmapped texture region
-					+ GlobalRenderContext::ReshadeDependentOceanTextures(color)
-							+ Impl
-								+ Transform: based on blue
-					+ GlobalRenderContext::ReshadeDependentOceanTextures(texture)
-							+ Impl
-								+ Transform: simply apply texture sample, with source alpha
-								+ Try with scaling to whole texture
-							+ Test:
-								+ All mipmap levels
-								+ No bleeding 
-									+ Need to save to see neighbours
-					+ Calls:
-						+ WRC::ApplyOceanRenderParametersChanges:
-							+ Call WRC::ReshadeDependentOceanTextures(renderParameters)
-						+ WRC::ApplyOceanTextureIndexChanges:
-							+ Store copy of texture in member
-							+ Call WRC::ReshadeDependentOceanTextures(renderParameters)
-						+ (new) WRC::ReshadeDependentOceanTextures(renderParameters):
-							+ Switch on render modes and call appropriate GRC::ReshadeDependentOceanTextures(.)
-		+ Foam:
-			+ For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
-				+ Foam: seamless texture along x, as Generic MipMapped
-					+ Flat above, bubbly below
-				X Option 1: drawn by ocean surface detailed shader:
-					= NOTE: requires swapping order of Update in World: ship first, coean surface next - so that we smooth foam toggle before rendering
-						- Add extra update step for surface
-					= OceanSurface: new foam buffer
-						+ Init as zero
-						+ Converges to 0 at each Update
-						= Populated when displacements happen
-							+ When DeltaHeightBuffer is written to
-							= Experiment with displacement<->toggle mapping
-						= Smooth it, like delta-height buffer
-							= "DecayFoamToggle" -> "UpdateFoamToggle"; dynamics:
-								+ Displace into FoamBuffer
-								= UpdateFoamToggle:
-									= Zero out FoamBuffer_work
-									= Smooth from FoamBuffer to FoamBuffer_work
-									= Decay FoamBuffer_work
-									= Swap FoamBuffer<->FoamBuffer_work
-								+ Upload FoamBuffer
-					+ Uploaded with detailed ocean surface
-					X WorldRenderContext:
-						! Only Upper shaders (IS_UPPER), both background and foreground
-						+ Set tile params in shader(s)
-						+ Vertex: new float
-						= Shaders:
-							= Flat
-								+ Only for upper
-								+ GenericLinearTexture param: only for upper
-								+ foamToggle: only for upper
-								= CalculateDetailedOceanPlaneColorUpper: use foamToggle it as mix
-									= TODO: interface between two shaders
-										- Might just lower interface Y to allow for texture
-
-									- TODO:
-										- Atlas params access from func
-											- What about the others then? Should also be params?
-										- New param for texture ratio -- but can use tile size?
-							- Depth
-							- Texture
-
-						- See if can only confine this to foreground (i.e. no background)
-				+ Option 2: with new eph particle, position-constrained onto surface
-					+ Spawn strategy:
-						+ 1: When we spawn splash (only for testing)
-						+ 2. With winner, but lower threshold
-							! Though will always match splash when it happens; good or bad?
-							+ Of the multiple ones, grow larger and larger with position
-								+ Calc depth accordingly
-					+ Doesn't have y velocity, only x 
-					+ Constrained onto surface, by means of cached depth
-						+ Adjust cached depth
-						+ Zero y velocity
-					+ Better strategy for size: low strength cannot be large (make smaller), so random offset should be smaller
-					+ Lateral extremes of foam must be smaller
-					X Try convection with waves, to avoid serpents
-					+ Try with non-whitened texture
-					+ Try: flatten particle (rectangle along a direction) depending on ocean surface normal
-						! Requires giving up rotation
-						+ Requires new uploader for MipMapped quad, with vec2 direction (up) and FloatSize for multipliers
-					+ Optimize InternalSpawnFoam: move out of loop constant things
-					+ Texture
-						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
-						+ Make it white
-						+ Try Kiko's
-							+ Ask trx bg
-						+ Try Kiko+Splash
-						+ Finalize authoring, after beta results
-							+ Buy foam
-							+ Make foam
-								+ Purchased: transparent background, round shape
-								+ 2-centered-scale
-								+ Kiko's
-								+ Kiko color replacement
-								+ Store in authoring
-								+ Make final png
-							X Buy another splash? https://www.istockphoto.com/nl/foto/blue-water-splash-isolated-on-white-background-gm490311803-39706194
-							+ Cleanup all build folders
-					+ Eph particle
-
-		+ Try displacement also against waves: replace vertical velocity with velocity against water surface
-			+ Project impact by angle with wave
-			+ Remove log
-			+ Do we want to lower waves when ship travels?
-
-		X See if still makes sense to continuously displace ocean surface at ship update loop
-			X Yes, for "constant rate"
-
-		+ Test:
-			+ Water Splashes when DoDisplaceWater is off
-
-		+ FIX: pieces of ship generate splashes at high coords
-			! Gets worse over time
-			+ Problem with cached depth?
-		+ FIX: plane of splashes when piece of ship is behind
-
-		+ Settings:
-			! WaterFoamSensitivityAdjustment, 0 for none
-			! WaterFoamLifetimeAdjustment
-			! WaterSplashSensitivityAdjustment, 0 for none
-			+ SimulationParameters
-			+ Use at:
-				+ WaterDisplacementWaveHeightAdjustment: use only for water displacement -- keep out of displacement calculation
-				+ WaterFoamSensitivityAdjustment -- make sure 0 is none
-					+ Try remove strength calc'n/linear thing
-				+ WaterSplashSensitivityAdjustment -- make sure 0 is none
-					+ Try remove strength calc'n/linear thing
-				+ WaterFoamLifetimeAdjustment
-			+ SettingsManager
-				+ IGameControllerSettings
-			+ SettingsDialog
-				+ Split Wind and Waves: move Wave Phenomena and Storms to "Power Tools and Phenomena" tab
-				+ Close to DisplaceWater, enablement depends on that value
-			+ Test
-				+ Nail down limits
-
-		+ See if needs capping for impact force
-
-		+ @ Bombs (blasts, incl. tool)
-			+ @ World::OnBlast, acting on either shipId or first ship
-				X Foam: not needed; ship does her own
-				+ Splash
-					+ Use sensitivity
-					+ Need to lower impact of blasts onto ephemeral particles
-						+ At Ship::ExplosionStateMachine::Update: use material's
-						+ See below for Silt Cloud!
-					+ Size must depend on depth, and be larger than 2.0
-					X FIX: above water splashes
-						! Problem is: above-water velocity is correct; it's the underwater case that's off, as surface goes up, hence
-						  splash goes up faster and that's what we see
-					+ Try with one random particle per-step
-					+ Cleanup code
-				+ Test:
-					+ PlaneID
-			+ If we end up needing to lower impact of blasts onto ephemeral particles, remember to do it for Silt Cloud as well
-				+ Test silt cloud + explosion: Android plane crashing
-			+ Test (w/changing settings as well)
-				+ Bombs
-				+ NPC bombs
-				+ Blast Tool
-					+ Use blast sensitivity of material for the physics
-					+ Nail down direction
-		+ @ Tornado bottom
-			+ Tornado physics: use blast sensitivity
-			+ Splash
-				+ Smaller
-				+ More upward
-				+ Incorporate alpha
-				+ Use toggle
-				+ TOO MANY!
-					+ Lower freq
-					+ Change to time-based: fix Lifetime, N and calc next timestamp
-						+ Then alternate L and R
-							+ Replace foamAndSplashSign
-					+ Nail down dir
-			+ Foam
-				+ Takes alpha
-				+ Use toggle
-				+ Randomize texture rot angle
-					+ TextureFrameMetadata has valid permutations
-					+ ShipRenderContext::Upload... chooses permutation based off personality seed
-				+ Randomize inter-particle offset, even if by a little bit
-				+ Make time-based as above
-					+ FIX: repeats
-						+ More time randomness
-						+ More frequency
-				+ Add spawn param for "visibility haste"
-					+ Replace with inverse, to avoid division
-				+ Cleanup
-		X @ Bubbles rising?
-		X @ Fishes rising?
-		X @ NPC floating?
-		+ Replace material's blast_sensitivity with a synthetic coeff created @ CreateEphParticle time
-			! After all it depends on role, not on material itself
-			+ "FoobarSensitivity"
-		+ Try: displacement math should consider velocity *perp* to frontier edge
-		+ Rewrite as more grounded in physics
-			! Goals:
-				1. Impact recoil force: should be based on ocean surface normal at that point
-				2a. Impact displacement: (proportional to, and sign of) vertical component of edge "push"
-					- Independent from ocean surface normal at that point
-				2b. Straight vertical keel moving along ocean surface (ship marching ahead): must generate waves and foam
-					- If keel is oblique: see 2a., pushing up or down
-					- In other words: when push surface is full but parallel to water surface, vertical component must still be != 0
-				2c. Laminar vertical (straight vertical Titanic keel rocking on flat surface): must generate small waves and foam
-					- In other words: when push surface is zero, must still push something - provided it has velocity
-
-			! It's a 2-plane 1-direction problem
-			! Solution: vector stays on point _velocity_, not edge _normal_
-			+ Impl of goals 2
-				+ Foam and splashes
-				+ FIX: Titanic goes awry
-					+ Lower boost for case b
-					+ FIX: but boost should depend on edge normal! Think of vertical keel in front (where it's fine to consider Velh as vertical)
-					  vs keel at bottom (where it's clearly parallel to surface)
-						+ Multiply min by abs(pushDir.dot(edgeNormal))
-						+ Optimize (we have already calculated dot?)
-				+ Test
-				+ If case c. boost stays at 0.9, try it with 1.0 and if ok, nuke it altogether
-				+ Update main comment, fit final implementation into theory
-
-			+ Impl of goal 1
-				+ If goes through: recycle calcn' of ocean surface normal
-		+ Decide on engine's displacement
-			+ It's currently commented-out - AND COMMITTED AS SUCH
-		X Try: displacement should also come from velocity in same dir as ocean surface
-			- Displace up after, displace down behind
-			- Rethink displacement: it's two components now
-		X Try: relative velocity for surface/water ship::update() (impact, displacements)
-			X Wave velocity is too small to notice
-		X Try: replace engine wake with bubbles
-			X Nuke all about wake if this goes through
-			X Add to Android plan
-		+ Test:
-			+ Wave displacement height setting
-		+ Cleanup:
-			+ Finalize alpha of foam (@ eph particle upload)
-			+ See if foam eph particle state's SkewedLifetime is still needed
-		+ Up splash sensitivity to ~2, for sinking effect
-			+ Then bake into constant, and re-calibrate min/max
-		X Try tornado: use whole base for splashes
-		+ Merge into Tornadoes
-		+ Changelist
-
-	+ Eph particle rearc: make it a runtime setting - default 8K, and choose between 4K, 8K, 16K based on calibration
-		! Note: lighting algo doesn't depend on # of eph particles!
-		! Note: ShipRenderContext needs it, but can be given it @ creation time
-		+ 1. SimulationParameters
-			+ First: take UPD + RND measurements before and after changing 4K -> 16K, and static measurement of time spent in FindFreeEphemeralParticle, measuring w/ Titanic forcibly sunk:
-				+ Pre:
-					+ UPD=3.25-3.35-3.4 RND=3.3-3.4
-					+ 0.505264 @ 87040, 2.45879 @ 396288
-					+ Mem: 800-850
-				+ 16k:
-					+ UPD=3.8-4.0 RND=3.3-3.4
-					+ 0.5 @ 38K
-					+ Mem: 800-850
-			+ Do
-				+ Needs to only be enforced at ship load (Ship+ShipRenderContext), make sure we never use it @ runtime, only at initialization times
-			+ Nail down default, and max
-		+ 2. Eph particle state @ Points is sized for eph particles only
-			+ See if Points::UpdateEphParticles better deal with "ephemeralParticleIndex", check for rename: now it means "index in eph particles"
-		+ 3. See if can improve FindFreeEphemeralParticle's perf
-			+ Thing 1: remove need for currentSimulationTime						
-			+ "EphemeralParticleAttributes1" -> "EphemeralParticleMetaData", and has:
-				+ EphemeralParticleIndex (const)
-					+ Init @ Points cctor
-				+ Prio
-				+ EphemeralParticleMetaData * ActiveListPrev;
-				+ EphemeralParticleMetaData * ActiveListNext;
-			+ "EphemeralParticleAttributes2" -> "EphemeralParticleAttributes", and gets Type and StartSimulationTime			
-			+ Points has EphemeralParticleMetaData * ActiveLo/HiPriEphemeralParticleListHead, Tail
-			+ Points has FreeEphemeralParticles vector - used as stack - for free ephemeral particles
-				+ Init'd with all
-				+ When we take free, we take from back
-			+ FindFreeEphParticle -> ParticleIndex|None
-				+ If FreeEphemeralParticles ! empty: pop it, add to Active list (based on prio), set prio, and return it
-				+ Else: if DoForce:
-					+ for each prio: if ActiveEphemeralParticleListHead.Next != nullptr: extract it, add to Active list (based on prio), set prio, and return it
-				+ Else: return None
-			+ ExpireEphParticle:
-				+ 1. Remove from Active list (assert it's in it)
-				+ 2. Push into FreeEphemeralParticles, into back
-				+ 3. Mark as inactive (type=none)
-			+ Invariants in _DEBUG
-				+ Total count
-				+ Type set <-> active
-			+ Hide all methods w/eph_index, incl iterator
-
-		+ Test:
-			+ Hesleden, 4K
-			+ PinnedPoints/AirBubbles
-			+ DestroyAt/AirBubbles
-			+ Time+Mem, 16K - RelWithDebInfo
-				+ 0.003 @ 105K
-				+ Mem: 795
-
-		+ Remove static measurement of time spent in FindFreeEphemeralParticle
-
-		+ 4. Keep eph particles out of 40 iterations' loop, and just integrate once @ end
-			! IT'S REALLY WORTH IT!
-			! Watch out for integration factors and coeffs -- everything that depends on numMechanicalIterations
-			+ Can have special task for last, doing last integration (on non-eph) followed by integration of eph
-				+ Hybrid
-					+ Check: IntegrateAndResetDynamicForces
-						+ dt
-							+ IntegrateAndResetDynamicForces: take dt
-						+ Points::IntegrationFactorBuffer
-					+ Check: HandleCollisionsWithSeaFloor
-						+ dt
-							+ HandleCollisionsWithSeaFloor: take dt
-					+ Check: mSpringRelaxationCoefficients.IntegrationVelocityFactor
-					+ Comment @ Points::CalculateIntegrationFactorTimeCoefficient
-					+ Find all places where we use NumMechanical
-					+ Do PR and commit
-					+ See if can incorporate in last task, so we do one less thread.run
-						+ Need to guarantee numMechIterations is even, either @ source or locally
-					+ Test:
-						+ Impact with silt (friction) and bedrock
-						~ Does silting really depend on num mechanical iterations?
-							+ Depth hardness
-								@ 40: 0.05 0.2
-								@  ?: 0.0169525  0.0716822
-						+ Change num mech iters, and #threads
-						+ Hesleden perf
-							+ Pre: 40-43 (22-23)
-							+ Post: 40-43 (21-22)
-						+ World boundaries (in Debug)
-				+ Full
-				+ StepByStep			
-			+ Test:
-				+ Hybrid
-				+ Full
-				+ StepByStep
-			+ Revert to original parallel mode (Hybrid)
-
-		+ If insanely high number of eph particles is doable, consider:
-			+ Tornadoes: 
-				+ Splashes along whole base
-				+ More foam
-				+ Foam along whole base
-			+ Lower velocity damp of foam
-
-		+ Better flat-color colorization of water textures
-		+ See if can lower height of splashes @ impact
-		+ Test:
-			+ Perf X 2 (UPD, RND) with all eph particles (~all bubbles) at 16k eph particles
-				- UPD=3.5, RND=4.3-4.5
-		+ Finish up (*)
-
-		+ Merge
-
-		+ Android Port Plan
-			+ Max eph particles being instanced setting, and calibration		
-
-	+ Run Discord poll for next:
-		! Customizable materials
-		! Rot redesign (includes better rusting, and organic alge growth)
-		! NPC phase II: ShipBuilder (Floorplan layer and Interior Texture layer), areas (e.g. assembly area), and behaviors (swimming, etc.)
-		! Fireworks
-		+ https://forms.gle/PcmJ2kCqxp8UVmfX8
-
-	+ Nuke all calls to glBindTexture(GL_TEXTURE_2D, 0) -- this just changes to default texture
-
-	+ Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
-
-	+ Test on old Dell
-		+ Now: 27,4-28 -- 29.3 w/out foam
-		! It's all rendering impact
-	
-	+ We upload all particles' <position, light, water>, even for eph particles
-		! Which we'd only need for Debris (which we upload as elements)
-		! We've already addressed this well for Decay, etc. - but here we have the Debris problem
-		! Gist:
-			! We never upload any eph particles (just RawShipPoints)
-			! Eph particle debris gets own batch (buffer, etc), we upload <position, light, water> to it, and render with ship_element shader
-		+ Impl base:
-			+ Prelim:
-				+ Get rid of uploading and accounting for all points - we never upload any eph particles (just RawShipPoints)
-					+ Rename mPointCount to mShipPointCount, "aligned count"
-					+ Pass right one @ ShipRenderContext creation
-					+ See all references to mPointCount: check each caller to ensure they comply
-						+ Points: nuke all "partial" and indicators, all do aligned (not only raw, so that we do not leave uninit'd mem)
-				+ Nuke these:
-					+ ShipRenderContext::mEphemeralPointElementBuffer
-				+ No debris calls
-				+ Test and commit
-
-			+ TODO: alpha problem: if no solution found in head, skip directly to shading as matte quads
-
-			+ Points: 
-				+ Nuke mAreEphemeralPointElementsDirtyForRendering (only used for Debris)
-				+ Nuke mIsPlaneIdBufferEphemeralDirty (only used for Debris)
-				+ Nuke mIsEphemeralColorBufferDirty
-				+ Add RotationPhase and OriginPointIndex to debris state
-				+ Upload
-			X ShipRenderContext:
-				+ New vertex, matching (with comment) layout expected by ship_element.glslinc, but only for groups 1 and 2
-				+ New VAO, VBO, with mAllocatedSize
-				+ New buffer of vertices // Not sticky
-					+ std::vector, reserved @ cctor
-				+ Global start upload: clears buffer
-					+ No need for UploadStart()
-				X UploadDebris(position, texture coords, ..., ..angle)						
-					+ Called by Points::UploadEphemeralParticles; no need for start
-					= For now do simple quad, size fixed, and rotate
-						- Size is kept in sync with point size
-					- Use precalc'd worldToShipTextureCoordsSpace factor, calc'd (and init'd) at ApplyViewModelChanges
-						- ShipSize (new from cctor -> const member) -> World
-				+ RenderPrepare
-				X RenderDraw
-					+ Inline with ship
-					+ Only when non empty
-					+ Implement these
-						+ Always use ship_triangles_texture shader, no matter what
-							+ HEAT_RENDER_MODE is 0
-							+ STRESS_RENDER_MODE is 0
-					X TODO: how do we draw debris with various other (debug) render modes?
-						- Needs to be fixed as we are currently inoking ship_strength, ship_decay, etc. shaders without having those vertex arrays in vbo
-						- ALSO: we don't use "render modifiers" with other eph's (strength, stress, etc.), so why should we care?							
-		+ Re-impl as GL_POINTS:
-			+ 0: Cleanup debris state (undo?)
-			+ 1. Debris created with OriginalPointIndex, copies all needed quantities into eph particle index
-				+ Water
-				+ PlaneId
-			+ 2. Vertex: cover all shaders
-				+ 
-					in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
-					in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
-					#if HEAT_RENDER_MODE != 0
-					in float inShipPointTemperature; // Temperature
-					#endif
-					#if STRESS_RENDER_MODE != 0
-					in float inShipPointStress; // Stress
-					#endif
-					#ifdef WITH_MATTE_COLOR -- ALWAYS
-					in vec4 inShipPointColor;
-					#endif
-				+ Describe, off of struct
-			+ 3. Upload:
-				+ All quantities
-			+ 4. Draw
-				+ As points, using mShipPointProgram
-		+ Final cleanups:
-			+ Can we actually use existing buffer for ALL eph particles' personality seeds?
-				+ Writing to it @ Spawn time, NOT reusing it (or else not too random)
-				+ SiltCloud
-				+ Smoke
-				+ WaterFoam
-				+ WaterSplash
-			+ Nuke setting of colors @ Points::CreateEphemeralParticleXYZ()
-				+ EXCEPT FOR DEBRIS!
-				+ Make sure that no ephemeral particle upload uses color
-
-		+ Verify perf
-			+ Pre UPL RND: 0.17-0.21 3.6-3.7
-			+ Post UPL RND: 0.10-0.12 3.6-3.7
-
-		+ Round-ish particles
-		+ Optimize AirBubble upload
-			! Pre (16K air bubbles): UPL=0.45-0.48
-			+ Precalc a lot:
-				! mGenericMipMappedTextureAirBubbleVertexBuffer: pre-populate with fixed vals
-				+ Buffer is still cleared, but Upload uses emplace_back_ghost to populate dynamic vals
-				+ Use float planeId directly
-			+ Post: 0.33-0.36
-			+ If ok: add to Android plan
-
-		+ Send beta
-
-		+ Merge into master
-			+ With PR, for Android!
-
-	+ Try OpenGL/Upload optimizations:
-		+ Create branch
-		+ 0: Get baseline measurements w/Hesleden
-			+ FPS:40-45 UPL:0.20 RND:4.38
-		+ 1: Simplify ShipRenderContext::UploadPointMutableAttributesPlaneId et al: no startDst, count; just pointer, and SRC uses mShipPointCount
-		+ 2: Ship attributes:
-			+ Split group1 into position, textureCoordinates; rename group2 as "group"
-				+ ShaderSets
-				+ Code
-					+ Members & code
-					+ Uploads
-				+ Shaders
-			+ TextureCoords pre-calcd once and for all, own VBO
-				+ But still, updated _later_ than init'n
-			+ Other 4 loaded at all times (Light, Water, Temperature, Decay): interleaved into mapped buf - own VBO
-			+ Last one loaded sparingly (plane): own VBO
-			+ One call for uploading all three VBOs
-			+ Nuke unneeded ShipRenderContext buffers
-			+ Redo debris vertex accordingly; structure and description
-				+ Remember: all debris shaders have IS_MATTE_COLOR, hence no need for texture coords
-			+ Test:
-				+ All variants
-					+ Heat mode
-					+ Stress mode
-				+ Debris
-					+ Stress 
-					+ InternalPressure
-					+ Strength
-				+ Internal pressure
-				+ Strength
-				+ Stressed springs
-				+ Frontiers
-
-			+ Perf:
-				+ FPS:42-45 UPL:0.07-0.08 RND:4.3-4.5
-
-			+ Check interleaving code assembly:
-				+ x86: bunch of move's
-
-		+ Check impact of ShipRenderContext::UploadMutableAttributes first
-			+ 0.15% (0.13% excl. opengl calls)
-
-		+ Decide what to do with Points::mIsDecayBufferDirty
-			+ There's a TODO there
-
-		+ Test perf on old dell
-			+ Pre: FPS: 27.0 27.8-28.8-29.5 UPL: 0.9-1.0 RND: 15.9-16.3 -- BUT ALSO 17.-18
-			+ Post: FPS: 28.6 UPL: 0.5x RND: 17.4-17.6 19.0
-			+ Main difference with more eph particles is now:
-				+ Ship::ApplyWorldParticleForces: loop for particles (2.51% vs 1.13% @ 4K)
-					X Vectorize?
-						- Problem: cached depth; do a pass first just for that?
-							X See if there's a step before it that we may piggyback
-					+ Reorg to kill ResetStaticForces:
-						+ 1. ApplyWorldForces -- uses SetStaticForce
-						+ 2. ApplyQueuedInteractionForces
-							+ Verified it only adds
-				+ Points::UploadEphParticles (0.82%, 0.27% of which due to foam/splashes vs 0.58%, 0.34% @ 4K)
-					X Going all the time through 16K particles: best if through two lists?
-						! No, as that pejorates worst case - i.e. all eph particles alive
-					+ VerticalAxis stuff
-						+ Make sure we don't rotate _and_ choose a random texture coords rotation, as that doesn't make sense
-					X See quad population function
-						X No, it's for center-based quad; ours is not
-					X Try padding generic texture vertex struct
-					+ Think of avoiding std::vector stuff
-						+ Just emplace Quad, instead of four Vertex
-						+ Perf profiler: 0.76%, 0.38% for foam
-						+ Assembly
-						+ Commit
-				+ Ship::Integration (0.4% per-thread vs 0.16% @ 4K)
-					+ Confirm dynamic force buffers play no role w/eph particles: no springs, no hydrostatic forces
-					+ Rearch Points
-						+ Throw away unused methods
-						+ Ensure dynamic force buffers are sized for AlignedShipCount only
-							+ But then, all uses need to not touch it for non-ephemeral
-					+ Re-verify all users of dynamic force buffers
-					+ Do new Algorithm - "Integrate(...)"
-						+ SSE, NEON
-						+ Unit tests
-					+ Call new algorithm for ephemeral step at SpringRelaxation, X 3
-					+ Tests:
-						+ Pressure forces
-						+ MoveBy, RotateBy X 2
-						+ Repair at depth
-						+ Simulation Threads #
-							+ Less tasks than thread - 1 particle
-							+ Quick changes
-						+ Perf: 0.25% (main thread) 0.66% (thread pool threads)
-
-		+ Try CheckOpenGLError optimization
-			+ Check assembly
-
-		+ Changelist
-
-		+ Port to Android, with merging PR
-		+ Merge PR
-
-	+ Aanpak slow rendering on Dell
-		+ Do water foam 256x256, also on PC
-		X Try on Dell: linear instead of mipmapped
-			+ Doesn't help on Intel UHD (new Dell, integrated)
-			X Neither on old Dell
-		+ Try with 4K particles
-			+ Final perf (after work above):
-				+ 16K: FPS=27.9-28.8-29.2-29.6 UPD=16.1-16.6 UPL=0.4-0.5 RND=17.9-18.2
-				+  4K: FPS=29.1-30.3 UPD=15.2-15.7 UPL=0.20 RND=17.7-18.2
-			+ Too many air bubbles for render! Adjust @ calibration
-				+ Get gfx score from old Dell, use threshold really close: score=0.02
-				X No setting
-
-	+ ASAN build
-		+ Do
-		+ Then, re-generate proj and verify gone
-
-	+ Be satisfied with upward velocity of splashes
-		X Try: consider displacement for position of splash, to limit empty room
-		! It's mostly due to ocean displacing, not much to upwards velocity
-			+ Yet, limit vel a bit
-		+ Test bombs
-
-	+ Do lift material
-		! @ frontier force application, as a _static_ force
-		+ StructuralMaterial::lift_coefficient, default 0.0
-			+ Make "Iron Hull Aerodynamic" and "Aluminium Hull Aerodynamic" materials, lift_coefficient=1.2
-				+ Use scripts for variants
-		+ Material.cpp
-		+ Setting for adjustment
-			+ SimParams
-			+ GameController
-		+ Ship::ApplySurfaceForces
-		+ Fine-tune
-			+ Add tiny 45deg lift material @ tail
-			+ Add thrust engines @ tail for up/down help
-			+ Test in release
-			+ Conclusion:
-				! For correct physics: we need at least 66 m/s, speed here is 16
-				+ Takes off from reset: multiplier (thermal): 4
-				+ Underwater is too much; just use air density
-				+ See assembly to see if we need precalc'd factor				
-		+ Test:
-			+ ShipBuilder palette title sizes
-			+ Android's plane
-				+ Make double-backup first
-				+ ...
-				+ Take backup and nuke double-backup		
-		+ Port plane & code & materials to Android
-		+ Merge into master
-		+ Test on Android
-		+ changelist
-
-	+ Rot rework + "water soluble" material:
-		! Spec:
-			! Quantities:
-				! Rot:
-					- From: combustion, LFLoop (water+underwater) - so all materials weaken
-					- Phys effect: weakens
-					- Renders (dark brown)
-				! Weakness:
-					- From: tornadoes, ...
-					- Phys effect: weakens
-				! Rust:
-					- From: LFLoop
-					- Phys effect: weakens
-					- Renders (red)
-				! AlgaeGrowth (encrusting):
-					- From: LFLoop
-					- Renders (green)
-			! New Water Solubility material property; doesn't affect rendering, just acts on weakness
-		+ Impl:
-			+ StructuralMaterial:
-				+ New rot_receptivity, default is 1.0 (same as current rust_receptivity)
-				+ rust_receptivity default is 0.0
-				+ New water_solubility, default is 0.0
-					+ Solubility doesn't affect rendering; just acts on weakness
-			+ structural_materials.json:
-				! All materials' defaults:
-					! rot_receptivity 1.0 
-					! rust_receptivity 0.0
-					! water_solubility 0.0
-				+ Metals:
-					+ rust_receptivity=old rust_receptivity/1.0
-						+ Steels: 0.5
-				+ Wood:
-					+ Nothing
-				+ Cardboard:
-					+ water_solubility=old rust_receptivity
-					+ no rust_receptivity
-				+ Stainless:
-					+ rot_receptivity=old rust_receptivity
-					+ no rust_receptivity (nuke "rust_receptivity": 0,)
-				+ Concrete, etc.:
-					+ rot_receptivity=old rust_receptivity
-					+ no rust_receptivity
-			+ Points:
-				+ Members:
-					+ AdditionalWeakness => Weakness
-						+ Getters/Setters
-					+ Decay: not a float but 3-fold struct: Rot, Rust, AlgaeGrowth -- union of struct superimposed with vec3f
-						! Start with 1, decay towards 0
-						+ Getters/Setters
-					+ AlgaeGrowthPattern: float
-				+ Code:
-					+ cctor: takes algae pattern
-			+ Spring strength uses Weakness only
-			+ ShipFactory:
-				+ Provide algae pattern w/perlin
-					+ 6, 6, 0.1 == 64 cells = size/16
-
-			+ Combustion:
-				+ Add to Weakness
-				+ Add to Rot buffer
-			+ Tornadoes:
-				+ Add to Weakness
-			+ SimulationParameters:
-				+ AlgaeGrowthAcceler8r
-				+ RustAcceler8r
-				+ GameController
-
-			+ LFLoop:
-				+ Important: don't add multiple weaknesses, do min among all
-					+ Just calc min alpha and use that for weakness
-				+ Rot:
-					+ Driven by material's rot_receptivity
-					+ Speed: RotAcceler8r
-					+ Amount:
-						+ Like now
-					+ Add to Weakness
-					+ Add to Rot buffer
-				+ Rust:
-					+ Should be for any point that is now exposed (i.e. which has lost at least one triangle)
-						+ 1) Mark point as damaged when we remove a triangle, by point Points::DisconnectTriangle itself
-						+ 2) Do it instead from HandleTriangleDestroy
-						+ Test:
-							+ Repair
-							+ Damage single particles
-					+ Driven by material's rust_receptivity
-					+ Speed: RustAcceler8r
-					+ Amount:
-						+ Damaged: +++
-							+ alpha = 1 - beta_damaged * damaged
-							+ Beta gets higher if there's water in it
-								! Can combine alpha's for various periods:
-									! a_low_rust=0.99973 a_high_rust=0.998701
-									! https://www.toolfk.com/online-plotter-frame#W3sidHlwZSI6MCwiZXEiOiIwLjk5OTczXngiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjAsImVxIjoiMC45OTg3MDFeeCIsImNvbG9yIjoiI0ZGMDUwNSJ9LHsidHlwZSI6MCwiZXEiOiIoKDAuOTk5NzMrMC45OTg3MDEpLzIpXngiLCJjb2xvciI6IiMwNUYwMjAifSx7InR5cGUiOjEwMDAsIndpbmRvdyI6WyItNDE2LjkwOTk5OTk5OTk5ODk0IiwiNjA4OS41OSIsIi0zLjUiLCI0LjUiXX1d
-								+ The alpha used for beta_damage is Mix(low_alpha, high_alpha, water);
-
-						+ Neighbors:
-							+ mass_multiplier = 0.5 + 0.5 * LinearStep(0.0, 1000.0)
-							+ beta = beta_high * avg_n_rust * mass_multiplier
-
-						+ Final:
-							+ Rust' = rust * (1 - (beta_damaged * damaged + beta_spread * neighbors_rust_amount * mass/whatever_for_structure) * mat.rust_receptibity)
-
-						+ Try with bottom rust of neighbors = 0.2 instead of 0.0
-							+ Bottom = f(damaged): 0 or 0.2
-							X If too slow: forget target, use max(0.2, newRust)
-
-						+ Boost rust if underwater
-
-					+ Add to Weakness
-						+ Min alpha/max beta
-						+ Does it become weak too soon? Want rust to expand more before it weakens
-
-					+ Add to Rust buffer
-
-					+ Add weakness setting
-						+ SettingsDialog
-						+ Test:
-							+ Scrub tool
-							+ Plain
-
-					+ FIX: asymptote thing cancels out tool-induced rust; need to change to beta
-						+ Do we still need mass then, given that we converge towards 0?
-					+ FIX: decay explodes oscillating with accel=500
-						+ Due to alpha's becoming 0.001, sum of beta's then is > 1
-
-					+ Test timings
-
-				+ Nail down time for decay
-					! Now: nSec / (SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod))
-					! Next: nSec * steps_in_sec
-						! steps_in_sec = 36/64 = SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod)
-					+ Test in RelWithDebInfo
-					+ Timing
-					+ Fix: spread is too fast, as it grows
-						+ alpha=>beta
-
-				+ Adjust rust color base
-
-				+ SettingsDialog: "Rot" static => "Decay"
-
-				+ AlgaeGrowth:
-					+ Speed: AlgaeGrowthAcceler8r
-					+ Amount:
-						+ Underwater => +
-					+ Add to AlgaeGrowth buffer
-						+ Asymptote is Perlin
-
-				+ Solubility:
-					+ Driven by material's water_solubility
-					+ Speed: RotAcceler8r
-					+ Amount:
-						+ Water or Underwater
-					+ Contribute to Weakness: update min
-
-				+ Optimize:
-					+ Precalcd' coeffs & update @ SimParams changes
-						+ Members of Ship
-					+ Ship::RotPoints
-
-			+ Repair
-				+ Lower weakness
-				+ Clean rot+rust, as that would be inconsistent with weakness
-					+ Copy from old code, but likely is same place as weakness restore now
-			+ Scrub tool: lower weakness + 3
-
-			+ Rot tool: rust
-				+ Rename first: Rot->Decay
-					+ Points buffer
-					+ Settings (GameController)
-					+ Tool
-					+ SettingsDialog
-					+ Android plan
-				+ Test radius setting works
-				+ With multiple throngs along perp to direction
-			+ Do we still need decay render mode?
-				+ If we remove it: add to Android plan
-
-			+ ShipRenderContext:
-				! AttributeGroup VBO becomes 6-way: Light, Water, Temperature, Rot, Rust, AlgaeGrowth
-				+ ShaderSets attributes
-				+ Vertex struct (just for convenience, comment on not being used directly)
-				+ Ship VAO
-				+ Ship Uploads
-				+ Debris VAO
-
-			+ Shaders:
-				+ AttributeGroup vertex buffer changes
-					+ All shaders
-					+ Debris
-				+ Color: Rust over AlgaeGrowth over Rot
-
-				+ Color constants
-					+ Search all uses
-
-				+ ship_decay
-					- Finalize color of rot
-				+ ship_element
-
-				+ Use texture's lightness as pattern
-				    float originalLuminosity = dot(vec3(0.299, 0.587, 0.114), vertexCol.xyz);    
-				    fragColour = mix(rustSample * (1.0 - (1.0 - originalLuminosity) * 0.15), fragColour, vertexAttributes2.x);
-
-				X Try rust _over_ water (@ship_element)
-					+ Ended up lowering water contrast
-
-			+ SettingsDialog:
-				+ AlgaeGrowthAcceler8r
-				+ RustAcceler8r
-
-		+ Finish rename Rot->Decay:
-			+ Ship::RotPoints, & period names
-
-		+ Do "water soluble metal" material
-
-
-		+ I found the first bug. As soon as i turned the rot accelerator down my ship just rusted and immediatley fell apart in 1.5 seconds.
-			+ Fix: mDecayRotXUw becomes -IND with denominator being zero (alpha's are equal)
-		+ Smooth underwater transition
-		+ Adjust rust spread speed to 0.2 adjustment, but keep current speed when underwater/wet
-			+ Beta dry, Beta wet -- in terms of time and/or gamma
-		+ Add white-ish and black-ish for water-soluble
-			+ Copy Aluminium Hull, Light Aluminium I-Beam (as "Water-Soluble Aluminium I-Beam")
-			+ Make them water-soluble
-		+ Add white-ish and black-ish for lift
-			+ Copy Aluminium Hull, add last to Aluminium group
-			+ Give it lift
-		+ Make a weaker version of the soluble material, basically low-grade soluable iron - a good compromise eh? what it does is speed up its destruction when waterline reaches it 2 times, basicly no flooding required
-			+ Check current test ship
-			+ Current water-soluble materials' water-solubility becomes 0.5
-				+ Change NS so that (1.0f - mDecayWaterSolubilityAlpha_OLD) == (1.0f - mDecayWaterSolubilityAlpha_NEW) * 0.5
-					+ NS=0.76782
-			+ Old material with 0.5, and cardboards 0.2->0.1 0.3->0.15
-			+ Verify old materials
-			+ Verify cardboard
-			+ New material with 1.0
-				+ Copy from Low-Grade Iron, call it "Water-Soluble Low-Grade Iron"
-			+ Change test ship & test
-
-		+ Test:
-			+ StressedSprings shader - no regressions
-			+ InternalPressure shader - no regressions
-			+ Strength shader - no regressions
-			+ Debris
-			+ GenericTextures
-			+ Electric spark rots the structure
-			+ Cardboard: rots (& doesn't rust)
-			+ Lego doesn't rot nor rust nor dissolves
-			+ Water Soluble Metal: dissolves
-			+ Tornadoes: weaken
-			+ Repair
-				+ Test repairing heavily rotten/rusted structure
-
-		+ Merge into master
-			+ With PR for Android
-
-		+ Android port:
-			+ ShipRenderContext/VBO changes
-			+ Shader coloring changes
-			+ New settings
-			+ ScrubRot tool name change @ tool (cosmetic) and settings (mandated)
-			+ Removal of ship_decay shaders
-
-		+ changelist
-
-		+ Try multi-channel texture for rust and algae		
-			+ New branch
-			+ Recover code from git stash
-				+ Shader
-				+ ShaderSets
-				+ GlobalRenderContext
-				+ ShipRenderContext - setting texture parameters
-			+ "ShipEnhancements" DB
-
-			+ RenderParameters:
-				+ New boolean: ShipHighQualityRendering
-					+ Default: true
-					+ Own dirty flag
-
-			+ Shaders params:
-				+ ShipEnhancements texture
-				+ ShipEnhancementsTextureSpaceMagnificationFactor (vec2)
-					+ Calc'd by ShipRenderContext @ init, based on ship's world size and GlobalRenderContext::GetShipEnhancementsTextureWorldSize
-						+ SetInAllShaders
-				+ ShipHighQualityRendering
-					+ Set at ShipRenderContext via ApplyShipQualityRenderModeChanges()
-						+ SetInAllShaders
-					+ Call ApplyShipQualityRenderModeChanges upon changes
-
-			+ "ShipEnhancements" texture
-				+ OpenGL param
-				+ Activation & load @ GlobalRenderContext
-
-			+ GlobalRenderContext: build dual-channel
-				+ Load database instead of frames
-
-			+ Shader:
-				+ Make colors based on paramShipHighQualityRendering
-				+ Use paramShipEnhancementsTextureSpaceMagnificationFactor
-
-			+ Test:
-				+ nVidia
-				+ All ship shaders work
-				+ Rust, Algae on all ship shaders
-					+ FIX: Draw structure (et al): doesn't pickup texture
-						+ SetTextureParametersInAllShaders called early on after ShaderManager has been initialized
-							+ Commit all
-							+ Do above
-							+ Nuke all SetTextureParameters calls
-						+ Tests
-
-			+ Rot<->Rust
-			+ Non-damaged rust
-
-			+ SettingsWindow
-				+ Move Render panel's "See Ship Through Water" to "Advanced", as lst in existing
-					+ This should shorten upper panel
-				+ Fix water sliders if needed
-					+ Try flexible row
-
-			+ Send beta
-				+ Bump up version
-
-			+ More scissor between dry rust and damage rust
-
-			+ Texture finalization:
-				+ Rust
-					+ Rust0220, exists @ 1024
-				+ Algae
-					+ Mossy Rock 4 / Albedo (search: "algae seamless"), exists @ 4096
-					+ TODO: do something else - more matte green, barnacles as noise
-						+ Check pixel size vs world size, not a multiple!
-					+ Test Rust, Algae
-
-			+ Calibration
-				+ Test on old Dell
-
-			+ Make PR
-				+ Port to Android
-				+ Merge into master
-				
-	+ TimCan's new sounds for PC+Mobile
-			! NOT:
-				- FS Deep Horn
-				- Queen Horn
-		+ PC
-			+ Materials
-			+ shipindustrialhorn
-				- 47711 (1081.88), 239377 (5428.05) (191666 (4346.17))
-				- 72653 (1647.46), 299859 (6799.52) (227206 (5152.06)
-			+ shipsteamwhistle
-				- 96431 (2186.64), 143634 (3257.01) (47203 (1070.36))
-				- 88910 (2016.1), 171123 (3880.34) (82213 (1864.24))
-			+ shipsuperwhistle
-				- 68400 (1551.02), 230371 (5223.83)
-				- 41107 (932.132), 217722 (4937.01)
-			+ Test ship
-			+ Calibrate delay for fish scare
-		+ Android
-			+ Port materials
-			+ Port code
-			+ Sounds:
-				+ Downsample
-				+ Loop properties
-				+ Bake
-			+ SoundController
-			+ Add test ship
-			+ Test
-			+ Remove test ship
-
-	+ Aerodynamic aluminium (colors as well)
-	
-	+ Try: ash with Thanos' snap
-		+ New material, not in palette, with unique key
-
-	+ See black triangles w/rust
-		! It's denormal!
-			- FLUSH_ZERO_MODE=32768
-			- DENORMALS_ZERO_MODE=64
-		+ Shader
-		+ Port to Android
-	+ Above-water rot
-		+ Use personality seed, try to randomize it
-
-	+ Transparent tornado power meter
-		+ PC
-		+ Android
-
-	+ Rot exposure: faster than rust (or equal)
-
-	+ Localization
-		+ IT
-			+ Do
-		+ ES
-			+ Send
-			+ Got it
-		+ PT_BR
-			+ Send (Kiko)
-			+ Got it
-		+ RU
-			+ Send
-			+ Got it
-		+ UK
-			+ Send (denis)
-			+ Got it
-	+ Ships:
-		+ Those @ TO_TAKE
-
-	= Release
-		+ Windows
-			+ MSI variable
-			+ Commit & push
-			+ 64-bit MSI
-				+ Cleanup Install
-				+ Build Release Install (after clean)
-				+ Sign two exes
-				+ Make MSI
-				+ Rename MSI (Floating-Sandbox-1.21.0-x64)
-				+ Sign MSI
-				+ Test upgrade from previous version
-			+ 32-bit MSI
-				+ Refresh config
-				+ Cleanup Install
-				+ Build Release Install (after clean)
-				+ Sign two exes
-				+ Make MSI
-				+ Rename MSI (Floating-Sandbox-1.21.0-x86)
-				+ Sign MSI
-				+ Test clean install
-					+ Verify it's a 32-bit process
-		+ Ubuntu
-			+ rm -rf ~/floating-sandbox
-			+ export GDK_BACKEND=x11
-			+ pull 
-			+ rm -rf build; mkdir build; cd build
-			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-			+ make install
-			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.21.0-x64.tar . && cd ..")
-			+ Zip tar ("gzip Floating-Sandbox*.tar")
-			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-		+ Send 3 installers to dev server for final smoke test
-		+ Wait for test results
-		*******
-		+ Cut tag on github
-		+ Copy binaries to Prev
-		+ Copy MSIs to scratch and GoogleDrive
-		+ Upload packages to GameJolt
-			+ Verify Windows Defender
-			+ Post
-
-	+ Fix materials palette
-
-	+ Branch is merged into master (if applicable)
-	= Windows
-		+ MSI variable
-		+ Commit & push
-		+ 64-bit MSI
-			+ Start SimplySign
-			+ Cleanup Install
-			+ Build Release Install (after clean)
-				+ Sign two exes
-			+ Make MSI
-				+ Sign MSI
-			+ Rename MSI (e.g. Floating-Sandbox-1.19.2-x64)
-			+ Copy to desktop
-			+ Test upgrade from previous version
-	- Cut tag on github
-	- Copy MSIs to scratch and GoogleDrive
-	- www.floatingsandbox.com:
-		- Update current version in FAQ (1.20.0)
-	- Bump up version
-	- Move this section at bottom of plan
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	- Reconsider compressing textures (decay now, later materials)
 		- jpeg: need lib @ PC and Android, and JpgTools
 			- Need to remove it from wxWidgets?
@@ -21156,3 +19178,1967 @@ IF WX:
 			+ Upload changes2.txt
 				+ Test w/old FS
 		+ Bump up version
+
+============================================
+1.21.0
+
+	+ Tornadoes:
+		! Gist
+			! Once tool is selected, user clicks down and tornado spawns there, or an existing tornado there is picked
+			! MouseMove:
+				! X: update target X
+				! Up: update force
+				! Down: update heat ~ TODOHERE
+			! MouseUp: tornado smooths towards target
+			! Update(Ship &) changes into Update(Ships, Npcs)
+				- First applies
+				- Then updates
+		+ Impl:
+			+ "GlobalForceFields" -> "InteractiveBodies"
+				+ Tornado:
+					- CurrentX, TargetX
+					- CurrentVelocityX, TargetVelocityX
+					- CurrentBaseY
+					- CurrentVisibilityAlpha, TargetVisibilityAlpha
+					- CurrentForceMultiplier, TargetForceMultiplier
+					- CurrentHeatMultiplier, TargetHeatMultiplier
+					- float LastActivitySimulationTimestamp
+						- Updated each time "Current" status changes (except for viz)
+						- After some time after this, starts TargetVisibilityAlpha=0
+				+ ElementIndex BeginPlaceTornado(x, searchRadius)
+					+ Search for nearest existing tornado
+						+ Use max(width of tornado, search radius)
+							+ via FloatSize Formulae::CalculateEffectiveTornadoSize(....)
+								+ Use also @ RenderUpload, takes FloatSize
+					+ If found:
+						+ Refresh its state (Tornado::ResetToBegin)
+							+ LastActivitySimulationTimestamp = now
+					+ Else:
+						+ Create new one
+				+ UpdateTornado(...)
+				+ EndUpdateTornado(...)
+				+ Update(Ships &, Npcs &, OceanSurface const &, ...):
+					+ Update TargetVelocityX w/Hooke force: vX=min(k*(targetX-curX), some_constant)
+					+ Converge CurrentVelocityX to target - with destination check
+					+ Calculate newCurrentX based on CurrentVelocityX
+					+ If different than CurrentX:
+						+ CurrentX = newCurrentX
+						+ CurrentBaseY = <calc>
+						+ Update LastActivitySimulationTimestamp
+						+ Update DirtyForRendering
+					+ Converge others by convergence, with destination check
+						+ Update DirtyForRendering if anything had not reached target yet
+						+ Update LastActivitySimulationTimestamp if anything had not reached target yet
+							+ Not with viz					
+					+ If currentSimulationTime > LastActivitySimulationTimestamp + IdleTimeout:
+						+ TargetVisibilityAlpha=0.0
+							+ Only place
+					+ If CurrentVisibilityAlpha==TargetVisibilityAlpha && TargetVisibilityAlpha==0.0:
+						+ assert currentSimulationTime > LastActivitySimulationTimestamp + IdleTimeout // Dangerous, might be in-use
+						+ Remove
+					+ Else:
+						+ // Apply						
+						+ For each ship:
+							+ ApplyTornado(...)
+								+ ForceMultiplier is multiplied by viz
+								+ Try orbital redesign also here
+									+ Driving a ilttle with attractor
+							+ Test UV mode
+						+ Npcs::ApplyTornado(...)
+							! Only free NPCs!
+							+ ForceMultiplier is multiplied by viz
+							+ Forces
+								+ Redesign orbital forces
+								+ Randomize npcs
+								+ Test furniture
+							+ Heat
+							+ Nuke SimulationParameter for OrbitalBaseForce
+							+ Test UV mode
+						+ OceanSurface
+							X Ugly if continuous, should pulse?
+							+ Beware of feedback loops
+						X Fishes? Would be:
+							+ Freefall becomes "Free", and since we're doing this, becomes "Regime"
+							+ Need force buffer for external forces
+								+ Used next to gravity, then cleared @ end of Update()
+							+ Analyze:
+								! gravity multiplier not needed
+								! Out-of-water multiplier needed for falling
+								X PROBLEM: TargetVelocity is constantly messed with (e.g. shoaling, etc.)
+								X PROBLEM: fish is wary of ocean-air interface
+							+ External forces: from ApplyTornado(...)
+						+ rn/abs fix
+							+ Ship
+							+ Npc
+				+ RenderUpload
+			+ Physics (ApplyTornado @Ship, @NPCs)
+				+ 1. Calculate strength (closed region around x)
+					+ Takes tornado size from Tornado
+				+ 2. Weaken strength of springs (goal: weak parts detach sooner or later)
+					+ Make separate facility for AdditionalWeakness
+						+ And Points::m/Strength/Buffer becomes FactoryStrength
+						+ Make sure Repair can fix it
+						+ Make sure anything else that "adjusts" (changes decay up, but not scrub) fixes it
+					+ Test:
+						+ Repair fixes it
+					X Try: not on ropes (# factory triangles=0)
+				+ 3. Apply forces 
+					! The particle must rotate around the axis of the vortex, in a horizontal plane perpendicular to the screen
+					! The magnitude V of its velocity is of our choice (synced to rendering/shader), depending on r (max at r=VortexWidth/2, 0 at r=0)
+					! Velocity projection along X axis is max at x=0 and 0 at x=+/-VortexWidth/2 - i.e. V*sin(x)
+					! Also need centripetal force: a=V^2/r, also projected along x axis
+						- Projection: 0 at x=0, V^2/r at x=+/-VortexWidth => V^2/r*cos(x)
+					+ X: m * V^2/r*cos(x)
+					+ Y: upwards, a bit
+					+ Cleanup (precalc, etc.)
+						+ Check assembly
+					+ Make cone!
+						+ Bottom width conjured up by Tornado (as a func of viz), 0..1 ("BottomWidthFraction")
+						+ Must be passed in args to interaction
+						+ Also uploaded, goes into vertex attribs
+						+ Interaction:
+							+ Still use AABB as a check, but recalc width for each particle (y)
+					+ Write all the above as comments
+					+ Apply ultra-violent mode for both x and y forces, and heat
+						+ Incorporate in effective's
+				+ 4. Apply heat
+					+ Application area should be larger
+					+ Don't give infinite heat: have a target temperature instead of giving heat
+						+ Option 1:
+							! Bring slowly to fixed temperature, which depends on HeatDepth
+								! HeatDepth=1: 2000K
+								! Multiply with UltraViolentMode
+							+ HeatDepth=0 => no temp delta
+								+ So: temp delta = (2000K - temp[p]) * HeatDepth * ConvergenceRate
+									+ 2000K does _not_ depend on HeatDepth
+						X Option 2:
+							X With heat quantity again
+
+						+ Test modulation
+						+ Test UV mode
+
+				X 5. Enlarge bottom of cone with strength multiplier (@Tornado)
+					X Both @ application and @ RenderUpload
+			+ WorldRenderContext:
+				+ VertexAttributes:
+					+ Geometry + v-space
+					+ VisibilityAlpha (0..1)
+					+ RotationSpeed (multiplier)
+					+ HeatDepth (0..1)
+				+ Upload:
+					+ Calculate simple quad, width and height fixed
+						+ Width and height are in SimulationParameters, so can be used by physics
+						+ For height, take into account Perlin - try to avoid repetitions
+						+ Will have to adjust smoke and fire resolution in shader
+				+ Shader
+					+ Pass coords of fire atlas frame in params
+					+ EffectiveAmbientLightIntensity
+					+ Unrelated: see if Ship::ApplySkyChanges is even needed, given that we set param in all shaders
+
+				+ Draw 2 passes
+					+ Second time around shader gets IsSecondaryRendering parameter set to 1.0
+						+ And lighter areas are more transparent
+						+ IsSecondaryRendering=1.0:
+							finalAlpha = whateverAlpha * smokeDarkness * 0.85 // Experiment
+						+ IsSecondaryRendering=0.0:
+							finalAlpha = whateverAlpha
+
+				+ Test:
+					+ Ambient light
+					+ Lamp
+					+ Moonlight
+					+ Land
+
+			+ Soften jumping up and down with OceanSurface
+
+			+ Do rotation
+				+ New "phase" member of tornado
+					+ Only proportional to Force/StrengthMultiplier
+					+ NOT proportional to viz
+
+			+ Tool
+				+ Cursor (up, down)
+					+ Anchors
+				+ Rethink dynamics of tool:
+					+ Up: StrengthMultiplier
+					+ Down: HeatDepth
+					+ Zero-click?					
+				+ Notification @ yLevel=0 (StartY)
+					+ Split Multi-notif: _world and _ndc
+					+ Colored vertical bar, x=mouseX, ytop/bottom = mouseY, ybottom/top=startY
+						+ New multi-notification type
+						+ Driven by tool
+
+			+ Sound
+				+ Handlers: onTornadoUpdated(float normalizedEvolution, float normalizedStrength) // normalizedEvolution !=/=0 is signal to start/end
+				+ Invoke from Tornado::Update
+					+ Send 0 when gone
+				+ Handle at SoundController
+					+ New sound type
+					+ Play/Stop depending on normalizedEvolution
+					+ Reset
+					+ Play with pitch?
+
+			+ Add one or two new stress_medium_cable sounds
+				+ Have them at C:\Users\Neurodancer\Desktop\FS Scratch\Ship Scratch\Sounds\Cable\Stress
+				+ Port to Android
+
+			+ If we decide to stay with 1 tornado, change BeginPlace algo to always pick it if alive
+
+			+ Test:
+				+ BeginPlaceAntiGravityField: we've changed to closest
+				+ Boundaries
+
+			+ Ship::ApplyTornado: upForceY: try with small mass still contributing a bit, not 30
+				X Try first without
+				+ Try: normal mass & windReceptivity: mass * (1.0 + windReceptivity) = materialFactor
+					+ Also @ forceX
+				+ Do linear
+
+			+ Test NPCs at scale
+
+			+ Try inverse weakness mask
+
+			+ Smoke: add distance traveled next to expiry time
+				+ State:
+					+ PreviousPosition
+						+ Initd with start pos
+					+ TotalSquareDistanceTraveled
+						+ 0.0
+					+ MaxTotalSquareDistanceTraveled
+						+ Phase II: calculate
+				+ Update:
+					+ Phase I. Maintain TotalSquareDistanceTraveled
+						+ Then print total distance @ expiry, so we may calc (current) max distance from time
+						! Black: 9-26 (heavier)
+						! White: 1.0: 27-38 (lighter)   2.5: 450-945    0.1: 0.01-0.085
+							- 0.1	0.047
+							- 1.0	32
+							- 2.5	700
+							- BUT: use a multiplier, so normally time always wins; use 1.5
+
+						! White:	MaxTime		Distance		Theo factor
+							- 0.1	0.37/0.51	0.02/0.048
+							- 1.0	3.5/4.1/5.7	9.2/12.5/28.9		2.62
+							- 2.5	9.2/12.7/14.5	83.6/149.0/188.2
+
+							0.37	0.02
+							0.51	0.048
+							3.5	9.2
+							4.1	12.5
+							5.7	28.9
+							9.2	83.6
+							12.7	149.0
+							14.5	188.2
+							y = -2.019994 + 0.8145161*x + 0.8616222*x^2
+					+ Phase II. Expire with both
+						+ Calc MaxTotalSquareDistanceTraveled
+							- 0.1	0.0705
+							- 1.0	48.0
+							- 2.5	1050.0
+							+ Make sure to incorporate randomization
+								+ We do so by means of using maxSimulationTime as our basis
+						+ Expire with max(elapsedTime, elapsedDistanceTraveled) ON NORMALIZED!
+							+ Use normalized, so can use max
+						+ Fix render:
+							! scale can still depend on time only
+								- Verify first: emitter (both) should be fine
+							+ alpha needs to depend on both
+							+ Then, bump max distance to ensure it kicks-in only when we really need it
+						+ Remove log
+		+ Send to Discord
+
+		+ Faster convergence of tool's changes
+		+ Try changing shape with strength
+		+ Slider height: fixed
+		+ Resend beta
+		+ Cleanup tool slider (server decided fixed-height, i.e. new one)
+		+ Send beta with wild masts + DKuz bug
+		+ Bump up version
+
+		+ FIX:
+			+ Ocean waves (wind = 0, high waves) "only on one half"
+				+ Option 1: ensure all positive (like now), then scale back if > 1.0f
+					+ Limits large numbers
+					+ Change meaning of bool @ interpol (search usages), and skip wrap check
+						+ Unit tests
+				- Option 2: back to where we were
+				+ Changelist (PC only)
+			+ Silt stripe
+
+		+ Fix nVidia RTX bug
+			+ Note: Longhorn didn't see it in 19.0, so it's either TRIANGLES vs TRIANGLE_STRIP, or alpha
+				+ Send him a beta for the alpha - with alpha=1
+				+ Undo shader & bump up version
+				+ Check feedback
+			+ 1. Try strip for two bedrock layers, w/ 1 degenerate
+				+ Strip (x3)
+				+ Send to Discord, bump up version
+				X Degenerate (x2)
+			+ 2. Just split those vertical quads
+				! Old # vertices: 28674=458,784B=0.5MB
+				! New # vertices: LandVertexBuffer.size=146703 allocatedSize=286722=4,587,552B=4.5MB
+				+ Basic
+				+ With whole delta Y constrain
+					+ 2/3
+					+ Send to Discord
+					+ Code
+						+ Can avoid interpolating when we know we're hitting end vertex?
+							+ newScanLineVertices[2]' populate each in turn
+							+ Then see if we still need to reset scan line vertices
+					+ Unit tests
+					+ Incorporate in WorldRenderContext
+				+ Change smoothers to last shorter
+				+ Test perf with test floor:
+					+ Before UHD 3.8
+					+ After UHD 3.3/3.8
+					+ Before nVidia 1.2/1.3
+					+ After nVidia 1.9/2.0
+				+ Tests in Debug:
+					+ Test whole screen being floor
+					+ Load+Exit (try to reproduce that "not responding")
+				+ Make WorldRenderContext::UploadLand(slice) inline again
+					+ Remove print @ UploadEnd
+				+ Send to testers
+				+ Do it only for nVidia
+					+ OpenGL init: store IsNvidia and RequiresTODO
+						! 15:01:44.395045:GL_VENDOR=NVIDIA Corporation
+						  15:01:44.395049:GL_RENDERER=NVIDIA GeForce RTX 3060/PCIe/SSE2
+						! 17:27:41.248221:GL_VENDOR=NVIDIA Corporation
+						  17:27:41.248225:GL_RENDERER=Quadro RTX 3000/PCIe/SSE2
+						+ Log
+					+ Use @ UploadOcean
+					+ Use @ count init - 12*slices
+
+				X Quest for optimal:
+					- Try with changing triangle sizes so not to overlap
+					- Might be nice to incorporate adjacent ones, so to lower @ of triangles
+
+		+ More tornado shapes
+			+ Add mid width
+				+ @ all physics
+					+ Ship
+					+ NPCs
+				+ @ quad render
+			+ 3 arrays of widths (top, mid, bottom), as many elements as the number of shapes
+			+ New quantity for shape, 0->1, whose bucketization onto number of shapes dictates shape widths; driven by strengthMultiplier, but slower convergence
+				X BUT first: try without it, may be strength multiplier is already ok
+				+ Used @ Apply and Render
+		+ Send beta, bump up version
+		+ At strongest should be wedge: almost vertical @ top, then restricts like cone (https://cajunnavy2016.org/tornado/what-is-a-wedge-tornado/)
+			+ Sacrifice cylinder, and redo sequence
+		        //vec3f(0.55f, 0.55f, 0.55f), // Cylinder
+		+ Send beta, bump up version
+		+ Don't commit until feedback
+		X Storm supercell above it
+			X Option 1: InteractiveBodies uploads straight to World/RenderContext
+				- ...which does parallax
+
+				- Buffer:
+					+ UploadCloudsStart adds + 1 to max size
+					- UploadAdditionalCloud - which may be invoked outside start/end but after start - appends 
+				- Draw above tornado
+					! Z won't work as clouds are mostly transparent, so needs to be drawn afterwards
+					- Requires a second batch, invoked after tornado
+				- NDCx: fixed, 0.0, with some lateral parallax depending on CamX
+				- NDCy: non-linear:
+					- If cloudBottomWorldY (~= tornado top) >= visibleWorldBottom: just it (but in NDC coords)
+					- Else: vertical parallax: extent is TODOHERE until visibleWorldBottom is at max top
+
+				- TODO: graded appear/dissolve, with max of all visibilityAlpha's
+				- TODO: volumetric growth progress: calc at Upload
+
+				- Tests:
+					- With zero clouds
+					- During storm
+
+			X Option 2: new shader & betch, parallel to tornado
+				= WorldRenderContext: 
+					+ New buffer & VBO, "tornadoCloud"
+					+ OrthoMatrix, & Time
+					+ UploadTornadoes() populates both
+						+ WorldWidth = 2 * MaxWorldWidth
+						+ WorldHeight = HalfMaxWorldHeight
+						+ Res | visible vCoords * Res gives 0...R in texture coords
+							+ Res = visibleWorldSize / cloudWorldSize (TODO: check v-coords ranges)
+							+ But also include aspect ratio: squares need to stay as squares
+						+ Populate vertices
+					+ RenderPrep/Draw does both
+					= Improvements:
+						+ Rez: why < 1.0?
+							! Because of tornado top
+						+ Scaled rez
+						+ Bottom overlap with flanges
+							+ Bottom
+							+ Sides
+						- Rez: different curve
+				- Shader
+					+ Shape: more rounded
+						+ Don't make it go all the way up: max width is 2 or more
+					= See if can fix detachment
+						+ Just reduce "red" band (pure zeroing)
+						= Now translate to real code
+							- Try to keep width of green band independent from zoom
+							+ Simplify: if we multiplt y's by scaling everywhere in smoothstep, then we don't need it
+						+ Taller tornado (and thus wider) - and thus raise cloud
+					
+					- Just flat bottom?
+						- If so, can simplify a) side flanges, and b) width altogether
+					- Dynamic smoke - bubbling
+					- Visibility dynamics: cloud visible earlier
+					= Double-side transparency
+					- Width fractions hardcoded
+
+					
+				- Darkening
+					- Using min among all sources
+				- Decide on heat/flame & thus also flame params (also @ GlobalRenderContext)
+				- Decide on time
+				- Decide on vertexStrengthMultiplier
+
+
+				- Put WorldRenderContext::UploadTornadoes() back as inline
+					
+
+			- If works:
+				- Add to Android port plan: rendering of cloud
+		X Alternatives to cloud:
+			- Cluster of clouds above tornado
+				- Option 1: actual clouds, fully dark
+					- Ad-hoc upload (i.e. outside of Clouds container) as we have to calc our own NDC coords
+				- Option 2: using the same shader - but how to make shape?
+			- Storm clouds rolling
+				- In background might be enough
+				- Via Clouds container
+
+			- Darkening
+				- Using min among all sources
+
+			- If works:
+				- Add to Android port plan: TODO
+
+	+ Fix: ShaderManager: infoLog: null-terminate strings
+
+	+ See ocean glitch: bulkyness to minimum, then wavemaker waterline
+		! Actual sim param value is 1/UI_param, thus 0.3333 => 3.0
+		+ Change max: 3->2
+			+ Then clamp @ GameController::Setter for settings loading
+		+ Fix sin args: when 1.0-mod can be 1.0
+		+ Default smoothing: 0.016
+		+ Port to Android
+
+	+ Fix Mia's crash
+		+ ImageTools::InternalResizeDimension_BoxFilter
+			! With a 11-k ship: Willem Ruys
+			! Image width: 11353
+			! Target width: 200
+			! widthScaleFactor = 0.0176164899
+			! widthScaleFactorInverse = 56.7649994
+			! In loop:
+				- srcToTgt = 0.0176164899
+				- tgtF = 200.011139
+				- srcI == latSize (11352)
+		+ Port to Android
+			+ Just ImageTools.cpp/.h
+
+	X Look into stutter:
+		+ See if mouse moves: it does :-(
+		+ Add probes
+		    // TODOTEST
+		    auto now = GameChronometer::Now();
+		    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTimestamp);
+		    if (elapsed.count() > 70)
+		    {
+			LogMessage("!!! Step 1: Actual=", elapsed.count());
+		    }
+		    auto previousTimestamp = now;
+
+		! Findings
+			! It's RunGameIteration step for sure, NOT the wxTimer
+			! It's mGameController->RunGameIteration() for sure, not anything else in MainFrame
+			! It's mRenderContext->UploadStart() (174/190ms)
+			! It's NOT glSwapBuffers
+			! It's glFinish
+			! Doesn't happen with nVidia
+
+		X To try:
+			X All threads prio
+				X Read well about prio's
+				- Remove
+			X Power settings
+			X Swap glFinish & swapBuffers
+			+ Add comment to glFinish on paying for it anyway at first draw calls
+			- VSync: https://community.khronos.org/t/odd-intermittent-frame-time-spike-that-resolves-when-enabling-debug-context/107622/4
+
+	+ Fix crash at exit on nVidia
+		+ Changelist
+		+ Port to Android plan
+			+ Also checks for element buffers in ShipRenderContext
+		+ Revert to non-nVidia
+
+	X Try modulating smoke quad shape with its velocity
+
+	+ Look into masts on seafloor colliding over and over again
+		! It's Iron Hull (743Kg) @ 5K depth, going at 0.5/0.9 m/s
+			kevc=395.549 thr=57.1429
+			kevc=96.1035 thr=57.1429
+			kevc=130.007 thr=57.1429
+			kevc=271.74 thr=57.1429
+			kevc=92.6388 thr=57.1429
+			kevc=137.815 thr=57.1429
+			kevc=408.053 thr=57.1429
+			kevc=445.538 thr=57.1429
+			kevc=100.046 thr=57.1429
+			kevc=139.107 thr=57.1429
+			kevc=89.2419 thr=57.1429
+			kevc=91.5449 thr=57.1429
+			kevc=125.156 thr=57.1429
+			kevc=166.572 thr=57.1429
+			kevc=91.8853 thr=57.1429
+			kevc=127.652 thr=57.1429
+			kevc=177.66 thr=57.1429
+			kevc=84.9339 thr=57.1429
+			kevc=115.057 thr=57.1429
+			kevc=137.064 thr=57.1429
+		+ Due to pressure - doesn't happen with 1K but it does with 2K
+		+ It's hull, so no counterpressure
+		! Due to static pressure forces, verified
+		+ Try with a mesh-based visit to gauge thickness
+			! Along springs with triangles, in direction of force vector
+			+ 1: distance to next edge
+				+ Make sure outward pressure works fine
+				+ Test perf
+					! Red October
+					! UPD without: 2.04/2.16
+					! UPD with: 2.04/2.15
+				+ Check assembly
+				! Problem: doesn't quell; larger structures exhibit same behavior
+					! Max residuals: torque=0.27
+						! But small annoying piece: 4.9
+						! But torque as low as 0.13 causes havoc
+				+ Keep, and add comments
+			+ 2: modulate pressure forces based on frontier size
+				! Facts:
+					! default_ship: 529
+					! ball: 100
+					! wild mast: 376
+					! Triton: 235
+					! Titanic: 807
+					! Small pieces: largest is 88
+					! Annoying pieces:
+						! 47
+						! 13 - VERY!
+				+ Scale:
+					- 235=1
+					- 180=1
+					-  47~=0
+					-  13=0
+				! Problem: big pieces still do it
+				+ Keep
+			+ 3: just limit total pressure force, regardless of frontier size
+				+ Just cap final force_vector's forceMultiplier to value it would have at a depth that we deem reasonable
+					! Facts:
+						- @ 3000m without frontier-size based: repro
+						- @ 3000m with frontier-size based: no repro
+						- @ 4000m without frontier-size based: repro
+						- @ 4000m with frontier-size based: no repro
+						- @ 5000m with frontier-size based: repro
+						- @ 6000m with frontier-size based: repro
+						- @ 7500m with frontier-size based: repro
+						- @ 10000m with frontier-size based: repro
+				+ 4000
+				+ Uhmmm...once done, repro's at 10k - sub at 2.5k
+					+ Problem is counterbalance adj factor: at real 4K it's around 0.3; at real 10K it's around 0.98
+					+ Was bug in "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, but when fixed it's even worse - unbalanced forces are huge
+						! Root of the problem is fully-hull structures, where differential is max
+						X Due to forces being dyn?
+							X Try 1: try with static (divide by num iterations though)
+								X No: even with static forces, at 10K (where sub doesn't even break) forces are big enough to cause it
+							- Try 2: skip first iter for clouds
+						X Try with not applying force when under silt
+							+ In edge loop
+							X NOPE: Even with static_pressure_adj=0, at 10K something happens that doesn't happen at 2.5K
+				! CONFIRMED: it's the floating point precision loss at -10K
+				+ Try 1: increase sensitivity with abs value of y
+					! Build empirical table for sensitivity: max value < 1 before repro's w/out pressure, maintaining clouds at impact; + see if global cap still needed
+						- @2500 (2): 1.0
+						- @5100 (3): 0.938
+						- @7500 (3): 0.938
+						- @8500 (4): 0.4
+						- @10000 (4): 0.375
+					+ Do formula:
+						< 4096: 1.0
+						< 8192: 0.938 // a bit less! 0.906
+						< 16K: 0.375
+						+ Better implementation
+							+ Rewrite scaling down k
+							+ Do first if for < -4096
+
+			+ When done: undo all changes one by one and only keep if needed
+				+ "Turn off under silt": (with bulkiness, without global cap, with thickness adjustment)
+					+ Nice at 5K
+					+ Nice at 10K
+				+ "Turn off under silt": (without bulkiness, without global cap, with thickness adjustment)
+					+ Nice at 5K
+					+ Nice at 10K
+				+ Above, but without thickness adjustment
+					X Nope, 2-px mast is crazy
+					+ TODOHERE: WITH thickness adjustment, a 4-pixel mast is crazy @ 2500
+						+ Try with smoother silt/non-silt transition
+							+ Turnoff begins at silt+0.2 and ends at silt
+						+ Then see if the 2-px mast crazyness was due to discontinuity
+				+ WITHOUT bulkiness, with silt-depth smoothing, WITHOUT thickness (distance) adjustment, WITHOUT global cap:
+					+ 2px mast ok @ 10000
+					X Titanic not ok @ 2500
+				+ With bulkiness, with silt-depth smoothing, WITHOUT thickness (distance) adjustment, WITHOUT global cap:
+					+ Titanic OK @ 10k
+					+ Triton OK @ 10k
+			+ Cleanup code after decided what to keep
+				+ Rewrite silt-depth check
+				+ Revisit big comment afterwards
+				+ Check assembly:
+					+ Silt damping factors: mParent.GetOceanFloor
+					+ prev=this, this=next
+
+			+ Remember to fix "s" factor for hydrostaticPressureCounterbalanceAdjustmentFactor, that was broken anyway
+				+ Need to re-include depth non-linearity
+				+ Nuke setting
+					+ Also SettingsDialog
+				+ Cleanup remaining code
+
+			+ With final look'n'feel:
+				+ Check outward pressure
+				+ Check sub & triton still implode
+
+			+ Cut early if bulkiness check (frontier size) would be zero
+
+			+ Changelist X 2
+
+			+ See what's going on with Base 3/complexity
+				! Loops for all iterations, as lambda's are basically 1 and reduction is super slow
+				+ Stop loop if lambda which provides most reduction is very close to 1
+			+ merge back into tornadoes
+			+ Test on old Dell
+				+ See if might want to turn it off on slow machines
+			+ Check sudden breakage
+
+	+ GameController::PickObjectToMove: must also do radius like Pick(connected component)
+		+ See if needs to be ported to Android
+
+	X Look into "I tried to make a small gravity field and it crashed"
+		+ Alex Cooper's crash dump
+			! 48 8B 75 A8 48 8B 7D 90 4C 8B 75 C0 44 8B 64 24 58
+		X It's OpenAL
+
+	+ Look into DKUZ's bug
+		! It's shader with high-derivative depth slopes
+		! Even with multisample and without derivatives, still silt-bedrock transparency shows
+			! Now it's any quantity that lowers with y: multisample interpolation generates value outside of range
+			+ Try centroid
+				= It works!
+					- Try real shader
+				+ Perf:
+					+ Pre: 5.80 (whole world) 3.60 (ship)
+					+ Post: 5.30 (whole world) 3.60 (ship)
+				= Test on nVidia
+					! Problem! Now there are seams between triangles, not due to centroid
+				- Comment in shader
+			X Try without strip
+				= Without multisampling
+					X nVidia
+						X Seam issue
+							! STILL PRESENT!
+								= Only when really close though
+									- Can we live with it? It's super-ugly...								
+								+ See if multisample+centroid was also when really close
+							X Test with squares (so just one long diagonal)
+								X Still happens
+							X Try exact same x @ OceanFloor
+							X Try normalizing coords							
+								X Isn't it the same once we run the vertex shader and transform to NDC?
+						+ Interp issue
+							+ With only alpha-silt: OK
+							X With alpha-silt + anti-alias: WRONG
+					+ Intel UHD
+						+ Seam issue: OK
+						+ Interp issue
+							+ With only alpha-silt: OK
+							X With alpha-silt + anti-alias: WRONG
+			! Recap:
+				! nVidia shows ghost lines (though only when really close) from day 0
+					! Didn't help: GL_DEPTH_CLAMP, glDisable(GL_CULL_FACE), glDisable(GL_POLYGON_SMOOTH)
+					! Didn't help: just squares
+					! With not-too-tall triangles (i.e. with not-tall floor, i.e. a bit above world bottom), lines are red
+				! Multi-sample fixes anti-aliasing but not ghost lines
+				! Multi-sample+centroid fixes anti-aliasing and ghost lines
+					+ centroid required or else MS introduces out-of-range samples, which generate ghost lines
+				! Multi-sample doesn't work on old Dell
+			+ Plan A: Multisample+centroid (fixes anti-aliasing and ghost lines), but we accept nVidia's "close-by" seams
+				+ Multisample+Centroid:
+					+ Detect failure @ OpenGL context creation on old Dell and revert to single-sampled
+						+ Use Create() -> bool
+						+ GameGLCanvas:
+							+ Rename
+							+ static Create() -> GameGLCanvas *
+					+ RenderDeviceProperties has bool for whether MS is supported
+					+ RenderContext:
+						+ cctor stores flag
+						+ Initialization: if supported, turn off
+							+ Do LINE_SMOOTH iff not MS
+						+ Test on old Dell
+						+ ShaderManager::CreateInstance() takes flag
+							+ Passes to SplitSource (->"PreProcessSource") which uses it to inject "#define " for centroid
+								+ Pre-build injected header, with #define IS_MULTISAMPLING_SUPPORTED
+								+ Unit tests								
+						+ Test: ugly lines and edges, NVidia close-by lines 
+						+ DrawOceanFloor: if supported: enable; disable
+						+ Draw[Ropes, Springs]: if supported: enable; disable
+					+ Shader: 
+						+ #define _centroid based on IS_MULTISAMPLING_SUPPORTED
+						+ Add _centroid
+						+ Keep vec4 vertex attrib split (for centroid)
+						+ Fragment:
+							+ Keep anti-aliasing only for not IS_MS_SUPPORTED
+							+ Revert everything else in fragment shader
+						+ Final cleanup
+					+ Test anti-aliasing and ghost lines on Intel UHD
+						+ OceanFloor (with and without silt): 
+							+ Anti-aliasing w/peaks: OK
+							+ Ghost lines: WRONG, NEW KIND - also on nVidia, and on nVidia seams are worse
+								+ Try with new segmentation
+									+ Fix lip: depth at yDE is not necessarily dummy
+										+ Now we've introduced NEW KIND again
+											X Need another slice? 
+											+ Or should we change DE to be at "bottom" of depth (i.e. after all lips and AA are over)?
+											X Try centroid for depth first
+
+									+ 5 tri's -> 4 tri's
+									+ See RND perf on UHD
+									X nVidia close-by lines: try with centroid on vertex coords as well (if it is a texture sampling issue?)
+									+ Cleanup all
+										+ incl. OceanFloor comment on slices+1
+						+ Ropes, edges
+							+ Segmentation: OK
+							+ Anti-aliasing: OK
+				+ Revert other changes, one at a time
+					+ WorldRenderContext::UploadLand
+
+				+ Test on new Dell, Intel UHD
+					+ AA on UHD with manually-induced SS
+						+ Add boot setting
+						+ Ocean floor peaks
+							! New ghost lines!
+							+ Nuke AA altogether
+							+ WE HAVE ALIASING
+						+ Ropes, ship edges: WE HAVE ALIASING
+						+ NPCs: OK
+					+ AA on nVidia with manually-induced SS
+						+ FIX: glad initialization failure - GDI renderer!
+							+ See if need HW accel (i.e. Platform defaults)
+						+ Ocean floor peaks
+							+ WE HAVE ALIASING
+							+ WE HAVE CLOSE-BY nVidia LINES
+						+ Ropes, ship edges: OK
+						+ NPCs: OK
+					+ Cleanup boot settings X 2 (Debug, RelWithDebInfo)
+					+ nVidia, with default MS:
+						+ AA:
+							+ Ocean floor peaks: OK
+							+ Ropes, ship edges
+						+ Ocean floor ghost lines
+							+ With Silt
+							+ Without Silt
+						+ ShipBuilder
+						+ nVidia close-by lines (expected to still exist): EXIST
+					+ UHD, with default MS:
+						+ AA:
+							+ Ocean floor peaks
+							+ Ropes, ship edges
+						+ Ocean floor ghost lines
+							+ With Silt
+							+ Without Silt
+						+ ShipBuilder
+				+ Test on old Dell
+					+ AA ship
+					+ AA ocean floor peaks
+					+ Ghost lines ocean floor peaks
+					+ Perf
+				+ Test on Ubuntu
+					! ULTRA GHOST LINES!
+					+ Try with round OceanFloor Dx (samples=2049)
+					+ Test Mariana
+					+ Test the heck out of it
+						+ Test impacts
+
+				X nVidia close-by seams issue:
+					X Try optimization step?
+					+ Regardless: OceanFloor::Upload should upload nSamples - 1 slices
+					X Try with further segmentation for nVidia
+						+ Test: see using Lip for test:
+							+ 1K: OK
+							X 4K: generates lines (and lip starts ghosting)
+
+				X See if edge springs are still required
+					X ROPES ARE DISCONNECTED FROM STRUCTURES
+					- Move enabling of GL_MULTISAMPLE before triangles
+					- Spings::Upload decides based on RenderContext::IsMultisamplingEnabled/Supported
+					- New Dell UHD
+					- New Dell nVidia
+					- Old Dell
+					- Ubuntu
+
+				+ Changelist
+				+ merge back into tornadoes..._wild_mast_experiments, with PR
+				+ Remove nVidia for all binaries				
+		+ Add to Android plan
+
+	X Attempt steep triangle fix with coords scaling
+		X FIRST: try on Android: highp precision also @ vertex shader
+		+ Comment-out nVidia case at UploadLand()
+		+ Verify repro on nVidia
+		+ Make orthomatrix building method @ View ("CalculateNormalizedGlobalOrthoMatrix")
+			+ Just rescale proper kernel cells after copying, by 16384.0f
+		+ Use orthomatrix building method
+		+ Scale coords at UploadLand()
+		+ Adjust scaling coords param 
+		+ Shader: world coords are also needed for others; multiply before sending
+		+ Evaluate
+			X New Dell Nvidia: still occurs :-(
+		X Attempt floating origin
+		X If works:
+			X Figure out where the scaling factor lives - also needed by shader		
+		X Port to Android if works
+	+ Check flat rendering - shader is still old one
+		! AA leak plus lines
+		+ See if AA needed
+			+ With MS: not needed
+			+ Without MS (old Dell)
+				+ Aliasing is present; we'll live with it
+		+ See if centroid needed
+			+ With MS: Needed
+		+ Test on:
+			+ UHD
+			+ nVidia
+			+ Old Dell
+		+ Port changes to Android
+			+ Just flat shader
+
+	+ Splashes and Foam
+		+ Splashes:
+			! Same concept as silt dust
+			+ Textures
+			+ Eph particles
+			+ Spawning of eph particles
+			+ Fine-tune:
+				+ Must not sink and must not remain underwater -- must always go to surface
+					+ Change props so it floats
+				+ Less-dense texture
+					+ Try without that one
+				+ PlaneID
+				+ Multiple particles, random dir
+				+ Particles still sink: constrain position by cachedDepth
+					+ Update cachedDepth
+					+ NO zero out y velocity
+				+ See if scale grows
+				+ Multiple particle randomness loop moves to Ship::InternalSpawnWaterSplash()
+				+ Impact direction from ocean surface normal
+
+				+ Shade texture depending on flat/depth color and texture
+					+ GameOpenGL: upload mipmapped texture region
+					+ GlobalRenderContext::ReshadeDependentOceanTextures(color)
+							+ Impl
+								+ Transform: based on blue
+					+ GlobalRenderContext::ReshadeDependentOceanTextures(texture)
+							+ Impl
+								+ Transform: simply apply texture sample, with source alpha
+								+ Try with scaling to whole texture
+							+ Test:
+								+ All mipmap levels
+								+ No bleeding 
+									+ Need to save to see neighbours
+					+ Calls:
+						+ WRC::ApplyOceanRenderParametersChanges:
+							+ Call WRC::ReshadeDependentOceanTextures(renderParameters)
+						+ WRC::ApplyOceanTextureIndexChanges:
+							+ Store copy of texture in member
+							+ Call WRC::ReshadeDependentOceanTextures(renderParameters)
+						+ (new) WRC::ReshadeDependentOceanTextures(renderParameters):
+							+ Switch on render modes and call appropriate GRC::ReshadeDependentOceanTextures(.)
+		+ Foam:
+			+ For all displacements (positive, or negative but little, or the same ones that triggered splashes), we create "foam"
+				+ Foam: seamless texture along x, as Generic MipMapped
+					+ Flat above, bubbly below
+				X Option 1: drawn by ocean surface detailed shader:
+					= NOTE: requires swapping order of Update in World: ship first, coean surface next - so that we smooth foam toggle before rendering
+						- Add extra update step for surface
+					= OceanSurface: new foam buffer
+						+ Init as zero
+						+ Converges to 0 at each Update
+						= Populated when displacements happen
+							+ When DeltaHeightBuffer is written to
+							= Experiment with displacement<->toggle mapping
+						= Smooth it, like delta-height buffer
+							= "DecayFoamToggle" -> "UpdateFoamToggle"; dynamics:
+								+ Displace into FoamBuffer
+								= UpdateFoamToggle:
+									= Zero out FoamBuffer_work
+									= Smooth from FoamBuffer to FoamBuffer_work
+									= Decay FoamBuffer_work
+									= Swap FoamBuffer<->FoamBuffer_work
+								+ Upload FoamBuffer
+					+ Uploaded with detailed ocean surface
+					X WorldRenderContext:
+						! Only Upper shaders (IS_UPPER), both background and foreground
+						+ Set tile params in shader(s)
+						+ Vertex: new float
+						= Shaders:
+							= Flat
+								+ Only for upper
+								+ GenericLinearTexture param: only for upper
+								+ foamToggle: only for upper
+								= CalculateDetailedOceanPlaneColorUpper: use foamToggle it as mix
+									= TODO: interface between two shaders
+										- Might just lower interface Y to allow for texture
+
+									- TODO:
+										- Atlas params access from func
+											- What about the others then? Should also be params?
+										- New param for texture ratio -- but can use tile size?
+							- Depth
+							- Texture
+
+						- See if can only confine this to foreground (i.e. no background)
+				+ Option 2: with new eph particle, position-constrained onto surface
+					+ Spawn strategy:
+						+ 1: When we spawn splash (only for testing)
+						+ 2. With winner, but lower threshold
+							! Though will always match splash when it happens; good or bad?
+							+ Of the multiple ones, grow larger and larger with position
+								+ Calc depth accordingly
+					+ Doesn't have y velocity, only x 
+					+ Constrained onto surface, by means of cached depth
+						+ Adjust cached depth
+						+ Zero y velocity
+					+ Better strategy for size: low strength cannot be large (make smaller), so random offset should be smaller
+					+ Lateral extremes of foam must be smaller
+					X Try convection with waves, to avoid serpents
+					+ Try with non-whitened texture
+					+ Try: flatten particle (rectangle along a direction) depending on ocean surface normal
+						! Requires giving up rotation
+						+ Requires new uploader for MipMapped quad, with vec2 direction (up) and FloatSize for multipliers
+					+ Optimize InternalSpawnFoam: move out of loop constant things
+					+ Texture
+						+ Try more dense (start with canvas-enlarged versions and copy to make round larger) 
+						+ Make it white
+						+ Try Kiko's
+							+ Ask trx bg
+						+ Try Kiko+Splash
+						+ Finalize authoring, after beta results
+							+ Buy foam
+							+ Make foam
+								+ Purchased: transparent background, round shape
+								+ 2-centered-scale
+								+ Kiko's
+								+ Kiko color replacement
+								+ Store in authoring
+								+ Make final png
+							X Buy another splash? https://www.istockphoto.com/nl/foto/blue-water-splash-isolated-on-white-background-gm490311803-39706194
+							+ Cleanup all build folders
+					+ Eph particle
+
+		+ Try displacement also against waves: replace vertical velocity with velocity against water surface
+			+ Project impact by angle with wave
+			+ Remove log
+			+ Do we want to lower waves when ship travels?
+
+		X See if still makes sense to continuously displace ocean surface at ship update loop
+			X Yes, for "constant rate"
+
+		+ Test:
+			+ Water Splashes when DoDisplaceWater is off
+
+		+ FIX: pieces of ship generate splashes at high coords
+			! Gets worse over time
+			+ Problem with cached depth?
+		+ FIX: plane of splashes when piece of ship is behind
+
+		+ Settings:
+			! WaterFoamSensitivityAdjustment, 0 for none
+			! WaterFoamLifetimeAdjustment
+			! WaterSplashSensitivityAdjustment, 0 for none
+			+ SimulationParameters
+			+ Use at:
+				+ WaterDisplacementWaveHeightAdjustment: use only for water displacement -- keep out of displacement calculation
+				+ WaterFoamSensitivityAdjustment -- make sure 0 is none
+					+ Try remove strength calc'n/linear thing
+				+ WaterSplashSensitivityAdjustment -- make sure 0 is none
+					+ Try remove strength calc'n/linear thing
+				+ WaterFoamLifetimeAdjustment
+			+ SettingsManager
+				+ IGameControllerSettings
+			+ SettingsDialog
+				+ Split Wind and Waves: move Wave Phenomena and Storms to "Power Tools and Phenomena" tab
+				+ Close to DisplaceWater, enablement depends on that value
+			+ Test
+				+ Nail down limits
+
+		+ See if needs capping for impact force
+
+		+ @ Bombs (blasts, incl. tool)
+			+ @ World::OnBlast, acting on either shipId or first ship
+				X Foam: not needed; ship does her own
+				+ Splash
+					+ Use sensitivity
+					+ Need to lower impact of blasts onto ephemeral particles
+						+ At Ship::ExplosionStateMachine::Update: use material's
+						+ See below for Silt Cloud!
+					+ Size must depend on depth, and be larger than 2.0
+					X FIX: above water splashes
+						! Problem is: above-water velocity is correct; it's the underwater case that's off, as surface goes up, hence
+						  splash goes up faster and that's what we see
+					+ Try with one random particle per-step
+					+ Cleanup code
+				+ Test:
+					+ PlaneID
+			+ If we end up needing to lower impact of blasts onto ephemeral particles, remember to do it for Silt Cloud as well
+				+ Test silt cloud + explosion: Android plane crashing
+			+ Test (w/changing settings as well)
+				+ Bombs
+				+ NPC bombs
+				+ Blast Tool
+					+ Use blast sensitivity of material for the physics
+					+ Nail down direction
+		+ @ Tornado bottom
+			+ Tornado physics: use blast sensitivity
+			+ Splash
+				+ Smaller
+				+ More upward
+				+ Incorporate alpha
+				+ Use toggle
+				+ TOO MANY!
+					+ Lower freq
+					+ Change to time-based: fix Lifetime, N and calc next timestamp
+						+ Then alternate L and R
+							+ Replace foamAndSplashSign
+					+ Nail down dir
+			+ Foam
+				+ Takes alpha
+				+ Use toggle
+				+ Randomize texture rot angle
+					+ TextureFrameMetadata has valid permutations
+					+ ShipRenderContext::Upload... chooses permutation based off personality seed
+				+ Randomize inter-particle offset, even if by a little bit
+				+ Make time-based as above
+					+ FIX: repeats
+						+ More time randomness
+						+ More frequency
+				+ Add spawn param for "visibility haste"
+					+ Replace with inverse, to avoid division
+				+ Cleanup
+		X @ Bubbles rising?
+		X @ Fishes rising?
+		X @ NPC floating?
+		+ Replace material's blast_sensitivity with a synthetic coeff created @ CreateEphParticle time
+			! After all it depends on role, not on material itself
+			+ "FoobarSensitivity"
+		+ Try: displacement math should consider velocity *perp* to frontier edge
+		+ Rewrite as more grounded in physics
+			! Goals:
+				1. Impact recoil force: should be based on ocean surface normal at that point
+				2a. Impact displacement: (proportional to, and sign of) vertical component of edge "push"
+					- Independent from ocean surface normal at that point
+				2b. Straight vertical keel moving along ocean surface (ship marching ahead): must generate waves and foam
+					- If keel is oblique: see 2a., pushing up or down
+					- In other words: when push surface is full but parallel to water surface, vertical component must still be != 0
+				2c. Laminar vertical (straight vertical Titanic keel rocking on flat surface): must generate small waves and foam
+					- In other words: when push surface is zero, must still push something - provided it has velocity
+
+			! It's a 2-plane 1-direction problem
+			! Solution: vector stays on point _velocity_, not edge _normal_
+			+ Impl of goals 2
+				+ Foam and splashes
+				+ FIX: Titanic goes awry
+					+ Lower boost for case b
+					+ FIX: but boost should depend on edge normal! Think of vertical keel in front (where it's fine to consider Velh as vertical)
+					  vs keel at bottom (where it's clearly parallel to surface)
+						+ Multiply min by abs(pushDir.dot(edgeNormal))
+						+ Optimize (we have already calculated dot?)
+				+ Test
+				+ If case c. boost stays at 0.9, try it with 1.0 and if ok, nuke it altogether
+				+ Update main comment, fit final implementation into theory
+
+			+ Impl of goal 1
+				+ If goes through: recycle calcn' of ocean surface normal
+		+ Decide on engine's displacement
+			+ It's currently commented-out - AND COMMITTED AS SUCH
+		X Try: displacement should also come from velocity in same dir as ocean surface
+			- Displace up after, displace down behind
+			- Rethink displacement: it's two components now
+		X Try: relative velocity for surface/water ship::update() (impact, displacements)
+			X Wave velocity is too small to notice
+		X Try: replace engine wake with bubbles
+			X Nuke all about wake if this goes through
+			X Add to Android plan
+		+ Test:
+			+ Wave displacement height setting
+		+ Cleanup:
+			+ Finalize alpha of foam (@ eph particle upload)
+			+ See if foam eph particle state's SkewedLifetime is still needed
+		+ Up splash sensitivity to ~2, for sinking effect
+			+ Then bake into constant, and re-calibrate min/max
+		X Try tornado: use whole base for splashes
+		+ Merge into Tornadoes
+		+ Changelist
+
+	+ Eph particle rearc: make it a runtime setting - default 8K, and choose between 4K, 8K, 16K based on calibration
+		! Note: lighting algo doesn't depend on # of eph particles!
+		! Note: ShipRenderContext needs it, but can be given it @ creation time
+		+ 1. SimulationParameters
+			+ First: take UPD + RND measurements before and after changing 4K -> 16K, and static measurement of time spent in FindFreeEphemeralParticle, measuring w/ Titanic forcibly sunk:
+				+ Pre:
+					+ UPD=3.25-3.35-3.4 RND=3.3-3.4
+					+ 0.505264 @ 87040, 2.45879 @ 396288
+					+ Mem: 800-850
+				+ 16k:
+					+ UPD=3.8-4.0 RND=3.3-3.4
+					+ 0.5 @ 38K
+					+ Mem: 800-850
+			+ Do
+				+ Needs to only be enforced at ship load (Ship+ShipRenderContext), make sure we never use it @ runtime, only at initialization times
+			+ Nail down default, and max
+		+ 2. Eph particle state @ Points is sized for eph particles only
+			+ See if Points::UpdateEphParticles better deal with "ephemeralParticleIndex", check for rename: now it means "index in eph particles"
+		+ 3. See if can improve FindFreeEphemeralParticle's perf
+			+ Thing 1: remove need for currentSimulationTime						
+			+ "EphemeralParticleAttributes1" -> "EphemeralParticleMetaData", and has:
+				+ EphemeralParticleIndex (const)
+					+ Init @ Points cctor
+				+ Prio
+				+ EphemeralParticleMetaData * ActiveListPrev;
+				+ EphemeralParticleMetaData * ActiveListNext;
+			+ "EphemeralParticleAttributes2" -> "EphemeralParticleAttributes", and gets Type and StartSimulationTime			
+			+ Points has EphemeralParticleMetaData * ActiveLo/HiPriEphemeralParticleListHead, Tail
+			+ Points has FreeEphemeralParticles vector - used as stack - for free ephemeral particles
+				+ Init'd with all
+				+ When we take free, we take from back
+			+ FindFreeEphParticle -> ParticleIndex|None
+				+ If FreeEphemeralParticles ! empty: pop it, add to Active list (based on prio), set prio, and return it
+				+ Else: if DoForce:
+					+ for each prio: if ActiveEphemeralParticleListHead.Next != nullptr: extract it, add to Active list (based on prio), set prio, and return it
+				+ Else: return None
+			+ ExpireEphParticle:
+				+ 1. Remove from Active list (assert it's in it)
+				+ 2. Push into FreeEphemeralParticles, into back
+				+ 3. Mark as inactive (type=none)
+			+ Invariants in _DEBUG
+				+ Total count
+				+ Type set <-> active
+			+ Hide all methods w/eph_index, incl iterator
+
+		+ Test:
+			+ Hesleden, 4K
+			+ PinnedPoints/AirBubbles
+			+ DestroyAt/AirBubbles
+			+ Time+Mem, 16K - RelWithDebInfo
+				+ 0.003 @ 105K
+				+ Mem: 795
+
+		+ Remove static measurement of time spent in FindFreeEphemeralParticle
+
+		+ 4. Keep eph particles out of 40 iterations' loop, and just integrate once @ end
+			! IT'S REALLY WORTH IT!
+			! Watch out for integration factors and coeffs -- everything that depends on numMechanicalIterations
+			+ Can have special task for last, doing last integration (on non-eph) followed by integration of eph
+				+ Hybrid
+					+ Check: IntegrateAndResetDynamicForces
+						+ dt
+							+ IntegrateAndResetDynamicForces: take dt
+						+ Points::IntegrationFactorBuffer
+					+ Check: HandleCollisionsWithSeaFloor
+						+ dt
+							+ HandleCollisionsWithSeaFloor: take dt
+					+ Check: mSpringRelaxationCoefficients.IntegrationVelocityFactor
+					+ Comment @ Points::CalculateIntegrationFactorTimeCoefficient
+					+ Find all places where we use NumMechanical
+					+ Do PR and commit
+					+ See if can incorporate in last task, so we do one less thread.run
+						+ Need to guarantee numMechIterations is even, either @ source or locally
+					+ Test:
+						+ Impact with silt (friction) and bedrock
+						~ Does silting really depend on num mechanical iterations?
+							+ Depth hardness
+								@ 40: 0.05 0.2
+								@  ?: 0.0169525  0.0716822
+						+ Change num mech iters, and #threads
+						+ Hesleden perf
+							+ Pre: 40-43 (22-23)
+							+ Post: 40-43 (21-22)
+						+ World boundaries (in Debug)
+				+ Full
+				+ StepByStep			
+			+ Test:
+				+ Hybrid
+				+ Full
+				+ StepByStep
+			+ Revert to original parallel mode (Hybrid)
+
+		+ If insanely high number of eph particles is doable, consider:
+			+ Tornadoes: 
+				+ Splashes along whole base
+				+ More foam
+				+ Foam along whole base
+			+ Lower velocity damp of foam
+
+		+ Better flat-color colorization of water textures
+		+ See if can lower height of splashes @ impact
+		+ Test:
+			+ Perf X 2 (UPD, RND) with all eph particles (~all bubbles) at 16k eph particles
+				- UPD=3.5, RND=4.3-4.5
+		+ Finish up (*)
+
+		+ Merge
+
+		+ Android Port Plan
+			+ Max eph particles being instanced setting, and calibration		
+
+	+ Run Discord poll for next:
+		! Customizable materials
+		! Rot redesign (includes better rusting, and organic alge growth)
+		! NPC phase II: ShipBuilder (Floorplan layer and Interior Texture layer), areas (e.g. assembly area), and behaviors (swimming, etc.)
+		! Fireworks
+		+ https://forms.gle/PcmJ2kCqxp8UVmfX8
+
+	+ Nuke all calls to glBindTexture(GL_TEXTURE_2D, 0) -- this just changes to default texture
+
+	+ Fix SoundAtlasBuilder: ensure loop end point is not beyond buffer
+
+	+ Test on old Dell
+		+ Now: 27,4-28 -- 29.3 w/out foam
+		! It's all rendering impact
+	
+	+ We upload all particles' <position, light, water>, even for eph particles
+		! Which we'd only need for Debris (which we upload as elements)
+		! We've already addressed this well for Decay, etc. - but here we have the Debris problem
+		! Gist:
+			! We never upload any eph particles (just RawShipPoints)
+			! Eph particle debris gets own batch (buffer, etc), we upload <position, light, water> to it, and render with ship_element shader
+		+ Impl base:
+			+ Prelim:
+				+ Get rid of uploading and accounting for all points - we never upload any eph particles (just RawShipPoints)
+					+ Rename mPointCount to mShipPointCount, "aligned count"
+					+ Pass right one @ ShipRenderContext creation
+					+ See all references to mPointCount: check each caller to ensure they comply
+						+ Points: nuke all "partial" and indicators, all do aligned (not only raw, so that we do not leave uninit'd mem)
+				+ Nuke these:
+					+ ShipRenderContext::mEphemeralPointElementBuffer
+				+ No debris calls
+				+ Test and commit
+
+			+ TODO: alpha problem: if no solution found in head, skip directly to shading as matte quads
+
+			+ Points: 
+				+ Nuke mAreEphemeralPointElementsDirtyForRendering (only used for Debris)
+				+ Nuke mIsPlaneIdBufferEphemeralDirty (only used for Debris)
+				+ Nuke mIsEphemeralColorBufferDirty
+				+ Add RotationPhase and OriginPointIndex to debris state
+				+ Upload
+			X ShipRenderContext:
+				+ New vertex, matching (with comment) layout expected by ship_element.glslinc, but only for groups 1 and 2
+				+ New VAO, VBO, with mAllocatedSize
+				+ New buffer of vertices // Not sticky
+					+ std::vector, reserved @ cctor
+				+ Global start upload: clears buffer
+					+ No need for UploadStart()
+				X UploadDebris(position, texture coords, ..., ..angle)						
+					+ Called by Points::UploadEphemeralParticles; no need for start
+					= For now do simple quad, size fixed, and rotate
+						- Size is kept in sync with point size
+					- Use precalc'd worldToShipTextureCoordsSpace factor, calc'd (and init'd) at ApplyViewModelChanges
+						- ShipSize (new from cctor -> const member) -> World
+				+ RenderPrepare
+				X RenderDraw
+					+ Inline with ship
+					+ Only when non empty
+					+ Implement these
+						+ Always use ship_triangles_texture shader, no matter what
+							+ HEAT_RENDER_MODE is 0
+							+ STRESS_RENDER_MODE is 0
+					X TODO: how do we draw debris with various other (debug) render modes?
+						- Needs to be fixed as we are currently inoking ship_strength, ship_decay, etc. shaders without having those vertex arrays in vbo
+						- ALSO: we don't use "render modifiers" with other eph's (strength, stress, etc.), so why should we care?							
+		+ Re-impl as GL_POINTS:
+			+ 0: Cleanup debris state (undo?)
+			+ 1. Debris created with OriginalPointIndex, copies all needed quantities into eph particle index
+				+ Water
+				+ PlaneId
+			+ 2. Vertex: cover all shaders
+				+ 
+					in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
+					in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
+					#if HEAT_RENDER_MODE != 0
+					in float inShipPointTemperature; // Temperature
+					#endif
+					#if STRESS_RENDER_MODE != 0
+					in float inShipPointStress; // Stress
+					#endif
+					#ifdef WITH_MATTE_COLOR -- ALWAYS
+					in vec4 inShipPointColor;
+					#endif
+				+ Describe, off of struct
+			+ 3. Upload:
+				+ All quantities
+			+ 4. Draw
+				+ As points, using mShipPointProgram
+		+ Final cleanups:
+			+ Can we actually use existing buffer for ALL eph particles' personality seeds?
+				+ Writing to it @ Spawn time, NOT reusing it (or else not too random)
+				+ SiltCloud
+				+ Smoke
+				+ WaterFoam
+				+ WaterSplash
+			+ Nuke setting of colors @ Points::CreateEphemeralParticleXYZ()
+				+ EXCEPT FOR DEBRIS!
+				+ Make sure that no ephemeral particle upload uses color
+
+		+ Verify perf
+			+ Pre UPL RND: 0.17-0.21 3.6-3.7
+			+ Post UPL RND: 0.10-0.12 3.6-3.7
+
+		+ Round-ish particles
+		+ Optimize AirBubble upload
+			! Pre (16K air bubbles): UPL=0.45-0.48
+			+ Precalc a lot:
+				! mGenericMipMappedTextureAirBubbleVertexBuffer: pre-populate with fixed vals
+				+ Buffer is still cleared, but Upload uses emplace_back_ghost to populate dynamic vals
+				+ Use float planeId directly
+			+ Post: 0.33-0.36
+			+ If ok: add to Android plan
+
+		+ Send beta
+
+		+ Merge into master
+			+ With PR, for Android!
+
+	+ Try OpenGL/Upload optimizations:
+		+ Create branch
+		+ 0: Get baseline measurements w/Hesleden
+			+ FPS:40-45 UPL:0.20 RND:4.38
+		+ 1: Simplify ShipRenderContext::UploadPointMutableAttributesPlaneId et al: no startDst, count; just pointer, and SRC uses mShipPointCount
+		+ 2: Ship attributes:
+			+ Split group1 into position, textureCoordinates; rename group2 as "group"
+				+ ShaderSets
+				+ Code
+					+ Members & code
+					+ Uploads
+				+ Shaders
+			+ TextureCoords pre-calcd once and for all, own VBO
+				+ But still, updated _later_ than init'n
+			+ Other 4 loaded at all times (Light, Water, Temperature, Decay): interleaved into mapped buf - own VBO
+			+ Last one loaded sparingly (plane): own VBO
+			+ One call for uploading all three VBOs
+			+ Nuke unneeded ShipRenderContext buffers
+			+ Redo debris vertex accordingly; structure and description
+				+ Remember: all debris shaders have IS_MATTE_COLOR, hence no need for texture coords
+			+ Test:
+				+ All variants
+					+ Heat mode
+					+ Stress mode
+				+ Debris
+					+ Stress 
+					+ InternalPressure
+					+ Strength
+				+ Internal pressure
+				+ Strength
+				+ Stressed springs
+				+ Frontiers
+
+			+ Perf:
+				+ FPS:42-45 UPL:0.07-0.08 RND:4.3-4.5
+
+			+ Check interleaving code assembly:
+				+ x86: bunch of move's
+
+		+ Check impact of ShipRenderContext::UploadMutableAttributes first
+			+ 0.15% (0.13% excl. opengl calls)
+
+		+ Decide what to do with Points::mIsDecayBufferDirty
+			+ There's a TODO there
+
+		+ Test perf on old dell
+			+ Pre: FPS: 27.0 27.8-28.8-29.5 UPL: 0.9-1.0 RND: 15.9-16.3 -- BUT ALSO 17.-18
+			+ Post: FPS: 28.6 UPL: 0.5x RND: 17.4-17.6 19.0
+			+ Main difference with more eph particles is now:
+				+ Ship::ApplyWorldParticleForces: loop for particles (2.51% vs 1.13% @ 4K)
+					X Vectorize?
+						- Problem: cached depth; do a pass first just for that?
+							X See if there's a step before it that we may piggyback
+					+ Reorg to kill ResetStaticForces:
+						+ 1. ApplyWorldForces -- uses SetStaticForce
+						+ 2. ApplyQueuedInteractionForces
+							+ Verified it only adds
+				+ Points::UploadEphParticles (0.82%, 0.27% of which due to foam/splashes vs 0.58%, 0.34% @ 4K)
+					X Going all the time through 16K particles: best if through two lists?
+						! No, as that pejorates worst case - i.e. all eph particles alive
+					+ VerticalAxis stuff
+						+ Make sure we don't rotate _and_ choose a random texture coords rotation, as that doesn't make sense
+					X See quad population function
+						X No, it's for center-based quad; ours is not
+					X Try padding generic texture vertex struct
+					+ Think of avoiding std::vector stuff
+						+ Just emplace Quad, instead of four Vertex
+						+ Perf profiler: 0.76%, 0.38% for foam
+						+ Assembly
+						+ Commit
+				+ Ship::Integration (0.4% per-thread vs 0.16% @ 4K)
+					+ Confirm dynamic force buffers play no role w/eph particles: no springs, no hydrostatic forces
+					+ Rearch Points
+						+ Throw away unused methods
+						+ Ensure dynamic force buffers are sized for AlignedShipCount only
+							+ But then, all uses need to not touch it for non-ephemeral
+					+ Re-verify all users of dynamic force buffers
+					+ Do new Algorithm - "Integrate(...)"
+						+ SSE, NEON
+						+ Unit tests
+					+ Call new algorithm for ephemeral step at SpringRelaxation, X 3
+					+ Tests:
+						+ Pressure forces
+						+ MoveBy, RotateBy X 2
+						+ Repair at depth
+						+ Simulation Threads #
+							+ Less tasks than thread - 1 particle
+							+ Quick changes
+						+ Perf: 0.25% (main thread) 0.66% (thread pool threads)
+
+		+ Try CheckOpenGLError optimization
+			+ Check assembly
+
+		+ Changelist
+
+		+ Port to Android, with merging PR
+		+ Merge PR
+
+	+ Aanpak slow rendering on Dell
+		+ Do water foam 256x256, also on PC
+		X Try on Dell: linear instead of mipmapped
+			+ Doesn't help on Intel UHD (new Dell, integrated)
+			X Neither on old Dell
+		+ Try with 4K particles
+			+ Final perf (after work above):
+				+ 16K: FPS=27.9-28.8-29.2-29.6 UPD=16.1-16.6 UPL=0.4-0.5 RND=17.9-18.2
+				+  4K: FPS=29.1-30.3 UPD=15.2-15.7 UPL=0.20 RND=17.7-18.2
+			+ Too many air bubbles for render! Adjust @ calibration
+				+ Get gfx score from old Dell, use threshold really close: score=0.02
+				X No setting
+
+	+ ASAN build
+		+ Do
+		+ Then, re-generate proj and verify gone
+
+	+ Be satisfied with upward velocity of splashes
+		X Try: consider displacement for position of splash, to limit empty room
+		! It's mostly due to ocean displacing, not much to upwards velocity
+			+ Yet, limit vel a bit
+		+ Test bombs
+
+	+ Do lift material
+		! @ frontier force application, as a _static_ force
+		+ StructuralMaterial::lift_coefficient, default 0.0
+			+ Make "Iron Hull Aerodynamic" and "Aluminium Hull Aerodynamic" materials, lift_coefficient=1.2
+				+ Use scripts for variants
+		+ Material.cpp
+		+ Setting for adjustment
+			+ SimParams
+			+ GameController
+		+ Ship::ApplySurfaceForces
+		+ Fine-tune
+			+ Add tiny 45deg lift material @ tail
+			+ Add thrust engines @ tail for up/down help
+			+ Test in release
+			+ Conclusion:
+				! For correct physics: we need at least 66 m/s, speed here is 16
+				+ Takes off from reset: multiplier (thermal): 4
+				+ Underwater is too much; just use air density
+				+ See assembly to see if we need precalc'd factor				
+		+ Test:
+			+ ShipBuilder palette title sizes
+			+ Android's plane
+				+ Make double-backup first
+				+ ...
+				+ Take backup and nuke double-backup		
+		+ Port plane & code & materials to Android
+		+ Merge into master
+		+ Test on Android
+		+ changelist
+
+	+ Rot rework + "water soluble" material:
+		! Spec:
+			! Quantities:
+				! Rot:
+					- From: combustion, LFLoop (water+underwater) - so all materials weaken
+					- Phys effect: weakens
+					- Renders (dark brown)
+				! Weakness:
+					- From: tornadoes, ...
+					- Phys effect: weakens
+				! Rust:
+					- From: LFLoop
+					- Phys effect: weakens
+					- Renders (red)
+				! AlgaeGrowth (encrusting):
+					- From: LFLoop
+					- Renders (green)
+			! New Water Solubility material property; doesn't affect rendering, just acts on weakness
+		+ Impl:
+			+ StructuralMaterial:
+				+ New rot_receptivity, default is 1.0 (same as current rust_receptivity)
+				+ rust_receptivity default is 0.0
+				+ New water_solubility, default is 0.0
+					+ Solubility doesn't affect rendering; just acts on weakness
+			+ structural_materials.json:
+				! All materials' defaults:
+					! rot_receptivity 1.0 
+					! rust_receptivity 0.0
+					! water_solubility 0.0
+				+ Metals:
+					+ rust_receptivity=old rust_receptivity/1.0
+						+ Steels: 0.5
+				+ Wood:
+					+ Nothing
+				+ Cardboard:
+					+ water_solubility=old rust_receptivity
+					+ no rust_receptivity
+				+ Stainless:
+					+ rot_receptivity=old rust_receptivity
+					+ no rust_receptivity (nuke "rust_receptivity": 0,)
+				+ Concrete, etc.:
+					+ rot_receptivity=old rust_receptivity
+					+ no rust_receptivity
+			+ Points:
+				+ Members:
+					+ AdditionalWeakness => Weakness
+						+ Getters/Setters
+					+ Decay: not a float but 3-fold struct: Rot, Rust, AlgaeGrowth -- union of struct superimposed with vec3f
+						! Start with 1, decay towards 0
+						+ Getters/Setters
+					+ AlgaeGrowthPattern: float
+				+ Code:
+					+ cctor: takes algae pattern
+			+ Spring strength uses Weakness only
+			+ ShipFactory:
+				+ Provide algae pattern w/perlin
+					+ 6, 6, 0.1 == 64 cells = size/16
+
+			+ Combustion:
+				+ Add to Weakness
+				+ Add to Rot buffer
+			+ Tornadoes:
+				+ Add to Weakness
+			+ SimulationParameters:
+				+ AlgaeGrowthAcceler8r
+				+ RustAcceler8r
+				+ GameController
+
+			+ LFLoop:
+				+ Important: don't add multiple weaknesses, do min among all
+					+ Just calc min alpha and use that for weakness
+				+ Rot:
+					+ Driven by material's rot_receptivity
+					+ Speed: RotAcceler8r
+					+ Amount:
+						+ Like now
+					+ Add to Weakness
+					+ Add to Rot buffer
+				+ Rust:
+					+ Should be for any point that is now exposed (i.e. which has lost at least one triangle)
+						+ 1) Mark point as damaged when we remove a triangle, by point Points::DisconnectTriangle itself
+						+ 2) Do it instead from HandleTriangleDestroy
+						+ Test:
+							+ Repair
+							+ Damage single particles
+					+ Driven by material's rust_receptivity
+					+ Speed: RustAcceler8r
+					+ Amount:
+						+ Damaged: +++
+							+ alpha = 1 - beta_damaged * damaged
+							+ Beta gets higher if there's water in it
+								! Can combine alpha's for various periods:
+									! a_low_rust=0.99973 a_high_rust=0.998701
+									! https://www.toolfk.com/online-plotter-frame#W3sidHlwZSI6MCwiZXEiOiIwLjk5OTczXngiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjAsImVxIjoiMC45OTg3MDFeeCIsImNvbG9yIjoiI0ZGMDUwNSJ9LHsidHlwZSI6MCwiZXEiOiIoKDAuOTk5NzMrMC45OTg3MDEpLzIpXngiLCJjb2xvciI6IiMwNUYwMjAifSx7InR5cGUiOjEwMDAsIndpbmRvdyI6WyItNDE2LjkwOTk5OTk5OTk5ODk0IiwiNjA4OS41OSIsIi0zLjUiLCI0LjUiXX1d
+								+ The alpha used for beta_damage is Mix(low_alpha, high_alpha, water);
+
+						+ Neighbors:
+							+ mass_multiplier = 0.5 + 0.5 * LinearStep(0.0, 1000.0)
+							+ beta = beta_high * avg_n_rust * mass_multiplier
+
+						+ Final:
+							+ Rust' = rust * (1 - (beta_damaged * damaged + beta_spread * neighbors_rust_amount * mass/whatever_for_structure) * mat.rust_receptibity)
+
+						+ Try with bottom rust of neighbors = 0.2 instead of 0.0
+							+ Bottom = f(damaged): 0 or 0.2
+							X If too slow: forget target, use max(0.2, newRust)
+
+						+ Boost rust if underwater
+
+					+ Add to Weakness
+						+ Min alpha/max beta
+						+ Does it become weak too soon? Want rust to expand more before it weakens
+
+					+ Add to Rust buffer
+
+					+ Add weakness setting
+						+ SettingsDialog
+						+ Test:
+							+ Scrub tool
+							+ Plain
+
+					+ FIX: asymptote thing cancels out tool-induced rust; need to change to beta
+						+ Do we still need mass then, given that we converge towards 0?
+					+ FIX: decay explodes oscillating with accel=500
+						+ Due to alpha's becoming 0.001, sum of beta's then is > 1
+
+					+ Test timings
+
+				+ Nail down time for decay
+					! Now: nSec / (SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod))
+					! Next: nSec * steps_in_sec
+						! steps_in_sec = 36/64 = SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod)
+					+ Test in RelWithDebInfo
+					+ Timing
+					+ Fix: spread is too fast, as it grows
+						+ alpha=>beta
+
+				+ Adjust rust color base
+
+				+ SettingsDialog: "Rot" static => "Decay"
+
+				+ AlgaeGrowth:
+					+ Speed: AlgaeGrowthAcceler8r
+					+ Amount:
+						+ Underwater => +
+					+ Add to AlgaeGrowth buffer
+						+ Asymptote is Perlin
+
+				+ Solubility:
+					+ Driven by material's water_solubility
+					+ Speed: RotAcceler8r
+					+ Amount:
+						+ Water or Underwater
+					+ Contribute to Weakness: update min
+
+				+ Optimize:
+					+ Precalcd' coeffs & update @ SimParams changes
+						+ Members of Ship
+					+ Ship::RotPoints
+
+			+ Repair
+				+ Lower weakness
+				+ Clean rot+rust, as that would be inconsistent with weakness
+					+ Copy from old code, but likely is same place as weakness restore now
+			+ Scrub tool: lower weakness + 3
+
+			+ Rot tool: rust
+				+ Rename first: Rot->Decay
+					+ Points buffer
+					+ Settings (GameController)
+					+ Tool
+					+ SettingsDialog
+					+ Android plan
+				+ Test radius setting works
+				+ With multiple throngs along perp to direction
+			+ Do we still need decay render mode?
+				+ If we remove it: add to Android plan
+
+			+ ShipRenderContext:
+				! AttributeGroup VBO becomes 6-way: Light, Water, Temperature, Rot, Rust, AlgaeGrowth
+				+ ShaderSets attributes
+				+ Vertex struct (just for convenience, comment on not being used directly)
+				+ Ship VAO
+				+ Ship Uploads
+				+ Debris VAO
+
+			+ Shaders:
+				+ AttributeGroup vertex buffer changes
+					+ All shaders
+					+ Debris
+				+ Color: Rust over AlgaeGrowth over Rot
+
+				+ Color constants
+					+ Search all uses
+
+				+ ship_decay
+					- Finalize color of rot
+				+ ship_element
+
+				+ Use texture's lightness as pattern
+				    float originalLuminosity = dot(vec3(0.299, 0.587, 0.114), vertexCol.xyz);    
+				    fragColour = mix(rustSample * (1.0 - (1.0 - originalLuminosity) * 0.15), fragColour, vertexAttributes2.x);
+
+				X Try rust _over_ water (@ship_element)
+					+ Ended up lowering water contrast
+
+			+ SettingsDialog:
+				+ AlgaeGrowthAcceler8r
+				+ RustAcceler8r
+
+		+ Finish rename Rot->Decay:
+			+ Ship::RotPoints, & period names
+
+		+ Do "water soluble metal" material
+
+
+		+ I found the first bug. As soon as i turned the rot accelerator down my ship just rusted and immediatley fell apart in 1.5 seconds.
+			+ Fix: mDecayRotXUw becomes -IND with denominator being zero (alpha's are equal)
+		+ Smooth underwater transition
+		+ Adjust rust spread speed to 0.2 adjustment, but keep current speed when underwater/wet
+			+ Beta dry, Beta wet -- in terms of time and/or gamma
+		+ Add white-ish and black-ish for water-soluble
+			+ Copy Aluminium Hull, Light Aluminium I-Beam (as "Water-Soluble Aluminium I-Beam")
+			+ Make them water-soluble
+		+ Add white-ish and black-ish for lift
+			+ Copy Aluminium Hull, add last to Aluminium group
+			+ Give it lift
+		+ Make a weaker version of the soluble material, basically low-grade soluable iron - a good compromise eh? what it does is speed up its destruction when waterline reaches it 2 times, basicly no flooding required
+			+ Check current test ship
+			+ Current water-soluble materials' water-solubility becomes 0.5
+				+ Change NS so that (1.0f - mDecayWaterSolubilityAlpha_OLD) == (1.0f - mDecayWaterSolubilityAlpha_NEW) * 0.5
+					+ NS=0.76782
+			+ Old material with 0.5, and cardboards 0.2->0.1 0.3->0.15
+			+ Verify old materials
+			+ Verify cardboard
+			+ New material with 1.0
+				+ Copy from Low-Grade Iron, call it "Water-Soluble Low-Grade Iron"
+			+ Change test ship & test
+
+		+ Test:
+			+ StressedSprings shader - no regressions
+			+ InternalPressure shader - no regressions
+			+ Strength shader - no regressions
+			+ Debris
+			+ GenericTextures
+			+ Electric spark rots the structure
+			+ Cardboard: rots (& doesn't rust)
+			+ Lego doesn't rot nor rust nor dissolves
+			+ Water Soluble Metal: dissolves
+			+ Tornadoes: weaken
+			+ Repair
+				+ Test repairing heavily rotten/rusted structure
+
+		+ Merge into master
+			+ With PR for Android
+
+		+ Android port:
+			+ ShipRenderContext/VBO changes
+			+ Shader coloring changes
+			+ New settings
+			+ ScrubRot tool name change @ tool (cosmetic) and settings (mandated)
+			+ Removal of ship_decay shaders
+
+		+ changelist
+
+		+ Try multi-channel texture for rust and algae		
+			+ New branch
+			+ Recover code from git stash
+				+ Shader
+				+ ShaderSets
+				+ GlobalRenderContext
+				+ ShipRenderContext - setting texture parameters
+			+ "ShipEnhancements" DB
+
+			+ RenderParameters:
+				+ New boolean: ShipHighQualityRendering
+					+ Default: true
+					+ Own dirty flag
+
+			+ Shaders params:
+				+ ShipEnhancements texture
+				+ ShipEnhancementsTextureSpaceMagnificationFactor (vec2)
+					+ Calc'd by ShipRenderContext @ init, based on ship's world size and GlobalRenderContext::GetShipEnhancementsTextureWorldSize
+						+ SetInAllShaders
+				+ ShipHighQualityRendering
+					+ Set at ShipRenderContext via ApplyShipQualityRenderModeChanges()
+						+ SetInAllShaders
+					+ Call ApplyShipQualityRenderModeChanges upon changes
+
+			+ "ShipEnhancements" texture
+				+ OpenGL param
+				+ Activation & load @ GlobalRenderContext
+
+			+ GlobalRenderContext: build dual-channel
+				+ Load database instead of frames
+
+			+ Shader:
+				+ Make colors based on paramShipHighQualityRendering
+				+ Use paramShipEnhancementsTextureSpaceMagnificationFactor
+
+			+ Test:
+				+ nVidia
+				+ All ship shaders work
+				+ Rust, Algae on all ship shaders
+					+ FIX: Draw structure (et al): doesn't pickup texture
+						+ SetTextureParametersInAllShaders called early on after ShaderManager has been initialized
+							+ Commit all
+							+ Do above
+							+ Nuke all SetTextureParameters calls
+						+ Tests
+
+			+ Rot<->Rust
+			+ Non-damaged rust
+
+			+ SettingsWindow
+				+ Move Render panel's "See Ship Through Water" to "Advanced", as lst in existing
+					+ This should shorten upper panel
+				+ Fix water sliders if needed
+					+ Try flexible row
+
+			+ Send beta
+				+ Bump up version
+
+			+ More scissor between dry rust and damage rust
+
+			+ Texture finalization:
+				+ Rust
+					+ Rust0220, exists @ 1024
+				+ Algae
+					+ Mossy Rock 4 / Albedo (search: "algae seamless"), exists @ 4096
+					+ TODO: do something else - more matte green, barnacles as noise
+						+ Check pixel size vs world size, not a multiple!
+					+ Test Rust, Algae
+
+			+ Calibration
+				+ Test on old Dell
+
+			+ Make PR
+				+ Port to Android
+				+ Merge into master
+				
+	+ TimCan's new sounds for PC+Mobile
+			! NOT:
+				- FS Deep Horn
+				- Queen Horn
+		+ PC
+			+ Materials
+			+ shipindustrialhorn
+				- 47711 (1081.88), 239377 (5428.05) (191666 (4346.17))
+				- 72653 (1647.46), 299859 (6799.52) (227206 (5152.06)
+			+ shipsteamwhistle
+				- 96431 (2186.64), 143634 (3257.01) (47203 (1070.36))
+				- 88910 (2016.1), 171123 (3880.34) (82213 (1864.24))
+			+ shipsuperwhistle
+				- 68400 (1551.02), 230371 (5223.83)
+				- 41107 (932.132), 217722 (4937.01)
+			+ Test ship
+			+ Calibrate delay for fish scare
+		+ Android
+			+ Port materials
+			+ Port code
+			+ Sounds:
+				+ Downsample
+				+ Loop properties
+				+ Bake
+			+ SoundController
+			+ Add test ship
+			+ Test
+			+ Remove test ship
+
+	+ Aerodynamic aluminium (colors as well)
+	
+	+ Try: ash with Thanos' snap
+		+ New material, not in palette, with unique key
+
+	+ See black triangles w/rust
+		! It's denormal!
+			- FLUSH_ZERO_MODE=32768
+			- DENORMALS_ZERO_MODE=64
+		+ Shader
+		+ Port to Android
+	+ Above-water rot
+		+ Use personality seed, try to randomize it
+
+	+ Transparent tornado power meter
+		+ PC
+		+ Android
+
+	+ Rot exposure: faster than rust (or equal)
+
+	+ Localization
+		+ IT
+			+ Do
+		+ ES
+			+ Send
+			+ Got it
+		+ PT_BR
+			+ Send (Kiko)
+			+ Got it
+		+ RU
+			+ Send
+			+ Got it
+		+ UK
+			+ Send (denis)
+			+ Got it
+	+ Ships:
+		+ Those @ TO_TAKE
+
+	= Release
+		+ Windows
+			+ MSI variable
+			+ Commit & push
+			+ 64-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI (Floating-Sandbox-1.21.0-x64)
+				+ Sign MSI
+				+ Test upgrade from previous version
+			+ 32-bit MSI
+				+ Refresh config
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI (Floating-Sandbox-1.21.0-x86)
+				+ Sign MSI
+				+ Test clean install
+					+ Verify it's a 32-bit process
+		+ Ubuntu
+			+ rm -rf ~/floating-sandbox
+			+ export GDK_BACKEND=x11
+			+ pull 
+			+ rm -rf build; mkdir build; cd build
+			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			+ make install
+			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.21.0-x64.tar . && cd ..")
+			+ Zip tar ("gzip Floating-Sandbox*.tar")
+			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+		+ Send 3 installers to dev server for final smoke test
+		+ Wait for test results
+		*******
+		+ Cut tag on github
+		+ Copy binaries to Prev
+		+ Copy MSIs to scratch and GoogleDrive
+		+ Upload packages to GameJolt
+			+ Verify Windows Defender
+			+ Post
+
+	+ Fix materials palette
+
+	+ Branch is merged into master (if applicable)
+	+ Windows
+		+ MSI variable
+		+ Commit & push
+		+ 64-bit MSI
+			+ Start SimplySign
+			+ Cleanup Install
+			+ Build Release Install (after clean)
+				+ Sign two exes
+			+ Make MSI
+				+ Sign MSI
+			+ Rename MSI (e.g. Floating-Sandbox-1.19.2-x64)
+			+ Copy to desktop
+			+ Test upgrade from previous version
+	+ Cut tag on github
+	+ Copy MSIs to scratch and GoogleDrive
+	+ www.floatingsandbox.com:
+		+ Update current version in FAQ (1.20.0)
+	+ Bump up version
+	+ Move this section at bottom of plan
