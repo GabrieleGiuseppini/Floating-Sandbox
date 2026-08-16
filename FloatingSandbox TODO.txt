@@ -2468,10 +2468,14 @@
 								+ a/w: 1/0.406; damping: 0.75; buoyancy vel: 0.3, no laterals: PERFECT LEVEL
 
 							! TODOHERE: overshoot is due to laterals! Without laterals there's no overshoot
-								! Also: why doesn't go back down once it's gone via laterals?
-									! Air trapped underneath should feel the urge to go up
-										! Is it because once it goes up, there's no obstacle to air going down again?
-									! Also hit known problem: more squeeze up causes pressure drop
+								! Also: why doesn't water go back down once it's gone via laterals? After all it adds to pressure, so dw downwards goes up
+									! Actually it does - done test with added water, after shooting up, interface goes down again to
+									  original
+								! So: overshoot is really due to rendering: water being splattered over layers above reaching equilibrium
+
+							! Layer of water below (W=7, A=3) with water above (2.7) still gets more water from above than it loses,
+							  just because of dAir
+
 										
 
 

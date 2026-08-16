@@ -4260,6 +4260,9 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2(
                 float const springUpness = std::max(springNormalizedVector.y, 0.0f);
                 float const springDownness = std::max(-springNormalizedVector.y, 0.0f);
 
+                (void)springUpness;
+                (void)springDownness;
+
                 //
                 // Water
                 //
@@ -4329,7 +4332,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2(
                 springOutboundWaterFlowWeights[s] =
                     // TODOTEST: orig
                     //springOutboundScalarWaterVelocity
-                    // TODOTEST: this was new, but behaves very differently
+                    // TODOTEST: new
                     springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> * oldPointWaterBufferData[pointIndex]
                     / mSprings.GetFactoryRestLength(cs.SpringIndex);
 
@@ -4345,7 +4348,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2(
                 // TODOTEST
                 if (pointIndex == mLastQueriedPointIndex)
                 {
-                    LogMessage("  W Out: springOutboundWaterFlowWeights=", springOutboundWaterFlowWeights[s], " dw=", dw, " springUpness=", springUpness, " springDownness=", springDownness);
+                    LogMessage("  W Out: springOutboundWaterFlowWeights=", springOutboundWaterFlowWeights[s], " dw=", dw, " springDir=", springNormalizedVector);
                     LogMessage("         pThis=", oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex],
                         " pOther=", oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex],
                         " bVel=", bernoulliVelocityAlongSpring, " wVel=", pointWaterVelocityAlongSpring);
@@ -4411,9 +4414,10 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2(
 
                 // TODOTEST: replacement of air moved
                 //airMoved =
-                //    Mix(airMoved, simulationParameters.ElectricalElementHeatProducedAdjustment, omega * springUpness)
-                //    //* SimulationParameters::SimulationStepTimeDuration<float> *oldPointAirPressureBufferData[pointIndex];
-                //    ;
+                //    Mix(
+                //        airMoved,
+                //        simulationParameters.ElectricalElementHeatProducedAdjustment * SimulationParameters::SimulationStepTimeDuration<float> *oldPointAirPressureBufferData[pointIndex],
+                //        omega * springUpness);
 
                 // Store weight along spring, scaling for the greater distance traveled along
                 // diagonal springs
@@ -4430,7 +4434,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2(
                 // TODOTEST
                 if (pointIndex == mLastQueriedPointIndex)
                 {
-                    LogMessage("  A Out: dAir=", dAir, " upwardVelocity=", upwardVelocity, " airMoved=", airMoved, " springUpness=", springUpness, " springOutboundAirFlowWeights=", springOutboundAirFlowWeights[s]);
+                    LogMessage("  A Out: dAir=", dAir, " upwardVelocity=", upwardVelocity, " airMoved=", airMoved, " springDir=", springNormalizedVector, " springOutboundAirFlowWeights=", springOutboundAirFlowWeights[s]);
                 }
             }
 
