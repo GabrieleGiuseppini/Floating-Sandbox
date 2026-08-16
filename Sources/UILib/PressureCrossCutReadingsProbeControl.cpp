@@ -153,6 +153,7 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
         int prevWaterY = 0;
         int prevTotalY = 0;
         float lastTotalValue = 0.0f;
+        float previousWorldY = std::numeric_limits<float>::max();
         for (int x = 0; x < mWidth; ++x)
         {
             size_t leftSampleI = mViewLeftSampleI + static_cast<size_t>(std::roundf(static_cast<float>(x) * xToSampleI));
@@ -181,6 +182,14 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
 
             if (x > 0)
             {
+                if (previousWorldY > 0.0f && mReadings[leftSampleI].WorldY <= 0.0f)
+                {
+                    dc.SetPen(mReferencePressurePen);
+                    dc.DrawLine(x - 1, 1, x - 1, GetSize().GetHeight() - 1);
+                }
+
+                previousWorldY = mReadings[leftSampleI].WorldY;
+
                 dc.SetPen(mTotalPressurePen);
                 dc.DrawLine(x - 1, prevTotalY, x, totalY);
 

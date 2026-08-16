@@ -2472,6 +2472,16 @@
 									! Actually it does - done test with added water, after shooting up, interface goes down again to
 									  original
 								! So: overshoot is really due to rendering: water being splattered over layers above reaching equilibrium
+									! With a ton of squeezing to remove splatter: 
+										! Causes pressure dip, causing in turn water to rise more than it should as water sees lower pressure above											
+											! Is it because at air's turn air at above layer escapes too much wrt above pressure, thus under-populating point?
+												! NO: no water at layer above (see screenshot)
+											- TODOHERE: why then?
+												- Test: symmetric downness @ water
+													- LESS SPLATTERING! BEST LEVEL!
+														- Just +1, see why
+									! Two steps (water then air):
+										! HOLD ON! minimal overshoot!
 
 							! Layer of water below (W=7, A=3) with water above (2.7) still gets more water from above than it loses,
 							  just because of dAir
