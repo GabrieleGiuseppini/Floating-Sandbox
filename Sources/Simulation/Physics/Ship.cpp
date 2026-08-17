@@ -4895,8 +4895,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
 
     // TODOTEST
     //int constexpr NumberOfIterations = 4;
-    //int constexpr NumberOfIterations = 2;
-    int constexpr NumberOfIterations = 1;
+    int constexpr NumberOfIterations = 2;
+    //int constexpr NumberOfIterations = 1;
     //int constexpr NumberOfIterations = 32;
 
 

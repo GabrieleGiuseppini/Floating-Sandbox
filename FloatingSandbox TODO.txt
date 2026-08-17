@@ -2467,7 +2467,7 @@
 							+ Repro scorecard above:
 								+ a/w: 1/0.406; damping: 0.75; buoyancy vel: 0.3, no laterals: PERFECT LEVEL
 
-							! TODOHERE: overshoot is due to laterals! Without laterals there's no overshoot
+							! Overshoot is due to laterals! Without laterals there's no overshoot [WAS WRONG: THERE IS, AT HIGHER VELOCITY]
 								! Also: why doesn't water go back down once it's gone via laterals? After all it adds to pressure, so dw downwards goes up
 									! Actually it does - done test with added water, after shooting up, interface goes down again to
 									  original
@@ -2476,15 +2476,34 @@
 										! Causes pressure dip, causing in turn water to rise more than it should as water sees lower pressure above											
 											! Is it because at air's turn air at above layer escapes too much wrt above pressure, thus under-populating point?
 												! NO: no water at layer above (see screenshot)
-											- TODOHERE: why then?
-												- Test: symmetric downness @ water
-													- LESS SPLATTERING! BEST LEVEL!
-														- Just +1, see why
-									! Two steps (water then air):
-										! HOLD ON! minimal overshoot!
-
-							! Layer of water below (W=7, A=3) with water above (2.7) still gets more water from above than it loses,
+											! TODOHERE: why then? Is it because air trapped at point bumps up water pressure that then needs goes up?
+												+ Test: symmetric downness/upness @ water
+													! LESS SPLATTERING! BEST LEVEL!
+														! Just +1
+							! Fact: layer of water below (W=7, A=3) with water above (2.7) still gets more water from above than it loses,
 							  just because of dAir
+
+							
+							! Two steps (water then air):
+								! HOLD ON! minimal overshoot!
+								! With: symmetric downness/upness @ water
+									- LESS SPLATTERING! BEST LEVEL!
+										- Just +1, see why
+								- With more water velocity (~0.8): it overshoots (+4.5)
+									X Is it velocity gained? Try without velocity: still overshoots - NO, IT'S NOT VELOCITY
+									X Is it water not going down (laterals)? Flatten downness @ water: still overshoots (by 4)
+										! And becomes directional :-(
+									- TODOHERE: why does velocity causes more pressure for water?
+										- Is it because oscillations still have directional bias? 
+											! After overshoot, lowering water diff speed makes everything backtrace to level
+											+ Double-check ingress/egress for bias
+											X See if it's "stuffing" because of lower # of inputs: large hole: NO, same overshoot
+											+ See if it's because of water laterals: remove all upness/downness: NO, still overshoots (+3)
+											+ See with two iters (w & a) (a/w=1.0/0.844, squeeze=0.3, damp=0.75): 
+												! Definitely reduced oscillations, and faster
+												! OVERSHOOT: WAY LESS! +1.5
+
+
 
 										
 
