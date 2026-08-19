@@ -2622,47 +2622,31 @@
 															- Obliquity: REDO with bounce=0.5: good! Though interface is jigsawed
 															- HOWEVER: diagonals rotated to vertical now have upness = 1.44, with deltaH still 1.0
 														+ With deltaH / ship_square_size (bounce=0.5, damp=0.9875):
-															! Rsise is still smooth
+															! Rise is still smooth
 															+ xL=1.74 m=0.96 yR=71.03 | OVERSHOOT:2.01 | tot_w=116271
 															+ Obliquity: good! Though interface is jigsawed
 															+ default_ship: good!
 														- To fight jagness:
 
+													- Damp @ 0.95:
+														- Rise is still smooth
+														- xL=3.5 m=0.98 yR=70.71 | OVERSHOOT:1.0 | tot_w=113197
+														- Obliquity:
+														- default_ship:
 
-													- TODOHERE: still upward velocity at uppermost layers @ equilibrium?
+
+													- TODOHERE: still upward velocity at uppermost layers @ equilibrium
 														- Problem: when no water flows, we maintain original velocity - verify @ eq there's no flows
 															- Indeed: flows are only down, but vel up stays
-																- Though vel could result from flows from below
+																- TODOHERE: Though vel could result from flows from below
 
+					- Water around hole has velocity _towards_ hole
+						- Because that's the only component left after expansion
 
-
-										
-
-
-
-
-
-						= To fix:
-							- More water velocity
-								= Try: lower damping
-									- 1.0: spectacular waves, but also jumping high
-								- Try: higher diffusion speed
-									+ A/W 1/1, Damping @ 0.75
-									- Scorecard: above water: -9; after holes: overshoot
-										- Why overshoot? no overshoot with 0.469 and no upness
-									- Also overshoots without upness
-								- Try: norm factor
-								+ Try: comment out water retention @ egress
-							= water moving horizontally: doesn't move as target pressure matches
-								= Try: multiply air by upness
-									- Causes water to splatter across multiple levels
-										- WAIT: is it really so? Also without upness
-										! Why? diagonal-up see lower air pressure up and thus raise, populating upper layer
-										- Try: do not superimpose buoyancy, just replace with it
-									- Try: stepwise upness (1.0 if normalized.y > 0.0f)
-				
+													
 
 					= Render full water range
+						- The +1 for rendering is due to bottom having full water, top having 0 - interpolation pushes blue all the way up
 
 
 					- Test goals:

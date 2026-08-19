@@ -4994,7 +4994,10 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
             LogMessage("================");
             LogMessage("Start W: ", oldPointWaterBufferData[mLastQueriedPointIndex], "  Start A: ", oldPointAirPressureBufferData[mLastQueriedPointIndex]);
         }
-        float todoTotalWOut = 0.0f;
+        float todoTotalWOutAtQueriedPoint = 0.0f;
+        float todoTotalWInAtQueriedPoint = 0.0f;
+        vec2f todoTotalWMomentumOutAtQueriedPoint = vec2f::zero();
+        vec2f todoTotalWMomentumInAtQueriedPoint = vec2f::zero();
 
         for (auto pointIndex : mPoints.RawShipPoints())
         {
@@ -5262,7 +5265,19 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
                     if (pointIndex == mLastQueriedPointIndex)
                     {
                         LogMessage("  W: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " (w=", springOutboundWaterFlowWeights[s], " norm=", waterQuantityNormalizationFactor, ")");
-                        todoTotalWOut += springOutboundQuantityOfWater;
+                        todoTotalWOutAtQueriedPoint += springOutboundQuantityOfWater;
+
+                        todoTotalWMomentumOutAtQueriedPoint +=
+                            oldPointWaterVelocityBufferData[pointIndex]
+                            * springOutboundQuantityOfWater;
+                    }
+                    else if (cs.OtherEndpointIndex == mLastQueriedPointIndex)
+                    {
+                        todoTotalWInAtQueriedPoint += springOutboundQuantityOfWater;
+
+                        todoTotalWMomentumInAtQueriedPoint +=
+                            springOutboundWaterVelocities[s]
+                            * springOutboundQuantityOfWater;
                     }
 
                     // Move water quantity
@@ -5393,7 +5408,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
         // TODOTEST
         if (mLastQueriedPointIndex != NoneElementIndex)
         {
-            LogMessage("Total W Out: ", todoTotalWOut);
+            LogMessage("Total WOut=", todoTotalWOutAtQueriedPoint, " WIn=", todoTotalWInAtQueriedPoint, " WNetOut=", (todoTotalWOutAtQueriedPoint - todoTotalWInAtQueriedPoint));
+            LogMessage("Total WMomOut=", todoTotalWMomentumOutAtQueriedPoint, " WMomIn=", todoTotalWMomentumInAtQueriedPoint, " WMomNetOut=", (todoTotalWMomentumOutAtQueriedPoint - todoTotalWMomentumInAtQueriedPoint));
         }
 
 
