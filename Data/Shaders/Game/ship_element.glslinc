@@ -38,6 +38,8 @@ void main()
 
     vertexAttributes1 = inShipPointAttributeGroup1;
     // TODOTEST: clamping water so that we interpolate between 0.0 and 1.0, rather than between 0.0 and one_gazillion.0
+    // 0.4 @ 1, 1 @ 10
+    // y = 0.4*x^0.39794
     //vertexAttributes1.y = min(pow(vertexAttributes1.y, paramWaterLevelOfDetail), 1.0);
     vertexAttributes1.y = min(0.4 * pow(vertexAttributes1.y, paramWaterLevelOfDetail), 1.0);
     vertexAttributes2 = inShipPointAttributeGroup2;

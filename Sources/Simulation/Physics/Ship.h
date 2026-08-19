@@ -773,6 +773,10 @@ private:
         SimulationParameters const & simulationParameters,
         float & waterSplashed);
 
+    void UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
+        SimulationParameters const & simulationParameters,
+        float & waterSplashed);
+
     void UpdateWaterAndAirPressure_GaussSeidel_1(
         SimulationParameters const & simulationParameters,
         float & waterSplashed);
