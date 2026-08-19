@@ -2538,12 +2538,67 @@
 													+ Verify quantity of water doesn't change - with once-injected water, verify it does not grow
 														+ Stable, even w/air injection
 											
-											- Investigate whether it's bounce up from below
-												- First: check that "velocity explosion" w/no damping
+											= Investigate whether it's bounce up from below
+												+ First: check that "velocity explosion" w/no damping
 													! IT EXISTS
-													- Check that change we did
-												- Then: check bounce math
-													- -2*vel
+													= Check that change we did
+														! dw * permeability
+														! Removes bottom velocity!
+														X But still causes crazyness
+														+ See with damping @ 0.875: does it affect overshoot?
+															+ xL=4.43 m=1.00 yR=71.26 | OVERSHOOT:1.5 | tot_w=112790
+															! It does! And in this config we still bounce!
+													X See if it's norm factor: it has an impact, but doesn't remove it
+													! Not present in orig; must be air 
+														! Though orig _does_ have huge velocity from bottom as well
+
+												= Re-design hitting walls/bounce:
+													+ Baseline: a_vel/w_vel=1.0/1.0 squeeze=0.312 damp=0.9875 | orig "pressure doesn't look at wall" | orig bounce
+														+ xL=2.56 m=0.99 yR=72.77 | OVERSHOOT:3.4 | tot_w=116250
+														! Great momenta after bounces
+													+ dw=0 against dry wall (note: this _is_ needed)
+														! Note: bounces look bad, and interface is bulged
+													+ With dw=0 against dry wall, redesign bounce:
+														+ 1: zeroing out old (thus leaving v=new-old):
+															+ xL=2.83 m=0.98 yR=71.88 | OVERSHOOT:2.6 | tot_w=115730
+															! Perfectly flat interface
+															! Some velocity against walls
+														+ 2: zeroing out all
+															+ xL=3.19 m=0.98 yR=71.56 | OVERSHOOT:1.8 | tot_w=113917
+															! Obviously no velocity against walls
+														+ Released version, default settings:
+															! Humongous overshoot
+														+ 3: controlled bounce
+															+ @ elasticity=1:
+																+ xL=1.99 m=0.96 yR=70.97 | OVERSHOOT:2.7 | tot_w=115666
+																! Velocity does bounce against bottom, but not much against wall
+															+ @ elasticity=0.5:
+																+ xL=2.49 m=0.97 yR=71.13 | OVERSHOOT:2.7 | tot_w=115470
+																! Velocity against walls is retained, also at bottom
+															+ @ elasticity=0.0:
+																+ xL=2.86 m=0.98 yR=71.83 | OVERSHOOT:2.7 | tot_w=115630
+													! Conclusions: 
+														+ Zeroing helps, but it's wrong (it's in spring-by-spring loop, and done per-spring)
+														+ bounce doesn't affect overshoot much, but changes slope
+
+
+												- Thoughts on velocity:
+													- When air does not move up, it retains upward velocity
+													- Last two layers @ interface have opposing velocities: uppermost goes up, lower goes down
+														- Even though point does lose water only down - but bVel (pointing down) is offset by this component going up
+															- Velocity gained is from two diagonals below, which do NOT push up but push diagonally
+																- Why do they push only diagonally? 
+																	! deltaH is same (-1.0), pressures are same
+																	! upness makes it so that we see less air above along diagonals, which in turn causes a bvel sign flip
+																		! We see enough less air to overcome negative deltaH 
+																		W Out: springOutboundWaterFlowWeights=0.334453 dw=1.66953 springDir=(0.707232773304, 0.70658659935)  /up
+																		       pThis=11.0924 pOther=9.42284 bVel=3.62378 wVel=-0.894774
+																		W Out: springOutboundWaterFlowWeights=0 dw=-0.796062 springDir=(0.000549584627151, 1.00004887581) | up
+																		       pThis=11.0924 pOther=11.8884 bVel=-5.93247 wVel=-1.26821
+																		W Out: springOutboundWaterFlowWeights=0.34541 dw=1.7051 springDir=(-0.706764876842, 0.707363069057) \up
+																		       pThis=11.0924 pOther=9.38727 bVel=3.71674 wVel=-0.898318
+														- This contributes to "expansion" of layers
+														- When we zero damping, that "expansion" tends to go back to zero
 
 
 

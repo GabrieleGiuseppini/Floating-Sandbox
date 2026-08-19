@@ -2688,8 +2688,9 @@ void Ship::UpdatePressureAndWaterInflow(
                         // Make sure we don't over-drain the point
                         deltaWater_Structural = std::max(-mPoints.GetWater(pointIndex), deltaWater_Structural);
 
-                        // Honor the water retention of this material
-                        deltaWater_Structural *= mPoints.GetMaterialWaterRestitution(pointIndex);
+                        // TODOTEST
+                        ////// Honor the water retention of this material
+                        ////deltaWater_Structural *= mPoints.GetMaterialWaterRestitution(pointIndex);
                     }
 
                     // Adjust water
@@ -3263,6 +3264,59 @@ void Ship::UpdateWaterVelocities(
     //
 
     mPoints.UpdateWaterVelocitiesFromMomenta();
+
+
+
+
+    //
+    // TODOTEST: readings
+    //
+
+    std::vector<PressureReading> readings;
+
+    //ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8283;
+    ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8150;
+    //ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 639;
+    ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 738;
+    if (PressureCrossCutReadingsStartPointIndex < mPoints.GetRawShipPointCount())
+    {
+        ElementIndex prevPointIndex = PressureCrossCutReadingsStartPointIndex;
+        for (ElementIndex pointIndex = PressureCrossCutReadingsStartPointIndex; pointIndex != NoneElementIndex && pointIndex != PressureCrossCutReadingsEndPointIndex; /* updated in loop */)
+        {
+            // Read
+            readings.emplace_back(PressureReading{
+                mPoints.GetAirPressure(pointIndex),
+                0.0f,
+                mPoints.GetWater(pointIndex),
+                mPoints.GetPosition(pointIndex).y });
+
+            // Advance
+            ElementIndex nextPointIndex = NoneElementIndex;
+            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+            {
+                auto const springOctant = mSprings.GetFactoryOtherEndpointOctant(cs.SpringIndex, pointIndex);
+                if (springOctant == 6)
+                {
+                    nextPointIndex = cs.OtherEndpointIndex;
+                    break;
+                }
+            }
+
+            prevPointIndex = pointIndex;
+            pointIndex = nextPointIndex;
+        }
+    }
+
+    mSimulationEventHandler.OnPressureReadings(readings);
+
+    // TODOTEST
+    // Calculate total water after
+    float totalWaterPost = 0.0f;
+    for (auto pointIndex : mPoints.RawShipPoints())
+    {
+        totalWaterPost += mPoints.GetWater(pointIndex);
+    }
+    mSimulationEventHandler.OnCustomProbe("Total W In", totalWaterPost);
 }
 
 void Ship::UpdateWaterAndAirPressure_NewtonRhapson(
@@ -5040,10 +5094,17 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
                 //float const dw =
                 //    (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex])
                 //    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness);
-                // TODOTEST: NEW (with air pressure, upness, and downness)
-                float const dw =
+
+                //// TODOTEST: NEW (with air pressure, upness, and downness)
+                //float const dw =
+                //    (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex] * springDownness)
+                //    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness);
+
+                // TODOTEST: NEW (with air pressure, upness, and downness), and no delta-pressure against wall
+                float const dw = (
                     (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex] * springDownness)
-                    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness);
+                    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness)
+                    ) * mSprings.GetWaterPermeability(cs.SpringIndex); // Enforce no delta-pressure with (dry) wall
 
                 // Gravity potential difference (positive implies point -> other endpoint flow)
                 float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(cs.OtherEndpointIndex).y;
@@ -5080,7 +5141,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
                     // TODOTEST: orig
                     //springOutboundScalarWaterVelocity
                     // TODOTEST: new
-                    springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> *oldPointWaterBufferData[pointIndex]
+                    springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> * oldPointWaterBufferData[pointIndex]
                     / mSprings.GetFactoryRestLength(cs.SpringIndex);
 
                 // Resultant outbound velocity along spring
@@ -5096,8 +5157,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
                 if (pointIndex == mLastQueriedPointIndex)
                 {
                     LogMessage("  W Out: springOutboundWaterFlowWeights=", springOutboundWaterFlowWeights[s], " dw=", dw, " springDir=", springNormalizedVector);
-                    LogMessage("         pThis=", oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex],
-                        " pOther=", oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex],
+                    LogMessage("         pThis=", oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex] * springDownness,
+                        " pOther=", oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness,
                         " bVel=", bernoulliVelocityAlongSpring, " wVel=", pointWaterVelocityAlongSpring);
                 }
 
@@ -5254,9 +5315,24 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
                     // No changes to other endpoint
                     //
 
+                    //// TODOTEST: orig
+                    //newPointWaterMomentumBufferData[pointIndex] -=
+                    //    springOutboundWaterVelocities[s]
+                    //    * springOutboundQuantityOfWater;
+
+                    // TODOTEST: new
+                    // Remove "old momentum" (old velocity) from point, for the quantity of water we're willing to move
                     newPointWaterMomentumBufferData[pointIndex] -=
-                        springOutboundWaterVelocities[s]
+                        oldPointWaterVelocityBufferData[pointIndex]
                         * springOutboundQuantityOfWater;
+                    // Add "new momentum" (new velocity gained), but after bounce
+                    newPointWaterMomentumBufferData[pointIndex] +=
+                        -springOutboundWaterVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f)
+                        * springOutboundQuantityOfWater;
+
+                    //// TODOTEST: zero out all
+                    //newPointWaterMomentumBufferData[pointIndex] = vec2f::zero();
+
 
 #if !FS_IS_PLATFORM_MOBILE()
                     //
@@ -5321,7 +5397,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
         {
             // TODOTEST
             //newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
-            mPoints.SetWaterVelocity(pointIndex, mPoints.GetWaterVelocity(pointIndex) * std::min(simulationParameters.AntiMatterBombImplosionStrength, 1.0f));
+            mPoints.SetWaterVelocity(pointIndex, mPoints.GetWaterVelocity(pointIndex) * std::min(simulationParameters.AntiMatterBombImplosionStrength / 10.0f, 1.0f));
         }
 
     } // Iter loop
