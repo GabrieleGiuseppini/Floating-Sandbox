@@ -41,6 +41,7 @@ private:
 
     void RecalculateReadingsStatistics(std::vector<PressureReading> const & readings);
     inline int MapValueToY(float value) const;
+    inline int MapSampleIndexToX(size_t sampleIndex) const;
 
 private:
 
@@ -53,6 +54,7 @@ private:
     wxPen const mWaterPressurePen;
     wxPen const mTotalPressurePen;
     wxPen const mReferencePressurePen;
+    wxPen const mLinearRegressionPen;
     int mViewZoom;
     int mViewLeftSampleI;
 

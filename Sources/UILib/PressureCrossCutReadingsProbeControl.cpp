@@ -36,6 +36,7 @@ PressureCrossCutReadingsProbeControl::PressureCrossCutReadingsProbeControl(
     , mWaterPressurePen(wxColor("BLUE"), 2, wxPENSTYLE_SOLID)
     , mTotalPressurePen(wxColour(50, 50, 50), 2, wxPENSTYLE_SOLID)
     , mReferencePressurePen(wxColour(200, 200, 200), 1, wxPENSTYLE_SHORT_DASH)
+    , mLinearRegressionPen(wxColour(200, 200, 200), 1, wxPENSTYLE_SOLID)
     , mViewZoom(1)
     , mViewLeftSampleI(0)
 {
@@ -182,6 +183,7 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
 
             if (x > 0)
             {
+                // Draw vertical reference line
                 if (previousWorldY > 0.0f && mReadings[leftSampleI].WorldY <= 0.0f)
                 {
                     dc.SetPen(mReferencePressurePen);
@@ -210,11 +212,72 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
         }
 
         //
+        // Calculate and draw linear regression
+        //
+
+        std::string linearRegressionLabelPrefix = "";
+
+        {
+            // X: sample index space
+            // Y: pressure space
+
+            float sumX = 0.0f;
+            float sumXSquared = 0.0f;
+            float sumY = 0.0f;
+            float sumXY = 0.0f;
+            size_t n = 0;
+            size_t startSampleIndex = 0;
+
+            for (size_t s = 0; s < mReadings.size(); ++s)
+            {
+                if (mReadings[s].WaterPressure >= mReferencePressure - 0.5f)
+                {
+                    // Begin
+                    startSampleIndex = s;
+                    for (; s < mReadings.size(); ++s)
+                    {
+                        float const x = static_cast<float>(s);
+                        sumX += x;
+                        sumXSquared += x * x;
+                        sumY += mReadings[s].WaterPressure;
+                        sumXY += x * mReadings[s].WaterPressure;
+                        n += 1;
+                    }
+                }
+            }
+
+            if (n >= 5) // At least these many points
+            {
+                float const nF = static_cast<float>(n);
+                float const m = (nF * sumXY - sumX * sumY) / (nF * sumXSquared - sumX * sumX);
+                float const b = (sumY - m * sumX) / nF;
+
+                dc.SetPen(mLinearRegressionPen);
+                dc.DrawLine(
+                    MapSampleIndexToX(0),
+                    MapValueToY(b),
+                    MapSampleIndexToX(mReadings.size()),
+                    MapValueToY(m * static_cast<float>(mReadings.size()) + b));
+
+                std::stringstream ss;
+                ss << std::fixed << std::setprecision(2) << "xL=" << (-b / m) << " m=" << m << " yR=" << (m * static_cast<float>(mReadings.size()) + b);
+                linearRegressionLabelPrefix = ss.str();
+            }
+        }
+
+        //
         // Draw label
         //
 
         std::stringstream ss;
-        ss << std::fixed << std::setprecision(1) << lastTotalValue;
+        if (linearRegressionLabelPrefix.empty())
+        {
+            ss << std::fixed << std::setprecision(1) << lastTotalValue;
+        }
+        else
+        {
+            ss << linearRegressionLabelPrefix;
+        }
 
         wxString labelText(ss.str());
         dc.DrawText(labelText, 0, 1);
@@ -239,3 +302,8 @@ int PressureCrossCutReadingsProbeControl::MapValueToY(float value) const
     return Height - 3 - static_cast<int>(round(y));
 }
 
+int PressureCrossCutReadingsProbeControl::MapSampleIndexToX(size_t sampleIndex) const
+{
+    float const sampleIToX = static_cast<float>(mWidth) * mViewZoom / static_cast<float>(mReadings.size());
+    return static_cast<int>(std::roundf(sampleIToX * static_cast<float>(sampleIndex)));
+}

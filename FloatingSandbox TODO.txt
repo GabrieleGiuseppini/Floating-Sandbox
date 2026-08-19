@@ -2494,14 +2494,59 @@
 									X Is it water not going down (laterals)? Flatten downness @ water: still overshoots (by 4)
 										! And becomes directional :-(
 									- TODOHERE: why does velocity causes more pressure for water?
-										- Is it because oscillations still have directional bias? 
-											! After overshoot, lowering water diff speed makes everything backtrace to level
+										! Is it because oscillations still have directional bias? 
+											! No: after overshoot, lowering water diff speed makes everything backtrace to level
 											+ Double-check ingress/egress for bias
 											X See if it's "stuffing" because of lower # of inputs: large hole: NO, same overshoot
 											+ See if it's because of water laterals: remove all upness/downness: NO, still overshoots (+3)
 											+ See with two iters (w & a) (a/w=1.0/0.844, squeeze=0.3, damp=0.75): 
 												! Definitely reduced oscillations, and faster
 												! OVERSHOOT: WAY LESS! +1.5
+												! (a/w=1.0/1.0, squeeze=0.3, damp=0.875): 
+													! More oscillations but stationary; faster!
+													! Bottom pressure: 69.3
+													! OVERSHOOT: MORE: +2.5
+														! damp=0.1: WAY LESS OVERSHOOT! +1.5
+															! Bottom pressure: 73-80
+										! Conclusion: overshoot happens when more water moves, doesn't matter if because of diffusion speed, or because of inertial velocity
+										! SEEMS: upping (intertial) velocity lowers bottom pressure, yet top stays at same position or goes even higher - so changes slope?
+											+ Verify slope - with linear regression
+												! a_vel=1.0 squeeze=0.312 damp=0.875
+												- STABLE SHIP:
+												- w_vel=1.0 (from begin): 
+													xL=3.7/3.8 m=1.0 yR= | OVERSHOOT:1.8 | tot_w=113635
+													xL=3.0/3.2 m=1.0 yR= | OVERSHOOT:2.5 | tot_w=114916
+													xL=3.6 m=1.0 yR=72.0/72.2 | OVERSHOOT:2.3 | tot_w=114370 | quite some v up
+													xL=3.8 m=1.00 yR=71.9 | OVERSHOOT:1.8 | tot_w=113423
+												- w_vel=0.344 (from begin):
+													xL=4.7 m=1.0 yR= | OVERSHOOT:1.5 | tot_w=112093
+													xL=4.8 m=1.0 yR= | OVERSHOOT:1.4 | tot_w=111646
+
+												- Is it velocity at interface?
+													- w_vel=1.0, damp=0.875: xL=3.6 m=1.0 yR=72.0/72.2 | OVERSHOOT:2.3 | tot_w=114370 | quite some v up
+													- -> damp to 0.1       : xL=4.5 m=1.0? yR=72.0/72.2 | OVERSHOOT:1.6 | tot_w=113318 | almost nul v up
+													- start damp 0.1       : xL=4.9 m=1.0? yR=72.9 | OVERSHOOT:1.6 | tot_w=113620 | almost nul v up
+
+													- w_vel=1.0, damp=0.875: xL=3.8 m=1.00 yR=71.9 | OVERSHOOT:1.8 | tot_w=113423
+													- -> damp to 0.1       : xL=4.87 m=1.01 yR=72.05 | OVERSHOOT:1.5 | tot_w=112450
+													- start damp 0.1       : xL=4.06 m=0.98 yR=70.59 | OVERSHOOT:1.5 | tot_w=112750
+
+													
+											! Conclusions:
+												! Slope is always 1.0 - YAY! Perfect
+												! Higher vel translates whole curve up, adding a bit of more water
+													+ Verify quantity of water doesn't change - with once-injected water, verify it does not grow
+														+ Stable, even w/air injection
+											
+											- Investigate whether it's bounce up from below
+												- First: check that "velocity explosion" w/no damping
+													! IT EXISTS
+													- Check that change we did
+												- Then: check bounce math
+													- -2*vel
+
+
+
 
 
 

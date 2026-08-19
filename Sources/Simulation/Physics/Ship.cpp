@@ -4885,6 +4885,16 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
     float pointKineticEnergyLoss;
 #endif
 
+
+    // TODOTEST
+    // Calculate total water before
+    float totalWaterPre = 0.0f;
+    for (auto pointIndex : mPoints.RawShipPoints())
+    {
+        totalWaterPre += mPoints.GetWater(pointIndex);
+    }
+
+
     //
     // Visit all non-ephemeral points and:
     //  - Move water and its momenta according to momenta and pressure differentials
@@ -4903,7 +4913,6 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
     //
     // Water step
     //
-
 
     for (int iter = 0; iter < NumberOfIterations; ++iter)
     {
@@ -5302,6 +5311,19 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
             LogMessage("Total W Out: ", todoTotalWOut);
         }
 
+
+        // TODOTEST
+        //
+        // Damp water velocities
+        //
+
+        for (auto pointIndex : mPoints.RawShipPoints())
+        {
+            // TODOTEST
+            //newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
+            mPoints.SetWaterVelocity(pointIndex, mPoints.GetWaterVelocity(pointIndex) * std::min(simulationParameters.AntiMatterBombImplosionStrength, 1.0f));
+        }
+
     } // Iter loop
 
 #if !FS_IS_PLATFORM_MOBILE()
@@ -5312,20 +5334,14 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
     waterSplashed = mWaterSplashedRunningAverage.Update(waterSplashed);
 #endif
 
-    // TODOTEST
     //
-    // Damp water velocities
+    // Read total air
     //
 
     float todoTotalAir = 0.0f;
 
     for (auto pointIndex : mPoints.RawShipPoints())
     {
-        // TODOTEST
-        //newPointWaterMomentumBufferData[pointIndex] *= 0.975f;
-        mPoints.SetWaterVelocity(pointIndex, mPoints.GetWaterVelocity(pointIndex) * std::min(simulationParameters.AntiMatterBombImplosionStrength, 1.0f));
-
-        // Update total air
         if (!mPoints.IsDamaged(pointIndex))
             todoTotalAir += mPoints.GetAirPressure(pointIndex);
     }
@@ -5576,8 +5592,10 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
 
     std::vector<PressureReading> readings;
 
-    ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8283;
-    ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 639;
+    //ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8283;
+    ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8150;
+    //ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 639;
+    ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 738;
     if (PressureCrossCutReadingsStartPointIndex < mPoints.GetRawShipPointCount())
     {
         ElementIndex prevPointIndex = PressureCrossCutReadingsStartPointIndex;
@@ -5614,6 +5632,19 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
     }
 
     mSimulationEventHandler.OnPressureReadings(readings);
+
+    // TODOTEST
+    // Calculate total water after
+    float totalWaterPost = 0.0f;
+    for (auto pointIndex : mPoints.RawShipPoints())
+    {
+        totalWaterPost += mPoints.GetWater(pointIndex);
+    }
+
+    LogMessage("===============");
+    LogMessage("TotalWater: pre=", totalWaterPre, " post=", totalWaterPost, " delta=", totalWaterPost - totalWaterPre);
+
+    mSimulationEventHandler.OnCustomProbe("Total W In", totalWaterPost);
 }
 
 void Ship::UpdateWaterAndAirPressure_GaussSeidel_1(
