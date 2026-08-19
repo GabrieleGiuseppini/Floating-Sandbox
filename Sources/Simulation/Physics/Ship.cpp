@@ -5057,9 +5057,14 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
                 //float const springUpness = std::max(springNormalizedVector.y, 0.0f);
                 //float const springDownness = std::max(-springNormalizedVector.y, 0.0f);
 
-                // TODOTEST: 0->0->1 smooth, corrected with rest_length
-                float const springUpness = std::max(springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
-                float const springDownness = std::max(-springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
+                //// TODOTEST: 0->0->1 smooth, corrected with rest_length
+                //float const springUpness = std::max(springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
+                //float const springDownness = std::max(-springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
+
+                // TODOTEST: 0->0->1 smooth, using delta_H
+                // FUTUREWORK: need to divide by ship's square side size here, once we use scale; add ship member for that
+                float const springUpness = std::max(mPoints.GetPosition(cs.OtherEndpointIndex).y - mPoints.GetPosition(pointIndex).y, 0.0f);
+                float const springDownness = std::max(mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(cs.OtherEndpointIndex).y, 0.0f);
 
                 (void)springUpness;
                 (void)springDownness;
@@ -5160,7 +5165,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
                 // TODOTEST
                 if (pointIndex == mLastQueriedPointIndex)
                 {
-                    LogMessage("  W Out: springOutboundWaterFlowWeights=", springOutboundWaterFlowWeights[s], " dw=", dw, " springDir=", springNormalizedVector);
+                    LogMessage("  W Out: springOutboundWaterFlowWeights=", springOutboundWaterFlowWeights[s], " dw=", dw, " upness=", springUpness, " downness=", springDownness);
                     LogMessage("         pThis=", oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex] * springDownness,
                         " pOther=", oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness,
                         " bVel=", bernoulliVelocityAlongSpring, " wVel=", pointWaterVelocityAlongSpring);
@@ -5495,9 +5500,14 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
                 //float const springUpness = std::max(springNormalizedVector.y, 0.0f);
                 //float const springDownness = std::max(-springNormalizedVector.y, 0.0f);
 
-                // TODOTEST: 0->0->1 smooth, corrected with rest_length
-                float const springUpness = std::max(springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
-                float const springDownness = std::max(-springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
+                //// TODOTEST: 0->0->1 smooth, corrected with rest_length
+                //float const springUpness = std::max(springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
+                //float const springDownness = std::max(-springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
+
+                // TODOTEST: 0->0->1 smooth, using delta_H
+                // FUTUREWORK: need to divide by ship's square side size here, once we use scale; add ship member for that
+                float const springUpness = std::max(mPoints.GetPosition(cs.OtherEndpointIndex).y - mPoints.GetPosition(pointIndex).y, 0.0f);
+                float const springDownness = std::max(mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(cs.OtherEndpointIndex).y, 0.0f);
 
                 (void)springUpness;
                 (void)springDownness;
@@ -5571,7 +5581,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
                 // TODOTEST
                 if (pointIndex == mLastQueriedPointIndex)
                 {
-                    LogMessage("  A Out: dAir=", dAir, " upwardVelocity=", upwardVelocity, " airMoved=", airMoved, " springDir=", springNormalizedVector, " springOutboundAirFlowWeights=", springOutboundAirFlowWeights[s]);
+                    LogMessage("  A Out: dAir=", dAir, " upwardVelocity=", upwardVelocity, " airMoved=", airMoved, " upness=", springUpness, " downness=", springDownness,
+                               " springOutboundAirFlowWeights=", springOutboundAirFlowWeights[s]);
                 }
             }
 
@@ -5724,9 +5735,6 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
     {
         totalWaterPost += mPoints.GetWater(pointIndex);
     }
-
-    LogMessage("===============");
-    LogMessage("TotalWater: pre=", totalWaterPre, " post=", totalWaterPost, " delta=", totalWaterPost - totalWaterPre);
 
     mSimulationEventHandler.OnCustomProbe("Total W In", totalWaterPost);
 }

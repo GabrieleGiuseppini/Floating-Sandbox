@@ -2608,20 +2608,31 @@
 																- After some time, magnitude of up becomes small though -- even before equilibrium
 															! Awful flatness though
 															! CONFIRMS: UPNESS IS WRONG
-													- TODOHERE: upness redesign
-														- On diagonals: upness * rest_length = 1
-														- On verticals: upness * rest_length = 1
-														- On skewed vertical: upness * rest_length < 1
-
-														= With rest lengths (bounce=0.5, damp=0.9875) :
+													= Upness redesign
+														+ With rest lengths (bounce=0.5, damp=0.9875):
+																- On diagonals: upness * rest_length = 1
+																- On verticals: upness * rest_length = 1
+																- On skewed vertical: upness * rest_length < 1
 															! Raise is smooth - not stepwise anymore!
 															+ xL=2.89 m=0.98 yR=72.01 | OVERSHOOT:2.0 | tot_w=114870
-															= Bounce=0.1:
-															- TODOHERE: xL=2.89 m=0.98 yR=72.01 | OVERSHOOT:2.0 | tot_w=114900
+															+ xL=2.81 m=0.97 yR=71.62 | OVERSHOOT:2.0 | tot_w=115685
+															+ Bounce=0.1:
+																+ xL=2.44 m=0.97 yR=71.00 | OVERSHOOT:2.0 | tot_w=115412
+															+ default_ship: GOOD!
+															- Obliquity: REDO with bounce=0.5: good! Though interface is jigsawed
+															- HOWEVER: diagonals rotated to vertical now have upness = 1.44, with deltaH still 1.0
+														+ With deltaH / ship_square_size (bounce=0.5, damp=0.9875):
+															! Rsise is still smooth
+															+ xL=1.74 m=0.96 yR=71.03 | OVERSHOOT:2.01 | tot_w=116271
+															+ Obliquity: good! Though interface is jigsawed
+															+ default_ship: good!
+														- To fight jagness:
 
 
-
-
+													- TODOHERE: still upward velocity at uppermost layers @ equilibrium?
+														- Problem: when no water flows, we maintain original velocity - verify @ eq there's no flows
+															- Indeed: flows are only down, but vel up stays
+																- Though vel could result from flows from below
 
 
 
@@ -2772,6 +2783,7 @@
 				- Total pressures
 
 
+	- When focusing on ship after ship moved in PAUSE, we focus on old position
 
 	- Fix foam with angley waves: is it because it becomes too wide?
 
