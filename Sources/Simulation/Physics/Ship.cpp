@@ -5053,9 +5053,13 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
                 //float const springUpness = std::min(springNormalizedVector.y + 1.0f, 1.0f);
                 //float const springDownness = std::min(1.0f - springNormalizedVector.y, 1.0f);
 
-                // TODOTEST: 0->0->1 smooth
-                float const springUpness = std::max(springNormalizedVector.y, 0.0f);
-                float const springDownness = std::max(-springNormalizedVector.y, 0.0f);
+                //// TODOTEST: 0->0->1 smooth
+                //float const springUpness = std::max(springNormalizedVector.y, 0.0f);
+                //float const springDownness = std::max(-springNormalizedVector.y, 0.0f);
+
+                // TODOTEST: 0->0->1 smooth, corrected with rest_length
+                float const springUpness = std::max(springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
+                float const springDownness = std::max(-springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
 
                 (void)springUpness;
                 (void)springDownness;
@@ -5488,8 +5492,12 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(
                 //float const springDownness = std::min(1.0f - springNormalizedVector.y, 1.0f);
 
                 // TODOTEST: 0->0->1 smooth
-                float const springUpness = std::max(springNormalizedVector.y, 0.0f);
-                float const springDownness = std::max(-springNormalizedVector.y, 0.0f);
+                //float const springUpness = std::max(springNormalizedVector.y, 0.0f);
+                //float const springDownness = std::max(-springNormalizedVector.y, 0.0f);
+
+                // TODOTEST: 0->0->1 smooth, corrected with rest_length
+                float const springUpness = std::max(springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
+                float const springDownness = std::max(-springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
 
                 (void)springUpness;
                 (void)springDownness;
