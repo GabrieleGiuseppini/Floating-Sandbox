@@ -30,12 +30,16 @@ out float vertexStress;
 
 // Params
 uniform mat4 paramOrthoMatrix;
+uniform float paramWaterLevelOfDetail;
 
 void main()
 {      
     vertexWorldY = inShipPointPosition.y;
 
     vertexAttributes1 = inShipPointAttributeGroup1;
+    // TODOTEST: clamping water so that we interpolate between 0.0 and 1.0, rather than between 0.0 and one_gazillion.0
+    //vertexAttributes1.y = min(pow(vertexAttributes1.y, paramWaterLevelOfDetail), 1.0);
+    vertexAttributes1.y = min(0.4 * pow(vertexAttributes1.y, paramWaterLevelOfDetail), 1.0);
     vertexAttributes2 = inShipPointAttributeGroup2;
     vertexTextureCoords = inShipPointTextureCoordinates;
 
@@ -82,7 +86,6 @@ uniform float paramOceanDepthDarkeningRate;
 uniform float paramShipDepthDarkeningSensitivity;
 uniform vec3 paramWaterColor;
 uniform float paramWaterContrast;
-uniform float paramWaterLevelOfDetail;
 #endif
 uniform vec3 paramLampLightColor;
 uniform vec2 paramShipEnhancementsTextureSpaceMagnificationFactor;
@@ -152,7 +155,8 @@ void main()
     // TODOTEST
     // 0.4 @ 1, 1 @ 10
     // y = 0.4*x^0.39794
-    float vertexColorWetness = min(0.4 * pow(vertexWater, paramWaterLevelOfDetail), 1.0) * paramWaterContrast;
+    //float vertexColorWetness = min(0.4 * pow(vertexWater, paramWaterLevelOfDetail), 1.0) * paramWaterContrast;
+    float vertexColorWetness = vertexWater * paramWaterContrast;
 
     fragColour = mix(fragColour, paramWaterColor, vertexColorWetness);
 
