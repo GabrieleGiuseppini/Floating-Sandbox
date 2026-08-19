@@ -2552,7 +2552,7 @@
 													! Not present in orig; must be air 
 														! Though orig _does_ have huge velocity from bottom as well
 
-												= Re-design hitting walls/bounce:
+												+ Re-design hitting walls/bounce:
 													+ Baseline: a_vel/w_vel=1.0/1.0 squeeze=0.312 damp=0.9875 | orig "pressure doesn't look at wall" | orig bounce
 														+ xL=2.56 m=0.99 yR=72.77 | OVERSHOOT:3.4 | tot_w=116250
 														! Great momenta after bounces
@@ -2579,7 +2579,7 @@
 																+ xL=2.86 m=0.98 yR=71.83 | OVERSHOOT:2.7 | tot_w=115630
 													! Conclusions: 
 														+ Zeroing helps, but it's wrong (it's in spring-by-spring loop, and done per-spring)
-														+ bounce doesn't affect overshoot much, but changes slope
+														+ Bounce doesn't affect overshoot much, but lowers slope keeping rotation at center
 
 
 												= Thoughts on velocity:
@@ -2608,7 +2608,7 @@
 																- After some time, magnitude of up becomes small though -- even before equilibrium
 															! Awful flatness though
 															! CONFIRMS: UPNESS IS WRONG
-													= Upness redesign
+													+ Upness redesign
 														+ With rest lengths (bounce=0.5, damp=0.9875):
 																- On diagonals: upness * rest_length = 1
 																- On verticals: upness * rest_length = 1
@@ -2626,19 +2626,19 @@
 															+ xL=1.74 m=0.96 yR=71.03 | OVERSHOOT:2.01 | tot_w=116271
 															+ Obliquity: good! Though interface is jigsawed
 															+ default_ship: good!
-														- To fight jagness:
 
-													- Damp @ 0.95:
+													= Damp @ 0.95:
 														- Rise is still smooth
 														- xL=3.5 m=0.98 yR=70.71 | OVERSHOOT:1.0 | tot_w=113197
-														- Obliquity:
+														- Obliquity: OK
 														- default_ship:
 
 
-													- TODOHERE: still upward velocity at uppermost layers @ equilibrium
+													- TODOHERE: still upward velocity at uppermost layers @ equilibrium, with low damping
 														- Problem: when no water flows, we maintain original velocity - verify @ eq there's no flows
 															- Indeed: flows are only down, but vel up stays
 																- TODOHERE: Though vel could result from flows from below
+														- Attempt redesign # 1: zero out momenta at each step, rebuilding based off in and out flows
 
 					- Water around hole has velocity _towards_ hole
 						- Because that's the only component left after expansion
@@ -2647,6 +2647,9 @@
 
 					= Render full water range
 						- The +1 for rendering is due to bottom having full water, top having 0 - interpolation pushes blue all the way up
+						- Possible fix 1: shader has to see water capped to 1.0, so it interpolates between 0 and 1
+							- Can we capped @ vertex shader!
+							- And then we map trivially
 
 
 					- Test goals:

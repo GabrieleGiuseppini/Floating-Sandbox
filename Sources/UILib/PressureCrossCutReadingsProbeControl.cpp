@@ -144,6 +144,28 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
     if (!mReadings.empty())
     {
         //
+        // Draw vertical reference line
+        //
+
+        for (size_t s = mViewLeftSampleI; s < mReadings.size() - 1; ++s)
+        {
+            // Draw vertical reference line
+            if (mReadings[s].WorldY >= 0.0f && mReadings[s+1].WorldY <= 0.0f)
+            {
+                dc.SetPen(mReferencePressurePen);
+
+                float const sampleIToX = static_cast<float>(mWidth) * mViewZoom / static_cast<float>(mReadings.size());
+
+                int const x =
+                    MapSampleIndexToX(s - mViewLeftSampleI)
+                    + static_cast<int>((mReadings[s].WorldY) / (mReadings[s].WorldY - mReadings[s + 1].WorldY) * sampleIToX);
+                dc.DrawLine(x, 1, x, GetSize().GetHeight() - 1);
+            }
+        }
+
+
+
+        //
         // Draw pressures
         //
 
@@ -154,7 +176,6 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
         int prevWaterY = 0;
         int prevTotalY = 0;
         float lastTotalValue = 0.0f;
-        float previousWorldY = std::numeric_limits<float>::max();
         for (int x = 0; x < mWidth; ++x)
         {
             size_t leftSampleI = mViewLeftSampleI + static_cast<size_t>(std::roundf(static_cast<float>(x) * xToSampleI));
@@ -183,15 +204,6 @@ void PressureCrossCutReadingsProbeControl::Render(wxDC & dc)
 
             if (x > 0)
             {
-                // Draw vertical reference line
-                if (previousWorldY > 0.0f && mReadings[leftSampleI].WorldY <= 0.0f)
-                {
-                    dc.SetPen(mReferencePressurePen);
-                    dc.DrawLine(x - 1, 1, x - 1, GetSize().GetHeight() - 1);
-                }
-
-                previousWorldY = mReadings[leftSampleI].WorldY;
-
                 dc.SetPen(mTotalPressurePen);
                 dc.DrawLine(x - 1, prevTotalY, x, totalY);
 
