@@ -541,8 +541,8 @@ void Ship::Update(
             // TODO: update comment above adding air pressure, and forces if we end up doing it here
             //UpdateWaterAndAirPressure_NewtonRhapson(simulationParameters, waterSplashedInStep);
             //UpdateWaterAndAirPressure_NewtonRhapson_2(simulationParameters, waterSplashedInStep);
-            UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(simulationParameters, waterSplashedInStep);
-            //UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(simulationParameters, waterSplashedInStep);
+            //UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep(simulationParameters, waterSplashedInStep);
+            UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(simulationParameters, waterSplashedInStep);
             //UpdateWaterAndAirPressure_GaussSeidel_1(simulationParameters, waterSplashedInStep);
             //UpdateWaterAndAirPressure_GaussSeidel_2(simulationParameters, waterSplashedInStep);
 
@@ -5876,28 +5876,42 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
 
     for (int iter = 0; iter < NumberOfIterations; ++iter)
     {
+        //
+        // Damp velocities
+        //
 
-
-        // TODOTEST: moved from outside into loop
-        // Calculate water momenta
-        mPoints.UpdateWaterMomentaFromVelocities();
-
-
-
-        // Source and result water buffers
-        auto oldPointWaterBuffer = mPoints.MakeWaterBufferCopy();
-        float const * restrict oldPointWaterBufferData = oldPointWaterBuffer->data();
-        float * restrict newPointWaterBufferData = mPoints.GetWaterBufferAsFloat();
-        vec2f * restrict oldPointWaterVelocityBufferData = mPoints.GetWaterVelocityBufferAsVec2();
-        vec2f * restrict newPointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
-        // Zero out momenta
+        float const dampingFactor = std::min(simulationParameters.AntiMatterBombImplosionStrength / 10.0f, 1.0f);
         for (auto pointIndex : mPoints.RawShipPoints())
         {
-            newPointWaterMomentumBufferData[pointIndex] = vec2f::zero();
+            mPoints.SetWaterVelocity(pointIndex, mPoints.GetWaterVelocity(pointIndex) * dampingFactor);
         }
 
+        vec2f const * const restrict oldPointWaterVelocityBufferData = mPoints.GetWaterVelocityBufferAsVec2();
+
+        //
+        // Prepare momenta
+        //
+
+        for (auto pointIndex : mPoints.RawShipPoints())
+        {
+            mPoints.SetWaterMomentum(pointIndex, vec2f::zero());
+        }
+
+        vec2f * const restrict newPointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
+
+        //
+        // Source and result water buffers
+        //
+
+        auto oldPointWaterBuffer = mPoints.MakeWaterBufferCopy();
+        float const * const restrict oldPointWaterBufferData = oldPointWaterBuffer->data();
+        float * const restrict newPointWaterBufferData = mPoints.GetWaterBufferAsFloat();
+
         // Source air buffers
-        auto oldPointAirPressureBufferData = mPoints.GetAirPressureBufferAsFloat();
+        float const * const oldPointAirPressureBufferData = mPoints.GetAirPressureBufferAsFloat();
+
+
+
 
         // TODOTEST
         if (mLastQueriedPointIndex != NoneElementIndex)
@@ -5909,6 +5923,9 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
         float todoTotalWInAtQueriedPoint = 0.0f;
         vec2f todoTotalWMomentumOutAtQueriedPoint = vec2f::zero();
         vec2f todoTotalWMomentumInAtQueriedPoint = vec2f::zero();
+
+
+
 
         for (auto pointIndex : mPoints.RawShipPoints())
         {
@@ -5946,7 +5963,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                     ? mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex)
                     : -mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex);
 
-                // Upness: TODOHERE -- 1.0 when up, -1.0 when down - it's cos(alpha) with alpha being angle with upward vector
+                // Upness and downess
 
                 // TODOTEST
                 //float const springUpness = springNormalizedVector.y;
@@ -6064,10 +6081,10 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                     // TODOTEST: orig
                     //springOutboundScalarWaterVelocity
                     // TODOTEST: new
-                    springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> *oldPointWaterBufferData[pointIndex]
+                    springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> * oldPointWaterBufferData[pointIndex]
                     / mSprings.GetFactoryRestLength(cs.SpringIndex);
 
-                // Resultant outbound velocity along spring
+                // Resultant outbound velocity vector along spring
                 springOutboundWaterVelocities[s] =
                     springNormalizedVector
                     * springOutboundScalarWaterVelocity;
@@ -6141,12 +6158,20 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
             waterQuantityNormalizationFactor /= static_cast<float>(NumberOfIterations);
 
             //
-            // 3) Move water/air along all springs according to their flows,
+            // 3) Add to this point's water momentum the momentum that stays
+            //
+
+            float const pointTotalWaterOut = totalOutboundWaterFlowWeight * waterQuantityNormalizationFactor;
+            float const pointRemainingWater = std::max(oldPointWaterBufferData[pointIndex] - pointTotalWaterOut, 0.0f);
+            newPointWaterMomentumBufferData[pointIndex] += oldPointWaterVelocityBufferData[pointIndex] * pointRemainingWater;
+
+            //
+            // 4) Move water/air along all springs according to their flows,
             //    and update destination's momenta accordingly
             //
 
 #if !FS_IS_PLATFORM_MOBILE()
-        // Kinetic energy lost at this point
+            // Kinetic energy lost at this point
             pointKineticEnergyLoss = 0.0f;
 #endif
 
@@ -6154,6 +6179,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
             {
                 auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
 
+                // Deleted springs are removed from points' connected springs
+                assert(!mSprings.IsDeleted(cs.SpringIndex));
 
                 //
                 // Water
@@ -6235,9 +6262,6 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                 {
                     // Wall hit
 
-                    // Deleted springs are removed from points' connected springs
-                    assert(!mSprings.IsDeleted(cs.SpringIndex));
-
                     //
                     // New momentum (old velocity + velocity gained) bounces back
                     // (and zeroes outgoing), assuming perfectly inelastic collision
@@ -6303,18 +6327,6 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
             LogMessage("Total WOut=", todoTotalWOutAtQueriedPoint, " WIn=", todoTotalWInAtQueriedPoint, " WNetOut=", (todoTotalWOutAtQueriedPoint - todoTotalWInAtQueriedPoint));
             LogMessage("Total WMomOut=", todoTotalWMomentumOutAtQueriedPoint, " WMomIn=", todoTotalWMomentumInAtQueriedPoint, " WMomNetOut=", (todoTotalWMomentumOutAtQueriedPoint - todoTotalWMomentumInAtQueriedPoint));
         }
-
-
-        // TODOTEST
-        //
-        // Damp water velocities
-        //
-
-        for (auto pointIndex : mPoints.RawShipPoints())
-        {
-            mPoints.SetWaterVelocity(pointIndex, mPoints.GetWaterVelocity(pointIndex) * std::min(simulationParameters.AntiMatterBombImplosionStrength / 10.0f, 1.0f));
-        }
-
     } // Iter loop
 
 #if !FS_IS_PLATFORM_MOBILE()

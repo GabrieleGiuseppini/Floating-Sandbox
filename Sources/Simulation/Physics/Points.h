@@ -1801,10 +1801,15 @@ public:
         return mWaterVelocityBuffer.data();
     }
 
-    /*
-     * Only valid after a call to UpdateWaterMomentaFromVelocities() and when
-     * neither water quantities nor velocities have changed.
-     */
+    // TODOTEST: these should go and be replaced by a simple work buffer, which is then passed to UpdateWaterVelocitiesFromMomenta
+    // or UpdateWaterVelocitiesFromMomenta is moved inline @ caller
+    void SetWaterMomentum(
+        ElementIndex pointElementIndex,
+        vec2f const & waterMomentum)
+    {
+        mWaterMomentumBuffer[pointElementIndex] = waterMomentum;
+    }
+
     vec2f * GetWaterMomentumBufferAsVec2f()
     {
         return mWaterMomentumBuffer.data();

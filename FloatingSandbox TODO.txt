@@ -2642,21 +2642,32 @@
 														! Problem: when no water flows, we maintain somehow original velocity
 															+ Indeed: flows are only down, but vel up stays
 																+ Though vel could result from flows from below
-														= Attempt redesign # 1: zero out momenta at each step, rebuilding based off in and out flows
+														X Attempt redesign # 1: zero out momenta at each step, rebuilding based off in and out flows
 															+ New momenta = 0.0
 															+ Loop:
 																+ Add momenta for all inflows
 															+ Momenta -> velocities
-
 															+ Damp @ 1.0:
 																! Very low momenta & velocities
 																+ xL=5.47 m=1.02 yR=72.01 | OVERSHOOT:-0.5 [real] | tot_w=110799
 																+ default_ship: slowish
 																+ Obliquity: jagged but ok
+															! Conclusion: very slow, and theoretically wrong
+														- Attempt redesign # 2: new math
+															! Velocities gradually lower going up - fantastic
+															! Momenta magnitudes look reasonable
+															! FIX: topmost layer however still shows upward vel - but layer underneath shows zero
 
-														- Need more momentum
-															X Crazyness @ 0.281
-															- TODOHERE: try with moving momenta
+															+ Damp @ 0.9875, bounce @ 5: OVERSHOOT +1.0
+															+ Damp @ 0.9750, bounce @ 5:
+																+ xL=3.02 m=0.97 yR=71.10 | OVERSHOOT:0.6 [real] -- and growing | tot_w=114240
+																+ default_ship: good!
+																+ Obliquity: good!
+
+															- Points arounds holes still have vel against hole
+															- Points were bounce occurs still point towards outside
+															- Try with more bounce
+
 
 
 					- Water around hole has velocity _towards_ hole
@@ -2673,8 +2684,10 @@
 						= Possible fix 2: as above, but with original pow
 							- TODOHERE: but now there's gap from hull walls
 						- Possible fix 3: back to fragment, and use air
+							- max(Water-Air, 0.0)
 						- Cleanup
 						
+					- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
 
 
 					- Test goals:
