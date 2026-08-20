@@ -5888,6 +5888,14 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
 
         vec2f const * const restrict oldPointWaterVelocityBufferData = mPoints.GetWaterVelocityBufferAsVec2();
 
+        // TODOTEST
+        if (mLastQueriedPointIndex != NoneElementIndex)
+        {
+            LogMessage("================");
+            LogMessage("Start W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", mPoints.GetWaterVelocity(mLastQueriedPointIndex),
+                       " WMom=", mPoints.GetWaterMomentumBufferAsVec2f()[mLastQueriedPointIndex], "  Start A=", mPoints.GetAirPressure(mLastQueriedPointIndex));
+        }
+
         //
         // Prepare momenta
         //
@@ -5912,13 +5920,6 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
 
 
 
-
-        // TODOTEST
-        if (mLastQueriedPointIndex != NoneElementIndex)
-        {
-            LogMessage("================");
-            LogMessage("Start W: ", oldPointWaterBufferData[mLastQueriedPointIndex], "  Start A: ", oldPointAirPressureBufferData[mLastQueriedPointIndex]);
-        }
         float todoTotalWOutAtQueriedPoint = 0.0f;
         float todoTotalWInAtQueriedPoint = 0.0f;
         vec2f todoTotalWMomentumOutAtQueriedPoint = vec2f::zero();
@@ -6096,7 +6097,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                 // TODOTEST
                 if (pointIndex == mLastQueriedPointIndex)
                 {
-                    LogMessage("  W Out: springOutboundWaterFlowWeights=", springOutboundWaterFlowWeights[s], " dw=", dw, " upness=", springUpness, " downness=", springDownness);
+                    LogMessage("  W Out: springOutboundWaterFlowWeights=", springOutboundWaterFlowWeights[s], " dw=", dw, " springDir=", springNormalizedVector,
+                               " upness=", springUpness, " downness=", springDownness);
                     LogMessage("         pThis=", oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex] * springDownness,
                         " pOther=", oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness,
                         " bVel=", bernoulliVelocityAlongSpring, " wVel=", pointWaterVelocityAlongSpring);
@@ -6165,6 +6167,12 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
             float const pointRemainingWater = std::max(oldPointWaterBufferData[pointIndex] - pointTotalWaterOut, 0.0f);
             newPointWaterMomentumBufferData[pointIndex] += oldPointWaterVelocityBufferData[pointIndex] * pointRemainingWater;
 
+            // TODOTEST
+            if (pointIndex == mLastQueriedPointIndex)
+            {
+                LogMessage("  W Init: remaining=", pointRemainingWater, " new mom=", oldPointWaterVelocityBufferData[pointIndex] * pointRemainingWater, " final mom=", newPointWaterMomentumBufferData[pointIndex]);
+            }
+
             //
             // 4) Move water/air along all springs according to their flows,
             //    and update destination's momenta accordingly
@@ -6199,25 +6207,6 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                     // Water - and momentum - move from point to endpoint
                     //
 
-                    // TODOTEST
-                    if (pointIndex == mLastQueriedPointIndex)
-                    {
-                        LogMessage("  W: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " (w=", springOutboundWaterFlowWeights[s], " norm=", waterQuantityNormalizationFactor, ")");
-                        todoTotalWOutAtQueriedPoint += springOutboundQuantityOfWater;
-
-                        todoTotalWMomentumOutAtQueriedPoint +=
-                            oldPointWaterVelocityBufferData[pointIndex]
-                            * springOutboundQuantityOfWater;
-                    }
-                    else if (cs.OtherEndpointIndex == mLastQueriedPointIndex)
-                    {
-                        todoTotalWInAtQueriedPoint += springOutboundQuantityOfWater;
-
-                        todoTotalWMomentumInAtQueriedPoint +=
-                            springOutboundWaterVelocities[s]
-                            * springOutboundQuantityOfWater;
-                    }
-
                     // Move water quantity
                     newPointWaterBufferData[pointIndex] -= springOutboundQuantityOfWater;
                     newPointWaterBufferData[cs.OtherEndpointIndex] += springOutboundQuantityOfWater;
@@ -6226,6 +6215,25 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                     newPointWaterMomentumBufferData[cs.OtherEndpointIndex] +=
                         springOutboundWaterVelocities[s]
                         * springOutboundQuantityOfWater;
+
+                    // TODOTEST
+                    if (pointIndex == mLastQueriedPointIndex)
+                    {
+                        LogMessage("  W Out: springOutboundQuantityOfWater=", springOutboundQuantityOfWater);
+
+                        todoTotalWOutAtQueriedPoint += springOutboundQuantityOfWater;
+                    }
+                    else if (cs.OtherEndpointIndex == mLastQueriedPointIndex)
+                    {
+                        LogMessage("  W In: springOutboundQuantityOfWater=", springOutboundQuantityOfWater,
+                            " mom in=", springOutboundWaterVelocities[s] * springOutboundQuantityOfWater, " final mom=", newPointWaterMomentumBufferData[cs.OtherEndpointIndex]);
+
+                        todoTotalWInAtQueriedPoint += springOutboundQuantityOfWater;
+
+                        todoTotalWMomentumInAtQueriedPoint +=
+                            springOutboundWaterVelocities[s]
+                            * springOutboundQuantityOfWater;
+                    }
 
 #if !FS_IS_PLATFORM_MOBILE()
                     //
@@ -6273,6 +6281,18 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                     newPointWaterMomentumBufferData[pointIndex] +=
                         -springOutboundWaterVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f)
                         * springOutboundQuantityOfWater;
+
+                    // TODOTEST
+                    if (pointIndex == mLastQueriedPointIndex)
+                    {
+                        LogMessage("  W Bounce: springOutboundQuantityOfWater=", springOutboundQuantityOfWater,
+                            " mom add=", -springOutboundWaterVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f),
+                            " final mom=", newPointWaterMomentumBufferData[pointIndex]);
+
+                        todoTotalWMomentumInAtQueriedPoint +=
+                            -springOutboundWaterVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f)
+                            * springOutboundQuantityOfWater;
+                    }
 
 #if !FS_IS_PLATFORM_MOBILE()
                     //
@@ -6327,6 +6347,15 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
             LogMessage("Total WOut=", todoTotalWOutAtQueriedPoint, " WIn=", todoTotalWInAtQueriedPoint, " WNetOut=", (todoTotalWOutAtQueriedPoint - todoTotalWInAtQueriedPoint));
             LogMessage("Total WMomOut=", todoTotalWMomentumOutAtQueriedPoint, " WMomIn=", todoTotalWMomentumInAtQueriedPoint, " WMomNetOut=", (todoTotalWMomentumOutAtQueriedPoint - todoTotalWMomentumInAtQueriedPoint));
         }
+
+        // TODOTEST
+        if (mLastQueriedPointIndex != NoneElementIndex)
+        {
+            LogMessage("================");
+            LogMessage("End W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", mPoints.GetWaterVelocity(mLastQueriedPointIndex),
+                " WMom=", mPoints.GetWaterMomentumBufferAsVec2f()[mLastQueriedPointIndex], "  Start A=", mPoints.GetAirPressure(mLastQueriedPointIndex));
+        }
+
     } // Iter loop
 
 #if !FS_IS_PLATFORM_MOBILE()
@@ -6608,7 +6637,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
     //ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8283;
     ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8150;
     //ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 639;
-    ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 738;
+    ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 640;
     if (PressureCrossCutReadingsStartPointIndex < mPoints.GetRawShipPointCount())
     {
         ElementIndex prevPointIndex = PressureCrossCutReadingsStartPointIndex;

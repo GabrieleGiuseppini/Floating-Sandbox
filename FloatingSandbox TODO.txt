@@ -2663,10 +2663,33 @@
 																+ xL=3.02 m=0.97 yR=71.10 | OVERSHOOT:0.6 [real] -- and growing | tot_w=114240
 																+ default_ship: good!
 																+ Obliquity: good!
+															+ Damp @ 0.9750, bounce @ 10:
+																+ xL=3.19 m=0.98 yR=71.31 | OVERSHOOT:1.0 [real] | tot_w=114397
 
 															- Points arounds holes still have vel against hole
 															- Points were bounce occurs still point towards outside
 															- Try with more bounce
+															- Investigate:
+																+ Extend readings to bottom
+																+ Log initial momentum -- always printing delta and final
+																+ Complete logs @ move -- always printing delta and final
+																+ Log starting vels
+																+ Log ending
+																+ Log spring dirs
+																- Conclusions:
+																	- So little w goes out at a step, that remaining momentum is a lot:
+
+																	What happened:
+																		0.09 came out, with net mom up for 0.016 - more than damping loss -- TODOHERE: how can this net mom be positive?
+																		Tallying up:
+																	W In: springOutboundQuantityOfWater=0.015599 mom in=(-0.0161159411073, 0.0161319673061) final mom=(-0.0161159411073, 0.0161319673061)
+																	W Out: springOutboundQuantityOfWater=0.0372126
+																	W Out: springOutboundQuantityOfWater=0.023517
+																	W Out: springOutboundQuantityOfWater=0.00825744
+																	W Out: springOutboundQuantityOfWater=0.0375608
+
+																		- Explains top maintaining top
+																		- Explains bottom pointing at bottom
 
 
 
