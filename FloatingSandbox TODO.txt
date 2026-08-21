@@ -2688,13 +2688,21 @@
 																		+ At final vel (bernoulli + own)
 																		+ ...once stored, can keep code as-is for momenta calcn's
 																		! WAY BETTER!
-																		+ xL=4.37-4.43 m=0.99 yR=72.07-72.13 | OVERSHOOT:CENTERED | tot_w=112400 [LONG EQUILIBRIUM]
-																		- default_ship
-																		- Obliquity
+																		+ xL=4.37-4.43 m=0.99 yR=72.07-72.13 | OVERSHOOT:CENTERED | tot_w=112400 [LONG EQUILIBRIUM]																		
 																		! Still leftover upward vel, most at topmost layer
 
+																		= Damp @ 0.9875:
+																			+ xL=4.19-4.23 m=0.99 yR=72.03-72.06 | OVERSHOOT:CENTERED | tot_w=112581
+																			+ default_ship: GOOD!
+																			- Obliquity: CONVERGES TO FLAT!
+
 																	- Option 2: We're not braking for air
-																		! Air does _not_ come in, because of higher W pressure than air
+																		! Note that Air does _not_ come in from above - because of higher W pressure than air - so we can't use incoming air to brake
+																		- @ Point:
+																			- If we find negative pressure along spring because of air on the other side, point's momentum must brake
+																				- There will be no incoming momentum
+																			- If we find negative pressure along spring because of water on the other side, that water will come in and add opposite momentum
+																				- What happens to own momentum?
 
 
 
