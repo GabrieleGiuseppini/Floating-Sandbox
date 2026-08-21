@@ -2684,17 +2684,25 @@
 
 																	- Is it a balance problem? 
 
-																	= Option 1: try relative vel
+																	+ Option 1: try relative vel
 																		+ At final vel (bernoulli + own)
 																		+ ...once stored, can keep code as-is for momenta calcn's
 																		! WAY BETTER!
 																		+ xL=4.37-4.43 m=0.99 yR=72.07-72.13 | OVERSHOOT:CENTERED | tot_w=112400 [LONG EQUILIBRIUM]																		
 																		! Still leftover upward vel, most at topmost layer
 
-																		= Damp @ 0.9875:
+																		+ Damp @ 0.9875:
 																			+ xL=4.19-4.23 m=0.99 yR=72.03-72.06 | OVERSHOOT:CENTERED | tot_w=112581
 																			+ default_ship: GOOD!
-																			- Obliquity: CONVERGES TO FLAT!
+																			+ Obliquity: CONVERGES TO FLAT!
+
+																		+ Damp @ 1.0:
+																			+ xL=4.51 m=1.0 yR=72.83 | OVERSHOOT:CENTERED | tot_w=112100
+																			+ default ship: GOOD!
+
+																	- FIX: stepwise horizontal
+																		! Cause: even with upness=0, side air has too much pressure for water to flow
+																			- Inject Rayleigh-Taylor
 
 																	- Option 2: We're not braking for air
 																		! Note that Air does _not_ come in from above - because of higher W pressure than air - so we can't use incoming air to brake
@@ -2705,6 +2713,7 @@
 																				- What happens to own momentum?
 
 
+					- Try adding air velocity: should help with stepwise horizontal
 
 													
 
@@ -2753,8 +2762,6 @@
 							- See if can simplify math by having Formulae directly in equivalent water height's
 						- Points.h: commented-out GetCumulatedOutflownAirPressure
 
-				- Try adding air velocity
-
 				- Temperature <-> Air Pressure
 					- A new step, before pressure, makes EffectiveAirPressure from AirPressure and Temperature
 				+ Finalize unit of AirPressure
@@ -2782,6 +2789,8 @@
 				- Cleanup
 				
 			- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
+
+			- Lower bulkheads @ default Titanic & make air escape, as it now takes forever
 
 
 			- Tests:

@@ -41,7 +41,9 @@ void main()
     // 0.4 @ 1, 1 @ 10
     // y = 0.4*x^0.39794
     //vertexAttributes1.y = min(pow(vertexAttributes1.y, paramWaterLevelOfDetail), 1.0);
-    vertexAttributes1.y = min(0.4 * pow(vertexAttributes1.y, paramWaterLevelOfDetail), 1.0);
+    //vertexAttributes1.y = min(0.2 * pow(vertexAttributes1.y, paramWaterLevelOfDetail), 1.0);
+    vertexAttributes1.y = min(1.-1./exp(vertexAttributes1.y * paramWaterLevelOfDetail), 1.0);
+
     vertexAttributes2 = inShipPointAttributeGroup2;
     vertexTextureCoords = inShipPointTextureCoordinates;
 
