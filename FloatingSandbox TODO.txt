@@ -2653,7 +2653,7 @@
 																+ default_ship: slowish
 																+ Obliquity: jagged but ok
 															! Conclusion: very slow, and theoretically wrong
-														- Attempt redesign # 2: new math
+														= Attempt redesign # 2: new math
 															! Velocities gradually lower going up - fantastic
 															! Momenta magnitudes look reasonable
 															! FIX: topmost layer however still shows upward vel - but layer underneath shows zero
@@ -2665,10 +2665,10 @@
 																+ Obliquity: good!
 															+ Damp @ 0.9750, bounce @ 10:
 																+ xL=3.19 m=0.98 yR=71.31 | OVERSHOOT:1.0 [real] | tot_w=114397
+															+ Try with more bounce
 
 															- Points arounds holes still have vel against hole
 															- Points were bounce occurs still point towards outside
-															- Try with more bounce
 															- Investigate:
 																+ Extend readings to bottom
 																+ Log initial momentum -- always printing delta and final
@@ -2676,38 +2676,32 @@
 																+ Log starting vels
 																+ Log ending
 																+ Log spring dirs
-																- Conclusions:
-																	- So little w goes out at a step, that remaining momentum is a lot
-																	- Explains slope < 1.0
-																	- Explains interface maintaining upward velocity
-																	- Explains bottom with velocity pointing at bottom
+																= Conclusions:
+																	! At interface: momentum lost because of mass out (downward) not balanced by momentum gained because of momentum in (from below)																		
+																		! Explains interface maintaining upward velocity
+																			! Explains slope < 1.0
+																		! Explains bottom with velocity pointing at bottom
 
-																	= We're not braking for air
+																	- Is it a balance problem? 
+
+																	= Option 1: try relative vel
+																		+ At final vel (bernoulli + own)
+																		+ ...once stored, can keep code as-is for momenta calcn's
+																		! WAY BETTER!
+																		+ xL=4.37-4.43 m=0.99 yR=72.07-72.13 | OVERSHOOT:CENTERED | tot_w=112400 [LONG EQUILIBRIUM]
+																		- default_ship
+																		- Obliquity
+																		! Still leftover upward vel, most at topmost layer
+
+																	- Option 2: We're not braking for air
 																		! Air does _not_ come in, because of higher W pressure than air
 
 
 
-					- Water around hole has velocity _towards_ hole
-						- Because that's the only component left after expansion
-
 													
 
-					= Render full water range
-						! The +1 for rendering is due to bottom having full water, top having 0 - interpolation pushes blue all the way up
-						X Possible fix 1: shader has to see water capped to 1.0, so it interpolates between 0 and 1
-							+ Can be capped @ vertex shader!
-							+ And then we map trivially
-							X But now, it's stepwise: full blue at just some water
-						= Possible fix 2: as above, but with original pow
-							- TODOHERE: but now there's gap from hull walls
-						- Possible fix 3: back to fragment, and use air
-							- max(Water-Air, 0.0)
-						- Cleanup
-						
-					- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
 
-
-					- Test goals:
+					- Success criteria:
 						- Water level stops in bell
 							- At right height
 						- Water level reaching ocean 
@@ -2751,6 +2745,8 @@
 							- See if can simplify math by having Formulae directly in equivalent water height's
 						- Points.h: commented-out GetCumulatedOutflownAirPressure
 
+				- Try adding air velocity
+
 				- Temperature <-> Air Pressure
 					- A new step, before pressure, makes EffectiveAirPressure from AirPressure and Temperature
 				+ Finalize unit of AirPressure
@@ -2765,7 +2761,21 @@
 					- Flood
 					- Internal Pressure
 
-			- See why rightmost point does not get flooded
+			= Render full water range
+				! The +1 by rendering is due to bottom having full water, top having 0 - interpolation pushes blue all the way up
+				X Possible fix 1: shader has to see water capped to 1.0, so it interpolates between 0 and 1
+					+ Can be capped @ vertex shader!
+					+ And then we map trivially
+					X But now, it's stepwise: full blue at just some water
+				= Possible fix 2: as above, but with original pow
+					- TODOHERE: but now there's gap from hull walls
+				- Possible fix 3: back to fragment, and use air
+					- max(Water-Air, 0.0)
+				- Cleanup
+				
+			- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
+
+
 			- Tests:
 				- Flotsam: water intake
 				- Rain: water intake
@@ -2775,21 +2785,6 @@
 				- Flooding speeds compared with previous version
 
 
-			- Decide if need to change Air to "moles"
-				- Quantity is multiplier of number of moles in 1m3 which make pressure == bottom of 1m water column
-				- Update actions below based on this
-
-			- Multiple runs of moves:
-				- Do perf baseline with prev release
-				- Don't forget to account for # of iterations @ moves
-					- Diffusion speeds: lock them down
-						- Local values from optimals found, obviously adjusted for # iterations
-						- Nuke SimulationParams
-				- Reading @ end of all
-
-				- Optimizations:
-					- See if can calc kinetic/splashes simply by looking @ before and after
-					- At each pass, calculate air pressures in local buffer - based on T and W
 
 			- Cleanup:
 				- Nuke InternalPressure concept
