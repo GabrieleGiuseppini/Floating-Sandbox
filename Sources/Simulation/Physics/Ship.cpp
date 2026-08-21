@@ -6077,8 +6077,9 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                 // along this spring will be picked up later also by the other endpoint,
                 // and at that time it would move water if it agrees with its velocity
                 float const springOutboundScalarWaterVelocity = std::max(
-                    // TODOTEST
+                    // TODOTEST: ORIG
                     //pointWaterVelocityAlongSpring + bernoulliVelocityAlongSpring * alphaCrazyness,
+                    // TODOTEST: relative velocity
                     (pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector)) + bernoulliVelocityAlongSpring * alphaCrazyness,
                     0.0f);
 
@@ -6086,10 +6087,11 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                 // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
                 springOutboundWaterFlowWeights[s] =
                     // TODOTEST: orig
-                    //springOutboundScalarWaterVelocity
+                    springOutboundScalarWaterVelocity
                     // TODOTEST: new
-                    springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> * oldPointWaterBufferData[pointIndex]
+                    //springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> *oldPointWaterBufferData[pointIndex]
                     / mSprings.GetFactoryRestLength(cs.SpringIndex);
+                    ;
 
                 // Resultant outbound velocity vector along spring
                 springOutboundWaterVelocities[s] =

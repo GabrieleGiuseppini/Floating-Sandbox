@@ -2692,7 +2692,7 @@
 																		! Still leftover upward vel, most at topmost layer
 
 																		+ Damp @ 0.9875:
-																			+ xL=4.19-4.23 m=0.99 yR=72.03-72.06 | OVERSHOOT:CENTERED | tot_w=112581
+																			+ xL=4.19-4.23 m=0.99 yR=72.03-72.06 | OVERSHOOT:1.0 @ CENTER | tot_w=112581
 																			+ default_ship: GOOD!
 																			+ Obliquity: CONVERGES TO FLAT!
 
@@ -2700,9 +2700,16 @@
 																			+ xL=4.51 m=1.0 yR=72.83 | OVERSHOOT:CENTERED | tot_w=112100
 																			+ default ship: GOOD!
 
+																		+ w/out dt * old_water @ weight calc'n; a_speed/w_speed=2.0/0.344:
+																			! Velocities against borders now all agree
+																			+ xL=4.77 m=1.00 yR=72.36 | OVERSHOOT:0.2 @ CENTER | tot_w=111600
+																			+ default_ship: GOOD!
+																			+ Obliquity: CONVERGES TO FLAT!
+
 																	- FIX: stepwise horizontal
 																		! Cause: even with upness=0, side air has too much pressure for water to flow
-																			- Inject Rayleigh-Taylor
+																			! Should also fix obliquity
+																		- Inject Rayleigh-Taylor
 
 																	- Option 2: We're not braking for air
 																		! Note that Air does _not_ come in from above - because of higher W pressure than air - so we can't use incoming air to brake
@@ -2775,6 +2782,7 @@
 				- Tools:
 					- Flood
 					- Internal Pressure
+				- Imparted water velocities w/move tool - et al?
 
 			= Render full water range
 				! The +1 by rendering is due to bottom having full water, top having 0 - interpolation pushes blue all the way up
