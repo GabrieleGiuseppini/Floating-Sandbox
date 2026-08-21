@@ -2677,19 +2677,13 @@
 																+ Log ending
 																+ Log spring dirs
 																- Conclusions:
-																	- So little w goes out at a step, that remaining momentum is a lot:
+																	- So little w goes out at a step, that remaining momentum is a lot
+																	- Explains slope < 1.0
+																	- Explains interface maintaining upward velocity
+																	- Explains bottom with velocity pointing at bottom
 
-																	What happened:
-																		0.09 came out, with net mom up for 0.016 - more than damping loss -- TODOHERE: how can this net mom be positive?
-																		Tallying up:
-																	W In: springOutboundQuantityOfWater=0.015599 mom in=(-0.0161159411073, 0.0161319673061) final mom=(-0.0161159411073, 0.0161319673061)
-																	W Out: springOutboundQuantityOfWater=0.0372126
-																	W Out: springOutboundQuantityOfWater=0.023517
-																	W Out: springOutboundQuantityOfWater=0.00825744
-																	W Out: springOutboundQuantityOfWater=0.0375608
-
-																		- Explains top maintaining top
-																		- Explains bottom pointing at bottom
+																	= We're not braking for air
+																		! Air does _not_ come in, because of higher W pressure than air
 
 
 

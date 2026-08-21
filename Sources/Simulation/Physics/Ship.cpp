@@ -5880,9 +5880,13 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
         // Damp velocities
         //
 
+        vec2f lastQueriedPointInitialVelocity = vec2f::zero();
+
         float const dampingFactor = std::min(simulationParameters.AntiMatterBombImplosionStrength / 10.0f, 1.0f);
         for (auto pointIndex : mPoints.RawShipPoints())
         {
+            if (pointIndex == mLastQueriedPointIndex)
+                lastQueriedPointInitialVelocity = mPoints.GetWaterVelocity(pointIndex);
             mPoints.SetWaterVelocity(pointIndex, mPoints.GetWaterVelocity(pointIndex) * dampingFactor);
         }
 
@@ -5892,7 +5896,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
         if (mLastQueriedPointIndex != NoneElementIndex)
         {
             LogMessage("================");
-            LogMessage("Start W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", mPoints.GetWaterVelocity(mLastQueriedPointIndex),
+            LogMessage("Start W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", lastQueriedPointInitialVelocity, " -> ", mPoints.GetWaterVelocity(mLastQueriedPointIndex),
                        " WMom=", mPoints.GetWaterMomentumBufferAsVec2f()[mLastQueriedPointIndex], "  Start A=", mPoints.GetAirPressure(mLastQueriedPointIndex));
         }
 
@@ -6190,6 +6194,11 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                 // Deleted springs are removed from points' connected springs
                 assert(!mSprings.IsDeleted(cs.SpringIndex));
 
+                // Normalized spring vector, oriented point -> other endpoint
+                vec2f const springNormalizedVector = (pointIndex == mSprings.GetEndpointAIndex(cs.SpringIndex))
+                    ? mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex)
+                    : -mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex);
+
                 //
                 // Water
                 //
@@ -6219,13 +6228,13 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                     // TODOTEST
                     if (pointIndex == mLastQueriedPointIndex)
                     {
-                        LogMessage("  W Out: springOutboundQuantityOfWater=", springOutboundQuantityOfWater);
+                        LogMessage("  W Out: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector);
 
                         todoTotalWOutAtQueriedPoint += springOutboundQuantityOfWater;
                     }
                     else if (cs.OtherEndpointIndex == mLastQueriedPointIndex)
                     {
-                        LogMessage("  W In: springOutboundQuantityOfWater=", springOutboundQuantityOfWater,
+                        LogMessage("  W In: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector,
                             " mom in=", springOutboundWaterVelocities[s] * springOutboundQuantityOfWater, " final mom=", newPointWaterMomentumBufferData[cs.OtherEndpointIndex]);
 
                         todoTotalWInAtQueriedPoint += springOutboundQuantityOfWater;
@@ -6240,11 +6249,6 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                     // Update point's kinetic energy loss:
                     // splintered water colliding with whole other endpoint
                     //
-
-                    // Normalized spring vector, oriented point -> other endpoint
-                    vec2f const springNormalizedVector = (pointIndex == mSprings.GetEndpointAIndex(cs.SpringIndex))
-                        ? mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex)
-                        : -mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex);
 
                     float ma = springOutboundQuantityOfWater;
                     float va = springOutboundWaterVelocities[s].length();
@@ -6285,7 +6289,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                     // TODOTEST
                     if (pointIndex == mLastQueriedPointIndex)
                     {
-                        LogMessage("  W Bounce: springOutboundQuantityOfWater=", springOutboundQuantityOfWater,
+                        LogMessage("  W Bounce: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector,
                             " mom add=", -springOutboundWaterVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f),
                             " final mom=", newPointWaterMomentumBufferData[pointIndex]);
 
@@ -6403,7 +6407,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
             LogMessage("================");
             LogMessage("Start W: ", oldPointWaterBufferData[mLastQueriedPointIndex], "  Start A: ", oldPointAirPressureBufferData[mLastQueriedPointIndex]);
         }
-        float todoTotalAOut = 0.0f;
+        float todoTotalAOutAtQueriedPoint = 0.0f;
+        float todoTotalAInAtQueriedPoint = 0.0f;
 
 
         for (auto pointIndex : mPoints.RawShipPoints())
@@ -6528,7 +6533,8 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                 // TODOTEST
                 if (pointIndex == mLastQueriedPointIndex)
                 {
-                    LogMessage("  A Out: dAir=", dAir, " upwardVelocity=", upwardVelocity, " airMoved=", airMoved, " upness=", springUpness, " downness=", springDownness,
+                    LogMessage("  A Out: dAir=", dAir, " pThis=", (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex]), " pOther=", (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]),
+                        " upwardVelocity=", upwardVelocity, " airMoved=", airMoved, " springDir=", springNormalizedVector, " upness=", springUpness, " downness=", springDownness,
                         " springOutboundAirFlowWeights=", springOutboundAirFlowWeights[s]);
                 }
             }
@@ -6597,11 +6603,24 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                     springOutboundAirFlowWeights[s] * airPressureQuantityNormalizationFactor,
                     newPointAirPressureBufferData[pointIndex]);
 
+                // Normalized spring vector, oriented point -> other endpoint
+                vec2f const springNormalizedVector = (pointIndex == mSprings.GetEndpointAIndex(cs.SpringIndex))
+                    ? mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex)
+                    : -mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex);
+
                 // TODOTEST
                 if (pointIndex == mLastQueriedPointIndex)
                 {
-                    LogMessage("  A: springOutboundQuantityOfAirPressure=", springOutboundQuantityOfAirPressure, " (w=", springOutboundAirFlowWeights[s], " norm=", airPressureQuantityNormalizationFactor, ")");
-                    todoTotalAOut += springOutboundQuantityOfAirPressure;
+                    LogMessage("  A Out: springOutboundQuantityOfAirPressure=", springOutboundQuantityOfAirPressure, " dir=", springNormalizedVector);
+
+                    todoTotalAOutAtQueriedPoint += springOutboundQuantityOfAirPressure;
+                }
+                else if (cs.OtherEndpointIndex == mLastQueriedPointIndex)
+                {
+                    LogMessage("  A In: springOutboundQuantityOfAirPressure=", springOutboundQuantityOfAirPressure, " dir=", springNormalizedVector);
+                    //    " mom in=", springOutboundWaterVelocities[s] * springOutboundQuantityOfWater, " final mom=", newPointWaterMomentumBufferData[cs.OtherEndpointIndex]);
+
+                    todoTotalAInAtQueriedPoint += springOutboundQuantityOfAirPressure;
                 }
 
                 assert(springOutboundQuantityOfAirPressure >= 0.0f);
@@ -6621,7 +6640,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
         // TODOTEST
         if (mLastQueriedPointIndex != NoneElementIndex)
         {
-            LogMessage("Total A Out: ", todoTotalAOut);
+            LogMessage("Total AOut=", todoTotalAOutAtQueriedPoint, " AIn=", todoTotalAInAtQueriedPoint, " ANetOut=", (todoTotalAOutAtQueriedPoint - todoTotalAInAtQueriedPoint));
         }
 
     } // Iter loop
