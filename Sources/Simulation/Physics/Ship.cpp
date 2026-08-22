@@ -6084,6 +6084,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                     0.0f);
 
                 // Store weight along spring, as quantity of water (& pressure) moved by velocity;
+                // TODO: comment on not using dt * old_water, as dt is simply multiplicative, and norm factor adds
                 // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
                 springOutboundWaterFlowWeights[s] =
                     // TODOTEST: orig
