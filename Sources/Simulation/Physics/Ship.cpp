@@ -5864,17 +5864,13 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
     //
 
     // TODOTEST
-    //int constexpr NumberOfIterations = 4;
-    int constexpr NumberOfIterations = 2;
-    //int constexpr NumberOfIterations = 1;
-    //int constexpr NumberOfIterations = 32;
-
+    int constexpr NumberOfWaterIterations = 2;
 
     //
     // Water step
     //
 
-    for (int iter = 0; iter < NumberOfIterations; ++iter)
+    for (int iter = 0; iter < NumberOfWaterIterations; ++iter)
     {
         //
         // Damp velocities
@@ -6080,11 +6076,15 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
                     // TODOTEST: ORIG
                     //pointWaterVelocityAlongSpring + bernoulliVelocityAlongSpring * alphaCrazyness,
                     // TODOTEST: relative velocity
-                    (pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector)) + bernoulliVelocityAlongSpring * alphaCrazyness,
+                    //(pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector)) + bernoulliVelocityAlongSpring * alphaCrazyness,
+                    // TODOTEST: relative velocity, but with upness only
+                    (pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * springUpness) + bernoulliVelocityAlongSpring * alphaCrazyness,
+                    // TODOTEST: relative velocity, modulated
+                    //(pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * simulationParameters.BlastToolRadius / 10.0f) + bernoulliVelocityAlongSpring * alphaCrazyness,
                     0.0f);
 
                 // Store weight along spring, as quantity of water (& pressure) moved by velocity;
-                // TODO: comment on not using dt * old_water, as dt is simply multiplicative, and norm factor adds
+                // TODO: comment on not using dt * old_water, as dt is simply multiplicative, and norm factor takes care of old quantity of water
                 // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
                 springOutboundWaterFlowWeights[s] =
                     // TODOTEST: orig
@@ -6166,7 +6166,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
             }
 
             // TODOTEST
-            waterQuantityNormalizationFactor /= static_cast<float>(NumberOfIterations);
+            waterQuantityNormalizationFactor /= static_cast<float>(NumberOfWaterIterations);
 
             //
             // 3) Add to this point's water momentum the momentum that stays
@@ -6396,7 +6396,9 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
     // Air step
     //
 
-    for (int iter = 0; iter < NumberOfIterations; ++iter)
+    int constexpr NumberOfAirIterations = 1;
+
+    for (int iter = 0; iter < NumberOfAirIterations; ++iter)
     {
         // Source and result water buffers
         float const * restrict oldPointWaterBufferData = mPoints.GetWaterBufferAsFloat();
@@ -6587,7 +6589,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
             }
 
             // TODOTEST
-            airPressureQuantityNormalizationFactor /= static_cast<float>(NumberOfIterations);
+            airPressureQuantityNormalizationFactor /= static_cast<float>(NumberOfAirIterations);
 
             //
             // 3) Move water/air along all springs according to their flows,

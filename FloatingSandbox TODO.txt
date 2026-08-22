@@ -2706,10 +2706,51 @@
 																			+ default_ship: GOOD!
 																			+ Obliquity: CONVERGES TO FLAT!
 
+																	+ Crazyness @ 0.125 (w_speed:0.344):
+																		! Momenta become crazy
+																		+ xL=6.48 m=1.07 yR=75.64 | UNDERSHOOT:0.4 @ CENTER-1 | tot_w=112744
+																		+ Flood test: awesome, but still some jagness (stepwise horiz)
+																		+ default_ship: GOOD!
+																		+ Obliquity: CONVERGES TO FLAT!
+
+																	+ Best config:
+																		- a_speed/w_speed: 2.0/0.344
+																		- fluid crazyness: 0.125
+																		- Squeeze: 0.312
+																		- Damp, bounce: 10.0 (aka 1.0)
+
+																	= 1 iter - no diagonal adjust @ water (yes @ air) - a_sp/w_sp=1.75/0.188
+																		+ UNDERSHOOT: 0.1 @ CENTER-1
+																		+ LIVELY
+																		+ JAGGED
+																		+ Try old norm factor - w_sp=0.344, and crazyness=0.188
+																			+ LIVELY
+																			+ JAGGED
+																			X UNDERSHOOT: 0.2 @ CENTER-2
+																		= Try old norm factor - a_sp/w_sp=1.281/0.562, and crazyness=0.125
+																			X SEVERE UNDERSHOOT
+																			- Bernoulli w/relative vel modulated @ 0.75:
+																				- a_speed/w_speed: 1.281/0.531; craz 0.125
+																			+ xL=3.23 m=0.99 yR=73.29 | SHOOT:0.8 @ CENTER-1 | tot_w=116389
+																			- Flood test
+																			- default_ship
+																			- Obliquity
+																		+ Try 2 iters to reduce plumes:
+																			+ OVERSHOOT: OK
+																		= Try: 2 iters water, 1 iter air
+																			! Good config: 
+																				- a/w_spd 1.219/0.875; crazyness 0; damp/bounce 1.0/1.0
+																				- Bernoulli relvel w/upness; water norm factor: max
+
+
+																	+ Jaggedness: solve with rendering:
+																		+ 0.51 1.76 4.60 7.82
+																		+ 0.14 0.71 1.97 4.23 8.88: y = 0.06363396*x^3.063396 or y = -0.914 + 1.517619*x - 0.6207143*x^2 + 0.1416667*x^3
+																		+ It's a cubic, so do cubic root
+
+
 																	- FIX: stepwise horizontal
-																		! Cause: even with upness=0, side air has too much pressure for water to flow
-																			! Should also fix obliquity
-																		- Inject Rayleigh-Taylor
+																		+ It's not air: it's just H diffusion that's slow
 
 																	- Option 2: We're not braking for air
 																		! Note that Air does _not_ come in from above - because of higher W pressure than air - so we can't use incoming air to brake
@@ -2720,7 +2761,8 @@
 																				- What happens to own momentum?
 
 
-					- Try adding air velocity: should help with stepwise horizontal
+					- Try adding air velocity, for better effects (think; NPC, etc.)
+						- If goes: interact with air velocities @ blasts, etc.
 
 													
 
