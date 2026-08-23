@@ -2727,20 +2727,34 @@
 																			+ LIVELY
 																			+ JAGGED
 																			X UNDERSHOOT: 0.2 @ CENTER-2
-																		= Try old norm factor - a_sp/w_sp=1.281/0.562, and crazyness=0.125
+																		+ Try old norm factor - a_sp/w_sp=1.281/0.562, and crazyness=0.125
 																			X SEVERE UNDERSHOOT
-																			- Bernoulli w/relative vel modulated @ 0.75:
-																				- a_speed/w_speed: 1.281/0.531; craz 0.125
+																			+ Bernoulli w/relative vel modulated @ 0.75:
+																				+ a_speed/w_speed: 1.281/0.531; craz 0.125
 																			+ xL=3.23 m=0.99 yR=73.29 | SHOOT:0.8 @ CENTER-1 | tot_w=116389
-																			- Flood test
-																			- default_ship
-																			- Obliquity
 																		+ Try 2 iters to reduce plumes:
 																			+ OVERSHOOT: OK
 																		= Try: 2 iters water, 1 iter air
 																			! Good config: 
 																				- a/w_spd 1.219/0.875; crazyness 0; damp/bounce 1.0/1.0
 																				- Bernoulli relvel w/upness; water norm factor: max
+																			+ OVERSHOOT: GOOD!
+																			X Tiny tube: OVERHOOT XX
+																			+ default_ship: GOOD!
+																			+ Flood test: GOOD!
+																			+ Obliquity: CONVERGES!
+																			+ Titanic: too quick
+																			X Now, given that it's too quick, try w/ 1 iter, adjusting water vel though: 0.438
+																				X Too many plumes/discontinuities on the surface; 2 iters smooth those out invisibily
+
+																			+ Water retention back; w_speed=0.625
+																				+ OVERSHOOT: GOOD!
+																				+ Tiny tube: slight undershoot
+																				+ Flood test: GREAT!
+																				+ Titanic: reasonable
+																				+ Obliquity: CONVERGES!
+
+																			+ New render: lod=0.750
 
 
 																	+ Jaggedness: solve with rendering:
@@ -2751,14 +2765,19 @@
 
 																	- FIX: stepwise horizontal
 																		+ It's not air: it's just H diffusion that's slow
+																		- Try square upness @ water seeing air @ other
 
-																	- Option 2: We're not braking for air
+																	X Option 2: We're not braking for air
 																		! Note that Air does _not_ come in from above - because of higher W pressure than air - so we can't use incoming air to brake
 																		- @ Point:
 																			- If we find negative pressure along spring because of air on the other side, point's momentum must brake
 																				- There will be no incoming momentum
 																			- If we find negative pressure along spring because of water on the other side, that water will come in and add opposite momentum
 																				- What happens to own momentum?
+					- Learnings:
+						+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
+							- Might make sense to have it as a setting
+
 
 
 					- Try adding air velocity, for better effects (think; NPC, etc.)

@@ -2689,9 +2689,8 @@ void Ship::UpdatePressureAndWaterInflow(
                         // Make sure we don't over-drain the point
                         deltaWater_Structural = std::max(-mPoints.GetWater(pointIndex), deltaWater_Structural);
 
-                        // TODOTEST
-                        ////// Honor the water retention of this material
-                        ////deltaWater_Structural *= mPoints.GetMaterialWaterRestitution(pointIndex);
+                        // Honor the water retention of this material
+                        deltaWater_Structural *= mPoints.GetMaterialWaterRestitution(pointIndex);
                     }
 
                     // Adjust water
@@ -5865,6 +5864,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
 
     // TODOTEST
     int constexpr NumberOfWaterIterations = 2;
+    //int constexpr NumberOfWaterIterations = 4;
 
     //
     // Water step
@@ -6154,6 +6154,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
 
                 // TODOTEST: max norm factor
                 maxOutboundWaterFlowWeight = std::min(maxOutboundWaterFlowWeight, oldPointWaterBufferData[pointIndex]);
+                assert(maxOutboundWaterFlowWeight <= totalOutboundWaterFlowWeight);
                 waterQuantityNormalizationFactor = std::min(
                     (maxOutboundWaterFlowWeight / totalOutboundWaterFlowWeight) * (simulationParameters.WaterDiffusionSpeedAdjustment),
                     1.0f);
@@ -6577,6 +6578,7 @@ void Ship::UpdateWaterAndAirPressure_NewtonRhapson_2_TwoStep_NewMomenta(
 
                 // TODOTEST: max factor
                 maxOutboundAirFlowWeight = std::min(maxOutboundAirFlowWeight, oldPointAirPressureBufferData[pointIndex]);
+                assert(maxOutboundAirFlowWeight <= totalOutboundAirFlowWeight);
                 airPressureQuantityNormalizationFactor = std::min(
                     (maxOutboundAirFlowWeight / totalOutboundAirFlowWeight) * (simulationParameters.AirDiffusionSpeedAdjustment),
                     1.0f);
