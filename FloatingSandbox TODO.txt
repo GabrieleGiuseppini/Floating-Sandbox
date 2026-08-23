@@ -2102,14 +2102,14 @@
 						! Simple air pressure increase at a tank should force water move out of it at water's turn
 							! Hopefully downward because of Bernoulli/gravity and Rayleigh–Taylor
 				
-			= Impl of Gist 2:
+			+ Impl of Gist 2:
 				+ Make test ship
 				+ Add AirPressure buffer
 				+ Duplicate UpdateWaterVelocitiesXYZ: UpdateWaterAndAirPressure
-				= UpdateWaterAndAirPressure
+				+ UpdateWaterAndAirPressure
 					+ Review old water: why normalization factor ensures all water at the point moves?
 					+ Plot cross-cut
-					= Gist implementation
+					+ Gist implementation
 						= Things to try/tune:
 
 							! Scorecard: bell: ; sea-level: ; after holes: (so slowly)
@@ -2202,7 +2202,7 @@
 									+ Scorecard without: 0.375: bell: -46.6; sea-level: -17.8; after holes: 0.0 (so slowly)
 									+ If ok: update scorecard of best
 
-							= Water not rising in complex ship (default ship)
+							X Water not rising in complex ship (default ship)
 								+ See if it's air diffusion speed
 									! Improves
 									+ 0.688: rises more; overshoots sea level
@@ -2266,7 +2266,7 @@
 													- Try: norm 1, fixing not at 1 but at diffusion speed (capped to point though)
 
 
-					= Fight: overshooting when more chaos, which (probably) is because of irreversibility of water gone up
+					X Fight: overshooting when more chaos, which (probably) is because of irreversibility of water gone up
 						- Quadrant: 1 iter, orig water norm (water speed: 0.375), linear water norm (thus 1) (air speed: 1.0)
 							+ Test 2*air: overshoots, but by very little!
 							+ Test air injection
@@ -2392,14 +2392,8 @@
 																- Try: write equlibrium equation for a cell with one above and one below,
 																  and then add dw
 
-
-
-						
-
-
-
 					! REVOLUTION!
-					= New PoV: air and water coexist in same space
+					+ New PoV: air and water coexist in same space
 						+ No more squeezing
 						+ Pressure at point is W+A
 							+ This W,A combination is stable: 40,0 - 30,10 - 0,40
@@ -2434,7 +2428,7 @@
 							+ OutboundWaterWeights: just velocity (not with dt and orig mass as in new) (temporarily)
 							+ Verify original behavior, changing sliders to 1-1-1
 									
-						= Reintroduce one by one
+						+ Reintroduce one by one
 							+ Ingress: still OK, like released version
 							+ Air pressure for water, with upness
 								+ Becomes very directional, interface doesn't become flat
@@ -2489,11 +2483,11 @@
 								! With: symmetric downness/upness @ water
 									- LESS SPLATTERING! BEST LEVEL!
 										- Just +1, see why
-								- With more water velocity (~0.8): it overshoots (+4.5)
+								+ With more water velocity (~0.8): it overshoots (+4.5)
 									X Is it velocity gained? Try without velocity: still overshoots - NO, IT'S NOT VELOCITY
 									X Is it water not going down (laterals)? Flatten downness @ water: still overshoots (by 4)
 										! And becomes directional :-(
-									- TODOHERE: why does velocity causes more pressure for water?
+									+ Why does velocity causes more pressure for water?
 										! Is it because oscillations still have directional bias? 
 											! No: after overshoot, lowering water diff speed makes everything backtrace to level
 											+ Double-check ingress/egress for bias
@@ -2538,7 +2532,7 @@
 													+ Verify quantity of water doesn't change - with once-injected water, verify it does not grow
 														+ Stable, even w/air injection
 											
-											= Investigate whether it's bounce up from below
+											+ Investigate whether it's bounce up from below
 												+ First: check that "velocity explosion" w/no damping
 													! IT EXISTS
 													= Check that change we did
@@ -2581,13 +2575,12 @@
 														+ Zeroing helps, but it's wrong (it's in spring-by-spring loop, and done per-spring)
 														+ Bounce doesn't affect overshoot much, but lowers slope keeping rotation at center
 
-
-												= Thoughts on velocity:
-													- When air does not move up, it retains upward velocity
-													- Last two layers @ interface have opposing velocities: uppermost goes up, lower goes down
-														- Even though point does lose water only down - but bVel (pointing down) is offset by this component going up
-															- Velocity gained is from two diagonals below, which do NOT push up but push diagonally
-																- Why do they push only diagonally? 
+												+ Thoughts on velocity:
+													! MAJOR: When air does not move up, it retains upward velocity
+													! Last two layers @ interface have opposing velocities: uppermost goes up, lower goes down
+														! Even though point does lose water only down - but bVel (pointing down) is offset by this component going up
+															! Velocity gained is from two diagonals below, which do NOT push up but push diagonally
+																! Why do they push only diagonally? 
 																	! deltaH is same (-1.0), pressures are same
 																	! upness makes it so that we see less air above along diagonals, which in turn causes a bvel sign flip
 																		! We see enough less air to overcome negative deltaH 
@@ -2597,8 +2590,8 @@
 																		       pThis=11.0924 pOther=11.8884 bVel=-5.93247 wVel=-1.26821
 																		W Out: springOutboundWaterFlowWeights=0.34541 dw=1.7051 springDir=(-0.706764876842, 0.707363069057) \up
 																		       pThis=11.0924 pOther=9.38727 bVel=3.71674 wVel=-0.898318
-														- This contributes to "expansion" of layers
-														- When we zero damping, that "expansion" tends to go back to zero
+														! This contributes to "expansion" of layers
+														! When we zero damping, that "expansion" tends to go back to zero
 													! IN SHORT: UPNESS DOES NOT AGREE WITH DELTAH
 														! !!! -> These are diagonals after all, different than non-diagonals but oblique: deltaH is still one despite upness being < 1.0
 														+ BAD EXPERIMENT: step upness:
@@ -2638,7 +2631,7 @@
 														+ xL=2.39 m=0.98 yR=71.89 | OVERSHOOT:1.0 [real] | tot_w=115463
 														+ default_ship: GREAT!
 
-													= Still upward velocity at uppermost layers @ equilibrium, with low damping
+													+ Still upward velocity at uppermost layers @ equilibrium, with low damping
 														! Problem: when no water flows, we maintain somehow original velocity
 															+ Indeed: flows are only down, but vel up stays
 																+ Though vel could result from flows from below
@@ -2653,7 +2646,7 @@
 																+ default_ship: slowish
 																+ Obliquity: jagged but ok
 															! Conclusion: very slow, and theoretically wrong
-														= Attempt redesign # 2: new math
+														+ Attempt redesign # 2: new math
 															! Velocities gradually lower going up - fantastic
 															! Momenta magnitudes look reasonable
 															! FIX: topmost layer however still shows upward vel - but layer underneath shows zero
@@ -2667,22 +2660,22 @@
 																+ xL=3.19 m=0.98 yR=71.31 | OVERSHOOT:1.0 [real] | tot_w=114397
 															+ Try with more bounce
 
-															- Points arounds holes still have vel against hole
-															- Points were bounce occurs still point towards outside
-															- Investigate:
+															! Points arounds holes still have vel against hole
+															! Points were bounce occurs still point towards outside
+															+ Investigate:
 																+ Extend readings to bottom
 																+ Log initial momentum -- always printing delta and final
 																+ Complete logs @ move -- always printing delta and final
 																+ Log starting vels
 																+ Log ending
 																+ Log spring dirs
-																= Conclusions:
+																+ Conclusions:
 																	! At interface: momentum lost because of mass out (downward) not balanced by momentum gained because of momentum in (from below)																		
 																		! Explains interface maintaining upward velocity
 																			! Explains slope < 1.0
 																		! Explains bottom with velocity pointing at bottom
 
-																	- Is it a balance problem? 
+																	! Is it a balance problem? No, it's a rel vel
 
 																	+ Option 1: try relative vel
 																		+ At final vel (bernoulli + own)
@@ -2719,7 +2712,7 @@
 																		- Squeeze: 0.312
 																		- Damp, bounce: 10.0 (aka 1.0)
 
-																	= 1 iter - no diagonal adjust @ water (yes @ air) - a_sp/w_sp=1.75/0.188
+																	+ 1 iter - no diagonal adjust @ water (yes @ air) - a_sp/w_sp=1.75/0.188
 																		+ UNDERSHOOT: 0.1 @ CENTER-1
 																		+ LIVELY
 																		+ JAGGED
@@ -2734,7 +2727,7 @@
 																			+ xL=3.23 m=0.99 yR=73.29 | SHOOT:0.8 @ CENTER-1 | tot_w=116389
 																		+ Try 2 iters to reduce plumes:
 																			+ OVERSHOOT: OK
-																		= Try: 2 iters water, 1 iter air
+																		+ Try: 2 iters water, 1 iter air
 																			! Good config: 
 																				- a/w_spd 1.219/0.875; crazyness 0; damp/bounce 1.0/1.0
 																				- Bernoulli relvel w/upness; water norm factor: max
@@ -2763,9 +2756,9 @@
 																		+ It's a cubic, so do cubic root
 
 
-																	- FIX: stepwise horizontal
+																	X FIX: stepwise horizontal
 																		+ It's not air: it's just H diffusion that's slow
-																		- Was always there; new rendering shows it more
+																		! Was always there; new rendering shows it more
 
 																	X Option 2: We're not braking for air
 																		! Note that Air does _not_ come in from above - because of higher W pressure than air - so we can't use incoming air to brake
@@ -2777,79 +2770,96 @@
 
 					! Good config: 
 						- a/w_spd 1.219/0.625; crazyness 0; damp/bounce 1.0/1.0
-						- Lod=0.750
+						- Lod=0.750 or 0.656 (for less jaggedness)
 						- Bernoulli relvel w/upness; water norm factor: max
 
-					- Learnings:
-						+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
-							- Might make sense to have it as a setting
+						! Decent water momenta
+
+			+ Cleanup Ship a bit
+
+			= Try adding air velocity, for better effects (think; NPC, etc.)
+				= Prep:
+					- Points' buffers (X2)
+					- New rendering option
+				- Impl @ air step:
+					- Init momenta
+					- @ spring:
+						- Calc bernoulli speed based on dp
+						- Calc weights based off speed (like water)
+					- Calc vels from momenta
 
 
 
-					- Try adding air velocity, for better effects (think; NPC, etc.)
-						- If goes: interact with air velocities @ blasts, etc.
 
-													
+				- If goes: interact with air velocities @ blasts, etc. (add to plan below)
 
 
-					- Success criteria:
-						- Water level stops in bell
-							- At right height
-						- Water level reaching ocean 
-						- Water level obliqueness (was fixed with upness being n.y instead of being step-like)
-						- Water interface ugly flatness
-							- Depends on step: the steeper and chaotic, the more lively the interface is
+			- Learnings:
+				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
+					- Might make sense to have it as a setting
 
-					- Cleanup:
-						- Comments
-						- Code
-							- Put back restrict pointers where needed
-						- Remove cross-cut readings -- LATER!
 
-				= Ingress/Egress and bubbles
-					= Water: enters or leaves based on internal total pressure <-> total external pressure differential
-						+ Consider total external and total internal pressures - thus including air
+											
 
-						- Things to try/tune:
-							- Use squeezed air pressure for calculation of internal pressure
-					= Air:
-						+ Leaves all if underwater
-						+ Enters iff above-water and (air/total) pressure outside > air pressure inside
-						- Things to try/tune:
-							- Rate of air pressure, cannot use bernoulli
-								- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
-							- Add SimulationParameters::AirIntakeAdjustment?
-					= Air Bubbles
-						+ Rename cumulation members
-						+ Bubble contribution proportional _only_ to air pressure that left point
-						- See if need to clamp lost air to positive
-						- Note that now we increase pressure lost also when above ground, but that shouldn't result in bubbles
-							- Decide: count anyway and no spawn, or no count
-					- Water pump
 
-					- Rain
+			- Success criteria:
+				- Water level stops in bell
+					- At right height
+				- Water level reaching ocean 
+				- Water level obliqueness (was fixed with upness being n.y instead of being step-like)
+				- Water interface ugly flatness
+					- Depends on step: the steeper and chaotic, the more lively the interface is
 
-					- Cleanup
-						- See what happens if we keep (water) ingress rate different than (water) diffusion speed: try different values
-						- Comments
-						- Code
-							- See if can simplify math by having Formulae directly in equivalent water height's
-						- Points.h: commented-out GetCumulatedOutflownAirPressure
+			- Cleanup:
+				- Comments
+				- Code
+					- Put back restrict pointers where needed
+				- Remove cross-cut readings -- LATER!
 
-				- Temperature <-> Air Pressure
-					- A new step, before pressure, makes EffectiveAirPressure from AirPressure and Temperature
-				+ Finalize unit of AirPressure
-					+ Also @ Points buffer comment
-				- Air Pressure <-> forces on "walls"
-					- We've changed unit of pressure, hence current math is invalid!
-					- Do we do it where we currently use InternalPressure, or do we bounce
-					  @ UpdateWaterAndAirPressure?
-					- Test Inflatable Balloon
-				- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure
-				- Tools:
-					- Flood
-					- Internal Pressure
-				- Imparted water velocities w/move tool - et al?
+			= Ingress/Egress and bubbles
+				= Water: enters or leaves based on internal total pressure <-> total external pressure differential
+					+ Consider total external and total internal pressures - thus including air
+
+					- Things to try/tune:
+						- Use squeezed air pressure for calculation of internal pressure
+				= Air:
+					+ Leaves all if underwater
+					+ Enters iff above-water and (air/total) pressure outside > air pressure inside
+					- Things to try/tune:
+						- Rate of air pressure, cannot use bernoulli
+							- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
+						- Add SimulationParameters::AirIntakeAdjustment?
+				= Air Bubbles
+					+ Rename cumulation members
+					+ Bubble contribution proportional _only_ to air pressure that left point
+					- See if need to clamp lost air to positive
+					- Note that now we increase pressure lost also when above ground, but that shouldn't result in bubbles
+						- Decide: count anyway and no spawn, or no count
+				- Water pump
+
+				- Rain
+
+				- Cleanup
+					- See what happens if we keep (water) ingress rate different than (water) diffusion speed: try different values
+					- Comments
+					- Code
+						- See if can simplify math by having Formulae directly in equivalent water height's
+					- Points.h: commented-out GetCumulatedOutflownAirPressure
+
+			- Temperature <-> Air Pressure
+				- A new step, before pressure, makes EffectiveAirPressure from AirPressure and Temperature
+			+ Finalize unit of AirPressure
+				+ Also @ Points buffer comment
+			- Air Pressure <-> forces on "walls"
+				- We've changed unit of pressure, hence current math is invalid!
+				- Do we do it where we currently use InternalPressure, or do we bounce
+				  @ UpdateWaterAndAirPressure?
+				- Test Inflatable Balloon
+			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure
+			- Tools:
+				- Flood
+				- Internal Pressure
+			- Imparted water velocities w/move tool - et al?
 
 			= Render full water range
 				! The +1 by rendering is due to bottom having full water, top having 0 - interpolation pushes blue all the way up
@@ -2857,15 +2867,13 @@
 					+ Can be capped @ vertex shader!
 					+ And then we map trivially
 					X But now, it's stepwise: full blue at just some water
-				= Possible fix 2: as above, but with original pow
-					- TODOHERE: but now there's gap from hull walls
-				- Possible fix 3: back to fragment, and use air
-					- max(Water-Air, 0.0)
-				- Cleanup
+				+ Possible fix 2: as above, but with original pow
+					+ TODOHERE: but now there's gap from hull walls
+				+ Final: @ vertex, using cubicity
+				- Cleanup and add comment on cubicity
 				
 			- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
 
-			- Lower bulkheads @ default Titanic & make air escape, as it now takes forever
 
 
 			- Tests:
@@ -2906,10 +2914,17 @@
 				- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
 					- Watchout: when we make copies of buffers we use mFloatBufferAllocator
 
+			- Lower bulkheads @ default Titanic & make air escape, as it now takes forever
+
 
 		- New electrical element: pressure switch
 			- Acts with delta pressure - TODO: towards interior and towards exterior types?
 				- Total pressures
+
+		- Android port plan:
+			- Water shader
+			- New settings
+			- Check ships for flooding
 
 
 	- When focusing on ship after ship moved in PAUSE, we focus on old position
