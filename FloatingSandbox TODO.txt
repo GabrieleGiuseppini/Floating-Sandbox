@@ -2765,7 +2765,7 @@
 
 																	- FIX: stepwise horizontal
 																		+ It's not air: it's just H diffusion that's slow
-																		- Try square upness @ water seeing air @ other
+																		- Was always there; new rendering shows it more
 
 																	X Option 2: We're not braking for air
 																		! Note that Air does _not_ come in from above - because of higher W pressure than air - so we can't use incoming air to brake
@@ -2774,6 +2774,12 @@
 																				- There will be no incoming momentum
 																			- If we find negative pressure along spring because of water on the other side, that water will come in and add opposite momentum
 																				- What happens to own momentum?
+
+					! Good config: 
+						- a/w_spd 1.219/0.625; crazyness 0; damp/bounce 1.0/1.0
+						- Lod=0.750
+						- Bernoulli relvel w/upness; water norm factor: max
+
 					- Learnings:
 						+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
 							- Might make sense to have it as a setting
