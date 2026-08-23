@@ -6141,7 +6141,8 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             _("Static Forces"),
             _("Dynamic Forces"),
             _("Water Velocities"),
-            _("Water Momenta")
+            _("Water Momenta"),
+            _("Air Velocities")
         };
 
         mVectorFieldRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1, -1),

@@ -765,6 +765,10 @@ private:
         SimulationParameters const & simulationParameters,
         float & waterSplashed);
 
+    void UpdateWaterAndAirPressure_WithAirVelocities(
+        SimulationParameters const & simulationParameters,
+        float & waterSplashed);
+
     void UpdateSinking(float currentSimulationTime);
 
     // Electrical

@@ -2510,7 +2510,7 @@ void Points::UploadVectors(
         case VectorFieldRenderModeType::PointAirPressureVelocity:
         {
             color = vec4f(0.794f, 0.309f, 0.309f, 1.0f);
-            vectorBuffer = mAirPressureVelocityBuffer.data();
+            vectorBuffer = mAirPressureMomentumBuffer.data();
             lengthAdjustment = 1.0f;
 
             break;

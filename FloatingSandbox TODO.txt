@@ -2781,17 +2781,30 @@
 				+ Prep:
 					+ Points' buffers (X2)
 					+ New rendering option
-				- Impl @ air step:
-					- Init momenta
-					- @ spring:
-						- Calc bernoulli speed based on dp
-						- Calc weights based off speed (like water)
-					- Calc vels from momenta
+				+ Impl @ air step:
+					+ Init momenta
+					+ @ spring:
+						+ Calc bernoulli speed based on dp
+						+ Calc weights based off speed (like water)
+						+ Distribute
+						+ Do permeability check later, and bounces
+					+ Calc vels from momenta
 
+				+ Requires recalculating good config, as air diffusion speed has changed multiplicand
+					+ a_spd/w_spd: 0.312/0.625; squeeze: 0.312; Damp/Bounce 1.0
+					+ PERFECT SHOOT
+
+				- Investigate:
+					- May be it's good, but...: air vels damp too much
+						- Is it relative vel?
+					X Wild plumes @ Flood Test
+						! Verify was there also before (air: 1.219) -- IT WAS!
 
 
 
 				- If goes: interact with air velocities @ blasts, etc. (add to plan below)
+
+				- Setting enum and all: decide air velocities vs momenta (or both?)
 
 
 			- Learnings:
