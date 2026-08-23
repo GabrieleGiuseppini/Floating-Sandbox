@@ -2795,6 +2795,12 @@
 					+ PERFECT SHOOT
 
 				- Investigate:
+					- Residual air
+						+ Investigate latest dump: norm factor zero is because e-36
+						+ Verify was there also before
+							+ No, was plain 0
+							+ New one: e-25
+						- Redo dump with ~e-25
 					- May be it's good, but...: air vels damp too much
 						- Is it relative vel?
 					X Wild plumes @ Flood Test

@@ -539,8 +539,8 @@ void Ship::Update(
             // TODOTEST
             //UpdateWaterVelocities(simulationParameters, waterSplashedInStep);
             // TODO: update comment above adding air pressure, and forces if we end up doing it here
-            UpdateWaterAndAirPressure(simulationParameters, waterSplashedInStep);
-            //UpdateWaterAndAirPressure_WithAirVelocities(simulationParameters, waterSplashedInStep);
+            //UpdateWaterAndAirPressure(simulationParameters, waterSplashedInStep);
+            UpdateWaterAndAirPressure_WithAirVelocities(simulationParameters, waterSplashedInStep);
 
             // Notify
             mSimulationEventHandler.OnWaterSplashed(waterSplashedInStep);
