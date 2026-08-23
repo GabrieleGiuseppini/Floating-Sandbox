@@ -2778,9 +2778,9 @@
 			+ Cleanup Ship a bit
 
 			= Try adding air velocity, for better effects (think; NPC, etc.)
-				= Prep:
-					- Points' buffers (X2)
-					- New rendering option
+				+ Prep:
+					+ Points' buffers (X2)
+					+ New rendering option
 				- Impl @ air step:
 					- Init momenta
 					- @ spring:

@@ -68,7 +68,6 @@ void Points::Add(
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
 
     mInternalPressureBuffer.emplace_back(internalPressure);
-    mAirPressureBuffer.emplace_back(Formulae::PressureToEquivalentWaterHeight(internalPressure, waterDensity)); // Init using current water density
     mIsHullBuffer.emplace_back(structuralMaterial.IsHull); // Default is from material
     mMaterialWaterIntakeBuffer.emplace_back(structuralMaterial.WaterIntake);
     mMaterialWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
@@ -77,6 +76,11 @@ void Points::Add(
     mWaterBuffer.emplace_back(water);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
+
+    mAirPressureBuffer.emplace_back(Formulae::PressureToEquivalentWaterHeight(internalPressure, waterDensity)); // Init using current water density
+    mAirPressureVelocityBuffer.emplace_back(vec2f::zero());
+    mAirPressureMomentumBuffer.emplace_back(vec2f::zero());
+
     mCumulatedOutflownAirPressure.emplace_back(0.0f);
     mLeakingCompositeBuffer.emplace_back(LeakingComposite(isStructurallyLeaking));
     if (isStructurallyLeaking)
@@ -2498,6 +2502,15 @@ void Points::UploadVectors(
         {
             color = vec4f(0.094f, 0.509f, 0.925f, 1.0f);
             vectorBuffer = mWaterVelocityBuffer.data();
+            lengthAdjustment = 1.0f;
+
+            break;
+        }
+
+        case VectorFieldRenderModeType::PointAirPressureVelocity:
+        {
+            color = vec4f(0.794f, 0.309f, 0.309f, 1.0f);
+            vectorBuffer = mAirPressureVelocityBuffer.data();
             lengthAdjustment = 1.0f;
 
             break;

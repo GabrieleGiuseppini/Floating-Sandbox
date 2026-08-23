@@ -779,13 +779,15 @@ public:
         // Pressure and water dynamics
         , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
         , mInternalPressureBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mAirPressureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterIntakeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mWaterMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mAirPressureBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mAirPressureVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mAirPressureMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mCumulatedOutflownAirPressure(mBufferElementCount, shipPointCount, 0.0f)
         , mLeakingCompositeBuffer(mBufferElementCount, shipPointCount, LeakingComposite(false))
         , mFactoryIsStructurallyLeakingBuffer(mBufferElementCount, shipPointCount, false)
@@ -1690,31 +1692,6 @@ public:
         return mInternalPressureBuffer.data();
     }
 
-    float GetAirPressure(ElementIndex pointElementIndex) const
-    {
-        return mAirPressureBuffer[pointElementIndex];
-    }
-
-    void SetAirPressure(
-        ElementIndex pointElementIndex,
-        float value)
-    {
-        mAirPressureBuffer[pointElementIndex] = value;
-    }
-
-    float * GetAirPressureBufferAsFloat()
-    {
-        return mAirPressureBuffer.data();
-    }
-
-    std::shared_ptr<Buffer<float>> MakeAirPressureBufferCopy()
-    {
-        auto airPressureBufferCopy = mFloatBufferAllocator.Allocate();
-        airPressureBufferCopy->copy_from(mAirPressureBuffer);
-
-        return airPressureBufferCopy;
-    }
-
     bool GetIsHull(ElementIndex pointElementIndex) const
     {
         return mIsHullBuffer[pointElementIndex];
@@ -1849,6 +1826,100 @@ public:
             {
                 // No mass, no velocity
                 waterVelocityBuffer[p] = vec2f::zero();
+            }
+        }
+    }
+
+    float GetAirPressure(ElementIndex pointElementIndex) const
+    {
+        return mAirPressureBuffer[pointElementIndex];
+    }
+
+    void SetAirPressure(
+        ElementIndex pointElementIndex,
+        float value)
+    {
+        mAirPressureBuffer[pointElementIndex] = value;
+    }
+
+    float * GetAirPressureBufferAsFloat()
+    {
+        return mAirPressureBuffer.data();
+    }
+
+    std::shared_ptr<Buffer<float>> MakeAirPressureBufferCopy()
+    {
+        auto airPressureBufferCopy = mFloatBufferAllocator.Allocate();
+        airPressureBufferCopy->copy_from(mAirPressureBuffer);
+
+        return airPressureBufferCopy;
+    }
+
+    vec2f const & GetAirPressureVelocity(ElementIndex pointElementIndex) const
+    {
+        return mAirPressureVelocityBuffer[pointElementIndex];
+    }
+
+    void SetAirPressureVelocity(
+        ElementIndex pointElementIndex,
+        vec2f const & airPressureVelocity)
+    {
+        mAirPressureVelocityBuffer[pointElementIndex] = airPressureVelocity;
+    }
+
+    vec2f * GetAirPressureVelocityBufferAsVec2()
+    {
+        return mAirPressureVelocityBuffer.data();
+    }
+
+    // TODOTEST: these should go and be replaced by a simple work buffer, which is then passed to UpdateAirPressureVelocitiesFromMomenta
+    // or UpdateAirPressureVelocitiesFromMomenta is moved inline @ caller
+    void SetAirPressureMomentum(
+        ElementIndex pointElementIndex,
+        vec2f const & airPressureMomentum)
+    {
+        mAirPressureMomentumBuffer[pointElementIndex] = airPressureMomentum;
+    }
+
+    vec2f * GetAirPressureMomentumBufferAsVec2f()
+    {
+        return mAirPressureMomentumBuffer.data();
+    }
+
+    void UpdateAirPressureMomentaFromVelocities()
+    {
+        float * const restrict airPressureBuffer = mAirPressureBuffer.data();
+        vec2f * const restrict airPressureVelocityBuffer = mAirPressureVelocityBuffer.data();
+        vec2f * restrict airPressureMomentumBuffer = mAirPressureMomentumBuffer.data();
+
+        // No need to visit ephemerals, as they don't get air
+        for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
+        {
+            airPressureMomentumBuffer[p] =
+                airPressureVelocityBuffer[p]
+                * airPressureBuffer[p];
+        }
+    }
+
+    void UpdateAirPressureVelocitiesFromMomenta()
+    {
+        float * const restrict airPressureBuffer = mAirPressureBuffer.data();
+        vec2f * restrict airPressureVelocityBuffer = mAirPressureVelocityBuffer.data();
+        vec2f * const restrict airPressureMomentumBuffer = mAirPressureMomentumBuffer.data();
+
+        // No need to visit ephemerals, as they don't get water
+        for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
+        {
+            if (airPressureBuffer[p] != 0.0f)
+            {
+                airPressureVelocityBuffer[p] =
+                    airPressureMomentumBuffer[p]
+                    / airPressureBuffer[p];
+            }
+            else
+            {
+                // No mass, no velocity
+                airPressureVelocityBuffer[p] = vec2f::zero();
             }
         }
     }
@@ -2634,7 +2705,6 @@ private:
 
     Buffer<bool> mIsHullBuffer; // Externally-computed resultant of material hullness and dynamic hullness
     Buffer<float> mInternalPressureBuffer; // Pressure at this particle (Pa)
-    Buffer<float> mAirPressureBuffer; // Air pressure at this particle, in equivalent meters of a 1m2-wide column of water
     Buffer<float> mMaterialWaterIntakeBuffer;
     Buffer<float> mMaterialWaterRestitutionBuffer;
     Buffer<float> mMaterialWaterDiffusionSpeedBuffer;
@@ -2646,8 +2716,17 @@ private:
     // Total velocity of the water at this point
     Buffer<vec2f> mWaterVelocityBuffer;
 
-    // Total momentum of the water at this point
+    // Total momentum of the water at this point [TODO: work buffer]
     Buffer<vec2f> mWaterMomentumBuffer;
+
+    // // Air pressure at this particle, in equivalent meters of a 1m2-wide column of water
+    Buffer<float> mAirPressureBuffer;
+
+    // Total velocity of air at this point
+    Buffer<vec2f> mAirPressureVelocityBuffer;
+
+    // Total momentum of air at this point [TODO: work buffer]
+    Buffer<vec2f> mAirPressureMomentumBuffer;
 
     // Total amount of air pressure in/out taken which has not yet been
     // utilized for air bubbles

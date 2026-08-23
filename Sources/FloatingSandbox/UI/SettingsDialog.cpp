@@ -6184,10 +6184,16 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                         break;
                     }
 
+                    case 5:
+                    {
+                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterMomentum);
+                        break;
+                    }
+
                     default:
                     {
-                        assert(5 == selectedVectorFieldRenderMode);
-                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterMomentum);
+                        assert(6 == selectedVectorFieldRenderMode);
+                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointAirPressureVelocity);
                         break;
                     }
                 }
@@ -7300,6 +7306,12 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         case VectorFieldRenderModeType::PointWaterMomentum:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(5);
+            break;
+        }
+
+        case VectorFieldRenderModeType::PointAirPressureVelocity:
+        {
+            mVectorFieldRenderModeRadioBox->SetSelection(6);
             break;
         }
     }

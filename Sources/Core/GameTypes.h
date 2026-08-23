@@ -1877,7 +1877,8 @@ enum class VectorFieldRenderModeType
     PointStaticForce,
     PointDynamicForce,
     PointWaterVelocity,
-    PointWaterMomentum
+    PointWaterMomentum,
+    PointAirPressureVelocity
 };
 
 /*

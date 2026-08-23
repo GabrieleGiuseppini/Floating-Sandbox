@@ -63,11 +63,7 @@ PressureCrossCutReadingsProbeControl::PressureCrossCutReadingsProbeControl(
 
 void PressureCrossCutReadingsProbeControl::RegisterReadings(std::vector<PressureReading> const & readings)
 {
-    // TODOTEST
-    //if (mReadings.empty())
-    {
-        RecalculateReadingsStatistics(readings);
-    }
+    RecalculateReadingsStatistics(readings);
 
     mReadings = readings;
 }
