@@ -40,7 +40,7 @@
             "texture_name": "metal_riveted_1_small",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -84,7 +84,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -128,7 +128,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -172,7 +172,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -216,7 +216,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -260,7 +260,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -304,7 +304,7 @@
             "texture_name": "metal_riveted_1_small",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "water_solubility": 0.5,
             "wind_receptivity": 0.1
@@ -349,7 +349,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "water_solubility": 0.5,
             "wind_receptivity": 0.1
@@ -394,7 +394,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "water_solubility": 1.0,
             "wind_receptivity": 0.1
@@ -440,7 +440,7 @@
             "texture_name": "metal_riveted_1_small",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -484,7 +484,7 @@
             "texture_name": "metal_riveted_1_small",
             "thermal_conductivity": 50.2,
             "thermal_expansion_coefficient": 1.15e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -528,7 +528,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 50.2,
             "thermal_expansion_coefficient": 1.15e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -572,7 +572,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 50.2,
             "thermal_expansion_coefficient": 1.15e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -616,7 +616,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 50.2,
             "thermal_expansion_coefficient": 1.15e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -661,7 +661,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 50.2,
             "thermal_expansion_coefficient": 1.15e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -705,7 +705,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 50.2,
             "thermal_expansion_coefficient": 1.15e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -749,7 +749,7 @@
             "texture_name": "metal_plates_1_small",
             "thermal_conductivity": 17.0,
             "thermal_expansion_coefficient": 8.7e-06,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -793,7 +793,7 @@
             "texture_name": "metal_plates_1",
             "thermal_conductivity": 17.0,
             "thermal_expansion_coefficient": 8.7e-06,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -837,7 +837,7 @@
             "texture_name": "metal_plates_1",
             "thermal_conductivity": 17.0,
             "thermal_expansion_coefficient": 8.7e-06,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -881,7 +881,7 @@
             "texture_name": "metal_plates_1",
             "thermal_conductivity": 17.0,
             "thermal_expansion_coefficient": 8.7e-06,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -925,7 +925,7 @@
             "texture_name": "metal_plates_1",
             "thermal_conductivity": 17.0,
             "thermal_expansion_coefficient": 8.7e-06,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -969,7 +969,7 @@
             "texture_name": "metal_plates_1",
             "thermal_conductivity": 17.0,
             "thermal_expansion_coefficient": 8.7e-06,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1013,7 +1013,7 @@
             "texture_name": "metal_riveted_2_small",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1057,7 +1057,7 @@
             "texture_name": "metal_riveted_2",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1101,7 +1101,7 @@
             "texture_name": "metal_riveted_2",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1145,7 +1145,7 @@
             "texture_name": "metal_riveted_2",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1189,7 +1189,7 @@
             "texture_name": "metal_riveted_2",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1233,7 +1233,7 @@
             "texture_name": "metal_riveted_2",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1277,7 +1277,7 @@
             "texture_name": "metal_riveted_2_small",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "water_solubility": 0.5,
             "wind_receptivity": 0.1
@@ -1322,7 +1322,7 @@
             "texture_name": "metal_riveted_2",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "water_solubility": 0.5,
             "wind_receptivity": 0.1
@@ -1368,7 +1368,7 @@
             "texture_name": "metal_riveted_2_small",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1410,7 +1410,7 @@
             "texture_name": "wood_studded_1",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1452,7 +1452,7 @@
             "texture_name": "wood_planks_1",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1494,7 +1494,7 @@
             "texture_name": "wood_planks_1",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1536,7 +1536,7 @@
             "texture_name": "wood_planks_1",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1578,7 +1578,7 @@
             "texture_name": "wood_planks_1",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1620,7 +1620,7 @@
             "texture_name": "wood_planks_1",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1662,7 +1662,7 @@
             "texture_name": "wood_planks_2",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1704,7 +1704,7 @@
             "texture_name": "wood_studded_2",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1746,7 +1746,7 @@
             "texture_name": "wood_planks_3",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1788,7 +1788,7 @@
             "texture_name": "wood_planks_3",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1830,7 +1830,7 @@
             "texture_name": "wood_planks_3",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1872,7 +1872,7 @@
             "texture_name": "wood_planks_3",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1914,7 +1914,7 @@
             "texture_name": "wood_planks_3",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1956,7 +1956,7 @@
             "texture_name": "wood_planks_3",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -1997,7 +1997,7 @@
             "strength": 3.8,
             "texture_name": "cloth_1",
             "thermal_conductivity": 0.04,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.5,
             "wind_receptivity": 0.5
         },
@@ -2038,7 +2038,7 @@
             "strength": 4.9,
             "texture_name": "cloth_1",
             "thermal_conductivity": 0.04,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.5,
             "wind_receptivity": 0.4
         },
@@ -2079,7 +2079,7 @@
             "strength": 4.2,
             "texture_name": "cloth_1",
             "thermal_conductivity": 0.04,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.5,
             "wind_receptivity": 0.5
         },
@@ -2120,7 +2120,7 @@
             "strength": 7.5,
             "texture_name": "cloth_1",
             "thermal_conductivity": 0.04,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.5,
             "wind_receptivity": 0.4
         },
@@ -2160,7 +2160,7 @@
             "strength": 3.166,
             "texture_name": "carbon_1",
             "thermal_conductivity": 1.7,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -2200,7 +2200,7 @@
             "strength": 3.166,
             "texture_name": "carbon_1",
             "thermal_conductivity": 1.7,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -2270,7 +2270,7 @@
             "strength": 0.42,
             "texture_name": "rubber_1",
             "thermal_conductivity": 0.25,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -2304,7 +2304,7 @@
             "strength": 0.42,
             "texture_name": "rubber_1",
             "thermal_conductivity": 0.25,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -2349,7 +2349,7 @@
             "strength": 0.1,
             "texture_name": "rubber_1",
             "thermal_conductivity": 0.25,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -2394,7 +2394,7 @@
             "strength": 0.15,
             "texture_name": "rubber_1",
             "thermal_conductivity": 0.25,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -2425,7 +2425,7 @@
             "strength": 0.42,
             "texture_name": "concrete_1",
             "thermal_conductivity": 140.0,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_reactivity_threshold": 0.5,
             "water_retention": 0.25,
             "wind_receptivity": 0.1
@@ -2470,7 +2470,7 @@
             "texture_name": "metal_riveted_2_small",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.2
         },
@@ -2514,7 +2514,7 @@
             "texture_name": "metal_riveted_2",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.2
         },
@@ -2558,7 +2558,7 @@
             "texture_name": "carbon_1",
             "thermal_conductivity": 173.0,
             "thermal_expansion_coefficient": 4.42e-06,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.2
         },
@@ -2602,7 +2602,7 @@
             "texture_name": "carbon_1",
             "thermal_conductivity": 173.0,
             "thermal_expansion_coefficient": 4.42e-06,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.2
         },
@@ -2644,7 +2644,7 @@
             "texture_name": "cardboard_1",
             "thermal_conductivity": 0.05,
             "thermal_expansion_coefficient": 0.0043,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.2,
             "water_solubility": 0.1,
             "wind_receptivity": 0.15
@@ -2687,7 +2687,7 @@
             "texture_name": "cardboard_1",
             "thermal_conductivity": 0.05,
             "thermal_expansion_coefficient": 0.00434,
-            "water_diffusion_speed": 0.55,
+            "water_diffusion_speed": 1.1,
             "water_retention": 0.75,
             "water_solubility": 0.15,
             "wind_receptivity": 0.15
@@ -2720,7 +2720,7 @@
             "texture_name": "paper_2",
             "thermal_conductivity": 0.05,
             "thermal_expansion_coefficient": 0.0035,
-            "water_diffusion_speed": 0.65,
+            "water_diffusion_speed": 1.3,
             "water_retention": 0.85,
             "water_solubility": 0.1,
             "wind_receptivity": 0.15
@@ -2753,7 +2753,7 @@
             "texture_name": "paper_1",
             "thermal_conductivity": 0.05,
             "thermal_expansion_coefficient": 0.0035,
-            "water_diffusion_speed": 0.65,
+            "water_diffusion_speed": 1.3,
             "water_retention": 0.85,
             "water_solubility": 0.15,
             "wind_receptivity": 0.15
@@ -2798,7 +2798,7 @@
             "texture_name": "metal_bulkheads_1",
             "thermal_conductivity": 50.2,
             "thermal_expansion_coefficient": 1.15e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -2841,7 +2841,7 @@
             "texture_name": "metal_riveted_1_small",
             "thermal_conductivity": 50.2,
             "thermal_expansion_coefficient": 1.15e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -2884,7 +2884,7 @@
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 50.2,
             "thermal_expansion_coefficient": 1.15e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -2928,7 +2928,7 @@
             "texture_name": "metal_plates_1_small",
             "thermal_conductivity": 17.0,
             "thermal_expansion_coefficient": 8.7e-06,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -2972,7 +2972,7 @@
             "texture_name": "metal_bulkheads_1",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3016,7 +3016,7 @@
             "strength": 0.08,
             "texture_name": "metal_plates_1_small",
             "thermal_conductivity": 66.8,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.05
         },
@@ -3059,7 +3059,7 @@
             "texture_name": "glass_1",
             "thermal_conductivity": 0.8,
             "thermal_expansion_coefficient": 5e-06,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
@@ -3103,7 +3103,7 @@
             "thermal_conductivity": 0.8,
             "thermal_expansion_coefficient": 5e-06,
             "unique_type": "Glass",
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
@@ -3146,7 +3146,7 @@
             "texture_name": "glass_1",
             "thermal_conductivity": 0.8,
             "thermal_expansion_coefficient": 5e-06,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
@@ -3189,7 +3189,7 @@
             "texture_name": "glass_1",
             "thermal_conductivity": 0.8,
             "thermal_expansion_coefficient": 5e-06,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
@@ -3225,7 +3225,7 @@
             "texture_name": "rubber_1",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 8e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3261,7 +3261,7 @@
             "texture_name": "rubber_1",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 8e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3297,7 +3297,7 @@
             "texture_name": "rubber_1",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 8e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3333,7 +3333,7 @@
             "texture_name": "rubber_1",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 8e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3375,7 +3375,7 @@
             "strength": 0.05,
             "texture_name": "fiberglass_1",
             "thermal_conductivity": 0.04,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3417,7 +3417,7 @@
             "strength": 0.05,
             "texture_name": "fiberglass_1",
             "thermal_conductivity": 0.04,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3456,7 +3456,7 @@
             "texture_name": "lego_1",
             "thermal_conductivity": 0.15,
             "thermal_expansion_coefficient": 3.1e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3495,7 +3495,7 @@
             "texture_name": "lego_1",
             "thermal_conductivity": 0.15,
             "thermal_expansion_coefficient": 3.1e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3527,7 +3527,7 @@
             "thermal_conductivity": 0.6,
             "thermal_expansion_coefficient": 0.00021,
             "unique_type": "Water",
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_intake": 0.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
@@ -3562,7 +3562,7 @@
             "thermal_conductivity": 0.0262,
             "thermal_expansion_coefficient": 0.0034,
             "unique_type": "Air",
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_intake": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
@@ -3595,7 +3595,7 @@
             "strength": 1.0,
             "thermal_conductivity": 0.0262,
             "thermal_expansion_coefficient": 0.0034,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_intake": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
@@ -3632,7 +3632,7 @@
             "strength": 1.0,
             "thermal_conductivity": 0.182,
             "thermal_expansion_coefficient": 0.0036,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3668,7 +3668,7 @@
             "strength": 1.0,
             "thermal_conductivity": 0.182,
             "thermal_expansion_coefficient": 0.0036,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3700,7 +3700,7 @@
             "strength": 1.0,
             "thermal_conductivity": 0.156,
             "thermal_expansion_coefficient": 0.0036,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3732,7 +3732,7 @@
             "strength": 1.0,
             "thermal_conductivity": 0.156,
             "thermal_expansion_coefficient": 0.0036,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3760,7 +3760,7 @@
             "thermal_conductivity": 0.0262,
             "thermal_expansion_coefficient": 0.0034,
             "unique_type": "SmokeLight",
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_intake": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
@@ -3789,7 +3789,7 @@
             "thermal_conductivity": 0.0262,
             "thermal_expansion_coefficient": 0.0014,
             "unique_type": "SmokeHeavy",
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_intake": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.005
@@ -3819,7 +3819,7 @@
             "thermal_conductivity": 0.0262,
             "thermal_expansion_coefficient": 0.0034,
             "unique_type": "SiltCloud",
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_intake": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
@@ -3849,7 +3849,7 @@
             "thermal_conductivity": 0.05,
             "thermal_expansion_coefficient": 0.0,
             "unique_type": "Ash",
-            "water_diffusion_speed": 0.65,
+            "water_diffusion_speed": 1.3,
             "water_retention": 0.85,
             "water_solubility": 0.15,
             "wind_receptivity": 0.1
@@ -3936,7 +3936,7 @@
             "texture_name": "concrete_1",
             "thermal_conductivity": 0.3,
             "thermal_expansion_coefficient": 8e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -3969,7 +3969,7 @@
             "texture_name": "styrofoam_1",
             "thermal_conductivity": 0.033,
             "thermal_expansion_coefficient": 1e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.1,
             "wind_receptivity": 0.5
         },
@@ -4002,7 +4002,7 @@
             "texture_name": "styrofoam_1",
             "thermal_conductivity": 0.033,
             "thermal_expansion_coefficient": 1e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.1,
             "wind_receptivity": 0.1
         },
@@ -4034,7 +4034,7 @@
             "texture_name": "carbon_1",
             "thermal_conductivity": 0.05,
             "thermal_expansion_coefficient": 0.0043,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.2,
             "wind_receptivity": 0.5
         },
@@ -4066,7 +4066,7 @@
             "texture_name": "carbon_1",
             "thermal_conductivity": 0.05,
             "thermal_expansion_coefficient": 0.0043,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_intake": 0.05,
             "water_retention": 0.2,
             "wind_receptivity": 0.1
@@ -4095,7 +4095,7 @@
             "stiffness": 1.0,
             "strength": 0.1,
             "thermal_conductivity": 0.8,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
@@ -4123,7 +4123,7 @@
             "stiffness": 1.0,
             "strength": 0.1,
             "thermal_conductivity": 0.8,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
@@ -4151,7 +4151,7 @@
             "stiffness": 1.0,
             "strength": 0.089,
             "thermal_conductivity": 205.0,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -4179,7 +4179,7 @@
             "stiffness": 1.0,
             "strength": 0.092,
             "thermal_conductivity": 0.25,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -4207,7 +4207,7 @@
             "stiffness": 1.0,
             "strength": 0.09,
             "thermal_conductivity": 0.25,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -4236,7 +4236,7 @@
             "strength": 0.15,
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -4277,7 +4277,7 @@
             "strength": 0.075,
             "thermal_conductivity": 0.04,
             "unique_type": "Rope",
-            "water_diffusion_speed": 0.015,
+            "water_diffusion_speed": 0.03,
             "water_intake": 0.05,
             "water_retention": 0.5,
             "wind_receptivity": 0.2
@@ -4318,7 +4318,7 @@
             "stiffness": 1.84,
             "strength": 0.075,
             "thermal_conductivity": 0.04,
-            "water_diffusion_speed": 0.015,
+            "water_diffusion_speed": 0.03,
             "water_intake": 0.05,
             "water_retention": 0.5,
             "wind_receptivity": 0.2
@@ -4358,7 +4358,7 @@
             "stiffness": 1.84,
             "strength": 0.5,
             "thermal_conductivity": 0.04,
-            "water_diffusion_speed": 0.015,
+            "water_diffusion_speed": 0.03,
             "water_intake": 0.05,
             "water_retention": 0.5,
             "wind_receptivity": 0.2
@@ -4399,7 +4399,7 @@
             "stiffness": 1.84,
             "strength": 0.5,
             "thermal_conductivity": 0.04,
-            "water_diffusion_speed": 0.015,
+            "water_diffusion_speed": 0.03,
             "water_intake": 0.05,
             "water_retention": 0.5,
             "wind_receptivity": 0.2
@@ -4444,7 +4444,7 @@
             "strength": 0.09,
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -4487,7 +4487,7 @@
             "strength": 0.75,
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -4691,7 +4691,7 @@
             "texture_name": "metal_riveted_2_small",
             "thermal_conductivity": 205.0,
             "thermal_expansion_coefficient": 2.2e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -4721,7 +4721,7 @@
             "strength": 0.42,
             "texture_name": "metal_riveted_1_small",
             "thermal_conductivity": 140.0,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_reactivity_threshold": 0.0,
             "water_retention": 0.25,
             "wind_receptivity": 0.1
@@ -4753,7 +4753,7 @@
             "texture_name": "wood_planks_3",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -4784,7 +4784,7 @@
             "texture_name": "wood_planks_3",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -4817,7 +4817,7 @@
             "texture_name": "metal_riveted_1_small",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -4844,7 +4844,7 @@
             "texture_name": "metal_riveted_1_small",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
@@ -4870,7 +4870,7 @@
             "strength": 0.42,
             "texture_name": "metal_riveted_1_small",
             "thermal_conductivity": 140.0,
-            "water_diffusion_speed": 0.5,
+            "water_diffusion_speed": 1.0,
             "water_reactivity_threshold": 0.5,
             "water_retention": 0.25,
             "wind_receptivity": 0.1

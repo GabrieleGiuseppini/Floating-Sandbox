@@ -4613,9 +4613,10 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 maxOutboundWaterFlowWeight = std::max(maxOutboundWaterFlowWeight, springOutboundWaterFlowWeights[s]);
 
                 // TODOTEST
-                if (pointIndex == mLastQueriedPointIndex)
+                if (pointIndex == mLastQueriedPointIndex
+                    || cs.OtherEndpointIndex == mLastQueriedPointIndex)
                 {
-                    LogMessage("  W Out: springOutboundWaterFlowWeights=", springOutboundWaterFlowWeights[s], " dw=", dw, " springDir=", springNormalizedVector,
+                    LogMessage("  W ", ((pointIndex == mLastQueriedPointIndex)? "Out" : "In"), ": springOutboundWaterFlowWeights=", springOutboundWaterFlowWeights[s], " dw=", dw, " springDir=", springNormalizedVector,
                         " upness=", springUpness, " downness=", springDownness);
                     LogMessage("         pThis=", oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex] * springDownness,
                         " pOther=", oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness,
@@ -4671,14 +4672,14 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 maxOutboundWaterFlowWeight = std::min(maxOutboundWaterFlowWeight, oldPointWaterBufferData[pointIndex]);
                 assert(maxOutboundWaterFlowWeight <= totalOutboundWaterFlowWeight);
                 waterQuantityNormalizationFactor = std::min(
-                    (maxOutboundWaterFlowWeight / totalOutboundWaterFlowWeight) * (simulationParameters.WaterDiffusionSpeedAdjustment),
+                    (maxOutboundWaterFlowWeight / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
                     1.0f);
 
                 // TODOTEST
                 if (pointIndex == mLastQueriedPointIndex)
                 {
-                    LogMessage("W: normFactor=", waterQuantityNormalizationFactor, " (oldWater=", oldPointWaterBufferData[pointIndex], " max=", maxOutboundWaterFlowWeight, 
-                        " alpha=", (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment), 
+                    LogMessage("W: normFactor=", waterQuantityNormalizationFactor, " (oldWater=", oldPointWaterBufferData[pointIndex], " max=", maxOutboundWaterFlowWeight,
+                        " alpha=", (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
                         " (mat=", mPoints.GetMaterialWaterDiffusionSpeed(pointIndex), " diffSpeed=", simulationParameters.WaterDiffusionSpeedAdjustment, ")",
                         " tot=", totalOutboundWaterFlowWeight, ")");
                 }
