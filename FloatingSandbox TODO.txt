@@ -2795,27 +2795,37 @@
 					+ PERFECT SHOOT
 
 				- Investigate:
-					- Residual air
+					+ Residual air
 						+ Investigate latest dump: norm factor zero is because e-36
 						+ Verify was there also before
 							+ No, was plain 0
 							+ New one: e-25
-						- Redo dump with ~e-25
+						+ Redo dump with ~e-25
+							+ It does go out...just very slowly
+					- Jaggedness, again
+						+ Get multi-step dump
+						- Forgot: re-add material diffusion speed, but recalc water_speed so that 0.625 = new * 0.5
 					- May be it's good, but...: air vels damp too much
-						- Is it relative vel?
+						X Is it relative vel? NO: using abs vel makes chaos - exploding vels
+						- Anything else? Keep it?
 					X Wild plumes @ Flood Test
 						! Verify was there also before (air: 1.219) -- IT WAS!
+					- Velocity of air in hull changes: every spring is impermeable, how can it change?
+						- Check with dump
 
+				- Should upward air velocity account for rest length? It's the same straight upwards as well as diagonally up
 
+				- If stays: interact with air velocities @ blasts, etc. (add to plan below)
 
-				- If goes: interact with air velocities @ blasts, etc. (add to plan below)
-
-				- Setting enum and all: decide air velocities vs momenta (or both?)
+				- Vector rendering setting enum and all: decide air velocities vs momenta (or both?)
+					- Velocities doesn't make much sense: it's drawn underwater, and there air is so small
+					- So rename all to Momenta
+						- Also consider nuking water velocities - check how it looks
 
 
 			- Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
-					- Might make sense to have it as a setting
+					- Make settings for both, @ SettingsDialog under "perf" (advanced)
 
 
 											

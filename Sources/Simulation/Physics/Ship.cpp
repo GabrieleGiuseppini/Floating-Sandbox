@@ -4655,6 +4655,12 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 //    (oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
                 //    //(oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (simulationParameters.WaterDiffusionSpeedAdjustment),
                 //    1.0f);
+                //
+                //// TODOTEST
+                //if (pointIndex == mLastQueriedPointIndex)
+                //{
+                //    LogMessage("W: normFactor=", waterQuantityNormalizationFactor, " (oldWater=", oldPointWaterBufferData[pointIndex], " alpha=", (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment), " tot=", totalOutboundWaterFlowWeight, ")");
+                //}
 
                 // TODOTEST: new norm factor
                 //waterQuantityNormalizationFactor =
@@ -4671,7 +4677,10 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 // TODOTEST
                 if (pointIndex == mLastQueriedPointIndex)
                 {
-                    LogMessage("W: normFactor=", waterQuantityNormalizationFactor, " (oldWater=", oldPointWaterBufferData[pointIndex], " alpha=", (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment), " tot=", totalOutboundWaterFlowWeight, ")");
+                    LogMessage("W: normFactor=", waterQuantityNormalizationFactor, " (oldWater=", oldPointWaterBufferData[pointIndex], " max=", maxOutboundWaterFlowWeight, 
+                        " alpha=", (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment), 
+                        " (mat=", mPoints.GetMaterialWaterDiffusionSpeed(pointIndex), " diffSpeed=", simulationParameters.WaterDiffusionSpeedAdjustment, ")",
+                        " tot=", totalOutboundWaterFlowWeight, ")");
                 }
             }
 
