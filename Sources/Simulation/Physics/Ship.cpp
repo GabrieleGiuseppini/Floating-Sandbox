@@ -5154,11 +5154,20 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 //        1.0f / totalOutboundAirFlowWeight,
                 //        oldPointAirPressureBufferData[pointIndex] * simulationParameters.AirDiffusionSpeedAdjustment / totalOutboundAirFlowWeightSquared);
 
-                // TODOTEST: max factor
-                maxOutboundAirFlowWeight = std::min(maxOutboundAirFlowWeight, oldPointAirPressureBufferData[pointIndex]);
+                //// TODOTEST: max norm factor
+                //// Note: we always do less that the outbound water flow height here, even if it drains the point negligibly; not good! See new one
+                //maxOutboundAirFlowWeight = std::min(maxOutboundAirFlowWeight, oldPointAirPressureBufferData[pointIndex]);
+                //assert(maxOutboundAirFlowWeight <= totalOutboundAirFlowWeight);
+                //airPressureQuantityNormalizationFactor = std::min(
+                //    (maxOutboundAirFlowWeight / totalOutboundAirFlowWeight) * (simulationParameters.AirDiffusionSpeedAdjustment),
+                //    1.0f);
+
+                // TODOTEST: max norm factor, newer: we're willing to do no more than a _speed_ fraction of current air, but we're also willing
+                // to do a full outbound flow weight if it agrees with our limits
+                maxOutboundAirFlowWeight = std::min(maxOutboundAirFlowWeight, oldPointAirPressureBufferData[pointIndex] * simulationParameters.AirDiffusionSpeedAdjustment);
                 assert(maxOutboundAirFlowWeight <= totalOutboundAirFlowWeight);
                 airPressureQuantityNormalizationFactor = std::min(
-                    (maxOutboundAirFlowWeight / totalOutboundAirFlowWeight) * (simulationParameters.AirDiffusionSpeedAdjustment),
+                    maxOutboundAirFlowWeight / totalOutboundAirFlowWeight,
                     1.0f);
 
                 // TODOTEST

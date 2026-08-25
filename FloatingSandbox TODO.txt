@@ -2794,7 +2794,7 @@
 					+ a_spd/w_spd: 0.312/0.625; squeeze: 0.312; Damp/Bounce 1.0
 					+ PERFECT SHOOT
 
-				- Investigate:
+				= Investigate:
 					+ Residual air
 						+ Investigate latest dump: norm factor zero is because e-36
 						+ Verify was there also before
@@ -2802,7 +2802,7 @@
 							+ New one: e-25
 						+ Redo dump with ~e-25
 							+ It does go out...just very slowly
-					= Jaggedness, again
+					+ Jaggedness, again
 						+ Get multi-step dump
 							+ Also print water-in's when this is otherEndpoint
 							+ Hints at norm factor
@@ -2811,14 +2811,20 @@
 								+ Write script to multiply by 2
 								+ Change default at load to 1.0
 							+ Ensure water_speed setting is at 0.625
-						= Try new norm factor
-							+ Less jagged!
+						+ Try new norm factor
+							! Less jagged!
 							+ Scorecard:
 								+ SHOOT: PERFECT!
 								+ default_ship: GOOD!
 								+ flood test: GOOD!
 								+ Obliquity: CONVERGES!
-							- Also at air; scorecard:
+							+ Also at air; scorecard:
+								! Air is crazy - but in total converges faster (a_speed: 0.312)
+									! Also render is jagged
+								+ SHOOT: PERFECT! (even better)
+								+ default_ship: GOOD!
+								+ flood test: AWESOME!
+								+ Obliquity: same
 						X Try linear render: first 2-5 
 					- May be it's good, but...: air vels damp too much
 						X Is it relative vel? NO: using abs vel makes chaos - exploding vels
@@ -2829,8 +2835,12 @@
 						- Check with dump
 
 				- Should upward air velocity account for rest length? It's the same straight upwards as well as diagonally up
+					- Obliquity:
+					- ....
 
-				- If stays: interact with air velocities @ blasts, etc. (add to plan below)
+				- If air velocity experiment stays: interact with air velocities @ blasts, etc. (add to plan below)
+					- And merge into _reality
+					- Delete _with_velocities branch
 
 				- Vector rendering setting enum and all: decide air velocities vs momenta (or both?)
 					- Velocities doesn't make much sense: it's drawn underwater, and there air is so small
