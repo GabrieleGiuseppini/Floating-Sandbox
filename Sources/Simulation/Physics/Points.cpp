@@ -2498,22 +2498,11 @@ void Points::UploadVectors(
             break;
         }
 
-        case VectorFieldRenderModeType::PointWaterVelocity:
-        {
-            color = vec4f(0.094f, 0.509f, 0.925f, 1.0f);
-            vectorBuffer = mWaterVelocityBuffer.data();
-            lengthAdjustment = 1.0f;
-
-            break;
-        }
-
-        case VectorFieldRenderModeType::PointAirPressureVelocity:
+        case VectorFieldRenderModeType::PointAirPressureMomentum:
         {
             color = vec4f(0.794f, 0.309f, 0.309f, 1.0f);
-            // TODOHERE
-            //vectorBuffer = mAirPressureVelocityBuffer.data();
             vectorBuffer = mAirPressureMomentumBuffer.data();
-            lengthAdjustment = 1.0f;
+            lengthAdjustment = 0.8f;
 
             break;
         }

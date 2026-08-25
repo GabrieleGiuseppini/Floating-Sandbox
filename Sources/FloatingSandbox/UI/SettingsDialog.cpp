@@ -6140,9 +6140,8 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             _("Velocities"),
             _("Static Forces"),
             _("Dynamic Forces"),
-            _("Water Velocities"),
             _("Water Momenta"),
-            _("Air Velocities")
+            _("Air Momenta")
         };
 
         mVectorFieldRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1, -1),
@@ -6181,20 +6180,14 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
                     case 4:
                     {
-                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterVelocity);
-                        break;
-                    }
-
-                    case 5:
-                    {
                         mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterMomentum);
                         break;
                     }
 
                     default:
                     {
-                        assert(6 == selectedVectorFieldRenderMode);
-                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointAirPressureVelocity);
+                        assert(5 == selectedVectorFieldRenderMode);
+                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointAirPressureMomentum);
                         break;
                     }
                 }
@@ -7298,21 +7291,15 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
 
-        case VectorFieldRenderModeType::PointWaterVelocity:
+        case VectorFieldRenderModeType::PointWaterMomentum:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(4);
             break;
         }
 
-        case VectorFieldRenderModeType::PointWaterMomentum:
+        case VectorFieldRenderModeType::PointAirPressureMomentum:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(5);
-            break;
-        }
-
-        case VectorFieldRenderModeType::PointAirPressureVelocity:
-        {
-            mVectorFieldRenderModeRadioBox->SetSelection(6);
             break;
         }
     }

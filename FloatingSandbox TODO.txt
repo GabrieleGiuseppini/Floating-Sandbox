@@ -2828,26 +2828,33 @@
 						X Try linear render: first 2-5 
 					- May be it's good, but...: air vels damp too much (after injection)
 						X Is it relative vel? NO: using abs vel makes chaos - exploding vels
-						- Anything else? Keep it?
+						! It's because it's a single point
+						- Convert toool to radius and all, like flood
+							- But keep triangle thing, as this tool might be used on stretched surfaces
+								- Triangle thing only if no points faound in radius; keep exactly as it is then, but inject at all three points
+									- Based on bary coords?
 					X Wild plumes @ Flood Test
 						! Verify was there also before (air: 1.219) -- IT WAS!
-					= Velocity of air in hull changes: every spring is impermeable, how can it change?
+					= Velocity of air in hull changes over time: every spring is impermeable, how can it change?
 						+ Check with dump: it's all bounces
-						- TODOHERE
+						! With internal pressure, we set separately hull pressure to avg of non-hull neighbors
+						= First off: no buoyancy across impermeable springs (if this is hull doesn't care of water above; if water above is in hull this doesn't care)
+						- TODOHERE: shut down bounces if point is hull
 
 				- Should upward air velocity account for rest length? It's the same straight upwards as well as diagonally up
 					- Obliquity:
 					- ....
 
-				- If air velocity experiment stays: interact with air velocities @ blasts, etc. (add to plan below)
+				- If air velocity experiment stays: interact with air velocities @ blasts, npcs, etc. (add to plan below)
 					- And merge into _reality
 					- Delete _with_velocities branch
 
-				- Vector rendering setting enum and all: decide air velocities vs momenta (or both?)
-					- Velocities doesn't make much sense: it's drawn underwater, and there air is so small
-					- So rename all to Momenta
-						- Also nuke water velocities - only keep momenta
+				+ Vector rendering setting enum and all: decide air velocities vs momenta (or both?)
+					! Velocities doesn't make much sense: it's drawn underwater, and there air is so small
+					+ So rename all to Momenta
+						+ Also nuke water velocities - only keep momenta
 
+			- Problem with velocities against holes (w & a) (leaking)
 
 			- Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
@@ -2874,9 +2881,6 @@
 			= Ingress/Egress and bubbles
 				= Water: enters or leaves based on internal total pressure <-> total external pressure differential
 					+ Consider total external and total internal pressures - thus including air
-
-					- Things to try/tune:
-						- Use squeezed air pressure for calculation of internal pressure
 				= Air:
 					+ Leaves all if underwater
 					+ Enters iff above-water and (air/total) pressure outside > air pressure inside
@@ -2909,6 +2913,7 @@
 				- We've changed unit of pressure, hence current math is invalid!
 				- Do we do it where we currently use InternalPressure, or do we bounce
 				  @ UpdateWaterAndAirPressure?
+					- Depending on answer: need to nail down diffusion in hull
 				- Test Inflatable Balloon
 			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure
 			- Tools:
