@@ -2826,13 +2826,14 @@
 								+ flood test: AWESOME!
 								+ Obliquity: same
 						X Try linear render: first 2-5 
-					- May be it's good, but...: air vels damp too much
+					- May be it's good, but...: air vels damp too much (after injection)
 						X Is it relative vel? NO: using abs vel makes chaos - exploding vels
 						- Anything else? Keep it?
 					X Wild plumes @ Flood Test
 						! Verify was there also before (air: 1.219) -- IT WAS!
-					- Velocity of air in hull changes: every spring is impermeable, how can it change?
-						- Check with dump
+					= Velocity of air in hull changes: every spring is impermeable, how can it change?
+						+ Check with dump: it's all bounces
+						- TODOHERE
 
 				- Should upward air velocity account for rest length? It's the same straight upwards as well as diagonally up
 					- Obliquity:
@@ -2852,7 +2853,7 @@
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
 					- Make settings for both, @ SettingsDialog under "perf" (advanced)
 
-			- Test water in ropes
+			+ Test water in ropes
 											
 
 

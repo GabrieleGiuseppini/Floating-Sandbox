@@ -5271,6 +5271,11 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     newPointAirPressureMomentumBufferData[pointIndex] +=
                         -springOutboundAirPressureVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f)
                         * springOutboundQuantityOfAirPressure;
+
+                    if (pointIndex == mLastQueriedPointIndex || cs.OtherEndpointIndex == mLastQueriedPointIndex)
+                    {
+                        LogMessage("    A Bounce");
+                    }
                 }
             }
         }
