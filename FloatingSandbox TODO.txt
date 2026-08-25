@@ -2803,13 +2803,23 @@
 						+ Redo dump with ~e-25
 							+ It does go out...just very slowly
 					= Jaggedness, again
-						= Get multi-step dump
-							- Also print water-in's when this is otherEndpoint
+						+ Get multi-step dump
+							+ Also print water-in's when this is otherEndpoint
+							+ Hints at norm factor
 						+ Forgot: re-add material diffusion speed, but recalc water_speed so that 0.625 = new * 0.5 => water_speed=1.25
 							+ OR: see what we set for diffusion_speed in materials; default should be 1.0 instead of 0.5
 								+ Write script to multiply by 2
 								+ Change default at load to 1.0
 							+ Ensure water_speed setting is at 0.625
+						= Try new norm factor
+							+ Less jagged!
+							+ Scorecard:
+								+ SHOOT: PERFECT!
+								+ default_ship: GOOD!
+								+ flood test: GOOD!
+								+ Obliquity: CONVERGES!
+							- Also at air; scorecard:
+						X Try linear render: first 2-5 
 					- May be it's good, but...: air vels damp too much
 						X Is it relative vel? NO: using abs vel makes chaos - exploding vels
 						- Anything else? Keep it?

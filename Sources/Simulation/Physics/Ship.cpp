@@ -4668,11 +4668,20 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 //    std::min(1.0f, oldPointWaterBufferData[pointIndex] * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment)
                 //    / totalOutboundWaterFlowWeight;
 
-                // TODOTEST: max norm factor
-                maxOutboundWaterFlowWeight = std::min(maxOutboundWaterFlowWeight, oldPointWaterBufferData[pointIndex]);
+                //// TODOTEST: max norm factor
+                // Note: we always do less that the outbound water flow height here, even if it drains the point negligibly; not good! See new one
+                //maxOutboundWaterFlowWeight = std::min(maxOutboundWaterFlowWeight, oldPointWaterBufferData[pointIndex]);
+                //assert(maxOutboundWaterFlowWeight <= totalOutboundWaterFlowWeight);
+                //waterQuantityNormalizationFactor = std::min(
+                //    (maxOutboundWaterFlowWeight / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
+                //    1.0f);
+
+                // TODOTEST: max norm factor, newer: we're willing to do no more than a _speed_ fraction of current water, but we're also willing
+                // to do a full outbound flow weight if it agrees with our limits
+                maxOutboundWaterFlowWeight = std::min(maxOutboundWaterFlowWeight, oldPointWaterBufferData[pointIndex] * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment);
                 assert(maxOutboundWaterFlowWeight <= totalOutboundWaterFlowWeight);
                 waterQuantityNormalizationFactor = std::min(
-                    (maxOutboundWaterFlowWeight / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
+                    maxOutboundWaterFlowWeight / totalOutboundWaterFlowWeight,
                     1.0f);
 
                 // TODOTEST
