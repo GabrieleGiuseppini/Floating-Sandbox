@@ -5089,12 +5089,11 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 // Indicator of "water above": 0 @ water[above] = 0.0, 1 @ water[above] >= 1.0
                 float const omega = std::min(oldPointWaterBufferData[cs.OtherEndpointIndex], 1.0f);
 
-                // Velocity along spring (only exists when going "up", and already projected onto vertical)
-                float const upwardVelocity =
+                // Velocity along spring (only exists when going "up", and it's projected onto vertical)
+                float const upwardVelocity = std::max(
                     //0.3f // Magic: bubble goes up at 0.25/0.40 m/s
-                    simulationParameters.ElectricalElementHeatProducedAdjustment
-                    * omega
-                    * springUpness;
+                    simulationParameters.ElectricalElementHeatProducedAdjustment * omega * springNormalizedVector.y,
+                    0.0f);
 
                 springOutboundScalarAirPressureVelocity += upwardVelocity;
 

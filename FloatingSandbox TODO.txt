@@ -2794,7 +2794,7 @@
 					+ a_spd/w_spd: 0.312/0.625; squeeze: 0.312; Damp/Bounce 1.0
 					+ PERFECT SHOOT
 
-				= Investigate:
+				+ Investigate:
 					+ Residual air
 						+ Investigate latest dump: norm factor zero is because e-36
 						+ Verify was there also before
@@ -2826,15 +2826,9 @@
 								+ flood test: AWESOME!
 								+ Obliquity: same
 						X Try linear render: first 2-5 
-					- May be it's good, but...: air vels damp too much (after injection)
+					+ May be it's good, but...: air vels damp too much (after injection)
 						X Is it relative vel? NO: using abs vel makes chaos - exploding vels
 						! It's because it's a single point
-						- Convert toool to radius and all, like flood
-							- But keep triangle thing, as this tool might be used on stretched surfaces
-								- Triangle thing only if no points faound in radius; keep exactly as it is then, but inject at all three points
-									- Based on bary coords?
-									- Also slider for velocity (momenta)
-										- -> Android plan: all new settings
 					X Wild plumes @ Flood Test
 						! Verify was there also before (air: 1.219) -- IT WAS!
 					+ Velocity of air in hull changes over time: every spring is impermeable, how can it change?
@@ -2847,11 +2841,22 @@
 							+ Bounce
 								+ This should not happen if two above are fixed: add assert
 
-				- Check Bernoulli's: rho/g
-
+				+ Upward velocity seems wrong: it's using upness, and thus it's not projected
+					+ Fix with real projection
+					+ Full test
+						+ SHOOT: same
+						+ flood_test: same
+						+ Obliquity: same
 				- Should upward air velocity account for rest length? It's the same straight upwards as well as diagonally up
-					- Obliquity:
-					- ....
+					- But we then divide the whole velocity (bernoulli + upward_ by rest length; if stays like so after work above, this point is moot
+
+				- Check Bernoulli's: rho/g
+					- Try fixing dimensions, @ both places
+
+				- Bernoulli:
+					- In both water and air, we got rel vel wrong: v1 = sqrt(v2^2 + ...)
+						- Try @ water
+						- Try @ air
 
 				- If air velocity experiment stays: interact with air velocities @ blasts, npcs, etc. (add to plan below)
 					- And merge into _reality
@@ -2864,6 +2869,8 @@
 
 			- Problem with velocities against holes (w & a) (leaking)
 				- TODOHERE: think: should water/air in/out impact velocities at all, e.g. through momentum loss?
+				- TODOHERE: if at equilibrium with outside, we stop diffusing out - why does vector not go down? No damping?
+					- Verify vel really stays at full equilibrium with outside
 
 			- Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
@@ -2887,6 +2894,8 @@
 				- Comments
 				- Code
 					- Put back restrict pointers where needed
+				- Finalize settings and constants
+					- -> Android plan: all new settings
 				- Remove cross-cut readings -- LATER!
 
 			= Ingress/Egress and bubbles
@@ -2899,6 +2908,7 @@
 						- Rate of air pressure, cannot use bernoulli
 							- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
 						- Add SimulationParameters::AirIntakeAdjustment?
+							- -> Android
 				= Air Bubbles
 					+ Rename cumulation members
 					+ Bubble contribution proportional _only_ to air pressure that left point
@@ -2928,9 +2938,17 @@
 				- Test Inflatable Balloon
 			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure
 			- Tools:
-				- Flood
-				- Internal Pressure
-			- Imparted water velocities w/move tool - et al?
+				- Flood, Internal Pressure:
+					- First off, rename: "Internal Pressure" -> "Air Pressure"
+						- Also @ SettingsDialog
+					- Both tools: rate, radius, and velocity injection
+						- But keep triangle thing, as this tool might be used on stretched surfaces
+							- Triangle thing only if no points faound in radius; keep exactly as it is then, but inject at all three points
+								- Based on bary coords?
+						- Also slider for velocity (momenta)
+							- -> Android plan: all new settings
+
+			- Imparted water and air velocities w/move tool - et other tools?
 
 			= Render full water range
 				! The +1 by rendering is due to bottom having full water, top having 0 - interpolation pushes blue all the way up
