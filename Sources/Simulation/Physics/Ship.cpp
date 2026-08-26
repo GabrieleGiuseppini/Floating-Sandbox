@@ -3312,7 +3312,7 @@ void Ship::UpdateWaterVelocities(
     {
         totalWaterPost += mPoints.GetWater(pointIndex);
     }
-    mSimulationEventHandler.OnCustomProbe("Total W In", totalWaterPost);
+    mSimulationEventHandler.OnCustomProbe("Total W Inside", totalWaterPost);
 }
 
 void Ship::UpdateWaterAndAirPressure(
@@ -5096,8 +5096,13 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     * omega
                     * springUpness;
 
-                // TODOCRITICAL
                 springOutboundScalarAirPressureVelocity += upwardVelocity;
+
+                // No velocity if this is a hull point
+                if (mPoints.GetIsHull(pointIndex)) // TODO: PERF: if we have to branch here, consider branching earlier then and skip more code
+                {
+                    springOutboundScalarAirPressureVelocity = 0.0f;
+                }
 
                 // Store weight along spring, scaling for the greater distance traveled along
                 // diagonal springs
@@ -5222,21 +5227,6 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     ? mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex)
                     : -mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex);
 
-                // TODOTEST
-                if (pointIndex == mLastQueriedPointIndex)
-                {
-                    LogMessage("  A Out: springOutboundQuantityOfAirPressure=", springOutboundQuantityOfAirPressure, " dir=", springNormalizedVector);
-
-                    todoTotalAOutAtQueriedPoint += springOutboundQuantityOfAirPressure;
-                }
-                else if (cs.OtherEndpointIndex == mLastQueriedPointIndex)
-                {
-                    LogMessage("  A In: springOutboundQuantityOfAirPressure=", springOutboundQuantityOfAirPressure, " dir=", springNormalizedVector,
-                              " mom in=", springOutboundAirPressureVelocities[s] * springOutboundQuantityOfAirPressure, " final mom=", newPointAirPressureMomentumBufferData[cs.OtherEndpointIndex]);
-
-                    todoTotalAInAtQueriedPoint += springOutboundQuantityOfAirPressure;
-                }
-
                 assert(springOutboundQuantityOfAirPressure >= 0.0f);
                 assert(springOutboundQuantityOfAirPressure <= newPointAirPressureBufferData[pointIndex]);
 
@@ -5255,6 +5245,21 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     newPointAirPressureMomentumBufferData[cs.OtherEndpointIndex] +=
                         springOutboundAirPressureVelocities[s]
                         * springOutboundQuantityOfAirPressure;
+
+                    // TODOTEST
+                    if (pointIndex == mLastQueriedPointIndex)
+                    {
+                        LogMessage("  A Out: springOutboundQuantityOfAirPressure=", springOutboundQuantityOfAirPressure, " dir=", springNormalizedVector);
+
+                        todoTotalAOutAtQueriedPoint += springOutboundQuantityOfAirPressure;
+                    }
+                    else if (cs.OtherEndpointIndex == mLastQueriedPointIndex)
+                    {
+                        LogMessage("  A In: springOutboundQuantityOfAirPressure=", springOutboundQuantityOfAirPressure, " dir=", springNormalizedVector,
+                            " mom in=", springOutboundAirPressureVelocities[s] * springOutboundQuantityOfAirPressure, " final mom=", newPointAirPressureMomentumBufferData[cs.OtherEndpointIndex]);
+
+                        todoTotalAInAtQueriedPoint += springOutboundQuantityOfAirPressure;
+                    }
                 }
                 else
                 {
@@ -5267,14 +5272,19 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     // No changes to other endpoint
                     //
 
+                    // If we're hull, we expect no flow
+                    assert(!mPoints.GetIsHull(pointIndex) || springOutboundQuantityOfAirPressure == 0.0f);
+
                     // Add "new momentum" (new velocity gained), but after bounce
                     newPointAirPressureMomentumBufferData[pointIndex] +=
                         -springOutboundAirPressureVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f)
                         * springOutboundQuantityOfAirPressure;
 
-                    if (pointIndex == mLastQueriedPointIndex || cs.OtherEndpointIndex == mLastQueriedPointIndex)
+                    if (pointIndex == mLastQueriedPointIndex)
                     {
-                        LogMessage("    A Bounce");
+                        LogMessage("    A Bounce back in: springOutboundQuantityOfAirPressure=", springOutboundQuantityOfAirPressure, " dir=", springNormalizedVector,
+                            " mom in=", (-springOutboundAirPressureVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f) * springOutboundQuantityOfAirPressure),
+                            " final mom=", newPointAirPressureMomentumBufferData[pointIndex]);
                     }
                 }
             }
@@ -5351,7 +5361,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
         totalWaterPost += mPoints.GetWater(pointIndex);
     }
 
-    mSimulationEventHandler.OnCustomProbe("Total W In", totalWaterPost);
+    mSimulationEventHandler.OnCustomProbe("Total W Inside", totalWaterPost);
 }
 
 void Ship::UpdateSinking(float /*currentSimulationTime*/)

@@ -2833,13 +2833,21 @@
 							- But keep triangle thing, as this tool might be used on stretched surfaces
 								- Triangle thing only if no points faound in radius; keep exactly as it is then, but inject at all three points
 									- Based on bary coords?
+									- Also slider for velocity (momenta)
+										- -> Android plan: all new settings
 					X Wild plumes @ Flood Test
 						! Verify was there also before (air: 1.219) -- IT WAS!
-					= Velocity of air in hull changes over time: every spring is impermeable, how can it change?
+					+ Velocity of air in hull changes over time: every spring is impermeable, how can it change?
 						+ Check with dump: it's all bounces
 						! With internal pressure, we set separately hull pressure to avg of non-hull neighbors
-						= First off: no buoyancy across impermeable springs (if this is hull doesn't care of water above; if water above is in hull this doesn't care)
-						- TODOHERE: shut down bounces if point is hull
+						+ Due to three things:
+							+ Rel velocity (w/other point) 
+							+ Buoyancy upward push
+							+ Fixed both: when point is hull, outbound vel is 0								
+							+ Bounce
+								+ This should not happen if two above are fixed: add assert
+
+				- Check Bernoulli's: rho/g
 
 				- Should upward air velocity account for rest length? It's the same straight upwards as well as diagonally up
 					- Obliquity:
@@ -2855,13 +2863,16 @@
 						+ Also nuke water velocities - only keep momenta
 
 			- Problem with velocities against holes (w & a) (leaking)
+				- TODOHERE: think: should water/air in/out impact velocities at all, e.g. through momentum loss?
 
 			- Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
 					- Make settings for both, @ SettingsDialog under "perf" (advanced)
+						- -> Android plan
 
 			+ Test water in ropes
-											
+					
+			- Run in debug (exercise assert's)
 
 
 			- Success criteria:
