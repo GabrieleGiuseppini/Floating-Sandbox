@@ -7399,6 +7399,7 @@ void Ship::HandleWatertightDoorUpdated(
 
         // Dry up point
         mPoints.SetWater(pointElementIndex, 0.0f);
+        mPoints.SetAirPressureVelocity(pointElementIndex, vec2f::zero());
 
         // Fire event
         mSimulationEventHandler.OnWatertightDoorClosed(
