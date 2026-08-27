@@ -2899,6 +2899,7 @@
 				- Comments
 				- Code
 					- Put back restrict pointers where needed
+					- Nuke [iff not used]: velocity damping
 				- Finalize settings and constants
 					- -> Android plan: all new settings
 				- Remove cross-cut readings -- LATER!
