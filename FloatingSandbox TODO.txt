@@ -2850,7 +2850,7 @@
 				+ Should upward air velocity account for rest length? It's the same straight upwards as well as diagonally up
 					+ But we then divide the whole velocity (bernoulli + upward_ by rest length; if stays like so after work above, this point is moot
 
-				- Check Bernoulli's: rho/g
+				+ Check Bernoulli's: rho/g
 					+ Try fixing dimensions, @ both places
 						+ Water: OK, needs comment
 						+ Air: needs g * rho_water/rho_air, value is 87.66 after square root!

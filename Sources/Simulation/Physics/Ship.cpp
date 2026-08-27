@@ -5059,7 +5059,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 // which would yield a ~87.66 multiplier for the value we calculate here.
                 //
                 // However, Bernoulli's principle doesn't apply here (air is compressible, and we consider large differences in pressure),
-                // so we are content with our naive calculation.
+                // so we are content with our naive calculation which doesn't yield large numbers.
                 //
 
                 float const dAir = (
