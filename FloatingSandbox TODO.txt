@@ -2851,10 +2851,11 @@
 					+ But we then divide the whole velocity (bernoulli + upward_ by rest length; if stays like so after work above, this point is moot
 
 				- Check Bernoulli's: rho/g
-					- Try fixing dimensions, @ both places
+					+ Try fixing dimensions, @ both places
 						+ Water: OK, needs comment
-						- Air: needs g * rho_water/rho_air, value is 
-						- FS pressure is 
+						+ Air: needs g * rho_water/rho_air, value is 87.66 after square root!
+							+ But Bernoulli doesn't apply to air
+							+ So we keep it like this
 
 				- Bernoulli:
 					- In both water and air, we got rel vel wrong: v1 = sqrt(v2^2 + ...)

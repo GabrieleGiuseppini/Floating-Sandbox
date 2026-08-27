@@ -5054,6 +5054,13 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 //
                 // Bernoulli
                 //
+                // Note: to be a real Bernoulli, the square root argument would need to be multiplier by (g * rho_water / rho_air)
+                // (easily found by considering that real air pressure of our P_air_fs quantity is rho_water * A * P_air_fs * g / A),
+                // which would yield a ~87.66 multiplier for the value we calculate here.
+                //
+                // However, Bernoulli's principle doesn't apply here (air is compressible, and we consider large differences in pressure),
+                // so we are content with our naive calculation.
+                //
 
                 float const dAir = (
                     (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex])
