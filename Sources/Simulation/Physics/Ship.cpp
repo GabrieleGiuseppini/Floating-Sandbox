@@ -4563,6 +4563,8 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 // (Bernoulli, 1738)
                 //
                 // We add pressure and heights as pressure is in "height equivalent units"
+                // - In Bernoulli, the pressure factor inside the square root is P/rho, which
+                //   can be easily shown to be g*Pfs, considering that Pfs is h of cube of water
                 float bernoulliVelocityAlongSpring;
                 float const dwy = dw + dy;
                 if (dwy >= 0.0f)
@@ -4593,7 +4595,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     0.0f);
 
                 // Store weight along spring, as quantity of water (& pressure) moved by velocity;
-                // TODO: comment on not using dt * old_water, as dt is simply multiplicative, and norm factor takes care of old quantity of water
+                // TODO: comment on not using dt * old_water, as dt is simply multiplicative -- TODO: what about old_water?
                 // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
                 springOutboundWaterFlowWeights[s] =
                     // TODOTEST: orig

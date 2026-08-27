@@ -2847,11 +2847,14 @@
 						+ SHOOT: same
 						+ flood_test: same
 						+ Obliquity: same
-				- Should upward air velocity account for rest length? It's the same straight upwards as well as diagonally up
-					- But we then divide the whole velocity (bernoulli + upward_ by rest length; if stays like so after work above, this point is moot
+				+ Should upward air velocity account for rest length? It's the same straight upwards as well as diagonally up
+					+ But we then divide the whole velocity (bernoulli + upward_ by rest length; if stays like so after work above, this point is moot
 
 				- Check Bernoulli's: rho/g
 					- Try fixing dimensions, @ both places
+						+ Water: OK, needs comment
+						- Air: needs g * rho_water/rho_air, value is 
+						- FS pressure is 
 
 				- Bernoulli:
 					- In both water and air, we got rel vel wrong: v1 = sqrt(v2^2 + ...)
@@ -2870,7 +2873,7 @@
 			- Problem with velocities against holes (w & a) (leaking)
 				- TODOHERE: think: should water/air in/out impact velocities at all, e.g. through momentum loss?
 				- TODOHERE: if at equilibrium with outside, we stop diffusing out - why does vector not go down? No damping?
-					- Verify vel really stays at full equilibrium with outside
+					- Verify with dump that vel really stays when at full equilibrium with outside
 
 			- Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
@@ -2880,7 +2883,6 @@
 			+ Test water in ropes
 					
 			- Run in debug (exercise assert's)
-
 
 			- Success criteria:
 				- Water level stops in bell
