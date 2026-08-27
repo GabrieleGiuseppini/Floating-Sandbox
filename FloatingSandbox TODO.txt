@@ -2857,7 +2857,7 @@
 							+ But Bernoulli doesn't apply to air
 							+ So we keep it like this
 
-				- Bernoulli:
+				- Bernoulli 2:
 					- In both water and air, we got rel vel wrong: v1 = sqrt(v2^2 + ...)
 						- Try @ water
 						- Try @ air
@@ -2875,6 +2875,8 @@
 				- TODOHERE: think: should water/air in/out impact velocities at all, e.g. through momentum loss?
 				- TODOHERE: if at equilibrium with outside, we stop diffusing out - why does vector not go down? No damping?
 					- Verify with dump that vel really stays when at full equilibrium with outside
+				X Try damping vels
+					+ Verify removes residuals: NO! It's not vel; check dump: it's incoming vel
 
 			- Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth

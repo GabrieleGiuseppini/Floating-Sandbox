@@ -4944,6 +4944,20 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
     for (int iter = 0; iter < NumberOfAirIterations; ++iter)
     {
+        //
+        // Damp velocities
+        //
+
+        vec2f lastQueriedPointInitialVelocity = vec2f::zero();
+
+        float const dampingFactor = std::min(simulationParameters.AntiMatterBombImplosionStrength / 10.0f, 1.0f);
+        for (auto pointIndex : mPoints.RawShipPoints())
+        {
+            if (pointIndex == mLastQueriedPointIndex)
+                lastQueriedPointInitialVelocity = mPoints.GetAirPressureVelocity(pointIndex);
+            mPoints.SetAirPressureVelocity(pointIndex, mPoints.GetAirPressureVelocity(pointIndex) * dampingFactor);
+        }
+
         vec2f const * const restrict oldPointAirPressureVelocityBufferData = mPoints.GetAirPressureVelocityBufferAsVec2();
 
         //
@@ -4971,7 +4985,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
         {
             LogMessage("================");
             LogMessage("Start W: ", oldPointWaterBufferData[mLastQueriedPointIndex], "  Start A: ", oldPointAirPressureBufferData[mLastQueriedPointIndex],
-                " AVel=", oldPointAirPressureVelocityBufferData[mLastQueriedPointIndex]);
+                " AVel=", lastQueriedPointInitialVelocity, " -> ", oldPointAirPressureVelocityBufferData[mLastQueriedPointIndex]);
         }
         float todoTotalAOutAtQueriedPoint = 0.0f;
         float todoTotalAInAtQueriedPoint = 0.0f;
