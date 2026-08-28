@@ -2849,18 +2849,21 @@
 						+ Obliquity: same
 				+ Should upward air velocity account for rest length? It's the same straight upwards as well as diagonally up
 					+ But we then divide the whole velocity (bernoulli + upward_ by rest length; if stays like so after work above, this point is moot
-
 				+ Check Bernoulli's: rho/g
 					+ Try fixing dimensions, @ both places
 						+ Water: OK, needs comment
 						+ Air: needs g * rho_water/rho_air, value is 87.66 after square root!
 							+ But Bernoulli doesn't apply to air
 							+ So we keep it like this
+				+ Bernoulli 2:
+					+ In both water and air, we got rel vel wrong: v1 = sqrt(v2^2 + ...)
+						+ Water
+						+ Air
+					! LOOKS WORSE!
+					+ If not OK: try without upness in relvel for water 
+					X Nuke it
 
-				- Bernoulli 2:
-					- In both water and air, we got rel vel wrong: v1 = sqrt(v2^2 + ...)
-						- Try @ water
-						- Try @ air
+				- See if upness in relvel for water is still needed
 
 				- If air velocity experiment stays: interact with air velocities @ blasts, npcs, etc. (add to plan below)
 					- And merge into _reality
@@ -2877,6 +2880,9 @@
 					- Verify with dump that vel really stays when at full equilibrium with outside
 				X Try damping vels
 					+ Verify removes residuals: NO! It's not vel; check dump: it's incoming vel
+				- TODOHERE: it's because vel neveer leaves
+				- Try removing vel again
+					- Undo momentum left + zeroing out
 
 			- Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth

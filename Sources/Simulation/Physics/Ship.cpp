@@ -4559,12 +4559,59 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 // Gravity potential difference (positive implies point -> other endpoint flow)
                 float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(cs.OtherEndpointIndex).y;
 
+
+
+
+
+                //
                 // Calculate gained water velocity along this spring, from point to other endpoint
                 // (Bernoulli, 1738)
                 //
                 // We add pressure and heights as pressure is in "height equivalent units"
                 // - In Bernoulli, the pressure factor inside the square root is P/rho, which
                 //   can be easily shown to be g*Pfs, considering that Pfs is h of cube of water
+                //
+
+                //// TODOTEST: NEW (v2 in sq root)
+
+                //// Relative velocity (this fluid vs other fluid)
+                //// TODOTEST
+                ////float const relativePointVelocityAlongSpring = (pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * springUpness);
+                //float const relativePointVelocityAlongSpring = (pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector));
+
+                //// Total pressure/rho
+                //float const dwy = dw + dy;
+
+                //// Putting it all together: v^2 + 2*g*dwy
+                //float const squareRootArg =
+                //    (relativePointVelocityAlongSpring >= 0.0f ? 1.0f : -1.0f) * relativePointVelocityAlongSpring * relativePointVelocityAlongSpring
+                //    + 2.0f * SimulationParameters::GravityMagnitude * dwy;
+
+                //float bernoulliVelocityAlongSpring;
+                //if (squareRootArg >= 0.0f)
+                //{
+                //    // Gained velocity goes from point to other endpoint
+                //    bernoulliVelocityAlongSpring = sqrtf(squareRootArg);
+                //}
+                //else
+                //{
+                //    // Gained velocity goes from other endpoint to point
+                //    bernoulliVelocityAlongSpring = -sqrtf(-squareRootArg);
+                //}
+
+                //// Resultant scalar velocity along spring; outbound only, as
+                //// if this were inbound it wouldn't result in any movement of the point's
+                //// water between these two springs. Morevoer, Bernoulli's velocity injected
+                //// along this spring will be picked up later also by the other endpoint,
+                //// and at that time it would move water if it agrees with its velocity
+                //float const springOutboundScalarWaterVelocity = std::max(
+                //    bernoulliVelocityAlongSpring * alphaCrazyness,
+                //    0.0f);
+
+
+
+
+                // TODOTEST: OLD
                 float bernoulliVelocityAlongSpring;
                 float const dwy = dw + dy;
                 if (dwy >= 0.0f)
@@ -4593,6 +4640,16 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     // TODOTEST: relative velocity, modulated
                     //(pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * simulationParameters.BlastToolRadius / 10.0f) + bernoulliVelocityAlongSpring * alphaCrazyness,
                     0.0f);
+
+
+
+
+
+
+
+
+
+
 
                 // Store weight along spring, as quantity of water (& pressure) moved by velocity;
                 // TODO: comment on not using dt * old_water, as dt is simply multiplicative -- TODO: what about old_water?
@@ -5076,6 +5133,10 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 // so we are content with our naive calculation which doesn't yield large numbers.
                 //
 
+
+
+                // TODOOLD
+
                 float const dAir = (
                     (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex])
                     - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex])
@@ -5104,6 +5165,49 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     // TODOTEST: relative velocity
                     (pointAirPressureVelocityAlongSpring - oldPointAirPressureVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector)) + bernoulliVelocityAlongSpring,
                     0.0f);
+
+
+
+                // TODONEW: v2 in sq_root
+
+                //// Delta pressure
+                //float const dAir = (
+                //    (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex])
+                //    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex])
+                //    ) * mSprings.GetWaterPermeability(cs.SpringIndex); // Enforce no delta-pressure with (dry) wall
+
+                //// Relative velocity (this fluid vs other fluid)
+                //float const relativePointVelocityAlongSpring = (pointAirPressureVelocityAlongSpring - oldPointAirPressureVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector));
+
+                //// Putting it all together: v^2 + 2*g*dwy
+                //float const squareRootArg =
+                //    (relativePointVelocityAlongSpring >= 0.0f ? 1.0f : -1.0f) * relativePointVelocityAlongSpring * relativePointVelocityAlongSpring
+                //    //+ 2.0f * SimulationParameters::GravityMagnitude * dAir;
+                //    + 2.0f * dAir;
+
+                //float bernoulliVelocityAlongSpring;
+                //if (squareRootArg >= 0.0f)
+                //{
+                //    // Gained velocity goes from point to other endpoint
+                //    bernoulliVelocityAlongSpring = sqrtf(squareRootArg);
+                //}
+                //else
+                //{
+                //    // Gained velocity goes from other endpoint to point
+                //    bernoulliVelocityAlongSpring = -sqrtf(-squareRootArg);
+                //}
+
+                //// Resultant scalar velocity along spring; outbound only, as
+                //// if this were inbound it wouldn't result in any movement of the point's
+                //// water between these two springs. Morevoer, Bernoulli's velocity injected
+                //// along this spring will be picked up later also by the other endpoint,
+                //// and at that time it would move water if it agrees with its velocity
+                //float springOutboundScalarAirPressureVelocity = std::max(
+                //    bernoulliVelocityAlongSpring,
+                //    0.0f);
+
+
+
 
                 //
                 // Add buoyancy: if layer above contains water, than this air moves up
