@@ -4634,9 +4634,9 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     // TODOTEST: ORIG
                     //pointWaterVelocityAlongSpring + bernoulliVelocityAlongSpring * alphaCrazyness,
                     // TODOTEST: relative velocity
-                    //(pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector)) + bernoulliVelocityAlongSpring * alphaCrazyness,
+                    (pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector)) + bernoulliVelocityAlongSpring * alphaCrazyness,
                     // TODOTEST: relative velocity, but with upness only
-                    (pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * springUpness) + bernoulliVelocityAlongSpring * alphaCrazyness,
+                    //(pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * springUpness) + bernoulliVelocityAlongSpring * alphaCrazyness,
                     // TODOTEST: relative velocity, modulated
                     //(pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * simulationParameters.BlastToolRadius / 10.0f) + bernoulliVelocityAlongSpring * alphaCrazyness,
                     0.0f);

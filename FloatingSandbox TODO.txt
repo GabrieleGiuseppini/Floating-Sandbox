@@ -2863,7 +2863,10 @@
 					+ If not OK: try without upness in relvel for water 
 					X Nuke it
 
-				- See if upness in relvel for water is still needed
+				+ See if upness in relvel for water is still needed
+					! Raises with plumes, unevenly (PTest controlled), see if was the same
+						! Was still with plumes
+					+ SHOOT: @ 04:10: 0.1 @ CENTER
 
 				- If air velocity experiment stays: interact with air velocities @ blasts, npcs, etc. (add to plan below)
 					- And merge into _reality
@@ -2938,6 +2941,10 @@
 						- See if can simplify math by having Formulae directly in equivalent water height's
 					- Points.h: commented-out GetCumulatedOutflownAirPressure
 
+			- Interact with air velocity @
+				- Blasts
+				- NPCs
+				- etc
 			- Temperature <-> Air Pressure
 				- A new step, before pressure, makes EffectiveAirPressure from AirPressure and Temperature
 			+ Finalize unit of AirPressure
