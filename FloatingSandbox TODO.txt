@@ -2876,15 +2876,29 @@
 					+ So rename all to Momenta
 						+ Also nuke water velocities - only keep momenta
 
-			- Problem with velocities against holes (w & a) (leaking)
-				- TODOHERE: think: should water/air in/out impact velocities at all, e.g. through momentum loss?
-				- TODOHERE: if at equilibrium with outside, we stop diffusing out - why does vector not go down? No damping?
-					- Verify with dump that vel really stays when at full equilibrium with outside
-				X Try damping vels
-					+ Verify removes residuals: NO! It's not vel; check dump: it's incoming vel
-				- TODOHERE: it's because vel neveer leaves
-				- Try removing vel again
-					- Undo momentum left + zeroing out
+			! Config: a_speed/w_speed=0.312/0.625; crazyness=0; damp=1, bounce=1, squeeze=0.312
+
+			= Problem with velocities against holes (w & a) (leaking)
+				+ If at equilibrium with outside, we stop diffusing out - why does vector not go down? No damping?
+					X Try damping vels
+						+ Verify removes residuals: NO! It's not vel
+				! It's because vel never leaves, shown by calculations: after two identical in/out steps, final v'' > v
+				= Try removing vel again
+					+ Calculations show that we should subtract exiting momentum
+					! More stepwise :-(
+					X Remove
+
+					- TODOHERE: BROKEN: that corner piece
+						- Why doesn't water flow in? Because incoming is zero, given that point's own vel is humongous and thus relative vel from outside is way negative
+						- Due to removing upness from rel vel
+
+					- TODOHERE
+
+					- Air
+					- If stays: write calcn's as comment
+				
+				X Think: should water/air in/out impact velocities at all, e.g. through momentum loss?
+					X NO: mass is lost, and at subsequent pressure simulation, momentum - which will be recalc'd from velocities - will thus be lower
 
 			- Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
@@ -2911,6 +2925,8 @@
 				- Finalize settings and constants
 					- -> Android plan: all new settings
 				- Remove cross-cut readings -- LATER!
+					- Also: decide whether to keep it or not; clean it up
+						- Readings struct
 
 			= Ingress/Egress and bubbles
 				= Water: enters or leaves based on internal total pressure <-> total external pressure differential

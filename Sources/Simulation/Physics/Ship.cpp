@@ -4679,7 +4679,9 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                         " upness=", springUpness, " downness=", springDownness);
                     LogMessage("         pThis=", oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex] * springDownness,
                         " pOther=", oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness,
-                        " bVel=", bernoulliVelocityAlongSpring, " wVel=", pointWaterVelocityAlongSpring);
+                        " bVel=", bernoulliVelocityAlongSpring, 
+                        " wVel=", pointWaterVelocityAlongSpring, " otherVel=", oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector), " relVel=", (pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector)),
+                        " springPerm=", mSprings.GetWaterPermeability(cs.SpringIndex));
                 }
 
 #if !FS_IS_PLATFORM_MOBILE()
