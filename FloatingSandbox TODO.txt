@@ -2878,24 +2878,25 @@
 
 			! Config: a_speed/w_speed=0.312/0.625; crazyness=0; damp=1, bounce=1, squeeze=0.312
 
+			+ FIX: that corner piece
+				! Why doesn't water flow in? Because incoming is zero, given that point's own vel is humongous - dspite infinitesimal mass - and thus relative vel from outside is way negative
+				! Came after removing upness from rel vel
+				+ Rel vel: weight vels by their masses (i.e. through momenta); @ water and ait
+					+ a_speed=0.625
+					! FANTASTIC
+					+ Scorecard: all perfect!
+
+
+
 			= Problem with velocities against holes (w & a) (leaking)
 				+ If at equilibrium with outside, we stop diffusing out - why does vector not go down? No damping?
 					X Try damping vels
 						+ Verify removes residuals: NO! It's not vel
 				! It's because vel never leaves, shown by calculations: after two identical in/out steps, final v'' > v
-				= Try removing vel again
+				X Try removing vel again
 					+ Calculations show that we should subtract exiting momentum
 					! More stepwise :-(
 					X Remove
-
-					- TODOHERE: BROKEN: that corner piece
-						- Why doesn't water flow in? Because incoming is zero, given that point's own vel is humongous and thus relative vel from outside is way negative
-						- Due to removing upness from rel vel
-
-					- TODOHERE
-
-					- Air
-					- If stays: write calcn's as comment
 				
 				X Think: should water/air in/out impact velocities at all, e.g. through momentum loss?
 					X NO: mass is lost, and at subsequent pressure simulation, momentum - which will be recalc'd from velocities - will thus be lower

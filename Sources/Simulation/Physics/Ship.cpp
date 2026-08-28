@@ -4630,11 +4630,18 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 // water between these two springs. Morevoer, Bernoulli's velocity injected
                 // along this spring will be picked up later also by the other endpoint,
                 // and at that time it would move water if it agrees with its velocity
+
+                float const relVelocity =
+                    (oldPointWaterBufferData[pointIndex] + oldPointWaterBufferData[cs.OtherEndpointIndex] != 0.0f)
+                    ? (pointWaterVelocityAlongSpring * oldPointWaterBufferData[pointIndex] - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * oldPointWaterBufferData[cs.OtherEndpointIndex])
+                        / (oldPointWaterBufferData[pointIndex] + oldPointWaterBufferData[cs.OtherEndpointIndex])
+                    : 0.0f;
+
                 float const springOutboundScalarWaterVelocity = std::max(
                     // TODOTEST: ORIG
                     //pointWaterVelocityAlongSpring + bernoulliVelocityAlongSpring * alphaCrazyness,
                     // TODOTEST: relative velocity
-                    (pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector)) + bernoulliVelocityAlongSpring * alphaCrazyness,
+                    relVelocity + bernoulliVelocityAlongSpring * alphaCrazyness,
                     // TODOTEST: relative velocity, but with upness only
                     //(pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * springUpness) + bernoulliVelocityAlongSpring * alphaCrazyness,
                     // TODOTEST: relative velocity, modulated
@@ -4679,7 +4686,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                         " upness=", springUpness, " downness=", springDownness);
                     LogMessage("         pThis=", oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex] * springDownness,
                         " pOther=", oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness,
-                        " bVel=", bernoulliVelocityAlongSpring, 
+                        " bVel=", bernoulliVelocityAlongSpring,
                         " wVel=", pointWaterVelocityAlongSpring, " otherVel=", oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector), " relVel=", (pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector)),
                         " springPerm=", mSprings.GetWaterPermeability(cs.SpringIndex));
                 }
@@ -5156,6 +5163,13 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     bernoulliVelocityAlongSpring = -sqrtf(2.0f * -dAir);
                 }
 
+                float const relVelocity =
+                    (oldPointAirPressureBufferData[pointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] != 0.0f)
+                    ?
+                        (pointAirPressureVelocityAlongSpring * oldPointAirPressureBufferData[pointIndex] - oldPointAirPressureVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * oldPointAirPressureBufferData[cs.OtherEndpointIndex])
+                        / (oldPointAirPressureBufferData[pointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex])
+                    : 0.0f;
+
                 // Resultant scalar velocity along spring; outbound only, as
                 // if this were inbound it wouldn't result in any movement of the point's
                 // water between these two springs. Morevoer, Bernoulli's velocity injected
@@ -5165,7 +5179,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     // TODOTEST: absolute
                     //pointAirPressureVelocityAlongSpring + bernoulliVelocityAlongSpring,
                     // TODOTEST: relative velocity
-                    (pointAirPressureVelocityAlongSpring - oldPointAirPressureVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector)) + bernoulliVelocityAlongSpring,
+                    relVelocity + bernoulliVelocityAlongSpring,
                     0.0f);
 
 
