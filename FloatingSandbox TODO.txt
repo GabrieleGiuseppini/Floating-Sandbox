@@ -2777,7 +2777,7 @@
 
 			+ Cleanup Ship a bit
 
-			= Try adding air velocity, for better effects (think; NPC, etc.)
+			+ Try adding air velocity, for better effects (think; NPC, etc.)
 				+ Prep:
 					+ Points' buffers (X2)
 					+ New rendering option
@@ -2868,9 +2868,8 @@
 						! Was still with plumes
 					+ SHOOT: @ 04:10: 0.1 @ CENTER
 
-				- If air velocity experiment stays: interact with air velocities @ blasts, npcs, etc. (add to plan below)
-					- And merge into _reality
-					- Delete _with_velocities branch
+				+ If air velocity experiment stays: interact with air velocities @ blasts, npcs, etc. (add to plan below)
+					+ And merge into _reality
 
 				+ Vector rendering setting enum and all: decide air velocities vs momenta (or both?)
 					! Velocities doesn't make much sense: it's drawn underwater, and there air is so small
