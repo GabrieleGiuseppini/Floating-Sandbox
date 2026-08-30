@@ -153,15 +153,15 @@ SettingsDialog::SettingsDialog(
     }
 
     //
-    // Water
+    // Water and Pressure
     //
 
     {
         wxPanel * panel = new wxPanel(notebook);
 
-        PopulateWaterPanel(panel);
+        PopulateWaterAndPressurePanel(panel);
 
-        notebook->AddPage(panel, _("Water"));
+        notebook->AddPage(panel, _("Water and Pressure"));
     }
 
     //
@@ -1051,7 +1051,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
     panel->SetSizer(gridSizer);
 }
 
-void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
+void SettingsDialog::PopulateWaterAndPressurePanel(wxPanel * panel)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
@@ -1211,17 +1211,17 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
         gridSizer->Add(
             waterBoxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 7),
+            wxGBSpan(1, 9),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     //
-    // Water Ingress
+    // Pressure
     //
 
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Water Ingress"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Pressure"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
@@ -1233,7 +1233,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Speed Adjust"),
+                    _("Water Intake"),
                     _("Adjusts the speed with which sea water enters or leaves a physical body."),
                     [this](float value)
                     {
@@ -1253,26 +1253,27 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Air Diffusion Speed
+            // Air Intake
             {
-                mAirDiffusionSpeedSlider = new SliderControl<float>(
+                mAirIntakeSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Air Diffusion Speed"),
-                    _("Adjusts the speed with which air propagates within a physical body."),
+                    _("Air Intake"),
+                    _("Adjusts the speed with which air enters or leaves a physical body."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::AirDiffusionSpeedAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::AirIntakeAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinAirDiffusionSpeedAdjustment(),
-                        mGameControllerSettingsOptions.GetMaxAirDiffusionSpeedAdjustment()));
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinAirIntakeAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxAirIntakeAdjustment()));
 
                 sizer->Add(
-                    mAirDiffusionSpeedSlider,
+                    mAirIntakeSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1305,27 +1306,53 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Water Crazyness
+            // Air Diffusion Speed
             {
-                mWaterCrazynessSlider = new SliderControl<float>(
+                mAirDiffusionSpeedSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Fluid Crazyness"),
-                    _("Adjusts how \"splashy\" water flows inside a physical body."),
+                    _("Air Diffusion Speed"),
+                    _("Adjusts the speed with which air propagates within a physical body."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::WaterCrazyness, value);
+                        this->mLiveSettings.SetValue(GameSettings::AirDiffusionSpeedAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinWaterCrazyness(),
-                        mGameControllerSettingsOptions.GetMaxWaterCrazyness()));
+                        mGameControllerSettingsOptions.GetMinAirDiffusionSpeedAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxAirDiffusionSpeedAdjustment()));
 
                 sizer->Add(
-                    mWaterCrazynessSlider,
+                    mAirDiffusionSpeedSlider,
                     wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Air Pressure Feedback on Water
+            {
+                mAirPressureFeedbackOnWaterSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Air Pressure Feedback"),
+                    _("Adjusts the degree to which air exerts pressure against water."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirPressureFeedbackOnWater, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinAirPressureFeedbackOnWater(),
+                        mGameControllerSettingsOptions.GetMaxAirPressureFeedbackOnWater()));
+
+                sizer->Add(
+                    mAirPressureFeedbackOnWaterSlider,
+                    wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -1343,7 +1370,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -1478,7 +1505,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
 
         gridSizer->Add(
             decayBoxSizer,
-            wxGBPosition(1, 3),
+            wxGBPosition(1, 5),
             wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -6238,7 +6265,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 3),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorderInner);
     }
@@ -6281,6 +6308,33 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Water Diffusion Iterations
+            {
+                mWaterDiffusionNumberOfIterationsSlider = new SliderControl<size_t>(
+                    performanceBoxSizer->GetStaticBox(),
+                    SliderControl<size_t>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Diffusion Quality"),
+                    _("Higher values improve the quality of the simulation of water diffusion inside the ship, at the expense of longer computation times."),
+                    [this](size_t value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterDiffusionNumberOfIterations, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<size_t>>(
+                        mGameControllerSettingsOptions.GetMinWaterDiffusionNumberOfIterations(),
+                        mGameControllerSettingsOptions.GetMaxWaterDiffusionNumberOfIterations()),
+                    mWarningIcon.get());
+
+                performanceSizer->Add(
+                    mWaterDiffusionNumberOfIterationsSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             // Simulation Parallelism
             {
                 mSimulationParallelismSlider = new SliderControl<size_t>(
@@ -6301,7 +6355,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
                 performanceSizer->Add(
                     mSimulationParallelismSlider,
-                    wxGBPosition(0, 1),
+                    wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -6318,8 +6372,8 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
         gridSizer->Add(
             performanceBoxSizer,
-            wxGBPosition(1, 5),
-            wxGBSpan(1, 2),
+            wxGBPosition(1, 4),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -6864,18 +6918,21 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mUltraViolentToggleButton->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
 
     //
-    // Water
+    // Water and Pressure
     //
 
     mWaterDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDensityAdjustment));
     mWaterFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterFrictionDragAdjustment));
     mWaterPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPressureDragAdjustment));
     mWaterImpactForceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterImpactForceAdjustment));
-    mWaterIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
-    mWaterCrazynessSlider->SetValue(settings.GetValue<float>(GameSettings::WaterCrazyness));
-    mAirDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::AirDiffusionSpeedAdjustment));
-    mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
     mWaterTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::WaterTemperature));
+    //
+    mWaterIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
+    mAirIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::AirIntakeAdjustment));
+    mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
+    mAirDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::AirDiffusionSpeedAdjustment));
+    mAirPressureFeedbackOnWaterSlider->SetValue(settings.GetValue<float>(GameSettings::AirPressureFeedbackOnWater));
+    //
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
     mRustAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RustAcceler8r));
     mRustWeaknessAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RustWeaknessAdjustment));
@@ -7308,6 +7365,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
 
     mNumMechanicalIterationsAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
+    mWaterDiffusionNumberOfIterationsSlider->SetValue(settings.GetValue<size_t>(GameSettings::WaterDiffusionNumberOfIterations));
     mSimulationParallelismSlider->SetValue(settings.GetValue<size_t>(GameSettings::SimulationParallelism));
 
 #if PARALLELISM_EXPERIMENTS

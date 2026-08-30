@@ -3761,7 +3761,6 @@
             "thermal_expansion_coefficient": 0.0034,
             "unique_type": "SmokeLight",
             "water_diffusion_speed": 1.0,
-            "water_intake": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
@@ -3790,7 +3789,6 @@
             "thermal_expansion_coefficient": 0.0014,
             "unique_type": "SmokeHeavy",
             "water_diffusion_speed": 1.0,
-            "water_intake": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.005
         },
@@ -3820,7 +3818,6 @@
             "thermal_expansion_coefficient": 0.0034,
             "unique_type": "SiltCloud",
             "water_diffusion_speed": 1.0,
-            "water_intake": 1.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },

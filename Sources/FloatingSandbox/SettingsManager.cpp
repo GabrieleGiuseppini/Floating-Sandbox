@@ -68,10 +68,16 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, WaterFrictionDragAdjustment);
     ADD_GC_SETTING(float, WaterPressureDragAdjustment);
     ADD_GC_SETTING(float, WaterImpactForceAdjustment);
+
+    // Pressure
     ADD_GC_SETTING(float, WaterIntakeAdjustment);
-    ADD_GC_SETTING(float, AirDiffusionSpeedAdjustment);
+    ADD_GC_SETTING(float, AirIntakeAdjustment);
     ADD_GC_SETTING(float, WaterDiffusionSpeedAdjustment);
-    ADD_GC_SETTING(float, WaterCrazyness);
+    ADD_GC_SETTING(float, AirDiffusionSpeedAdjustment);
+    ADD_GC_SETTING(float, AirPressureFeedbackOnWater);
+    ADD_GC_SETTING(size_t, WaterDiffusionNumberOfIterations);
+
+    // ?
     ADD_GC_SETTING(bool, DoDisplaceWater);
     ADD_GC_SETTING(float, WaterDisplacementWaveHeightAdjustment);
     ADD_GC_SETTING(float, WaterFoamSensitivityAdjustment);

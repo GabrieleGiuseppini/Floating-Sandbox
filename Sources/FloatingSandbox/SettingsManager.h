@@ -38,10 +38,16 @@ enum class GameSettings : size_t
     WaterFrictionDragAdjustment,
     WaterPressureDragAdjustment,
     WaterImpactForceAdjustment,
+
+    // Pressure
     WaterIntakeAdjustment,
-    AirDiffusionSpeedAdjustment,
+    AirIntakeAdjustment,
     WaterDiffusionSpeedAdjustment,
-    WaterCrazyness,
+    AirDiffusionSpeedAdjustment,
+    AirPressureFeedbackOnWater,
+    WaterDiffusionNumberOfIterations,
+
+    // ?
     DoDisplaceWater,
     WaterDisplacementWaveHeightAdjustment,
     WaterFoamSensitivityAdjustment,

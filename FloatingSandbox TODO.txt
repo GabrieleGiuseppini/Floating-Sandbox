@@ -2903,6 +2903,8 @@
 
 			+ Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
+				+ Vertical water velocity determines slope of water pressure gradient, during a slow rise
+					+ The higher the velocity, the more water will overshoot
 
 			! Config: a_speed/w_speed=0.625/0.625; crazyness=0; damp=1, bounce=1, squeeze=0.312
 
@@ -2920,17 +2922,40 @@
 							+ w_speed=0.624: somewhat original speed
 						+ Obliquity: OK
 
-				- Iters plan:
-					- Setting for # of water iterations
-						- SimParams
-						- SettingsDialog: under "perf"
-							- -> Android plan
+				= Iters plan:
+					+ Setting for # of water iterations
+						+ SimParams
+						+ SettingsDialog: under "perf"
+							+ -> Android plan
 					- Use:
 						- w_speed mappings:
 							- 1: 0.312
 							- >=2: 0.624
 
-			+ Test water in ropes
+			= Settings plan:
+				= Intake adjust - water & air
+					+ SimParams & GC
+					+ SettingsDialog
+					- Use
+					- Test
+				= Air and Water diffusion speeds
+					+ SimParams & GC
+					+ SettingsDialog
+					- Use
+					- Test
+				= Air pressure feedback on water
+					+ SimParams & GC
+					+ SettingsDialog
+					- Use
+					- Test
+				= (*) # of water iters
+					+ SimParams & GC
+					+ SettingsDialog
+					- Use (*)
+					- Test
+				
+				+ Remove:
+					+ Crazyness
 					
 			- Success criteria:
 				- Water level stops in bell
@@ -2939,14 +2964,16 @@
 				- Water level obliqueness (was fixed with upness being n.y instead of being step-like)
 				- Water interface ugly flatness
 					- Depends on step: the steeper and chaotic, the more lively the interface is
-
-			- Settings:
-				- (*) # of water iters
-				- TODOHERE
+				- Water in ropes
 
 			- Cleanup:
 				- "Air pressure" -> "Air"
 					- Also @ vector field rendering enum, @ settings dialog
+				- Momenta spirit:
+					- Points::Momenta only for rendering; byproduct of diffusion speed
+					- Only accessors:
+						- Reset
+						- VelocitiesFromMomenta
 				- Comments
 				- Code
 					- Finalize settings and constants
@@ -3025,8 +3052,6 @@
 					+ TODOHERE: but now there's gap from hull walls
 				+ Final: @ vertex, using cubicity
 				- Cleanup and add comment on cubicity
-				
-			- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
 
 
 
@@ -3046,9 +3071,7 @@
 					- ...
 				- Nuke Ship::UpdateWaterVelocities
 				- Keep only winner of Ship::UpdatePressureAndWaterInflow: Newton-Rhapson
-				- TODO: are we changing Air to "moles"?
-					- Quantity we keep is moles in 1m3 at 1m3 water pressure
-				- Renames (Internal Pressure -> Air Pressure):
+				- Renames (Internal Pressure -> Air / Pressure):
 					- PhysicsData
 						- PhysicsData struct
 						- De/Serialization
@@ -3068,6 +3091,11 @@
 				- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
 					- Watchout: when we make copies of buffers we use mFloatBufferAllocator
 
+			- Calibration for # of water iters
+				- -> Android plan
+
+			- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
+
 			- Lower bulkheads @ default Titanic & make air escape, as it now takes forever
 
 
@@ -3077,7 +3105,14 @@
 
 		- Android port plan:
 			- Water shader
-			- New settings
+			- New settings:
+				- "Pressure" or "Water and Pressure":
+					- Intake adjust - water & air
+					- Air and Water diffusion speeds
+					- Air pressure feedback on water
+				- Perf:
+					- # of water iters
+
 			- Check ships for flooding
 
 

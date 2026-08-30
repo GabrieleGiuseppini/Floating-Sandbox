@@ -79,16 +79,19 @@ private:
     SliderControl<unsigned int> * mMaxBurningParticlesPerShipSlider;
     BitmapToggleButton * mUltraViolentToggleButton;
 
-    // Water
+    // Water and Pressure
     SliderControl<float> * mWaterDensityAdjustmentSlider;
     SliderControl<float> * mWaterFrictionDragSlider;
     SliderControl<float> * mWaterPressureDragSlider;
     SliderControl<float> * mWaterImpactForceAdjustmentSlider;
-    SliderControl<float> * mWaterIntakeSlider;
-    SliderControl<float> * mWaterCrazynessSlider;
-    SliderControl<float> * mAirDiffusionSpeedSlider;
-    SliderControl<float> * mWaterDiffusionSpeedSlider;
     SliderControl<float> * mWaterTemperatureSlider;
+    //
+    SliderControl<float> * mWaterIntakeSlider;
+    SliderControl<float> * mAirIntakeSlider;
+    SliderControl<float> * mWaterDiffusionSpeedSlider;
+    SliderControl<float> * mAirDiffusionSpeedSlider;
+    SliderControl<float> * mAirPressureFeedbackOnWaterSlider;
+    //
     SliderControl<float> * mRotAcceler8rSlider;
     SliderControl<float> * mRustAcceler8rSlider;
     SliderControl<float> * mRustWeaknessAdjustmentSlider;
@@ -253,6 +256,7 @@ private:
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesForCutsCheckBox;
     SliderControl<float> * mNumMechanicalIterationsAdjustmentSlider;
+    SliderControl<size_t> * mWaterDiffusionNumberOfIterationsSlider;
     SliderControl<size_t> * mSimulationParallelismSlider;
 
     // Settings Management
@@ -288,7 +292,7 @@ private:
     void DoClose();
 
     void PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel, GameAssetManager const & gameAssetManager);
-    void PopulateWaterPanel(wxPanel * panel);
+    void PopulateWaterAndPressurePanel(wxPanel * panel);
     void PopulateOceanPanel(wxPanel * panel);
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateAirAndSkyPanel(wxPanel * panel);

@@ -100,17 +100,25 @@ struct IGameControllerSettings
     virtual float GetWaterImpactForceAdjustment() const = 0;
     virtual void SetWaterImpactForceAdjustment(float value) = 0;
 
+    // Pressure
+
     virtual float GetWaterIntakeAdjustment() const = 0;
     virtual void SetWaterIntakeAdjustment(float value) = 0;
 
-    virtual float GetAirDiffusionSpeedAdjustment() const = 0;
-    virtual void SetAirDiffusionSpeedAdjustment(float value) = 0;
+    virtual float GetAirIntakeAdjustment() const = 0;
+    virtual void SetAirIntakeAdjustment(float value) = 0;
 
     virtual float GetWaterDiffusionSpeedAdjustment() const = 0;
     virtual void SetWaterDiffusionSpeedAdjustment(float value) = 0;
 
-    virtual float GetWaterCrazyness() const = 0;
-    virtual void SetWaterCrazyness(float value) = 0;
+    virtual float GetAirDiffusionSpeedAdjustment() const = 0;
+    virtual void SetAirDiffusionSpeedAdjustment(float value) = 0;
+
+    virtual float GetAirPressureFeedbackOnWater() const = 0;
+    virtual void SetAirPressureFeedbackOnWater(float value) = 0;
+
+    virtual size_t GetWaterDiffusionNumberOfIterations() const = 0;
+    virtual void SetWaterDiffusionNumberOfIterations(size_t value) = 0;
 
     // Ocean Floor
 

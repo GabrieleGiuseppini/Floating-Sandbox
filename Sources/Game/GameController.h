@@ -536,25 +536,39 @@ public:
     float GetMinWaterImpactForceAdjustment() const override { return SimulationParameters::MinWaterImpactForceAdjustment; }
     float GetMaxWaterImpactForceAdjustment() const override { return SimulationParameters::MaxWaterImpactForceAdjustment; }
 
+    // Pressure
+
     float GetWaterIntakeAdjustment() const override { return mSimulationParameters.WaterIntakeAdjustment; }
     void SetWaterIntakeAdjustment(float value) override { mSimulationParameters.WaterIntakeAdjustment = value; }
     float GetMinWaterIntakeAdjustment() const override { return SimulationParameters::MinWaterIntakeAdjustment; }
     float GetMaxWaterIntakeAdjustment() const override { return SimulationParameters::MaxWaterIntakeAdjustment; }
 
-    float GetAirDiffusionSpeedAdjustment() const override { return mSimulationParameters.AirDiffusionSpeedAdjustment; }
-    void SetAirDiffusionSpeedAdjustment(float value) override { mSimulationParameters.AirDiffusionSpeedAdjustment = value; }
-    float GetMinAirDiffusionSpeedAdjustment() const override { return SimulationParameters::MinAirDiffusionSpeedAdjustment; }
-    float GetMaxAirDiffusionSpeedAdjustment() const override { return SimulationParameters::MaxAirDiffusionSpeedAdjustment; }
+    float GetAirIntakeAdjustment() const override { return mSimulationParameters.AirIntakeAdjustment; }
+    void SetAirIntakeAdjustment(float value) override { mSimulationParameters.AirIntakeAdjustment = value; }
+    float GetMinAirIntakeAdjustment() const override { return SimulationParameters::MinAirIntakeAdjustment; }
+    float GetMaxAirIntakeAdjustment() const override { return SimulationParameters::MaxAirIntakeAdjustment; }
 
     float GetWaterDiffusionSpeedAdjustment() const override { return mSimulationParameters.WaterDiffusionSpeedAdjustment; }
     void SetWaterDiffusionSpeedAdjustment(float value) override { mSimulationParameters.WaterDiffusionSpeedAdjustment = value; }
     float GetMinWaterDiffusionSpeedAdjustment() const override { return SimulationParameters::MinWaterDiffusionSpeedAdjustment; }
     float GetMaxWaterDiffusionSpeedAdjustment() const override { return SimulationParameters::MaxWaterDiffusionSpeedAdjustment; }
 
-    float GetWaterCrazyness() const override { return mSimulationParameters.WaterCrazyness; }
-    void SetWaterCrazyness(float value) override { mSimulationParameters.WaterCrazyness = value; }
-    float GetMinWaterCrazyness() const override { return SimulationParameters::MinWaterCrazyness; }
-    float GetMaxWaterCrazyness() const override { return SimulationParameters::MaxWaterCrazyness; }
+    float GetAirDiffusionSpeedAdjustment() const override { return mSimulationParameters.AirDiffusionSpeedAdjustment; }
+    void SetAirDiffusionSpeedAdjustment(float value) override { mSimulationParameters.AirDiffusionSpeedAdjustment = value; }
+    float GetMinAirDiffusionSpeedAdjustment() const override { return SimulationParameters::MinAirDiffusionSpeedAdjustment; }
+    float GetMaxAirDiffusionSpeedAdjustment() const override { return SimulationParameters::MaxAirDiffusionSpeedAdjustment; }
+
+    float GetAirPressureFeedbackOnWater() const override { return mSimulationParameters.AirPressureFeedbackOnWater; }
+    void SetAirPressureFeedbackOnWater(float value) override { mSimulationParameters.AirPressureFeedbackOnWater = value; }
+    float GetMinAirPressureFeedbackOnWater() const override { return SimulationParameters::MinAirPressureFeedbackOnWater; }
+    float GetMaxAirPressureFeedbackOnWater() const override { return SimulationParameters::MaxAirPressureFeedbackOnWater; }
+
+    size_t GetWaterDiffusionNumberOfIterations() const override { return mSimulationParameters.WaterDiffusionNumberOfIterations; }
+    void SetWaterDiffusionNumberOfIterations(size_t value) override { mSimulationParameters.WaterDiffusionNumberOfIterations = value; }
+    size_t GetMinWaterDiffusionNumberOfIterations() const override { return SimulationParameters::MinWaterDiffusionNumberOfIterations; }
+    size_t GetMaxWaterDiffusionNumberOfIterations() const override{ return SimulationParameters::MaxWaterDiffusionNumberOfIterations; }
+
+    // ?
 
     float GetSmokeMassAdjustment() const override { return mSimulationParameters.SmokeMassAdjustment; }
     void SetSmokeMassAdjustment(float value) override { mSimulationParameters.SmokeMassAdjustment = value; }

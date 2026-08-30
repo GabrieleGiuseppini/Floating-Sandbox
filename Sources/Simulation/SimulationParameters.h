@@ -198,21 +198,31 @@ struct SimulationParameters
     static float constexpr MinWaterImpactForceAdjustment = 0.0f;
     static float constexpr MaxWaterImpactForceAdjustment = 10.0f;
 
+    // Pressure
+
     float WaterIntakeAdjustment;
     static float constexpr MinWaterIntakeAdjustment = 0.001f;
     static float constexpr MaxWaterIntakeAdjustment = 10.0f;
 
-    float AirDiffusionSpeedAdjustment;
-    static float constexpr MinAirDiffusionSpeedAdjustment = 0.001f;
-    static float constexpr MaxAirDiffusionSpeedAdjustment = 2.0f;
+    float AirIntakeAdjustment;
+    static float constexpr MinAirIntakeAdjustment = 0.001f;
+    static float constexpr MaxAirIntakeAdjustment = 10.0f;
 
     float WaterDiffusionSpeedAdjustment;
     static float constexpr MinWaterDiffusionSpeedAdjustment = 0.001f;
     static float constexpr MaxWaterDiffusionSpeedAdjustment = 2.0f;
 
-    float WaterCrazyness;
-    static float constexpr MinWaterCrazyness = 0.0f;
-    static float constexpr MaxWaterCrazyness = 2.0f;
+    float AirDiffusionSpeedAdjustment;
+    static float constexpr MinAirDiffusionSpeedAdjustment = 0.001f;
+    static float constexpr MaxAirDiffusionSpeedAdjustment = 2.0f;
+
+    float AirPressureFeedbackOnWater;
+    static float constexpr MinAirPressureFeedbackOnWater = 0.0f;
+    static float constexpr MaxAirPressureFeedbackOnWater = 1.0f;
+
+    size_t WaterDiffusionNumberOfIterations;
+    static size_t constexpr MinWaterDiffusionNumberOfIterations = 1;
+    static size_t constexpr MaxWaterDiffusionNumberOfIterations = 4;
 
     //
     // Ocean
