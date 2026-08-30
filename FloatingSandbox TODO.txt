@@ -2908,12 +2908,27 @@
 
 			+ Damp (now invisible) plan for making 
 
-			- Iters:
-				- Try 1-1
+			= Iters:
+				+ Try 1-1
+					+ a_speed/w_speed: 0.625/0.312
+					! More stepwise & plumes
+				+ Try 4-1: 
+					+ w_speed=0.624: very smooth
+					+ w_speed=1.250: very smooth
+						+ Shoot: PERFECT
+						+ Flood_test: somewhat too fast
+							+ w_speed=0.624: somewhat original speed
+						+ Obliquity: OK
 
-				- If worth it:
-					- Make settings for both, @ SettingsDialog under "perf" (advanced)
-						- -> Android plan
+				- Iters plan:
+					- Setting for # of water iterations
+						- SimParams
+						- SettingsDialog: under "perf"
+							- -> Android plan
+					- Use:
+						- w_speed mappings:
+							- 1: 0.312
+							- >=2: 0.624
 
 			+ Test water in ropes
 					
@@ -2925,15 +2940,19 @@
 				- Water interface ugly flatness
 					- Depends on step: the steeper and chaotic, the more lively the interface is
 
+			- Settings:
+				- (*) # of water iters
+				- TODOHERE
+
 			- Cleanup:
 				- "Air pressure" -> "Air"
 					- Also @ vector field rendering enum, @ settings dialog
 				- Comments
 				- Code
+					- Finalize settings and constants
+						- -> Android plan: all new settings
 					- Put back restrict pointers where needed
 					- Nuke [iff not used]: velocity damping
-				- Finalize settings and constants
-					- -> Android plan: all new settings
 				- Remove cross-cut readings -- LATER!
 					- Also: decide whether to keep it or not; clean it up
 						- Readings struct
