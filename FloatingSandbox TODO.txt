@@ -2876,7 +2876,7 @@
 					+ So rename all to Momenta
 						+ Also nuke water velocities - only keep momenta
 
-			! Config: a_speed/w_speed=0.312/0.625; crazyness=0; damp=1, bounce=1, squeeze=0.312
+			! Config: a_speed/w_speed=0.312/0.625; crazyness=0; damp=1, bounce=1, squeeze=0.312, 2 iters
 
 			+ FIX: that corner piece
 				! Why doesn't water flow in? Because incoming is zero, given that point's own vel is humongous - dspite infinitesimal mass - and thus relative vel from outside is way negative
@@ -2906,11 +2906,11 @@
 				+ Vertical water velocity determines slope of water pressure gradient, during a slow rise
 					+ The higher the velocity, the more water will overshoot
 
-			! Config: a_speed/w_speed=0.625/0.625; crazyness=0; damp=1, bounce=1, squeeze=0.312
+			! Config: a_speed/w_speed=0.625/0.625; crazyness=0; damp=1, bounce=1, squeeze=0.312, iters=2
 
 			+ Damp (now invisible) plan for making 
 
-			= Iters:
+			+ Iters:
 				+ Try 1-1
 					+ a_speed/w_speed: 0.625/0.312
 					! More stepwise & plumes
@@ -2932,7 +2932,40 @@
 							+ 1: 0.312 -> 0.312
 							+ >=2: 0.624 -> 0.312
 
-				- Try dividing by # of iterations
+				X Try dividing by # of iterations
+
+				+ Wrong: we were dividing norm factor by # of iters
+					+ Redo like that
+
+			- Retry smoother upness (which one?) to reduce jaggedness
+					
+			- Run in debug (exercise assert's)
+
+			! Config: a_speed/w_speed=0.625/1.0; damp=1, bounce=1, squeeze=0.312, iters=2
+
+			= Ingress/Egress and bubbles
+				= Water: enters or leaves based on internal total pressure <-> total external pressure differential
+					+ Consider total external and total internal pressures - thus including air
+				= Air:
+					+ Leaves all if underwater
+					+ Enters iff above-water and (air/total) pressure outside > air pressure inside
+					- Use SimulationParameters::AirIntakeAdjustment
+				= Air Bubbles
+					+ Rename cumulation members
+					+ Bubble contribution proportional _only_ to air pressure that left point
+					- See if need to clamp lost air to positive
+					- Note that now we increase pressure lost also when above ground, but that shouldn't result in bubbles
+						- Decide: count anyway and no spawn, or no count
+				- Water pump
+
+				- Rain
+
+				- Cleanup
+					- See what happens if we keep (water) ingress rate different than (water) diffusion speed: try different values
+					- Comments
+					- Code
+						- See if can simplify math by having Formulae directly in equivalent water height's
+					- Points.h: commented-out GetCumulatedOutflownAirPressure
 
 			= Settings plan:
 				= Intake adjust - water & air
@@ -2958,36 +2991,6 @@
 				
 				+ Remove:
 					+ Crazyness
-					
-			- Run in debug (exercise assert's)
-
-			= Ingress/Egress and bubbles
-				= Water: enters or leaves based on internal total pressure <-> total external pressure differential
-					+ Consider total external and total internal pressures - thus including air
-				= Air:
-					+ Leaves all if underwater
-					+ Enters iff above-water and (air/total) pressure outside > air pressure inside
-					- Things to try/tune:
-						- Rate of air pressure, cannot use bernoulli
-							- https://engineering.stackexchange.com/questions/56092/finding-the-time-taken-for-pressurised-tank-to-reach-1-atm-exam-prep
-						- Add SimulationParameters::AirIntakeAdjustment?
-							- -> Android
-				= Air Bubbles
-					+ Rename cumulation members
-					+ Bubble contribution proportional _only_ to air pressure that left point
-					- See if need to clamp lost air to positive
-					- Note that now we increase pressure lost also when above ground, but that shouldn't result in bubbles
-						- Decide: count anyway and no spawn, or no count
-				- Water pump
-
-				- Rain
-
-				- Cleanup
-					- See what happens if we keep (water) ingress rate different than (water) diffusion speed: try different values
-					- Comments
-					- Code
-						- See if can simplify math by having Formulae directly in equivalent water height's
-					- Points.h: commented-out GetCumulatedOutflownAirPressure
 
 			- Interact with air velocity @
 				- Blasts

@@ -4371,13 +4371,17 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
     //
 
     //
-    // TODOHERE: we move water and its momenta according to momenta and pressure differentials
+    // TODOHERE: full comment: we move water and its momenta according to momenta and pressure differentials
     //
 
-    // Calculate quantum for water transfer
+    // Calculate quantum for water transfer, i.e. maximum fraction
+    // of current water (pressure) we're willing to move out of a point
     float const effectiveWaterDiffusionSpeedAdjustment =
-        0.3125f // Empirical
+        (simulationParameters.WaterDiffusionNumberOfIterations == 1) ? 0.3125f : 0.625f // Empirical; with more than one iter we can afford a larger quantum as we'll converge better
         * simulationParameters.WaterDiffusionSpeedAdjustment;
+
+    // We will scale down transfers by # of iterations, for a smoother experience
+    float const inverseNumberOfWaterIterations = 1.0f / static_cast<float>(simulationParameters.WaterDiffusionNumberOfIterations);
 
     //
     // Visit all non-ephemeral points
@@ -4582,14 +4586,16 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 assert(maxOutboundWaterFlowWeight <= totalOutboundWaterFlowWeight);
                 waterQuantityNormalizationFactor = std::min(
                     maxOutboundWaterFlowWeight / totalOutboundWaterFlowWeight,
-                    1.0f);
+                    1.0f)
+                    * inverseNumberOfWaterIterations; // Chop up quantum
 
                 // TODOTEST
                 if (pointIndex == mLastQueriedPointIndex)
                 {
                     LogMessage("W: normFactor=", waterQuantityNormalizationFactor, " (oldWater=", oldPointWaterBufferData[pointIndex], " max=", maxOutboundWaterFlowWeight,
-                        " alpha=", (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
-                        " (mat=", mPoints.GetMaterialWaterDiffusionSpeed(pointIndex), " diffSpeed=", simulationParameters.WaterDiffusionSpeedAdjustment, ")",
+                        " alpha=", (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * effectiveWaterDiffusionSpeedAdjustment),
+                        " (mat=", mPoints.GetMaterialWaterDiffusionSpeed(pointIndex), " diffSpeed=", effectiveWaterDiffusionSpeedAdjustment, ")",
+                        " itersFactor=", inverseNumberOfWaterIterations,
                         " tot=", totalOutboundWaterFlowWeight, ")");
                 }
             }
