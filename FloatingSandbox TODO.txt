@@ -2935,14 +2935,15 @@
 			+ Config:
 				+ a_speed/w_speed: 0.5/0.625, damping: 0.25, bounce: 1, squeeze: 0.312
 
-			- Learnings:
+			+ Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
 					- Make settings for both, @ SettingsDialog under "perf" (advanced)
 						- -> Android plan
-				- Nail down default # iters w/tests:
-					- 1 iter, 1 iter
-					- 2 iter, 1 iter as 1w-1a-1w
-					- 4 iter, 1 iter
+			= Nail down default # iters w/tests:
+				= 1 iter, 1 iter:
+					+ a_speed/w_speed: 0.5/0.312
+					+ Shoot: OK
+				- 4 iter, 1 iter
 
 			+ Test water in ropes
 					
