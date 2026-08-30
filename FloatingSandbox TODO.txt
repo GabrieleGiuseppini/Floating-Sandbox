@@ -2888,7 +2888,7 @@
 
 			! Config: a_speed/w_speed=0.625/0.625; crazyness=0; damp=1, bounce=1, squeeze=0.312
 
-			= Problem with velocities against holes (w & a) (leaking)
+			+ Problem with velocities against holes (w & a) (leaking)
 				+ If at equilibrium with outside, we stop diffusing out - why does vector not go down? No damping?
 					X Try damping vels
 						+ Verify removes residuals: NO! It's not vel
@@ -2923,9 +2923,17 @@
 					+ Config:
 						+ a_speed/w_speed: 0.5/0.625, damping: 0.4, bounce: 1, squeeze: 0.312
 
-				- double-check momenta
-					- Damp right away
+				+ double-check momenta
+					X Damp right away
+						! Won't work: we plot momenta
+					+ Damp at momentum addition time
+						+ Precalc factor @ local
+						X Damp @ 0.4: length_mult's = 0.07, 0.1
+						+ Damp @ 0.25: length_mult's = 0.1, 0.5
+				X Try w/lower air speed
 
+			+ Config:
+				+ a_speed/w_speed: 0.5/0.625, damping: 0.25, bounce: 1, squeeze: 0.312
 
 			- Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
@@ -2947,6 +2955,9 @@
 					- Depends on step: the steeper and chaotic, the more lively the interface is
 
 			- Cleanup:
+				- Points (and all):
+					- AirPressure -> Air
+						- Also @ vector field render mode name & @ settings dialog
 				- Comments
 				- Code
 					- Put back restrict pointers where needed

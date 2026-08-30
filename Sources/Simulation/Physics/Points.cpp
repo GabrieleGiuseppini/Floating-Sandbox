@@ -2502,7 +2502,7 @@ void Points::UploadVectors(
         {
             color = vec4f(0.794f, 0.309f, 0.309f, 1.0f);
             vectorBuffer = mAirPressureMomentumBuffer.data();
-            lengthAdjustment = 0.8f;
+            lengthAdjustment = 0.5f;
 
             break;
         }

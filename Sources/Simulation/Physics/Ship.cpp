@@ -4379,30 +4379,20 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
     // Water step
     //
 
+    float const waterVelocityDampingFactor = std::min(simulationParameters.AntiMatterBombImplosionStrength / 10.0f, 1.0f);
+
+
     for (int iter = 0; iter < NumberOfWaterIterations; ++iter)
     {
-        //
-        // Damp velocities
-        //
-
-        vec2f lastQueriedPointInitialVelocity = vec2f::zero();
-
-        float const dampingFactor = std::min(simulationParameters.AntiMatterBombImplosionStrength / 10.0f, 1.0f);
-        for (auto pointIndex : mPoints.RawShipPoints())
-        {
-            if (pointIndex == mLastQueriedPointIndex)
-                lastQueriedPointInitialVelocity = mPoints.GetWaterVelocity(pointIndex);
-            mPoints.SetWaterVelocity(pointIndex, mPoints.GetWaterVelocity(pointIndex) * dampingFactor);
-        }
-
         vec2f const * const restrict oldPointWaterVelocityBufferData = mPoints.GetWaterVelocityBufferAsVec2();
 
         // TODOTEST
         if (mLastQueriedPointIndex != NoneElementIndex)
         {
             LogMessage("================");
-            LogMessage("Start W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", lastQueriedPointInitialVelocity, " -> ", mPoints.GetWaterVelocity(mLastQueriedPointIndex),
-                " WMom=", mPoints.GetWaterMomentumBufferAsVec2f()[mLastQueriedPointIndex], "  Start A=", mPoints.GetAirPressure(mLastQueriedPointIndex));
+            LogMessage("Start W=", mPoints.GetWater(mLastQueriedPointIndex),
+                " WVel=", mPoints.GetWaterVelocity(mLastQueriedPointIndex), " WMom=", mPoints.GetWaterMomentumBufferAsVec2f()[mLastQueriedPointIndex],
+                "  Start A=", mPoints.GetAirPressure(mLastQueriedPointIndex));
         }
 
         //
@@ -4949,6 +4939,12 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
         // Transforming momenta into velocities
         //
 
+        // Damp momenta
+        for (auto pointIndex : mPoints.RawShipPoints())
+        {
+            mPoints.SetWaterMomentum(pointIndex, mPoints.GetWaterMomentumBufferAsVec2f()[pointIndex] * waterVelocityDampingFactor);
+        }
+
         mPoints.UpdateWaterVelocitiesFromMomenta();
 
 
@@ -4998,6 +4994,8 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
     // Air step
     //
 
+    float const airVelocityDampingFactor = std::min(simulationParameters.AntiMatterBombImplosionStrength / 10.0f, 1.0f);
+
     // Weights of outbound air flows along each spring, only permeable ones;
     // set to zero for springs whose resultant scalar air flows are
     // directed towards the point being visited
@@ -5015,21 +5013,16 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
     for (int iter = 0; iter < NumberOfAirIterations; ++iter)
     {
-        //
-        // Damp velocities
-        //
-
-        vec2f lastQueriedPointInitialVelocity = vec2f::zero();
-
-        float const dampingFactor = std::min(simulationParameters.AntiMatterBombImplosionStrength / 10.0f, 1.0f);
-        for (auto pointIndex : mPoints.RawShipPoints())
-        {
-            if (pointIndex == mLastQueriedPointIndex)
-                lastQueriedPointInitialVelocity = mPoints.GetAirPressureVelocity(pointIndex);
-            mPoints.SetAirPressureVelocity(pointIndex, mPoints.GetAirPressureVelocity(pointIndex) * dampingFactor);
-        }
-
         vec2f const * const restrict oldPointAirPressureVelocityBufferData = mPoints.GetAirPressureVelocityBufferAsVec2();
+
+        // TODOTEST
+        if (mLastQueriedPointIndex != NoneElementIndex)
+        {
+            LogMessage("================");
+            LogMessage("Start A=", mPoints.GetAirPressure(mLastQueriedPointIndex),
+                " AVel=", mPoints.GetAirPressureVelocity(mLastQueriedPointIndex), " AMom=", mPoints.GetAirPressureMomentumBufferAsVec2f()[mLastQueriedPointIndex],
+                "  Start W=", mPoints.GetWater(mLastQueriedPointIndex));
+        }
 
         //
         // Prepare momenta
@@ -5056,7 +5049,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
         {
             LogMessage("================");
             LogMessage("Start W: ", oldPointWaterBufferData[mLastQueriedPointIndex], "  Start A: ", oldPointAirPressureBufferData[mLastQueriedPointIndex],
-                " AVel=", lastQueriedPointInitialVelocity, " -> ", oldPointAirPressureVelocityBufferData[mLastQueriedPointIndex]);
+                " AVel=", oldPointAirPressureVelocityBufferData[mLastQueriedPointIndex]);
         }
         float todoTotalAOutAtQueriedPoint = 0.0f;
         float todoTotalAInAtQueriedPoint = 0.0f;
@@ -5450,6 +5443,12 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
         //
         // Transforming momenta into velocities
         //
+
+        // Damp momenta
+        for (auto pointIndex : mPoints.RawShipPoints())
+        {
+            mPoints.SetAirPressureMomentum(pointIndex, mPoints.GetAirPressureMomentumBufferAsVec2f()[pointIndex] * airVelocityDampingFactor);
+        }
 
         mPoints.UpdateAirPressureVelocitiesFromMomenta();
 
