@@ -2886,7 +2886,7 @@
 					! FANTASTIC
 					+ Scorecard: all perfect!
 
-
+			! Config: a_speed/w_speed=0.625/0.625; crazyness=0; damp=1, bounce=1, squeeze=0.312
 
 			= Problem with velocities against holes (w & a) (leaking)
 				+ If at equilibrium with outside, we stop diffusing out - why does vector not go down? No damping?
@@ -2901,15 +2901,43 @@
 				X Think: should water/air in/out impact velocities at all, e.g. through momentum loss?
 					X NO: mass is lost, and at subsequent pressure simulation, momentum - which will be recalc'd from velocities - will thus be lower
 
+				+ Try again removing vel - water and air:
+					+ 1) Prepare momenta from vels
+					+ 2) Remove that mom init
+					+ 3) Remove (same exiting) mom from point when it leaves
+					+ Bounce: given that we leave initial momentum as-is, remove 2X
+					X NO: velocities are now opposite to water direction
+					+ Apply same vel as outgoing - but as momentum
+						+ 1) Reset momenta to zero
+						+ 2) Outgoing:
+							- First calc remainder mass - as local
+							- For each outgoing:
+								- Apply that vel to remainder => momentum
+								- Bounce (2x)
+						+ Do for air
+						+ Scorecard:
+							+ SHOOT: OK
+							+ flood_test: good!
+							+ Obliquity: OK
+
+					+ Config:
+						+ a_speed/w_speed: 0.5/0.625, damping: 0.4, bounce: 1, squeeze: 0.312
+
+				- double-check momenta
+					- Damp right away
+
+
 			- Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
 					- Make settings for both, @ SettingsDialog under "perf" (advanced)
 						- -> Android plan
+				- Nail down default # iters w/tests:
+					- 1 iter, 1 iter
+					- 2 iter, 1 iter as 1w-1a-1w
+					- 4 iter, 1 iter
 
 			+ Test water in ropes
 					
-			- Run in debug (exercise assert's)
-
 			- Success criteria:
 				- Water level stops in bell
 					- At right height
@@ -2923,11 +2951,18 @@
 				- Code
 					- Put back restrict pointers where needed
 					- Nuke [iff not used]: velocity damping
+					- Points::Vels from momenta: take damping
+						- This would damp vels right after diffusion, rather than at beginning of next diffusion step; sim would then see damped vels
+							- Pros: vels injected by various interactions is seen full by next diffusion step
+					- Points::Momenta from vels: nuke
+						- Add Reset
 				- Finalize settings and constants
 					- -> Android plan: all new settings
-				- Remove cross-cut readings -- LATER!
-					- Also: decide whether to keep it or not; clean it up
+
+				- Remove cross-cut readings -- LATER! For now comment out, then add item to remove
+					- Also: decide whether to keep it or not (w/tool); clean up:
 						- Readings struct
+						- UI control
 
 			= Ingress/Egress and bubbles
 				= Water: enters or leaves based on internal total pressure <-> total external pressure differential
@@ -2956,6 +2991,8 @@
 					- Code
 						- See if can simplify math by having Formulae directly in equivalent water height's
 					- Points.h: commented-out GetCumulatedOutflownAirPressure
+
+			- Run water/air diffusion in debug (exercise assert's)
 
 			- Interact with air velocity @
 				- Blasts

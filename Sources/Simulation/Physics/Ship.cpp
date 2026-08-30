@@ -4633,7 +4633,8 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
                 float const relVelocity =
                     (oldPointWaterBufferData[pointIndex] + oldPointWaterBufferData[cs.OtherEndpointIndex] != 0.0f)
-                    ? (pointWaterVelocityAlongSpring * oldPointWaterBufferData[pointIndex] - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * oldPointWaterBufferData[cs.OtherEndpointIndex])
+                    ?
+                        (pointWaterVelocityAlongSpring * oldPointWaterBufferData[pointIndex] - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * oldPointWaterBufferData[cs.OtherEndpointIndex])
                         / (oldPointWaterBufferData[pointIndex] + oldPointWaterBufferData[cs.OtherEndpointIndex])
                     : 0.0f;
 
@@ -4771,12 +4772,11 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
             float const pointTotalWaterOut = totalOutboundWaterFlowWeight * waterQuantityNormalizationFactor;
             float const pointRemainingWater = std::max(oldPointWaterBufferData[pointIndex] - pointTotalWaterOut, 0.0f);
-            newPointWaterMomentumBufferData[pointIndex] += oldPointWaterVelocityBufferData[pointIndex] * pointRemainingWater;
 
             // TODOTEST
             if (pointIndex == mLastQueriedPointIndex)
             {
-                LogMessage("  W Init: remaining=", pointRemainingWater, " new mom=", oldPointWaterVelocityBufferData[pointIndex] * pointRemainingWater, " final mom=", newPointWaterMomentumBufferData[pointIndex]);
+                LogMessage("  W Init: remaining=", pointRemainingWater);
             }
 
             //
@@ -4811,6 +4811,11 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     * waterQuantityNormalizationFactor;
 
                 assert(springOutboundQuantityOfWater >= 0.0f);
+
+                // Apply this conjured velocity to remainder mass
+                newPointWaterMomentumBufferData[pointIndex] +=
+                    springOutboundWaterVelocities[s]
+                    * pointRemainingWater;
 
                 if (mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
                 {
@@ -4885,7 +4890,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
                     // Add "new momentum" (new velocity gained), but after bounce
                     newPointWaterMomentumBufferData[pointIndex] +=
-                        -springOutboundWaterVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f)
+                        -springOutboundWaterVelocities[s] * (1.0f + simulationParameters.BlastToolForceAdjustment / 10.0f)
                         * springOutboundQuantityOfWater;
 
                     // TODOTEST
@@ -5334,12 +5339,11 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
             float const pointTotalAirOut = totalOutboundAirFlowWeight * airPressureQuantityNormalizationFactor;
             float const pointRemainingAir = std::max(oldPointAirPressureBufferData[pointIndex] - pointTotalAirOut, 0.0f);
-            newPointAirPressureMomentumBufferData[pointIndex] += oldPointAirPressureVelocityBufferData[pointIndex] * pointRemainingAir;
 
             // TODOTEST
             if (pointIndex == mLastQueriedPointIndex)
             {
-                LogMessage("  A Init: remaining=", pointRemainingAir, " new mom=", oldPointAirPressureVelocityBufferData[pointIndex] * pointRemainingAir, " final mom=", newPointAirPressureMomentumBufferData[pointIndex]);
+                LogMessage("  A Init: remaining=", pointRemainingAir);
             }
 
             //
@@ -5371,6 +5375,11 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
                 assert(springOutboundQuantityOfAirPressure >= 0.0f);
                 assert(springOutboundQuantityOfAirPressure <= newPointAirPressureBufferData[pointIndex]);
+
+                // Apply this conjured velocity to remainder mass
+                newPointAirPressureMomentumBufferData[pointIndex] +=
+                    springOutboundAirPressureVelocities[s]
+                    * pointRemainingAir;
 
                 if (mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
                 {
@@ -5419,7 +5428,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
                     // Add "new momentum" (new velocity gained), but after bounce
                     newPointAirPressureMomentumBufferData[pointIndex] +=
-                        -springOutboundAirPressureVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f)
+                        -springOutboundAirPressureVelocities[s] * (1.0f + simulationParameters.BlastToolForceAdjustment / 10.0f)
                         * springOutboundQuantityOfAirPressure;
 
                     if (pointIndex == mLastQueriedPointIndex)
