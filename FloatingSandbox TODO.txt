@@ -2886,9 +2886,7 @@
 					! FANTASTIC
 					+ Scorecard: all perfect!
 
-
-
-			= Problem with velocities against holes (w & a) (leaking)
+			+ Problem with velocities against holes (w & a) (leaking)
 				+ If at equilibrium with outside, we stop diffusing out - why does vector not go down? No damping?
 					X Try damping vels
 						+ Verify removes residuals: NO! It's not vel
@@ -2900,16 +2898,25 @@
 				
 				X Think: should water/air in/out impact velocities at all, e.g. through momentum loss?
 					X NO: mass is lost, and at subsequent pressure simulation, momentum - which will be recalc'd from velocities - will thus be lower
+				! Calculations show that we're leaving vel behind with dm mass moving first in then out
+					! Fix would be to remove same momentum as that added to other, but things get worse - we decided to keep this
 
-			- Learnings:
+			+ Learnings:
 				+ Number of water iters smooths; 1 makes plumes, 2 less plumes; 4 very smooth
+
+			! Config: a_speed/w_speed=0.625/0.625; crazyness=0; damp=1, bounce=1, squeeze=0.312
+
+			+ Damp (now invisible) plan for making 
+
+			- Iters:
+				- Try 1-1
+
+				- If worth it:
 					- Make settings for both, @ SettingsDialog under "perf" (advanced)
 						- -> Android plan
 
 			+ Test water in ropes
 					
-			- Run in debug (exercise assert's)
-
 			- Success criteria:
 				- Water level stops in bell
 					- At right height
@@ -2919,6 +2926,8 @@
 					- Depends on step: the steeper and chaotic, the more lively the interface is
 
 			- Cleanup:
+				- "Air pressure" -> "Air"
+					- Also @ vector field rendering enum, @ settings dialog
 				- Comments
 				- Code
 					- Put back restrict pointers where needed
@@ -2928,6 +2937,8 @@
 				- Remove cross-cut readings -- LATER!
 					- Also: decide whether to keep it or not; clean it up
 						- Readings struct
+
+			- Run in debug (exercise assert's)
 
 			= Ingress/Egress and bubbles
 				= Water: enters or leaves based on internal total pressure <-> total external pressure differential
