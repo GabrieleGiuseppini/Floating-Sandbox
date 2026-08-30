@@ -1778,6 +1778,11 @@ public:
         return mWaterVelocityBuffer.data();
     }
 
+    void ResetWaterMomenta()
+    {
+        mWaterMomentumBuffer.fill(vec2f::zero());
+    }
+
     // TODOTEST: these should go and be replaced by a simple work buffer, which is then passed to UpdateWaterVelocitiesFromMomenta
     // or UpdateWaterVelocitiesFromMomenta is moved inline @ caller
     void SetWaterMomentum(

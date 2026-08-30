@@ -36,7 +36,7 @@ SimulationParameters::SimulationParameters()
     , WaterDiffusionSpeedAdjustment(1.0f)
     , AirDiffusionSpeedAdjustment(1.0f)
     , AirPressureFeedbackOnWater(1.0f)
-    , WaterDiffusionNumberOfIterations(1)
+    , WaterDiffusionNumberOfIterations(2)
     // Ocean floor
     , SeaDepth(1000.0f)
     , OceanFloorBedrockBumpiness(1.0f)

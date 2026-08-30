@@ -2922,15 +2922,17 @@
 							+ w_speed=0.624: somewhat original speed
 						+ Obliquity: OK
 
-				= Iters plan:
+				+ Iters plan:
 					+ Setting for # of water iterations
 						+ SimParams
 						+ SettingsDialog: under "perf"
 							+ -> Android plan
-					- Use:
-						- w_speed mappings:
-							- 1: 0.312
-							- >=2: 0.624
+					+ Use:
+						+ w_speed mappings:
+							+ 1: 0.312 -> 0.312
+							+ >=2: 0.624 -> 0.312
+
+				- Try dividing by # of iterations
 
 			= Settings plan:
 				= Intake adjust - water & air
@@ -2948,42 +2950,15 @@
 					+ SettingsDialog
 					- Use
 					- Test
-				= (*) # of water iters
+				+ (*) # of water iters
 					+ SimParams & GC
 					+ SettingsDialog
-					- Use (*)
-					- Test
+					+ Use (*)
+					+ Test
 				
 				+ Remove:
 					+ Crazyness
 					
-			- Success criteria:
-				- Water level stops in bell
-					- At right height
-				- Water level reaching ocean 
-				- Water level obliqueness (was fixed with upness being n.y instead of being step-like)
-				- Water interface ugly flatness
-					- Depends on step: the steeper and chaotic, the more lively the interface is
-				- Water in ropes
-
-			- Cleanup:
-				- "Air pressure" -> "Air"
-					- Also @ vector field rendering enum, @ settings dialog
-				- Momenta spirit:
-					- Points::Momenta only for rendering; byproduct of diffusion speed
-					- Only accessors:
-						- Reset
-						- VelocitiesFromMomenta
-				- Comments
-				- Code
-					- Finalize settings and constants
-						- -> Android plan: all new settings
-					- Put back restrict pointers where needed
-					- Nuke [iff not used]: velocity damping
-				- Remove cross-cut readings -- LATER!
-					- Also: decide whether to keep it or not; clean it up
-						- Readings struct
-
 			- Run in debug (exercise assert's)
 
 			= Ingress/Egress and bubbles
@@ -3022,6 +2997,9 @@
 				- A new step, before pressure, makes EffectiveAirPressure from AirPressure and Temperature
 			+ Finalize unit of AirPressure
 				+ Also @ Points buffer comment
+			- Water splash sounds (kinetic energy)
+				- Scale kinetic energy by # of iters?
+				- Could use presence of air as replacement of freeness?
 			- Air Pressure <-> forces on "walls"
 				- We've changed unit of pressure, hence current math is invalid!
 				- Do we do it where we currently use InternalPressure, or do we bounce
@@ -3039,10 +3017,9 @@
 								- Based on bary coords?
 						- Also slider for velocity (momenta)
 							- -> Android plan: all new settings
-
 			- Imparted water and air velocities w/move tool - et other tools?
 
-			= Render full water range
+			+ Render full water range
 				! The +1 by rendering is due to bottom having full water, top having 0 - interpolation pushes blue all the way up
 				X Possible fix 1: shader has to see water capped to 1.0, so it interpolates between 0 and 1
 					+ Can be capped @ vertex shader!
@@ -3051,21 +3028,50 @@
 				+ Possible fix 2: as above, but with original pow
 					+ TODOHERE: but now there's gap from hull walls
 				+ Final: @ vertex, using cubicity
-				- Cleanup and add comment on cubicity
+				+ Cleanup and add comment on cubicity
 
 
 
 			- Tests:
+				- Success criteria:
+					- Water level stops in bell
+						- At right height
+					- Water level reaching ocean 
+					- Water level obliqueness (was fixed with upness being n.y instead of being step-like)
+					- Water interface ugly flatness
+						- Depends on step: the steeper and chaotic, the more lively the interface is
+					- Water in ropes
 				- Flotsam: water intake
 				- Rain: water intake
-				- Cloth, ropes: retention (and air)
+				- Cloth, ropes: intake, retention (of water and air)
 				- Kinetic energy->Splash sounds
 				- Default water crazyness
 				- Flooding speeds compared with previous version
 
+			- Cleanup 1:
+				- "Air pressure" -> "Air"
+					- Also @ vector field rendering enum, @ settings dialog
+				- Momenta spirit:
+					- Points::Momenta only for rendering; byproduct of diffusion speed
+						- Only accessors:
+							+ Reset
+							- VelocitiesFromMomenta
+					- Simulation changes velocities only
+						- For rendering, might also modify momenta (e.g. after blast), iff that happens after water diffusion step
+				- Comments
+				- Code
+					- Back to single function - UpdateWaterAndAirPressure
+					- Nuke log lines
+					- Finalize settings and constants
+						- -> Android plan: all new settings
+					- Put back restrict pointers where needed
+					- Nuke [iff not used]: velocity damping
+				- Remove cross-cut readings -- LATER!
+					- Also: decide whether to keep it or not; clean it up
+						- Readings struct
 
 
-			- Cleanup:
+			- Cleanup 2:
 				- Nuke InternalPressure concept
 					- Points
 					- ...

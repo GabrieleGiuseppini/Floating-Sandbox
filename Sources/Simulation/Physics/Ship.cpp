@@ -3015,7 +3015,9 @@ void Ship::UpdateWaterVelocities(
         // WaterCrazyness=0   -> alpha=1
         // WaterCrazyness=0.5 -> alpha=0.5 + 0.5*Wh
         // WaterCrazyness=1   -> alpha=Wh
-        float const alphaCrazyness = 1.0f + simulationParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
+        // TODOTEST
+        //float const alphaCrazyness = 1.0f + simulationParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
+        float const alphaCrazyness = 1.0f;
 
 #if !FS_IS_PLATFORM_MOBILE()
         pointSplashNeighbors = 0.0f;
@@ -3496,15 +3498,17 @@ void Ship::UpdateWaterAndAirPressure(
             // 1b) Calculate air pressure transfers along travelable springs connected to this point
             //
 
-            // A higher crazyness gives more emphasis to bernoulli's velocity, as if pressures
-            // and gravity were exaggerated
-            //
-            // WV[t] = WV[t-1] + alpha * Bernoulli
-            //
-            // WaterCrazyness=0   -> alpha=1
-            // WaterCrazyness=0.5 -> alpha=0.5 + 0.5*Wh
-            // WaterCrazyness=1   -> alpha=Wh
-            float const alphaCrazyness = 1.0f + simulationParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
+            // TODONUKE
+            //// A higher crazyness gives more emphasis to bernoulli's velocity, as if pressures
+            //// and gravity were exaggerated
+            ////
+            //// WV[t] = WV[t-1] + alpha * Bernoulli
+            ////
+            //// WaterCrazyness=0   -> alpha=1
+            //// WaterCrazyness=0.5 -> alpha=0.5 + 0.5*Wh
+            //// WaterCrazyness=1   -> alpha=Wh
+            //float const alphaCrazyness = 1.0f + simulationParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
+            float const alphaCrazyness = 1.0f;
 
 #if !FS_IS_PLATFORM_MOBILE()
             pointSplashNeighbors = 0.0f;
@@ -4362,80 +4366,52 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
         totalWaterPre += mPoints.GetWater(pointIndex);
     }
 
-
-    //
-    // Visit all non-ephemeral points and:
-    //  - Move water and its momenta according to momenta and pressure differentials
-    //  - Move air (pressure) according to pressure differentials (and volumetric bias)
-    //
-    // No need to visit ephemeral points as they have no springs
-    //
-
-    // TODOTEST
-    int constexpr NumberOfWaterIterations = 2;
-    //int constexpr NumberOfWaterIterations = 4;
-
     //
     // Water step
     //
 
-    for (int iter = 0; iter < NumberOfWaterIterations; ++iter)
+    //
+    // TODOHERE: we move water and its momenta according to momenta and pressure differentials
+    //
+
+    // Calculate quantum for water transfer
+    float const effectiveWaterDiffusionSpeedAdjustment =
+        0.3125f // Empirical
+        * simulationParameters.WaterDiffusionSpeedAdjustment;
+
+    //
+    // Visit all non-ephemeral points
+    //
+    // No need to visit ephemeral points as they have no springs.
+    //
+
+    for (int iter = 0; iter < simulationParameters.WaterDiffusionNumberOfIterations; ++iter)
     {
-        //
-        // Damp velocities
-        //
-
-        vec2f lastQueriedPointInitialVelocity = vec2f::zero();
-
-        float const dampingFactor = std::min(simulationParameters.AntiMatterBombImplosionStrength / 10.0f, 1.0f);
-        for (auto pointIndex : mPoints.RawShipPoints())
-        {
-            if (pointIndex == mLastQueriedPointIndex)
-                lastQueriedPointInitialVelocity = mPoints.GetWaterVelocity(pointIndex);
-            mPoints.SetWaterVelocity(pointIndex, mPoints.GetWaterVelocity(pointIndex) * dampingFactor);
-        }
-
-        vec2f const * const restrict oldPointWaterVelocityBufferData = mPoints.GetWaterVelocityBufferAsVec2();
-
         // TODOTEST
         if (mLastQueriedPointIndex != NoneElementIndex)
         {
             LogMessage("================");
-            LogMessage("Start W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", lastQueriedPointInitialVelocity, " -> ", mPoints.GetWaterVelocity(mLastQueriedPointIndex),
+            LogMessage("Start W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", mPoints.GetWaterVelocity(mLastQueriedPointIndex),
                 " WMom=", mPoints.GetWaterMomentumBufferAsVec2f()[mLastQueriedPointIndex], "  Start A=", mPoints.GetAirPressure(mLastQueriedPointIndex));
         }
-
-        //
-        // Prepare momenta
-        //
-
-        for (auto pointIndex : mPoints.RawShipPoints())
-        {
-            mPoints.SetWaterMomentum(pointIndex, vec2f::zero());
-        }
-
-        vec2f * const restrict newPointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
-
-        //
-        // Source and result water buffers
-        //
 
         auto oldPointWaterBuffer = mPoints.MakeWaterBufferCopy();
         float const * const restrict oldPointWaterBufferData = oldPointWaterBuffer->data();
         float * const restrict newPointWaterBufferData = mPoints.GetWaterBufferAsFloat();
 
-        // Source air buffers
-        float const * const oldPointAirPressureBufferData = mPoints.GetAirPressureBufferAsFloat();
+        vec2f const * const restrict oldPointWaterVelocityBufferData = mPoints.GetWaterVelocityBufferAsVec2();
+
+        mPoints.ResetWaterMomenta(); // Start with zero, we'll add as we go
+        vec2f * const restrict newPointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
+
+        float const * const restrict oldPointAirPressureBufferData = mPoints.GetAirPressureBufferAsFloat();
 
 
-
+        // TODOTEST
         float todoTotalWOutAtQueriedPoint = 0.0f;
         float todoTotalWInAtQueriedPoint = 0.0f;
         vec2f todoTotalWMomentumOutAtQueriedPoint = vec2f::zero();
         vec2f todoTotalWMomentumInAtQueriedPoint = vec2f::zero();
-
-
-
 
         for (auto pointIndex : mPoints.RawShipPoints())
         {
@@ -4444,16 +4420,6 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
             //     including impermeable ones - as we'll eventually bounce back along those
             // 1b) Calculate air pressure transfers along travelable springs connected to this point
             //
-
-            // A higher crazyness gives more emphasis to bernoulli's velocity, as if pressures
-            // and gravity were exaggerated
-            //
-            // WV[t] = WV[t-1] + alpha * Bernoulli
-            //
-            // WaterCrazyness=0   -> alpha=1
-            // WaterCrazyness=0.5 -> alpha=0.5 + 0.5*Wh
-            // WaterCrazyness=1   -> alpha=Wh
-            float const alphaCrazyness = 1.0f + simulationParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
 
 #if !FS_IS_PLATFORM_MOBILE()
             pointSplashNeighbors = 0.0f;
@@ -4475,40 +4441,10 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
                 // Upness and downess
 
-                // TODOTEST
-                //float const springUpness = springNormalizedVector.y;
-
-                // TODOTEST: step
-                //float const springUpness = Step(0.0f, springNormalizedVector.y);
-                //float const springDownness = 1.0f - springUpness;
-
-                // TODOTEST: 0->1 smooth
-                //float const springUpness = (1.0f + springNormalizedVector.y) / 2.0f;
-                //float const springDownness = 1.0f - springUpness;
-
-                // TODOTEST: -1->1 smooth
-                //float const springUpness = springNormalizedVector.y;
-                //float const springDownness = -springUpness;
-
-                // TODOTEST: 0->1->1 smooth
-                //float const springUpness = std::min(springNormalizedVector.y + 1.0f, 1.0f);
-                //float const springDownness = std::min(1.0f - springNormalizedVector.y, 1.0f);
-
-                //// TODOTEST: 0->0->1 smooth
-                //float const springUpness = std::max(springNormalizedVector.y, 0.0f);
-                //float const springDownness = std::max(-springNormalizedVector.y, 0.0f);
-
-                //// TODOTEST: 0->0->1 smooth, corrected with rest_length
-                //float const springUpness = std::max(springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
-                //float const springDownness = std::max(-springNormalizedVector.y, 0.0f) * mSprings.GetFactoryRestLength(cs.SpringIndex);
-
                 // TODOTEST: 0->0->1 smooth, using delta_H
                 // FUTUREWORK: need to divide by ship's square side size here, once we use scale; add ship member for that
                 float const springUpness = std::max(mPoints.GetPosition(cs.OtherEndpointIndex).y - mPoints.GetPosition(pointIndex).y, 0.0f);
                 float const springDownness = std::max(mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(cs.OtherEndpointIndex).y, 0.0f);
-
-                (void)springUpness;
-                (void)springDownness;
 
                 //
                 // Water
@@ -4530,25 +4466,6 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 // the other endpoint
                 //
 
-                // TODOTEST: ORIG (no air pressure)
-                //float const dw =
-                //    (oldPointWaterBufferData[pointIndex])
-                //    - (oldPointWaterBufferData[cs.OtherEndpointIndex]);
-
-                // TODOTEST: NEW-WRONG (with air pressure, but no laterals)
-                //float const dw =
-                //    (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex])
-                //    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex]);
-
-                // TODOTEST: NEW (with air pressure, and upness)
-                //float const dw =
-                //    (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex])
-                //    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness);
-
-                //// TODOTEST: NEW (with air pressure, upness, and downness)
-                //float const dw =
-                //    (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex] * springDownness)
-                //    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness);
 
                 // TODOTEST: NEW (with air pressure, upness, and downness), and no delta-pressure against wall
                 float const dw = (
@@ -4560,9 +4477,6 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(cs.OtherEndpointIndex).y;
 
 
-
-
-
                 //
                 // Calculate gained water velocity along this spring, from point to other endpoint
                 // (Bernoulli, 1738)
@@ -4572,46 +4486,6 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 //   can be easily shown to be g*Pfs, considering that Pfs is h of cube of water
                 //
 
-                //// TODOTEST: NEW (v2 in sq root)
-
-                //// Relative velocity (this fluid vs other fluid)
-                //// TODOTEST
-                ////float const relativePointVelocityAlongSpring = (pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * springUpness);
-                //float const relativePointVelocityAlongSpring = (pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector));
-
-                //// Total pressure/rho
-                //float const dwy = dw + dy;
-
-                //// Putting it all together: v^2 + 2*g*dwy
-                //float const squareRootArg =
-                //    (relativePointVelocityAlongSpring >= 0.0f ? 1.0f : -1.0f) * relativePointVelocityAlongSpring * relativePointVelocityAlongSpring
-                //    + 2.0f * SimulationParameters::GravityMagnitude * dwy;
-
-                //float bernoulliVelocityAlongSpring;
-                //if (squareRootArg >= 0.0f)
-                //{
-                //    // Gained velocity goes from point to other endpoint
-                //    bernoulliVelocityAlongSpring = sqrtf(squareRootArg);
-                //}
-                //else
-                //{
-                //    // Gained velocity goes from other endpoint to point
-                //    bernoulliVelocityAlongSpring = -sqrtf(-squareRootArg);
-                //}
-
-                //// Resultant scalar velocity along spring; outbound only, as
-                //// if this were inbound it wouldn't result in any movement of the point's
-                //// water between these two springs. Morevoer, Bernoulli's velocity injected
-                //// along this spring will be picked up later also by the other endpoint,
-                //// and at that time it would move water if it agrees with its velocity
-                //float const springOutboundScalarWaterVelocity = std::max(
-                //    bernoulliVelocityAlongSpring * alphaCrazyness,
-                //    0.0f);
-
-
-
-
-                // TODOTEST: OLD
                 float bernoulliVelocityAlongSpring;
                 float const dwy = dw + dy;
                 if (dwy >= 0.0f)
@@ -4638,23 +4512,8 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                     : 0.0f;
 
                 float const springOutboundScalarWaterVelocity = std::max(
-                    // TODOTEST: ORIG
-                    //pointWaterVelocityAlongSpring + bernoulliVelocityAlongSpring * alphaCrazyness,
-                    // TODOTEST: relative velocity
-                    relVelocity + bernoulliVelocityAlongSpring * alphaCrazyness,
-                    // TODOTEST: relative velocity, but with upness only
-                    //(pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * springUpness) + bernoulliVelocityAlongSpring * alphaCrazyness,
-                    // TODOTEST: relative velocity, modulated
-                    //(pointWaterVelocityAlongSpring - oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * simulationParameters.BlastToolRadius / 10.0f) + bernoulliVelocityAlongSpring * alphaCrazyness,
+                    relVelocity + bernoulliVelocityAlongSpring,
                     0.0f);
-
-
-
-
-
-
-
-
 
 
 
@@ -4662,12 +4521,8 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 // TODO: comment on not using dt * old_water, as dt is simply multiplicative -- TODO: what about old_water?
                 // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
                 springOutboundWaterFlowWeights[s] =
-                    // TODOTEST: orig
                     springOutboundScalarWaterVelocity
-                    // TODOTEST: new
-                    //springOutboundScalarWaterVelocity * SimulationParameters::SimulationStepTimeDuration<float> *oldPointWaterBufferData[pointIndex]
                     / mSprings.GetFactoryRestLength(cs.SpringIndex);
-                ;
 
                 // Resultant outbound velocity vector along spring
                 springOutboundWaterVelocities[s] =
@@ -4718,35 +4573,12 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
             float waterQuantityNormalizationFactor = 0.0f;
             if (totalOutboundWaterFlowWeight != 0.0f)
             {
-                //// TODOTEST: orig norm factor
-                //waterQuantityNormalizationFactor = std::min(
-                //    // TODOTEST
-                //    (oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
-                //    //(oldPointWaterBufferData[pointIndex] / totalOutboundWaterFlowWeight) * (simulationParameters.WaterDiffusionSpeedAdjustment),
-                //    1.0f);
-                //
-                //// TODOTEST
-                //if (pointIndex == mLastQueriedPointIndex)
-                //{
-                //    LogMessage("W: normFactor=", waterQuantityNormalizationFactor, " (oldWater=", oldPointWaterBufferData[pointIndex], " alpha=", (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment), " tot=", totalOutboundWaterFlowWeight, ")");
-                //}
-
-                // TODOTEST: new norm factor
-                //waterQuantityNormalizationFactor =
-                //    std::min(1.0f, oldPointWaterBufferData[pointIndex] * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment)
-                //    / totalOutboundWaterFlowWeight;
-
-                //// TODOTEST: max norm factor
-                // Note: we always do less that the outbound water flow height here, even if it drains the point negligibly; not good! See new one
-                //maxOutboundWaterFlowWeight = std::min(maxOutboundWaterFlowWeight, oldPointWaterBufferData[pointIndex]);
-                //assert(maxOutboundWaterFlowWeight <= totalOutboundWaterFlowWeight);
-                //waterQuantityNormalizationFactor = std::min(
-                //    (maxOutboundWaterFlowWeight / totalOutboundWaterFlowWeight) * (mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment),
-                //    1.0f);
-
                 // TODOTEST: max norm factor, newer: we're willing to do no more than a _speed_ fraction of current water, but we're also willing
                 // to do a full outbound flow weight if it agrees with our limits
-                maxOutboundWaterFlowWeight = std::min(maxOutboundWaterFlowWeight, oldPointWaterBufferData[pointIndex] * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment);
+                maxOutboundWaterFlowWeight = std::min(
+                    maxOutboundWaterFlowWeight,
+                    oldPointWaterBufferData[pointIndex] * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * effectiveWaterDiffusionSpeedAdjustment);
+                assert(maxOutboundWaterFlowWeight >= 0.0f);
                 assert(maxOutboundWaterFlowWeight <= totalOutboundWaterFlowWeight);
                 waterQuantityNormalizationFactor = std::min(
                     maxOutboundWaterFlowWeight / totalOutboundWaterFlowWeight,
@@ -4761,9 +4593,6 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                         " tot=", totalOutboundWaterFlowWeight, ")");
                 }
             }
-
-            // TODOTEST
-            waterQuantityNormalizationFactor /= static_cast<float>(NumberOfWaterIterations);
 
             //
             // 3) Add to this point's water momentum the momentum that stays
@@ -4937,11 +4766,8 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 #endif
         }
 
-
-
-        // TODOTEST: moved into this loop from outside
         //
-        // Transforming momenta into velocities
+        // Transform momenta into velocities
         //
 
         mPoints.UpdateWaterVelocitiesFromMomenta();

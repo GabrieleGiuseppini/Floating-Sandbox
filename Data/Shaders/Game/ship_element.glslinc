@@ -37,17 +37,11 @@ void main()
     vertexWorldY = inShipPointPosition.y;
 
     vertexAttributes1 = inShipPointAttributeGroup1;
-    // TODOTEST: clamping water so that we interpolate between 0.0 and 1.0, rather than between 0.0 and one_gazillion.0
-    // 0.4 @ 1, 1 @ 10
-    // y = 0.4*x^0.39794
-    //vertexAttributes1.y = min(pow(vertexAttributes1.y, paramWaterLevelOfDetail), 1.0);
-    //vertexAttributes1.y = min(0.2 * pow(vertexAttributes1.y, paramWaterLevelOfDetail), 1.0);
-    //vertexAttributes1.y = min(1.-1./exp(vertexAttributes1.y * paramWaterLevelOfDetail), 1.0);
-    //vertexAttributes1.y = min(pow(vertexAttributes1.y, 1. / (3. * paramWaterLevelOfDetail * 2.) ), 1.0);
-    // TODOTEST: cubic root
+    // Normalizing water here so that we interpolate between 0.0 and 1.0, rather than between 0.0 and one_gazillion.0
+    // Note: water occupancy profile seems to be cubic, hence the cubic root
+        // 0.4 @ 1, 1 @ 10
+        // y = 0.4*x^0.39794
     vertexAttributes1.y = min(pow(vertexAttributes1.y, 1./3.) * paramWaterLevelOfDetail, 1.0);
-    // TODOTEST: linear
-    //vertexAttributes1.y = min(vertexAttributes1.y / (paramWaterLevelOfDetail * 10.0), 1.0);
 
     vertexAttributes2 = inShipPointAttributeGroup2;
     vertexTextureCoords = inShipPointTextureCoordinates;
@@ -160,14 +154,7 @@ void main()
 #else
     float vertexWater = vertexAttributes1.y;
 #endif
-    //float vertexColorWetness = min(pow(vertexWater, paramWaterLevelOfDetail), 1.0) * paramWaterContrast;
-    // TODOTEST
-    // 0.4 @ 1, 1 @ 10
-    // y = 0.4*x^0.39794
-    //float vertexColorWetness = min(0.4 * pow(vertexWater, paramWaterLevelOfDetail), 1.0) * paramWaterContrast;
-    float vertexColorWetness = vertexWater * paramWaterContrast;
-
-    fragColour = mix(fragColour, paramWaterColor, vertexColorWetness);
+    fragColour = mix(fragColour, paramWaterColor, vertexWater * paramWaterContrast);
 
     // Complement missing ambient light with point's light
     float effectiveAmbientLightIntensity = mix(vertexAttributes1.x, 1.0, paramEffectiveAmbientLightIntensity);
