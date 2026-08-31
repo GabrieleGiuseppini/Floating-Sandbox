@@ -2937,9 +2937,31 @@
 				+ Wrong: we were dividing norm factor by # of iters
 					+ Redo like that
 
-			- Re-look into jaggedness
-				- Try @ render: linear vs cubic for low vals
-				- Retry smoother upness (which one?) to reduce jaggedness
+			= Re-look into jaggedness
+				X Orig shading is even worse
+				+ Retry smoother upness (which one?) to reduce jaggedness
+					+ Water upness as std::max(springNormalizedVector.y, 0.0f)
+						+ lod: from 0.625 (default) -> 0.5
+						+ SHOOT: OK (slightly higher than before though)
+						+ Obliquity: (still jagged though, but a bit less)
+					+ Also downness, and both @ air:
+						+ SHOOT: OK
+						+ Obliquity: (still jagged though, but a bit less)
+					X Still jagged, removed
+				= Try @ render: 
+					+ Cap @ fragment, not @ vertex
+						+ Flood test: way less jagged!
+						+ SHOOT: ~OK, flutters
+						+ Obliquity: still jagged, but ok
+						+ default_ship: OK
+						+ Artifacts slightly re-appeared
+						+ Decide Lod: 0.625 (default) vs 0.734
+							+ SHOOT: OK
+							+ flood_test: OK
+							+ Change default
+							+ Obliquity: OK
+						+ Adjust shader comment to say we leave it overflow
+					- Experiment with different cubic root vals
 					
 			- Run in debug (exercise assert's)
 
@@ -2994,6 +3016,8 @@
 				
 				+ Remove:
 					+ Crazyness
+
+			- Nail down default for water lod
 
 			- Interact with air velocity @
 				- Blasts

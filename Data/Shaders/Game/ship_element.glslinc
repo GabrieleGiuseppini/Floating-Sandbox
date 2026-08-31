@@ -37,11 +37,13 @@ void main()
     vertexWorldY = inShipPointPosition.y;
 
     vertexAttributes1 = inShipPointAttributeGroup1;
-    // Normalizing water here so that we interpolate between 0.0 and 1.0, rather than between 0.0 and one_gazillion.0
+    // Normalizing water here *a bit* so that we interpolate between 0.0 and 1.0, rather than between 0.0 and one_gazillion.0
+    //  - We _do_ leave some overflow for a better ux, though it generates artifacts (seemingly empty corners)
     // Note: water occupancy profile seems to be cubic, hence the cubic root
         // 0.4 @ 1, 1 @ 10
         // y = 0.4*x^0.39794
-    vertexAttributes1.y = min(pow(vertexAttributes1.y, 1./3.) * paramWaterLevelOfDetail, 1.0);
+    //vertexAttributes1.y = min(pow(vertexAttributes1.y, 1./3.) * paramWaterLevelOfDetail, 1.0);
+    vertexAttributes1.y = pow(vertexAttributes1.y, 1./3.) * paramWaterLevelOfDetail;
 
     vertexAttributes2 = inShipPointAttributeGroup2;
     vertexTextureCoords = inShipPointTextureCoordinates;
@@ -149,11 +151,7 @@ void main()
     fragColour = mix(algaeGrowthSample, fragColour, sqrt(vertexAttributes2.y));
 
     // Apply point water
-#ifdef FOR_LINES
-    float vertexWater = max(vertexAttributes1.y, 0.0); // Bug on Intel UHD cards: line primitives interpolate water value to below zero
-#else
-    float vertexWater = vertexAttributes1.y;
-#endif
+    float vertexWater = clamp(vertexAttributes1.y, 0.0, 1.0); // Bug on Intel UHD cards: line primitives interpolate water value to below zero
     fragColour = mix(fragColour, paramWaterColor, vertexWater * paramWaterContrast);
 
     // Complement missing ambient light with point's light
