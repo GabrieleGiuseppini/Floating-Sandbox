@@ -2937,7 +2937,9 @@
 				+ Wrong: we were dividing norm factor by # of iters
 					+ Redo like that
 
-			- Retry smoother upness (which one?) to reduce jaggedness
+			- Re-look into jaggedness
+				- Try @ render: linear vs cubic for low vals
+				- Retry smoother upness (which one?) to reduce jaggedness
 					
 			- Run in debug (exercise assert's)
 
@@ -2976,8 +2978,9 @@
 				= Air and Water diffusion speeds
 					+ SimParams & GC
 					+ SettingsDialog
-					- Use
-					- Test
+					+ Use Water
+					= Use Air
+					= Test
 				= Air pressure feedback on water
 					+ SimParams & GC
 					+ SettingsDialog

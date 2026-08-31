@@ -4840,6 +4840,12 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
     int constexpr NumberOfAirIterations = 1;
 
+    // Calculate quantum for air transfer, i.e. maximum fraction
+    // of current air (pressure) we're willing to move out of a point
+    float const effectiveAirDiffusionSpeedAdjustment =
+        0.625f // Empirical
+        * simulationParameters.AirDiffusionSpeedAdjustment;
+
     for (int iter = 0; iter < NumberOfAirIterations; ++iter)
     {
         //
@@ -5143,7 +5149,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
                 // TODOTEST: max norm factor, newer: we're willing to do no more than a _speed_ fraction of current air, but we're also willing
                 // to do a full outbound flow weight if it agrees with our limits
-                maxOutboundAirFlowWeight = std::min(maxOutboundAirFlowWeight, oldPointAirPressureBufferData[pointIndex] * simulationParameters.AirDiffusionSpeedAdjustment);
+                maxOutboundAirFlowWeight = std::min(maxOutboundAirFlowWeight, oldPointAirPressureBufferData[pointIndex] * effectiveAirDiffusionSpeedAdjustment);
                 assert(maxOutboundAirFlowWeight <= totalOutboundAirFlowWeight);
                 airPressureQuantityNormalizationFactor = std::min(
                     maxOutboundAirFlowWeight / totalOutboundAirFlowWeight,
@@ -5153,7 +5159,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 if (pointIndex == mLastQueriedPointIndex)
                 {
                     LogMessage("A: normFactor=", airPressureQuantityNormalizationFactor, " (oldAir=", oldPointAirPressureBufferData[pointIndex],
-                        " alpha=", simulationParameters.AirDiffusionSpeedAdjustment, " tot=", totalOutboundAirFlowWeight, ")");
+                        " alpha=", effectiveAirDiffusionSpeedAdjustment, " tot=", totalOutboundAirFlowWeight, ")");
                 }
             }
 
