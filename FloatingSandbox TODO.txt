@@ -2943,7 +2943,7 @@
 					
 			- Run in debug (exercise assert's)
 
-			! Config: a_speed/w_speed=0.625/1.0; damp=1, bounce=1, squeeze=0.312, iters=2
+			! Config: a_speed/w_speed=1.0/1.0; damp=1, bounce=1, squeeze=0.312, iters=2
 
 			= Ingress/Egress and bubbles
 				= Water: enters or leaves based on internal total pressure <-> total external pressure differential
@@ -2975,12 +2975,12 @@
 					+ SettingsDialog
 					- Use
 					- Test
-				= Air and Water diffusion speeds
+				+ Air and Water diffusion speeds
 					+ SimParams & GC
 					+ SettingsDialog
 					+ Use Water
-					= Use Air
-					= Test
+					+ Use Air
+					+ Test
 				= Air pressure feedback on water
 					+ SimParams & GC
 					+ SettingsDialog
