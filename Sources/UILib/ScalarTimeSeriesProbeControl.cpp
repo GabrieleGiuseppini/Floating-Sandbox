@@ -16,7 +16,8 @@
 
 static constexpr int Height = 80;
 
-ScalarTimeSeriesProbeControl::ScalarTimeSeriesProbeControl(
+template<typename TTuple>
+ScalarTimeSeriesProbeControl<TTuple>::ScalarTimeSeriesProbeControl(
     wxWindow * parent,
     int width)
     : wxPanel(
@@ -27,7 +28,6 @@ ScalarTimeSeriesProbeControl::ScalarTimeSeriesProbeControl(
         wxBORDER_SIMPLE)
     , mWidth(width)
     , mBufferedDCBitmap()
-    , mTimeSeriesPen(wxColor("BLACK"), 2, wxPENSTYLE_SOLID)
     , mGridPen(wxColor(0xa0, 0xa0, 0xa0), 1, wxPENSTYLE_SOLID)
 {
     SetMinSize(wxSize(width, Height));
@@ -49,48 +49,59 @@ ScalarTimeSeriesProbeControl::ScalarTimeSeriesProbeControl(
     Reset();
 }
 
-void ScalarTimeSeriesProbeControl::RegisterSample(float value)
+template<typename TTuple>
+void ScalarTimeSeriesProbeControl<TTuple>::SetPens(PenTuple pens)
 {
-    mMaxValue = std::max(mMaxValue, value);
-    mMinValue = std::min(mMinValue, value);
-
-    mSamples.emplace(
-        [](float) {},
-        value);
+    mTimeSeriesPens = pens;
 }
 
-void ScalarTimeSeriesProbeControl::UpdateSimulation()
+template<typename TTuple>
+void ScalarTimeSeriesProbeControl<TTuple>::RegisterSample(TTuple values)
+{
+    mMaxValues = Max(mMaxValues, values);
+    mMinValues = Min(mMinValues, values);
+
+    mSamples.emplace(
+        [](TTuple) {},
+        values);
+}
+
+template<typename TTuple>
+void ScalarTimeSeriesProbeControl<TTuple>::UpdateSimulation()
 {
     Refresh();
 }
 
-void ScalarTimeSeriesProbeControl::Reset()
+template<typename TTuple>
+void ScalarTimeSeriesProbeControl<TTuple>::Reset()
 {
     mSamples.clear();
 
-    mMaxValue = std::numeric_limits<float>::lowest();
-    mMinValue = std::numeric_limits<float>::max();
+    mMaxValues = InitTuple(std::numeric_limits<float>::lowest());
+    mMinValues = InitTuple(std::numeric_limits<float>::max());
 
     mGridValueSize = 0.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void ScalarTimeSeriesProbeControl::OnMouseClick(wxMouseEvent & /*event*/)
+template<typename TTuple>
+void ScalarTimeSeriesProbeControl<TTuple>::OnMouseClick(wxMouseEvent & /*event*/)
 {
     // Reset extent
-    mMaxValue = std::numeric_limits<float>::lowest();
-    mMinValue = std::numeric_limits<float>::max();
-    for (auto it : mSamples)
+    mMaxValues = InitTuple(std::numeric_limits<float>::lowest());
+    mMinValues = InitTuple(std::numeric_limits<float>::max());
+    for (auto const & sample : mSamples)
     {
-        mMaxValue = std::max(mMaxValue, it);
-        mMinValue = std::min(mMinValue, it);
+        mMaxValues = Max(mMaxValues, sample);
+        mMinValues = Min(mMinValues, sample);
     }
 
     Refresh();
 }
 
-void ScalarTimeSeriesProbeControl::OnPaint(wxPaintEvent & /*event*/)
+template<typename TTuple>
+void ScalarTimeSeriesProbeControl<TTuple>::OnPaint(wxPaintEvent & /*event*/)
 {
     if (!mBufferedDCBitmap || mBufferedDCBitmap->GetSize() != this->GetSize())
     {
@@ -102,66 +113,62 @@ void ScalarTimeSeriesProbeControl::OnPaint(wxPaintEvent & /*event*/)
     Render(bufDc);
 }
 
-void ScalarTimeSeriesProbeControl::OnEraseBackground(wxPaintEvent & /*event*/)
+template<typename TTuple>
+void ScalarTimeSeriesProbeControl<TTuple>::OnEraseBackground(wxPaintEvent & /*event*/)
 {
     // Do nothing, eat event
 }
 
-int ScalarTimeSeriesProbeControl::MapValueToY(float value) const
-{
-    if (mMaxValue == mMinValue)
-        return Height / 2;
-
-    float y = static_cast<float>(Height - 4) * (value - mMinValue) / (mMaxValue - mMinValue);
-    return Height - 3 - static_cast<int>(round(y));
-}
-
-void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
+template<typename TTuple>
+void ScalarTimeSeriesProbeControl<TTuple>::Render(wxDC & dc)
 {
     dc.Clear();
 
     if (!mSamples.empty())
     {
-        //
-        // Check if need to resize grid
-        //
-
-        // Calculate new grid step
-        float numberOfGridLines = 6.0f;
-        float const currentValueExtent = mMaxValue - mMinValue;
-        if (currentValueExtent > 0.0f)
+        if constexpr (std::tuple_size<TTuple>{} == 1)
         {
-            if (mGridValueSize == 0.0f)
-                mGridValueSize = currentValueExtent / 6.0f;
+            //
+            // Check if need to resize grid
+            //
 
-            // Number of grid lines we would have with the current extent
-            numberOfGridLines = currentValueExtent / mGridValueSize;
-            if (numberOfGridLines > 20.0f)
+            // Calculate new grid step
+            float numberOfGridLines = 6.0f;
+            float const currentValueExtent = std::get<0>(mMaxValues) - std::get<0>(mMinValues);
+            if (currentValueExtent > 0.0f)
             {
-                // Recalc
-                mGridValueSize = currentValueExtent / 6.0f;
-                numberOfGridLines = 6.0f;
+                if (mGridValueSize == 0.0f)
+                    mGridValueSize = currentValueExtent / 6.0f;
+
+                // Number of grid lines we would have with the current extent
+                numberOfGridLines = currentValueExtent / mGridValueSize;
+                if (numberOfGridLines > 20.0f)
+                {
+                    // Recalc
+                    mGridValueSize = currentValueExtent / 6.0f;
+                    numberOfGridLines = 6.0f;
+                }
             }
-        }
 
-        static const int xGridStepSize = mWidth / 6;
-        int yGridStepSize = std::min(mWidth, Height) / static_cast<int>(ceil(numberOfGridLines));
+            static const int xGridStepSize = mWidth / 6;
+            int yGridStepSize = std::min(mWidth, Height) / static_cast<int>(ceil(numberOfGridLines));
 
 
-        //
-        // Draw grid
-        //
+            //
+            // Draw grid
+            //
 
-        dc.SetPen(mGridPen);
+            dc.SetPen(mGridPen);
 
-        for (int y = yGridStepSize; y < Height - 1; y += yGridStepSize)
-        {
-            dc.DrawLine(0, y, mWidth - 1, y);
-        }
+            for (int y = yGridStepSize; y < Height - 1; y += yGridStepSize)
+            {
+                dc.DrawLine(0, y, mWidth - 1, y);
+            }
 
-        for (int x = xGridStepSize; x < mWidth - 1; x += xGridStepSize)
-        {
-            dc.DrawLine(x, 0, x, Height - 1);
+            for (int x = xGridStepSize; x < mWidth - 1; x += xGridStepSize)
+            {
+                dc.DrawLine(x, 0, x, Height - 1);
+            }
         }
 
 
@@ -169,11 +176,13 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
         // Draw chart
         //
 
-        dc.SetPen(mTimeSeriesPen);
+        int labelY = 1;
+
+        dc.SetPen(std::get<0>(mTimeSeriesPens));
 
         auto it = mSamples.cbegin();
         int lastX = mWidth - 2;
-        int lastY = MapValueToY(*it);
+        int lastY = MapValueToY(std::get<0>(*it), std::get<0>(mMinValues), std::get<0>(mMaxValues));
         ++it;
 
         if (it == mSamples.cend())
@@ -190,7 +199,7 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
                 if (newX == 0)
                     break;
 
-                int newY = MapValueToY(*it);
+                int newY = MapValueToY(std::get<0>(*it), std::get<0>(mMinValues), std::get<0>(mMaxValues));
 
                 dc.DrawLine(newX, newY, lastX, lastY);
 
@@ -208,9 +217,23 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
         //
 
         std::stringstream ss;
-        ss << std::fixed << std::setprecision(3) << *mSamples.cbegin() << " (" << mMaxValue << ")";
+        ss << std::fixed << std::setprecision(3) << std::get<0>(*mSamples.cbegin()) << " (" << std::get<0>(mMaxValues) << ")";
 
         wxString labelText(ss.str());
-        dc.DrawText(labelText, 0, 1);
+        dc.DrawText(labelText, 0, labelY);
     }
 }
+
+template<typename TTuple>
+int ScalarTimeSeriesProbeControl<TTuple>::MapValueToY(float value, float minValue, float maxValue)
+{
+    if (maxValue == minValue)
+        return Height / 2;
+
+    float y = static_cast<float>(Height - 4) * (value - minValue) / (maxValue - minValue);
+    return Height - 3 - static_cast<int>(round(y));
+}
+
+// Force specializations
+template class ScalarTimeSeriesProbeControl<std::tuple<float>>;
+template class ScalarTimeSeriesProbeControl<std::tuple<float, float>>;
