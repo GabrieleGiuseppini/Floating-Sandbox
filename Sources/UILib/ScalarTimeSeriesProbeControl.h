@@ -33,12 +33,15 @@ struct change_tuple_element_type<TNewElement, std::tuple<TSourceElement...>>
 /*
  * Multi-series time-based graph; performs scroll automatically.
  */
-template<typename TTuple>
+template<typename...TElement>
 class ScalarTimeSeriesProbeControl : public wxPanel
 {
 public:
 
-    using PenTuple = typename change_tuple_element_type<wxPen, TTuple>::type;
+    using ValueTuple = std::tuple<TElement...>;
+
+    // TODO: see if can use ...TElement
+    using PenTuple = typename change_tuple_element_type<wxPen, ValueTuple>::type;
 
     ScalarTimeSeriesProbeControl(
         wxWindow * parent,
@@ -48,7 +51,7 @@ public:
 
     void SetPens(PenTuple pens);
 
-    void RegisterSample(TTuple values);
+    void RegisterSample(ValueTuple values);
 
     void UpdateSimulation();
 
@@ -64,63 +67,32 @@ private:
 
     // Tuple kung-fu
 
-    template<size_t... Is>
-    static TTuple InitTuple(float initValue, std::integer_sequence<size_t, Is...>)
+    static ValueTuple InitTuple(float initValue)
     {
-        return TTuple{ initValue... };
+        return ValueTuple{ TElement(initValue)... };
     }
-
-    template<typename...TElement>
-    static std::tuple<TElement...> InitTuple(float initValue)
-    {
-        return InitTuple(initValue, std::make_index_sequence<sizeof...(TElement)>{});
-    }
-
-
-
-    //template <typename TSourceElement>
-    //struct TupleHelper;
-
-    //template <typename...TSourceElement>
-    //struct TupleHelper<std::tuple<TSourceElement...>>
-    //{
-    //    static std::tuple<TSourceElement...> InitTuple(float value)
-    //    {
-    //        return std::tuple<TSourceElement...>(value...);
-    //    }
-    //};
-
-    //static TTuple InitTuple(float value)
-    //{
-    //    return TupleHelper<TTuple>::InitTuple(value);
-    //}
 
     template<size_t... Is>
-    static TTuple Min(TTuple const & t1, TTuple const & t2, std::integer_sequence<size_t, Is...>)
+    static ValueTuple Min(ValueTuple const & t1, ValueTuple const & t2, std::integer_sequence<size_t, Is...>)
     {
-        return TTuple{ std::min(std::get<Is>(t1), std::get<Is>(t2))... };
+        return ValueTuple{ std::min(std::get<Is>(t1), std::get<Is>(t2))... };
     }
 
-    template<typename...TElement>
-    static TTuple Min(std::tuple<TElement...> const & t1, std::tuple<TElement...> const & t2)
+    static ValueTuple Min(ValueTuple const & t1, ValueTuple const & t2)
     {
-        static_assert(sizeof...(TElement) == std::tuple_size<TTuple>{});
         return Min(t1, t2, std::make_index_sequence<sizeof...(TElement)>{});
     }
 
     template<size_t... Is>
-    static TTuple Max(TTuple const & t1, TTuple const & t2, std::integer_sequence<size_t, Is...>)
+    static ValueTuple Max(ValueTuple const & t1, ValueTuple const & t2, std::integer_sequence<size_t, Is...>)
     {
-        return TTuple{ std::max(std::get<Is>(t1), std::get<Is>(t2))... };
+        return ValueTuple{ std::max(std::get<Is>(t1), std::get<Is>(t2))... };
     }
 
-    template<typename...TElement>
-    static TTuple Max(std::tuple<TElement...> const & t1, std::tuple<TElement...> const & t2)
+    static ValueTuple Max(ValueTuple const & t1, ValueTuple const & t2)
     {
-        static_assert(sizeof...(TElement) == std::tuple_size<TTuple>{});
         return Max(t1, t2, std::make_index_sequence<sizeof...(TElement)>{});
     }
-
 
     static int MapValueToY(float value, float minValue, float maxValue);
 
@@ -146,9 +118,9 @@ private:
     PenTuple mTimeSeriesPens;
     wxPen mGridPen;
 
-    TTuple mMaxValues;
-    TTuple mMinValues;
+    ValueTuple mMaxValues;
+    ValueTuple mMinValues;
     float mGridValueSize;
 
-    CircularList<TTuple, 200> mSamples;
+    CircularList<ValueTuple, 200> mSamples;
 };

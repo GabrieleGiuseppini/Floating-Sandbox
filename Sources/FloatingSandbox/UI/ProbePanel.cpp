@@ -29,20 +29,20 @@ ProbePanel::ProbePanel(wxWindow* parent)
 
     mProbesSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    mFrameRateProbe = AddProbe<ScalarTimeSeriesProbeControl<std::tuple<float>>>(_("Frame Rate"), 150);
+    mFrameRateProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Frame Rate"), 150);
     mFrameRateProbe->SetPens({ defaultPen });
-    mCurrentUpdateDurationProbe = AddProbe<ScalarTimeSeriesProbeControl<std::tuple<float>>>(_("Update Time"), 150);
+    mCurrentUpdateDurationProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Update Time"), 150);
     mCurrentUpdateDurationProbe->SetPens({ defaultPen });
 
-    mPressureIntakeProbe = AddProbe<ScalarTimeSeriesProbeControl<std::tuple<float, float>>>(_("Water Inflow"), 120);
+    mPressureIntakeProbe = AddProbe<ScalarTimeSeriesProbeControl<float, float>>(_("Water Inflow"), 120);
     mPressureIntakeProbe->SetPens({ wxPen(wxColor("BLUE"), 2, wxPENSTYLE_SOLID), wxPen(wxColor("PINK"), 2, wxPENSTYLE_SOLID) });
 
-    mWindSpeedProbe = AddProbe<ScalarTimeSeriesProbeControl<std::tuple<float>>>(_("Wind Speed"), 120);
+    mWindSpeedProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Wind Speed"), 120);
     mWindSpeedProbe->SetPens({ defaultPen });
 
-    mStaticPressureNetForceProbe = AddProbe<ScalarTimeSeriesProbeControl<std::tuple<float>>>(_("Static Pressure Net Force"), 120);
+    mStaticPressureNetForceProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Static Pressure Net Force"), 120);
     mStaticPressureNetForceProbe->SetPens({ defaultPen });
-    mStaticPressureComplexityProbe = AddProbe<ScalarTimeSeriesProbeControl<std::tuple<float>>>(_("Static Pressure Complexity"), 120);
+    mStaticPressureComplexityProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Static Pressure Complexity"), 120);
     mStaticPressureComplexityProbe->SetPens({ defaultPen });
 
     //
@@ -150,7 +150,7 @@ void ProbePanel::OnCustomProbe(
     auto & probe = mCustomProbes[name];
     if (!probe)
     {
-        probe = AddProbe<ScalarTimeSeriesProbeControl<std::tuple<float>>>(name, 100);
+        probe = AddProbe<ScalarTimeSeriesProbeControl<float>>(name, 100);
         probe->SetPens({ wxPen(wxColor("BLACK"), 2, wxPENSTYLE_SOLID) });
         mProbesSizer->Layout();
         SetSizerAndFit(mProbesSizer);

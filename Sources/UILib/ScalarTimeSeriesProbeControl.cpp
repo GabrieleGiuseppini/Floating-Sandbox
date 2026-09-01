@@ -16,8 +16,8 @@
 
 static constexpr int Height = 80;
 
-template<typename TTuple>
-ScalarTimeSeriesProbeControl<TTuple>::ScalarTimeSeriesProbeControl(
+template<typename...TElement>
+ScalarTimeSeriesProbeControl<TElement...>::ScalarTimeSeriesProbeControl(
     wxWindow * parent,
     int width)
     : wxPanel(
@@ -49,31 +49,31 @@ ScalarTimeSeriesProbeControl<TTuple>::ScalarTimeSeriesProbeControl(
     Reset();
 }
 
-template<typename TTuple>
-void ScalarTimeSeriesProbeControl<TTuple>::SetPens(PenTuple pens)
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::SetPens(PenTuple pens)
 {
     mTimeSeriesPens = pens;
 }
 
-template<typename TTuple>
-void ScalarTimeSeriesProbeControl<TTuple>::RegisterSample(TTuple values)
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::RegisterSample(ValueTuple values)
 {
     mMaxValues = Max(mMaxValues, values);
     mMinValues = Min(mMinValues, values);
 
     mSamples.emplace(
-        [](TTuple) {},
+        [](ValueTuple) {},
         values);
 }
 
-template<typename TTuple>
-void ScalarTimeSeriesProbeControl<TTuple>::UpdateSimulation()
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::UpdateSimulation()
 {
     Refresh();
 }
 
-template<typename TTuple>
-void ScalarTimeSeriesProbeControl<TTuple>::Reset()
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::Reset()
 {
     mSamples.clear();
 
@@ -85,8 +85,8 @@ void ScalarTimeSeriesProbeControl<TTuple>::Reset()
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-template<typename TTuple>
-void ScalarTimeSeriesProbeControl<TTuple>::OnMouseClick(wxMouseEvent & /*event*/)
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::OnMouseClick(wxMouseEvent & /*event*/)
 {
     // Reset extent
     mMaxValues = InitTuple(std::numeric_limits<float>::lowest());
@@ -100,8 +100,8 @@ void ScalarTimeSeriesProbeControl<TTuple>::OnMouseClick(wxMouseEvent & /*event*/
     Refresh();
 }
 
-template<typename TTuple>
-void ScalarTimeSeriesProbeControl<TTuple>::OnPaint(wxPaintEvent & /*event*/)
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::OnPaint(wxPaintEvent & /*event*/)
 {
     if (!mBufferedDCBitmap || mBufferedDCBitmap->GetSize() != this->GetSize())
     {
@@ -113,20 +113,20 @@ void ScalarTimeSeriesProbeControl<TTuple>::OnPaint(wxPaintEvent & /*event*/)
     Render(bufDc);
 }
 
-template<typename TTuple>
-void ScalarTimeSeriesProbeControl<TTuple>::OnEraseBackground(wxPaintEvent & /*event*/)
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::OnEraseBackground(wxPaintEvent & /*event*/)
 {
     // Do nothing, eat event
 }
 
-template<typename TTuple>
-void ScalarTimeSeriesProbeControl<TTuple>::Render(wxDC & dc)
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::Render(wxDC & dc)
 {
     dc.Clear();
 
     if (!mSamples.empty())
     {
-        if constexpr (std::tuple_size<TTuple>{} == 1)
+        if constexpr (sizeof...(TElement) == 1)
         {
             //
             // Check if need to resize grid
@@ -224,8 +224,8 @@ void ScalarTimeSeriesProbeControl<TTuple>::Render(wxDC & dc)
     }
 }
 
-template<typename TTuple>
-int ScalarTimeSeriesProbeControl<TTuple>::MapValueToY(float value, float minValue, float maxValue)
+template<typename...TElement>
+int ScalarTimeSeriesProbeControl<TElement...>::MapValueToY(float value, float minValue, float maxValue)
 {
     if (maxValue == minValue)
         return Height / 2;
@@ -235,5 +235,5 @@ int ScalarTimeSeriesProbeControl<TTuple>::MapValueToY(float value, float minValu
 }
 
 // Force specializations
-template class ScalarTimeSeriesProbeControl<std::tuple<float>>;
-template class ScalarTimeSeriesProbeControl<std::tuple<float, float>>;
+template class ScalarTimeSeriesProbeControl<float>;
+template class ScalarTimeSeriesProbeControl<float, float>;

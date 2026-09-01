@@ -100,12 +100,12 @@ private:
 
     wxBoxSizer * mProbesSizer;
 
-    std::unique_ptr<ScalarTimeSeriesProbeControl<std::tuple<float>>> mFrameRateProbe;
-    std::unique_ptr<ScalarTimeSeriesProbeControl<std::tuple<float>>> mCurrentUpdateDurationProbe;
-    std::unique_ptr<ScalarTimeSeriesProbeControl<std::tuple<float, float>>> mPressureIntakeProbe;
-    std::unique_ptr<ScalarTimeSeriesProbeControl<std::tuple<float>>> mWindSpeedProbe;
-    std::unique_ptr<ScalarTimeSeriesProbeControl<std::tuple<float>>> mStaticPressureNetForceProbe;
-    std::unique_ptr<ScalarTimeSeriesProbeControl<std::tuple<float>>> mStaticPressureComplexityProbe;
+    std::unique_ptr<ScalarTimeSeriesProbeControl<float>> mFrameRateProbe;
+    std::unique_ptr<ScalarTimeSeriesProbeControl<float>> mCurrentUpdateDurationProbe;
+    std::unique_ptr<ScalarTimeSeriesProbeControl<float, float>> mPressureIntakeProbe;
+    std::unique_ptr<ScalarTimeSeriesProbeControl<float>> mWindSpeedProbe;
+    std::unique_ptr<ScalarTimeSeriesProbeControl<float>> mStaticPressureNetForceProbe;
+    std::unique_ptr<ScalarTimeSeriesProbeControl<float>> mStaticPressureComplexityProbe;
     std::unique_ptr<PressureCrossCutReadingsProbeControl> mPressureCrossCutReadingsProbe;
-    std::unordered_map<std::string, std::unique_ptr<ScalarTimeSeriesProbeControl<std::tuple<float>>>> mCustomProbes;
+    std::unordered_map<std::string, std::unique_ptr<ScalarTimeSeriesProbeControl<float>>> mCustomProbes;
 };
