@@ -50,7 +50,9 @@ public:
         gameController.RegisterGameStatisticsEventHandler(this);
     }
 
-    void OnWaterTaken(float waterTaken) override;
+    void OnPressureIntake(
+        float waterTaken,
+        float airTaken) override;
 
     void OnWindSpeedUpdated(
         float const zeroSpeedMagnitude,

@@ -117,8 +117,11 @@ void ProbePanel::OnGameReset()
     }
 }
 
-void ProbePanel::OnWaterTaken(float waterTaken)
+void ProbePanel::OnPressureIntake(
+    float waterTaken,
+    float airTaken)
 {
+    // TODOHERE
     mWaterTakenProbe->RegisterSample(waterTaken);
 }
 

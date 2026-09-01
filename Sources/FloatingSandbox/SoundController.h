@@ -289,7 +289,9 @@ public:
         bool isPinned,
         bool isUnderwater) override;
 
-    void OnWaterTaken(float waterTaken) override;
+    void OnPressureIntake(
+        float waterTaken,
+        float airTaken) override;
 
     void OnWaterSplashed(float waterSplashed) override;
 

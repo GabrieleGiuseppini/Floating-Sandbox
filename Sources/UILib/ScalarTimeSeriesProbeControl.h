@@ -51,31 +51,3 @@ private:
 
     CircularList<float, 200> mSamples;
 };
-
-class IntegratingScalarTimeSeriesProbeControl : public ScalarTimeSeriesProbeControl
-{
-public:
-
-    IntegratingScalarTimeSeriesProbeControl(
-        wxWindow * parent,
-        int width)
-        : ScalarTimeSeriesProbeControl(parent, width)
-        , mCurrentSum(0.0f)
-    {}
-
-    void RegisterSample(float value)
-    {
-        mCurrentSum += value;
-        ScalarTimeSeriesProbeControl::RegisterSample(mCurrentSum);
-    }
-
-    void Reset()
-    {
-        ScalarTimeSeriesProbeControl::Reset();
-        mCurrentSum = 0.0f;
-    }
-
-private:
-
-    float mCurrentSum;
-};

@@ -108,7 +108,9 @@ struct IGenericShipEventHandler
         // Default-implemented
     }
 
-    virtual void OnWaterTaken(float /*waterTaken*/)
+    virtual void OnPressureIntake(
+        float /*waterTaken*/,
+        float /*airTaken*/)
     {
         // Default-implemented
     }

@@ -752,8 +752,7 @@ private:
         float effectiveWaterDensity,
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
-        SimulationParameters const & simulationParameters,
-        float & waterTakenInStep);
+        SimulationParameters const & simulationParameters);
 
     void EqualizeInternalPressure(SimulationParameters const & simulationParameters);
 

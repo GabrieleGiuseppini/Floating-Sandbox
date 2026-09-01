@@ -2038,7 +2038,9 @@ void SoundController::OnLampImploded(
         true);
 }
 
-void SoundController::OnWaterTaken(float waterTaken)
+void SoundController::OnPressureIntake(
+    float waterTaken,
+    float /*airTaken*/)
 {
     // 40 * (-1 / 2.4^(0.5 * x) + 1)
     float rushVolume = 40.f * (-1.f / std::pow(2.4f, std::min(90.0f, 0.5f * std::abs(waterTaken))) + 1.f);
