@@ -2529,8 +2529,8 @@ void Ship::UpdatePressureAndWaterInflow(
     //
 
     // Totals for broadcasting pressure ingress event
-    float totalWaterTakenMeasured = 0.0f;
-    float totalAirTakenMeasured = 0.0f;
+    float totalWaterIntakeMeasured = 0.0f;
+    float totalAirIntakeMeasured = 0.0f;
 
     // Multiplier to get internal pressure delta from water delta
     float const volumetricWaterPressure = Formulae::CalculateVolumetricWaterPressure(simulationParameters.WaterTemperature, simulationParameters);
@@ -2575,10 +2575,8 @@ void Ship::UpdatePressureAndWaterInflow(
             // Internal water height
             float const internalWaterHeight = mPoints.GetWater(pointIndex);
 
-            // Quantities exchanged at this point
-            float pointDeltaWaterInScope = 0.0f; // Discounts orhpaned points' structural
-            float pointDeltaAir = 0.0f;
-            float pointDeltaAirInScope = 0.0f; // Discounts orhpaned points' structural
+            // Air left at this point
+            float pointAirLost = 0.0f;
 
             if (pointCompositeLeaking.LeakingSources.StructuralLeak != 0.0f)
             {
@@ -2691,13 +2689,15 @@ void Ship::UpdatePressureAndWaterInflow(
                         pointIndex,
                         mPoints.GetWater(pointIndex) + deltaWater_Structural);
 
-                    // Update total delta water
-                    if (!mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty()) // Note that leaking points have no connected triangles
+                    // Update measured water intake
+                    //
+                    // Only count water taken if this point has a spring, to avoid counting
+                    // water and generating bubbles for orphaned particles, and not counting
+                    // ropes, to prevent "rushing water" sound from playing for ropes
+                    if (!mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty() // Note that leaking points have no connected triangles
+                        && !mPoints.IsRope(pointIndex))
                     {
-                        // Only count water taken if this point has a spring, to avoid counting
-                        // water and generating bubbles for orphaned particles
-                        // (note that leaking points have no connected triangles)
-                        pointDeltaWaterInScope += deltaWater_Structural;
+                        totalWaterIntakeMeasured += deltaWater_Structural;
                     }
                 }
 
@@ -2738,13 +2738,17 @@ void Ship::UpdatePressureAndWaterInflow(
                             pointIndex,
                             newAirPressure);
 
-                        // Update total delta air
-                        pointDeltaAir += deltaAir_Structural;
-                        if (!mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty()) // Note that leaking points have no connected triangles
+                        pointAirLost += deltaAir_Structural;
+
+                        // Update measured air intake
+                        //
+                        // Only count air taken if this point has a spring, to avoid counting
+                        // air and generating bubbles for orphaned particles, and not counting
+                        // ropes, for symmetry with water
+                        if (!mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty() // Note that leaking points have no connected triangles
+                            && !mPoints.IsRope(pointIndex))
                         {
-                            // Only count air taken if this point has a spring, to avoid counting
-                            // air for orphaned particles
-                            pointDeltaAirInScope += deltaAir_Structural;
+                            totalAirIntakeMeasured += deltaAir_Structural;
                         }
                     }
                 }
@@ -2782,8 +2786,14 @@ void Ship::UpdatePressureAndWaterInflow(
                     pointIndex,
                     mPoints.GetWater(pointIndex) + deltaWater_Forced);
 
-                // Update total delta water
-                pointDeltaWaterInScope += deltaWater_Forced;
+                // Update measured water intake
+                //
+                // Only count water taken if this is not a rope,
+                // to prevent "rushing water" sound from playing for ropes
+                if (!mPoints.IsRope(pointIndex))
+                {
+                    totalWaterIntakeMeasured += deltaWater_Forced;
+                }
 
                 //
                 // 4) Update pressure due to forced leaks (pumps)
@@ -2803,7 +2813,7 @@ void Ship::UpdatePressureAndWaterInflow(
             // 5) Check if it's time to produce air bubbles
             //
 
-            float newPointCumulatedOutflownAirPressure = mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointDeltaAir;
+            float newPointCumulatedOutflownAirPressure = mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost;
             if (newPointCumulatedOutflownAirPressure > cumulatedOutflownAirPressureThresholdForAirBubbles)
             {
                 // Generate air bubbles - but not on ropes as that looks awful
@@ -2826,16 +2836,6 @@ void Ship::UpdatePressureAndWaterInflow(
             }
 
             mPoints.SetCumulatedOutflownAirPressure(pointIndex, newPointCumulatedOutflownAirPressure);
-
-            // Adjust total water taken during this step, but not counting
-            // ropes, to prevent "rushing water" sound from playing for
-            // ropes, and also to prevent rope-only ships from playing
-            // "farewell"
-            if (!mPoints.IsRope(pointIndex))
-            {
-                totalWaterTakenMeasured += pointDeltaWaterInScope;
-                totalAirTakenMeasured += pointDeltaAirInScope;
-            }
         }
     }
 
@@ -2843,7 +2843,7 @@ void Ship::UpdatePressureAndWaterInflow(
     // Notify pressure intake
     //
 
-    mSimulationEventHandler.OnPressureIntake(totalWaterTakenMeasured, totalAirTakenMeasured);
+    mSimulationEventHandler.OnPressureIntake(totalWaterIntakeMeasured, totalAirIntakeMeasured);
 }
 
 void Ship::EqualizeInternalPressure(SimulationParameters const & /*simulationParameters*/)
