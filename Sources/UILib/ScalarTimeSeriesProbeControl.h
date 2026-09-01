@@ -65,7 +65,7 @@ private:
     void Render(wxDC& dc);
 
     template<size_t... Is>
-    void DrawChart(wxDC& dc, std::integer_sequence<size_t, Is...>)
+    void DrawCharts(wxDC& dc, std::integer_sequence<size_t, Is...>)
     {
         (DrawChart<Is>(dc), ...);
     }
@@ -102,7 +102,8 @@ private:
         return Max(t1, t2, std::make_index_sequence<sizeof...(TElement)>{});
     }
 
-    static int MapValueToY(float value, float minValue, float maxValue);
+    template<size_t IElement>
+    int MapValueToY(ValueTuple const & t) const;
 
 private:
 

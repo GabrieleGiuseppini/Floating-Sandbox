@@ -153,7 +153,6 @@ void ScalarTimeSeriesProbeControl<TElement...>::Render(wxDC & dc)
             static const int xGridStepSize = mWidth / 6;
             int yGridStepSize = std::min(mWidth, Height) / static_cast<int>(ceil(numberOfGridLines));
 
-
             //
             // Draw grid
             //
@@ -171,12 +170,11 @@ void ScalarTimeSeriesProbeControl<TElement...>::Render(wxDC & dc)
             }
         }
 
-
         //
-        // Draw chart
+        // Draw charts
         //
 
-        DrawChart(dc, std::make_index_sequence<sizeof...(TElement)>{});
+        DrawCharts(dc, std::make_index_sequence<sizeof...(TElement)>{});
     }
 }
 
@@ -188,7 +186,7 @@ void ScalarTimeSeriesProbeControl<TElement...>::DrawChart(wxDC& dc)
 
     auto it = mSamples.cbegin();
     int lastX = mWidth - 2;
-    int lastY = MapValueToY(std::get<IElement>(*it), std::get<IElement>(mMinValues), std::get<IElement>(mMaxValues));
+    int lastY = MapValueToY<IElement>(*it);
     ++it;
 
     if (it == mSamples.cend())
@@ -205,7 +203,7 @@ void ScalarTimeSeriesProbeControl<TElement...>::DrawChart(wxDC& dc)
             if (newX == 0)
                 break;
 
-            int newY = MapValueToY(std::get<IElement>(*it), std::get<IElement>(mMinValues), std::get<IElement>(mMaxValues));
+            int newY = MapValueToY<IElement>(*it);
 
             dc.DrawLine(newX, newY, lastX, lastY);
 
@@ -222,19 +220,26 @@ void ScalarTimeSeriesProbeControl<TElement...>::DrawChart(wxDC& dc)
     //
 
     std::stringstream ss;
-    ss << std::fixed << std::setprecision(3) << std::get<IElement>(*mSamples.cbegin()) << " (" << std::get<IElement>(mMaxValues) << ")";
+    ss << std::fixed << std::setprecision(2);
+
+    float const currentValue = std::get<IElement>(*mSamples.cbegin());
+    if (currentValue >= 0.0f)
+        ss << ' ';
+    ss << currentValue << " (" << std::get<IElement>(mMaxValues) << ")";
 
     wxString labelText(ss.str());
+    dc.SetTextForeground(std::get<IElement>(mTimeSeriesPens).GetColour());
     dc.DrawText(labelText, 0, 1 + 9 * static_cast<int>(IElement));
 }
 
 template<typename...TElement>
-int ScalarTimeSeriesProbeControl<TElement...>::MapValueToY(float value, float minValue, float maxValue)
+template<size_t IElement>
+int ScalarTimeSeriesProbeControl<TElement...>::MapValueToY(ValueTuple const & t) const
 {
-    if (maxValue == minValue)
+    if (std::get<IElement>(mMaxValues) == std::get<IElement>(mMinValues))
         return Height / 2;
 
-    float y = static_cast<float>(Height - 4) * (value - minValue) / (maxValue - minValue);
+    float y = static_cast<float>(Height - 4) * (std::get<IElement>(t) - std::get<IElement>(mMinValues)) / (std::get<IElement>(mMaxValues) - std::get<IElement>(mMinValues));
     return Height - 3 - static_cast<int>(round(y));
 }
 
