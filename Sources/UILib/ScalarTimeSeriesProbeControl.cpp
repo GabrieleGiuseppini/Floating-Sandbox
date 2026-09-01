@@ -176,52 +176,56 @@ void ScalarTimeSeriesProbeControl<TElement...>::Render(wxDC & dc)
         // Draw chart
         //
 
-        int labelY = 1;
-
-        dc.SetPen(std::get<0>(mTimeSeriesPens));
-
-        auto it = mSamples.cbegin();
-        int lastX = mWidth - 2;
-        int lastY = MapValueToY(std::get<0>(*it), std::get<0>(mMinValues), std::get<0>(mMaxValues));
-        ++it;
-
-        if (it == mSamples.cend())
-        {
-            // Draw just a point
-            dc.DrawPoint(lastX, lastY);
-        }
-        else
-        {
-            // Draw lines
-            do
-            {
-                int newX = lastX - 1;
-                if (newX == 0)
-                    break;
-
-                int newY = MapValueToY(std::get<0>(*it), std::get<0>(mMinValues), std::get<0>(mMaxValues));
-
-                dc.DrawLine(newX, newY, lastX, lastY);
-
-                lastX = newX;
-                lastY = newY;
-
-                ++it;
-            }
-            while (it != mSamples.cend());
-        }
-
-
-        //
-        // Draw label
-        //
-
-        std::stringstream ss;
-        ss << std::fixed << std::setprecision(3) << std::get<0>(*mSamples.cbegin()) << " (" << std::get<0>(mMaxValues) << ")";
-
-        wxString labelText(ss.str());
-        dc.DrawText(labelText, 0, labelY);
+        DrawChart(dc, std::make_index_sequence<sizeof...(TElement)>{});
     }
+}
+
+template<typename...TElement>
+template<size_t IElement>
+void ScalarTimeSeriesProbeControl<TElement...>::DrawChart(wxDC& dc)
+{
+    dc.SetPen(std::get<IElement>(mTimeSeriesPens));
+
+    auto it = mSamples.cbegin();
+    int lastX = mWidth - 2;
+    int lastY = MapValueToY(std::get<IElement>(*it), std::get<IElement>(mMinValues), std::get<IElement>(mMaxValues));
+    ++it;
+
+    if (it == mSamples.cend())
+    {
+        // Draw just a point
+        dc.DrawPoint(lastX, lastY);
+    }
+    else
+    {
+        // Draw lines
+        do
+        {
+            int newX = lastX - 1;
+            if (newX == 0)
+                break;
+
+            int newY = MapValueToY(std::get<IElement>(*it), std::get<IElement>(mMinValues), std::get<IElement>(mMaxValues));
+
+            dc.DrawLine(newX, newY, lastX, lastY);
+
+            lastX = newX;
+            lastY = newY;
+
+            ++it;
+        } while (it != mSamples.cend());
+    }
+
+
+    //
+    // Draw label
+    //
+
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(3) << std::get<IElement>(*mSamples.cbegin()) << " (" << std::get<IElement>(mMaxValues) << ")";
+
+    wxString labelText(ss.str());
+    dc.DrawText(labelText, 0, 1 + 9 * static_cast<int>(IElement));
 }
 
 template<typename...TElement>

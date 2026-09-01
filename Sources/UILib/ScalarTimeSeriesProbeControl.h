@@ -40,7 +40,6 @@ public:
 
     using ValueTuple = std::tuple<TElement...>;
 
-    // TODO: see if can use ...TElement
     using PenTuple = typename change_tuple_element_type<wxPen, ValueTuple>::type;
 
     ScalarTimeSeriesProbeControl(
@@ -64,6 +63,15 @@ private:
     void OnEraseBackground(wxPaintEvent & event);
 
     void Render(wxDC& dc);
+
+    template<size_t... Is>
+    void DrawChart(wxDC& dc, std::integer_sequence<size_t, Is...>)
+    {
+        (DrawChart<Is>(dc), ...);
+    }
+
+    template<size_t IElement>
+    void DrawChart(wxDC& dc);
 
     // Tuple kung-fu
 
@@ -95,20 +103,6 @@ private:
     }
 
     static int MapValueToY(float value, float minValue, float maxValue);
-
-    // TODOTEST
-    //using IntTuple = typename change_tuple_element_type<int, TTuple>::type;
-
-    //template<size_t... Is>
-    //IntTuple MapValueToY(TTuple const & t, std::integer_sequence<size_t, Is...>) const
-    //{
-    //    return TTuple{ MapValueToY(std::get<Is>(t), std::get<Is>(mMinValues), std::get<Is>(mMaxValues))... };
-    //}
-
-    //IntTuple MapValueToY(TTuple const & t) const
-    //{
-    //    return MapValueToY(t, std::make_index_sequence<sizeof...(TTuple)>{});
-    //}
 
 private:
 

@@ -34,7 +34,7 @@ ProbePanel::ProbePanel(wxWindow* parent)
     mCurrentUpdateDurationProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Update Time"), 150);
     mCurrentUpdateDurationProbe->SetPens({ defaultPen });
 
-    mPressureIntakeProbe = AddProbe<ScalarTimeSeriesProbeControl<float, float>>(_("Water Inflow"), 120);
+    mPressureIntakeProbe = AddProbe<ScalarTimeSeriesProbeControl<float, float>>(_("Pressure Inflow"), 120);
     mPressureIntakeProbe->SetPens({ wxPen(wxColor("BLUE"), 2, wxPENSTYLE_SOLID), wxPen(wxColor("PINK"), 2, wxPENSTYLE_SOLID) });
 
     mWindSpeedProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Wind Speed"), 120);
