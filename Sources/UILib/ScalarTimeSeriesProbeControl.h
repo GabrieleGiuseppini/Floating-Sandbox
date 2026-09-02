@@ -44,11 +44,10 @@ public:
 
     ScalarTimeSeriesProbeControl(
         wxWindow * parent,
-        int width);
+        int width,
+        PenTuple pens);
 
     virtual ~ScalarTimeSeriesProbeControl() = default;
-
-    void SetPens(PenTuple pens);
 
     void RegisterSample(ValueTuple values);
 

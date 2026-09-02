@@ -87,10 +87,11 @@ private:
         return this->IsShown();
     }
 
-    template<typename TProbeControl>
+    template<typename TProbeControl, typename ... TExtraArgs>
     std::unique_ptr<TProbeControl> AddProbe(
         wxString const & name,
-        int sampleCount);
+        int sampleCount,
+        TExtraArgs&&...extraArgs);
 
 private:
 

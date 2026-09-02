@@ -2975,14 +2975,18 @@
 					+ Enters iff above-water and (air/total) pressure outside > air pressure inside
 					- Use SimulationParameters::AirIntakeAdjustment
 					= Keep track of air inflow
-						- We call it inflow, so keep count of _incomin_ air
+						+ We call it inflow, so keep count of _incoming_ air
 						= Make ScalarTimeSeriesProbeControl templated on tuple<float, ...>
 							+ https://stackoverflow.com/questions/61112088/transform-tuple-type-to-another-tuple-type
 							+ https://www.cppstories.com/2022/tuple-iteration-apply/
 							+ cctor takes tuple of colors
 							+ Fix label flicker (account for minus)
+							+ ProbePanel::MakeProbe<>: std::fwd args
+								+ Then takes pens in cctor
 							- Darker label
-							- Zero axes for each?
+								- Create tuple of colors when pens are created
+							- Zero axes for each
+								- Create tuple of pens when pens are created
 				= Air Bubbles
 					+ Rename cumulation members
 					+ Bubble contribution proportional _only_ to air pressure that left point
@@ -3033,7 +3037,19 @@
 				- NPCs
 				- etc
 			- Temperature <-> Air Pressure
-				- A new step, before pressure, makes EffectiveAirPressure from AirPressure and Temperature
+				! Theoretically: each temperature change should change Air (pressure)
+				! In practice:
+					- Option 1:
+						! Gist: we have TheoreticalAir and EffectiveAir
+							! Much like WaterVelocities and WaterMomenta
+						! During a simulation step:
+							! Interaction changes are made to TheoreticalAir
+							! Reads happen from EffectiveAir (assuming don't need immediately changes done in same step)
+							! DiffusionSimulation:
+								! Theo->Effective (via T)
+								! Diffusion on Effective
+								! Effective->Theo
+									! And Effective stays for reading, exactly like WaterMomenta
 			+ Finalize unit of AirPressure
 				+ Also @ Points buffer comment
 			- Water splash sounds (kinetic energy)
@@ -3044,6 +3060,10 @@
 				- Do we do it where we currently use InternalPressure, or do we bounce
 				  @ UpdateWaterAndAirPressure?
 					- Depending on answer: need to nail down diffusion in hull
+				- Option 1:
+					- One step (replacement of old "InternalPressure") sets all hull points to avg of their points
+						- TODO: should the looked at points also include hull points? If not can't propagate
+
 				- Test Inflatable Balloon
 			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure
 			- Tools:

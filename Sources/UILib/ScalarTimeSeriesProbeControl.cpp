@@ -19,7 +19,8 @@ static constexpr int Height = 80;
 template<typename...TElement>
 ScalarTimeSeriesProbeControl<TElement...>::ScalarTimeSeriesProbeControl(
     wxWindow * parent,
-    int width)
+    int width,
+    PenTuple pens)
     : wxPanel(
         parent,
         wxID_ANY,
@@ -28,6 +29,7 @@ ScalarTimeSeriesProbeControl<TElement...>::ScalarTimeSeriesProbeControl(
         wxBORDER_SIMPLE)
     , mWidth(width)
     , mBufferedDCBitmap()
+    , mTimeSeriesPens(pens)
     , mGridPen(wxColor(0xa0, 0xa0, 0xa0), 1, wxPENSTYLE_SOLID)
 {
     SetMinSize(wxSize(width, Height));
@@ -47,12 +49,6 @@ ScalarTimeSeriesProbeControl<TElement...>::ScalarTimeSeriesProbeControl(
     Connect(this->GetId(), wxEVT_ERASE_BACKGROUND, (wxObjectEventFunction)&ScalarTimeSeriesProbeControl::OnEraseBackground);
 
     Reset();
-}
-
-template<typename...TElement>
-void ScalarTimeSeriesProbeControl<TElement...>::SetPens(PenTuple pens)
-{
-    mTimeSeriesPens = pens;
 }
 
 template<typename...TElement>

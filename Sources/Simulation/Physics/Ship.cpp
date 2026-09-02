@@ -2732,6 +2732,7 @@ void Ship::UpdatePressureAndWaterInflow(
                         // See TODO for rate here
                         float const newAirPressure = externalAirPressure;
 
+                        // Air lost
                         float const deltaAir_Structural = mPoints.GetAirPressure(pointIndex) - newAirPressure;
 
                         mPoints.SetAirPressure(
@@ -2748,7 +2749,7 @@ void Ship::UpdatePressureAndWaterInflow(
                         if (!mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty() // Note that leaking points have no connected triangles
                             && !mPoints.IsRope(pointIndex))
                         {
-                            totalAirIntakeMeasured += deltaAir_Structural;
+                            totalAirIntakeMeasured += -deltaAir_Structural;
                         }
                     }
                 }
