@@ -2747,6 +2747,13 @@ void Ship::UpdatePressureAndWaterInflow(
                             pointAirLost += -deltaAir_Structural;
                         }
 
+                        // TODOTEST
+                        if (pointIndex == 6864 && pointDepth > 0.0f)
+                        {
+                            LogMessage("!!! air=", mPoints.GetAirPressure(pointIndex), " deltaAir_Structural=", deltaAir_Structural,
+                                " pointAirLost=", pointAirLost, " -> ", mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost);
+                        }
+
                         mPoints.SetAirPressure(
                             pointIndex,
                             mPoints.GetAirPressure(pointIndex) + deltaAir_Structural);
@@ -2825,12 +2832,12 @@ void Ship::UpdatePressureAndWaterInflow(
             //
 
             // TODOTEST
-            if (pointIndex == 6864)
-            {
-                LogMessage("!!! pointAirLost=", pointAirLost, " -> ", mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost,
-                    (mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost > cumulatedOutflownAirPressureThresholdForAirBubbles)
-                    ? " BUBBLE!" : "");
-            }
+            //if (pointIndex == 6864)
+            //{
+            //    LogMessage("!!! pointAirLost=", pointAirLost, " -> ", mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost,
+            //        (mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost > cumulatedOutflownAirPressureThresholdForAirBubbles)
+            //        ? " BUBBLE!" : "");
+            //}
 
             float newPointCumulatedOutflownAirPressure = mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost;
             if (newPointCumulatedOutflownAirPressure > cumulatedOutflownAirPressureThresholdForAirBubbles)

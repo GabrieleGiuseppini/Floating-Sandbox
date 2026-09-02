@@ -2996,13 +2996,29 @@
 					= Nail down density for air bubbles from funnels
 						+ Should we only count air lost, and not update cumulated with gained
 						- Redesign:
-							- Option 1:
-								- Density between 0.0 and 1.0
+							= Pre: study distribution of losses
+
+							- Option 1: air lost is capped (not down-multiplied)
+								! More physical, considering speed of sound limit
+								- Reasonable cap seems 1.0
+									- Adjust with intake, TODO formula
+									- Cap both in-take and out-take
+								- Then, option 2
+
+							- Option 2: we only count air lost when underwater; we let it cumulate and outflow each time taking out a threshold
+								! Reasonable threshold values seems 1.0
+								- Rename: "air lost underwater"
+								- Count only when deep
+								- Effective threshold: between TODO
+								- Density setting range: TODO
 								- Density*magic gives threshold
 									- Magic start value: 1.0
-								- 1.1: After threshold, keep just fractional part
-								- 1.2: After threshold, remove just one threshold when over -- causes lots of bubbles when a lot is lost, might give troubles if a lot is lost
-							- Option 2: should lower default air intake, so that we have more chances to spawn bubble
+								- 1.1: After threshold, remove just one threshold when over
+									! After all we only count air lost when underwater
+									- We'll let the cumulated keep throwing bubbles under exhausted
+								- 1.2: After threshold, keep just fractional part
+							- Option 3: no cumulation; bubbles are lost each time at least an X quantity of water is lost when underwater
+							- Option 4: should lower default air intake, so that we have more chances to spawn bubble
 							- Scorecard:
 								- Shoot:
 								- Flood test:
@@ -3013,6 +3029,11 @@
 
 				- Redesign water pressure calcn's to a) simplify, and b) take rain into account
 					! Should be independent from water density
+						- Water buffer is in "Current" density - we assume WaterDensity changes applies to all water instantaneously, including that already entered,
+						  so for Bernoulli we'd calc real pressure using "Current" density, and water density using "Current" density
+							- TODO: but in reality, height of column of water depends on water density - and in our case it would not be
+								- That's because we lie with air: our air pressure already takes into account water density
+					- TODO: what about _air_ density?
 
 				- Water pump
 
