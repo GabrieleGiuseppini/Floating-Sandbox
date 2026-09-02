@@ -30,6 +30,7 @@ ScalarTimeSeriesProbeControl<TElement...>::ScalarTimeSeriesProbeControl(
     , mWidth(width)
     , mBufferedDCBitmap()
     , mTimeSeriesPens(pens)
+    , mLabelColors(MakeDarkerColors(pens))
     , mGridPen(wxColor(0xa0, 0xa0, 0xa0), 1, wxPENSTYLE_SOLID)
 {
     SetMinSize(wxSize(width, Height));
@@ -224,7 +225,7 @@ void ScalarTimeSeriesProbeControl<TElement...>::DrawChart(wxDC& dc)
     ss << currentValue << " (" << std::get<IElement>(mMaxValues) << ")";
 
     wxString labelText(ss.str());
-    dc.SetTextForeground(std::get<IElement>(mTimeSeriesPens).GetColour());
+    dc.SetTextForeground(std::get<IElement>(mLabelColors));
     dc.DrawText(labelText, 0, 1 + 9 * static_cast<int>(IElement));
 }
 

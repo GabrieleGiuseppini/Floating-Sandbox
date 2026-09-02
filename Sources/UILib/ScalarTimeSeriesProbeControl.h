@@ -41,6 +41,7 @@ public:
     using ValueTuple = std::tuple<TElement...>;
 
     using PenTuple = typename change_tuple_element_type<wxPen, ValueTuple>::type;
+    using ColorTuple = typename change_tuple_element_type<wxColor, ValueTuple>::type;
 
     ScalarTimeSeriesProbeControl(
         wxWindow * parent,
@@ -80,6 +81,17 @@ private:
     }
 
     template<size_t... Is>
+    static ColorTuple MakeDarkerColors(PenTuple const & t, std::integer_sequence<size_t, Is...>)
+    {
+        return ColorTuple{ std::get<Is>(t).GetColour().ChangeLightness(50)...};
+    }
+
+    static ColorTuple MakeDarkerColors(PenTuple const & t)
+    {
+        return MakeDarkerColors(t, std::make_index_sequence<sizeof...(TElement)>{});
+    }
+
+    template<size_t... Is>
     static ValueTuple Min(ValueTuple const & t1, ValueTuple const & t2, std::integer_sequence<size_t, Is...>)
     {
         return ValueTuple{ std::min(std::get<Is>(t1), std::get<Is>(t2))... };
@@ -109,7 +121,8 @@ private:
     int const mWidth;
 
     std::unique_ptr<wxBitmap> mBufferedDCBitmap;
-    PenTuple mTimeSeriesPens;
+    PenTuple const mTimeSeriesPens;
+    ColorTuple const mLabelColors;
     wxPen mGridPen;
 
     ValueTuple mMaxValues;

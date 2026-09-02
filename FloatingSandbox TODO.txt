@@ -2983,8 +2983,8 @@
 							+ Fix label flicker (account for minus)
 							+ ProbePanel::MakeProbe<>: std::fwd args
 								+ Then takes pens in cctor
-							- Darker label
-								- Create tuple of colors when pens are created
+							+ Darker label
+								+ Create tuple of colors when pens are created
 							- Zero axes for each
 								- Create tuple of pens when pens are created
 				= Air Bubbles
