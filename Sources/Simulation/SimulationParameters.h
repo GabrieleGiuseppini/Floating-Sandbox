@@ -341,7 +341,7 @@ struct SimulationParameters
 
     static float constexpr AirBubblesDensityToCumulatedOutflownAirPressure(float airBubblesDensity)
     {
-        return 128.0f - airBubblesDensity;
+        return MaxAirBubblesDensity - airBubblesDensity;
     }
 
     bool DoGenerateEngineWakeParticles;

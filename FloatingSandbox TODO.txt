@@ -2962,6 +2962,7 @@
 							+ Obliquity: OK
 						+ Adjust shader comment to say we leave it overflow
 					- Experiment with different cubic root vals
+					- Nail down default for water lod
 					
 			+ Run in debug (exercise assert's)
 
@@ -2992,10 +2993,27 @@
 				= Air Bubbles
 					+ Rename cumulation members
 					+ Bubble contribution proportional _only_ to air pressure that left point
-					- See if need to clamp lost air to positive
-						- What did we do before?
-					- Note that now we increase pressure lost also when above ground, but that shouldn't result in bubbles
-						- Decide: count anyway and no spawn, or no count
+					= Nail down density for air bubbles from funnels
+						+ Should we only count air lost, and not update cumulated with gained
+						- Redesign:
+							- Option 1:
+								- Density between 0.0 and 1.0
+								- Density*magic gives threshold
+									- Magic start value: 1.0
+								- 1.1: After threshold, keep just fractional part
+								- 1.2: After threshold, remove just one threshold when over -- causes lots of bubbles when a lot is lost, might give troubles if a lot is lost
+							- Option 2: should lower default air intake, so that we have more chances to spawn bubble
+							- Scorecard:
+								- Shoot:
+								- Flood test:
+								- Default ship:
+
+						- Remove test log
+						- If we change bubble density scale, GameController::setter should clamp
+
+				- Redesign water pressure calcn's to a) simplify, and b) take rain into account
+					! Should be independent from water density
+
 				- Water pump
 
 				- Rain
@@ -3008,7 +3026,7 @@
 							- Air
 					- Points.h: commented-out GetCumulatedOutflownAirPressure
 
-			= Settings plan:
+			+ Settings plan:
 				+ Intake adjust - water & air
 					+ SimParams & GC
 					+ SettingsDialog
@@ -3024,11 +3042,11 @@
 					+ Use Water
 					+ Use Air
 					+ Test
-				= Air pressure feedback on water
+				+ Air pressure feedback on water
 					+ SimParams & GC
 					+ SettingsDialog
-					- Use
-					- Test
+					+ Use
+					+ Test
 				+ (*) # of water iters
 					+ SimParams & GC
 					+ SettingsDialog
@@ -3038,7 +3056,7 @@
 				+ Remove:
 					+ Crazyness
 
-			- Nail down default for water lod
+			----- Time for nailing down constants?
 
 			- Interact with air velocity @
 				- Blasts

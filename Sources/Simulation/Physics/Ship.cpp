@@ -2712,7 +2712,7 @@ void Ship::UpdatePressureAndWaterInflow(
 
                     // External air pressure in equivalent water height
                     float const externalAirPressure = (pointDepth >= 0.0f)
-                        ? 0.0f // Device to force all air to be espelled when underwater
+                        ? 0.0f // Device to force all air to be expelled when underwater
                         : Formulae::PressureToEquivalentWaterHeight(
                             Formulae::CalculateAirColumnPressureAt(
                                 mPoints.GetPosition(pointIndex).y,
@@ -2738,13 +2738,18 @@ void Ship::UpdatePressureAndWaterInflow(
 
                             // Make sure we don't over-drain the point
                             deltaAir_Structural = std::max(-mPoints.GetAirPressure(pointIndex), deltaAir_Structural);
+
+                            // Count lost air for air bubbles
+                            //
+                            // Note: we don't offset with air gained, as that would cumulate a lot and never cause bubbles.
+                            // Note: we might cumulate lost even when not underwater; fine, we'll shoot bubbles immediately
+                            // once we get underwater.
+                            pointAirLost += -deltaAir_Structural;
                         }
 
                         mPoints.SetAirPressure(
                             pointIndex,
                             mPoints.GetAirPressure(pointIndex) + deltaAir_Structural);
-
-                        pointAirLost += -deltaAir_Structural;
 
                         // Update measured air intake
                         //
@@ -2819,13 +2824,22 @@ void Ship::UpdatePressureAndWaterInflow(
             // 5) Check if it's time to produce air bubbles
             //
 
+            // TODOTEST
+            if (pointIndex == 6864)
+            {
+                LogMessage("!!! pointAirLost=", pointAirLost, " -> ", mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost,
+                    (mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost > cumulatedOutflownAirPressureThresholdForAirBubbles)
+                    ? " BUBBLE!" : "");
+            }
+
             float newPointCumulatedOutflownAirPressure = mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost;
             if (newPointCumulatedOutflownAirPressure > cumulatedOutflownAirPressureThresholdForAirBubbles)
             {
-                // Generate air bubbles - but not on ropes as that looks awful
+                // Generate air bubbles - but not on ropes as that looks awful,
+                // and only when underwater
                 if (doGenerateAirBubbles
                     && !mPoints.IsRope(pointIndex)
-                    && pointDepth >= 0.0f) // TODOHERE: see notes on pressure lost / underwater
+                    && pointDepth > 0.0f)
                 {
                     InternalSpawnAirBubble(
                         mPoints.GetPosition(pointIndex),
@@ -4490,8 +4504,8 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
                 // TODOTEST: NEW (with air pressure, upness, and downness), and no delta-pressure against wall
                 float const dw = (
-                    (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex] * springDownness)
-                    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness)
+                    (oldPointWaterBufferData[pointIndex] + oldPointAirPressureBufferData[pointIndex] * springDownness * simulationParameters.AirPressureFeedbackOnWater)
+                    - (oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointAirPressureBufferData[cs.OtherEndpointIndex] * springUpness * simulationParameters.AirPressureFeedbackOnWater)
                     ) * mSprings.GetWaterPermeability(cs.SpringIndex); // Enforce no delta-pressure with (dry) wall
 
                 // Gravity potential difference (positive implies point -> other endpoint flow)

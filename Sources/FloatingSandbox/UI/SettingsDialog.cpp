@@ -1340,7 +1340,7 @@ void SettingsDialog::PopulateWaterAndPressurePanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     _("Air Pressure Feedback"),
-                    _("Adjusts the degree to which air exerts pressure against water."),
+                    _("Adjusts the degree to which air exerts pressure against water. Set to zero to disable completely \"air pocket\" effects."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::AirPressureFeedbackOnWater, value);
