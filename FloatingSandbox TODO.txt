@@ -2974,9 +2974,9 @@
 					+ Leaves all if underwater
 					+ Enters iff above-water and (air/total) pressure outside > air pressure inside
 					- Use SimulationParameters::AirIntakeAdjustment
-					= Keep track of air inflow
+					+ Keep track of air inflow
 						+ We call it inflow, so keep count of _incoming_ air
-						= Make ScalarTimeSeriesProbeControl templated on tuple<float, ...>
+						+ Make ScalarTimeSeriesProbeControl templated on tuple<float, ...>
 							+ https://stackoverflow.com/questions/61112088/transform-tuple-type-to-another-tuple-type
 							+ https://www.cppstories.com/2022/tuple-iteration-apply/
 							+ cctor takes tuple of colors
@@ -2985,8 +2985,8 @@
 								+ Then takes pens in cctor
 							+ Darker label
 								+ Create tuple of colors when pens are created
-							- Zero axes for each
-								- Create tuple of pens when pens are created
+							+ Zero axes for each
+								+ Create tuple of pens when pens are created
 				= Air Bubbles
 					+ Rename cumulation members
 					+ Bubble contribution proportional _only_ to air pressure that left point

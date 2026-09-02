@@ -35,7 +35,8 @@ ProbePanel::ProbePanel(wxWindow* parent)
     mPressureIntakeProbe = AddProbe<ScalarTimeSeriesProbeControl<float, float>>(
         _("Pressure Inflow"),
         150,
-        std::make_tuple(wxPen(wxColor("BLUE"), 2, wxPENSTYLE_SOLID), wxPen(wxColor("PLUM"), 2, wxPENSTYLE_SOLID)));
+        std::make_tuple(wxPen(wxColor("BLUE"), 2, wxPENSTYLE_SOLID), wxPen(wxColor("PLUM"), 2, wxPENSTYLE_SOLID)),
+        ScalarTimeSeriesProbeControlOptions::ZeroLine);
 
     mWindSpeedProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Wind Speed"), 120, std::make_tuple(defaultPen));
 

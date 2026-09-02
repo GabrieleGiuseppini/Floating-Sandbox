@@ -6,6 +6,7 @@
 #pragma once
 
 #include <Core/CircularList.h>
+#include <Core/EnumFlags.h>
 
 #include <wx/wx.h>
 
@@ -33,6 +34,17 @@ struct change_tuple_element_type<TNewElement, std::tuple<TSourceElement...>>
 /*
  * Multi-series time-based graph; performs scroll automatically.
  */
+
+enum class ScalarTimeSeriesProbeControlOptions
+{
+    None = 0,
+    ZeroLine = 1
+};
+
+template <> struct is_flag<ScalarTimeSeriesProbeControlOptions> : std::true_type {
+};
+
+
 template<typename...TElement>
 class ScalarTimeSeriesProbeControl : public wxPanel
 {
@@ -46,7 +58,19 @@ public:
     ScalarTimeSeriesProbeControl(
         wxWindow * parent,
         int width,
-        PenTuple pens);
+        PenTuple pens)
+        : ScalarTimeSeriesProbeControl(
+            parent,
+            width,
+            pens,
+            ScalarTimeSeriesProbeControlOptions::None)
+    { }
+
+    ScalarTimeSeriesProbeControl(
+        wxWindow * parent,
+        int width,
+        PenTuple pens,
+        ScalarTimeSeriesProbeControlOptions flags);
 
     virtual ~ScalarTimeSeriesProbeControl() = default;
 
@@ -75,20 +99,36 @@ private:
 
     // Tuple kung-fu
 
-    static ValueTuple InitTuple(float initValue)
-    {
-        return ValueTuple{ TElement(initValue)... };
-    }
-
     template<size_t... Is>
     static ColorTuple MakeDarkerColors(PenTuple const & t, std::integer_sequence<size_t, Is...>)
     {
-        return ColorTuple{ std::get<Is>(t).GetColour().ChangeLightness(50)...};
+        return ColorTuple{ std::get<Is>(t).GetColour().ChangeLightness(50)... };
     }
 
     static ColorTuple MakeDarkerColors(PenTuple const & t)
     {
         return MakeDarkerColors(t, std::make_index_sequence<sizeof...(TElement)>{});
+    }
+
+    static wxPen MakeZeroLinePen(wxPen const & pen)
+    {
+        return wxPen(pen.GetColour(), 1, wxPENSTYLE_SHORT_DASH);
+    }
+
+    template<size_t... Is>
+    static PenTuple MakeZeroLinePens(PenTuple const & t, std::integer_sequence<size_t, Is...>)
+    {
+        return PenTuple{ MakeZeroLinePen(std::get<Is>(t))... };
+    }
+
+    static PenTuple MakeZeroLinePens(PenTuple const & t)
+    {
+        return MakeZeroLinePens(t, std::make_index_sequence<sizeof...(TElement)>{});
+    }
+
+    static ValueTuple InitTuple(float initValue)
+    {
+        return ValueTuple{ TElement(initValue)... };
     }
 
     template<size_t... Is>
@@ -116,6 +156,9 @@ private:
     template<size_t IElement>
     int MapValueToY(ValueTuple const & t) const;
 
+    template<size_t IElement>
+    int MapValueToY(float value) const;
+
 private:
 
     int const mWidth;
@@ -123,7 +166,9 @@ private:
     std::unique_ptr<wxBitmap> mBufferedDCBitmap;
     PenTuple const mTimeSeriesPens;
     ColorTuple const mLabelColors;
-    wxPen mGridPen;
+    PenTuple const mZeroLinePens;
+    wxPen const mGridPen;
+    ScalarTimeSeriesProbeControlOptions const mFlags;
 
     ValueTuple mMaxValues;
     ValueTuple mMinValues;

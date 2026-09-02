@@ -20,7 +20,8 @@ template<typename...TElement>
 ScalarTimeSeriesProbeControl<TElement...>::ScalarTimeSeriesProbeControl(
     wxWindow * parent,
     int width,
-    PenTuple pens)
+    PenTuple pens,
+    ScalarTimeSeriesProbeControlOptions flags)
     : wxPanel(
         parent,
         wxID_ANY,
@@ -31,7 +32,9 @@ ScalarTimeSeriesProbeControl<TElement...>::ScalarTimeSeriesProbeControl(
     , mBufferedDCBitmap()
     , mTimeSeriesPens(pens)
     , mLabelColors(MakeDarkerColors(pens))
+    , mZeroLinePens(MakeZeroLinePens(pens))
     , mGridPen(wxColor(0xa0, 0xa0, 0xa0), 1, wxPENSTYLE_SOLID)
+    , mFlags(flags)
 {
     SetMinSize(wxSize(width, Height));
     SetMaxSize(wxSize(width, Height));
@@ -179,6 +182,18 @@ template<typename...TElement>
 template<size_t IElement>
 void ScalarTimeSeriesProbeControl<TElement...>::DrawChart(wxDC& dc)
 {
+    // Zero line
+
+    if ((mFlags & ScalarTimeSeriesProbeControlOptions::ZeroLine) != ScalarTimeSeriesProbeControlOptions::None)
+    {
+        dc.SetPen(std::get<IElement>(mZeroLinePens));
+
+        int zeroY = MapValueToY<IElement>(0.0f);
+        dc.DrawLine(1, zeroY, mWidth - 1, zeroY);
+    }
+
+    // Chart
+
     dc.SetPen(std::get<IElement>(mTimeSeriesPens));
 
     auto it = mSamples.cbegin();
@@ -233,10 +248,17 @@ template<typename...TElement>
 template<size_t IElement>
 int ScalarTimeSeriesProbeControl<TElement...>::MapValueToY(ValueTuple const & t) const
 {
+    return MapValueToY<IElement>(std::get<IElement>(t));
+}
+
+template<typename...TElement>
+template<size_t IElement>
+int ScalarTimeSeriesProbeControl<TElement...>::MapValueToY(float value) const
+{
     if (std::get<IElement>(mMaxValues) == std::get<IElement>(mMinValues))
         return Height / 2;
 
-    float y = static_cast<float>(Height - 4) * (std::get<IElement>(t) - std::get<IElement>(mMinValues)) / (std::get<IElement>(mMaxValues) - std::get<IElement>(mMinValues));
+    float y = static_cast<float>(Height - 4) * (value - std::get<IElement>(mMinValues)) / (std::get<IElement>(mMaxValues) - std::get<IElement>(mMinValues));
     return Height - 3 - static_cast<int>(round(y));
 }
 
