@@ -2665,8 +2665,7 @@ void Ship::UpdatePressureAndWaterInflow(
                     float deltaWater_Structural =
                         incomingWaterVelocity_Structural
                         * SimulationParameters::SimulationStepTimeDuration<float>
-                        // TODOTEST
-                        //* mPoints.GetMaterialWaterIntake(pointIndex)
+                        * mPoints.GetMaterialWaterIntake(pointIndex)
                         * simulationParameters.WaterIntakeAdjustment;
 
                     //
@@ -2729,17 +2728,23 @@ void Ship::UpdatePressureAndWaterInflow(
                     {
                         // Assuming that external pressure is an infinite reservoir,
                         // we converge internal pressure to the external
-                        // See TODO for rate here
-                        float const newAirPressure = externalAirPressure;
+                        float deltaAir_Structural = // Gained
+                            (externalAirPressure - mPoints.GetAirPressure(pointIndex))
+                            * simulationParameters.AirIntakeAdjustment;
 
-                        // Air lost
-                        float const deltaAir_Structural = mPoints.GetAirPressure(pointIndex) - newAirPressure;
+                        if (deltaAir_Structural < 0.0f)
+                        {
+                            // Outgoing air
+
+                            // Make sure we don't over-drain the point
+                            deltaAir_Structural = std::max(-mPoints.GetAirPressure(pointIndex), deltaAir_Structural);
+                        }
 
                         mPoints.SetAirPressure(
                             pointIndex,
-                            newAirPressure);
+                            mPoints.GetAirPressure(pointIndex) + deltaAir_Structural);
 
-                        pointAirLost += deltaAir_Structural;
+                        pointAirLost += -deltaAir_Structural;
 
                         // Update measured air intake
                         //
@@ -2749,7 +2754,7 @@ void Ship::UpdatePressureAndWaterInflow(
                         if (!mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty() // Note that leaking points have no connected triangles
                             && !mPoints.IsRope(pointIndex))
                         {
-                            totalAirIntakeMeasured += -deltaAir_Structural;
+                            totalAirIntakeMeasured += deltaAir_Structural;
                         }
                     }
                 }

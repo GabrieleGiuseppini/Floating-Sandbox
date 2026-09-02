@@ -206,7 +206,7 @@ struct SimulationParameters
 
     float AirIntakeAdjustment;
     static float constexpr MinAirIntakeAdjustment = 0.001f;
-    static float constexpr MaxAirIntakeAdjustment = 10.0f;
+    static float constexpr MaxAirIntakeAdjustment = 2.0f;
 
     float WaterDiffusionSpeedAdjustment;
     static float constexpr MinWaterDiffusionSpeedAdjustment = 0.001f;
