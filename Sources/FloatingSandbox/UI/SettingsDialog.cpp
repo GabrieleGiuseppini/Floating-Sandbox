@@ -2517,8 +2517,9 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                         this->mLiveSettings.SetValue(GameSettings::AirBubblesDensity, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<LinearSliderCore>(
+                    std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions.GetMinAirBubblesDensity(),
+                        1.0f,
                         mGameControllerSettingsOptions.GetMaxAirBubblesDensity()));
 
                 airSizer->Add(

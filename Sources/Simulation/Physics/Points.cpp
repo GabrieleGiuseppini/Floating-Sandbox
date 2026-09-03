@@ -81,7 +81,7 @@ void Points::Add(
     mAirPressureVelocityBuffer.emplace_back(vec2f::zero());
     mAirPressureMomentumBuffer.emplace_back(vec2f::zero());
 
-    mCumulatedOutflownAirPressure.emplace_back(0.0f);
+    mCumulatedOutflownUnderwaterAirPressure.emplace_back(0.0f);
     mLeakingCompositeBuffer.emplace_back(LeakingComposite(isStructurallyLeaking));
     if (isStructurallyLeaking)
         SetStructurallyLeaking(pointIndex);
@@ -1139,20 +1139,20 @@ void Points::UpdateForSimulationParameters(SimulationParameters const & simulati
         mCurrentKineticFrictionAdjustment = kineticFrictionAdjustment;
     }
 
-    float const cumulatedOutflownAirPressureThresholdForAirBubbles = SimulationParameters::AirBubblesDensityToCumulatedOutflownAirPressure(simulationParameters.AirBubblesDensity);
-    if (cumulatedOutflownAirPressureThresholdForAirBubbles != mCurrentCumulatedOutflownAirPressureThresholdForAirBubbles)
+    float const cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles = SimulationParameters::AirBubblesDensityToCumulatedOutflownUnderwaterAirPressure(simulationParameters.AirBubblesDensity);
+    if (cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles != mCurrentCumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles)
     {
         // Randomize cumulated water intaken for each leaking point
         for (ElementIndex i : RawShipPoints())
         {
             if (GetLeakingComposite(i).IsCumulativelyLeaking)
             {
-                mCumulatedOutflownAirPressure[i] = RandomizeCumulatedOutflownAirPressure(cumulatedOutflownAirPressureThresholdForAirBubbles);
+                mCumulatedOutflownUnderwaterAirPressure[i] = RandomizeCumulatedOutflownUnderwaterAirPressure(cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles);
             }
         }
 
         // Remember the new value
-        mCurrentCumulatedOutflownAirPressureThresholdForAirBubbles = cumulatedOutflownAirPressureThresholdForAirBubbles;
+        mCurrentCumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles = cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles;
     }
 
     float const combustionSpeedAdjustment = simulationParameters.CombustionSpeedAdjustment;
@@ -2569,9 +2569,9 @@ void Points::UploadEphemeralParticles(
 
                     // Calculate scale based on lifetime
                     float const scaleMax = state.FinalScale;
-                    float const scaleMin = state.FinalScale / 5.0f;
+                    float const scaleMin = state.FinalScale / 4.0f;
                     float const scale =
-                        scaleMin + (scaleMax - scaleMin) * LinearStep(0.0f, 4.0f, state.SimulationLifetime);
+                        scaleMin + (scaleMax - scaleMin) * LinearStep(0.0f, 6.0f, state.SimulationLifetime);
 
                     shipRenderContext.UploadAirBubble(
                         mPlaneIdFloatBuffer[pointIndex],

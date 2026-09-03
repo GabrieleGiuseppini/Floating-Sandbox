@@ -2995,30 +2995,55 @@
 					+ Bubble contribution proportional _only_ to air pressure that left point
 					= Nail down density for air bubbles from funnels
 						+ Should we only count air lost, and not update cumulated with gained
-						- Redesign:
-							= Pre: study distribution of losses
+						= Redesign:
+							+ Pre: study distribution of losses
 
-							- Option 1: air lost is capped (not down-multiplied)
+							+ 1: air lost is capped (not down-multiplied)
 								! More physical, considering speed of sound limit
-								- Reasonable cap seems 1.0
-									- Adjust with intake, TODO formula
-									- Cap both in-take and out-take
-								- Then, option 2
+								+ Reasonable cap seems 1.0
+									+ Adjust with intake:
+										+ Cap: 1.0 * AirIntakeAdjustment
+										+ Intake range: 0.0-10.0
+									+ Cap both in-take and out-take
+								+ Test intake cap
+									+ Shoot:
+									+ Flood test:
+							= 2:
+								= Option 1: we only count air lost when underwater; we let it cumulate and outflow each time taking out a threshold
+									! Reasonable threshold values seems 1.0
+									+ Rename: "air lost underwater"
+									+ Count only when deep
+									+ Effective threshold: between 0.1 and +INF
+									+ Density setting range: 0.0 - 10.0
+									+ f(Density) gives threshold
+										+ Add (replace) function for threshold to SimulationParameters
+											- Threshold = 
+												d=0.0	t=+INF
+												d=1.0	t=1.0 [magic start value]
+												d=10.0	t=0.1
+												t = magic / density
+										+ Use it @ Points
+									+ 1.1: After threshold, remove just one threshold when over
+										! After all we only count air lost when underwater
+										+ We'll let the cumulated keep throwing bubbles until exhausted
+									+ Try:
+										+ Threshold=5-10 -> d=0.1-0.2
+										+ if delta > 0.1: add 1.0
+										+ else: add delta
+										+ Remove whole threshold
+											+ Actually, zeroing should be enough, given that we inctrment by 1.0?
 
-							- Option 2: we only count air lost when underwater; we let it cumulate and outflow each time taking out a threshold
-								! Reasonable threshold values seems 1.0
-								- Rename: "air lost underwater"
-								- Count only when deep
-								- Effective threshold: between TODO
-								- Density setting range: TODO
-								- Density*magic gives threshold
-									- Magic start value: 1.0
-								- 1.1: After threshold, remove just one threshold when over
-									! After all we only count air lost when underwater
-									- We'll let the cumulated keep throwing bubbles under exhausted
-								- 1.2: After threshold, keep just fractional part
-							- Option 3: no cumulation; bubbles are lost each time at least an X quantity of water is lost when underwater
-							- Option 4: should lower default air intake, so that we have more chances to spawn bubble
+										+ d=0.2: GOOD (threshold = 5.0)
+									- Cleanup
+
+
+								- Option 2: no cumulation; bubbles are lost each time at least an X quantity of water is lost when underwater
+								- Option 3: should lower default air intake, so that we have more chances to spawn bubble
+
+								- Finalize bubbles density range (depends on magic)
+									- Test 0
+								- Avoid calc'n of threshold at Points, use new "current air bubbles density" member (next to calc'd value obviously)
+							
 							- Scorecard:
 								- Shoot:
 								- Flood test:
@@ -3031,8 +3056,12 @@
 					! Should be independent from water density
 						- Water buffer is in "Current" density - we assume WaterDensity changes applies to all water instantaneously, including that already entered,
 						  so for Bernoulli we'd calc real pressure using "Current" density, and water density using "Current" density
-							- TODO: but in reality, height of column of water depends on water density - and in our case it would not be
-								- That's because we lie with air: our air pressure already takes into account water density
+							- But in reality, height of column of water depends on water density - and in our case it would not be
+								! That's because we lie with air: our air pressure already takes into account water density
+								- Air pressure during diffusion should take into account effective water density and scale air pressure accordingly (likely via a simple ratio)
+									- Also affects pressure reading in Pa, see (*) Physics Probe
+									- Write formula for internal pressure to Pa, and then derive from it adjustments necessary @ water diffusion to take
+									  into account effective water density (and air density)
 					- TODO: what about _air_ density?
 
 				- Water pump
@@ -3104,15 +3133,15 @@
 				- Could use presence of air as replacement of freeness?
 			- Air Pressure <-> forces on "walls"
 				- We've changed unit of pressure, hence current math is invalid!
-				- Do we do it where we currently use InternalPressure, or do we bounce
-				  @ UpdateWaterAndAirPressure?
+				- Do we do it where we currently use InternalPressure, or do we bounce @ UpdateWaterAndAirPressure?
 					- Depending on answer: need to nail down diffusion in hull
 				- Option 1:
 					- One step (replacement of old "InternalPressure") sets all hull points to avg of their points
 						- TODO: should the looked at points also include hull points? If not can't propagate
 
 				- Test Inflatable Balloon
-			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure
+			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure 
+				- BUT: conversion to Pa requires plugging-in correct densities (*)
 			- Tools:
 				- Flood, Internal Pressure:
 					- First off, rename: "Internal Pressure" -> "Air Pressure"

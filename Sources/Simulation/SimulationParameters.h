@@ -206,7 +206,7 @@ struct SimulationParameters
 
     float AirIntakeAdjustment;
     static float constexpr MinAirIntakeAdjustment = 0.001f;
-    static float constexpr MaxAirIntakeAdjustment = 2.0f;
+    static float constexpr MaxAirIntakeAdjustment = 10.0f;
 
     float WaterDiffusionSpeedAdjustment;
     static float constexpr MinWaterDiffusionSpeedAdjustment = 0.001f;
@@ -337,11 +337,14 @@ struct SimulationParameters
 
     float AirBubblesDensity;
     static float constexpr MinAirBubblesDensity = 0.0f;
-    static float constexpr MaxAirBubblesDensity = 128.0f;
+    static float constexpr MaxAirBubblesDensity = 10.0f;
 
-    static float constexpr AirBubblesDensityToCumulatedOutflownAirPressure(float airBubblesDensity)
+    static float constexpr AirBubblesDensityToCumulatedOutflownUnderwaterAirPressure(float airBubblesDensity)
     {
-        return MaxAirBubblesDensity - airBubblesDensity;
+        float constexpr ThresholdAtDensity1 = 5.0f;
+        return (airBubblesDensity == 0.0f)
+            ? std::numeric_limits<float>::max()
+            : ThresholdAtDensity1 / airBubblesDensity;
     }
 
     bool DoGenerateEngineWakeParticles;

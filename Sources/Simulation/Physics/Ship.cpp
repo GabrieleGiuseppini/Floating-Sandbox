@@ -2548,8 +2548,8 @@ void Ship::UpdatePressureAndWaterInflow(
 
     bool const doGenerateAirBubbles = (simulationParameters.AirBubblesDensity != 0.0f);
 
-    float const cumulatedOutflownAirPressureThresholdForAirBubbles =
-        SimulationParameters::AirBubblesDensityToCumulatedOutflownAirPressure(simulationParameters.AirBubblesDensity);
+    float const cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles =
+        SimulationParameters::AirBubblesDensityToCumulatedOutflownUnderwaterAirPressure(simulationParameters.AirBubblesDensity);
 
     for (auto pointIndex : mPoints.RawShipPoints())
     {
@@ -2574,9 +2574,6 @@ void Ship::UpdatePressureAndWaterInflow(
 
             // Internal water height
             float const internalWaterHeight = mPoints.GetWater(pointIndex);
-
-            // Air left at this point
-            float pointAirLost = 0.0f;
 
             if (pointCompositeLeaking.LeakingSources.StructuralLeak != 0.0f)
             {
@@ -2723,40 +2720,59 @@ void Ship::UpdatePressureAndWaterInflow(
                     // Internal pressure in equivalent water height
                     float const internalAirPressure = mPoints.GetAirPressure(pointIndex);
 
+                    // Check conditions for air pressure moving:
+                    //  - Internal >= External (above or below water), or:
+                    //  - Internal < External AND above water (or else air can't flow in)
                     if (internalAirPressure >= externalAirPressure // Always if underwater
                         || pointDepth < 0.0f) // Air can only come in if there's air outside
                     {
                         // Assuming that external pressure is an infinite reservoir,
-                        // we converge internal pressure to the external
-                        float deltaAir_Structural = // Gained
-                            (externalAirPressure - mPoints.GetAirPressure(pointIndex))
+                        // we converge internal pressure to the external,
+                        // but we cap it to simulate physical limit to air moved (i.e. Mach 1)
+                        //
+                        // My calculations tell me that P escaped is P * Mach1 * dt (i.e. 5.36),
+                        // but we use 1.0
+
+                        float const deltaAirCap =
+                            1.0f // Magic
                             * simulationParameters.AirIntakeAdjustment;
 
-                        if (deltaAir_Structural < 0.0f)
+                        float const deltaAirGained = Clamp(
+                            externalAirPressure - mPoints.GetAirPressure(pointIndex),
+                            std::max(-deltaAirCap, -mPoints.GetAirPressure(pointIndex)), // Don't overdrain the point - if draining (<0)
+                            deltaAirCap);
+
+                        // TODOTEST
+                        if (pointIndex == 6864 && pointDepth > 0.0f)
                         {
-                            // Outgoing air
+                            LogMessage("!!! air=", mPoints.GetAirPressure(pointIndex), " external=", externalAirPressure, " deltaAirGained=", deltaAirGained);
+                        }
 
-                            // Make sure we don't over-drain the point
-                            deltaAir_Structural = std::max(-mPoints.GetAirPressure(pointIndex), deltaAir_Structural);
+                        mPoints.SetAirPressure(
+                            pointIndex,
+                            mPoints.GetAirPressure(pointIndex) + deltaAirGained);
 
-                            // Count lost air for air bubbles
-                            //
-                            // Note: we don't offset with air gained, as that would cumulate a lot and never cause bubbles.
-                            // Note: we might cumulate lost even when not underwater; fine, we'll shoot bubbles immediately
-                            // once we get underwater.
-                            pointAirLost += -deltaAir_Structural;
+                        if (pointDepth > 0.0f && deltaAirGained < 0.0f)
+                        {
+                            // Update cumulative air lost underwater - for air bubbles
+
+                            // TODO: cleanup
+                            float const todo = (deltaAirGained < -0.01f)
+                                ? 1.0f
+                                : -deltaAirGained;
+
+                            mPoints.SetCumulatedOutflownUnderwaterAirPressure(
+                                pointIndex,
+                                mPoints.GetCumulatedOutflownUnderwaterAirPressure(pointIndex) + todo);
                         }
 
                         // TODOTEST
                         if (pointIndex == 6864 && pointDepth > 0.0f)
                         {
-                            LogMessage("!!! air=", mPoints.GetAirPressure(pointIndex), " deltaAir_Structural=", deltaAir_Structural,
-                                " pointAirLost=", pointAirLost, " -> ", mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost);
+                            LogMessage("    new air=", mPoints.GetAirPressure(pointIndex),
+                                " deltaCumulative=", std::max(-deltaAirGained, 0.0f), " -> ", mPoints.GetCumulatedOutflownUnderwaterAirPressure(pointIndex),
+                                " threshold=", cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles);
                         }
-
-                        mPoints.SetAirPressure(
-                            pointIndex,
-                            mPoints.GetAirPressure(pointIndex) + deltaAir_Structural);
 
                         // Update measured air intake
                         //
@@ -2766,7 +2782,7 @@ void Ship::UpdatePressureAndWaterInflow(
                         if (!mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty() // Note that leaking points have no connected triangles
                             && !mPoints.IsRope(pointIndex))
                         {
-                            totalAirIntakeMeasured += deltaAir_Structural;
+                            totalAirIntakeMeasured += deltaAirGained;
                         }
                     }
                 }
@@ -2839,8 +2855,8 @@ void Ship::UpdatePressureAndWaterInflow(
             //        ? " BUBBLE!" : "");
             //}
 
-            float newPointCumulatedOutflownAirPressure = mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost;
-            if (newPointCumulatedOutflownAirPressure > cumulatedOutflownAirPressureThresholdForAirBubbles)
+            auto const currentCumulatedOutflownUnderwaterAirPressure = mPoints.GetCumulatedOutflownUnderwaterAirPressure(pointIndex);
+            if (currentCumulatedOutflownUnderwaterAirPressure > cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles)
             {
                 // Generate air bubbles - but not on ropes as that looks awful,
                 // and only when underwater
@@ -2856,13 +2872,20 @@ void Ship::UpdatePressureAndWaterInflow(
                         mPoints.GetPlaneId(pointIndex),
                         currentSimulationTime,
                         simulationParameters);
+
+                    // Bubble emitted, consume one threshold quantum
+                    mPoints.SetCumulatedOutflownUnderwaterAirPressure(
+                        pointIndex,
+                        currentCumulatedOutflownUnderwaterAirPressure - cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles);
                 }
-
-                // Consume all cumulated air pressure lost
-                newPointCumulatedOutflownAirPressure = 0.0f;
+                else
+                {
+                    // No conditions for bubble, reset
+                    mPoints.SetCumulatedOutflownUnderwaterAirPressure(
+                        pointIndex,
+                        0.0f);
+                }
             }
-
-            mPoints.SetCumulatedOutflownAirPressure(pointIndex, newPointCumulatedOutflownAirPressure);
         }
     }
 
