@@ -2995,7 +2995,7 @@
 					+ Bubble contribution proportional _only_ to air pressure that left point
 					= Nail down density for air bubbles from funnels
 						+ Should we only count air lost, and not update cumulated with gained
-						= Redesign:
+						+ Redesign:
 							+ Pre: study distribution of losses
 
 							+ 1: air lost is capped (not down-multiplied)
@@ -3008,7 +3008,7 @@
 								+ Test intake cap
 									+ Shoot:
 									+ Flood test:
-							= 2:
+							+ 2:
 								! We only count air lost when underwater; we let it cumulate and outflow each time taking out a threshold
 								! Reasonable threshold values seems 1.0
 								+ Rename: "air lost underwater"
@@ -3038,21 +3038,20 @@
 									+ When smaller than epsilon, try adding 10x
 										+ min(that * 100, 1.0)
 								+ Cleanup code @ bubbles
-
 								X Try lowering air intake, for prolonged bubble action
 								+ Lower water displacement by bubbles
 								+ Finalize bubbles density range (depends on magic)
 									+ Test 0
+								+ Avoid calc'n of threshold at Points, use new "current air bubbles density" member (next to calc'd value obviously)							
+						+ Remove test log
 
-								- Avoid calc'n of threshold at Points, use new "current air bubbles density" member (next to calc'd value obviously)
-							
-							- Scorecard:
-								- Shoot:
-								- Flood test:
-								- Default ship:
+						- Change deser of AirBubblesDensity setting
+							- Version based
 
-						- Remove test log
-						- If we change bubble density scale, GameController::setter should clamp
+				- Scorecard:
+					- Shoot:
+					- Flood test:
+					- Default ship:
 
 				- Redesign water pressure calcn's to a) simplify, and b) take rain into account
 					! Should be independent from water density
@@ -3117,10 +3116,6 @@
 
 			----- Time for nailing down constants?
 
-			- Interact with air velocity @
-				- Blasts
-				- NPCs
-				- etc
 			- Temperature <-> Air Pressure
 				! Theoretically: each temperature change should change Air (pressure)
 				! In practice:
@@ -3130,17 +3125,29 @@
 						! During a simulation step:
 							! Interaction changes are made to TheoreticalAir
 							! Reads happen from EffectiveAir (assuming don't need immediately changes done in same step)
+								- TODO: do we really need many reads for air? If not, can just be local to WaterDiffusion
+									- As we will probably introduce "effective water" concept for density adjustments, and those will be local
 							! DiffusionSimulation:
 								! Theo->Effective (via T)
 								! Diffusion on Effective
 								! Effective->Theo
 									! And Effective stays for reading, exactly like WaterMomenta
+			- Water and Air density adjustments
+				- Depends on choices above at Ingress/Egress pressure formulas (*)
+					! i.e. choice of reference density for Water and Air
+				- Current thought: we multiply water and air read by precalc'd multipliers based on density ratios
+					- But could reuse temperature work above
+
+			- Interact with air velocity @
+				- Blasts
+				- NPCs
+				- etc
 			+ Finalize unit of AirPressure
 				+ Also @ Points buffer comment
 			- Water splash sounds (kinetic energy)
 				- Scale kinetic energy by # of iters?
 				- Could use presence of air as replacement of freeness?
-			- Air Pressure <-> forces on "walls"
+			- Air & Water Pressure <-> forces on "walls"
 				- We've changed unit of pressure, hence current math is invalid!
 				- Do we do it where we currently use InternalPressure, or do we bounce @ UpdateWaterAndAirPressure?
 					- Depending on answer: need to nail down diffusion in hull
