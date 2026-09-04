@@ -2742,36 +2742,21 @@ void Ship::UpdatePressureAndWaterInflow(
                             std::max(-deltaAirCap, -mPoints.GetAirPressure(pointIndex)), // Don't overdrain the point - if draining (<0)
                             deltaAirCap);
 
-                        // TODOTEST
-                        if (pointIndex == 6864 && pointDepth > 0.0f)
-                        {
-                            LogMessage("!!! air=", mPoints.GetAirPressure(pointIndex), " external=", externalAirPressure, " deltaAirGained=", deltaAirGained);
-                        }
-
                         mPoints.SetAirPressure(
                             pointIndex,
                             mPoints.GetAirPressure(pointIndex) + deltaAirGained);
 
+                        // Update cumulative air *lost* when *underwater* - for air bubbles
                         if (pointDepth > 0.0f && deltaAirGained < 0.0f)
                         {
-                            // Update cumulative air lost underwater - for air bubbles
-
-                            // TODO: cleanup
-                            float const todo = (deltaAirGained < -0.01f)
-                                ? 1.0f
-                                : -deltaAirGained;
+                            // Since the slope of air lost is exponential, scale it
+                            //  - >0.01: 1
+                            //  - else: *100
+                            float const outflownUnderwaterAir = std::min(-deltaAirGained * 100.0f, 1.0f);
 
                             mPoints.SetCumulatedOutflownUnderwaterAirPressure(
                                 pointIndex,
-                                mPoints.GetCumulatedOutflownUnderwaterAirPressure(pointIndex) + todo);
-                        }
-
-                        // TODOTEST
-                        if (pointIndex == 6864 && pointDepth > 0.0f)
-                        {
-                            LogMessage("    new air=", mPoints.GetAirPressure(pointIndex),
-                                " deltaCumulative=", std::max(-deltaAirGained, 0.0f), " -> ", mPoints.GetCumulatedOutflownUnderwaterAirPressure(pointIndex),
-                                " threshold=", cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles);
+                                mPoints.GetCumulatedOutflownUnderwaterAirPressure(pointIndex) + outflownUnderwaterAir);
                         }
 
                         // Update measured air intake
@@ -2846,14 +2831,6 @@ void Ship::UpdatePressureAndWaterInflow(
             //
             // 5) Check if it's time to produce air bubbles
             //
-
-            // TODOTEST
-            //if (pointIndex == 6864)
-            //{
-            //    LogMessage("!!! pointAirLost=", pointAirLost, " -> ", mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost,
-            //        (mPoints.GetCumulatedOutflownAirPressure(pointIndex) + pointAirLost > cumulatedOutflownAirPressureThresholdForAirBubbles)
-            //        ? " BUBBLE!" : "");
-            //}
 
             auto const currentCumulatedOutflownUnderwaterAirPressure = mPoints.GetCumulatedOutflownUnderwaterAirPressure(pointIndex);
             if (currentCumulatedOutflownUnderwaterAirPressure > cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles)

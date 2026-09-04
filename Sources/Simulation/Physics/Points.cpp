@@ -164,7 +164,7 @@ void Points::CreateEphemeralParticleAirBubble(
     assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
-    mVelocityBuffer[pointIndex] = vec2f::zero();
+    mVelocityBuffer[pointIndex] = vec2f::zero(); // Start with zero velocity
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
@@ -1961,10 +1961,12 @@ void Points::UpdateEphemeralParticles(
                             if (simulationParameters.DoDisplaceWater
                                 && depth < oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset)
                             {
+                                float constexpr DisplacementMagic = 1.0f; // Changed in 1.22.0 from 3.75, after pressure (and air bubble) redesign
+
                                 mParentWorld.DisplaceOceanSurfaceAt(
                                     GetPosition(pointIndex).x,
                                     // Magnitude is lower with depth and higher with scale
-                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - depth) * state.FinalScale * 3.75f); // Magic number
+                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - depth) * state.FinalScale * DisplacementMagic);
 
                                 mSimulationEventHandler.OnAirBubbleSurfaced(1);
                             }

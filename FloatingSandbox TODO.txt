@@ -2966,7 +2966,7 @@
 					
 			+ Run in debug (exercise assert's)
 
-			! Config: a_speed/w_speed=1.0/1.0; damp=1, bounce=1, squeeze=0.312, iters=2
+			! Config: a_speed/w_speed=1.0/1.0; damp=1, bounce=1, squeeze=0.312, iters=2; lod=0.734375
 
 			= Ingress/Egress and bubbles
 				+ Water: enters or leaves based on internal total pressure <-> total external pressure differential
@@ -3009,39 +3009,41 @@
 									+ Shoot:
 									+ Flood test:
 							= 2:
-								= Option 1: we only count air lost when underwater; we let it cumulate and outflow each time taking out a threshold
-									! Reasonable threshold values seems 1.0
-									+ Rename: "air lost underwater"
-									+ Count only when deep
-									+ Effective threshold: between 0.1 and +INF
-									+ Density setting range: 0.0 - 10.0
-									+ f(Density) gives threshold
-										+ Add (replace) function for threshold to SimulationParameters
-											- Threshold = 
-												d=0.0	t=+INF
-												d=1.0	t=1.0 [magic start value]
-												d=10.0	t=0.1
-												t = magic / density
-										+ Use it @ Points
-									+ 1.1: After threshold, remove just one threshold when over
-										! After all we only count air lost when underwater
-										+ We'll let the cumulated keep throwing bubbles until exhausted
-									+ Try:
-										+ Threshold=5-10 -> d=0.1-0.2
-										+ if delta > 0.1: add 1.0
-										+ else: add delta
-										+ Remove whole threshold
-											+ Actually, zeroing should be enough, given that we inctrment by 1.0?
+								! We only count air lost when underwater; we let it cumulate and outflow each time taking out a threshold
+								! Reasonable threshold values seems 1.0
+								+ Rename: "air lost underwater"
+								+ Count only when deep
+								+ Effective threshold: between 0.1 and +INF
+								+ Density setting range: 0.0 - 10.0
+								+ f(Density) gives threshold
+									+ Add (replace) function for threshold to SimulationParameters
+										- Threshold = 
+											d=0.0	t=+INF
+											d=1.0	t=1.0 [magic start value]
+											d=10.0	t=0.1
+											t = magic / density
+									+ Use it @ Points
+								+ 1.1: After threshold, remove just one threshold when over
+									! After all we only count air lost when underwater
+									+ We'll let the cumulated keep throwing bubbles until exhausted
+								+ Try:
+									+ Threshold=5-10 -> d=0.1-0.2
+									+ if delta > 0.1: add 1.0
+									+ else: add delta
+									+ Remove whole threshold
+										+ Actually, zeroing should be enough, given that we inctrment by 1.0?
 
-										+ d=0.2: GOOD (threshold = 5.0)
-									- Cleanup
+									+ d=0.2: GOOD (threshold = 5.0)
 
+									+ When smaller than epsilon, try adding 10x
+										+ min(that * 100, 1.0)
+								+ Cleanup code @ bubbles
 
-								- Option 2: no cumulation; bubbles are lost each time at least an X quantity of water is lost when underwater
-								- Option 3: should lower default air intake, so that we have more chances to spawn bubble
+								X Try lowering air intake, for prolonged bubble action
+								+ Lower water displacement by bubbles
+								+ Finalize bubbles density range (depends on magic)
+									+ Test 0
 
-								- Finalize bubbles density range (depends on magic)
-									- Test 0
 								- Avoid calc'n of threshold at Points, use new "current air bubbles density" member (next to calc'd value obviously)
 							
 							- Scorecard:
@@ -3062,11 +3064,18 @@
 									- Also affects pressure reading in Pa, see (*) Physics Probe
 									- Write formula for internal pressure to Pa, and then derive from it adjustments necessary @ water diffusion to take
 									  into account effective water density (and air density)
+								- Alternative: both water and air need adjustment based on actual densities, and we consider "column unit" on density_0
 					- TODO: what about _air_ density?
 
 				- Water pump
 
 				- Rain
+					- Add precalc'd rain water to incoming structural water
+						- Ideally only if above water, if there's an existing codepath for it
+
+				- Flotsam
+					- Check if still needed (paper? test w/old)
+					- If so: just add offset (0.1) to y
 
 				- Cleanup
 					- Comments
