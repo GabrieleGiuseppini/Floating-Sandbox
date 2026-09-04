@@ -7,6 +7,8 @@
 
 #include <Simulation/OceanFloorHeightMap.h>
 
+#include <Core/Version.h>
+
 #include <cctype>
 #include <sstream>
 
@@ -28,6 +30,15 @@ std::string MangleSettingName(std::string && settingName);
         [&gameControllerSettings](auto const & v) { gameControllerSettings.Set##name(v); }, \
         [&gameControllerSettings](auto const & v) { gameControllerSettings.Set##name ## Immediate(v); });
 
+#define ADD_GC_SETTING_WITH_POST_DESERIALIZATION_HOOK(type, name, functor) \
+    factory.AddSetting<type>(                           \
+        GameSettings::name,                             \
+        MangleSettingName(#name),                       \
+        [&gameControllerSettings]() -> type { return gameControllerSettings.Get##name(); }, \
+        [&gameControllerSettings](auto const & v) { gameControllerSettings.Set##name(v); }, \
+        [&gameControllerSettings](auto const & v) { gameControllerSettings.Set##name(v); }, \
+        std::move(functor));
+
 #define ADD_SC_SETTING(type, name)                      \
     factory.AddSetting<type>(                           \
         GameSettings::name,                             \
@@ -35,6 +46,17 @@ std::string MangleSettingName(std::string && settingName);
         [&soundController]() -> type { return soundController.Get##name(); },	\
         [&soundController](auto const & v) { soundController.Set##name(v); },	\
         [&soundController](auto const & v) { soundController.Set##name(v); });
+
+// Air Bubbles Density: semantics has changed in 1.22, thus any old value we override with default (1.0)
+float AirBubblesDensityPostDeserializationHook(float deserializedValue, SettingsDeserializationContext const & context)
+{
+    if (context.GetSettingsVersion() < Version(1, 22, 0, 0))
+    {
+        return 1.0f;
+    }
+
+    return deserializedValue;
+}
 
 BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::MakeSettingsFactory(
     IGameControllerSettings & gameControllerSettings,
@@ -179,7 +201,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, CombustionSmokeEmissionDensityAdjustment);
     ADD_GC_SETTING(float, CombustionSmokeParticleLifetimeAdjustment);
     ADD_GC_SETTING(bool, DoGenerateSparklesForCuts);
-    ADD_GC_SETTING(float, AirBubblesDensity);
+    ADD_GC_SETTING_WITH_POST_DESERIALIZATION_HOOK(float, AirBubblesDensity, AirBubblesDensityPostDeserializationHook);
     ADD_GC_SETTING(bool, DoGenerateEngineWakeParticles);
     ADD_GC_SETTING(float, SiltDustCloudSensitivity);
     ADD_GC_SETTING(float, SiltDustCloudUnderwaterLifetime);

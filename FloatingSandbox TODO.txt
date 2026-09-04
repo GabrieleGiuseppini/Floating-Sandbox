@@ -2990,10 +2990,10 @@
 								+ Create tuple of colors when pens are created
 							+ Zero axes for each
 								+ Create tuple of pens when pens are created
-				= Air Bubbles
+				+ Air Bubbles
 					+ Rename cumulation members
 					+ Bubble contribution proportional _only_ to air pressure that left point
-					= Nail down density for air bubbles from funnels
+					+ Nail down density for air bubbles from funnels
 						+ Should we only count air lost, and not update cumulated with gained
 						+ Redesign:
 							+ Pre: study distribution of losses
@@ -3044,16 +3044,36 @@
 									+ Test 0
 								+ Avoid calc'n of threshold at Points, use new "current air bubbles density" member (next to calc'd value obviously)							
 						+ Remove test log
+						+ Change deser of AirBubblesDensity setting
+							+ Inject "hack" into deserialization
+								+ Optional functor that massages deserialzied value
+								+ Deser body: version based
+								+ -> Android plan
 
-						- Change deser of AirBubblesDensity setting
-							- Version based
-
-				- Scorecard:
-					- Shoot:
-					- Flood test:
-					- Default ship:
+				- Flotsam pre: check if still needed
+					- Check with old: ark and paper flotsam
+						! New ones take water immediately
+						! Old ones too?!?
 
 				- Redesign water pressure calcn's to a) simplify, and b) take rain into account
+					+ Current implementation:
+						+ Water and air density changes do affect inflow!
+							+ Ingress/Egress: formula divides sum of air + water(which is f(water_density)) by water_density
+					- Option 1: water is at reference density
+						- Water:
+							- Ingress/Egress: 
+								- External water pressure in height equivalent units needs to scale with effective water density
+									- A higher water density causes more pressure, thus more "height" at reference density
+							- Diffusion:
+								- TODO
+						- Air:
+							- Ingress/Egress: 
+								- External air pressure in height equivalent units TODOHERE
+							- Diffusion:
+								- TODO
+					- Option 2: water is at current density
+
+					TODOOLD
 					! Should be independent from water density
 						- Water buffer is in "Current" density - we assume WaterDensity changes applies to all water instantaneously, including that already entered,
 						  so for Bernoulli we'd calc real pressure using "Current" density, and water density using "Current" density
@@ -3065,6 +3085,19 @@
 									  into account effective water density (and air density)
 								- Alternative: both water and air need adjustment based on actual densities, and we consider "column unit" on density_0
 					- TODO: what about _air_ density?
+					- TODO: alternative thinking:
+						- Densities only @ ingress/egress, influences air/water taken, then once inside same as now (vals relative to default densities)
+							- See if really works (it would be a no-op)
+
+
+
+					- Formula should ideally take externalWaterHeight, so we may take rain and flotsam into account like now
+
+				- Scorecard:
+					- Shoot:
+					- Flood test:
+					- Default ship:
+
 
 				- Water pump
 
@@ -3262,6 +3295,9 @@
 
 		- Android port plan:
 			- Water shader
+			- AirBubblesDensity setting de-serialization: 
+				- PostDeserialization hook @ Settings.cpp/h
+				- Use it at SettingsManager
 			- New settings:
 				- "Pressure" or "Water and Pressure":
 					- Intake adjust - water & air
