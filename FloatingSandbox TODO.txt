@@ -3050,28 +3050,109 @@
 								+ Deser body: version based
 								+ -> Android plan
 
-				- Flotsam pre: check if still needed
-					- Check with old: ark and paper flotsam
+				+ Flotsam pre: check if still needed
+					+ Check with old: ark and paper flotsam
 						! New ones take water immediately
 						! Old ones too?!?
+					+ After removing code, still no flotsam - will ignore
 
-				- Redesign water pressure calcn's to a) simplify, and b) take rain into account
+				= Redesign water pressure calcn's to a) simplify, and b) take rain into account
 					+ Current implementation:
 						+ Water and air density changes do affect inflow!
 							+ Ingress/Egress: formula divides sum of air + water(which is f(water_density)) by water_density
-					- Option 1: water is at reference density
-						- Water:
-							- Ingress/Egress: 
-								- External water pressure in height equivalent units needs to scale with effective water density
-									- A higher water density causes more pressure, thus more "height" at reference density
-							- Diffusion:
-								- TODO
-						- Air:
-							- Ingress/Egress: 
-								- External air pressure in height equivalent units TODOHERE
-							- Diffusion:
-								- TODO
-					- Option 2: water is at current density
+					- Expected behaviors:
+						- PressureTest Controlled case: no difference with any density change:
+							- Air density increases cause more water inside but also more air inside
+							- Water density increases cause more water inside but also less upward push (Bernoulli is slowed with denser water)
+								- THIS IS IMPORTANT: Bernoulli should perfectly negate the additional water from below
+						- Bell case: 
+							- Air density increases cause more water inside but also more air push inside
+							- Water density increases cause more water inside but also less upward push (Bernoulli is slowed with denser water)
+
+					- Option 1: water is at reference density, air is at reference density
+						- Ingress/Egress:
+							! Total external pressure in height equivalent units needs to scale with effective water and air density
+								! A higher water or air density, for example, needs to yield a higher height
+							- External air pressure in pascal is calculated with effective air density
+							- External water pressure in pascal is calculated with effective water density
+							- Sum of air+water in pascal is transformed to height equivalent units with reference water density
+						- Internal water as-is is thus comparable to external pressure in height equivalent units, which takes into account effective density
+						- Diffusion:
+							- Water in Bernoulli:
+								P / rho_effective = W * rho_reference * g / rho_effective = W * g * (rho_reference/rho_effective)
+									- Slower with denser water
+							- Internal water as-is (in reference density) will (should) balance external pressure, which takes into account effective density
+								- A higher water density results in higher external pressure and thus more W inside
+							- Water step should see air scaled as:
+								- rho_air_effective/rho_air_reference (higher air density -> higher air pressure)
+								- TODOHERE
+							- Water readings for delta_p: scale by rho_effective/rho_reference
+								- Air needs to see more water pressure
+							- Air readings for delta_p: scale by rho_effective/rho_reference
+
+					- Option 2: water is at effective water density, air is at effective water density
+						- Air (fs) gives a pascal pressure equal to Air*rho_effective_water*g
+							- Its pascal pressure thus increases with rho_effective_water
+							- But it must also increase with rho_effective_air, thus it scales with rho_effective_air/rho_reference_air
+						- Water (fs) gives a pascal pressure equal to Water*rho_effective_water*g
+							- Its pascal pressure thus increases with rho_effective_water
+						- Ingress/Egress:
+							- External air pressure in pascal is calculated with effective air density
+							- External water pressure in pascal is calculated with effective water density
+							- Sum of air+water in pascal is transformed to height equivalent units with effective water density
+								! Like now
+							- Deltas in/out change due to ratio between air and water pressures
+						- Internal water as-is is thus comparable to external pressure in height equivalent units
+						- Internal air as-is is thus comparable to external pressure in height equivalent units - but needs to scale with effective air density
+						- Diffusion:
+							- Water in Bernoulli does not change: same rho_water_effective
+							- Water and air steps should see air scaled as:
+								- For air density adjustments: rho_air_effective/rho_air_reference (higher air density -> higher air pressure)
+								- For water density adjustments: a water density increase should have no effect on pascal pressure of air inside (Air*rho_water_effective*g),
+								  thus scales by rho_water_reference/rho_water_effective
+
+						- Current implementation:
+							- Ingress/Egress operate as: water is at effective water density, air is at effective water density
+							- In Pressure Test Controlled:
+								- Increasing water density causes an exit of air and an exit of water - PHYSICALLY WRONG
+									- external_pressure = (atm + d*rho_effective) / rho_effective = atm/rho_effective + d
+									- Thus external pressure goes down, because atmosphere in equivalent water units goes down
+									- This causes exit of both
+									- Should reach equilibrium - and it does!
+								- Decreasing does the opposite, and still reaches equilibrium
+								- Increasing air density causes an entry of air and an entry of water - PHYSICALLY CORRECT
+									- Entry of air: because more atmospheric pressure
+									- Entry of water: same
+									- Should reach equlibrium - and it does!
+								- Decreasing does the opposite, and still reaches equilibrium
+							- In Bell:
+								- Increasing water density: (should cause raise in water level):
+									- External pressure goes down (see above), causing water to go out - wrong
+								- Increasing air density: (should cause lowering in water level):
+									- External pressure goes up (atmospheric pressure) => more water in
+									- Internal air doesn't change
+									- Result: water goes up - wrong
+
+						- What if we changed to reference densities? Do a thought experiment with the "right" implementation
+							- External pressure is (sum effective pressure) / (reference pressure)
+							- In Pressure Test Controlled:
+								- Increasing water density: (should cause no changes)
+									- Increase in ocean pressure only => increase in external pressure => more water in
+									- TODOHERE: does air reading change?
+									- Should be balanced by augmented weight of water inside
+										- Hopefully by Bernoulli, which becomes slower
+									- Air shouldn't change a thing
+								- Increasing air density: (should cause no changes)
+									- Increase in atmospheric pressure only => increase in external pressure => more water in
+									- Increase in atmospheric pressure only => increase in external pressure => more air in
+									- Should reach equilibrium
+							- In Bell:
+								- Increasing water density: (should cause raise in water level):
+									- Increase in ocean pressure only => increase in external pressure => more water in
+									- Augmented weight of water inside
+									- Air needs to read 
+
+
 
 					TODOOLD
 					! Should be independent from water density
@@ -3088,26 +3169,24 @@
 					- TODO: alternative thinking:
 						- Densities only @ ingress/egress, influences air/water taken, then once inside same as now (vals relative to default densities)
 							- See if really works (it would be a no-op)
+								- NO: raising air density would have no effect - would actually make water raise because of more external pressure
 
 
 
 					- Formula should ideally take externalWaterHeight, so we may take rain and flotsam into account like now
 
-				- Scorecard:
-					- Shoot:
-					- Flood test:
-					- Default ship:
-
 
 				- Water pump
+					- Just nail down externalWaterHeight
+					- Nuke internal pressure
 
 				- Rain
 					- Add precalc'd rain water to incoming structural water
 						- Ideally only if above water, if there's an existing codepath for it
 
-				- Flotsam
-					- Check if still needed (paper? test w/old)
-					- If so: just add offset (0.1) to y
+				X Flotsam
+					X Check if still needed (paper? test w/old)
+					X If so: just add offset (0.1) to y
 
 				- Cleanup
 					- Comments
@@ -3146,6 +3225,13 @@
 				
 				+ Remove:
 					+ Crazyness
+
+			- Scorecard:
+				- Config: 
+				- Shoot:
+				- Flood test:
+				- Default ship:
+
 
 			----- Time for nailing down constants?
 
