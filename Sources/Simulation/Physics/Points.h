@@ -850,6 +850,7 @@ public:
         , mCurrentKineticFrictionAdjustment(simulationParameters.KineticFrictionAdjustment)
         , mCurrentOceanFloorBedrockElasticityCoefficient(simulationParameters.OceanFloorBedrockElasticityCoefficient)
         , mCurrentOceanFloorBedrockFrictionCoefficient(simulationParameters.OceanFloorBedrockFrictionCoefficient)
+        , mCurrentAirBubblesDensity(simulationParameters.AirBubblesDensity)
         , mCurrentCumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles(SimulationParameters::AirBubblesDensityToCumulatedOutflownUnderwaterAirPressure(simulationParameters.AirBubblesDensity))
         , mCurrentCombustionSpeedAdjustment(simulationParameters.CombustionSpeedAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
@@ -2859,6 +2860,7 @@ private:
     float mCurrentKineticFrictionAdjustment;
     float mCurrentOceanFloorBedrockElasticityCoefficient;
     float mCurrentOceanFloorBedrockFrictionCoefficient;
+    float mCurrentAirBubblesDensity;
     float mCurrentCumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles;
     float mCurrentCombustionSpeedAdjustment;
 

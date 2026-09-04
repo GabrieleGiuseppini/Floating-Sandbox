@@ -1139,10 +1139,11 @@ void Points::UpdateForSimulationParameters(SimulationParameters const & simulati
         mCurrentKineticFrictionAdjustment = kineticFrictionAdjustment;
     }
 
-    float const cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles = SimulationParameters::AirBubblesDensityToCumulatedOutflownUnderwaterAirPressure(simulationParameters.AirBubblesDensity);
-    if (cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles != mCurrentCumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles)
+    float const airBubblesDensity = simulationParameters.AirBubblesDensity;
+    if (airBubblesDensity != mCurrentAirBubblesDensity)
     {
         // Randomize cumulated water intaken for each leaking point
+        float const cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles = SimulationParameters::AirBubblesDensityToCumulatedOutflownUnderwaterAirPressure(airBubblesDensity);
         for (ElementIndex i : RawShipPoints())
         {
             if (GetLeakingComposite(i).IsCumulativelyLeaking)
@@ -1151,7 +1152,8 @@ void Points::UpdateForSimulationParameters(SimulationParameters const & simulati
             }
         }
 
-        // Remember the new value
+        // Remember the new values
+        mCurrentAirBubblesDensity = airBubblesDensity;
         mCurrentCumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles = cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles;
     }
 
