@@ -1903,9 +1903,6 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
     std::set<ElectricalElementInstanceIndex> allElectricalElementInstanceIndices;
 
     float const internalPressure = Formulae::AtmospheresToPascal(physicsData.InternalPressure);
-    float const waterDensity = Formulae::CalculateWaterDensity(
-        simulationParameters.WaterTemperature,
-        simulationParameters);
 
     ElementIndex electricalElementCounter = 0;
     for (size_t p = 0; p < pointInfos2.size(); ++p)
@@ -1949,7 +1946,6 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
             pointInfo.Position,
             pointInfo.Water,
             internalPressure,
-            waterDensity,
             pointInfo.StructuralMtl,
             pointInfo.ElectricalMtl,
             pointInfo.IsRope,

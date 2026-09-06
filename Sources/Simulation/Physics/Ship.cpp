@@ -534,7 +534,11 @@ void Ship::Update(
             //UpdateWaterVelocities(simulationParameters, waterSplashedInStep);
             // TODO: update comment above adding air pressure, and forces if we end up doing it here
             //UpdateWaterAndAirPressure(simulationParameters, waterSplashedInStep);
-            UpdateWaterAndAirPressure_WithAirVelocities(simulationParameters, waterSplashedInStep);
+            UpdateWaterAndAirPressure_WithAirVelocities(
+                effectiveAirDensity,
+                effectiveWaterDensity,
+                simulationParameters,
+                waterSplashedInStep);
 
             // Notify
             mSimulationEventHandler.OnWaterSplashed(waterSplashedInStep);
@@ -2621,8 +2625,7 @@ void Ship::UpdatePressureAndWaterInflow(
                                 mPoints.GetPosition(pointIndex).y + pointDepth, // oceanSurfaceY
                                 effectiveAirDensity,
                                 effectiveWaterDensity,
-                                simulationParameters),
-                            effectiveWaterDensity);
+                                simulationParameters));
 
                     float const internalTotalPressure = mPoints.GetWater(pointIndex) + mPoints.GetAirPressure(pointIndex);
 
@@ -2714,8 +2717,7 @@ void Ship::UpdatePressureAndWaterInflow(
                             Formulae::CalculateAirColumnPressureAt(
                                 mPoints.GetPosition(pointIndex).y,
                                 effectiveAirDensity,
-                                simulationParameters),
-                            effectiveWaterDensity);
+                                simulationParameters));
 
                     // Internal pressure in equivalent water height
                     float const internalAirPressure = mPoints.GetAirPressure(pointIndex);
@@ -4317,6 +4319,8 @@ void Ship::UpdateWaterAndAirPressure(
 }
 
 void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
+    float effectiveAirDensity,
+    float effectiveWaterDensity,
     SimulationParameters const & simulationParameters,
     float & waterSplashed)
 {
@@ -4324,7 +4328,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
     // For each (non-ephemeral) point, move water and air along its connected springs,
     // based on pressure differentials and water momenta (https://gabrielegiuseppini.wordpress.com/2018/09/08/momentum-based-simulation-of-water-flooding-2d-spaces/)
     //
-    // Model is tanks, connected at bottom (for water moves) and at top (for air moves)
+    // TODOHERE: we changed model: Model is tanks, connected at bottom (for water moves) and at top (for air moves)
     //    - Hence, water moves are governed by pressures at bottom, which are air pressure + water pressure, and water momenta
     //    - Hence, air moves are governed by pressures at top, which are air pressure
     //      - But compressibility of air plays a role - i.e.water volumes plays a role
@@ -4406,20 +4410,6 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
 
 
-
-
-    // TODOTEST
-    float const waterFoobar =
-        Formulae::CalculateWaterDensity(simulationParameters.WaterTemperature, simulationParameters)
-        / SimulationParameters::WaterMass;
-
-    float const airFoobar =
-        Formulae::CalculateAirDensity(simulationParameters.AirTemperature, simulationParameters)
-        / SimulationParameters::AirMass;
-
-
-
-
     //
     // Water step
     //
@@ -4427,6 +4417,13 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
     //
     // TODOHERE: full comment: we move water and its momenta according to momenta and pressure differentials
     //
+
+    // Current density doesn't change the "pascal pressure" deriving from an A or W stored at a point; that value
+    // is the current pressure, regardless of density; however, the real *height* of the column that we would need
+    // there (a higher density requires less height for the same pressure), and this height we only use for Bernoulli:
+    // the P/rho term is "real height" and thus needs to change with densities
+    assert(effectiveWaterDensity > 0.0f);
+    float const waterColumnHeightDensityFactor = SimulationParameters::WaterMass / effectiveWaterDensity;
 
     // Calculate quantum for water transfer, i.e. maximum fraction
     // of current water (pressure) we're willing to move out of a point
@@ -4545,7 +4542,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 //
 
                 float bernoulliVelocityAlongSpring;
-                float const dwy = dw / waterFoobar + dy;
+                float const dwy = dw * waterColumnHeightDensityFactor + dy;
                 if (dwy >= 0.0f)
                 {
                     // Gained velocity goes from point to other endpoint
@@ -4879,6 +4876,10 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
     // Air step
     //
 
+    // See comment above on having to adjust W and A when we need their physical
+    // height
+    float const airColumnHeightDensityFactor = SimulationParameters::AirMass / effectiveAirDensity;
+
     // Weights of outbound air flows along each spring, only permeable ones;
     // set to zero for springs whose resultant scalar air flows are
     // directed towards the point being visited
@@ -5047,12 +5048,12 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 if (dAir >= 0.0f)
                 {
                     // Gained velocity goes from point to other endpoint
-                    bernoulliVelocityAlongSpring = sqrtf(2.0f * dAir / airFoobar);
+                    bernoulliVelocityAlongSpring = sqrtf(2.0f * dAir * airColumnHeightDensityFactor);
                 }
                 else
                 {
                     // Gained velocity goes from other endpoint to point
-                    bernoulliVelocityAlongSpring = -sqrtf(2.0f * -dAir / airFoobar);
+                    bernoulliVelocityAlongSpring = -sqrtf(2.0f * -dAir * airColumnHeightDensityFactor);
                 }
 
                 float const relVelocity =

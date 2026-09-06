@@ -19,7 +19,6 @@ void Points::Add(
     vec2f const & position,
     float water,
     float internalPressure,
-    float waterDensity,
     StructuralMaterial const & structuralMaterial,
     ElectricalMaterial const * electricalMaterial,
     bool isRope,
@@ -77,7 +76,7 @@ void Points::Add(
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
 
-    mAirPressureBuffer.emplace_back(Formulae::PressureToEquivalentWaterHeight(internalPressure, waterDensity)); // Init using current water density
+    mAirPressureBuffer.emplace_back(Formulae::PressureToEquivalentWaterHeight(internalPressure));
     mAirPressureVelocityBuffer.emplace_back(vec2f::zero());
     mAirPressureMomentumBuffer.emplace_back(vec2f::zero());
 

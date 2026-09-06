@@ -1383,7 +1383,7 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
         mPoints.SetAirPressure(
             bestPointIndex,
             std::max(
-                mPoints.GetAirPressure(bestPointIndex) + Formulae::PressureToEquivalentWaterHeight(SimulationParameters::AirPressureAtSeaLevel, SimulationParameters::WaterMass) * pressureQuantityMultiplier,
+                mPoints.GetAirPressure(bestPointIndex) + Formulae::PressureToEquivalentWaterHeight(SimulationParameters::AirPressureAtSeaLevel) * pressureQuantityMultiplier,
                 0.0f));
             //std::max(mPoints.GetAirPressure(bestPointIndex) + quantityOfPressureDelta, 0.0f));
 

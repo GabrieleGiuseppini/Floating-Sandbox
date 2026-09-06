@@ -957,7 +957,6 @@ public:
         vec2f const & position,
         float water,
         float internalPressure,
-        float waterDensity,
         StructuralMaterial const & structuralMaterial,
         ElectricalMaterial const * electricalMaterial,
         bool isRope,
@@ -2710,7 +2709,27 @@ private:
     Buffer<float> mMaterialWaterRestitutionBuffer;
     Buffer<float> mMaterialWaterDiffusionSpeedBuffer;
 
-    // Height of a 1m2-wide column of water which provides a pressure equivalent to the pressure at
+    //
+    // Axioms:
+    //  - Water and Air at a point represent the *pressure* built-up at that point until that moment
+    //    - That pressure is not directly related to _quantity_
+    //    - That pressure is independent from water and air densities at the moment of reading it
+    //      - It is only *indirectly* dependent from water and air densities while it was building up, simply
+    //        because of the latters' effect on external pressure and thus on inflows and outflows
+    //  - We choose for W and A to be the numerical value of the height of a column of water at *reference* water density which would yield
+    //    a numerical pressure (in pascals) equal to the pressure at that point
+    //    - Thus, the numerical value of the pressure exercised by a quantity X(W or A) is X*rho_water_reference*g
+    //    - So doesn't change with any effective density at the moment of reading
+    // Corollaries:
+    //  - Density changes have no effect on pressure comparisons inside a closed container - the values we read *are* pressures
+    //  - Changing density doesn't change the "pascal pressure" deriving from an A or W stored at a point; that value
+    //    is the current pressure, regardless of density
+    //    - Density eventually affects the real *height* of the column that we would need there (a higher density requires less height in order
+    //      to yield the same pressure), and this height we only use for Bernoulli: the P/rho term is "real height" and thus needs to change with densities
+    //    - For open containers, density changes directly affect in / outflows via external pressure
+    //
+
+    // Height of a 1m2-wide column of water at reference density which provides a pressure equivalent to the pressure at
     // this point. Volume of water is min(water, 1.0)
     Buffer<float> mWaterBuffer;
 
@@ -2720,7 +2739,7 @@ private:
     // Total momentum of the water at this point [TODO: work buffer]
     Buffer<vec2f> mWaterMomentumBuffer;
 
-    // // Air pressure at this particle, in equivalent meters of a 1m2-wide column of water
+    // Air pressure at this particle, in equivalent meters of a 1m2-wide column of water at reference density
     Buffer<float> mAirPressureBuffer;
 
     // Total velocity of air at this point

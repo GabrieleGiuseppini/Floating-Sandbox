@@ -99,16 +99,11 @@ public:
         return airPressure + waterPressure;
     }
 
-    // Calculate the equivalent height of a 1m2-wide column of water that gives
-    // the specified pressure in Pa, with the specified water density
-    static float PressureToEquivalentWaterHeight(
-        float pressure,
-        float waterDensity)
+    // Calculates the equivalent height of a 1m2-wide column of water at reference density
+    // which gives the specified pressure in Pa
+    static float PressureToEquivalentWaterHeight(float pressure)
     {
         // Pressure in Pa of a H-high column of water in a 1m2-wide tube: Pa = h * g * water_rho
-        // TODOTEST
-        //return pressure / (waterDensity * SimulationParameters::GravityMagnitude);
-        (void)waterDensity;
         return pressure / (SimulationParameters::WaterMass * SimulationParameters::GravityMagnitude);
     }
 

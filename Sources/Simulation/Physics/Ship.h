@@ -765,6 +765,8 @@ private:
         float & waterSplashed);
 
     void UpdateWaterAndAirPressure_WithAirVelocities(
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
         SimulationParameters const & simulationParameters,
         float & waterSplashed);
 

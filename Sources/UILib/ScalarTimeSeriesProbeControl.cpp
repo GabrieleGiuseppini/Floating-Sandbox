@@ -182,16 +182,6 @@ template<typename...TElement>
 template<size_t IElement>
 void ScalarTimeSeriesProbeControl<TElement...>::DrawChart(wxDC& dc)
 {
-    // Zero line
-
-    if ((mFlags & ScalarTimeSeriesProbeControlOptions::ZeroLine) != ScalarTimeSeriesProbeControlOptions::None)
-    {
-        dc.SetPen(std::get<IElement>(mZeroLinePens));
-
-        int zeroY = MapValueToY<IElement>(0.0f);
-        dc.DrawLine(1, zeroY, mWidth - 1, zeroY);
-    }
-
     // Chart
 
     dc.SetPen(std::get<IElement>(mTimeSeriesPens));
@@ -226,6 +216,15 @@ void ScalarTimeSeriesProbeControl<TElement...>::DrawChart(wxDC& dc)
         } while (it != mSamples.cend());
     }
 
+    // Zero line
+
+    if ((mFlags & ScalarTimeSeriesProbeControlOptions::ZeroLine) != ScalarTimeSeriesProbeControlOptions::None)
+    {
+        dc.SetPen(std::get<IElement>(mZeroLinePens));
+
+        int zeroY = MapValueToY<IElement>(0.0f);
+        dc.DrawLine(1, zeroY, mWidth - 1, zeroY);
+    }
 
     //
     // Draw label

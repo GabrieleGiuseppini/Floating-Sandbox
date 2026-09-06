@@ -29,7 +29,7 @@ PressureCrossCutReadingsProbeControl::PressureCrossCutReadingsProbeControl(
         wxDefaultSize,
         wxBORDER_SIMPLE)
     , mWidth(width)
-    , mReferencePressure(Physics::Formulae::PressureToEquivalentWaterHeight(SimulationParameters::AirPressureAtSeaLevel, SimulationParameters::WaterMass))
+    , mReferencePressure(Physics::Formulae::PressureToEquivalentWaterHeight(SimulationParameters::AirPressureAtSeaLevel))
     , mBufferedDCBitmap()
     , mAirPressurePen(wxColor("RED"), 2, wxPENSTYLE_SOLID)
     , mSqueezedAirPressurePen(wxColour(200, 100, 100), 2, wxPENSTYLE_SOLID)

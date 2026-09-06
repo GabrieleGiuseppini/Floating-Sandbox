@@ -3097,7 +3097,6 @@
 								- In other words: W and A match real pressures only when W is at reference density; changing water density changes physical readings
 								  instantaneously - as if we were changing molecules in-place everywhere
 
-
 					+ Exploratory tests:
 						+ Conversion to equivalent_units uses reference water density
 						+ Tests with default vals (densities=1): no change, as expected
@@ -3161,12 +3160,12 @@
 								+ Air density up: no changes, or raises slightly
 
 
-					- Wrap it up then: with just bernoulli adjustment at both water and air
-						- Copy explanation above to Points
-						- Resist urge to rename AirPressure
-						- Cleanup code (TODOAIR)
-							- Formulae
-							- Diffusion
+					+ Wrap it up then: with just bernoulli adjustment at both water and air
+						+ Copy explanation above to Points
+						+ Resist urge to rename AirPressure
+						+ Cleanup code 
+							+ Formulae
+							+ Diffusion
 					
 					- Redesign water pressure calcn's to a) simplify, and b) take rain into account (if possible)
 
