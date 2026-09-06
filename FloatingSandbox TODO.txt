@@ -3058,20 +3058,23 @@
 
 				= Redesign water pressure calcn's to a) simplify, and b) take rain into account
 
-					- Axioms:
-						- W and A at a point are the absolute *pressure* built-up at that point
-						  until that moment
+					! Axioms:
+						- W and A at a point represent the *pressure* built-up at that point until that moment
+							- That pressure is not directly related to _quantity_						  
 							- That pressure is independent from water and air densities at the moment
 								- It is only *indirectly* dependent from water and air densities while it was building up, simply
 								  because of the latters' effect on external pressure and thus on inflows and outflows
-						- We choose for W and A to represent the pressure exercised by a column of water of that height at *reference* water density
+						- We choose for W and A to be the numerical value of the height of a column of water at *reference* water density which would yield
+						  a numerical pressure (in pascal) equal to the pressure at that point
 							- Thus, the numerical value of the pressure exercised by a quantity X (W or A) is X*rho_water_reference*g
 								- So doesn't change with any effective density at the moment of reading
-					- Corollaries:
-						- TODOHERE
-						- Density changes have no effect on equilibrium inside a closed container
-						- For open containers, density changes only affect in/outflows via external pressure 
-							- Changing water density doesn't change the "pascal pressure" deriving from an A or W stored at a point
+					! Corollaries:
+						- Density changes have no effect on pressure comparisons inside a closed container
+							- Changing water density doesn't change the "pascal pressure" deriving from an A or W stored at a point; that value
+							  is the current pressure, regardless of density
+							  - Density eventually affects the real *height* of the column that we would need there (a higher density requires less height for the same
+							    pressure), and this height we only use for Bernoulli: the P/rho term is "real height" and thus needs to change with densities
+						- For open containers, density changes directly affect in/outflows via external pressure 
 
 					+ TODOHERE:
 						- What about air density? Do the axioms above apply to air density as well, or only to water density?
