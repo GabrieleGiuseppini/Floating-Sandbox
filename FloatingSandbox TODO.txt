@@ -3172,12 +3172,13 @@
 						+ Do
 						+ Cleanup logs
 
-				- Water pump
+				+ Water pump
 					+ Do we need externalWaterHeight for pumps, other than as a switch? NO
-					- Just nail down externalWaterHeight/internalWaterHeight
-						- internalWaterHeight is Water
-						- externalWaterHeight is pointDepth
-					- Nuke internal pressure
+					+ Just nail down externalWaterHeight/internalWaterHeight
+						+ internalWaterHeight is Water
+						+ externalWaterHeight is pointDepth
+					+ Nuke internal pressure
+					+ Test pumps w/submersible
 
 				- Rain
 					- Add precalc'd rain water to incoming structural water
@@ -3187,9 +3188,9 @@
 					X Check if still needed (paper? test w/old)
 					X If so: just add offset (0.1) to y
 
-				- Cleanup
-					- Comments
-					- Code
+				= Cleanup
+					+ Comments
+					+ Code
 						+ See if can simplify math by having Formulae directly in equivalent water height's
 							+ Water
 							+ Air
@@ -3231,8 +3232,26 @@
 				- Flood test:
 				- Default ship:
 
-
 			----- Time for nailing down constants?
+
+			- PR:
+				- What works already?
+					- Water and air intake and outtake
+					- Water/Air equilibrium physics
+					- New air bubbles
+					- "Classic" water pumps
+					- Rain flooding ship
+				- What still needs to be worked on?
+					- Changes to Flood and InjectPressure tools
+					- Internal pressure balancing "depth" (hydrostatic) pressure
+						- Read: no inflatable balloon
+					- Physics Probe tool showing total air+water pressure
+					- Temperature affecting air pressure
+					- NPCs affected by air and water
+					- New pumps and switches
+					- Blasts affecting air
+					- Water splash sounds when water enters and moves in the ship
+					- Water gaining inertia when ship is moved manually
 
 			- Temperature <-> Air Pressure
 				! Theoretically: each temperature change should change Air (pressure)
@@ -3255,8 +3274,8 @@
 								! Diffusion on Effective
 								! Effective->Theo
 									! And Effective stays for reading, exactly like WaterMomenta
-			= Water and Air density adjustments
-				- Depends on choices above at Ingress/Egress pressure formulas (*)
+			+ Water and Air density adjustments
+				+ Depends on choices above at Ingress/Egress pressure formulas (*)
 					! i.e. choice of reference density for Water and Air
 
 			- Interact with air velocity @
@@ -3265,6 +3284,7 @@
 				- etc
 			+ Finalize unit of AirPressure
 				+ Also @ Points buffer comment
+			- Water rush sounds (ingress/egress)
 			- Water splash sounds (kinetic energy)
 				- Scale kinetic energy by # of iters?
 				- Could use presence of air as replacement of freeness?
@@ -3321,8 +3341,7 @@
 				- Rain: water intake
 				- Cloth, ropes: intake, retention (of water and air)
 				- Kinetic energy->Splash sounds
-				- Default water crazyness
-				- Flooding speeds compared with previous version
+				- Ingress/Egress Rush sounds
 
 			- Cleanup 1:
 				- "Air pressure" -> "Air"

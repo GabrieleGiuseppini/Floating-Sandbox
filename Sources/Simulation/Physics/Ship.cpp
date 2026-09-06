@@ -2536,9 +2536,6 @@ void Ship::UpdatePressureAndWaterInflow(
     float totalWaterIntakeMeasured = 0.0f;
     float totalAirIntakeMeasured = 0.0f;
 
-    // Multiplier to get internal pressure delta from water delta
-    float const volumetricWaterPressure = Formulae::CalculateVolumetricWaterPressure(simulationParameters.WaterTemperature, simulationParameters);
-
     // Equivalent depth of a point when it's exposed to rain
     float const rainEquivalentWaterHeight =
         stormParameters.RainQuantity // m/h
@@ -2668,8 +2665,8 @@ void Ship::UpdatePressureAndWaterInflow(
                     // Update measured water intake
                     //
                     // Only count water taken if this point has a spring, to avoid counting
-                    // water and generating bubbles for orphaned particles, and not counting
-                    // ropes, to prevent "rushing water" sound from playing for ropes
+                    // water for orphaned particles, and not counting ropes, to prevent
+                    // "rushing water" sound from playing for ropes
                     if (!mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty() // Note that leaking points have no connected triangles
                         && !mPoints.IsRope(pointIndex))
                     {
@@ -2768,12 +2765,9 @@ void Ship::UpdatePressureAndWaterInflow(
                 {
                     // Outward pump: only works if water inside
                     deltaWater_Forced = (mPoints.GetWater(pointIndex) > 0.0f)
-                        ? waterPumpForce * waterPumpPowerMultiplier // We'll cap it
+                        ? std::max(-mPoints.GetWater(pointIndex), waterPumpForce * waterPumpPowerMultiplier) // Make sure we don't over-drain the point
                         : 0.0f;
                 }
-
-                // Make sure we don't over-drain the point
-                deltaWater_Forced = std::max(-mPoints.GetWater(pointIndex), deltaWater_Forced);
 
                 // Adjust water
                 mPoints.SetWater(
@@ -2781,30 +2775,11 @@ void Ship::UpdatePressureAndWaterInflow(
                     mPoints.GetWater(pointIndex) + deltaWater_Forced);
 
                 // Update measured water intake
-                //
-                // Only count water taken if this is not a rope,
-                // to prevent "rushing water" sound from playing for ropes
-                if (!mPoints.IsRope(pointIndex))
-                {
-                    totalWaterIntakeMeasured += deltaWater_Forced;
-                }
-
-                //
-                // 4) Update pressure due to forced leaks (pumps)
-                //    (positive is incoming)
-                //
-                //    Forced delta pressure depends on (effective) forced delta water only
-                //
-
-                float const deltaPressure_Forced = deltaWater_Forced * volumetricWaterPressure;
-
-                mPoints.SetInternalPressure(
-                    pointIndex,
-                    std::max(mPoints.GetInternalPressure(pointIndex) + deltaPressure_Forced, 0.0f)); // Make sure we don't over-drain the point
+                totalWaterIntakeMeasured += deltaWater_Forced;
             }
 
             //
-            // 5) Check if it's time to produce air bubbles
+            // 4) Check if it's time to produce air bubbles
             //
 
             auto const currentCumulatedOutflownUnderwaterAirPressure = mPoints.GetCumulatedOutflownUnderwaterAirPressure(pointIndex);
