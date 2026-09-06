@@ -112,7 +112,7 @@ private:
 
     static wxPen MakeZeroLinePen(wxPen const & pen)
     {
-        return wxPen(pen.GetColour(), 1, wxPENSTYLE_SHORT_DASH);
+        return wxPen(pen.GetColour().ChangeLightness(50), 1, wxPENSTYLE_SHORT_DASH);
     }
 
     template<size_t... Is>
