@@ -106,7 +106,10 @@ public:
         float waterDensity)
     {
         // Pressure in Pa of a H-high column of water in a 1m2-wide tube: Pa = h * g * water_rho
-        return pressure / (waterDensity * SimulationParameters::GravityMagnitude);
+        // TODOTEST
+        //return pressure / (waterDensity * SimulationParameters::GravityMagnitude);
+        (void)waterDensity;
+        return pressure / (SimulationParameters::WaterMass * SimulationParameters::GravityMagnitude);
     }
 
     static float AtmospheresToPascal(float atmospheres) noexcept

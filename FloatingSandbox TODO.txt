@@ -3057,123 +3057,115 @@
 					+ After removing code, still no flotsam - will ignore
 
 				= Redesign water pressure calcn's to a) simplify, and b) take rain into account
-					+ Current implementation:
-						+ Water and air density changes do affect inflow!
-							+ Ingress/Egress: formula divides sum of air + water(which is f(water_density)) by water_density
-					- Expected behaviors:
-						- PressureTest Controlled case: no difference with any density change:
-							- Air density increases cause more water inside but also more air inside
-							- Water density increases cause more water inside but also less upward push (Bernoulli is slowed with denser water)
-								- THIS IS IMPORTANT: Bernoulli should perfectly negate the additional water from below
-						- Bell case: 
-							- Air density increases cause more water inside but also more air push inside
-							- Water density increases cause more water inside but also less upward push (Bernoulli is slowed with denser water)
 
-					- Option 1: water is at reference density, air is at reference density
-						- Ingress/Egress:
-							! Total external pressure in height equivalent units needs to scale with effective water and air density
-								! A higher water or air density, for example, needs to yield a higher height
-							- External air pressure in pascal is calculated with effective air density
-							- External water pressure in pascal is calculated with effective water density
-							- Sum of air+water in pascal is transformed to height equivalent units with reference water density
-						- Internal water as-is is thus comparable to external pressure in height equivalent units, which takes into account effective density
-						- Diffusion:
-							- Water in Bernoulli:
-								P / rho_effective = W * rho_reference * g / rho_effective = W * g * (rho_reference/rho_effective)
-									- Slower with denser water
-							- Internal water as-is (in reference density) will (should) balance external pressure, which takes into account effective density
-								- A higher water density results in higher external pressure and thus more W inside
-							- Water step should see air scaled as:
-								- rho_air_effective/rho_air_reference (higher air density -> higher air pressure)
-								- TODOHERE
-							- Water readings for delta_p: scale by rho_effective/rho_reference
-								- Air needs to see more water pressure
-							- Air readings for delta_p: scale by rho_effective/rho_reference
+					- Axioms:
+						- W and A at a point are the absolute *pressure* built-up at that point
+						  until that moment
+							- That pressure is independent from water and air densities at the moment
+								- It is only *indirectly* dependent from water and air densities while it was building up, simply
+								  because of the latters' effect on external pressure and thus on inflows and outflows
+						- We choose for W and A to represent the pressure exercised by a column of water of that height at *reference* water density
+							- Thus, the numerical value of the pressure exercised by a quantity X (W or A) is X*rho_water_reference*g
+								- So doesn't change with any effective density at the moment of reading
+					- Corollaries:
+						- TODOHERE
+						- Density changes have no effect on equilibrium inside a closed container
+						- For open containers, density changes only affect in/outflows via external pressure 
+							- Changing water density doesn't change the "pascal pressure" deriving from an A or W stored at a point
 
-					- Option 2: water is at effective water density, air is at effective water density
-						- Air (fs) gives a pascal pressure equal to Air*rho_effective_water*g
-							- Its pascal pressure thus increases with rho_effective_water
-							- But it must also increase with rho_effective_air, thus it scales with rho_effective_air/rho_reference_air
-						- Water (fs) gives a pascal pressure equal to Water*rho_effective_water*g
-							- Its pascal pressure thus increases with rho_effective_water
-						- Ingress/Egress:
-							- External air pressure in pascal is calculated with effective air density
-							- External water pressure in pascal is calculated with effective water density
-							- Sum of air+water in pascal is transformed to height equivalent units with effective water density
-								! Like now
-							- Deltas in/out change due to ratio between air and water pressures
-						- Internal water as-is is thus comparable to external pressure in height equivalent units
-						- Internal air as-is is thus comparable to external pressure in height equivalent units - but needs to scale with effective air density
-						- Diffusion:
-							- Water in Bernoulli does not change: same rho_water_effective
-							- Water and air steps should see air scaled as:
-								- For air density adjustments: rho_air_effective/rho_air_reference (higher air density -> higher air pressure)
-								- For water density adjustments: a water density increase should have no effect on pascal pressure of air inside (Air*rho_water_effective*g),
-								  thus scales by rho_water_reference/rho_water_effective
+					+ TODOHERE:
+						- What about air density? Do the axioms above apply to air density as well, or only to water density?
+							- In other words: does changing air density affect the air pressure stored at a point, or do we consider that pressure
+							  also "already cooked" and numerically equivalent to pressure at reference air density?
+							- Think of our plan for temperature changes: with temperature we _do_ plan to transform air readings
 
-						- Current implementation:
-							- Ingress/Egress operate as: water is at effective water density, air is at effective water density
-							- In Pressure Test Controlled:
-								- Increasing water density causes an exit of air and an exit of water - PHYSICALLY WRONG
-									- external_pressure = (atm + d*rho_effective) / rho_effective = atm/rho_effective + d
-									- Thus external pressure goes down, because atmosphere in equivalent water units goes down
-									- This causes exit of both
-									- Should reach equilibrium - and it does!
-								- Decreasing does the opposite, and still reaches equilibrium
-								- Increasing air density causes an entry of air and an entry of water - PHYSICALLY CORRECT
-									- Entry of air: because more atmospheric pressure
-									- Entry of water: same
-									- Should reach equlibrium - and it does!
-								- Decreasing does the opposite, and still reaches equilibrium
-							- In Bell:
-								- Increasing water density: (should cause raise in water level):
-									- External pressure goes down (see above), causing water to go out - wrong
-								- Increasing air density: (should cause lowering in water level):
-									- External pressure goes up (atmospheric pressure) => more water in
-									- Internal air doesn't change
-									- Result: water goes up - wrong
-
-						- What if we changed to reference densities? Do a thought experiment with the "right" implementation
-							- External pressure is (sum effective pressure) / (reference pressure)
-							- In Pressure Test Controlled:
-								- Increasing water density: (should cause no changes)
-									- Increase in ocean pressure only => increase in external pressure => more water in
-									- TODOHERE: does air reading change?
-									- Should be balanced by augmented weight of water inside
-										- Hopefully by Bernoulli, which becomes slower
-									- Air shouldn't change a thing
-								- Increasing air density: (should cause no changes)
-									- Increase in atmospheric pressure only => increase in external pressure => more water in
-									- Increase in atmospheric pressure only => increase in external pressure => more air in
-									- Should reach equilibrium
-							- In Bell:
-								- Increasing water density: (should cause raise in water level):
-									- Increase in ocean pressure only => increase in external pressure => more water in
-									- Augmented weight of water inside
-									- Air needs to read 
+							- May be: for symmetry with water, we consider A as the pressure built up until that moment, whose numeric value
+							  is based on reference densities; changing air density doesn't change the "pascal pressure" coming from an A stored at a point
+						- From exploratory tests below: we need to scale Bernoulli @ water step in order to "squash" water in PressureTest Controlled case;
+						  is this an infringement of the axioms?
+							- Option 1: it _is_ an infringement. Hence, we change the axioms this way:
+								- W at a point is the height of a column of water which, at the current effective (water) density, yields a pressure identical
+								  to the (water) pressure at that point
+								  - Implies: Pressure_pa = W*effective_rho*g
+									- Actual numerical (water) pressure depends from (water) density at that moment
+										- Increases in water density immediately increase pressure readings everywhere
+								- A at a point is the height of a column of water which, at the current effective (water) density, yields a pressure identical
+								  to the (air) pressure at that point
+								- In other words: W and A match real pressures only when W is at reference density; changing water density changes physical readings
+								  instantaneously - as if we were changing molecules in-place everywhere
 
 
+					+ Exploratory tests:
+						+ Conversion to equivalent_units uses reference water density
+						+ Tests with default vals (densities=1): no change, as expected
+						+ Water density up:
+							+ PROBLEM 1: PressureTest Controlled: water raises above water level; even when starting with higher water density (i.e. with no changes)
+								- What's happening here?
+									- Major water intake (external pressure larger)
+									- No change to air intake
+									- Bernoulli doesn't balance
+										- Test with dw in Bernoulli @ water step mult'd by ref/effective (lower vel): PERFECT!
+											! Learning: Bernoulli needs to take into account effective water density, for water density to balance more external pressure
+											- With Bell, fully submerged: 
+												! In real world: should raise
+												- Here: should not (same balancing as we see in PressureTest Controlled)
+													- HOLD ON: it _does_ raise!!! Why is it different than PressureTest Controlled?!?
+														+ Major water intake
+														+ Zero air intake (obviously)
+														+ Bernoulli balances
+														- ...so, what's different?
+															- May be it's the *slope* of delta_pressure within Bernoulli
 
-					TODOOLD
-					! Should be independent from water density
-						- Water buffer is in "Current" density - we assume WaterDensity changes applies to all water instantaneously, including that already entered,
-						  so for Bernoulli we'd calc real pressure using "Current" density, and water density using "Current" density
-							- But in reality, height of column of water depends on water density - and in our case it would not be
-								! That's because we lie with air: our air pressure already takes into account water density
-								- Air pressure during diffusion should take into account effective water density and scale air pressure accordingly (likely via a simple ratio)
-									- Also affects pressure reading in Pa, see (*) Physics Probe
-									- Write formula for internal pressure to Pa, and then derive from it adjustments necessary @ water diffusion to take
-									  into account effective water density (and air density)
-								- Alternative: both water and air need adjustment based on actual densities, and we consider "column unit" on density_0
-					- TODO: what about _air_ density?
-					- TODO: alternative thinking:
-						- Densities only @ ingress/egress, influences air/water taken, then once inside same as now (vals relative to default densities)
-							- See if really works (it would be a no-op)
-								- NO: raising air density would have no effect - would actually make water raise because of more external pressure
+											- With Bell, partially submerged (high):
+												- @ raise of water density: massive water intake, but new bernoulli "compresses"; then raises again, back to eq
+											- With Bell, partially submerged (low):
+												- @ raise of water density: massive water intake, but new bernoulli "compresses"; then raises again, back to eq
+					+ Experiments log:
+						! Conversion to equivalent_units uses reference water density
+						+ with dw in Bernoulli @ water step mult'd by ref/effective (lower vel):
+							+ Controlled: PERFECT! (no change)
+								+ When was at eq with rho=1: first lowers; then raises again, back to eq; slight overshoot
+							+ Bell, fully submerged: 
+								+ Raises
+									! Unexpected, as it should be like Controlled
+									! Possibly because of *slope* of delta_pressure within Bernoulli
+							+ Bell, partially submerged (high):
+								+ @ raise of water density: massive water intake, but new bernoulli "compresses"; then raises again, back to eq
+							+ Bell, partially submerged (low):
+								+ @ raise of water density: massive water intake, but new bernoulli "compresses"; then raises again, back to eq
+						X With water readings and air readings multiplied by effective/reference, at both steps:
+							X Controlled: water density up: [expected: no changes]: RAISES
+						X With water readings and air readings multiplied by effective/reference, at both steps, and bernoulli like earlier:
+							X Controlled:
+								X Water density up: [expected: no changes]: RAISES
+								- Air density up: [expected: no changes]:
+						X With air readings multiplied by effective/reference, at both steps, and bernoulli like earlier:
+							X Controlled:
+								- Water density up: [expected: no changes]: // should be like above, ok 
+								X Air density up: [expected: no changes]: LOWERS
+						+ With just bernoulli adjustment at both water and air:		
+							+ Controlled:
+								+ Water density up: [expected: no changes]: reaches right equilibrium, slight overshoot
+								+ Water density down: [expected: no changes]: reaches right equilibrium, but slowly
+								+ Air density up: [expected: no changes]: PERFECT
+							+ Bell, partially submerged (high):
+								- Water density up:
+								+ Air density up: [expected: no changes]: 
+									- Starting from rho=1 then changing: RAISES - this may only happen if air _inside_ stays at own density
+									- Starting from rho=2: RAISES
+							+ Bell, fully submerged:
+								- Water density up:
+								+ Air density up: no changes, or raises slightly
 
 
-
-					- Formula should ideally take externalWaterHeight, so we may take rain and flotsam into account like now
+					- Wrap it up then: with just bernoulli adjustment at both water and air
+						- Copy explanation above to Points
+						- Resist urge to rename AirPressure
+						- Cleanup code (TODOAIR)
+							- Formulae
+							- Diffusion
+					
+					- Redesign water pressure calcn's to a) simplify, and b) take rain into account (if possible)
 
 
 				- Water pump
@@ -3238,6 +3230,7 @@
 			- Temperature <-> Air Pressure
 				! Theoretically: each temperature change should change Air (pressure)
 				! In practice:
+					- TODOHERE: rewrite based on learnings
 					- Option 1:
 						! Gist: we have TheoreticalAir and EffectiveAir
 							! Much like WaterVelocities and WaterMomenta
@@ -3246,16 +3239,17 @@
 							! Reads happen from EffectiveAir (assuming don't need immediately changes done in same step)
 								- TODO: do we really need many reads for air? If not, can just be local to WaterDiffusion
 									- As we will probably introduce "effective water" concept for density adjustments, and those will be local
+									- Readings:
+										- Physics Probe tool
+										- Surface forces/mechanical pressure
 							! DiffusionSimulation:
 								! Theo->Effective (via T)
 								! Diffusion on Effective
 								! Effective->Theo
 									! And Effective stays for reading, exactly like WaterMomenta
-			- Water and Air density adjustments
+			= Water and Air density adjustments
 				- Depends on choices above at Ingress/Egress pressure formulas (*)
 					! i.e. choice of reference density for Water and Air
-				- Current thought: we multiply water and air read by precalc'd multipliers based on density ratios
-					- But could reuse temperature work above
 
 			- Interact with air velocity @
 				- Blasts

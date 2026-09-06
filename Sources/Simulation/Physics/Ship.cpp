@@ -4404,6 +4404,22 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
         totalWaterPre += mPoints.GetWater(pointIndex);
     }
 
+
+
+
+
+    // TODOTEST
+    float const waterFoobar =
+        Formulae::CalculateWaterDensity(simulationParameters.WaterTemperature, simulationParameters)
+        / SimulationParameters::WaterMass;
+
+    float const airFoobar =
+        Formulae::CalculateAirDensity(simulationParameters.AirTemperature, simulationParameters)
+        / SimulationParameters::AirMass;
+
+
+
+
     //
     // Water step
     //
@@ -4529,7 +4545,7 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 //
 
                 float bernoulliVelocityAlongSpring;
-                float const dwy = dw + dy;
+                float const dwy = dw / waterFoobar + dy;
                 if (dwy >= 0.0f)
                 {
                     // Gained velocity goes from point to other endpoint
@@ -5031,12 +5047,12 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
                 if (dAir >= 0.0f)
                 {
                     // Gained velocity goes from point to other endpoint
-                    bernoulliVelocityAlongSpring = sqrtf(2.0f * dAir);
+                    bernoulliVelocityAlongSpring = sqrtf(2.0f * dAir / airFoobar);
                 }
                 else
                 {
                     // Gained velocity goes from other endpoint to point
-                    bernoulliVelocityAlongSpring = -sqrtf(2.0f * -dAir);
+                    bernoulliVelocityAlongSpring = -sqrtf(2.0f * -dAir / airFoobar);
                 }
 
                 float const relVelocity =
