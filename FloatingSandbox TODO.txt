@@ -2937,7 +2937,7 @@
 				+ Wrong: we were dividing norm factor by # of iters
 					+ Redo like that
 
-			= Re-look into jaggedness
+			+ Re-look into jaggedness
 				X Orig shading is even worse
 				+ Retry smoother upness (which one?) to reduce jaggedness
 					+ Water upness as std::max(springNormalizedVector.y, 0.0f)
@@ -2948,7 +2948,7 @@
 						+ SHOOT: OK
 						+ Obliquity: (still jagged though, but a bit less)
 					X Still jagged, removed
-				= Try @ render: 
+				+ Try @ render: 
 					+ Cap @ fragment, not @ vertex
 						+ Flood test: way less jagged!
 						+ SHOOT: ~OK, flutters
@@ -2961,8 +2961,8 @@
 							+ Change default
 							+ Obliquity: OK
 						+ Adjust shader comment to say we leave it overflow
-					- Experiment with different cubic root vals
-					- Nail down default for water lod
+					+ Experiment with different cubic root vals
+					+ Nail down default for water lod: 0.734375
 					
 			+ Run in debug (exercise assert's)
 
