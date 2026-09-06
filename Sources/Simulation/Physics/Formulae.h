@@ -52,7 +52,8 @@ public:
             * SimulationParameters::GravityMagnitude;
     }
 
-    // Calculates the pressure exherted by the 1m2 column of air at the given y, in Pa
+    // Calculates the pressure exherted by the 1m2 column of air at the given y, in Pa.
+    // Ignores ocean surface
     static float CalculateAirColumnPressureAt(
         float y,
         float airDensity,
@@ -61,11 +62,35 @@ public:
         // While the real barometric formula is exponential, here we simplify it as linear:
         //      - Pressure is zero at y = MaxWorldHeight+10%
         //      - Pressure is AirPressureAtSeaLevel at y = 0
+
         float const seaLevelPressure =
             SimulationParameters::AirPressureAtSeaLevel
             * (airDensity / SimulationParameters::AirMass); // Adjust for density, assuming linear relationship
+
         return seaLevelPressure
             * (SimulationParameters::HalfMaxWorldHeight * 1.1f - y) / (SimulationParameters::HalfMaxWorldHeight * 1.1f);
+    }
+
+    // Calculates the pressure exherted by the 1m2 column of air at the given y, in equivalent
+    // water height units.
+    // Stops at the ocean surface.
+    static float CalculateAirColumnPressureInEquivalentWaterHeightAt(
+        float y,
+        float oceanSurfaceY,
+        float airDensity,
+        SimulationParameters const & /*simulationParameters*/)
+    {
+        // While the real barometric formula is exponential, here we simplify it as linear:
+        //      - Pressure is zero at y = MaxWorldHeight+10%
+        //      - Pressure is AirPressureAtSeaLevel at y = 0
+
+        float const seaLevelPressure =
+            SimulationParameters::AirPressureAtSeaLevel
+            * (airDensity / SimulationParameters::AirMass) // Adjust for density, assuming linear relationship
+            / (SimulationParameters::WaterMass * SimulationParameters::GravityMagnitude); // Convert to equivalent watr height units
+
+        return seaLevelPressure
+            * (SimulationParameters::HalfMaxWorldHeight * 1.1f - std::max(y, oceanSurfaceY)) / (SimulationParameters::HalfMaxWorldHeight * 1.1f);
     }
 
     // Calculates the pressure exherted by a 1m2 column of water of the given height, in Pa
@@ -76,6 +101,21 @@ public:
     {
         return waterDensity * height // Volume
             * SimulationParameters::GravityMagnitude;
+    }
+
+    // Calculates the pressure exherted by the ocean water at the given y, in equivalent
+    // water height units.
+    // Zero if above water.
+    static float CalculateOceanWaterPressureInEquivalentWaterHeightAt(
+        float y,
+        float oceanSurfaceY,
+        float waterDensity,
+        SimulationParameters const & /*simulationParameters*/)
+    {
+        float const oceanWaterHeight = std::max(oceanSurfaceY - y, 0.0f);
+
+        return waterDensity * oceanWaterHeight // Volume
+            / SimulationParameters::WaterMass;
     }
 
     // Calculates the total (air above + water) pressure at the given y, in N/m2 (Pa)

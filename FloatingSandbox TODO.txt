@@ -3056,7 +3056,7 @@
 						! Old ones too?!?
 					+ After removing code, still no flotsam - will ignore
 
-				= Redesign water pressure calcn's to a) simplify, and b) take rain into account
+				+ Redesign external pressure calcn's to simplify
 
 					! Axioms:
 						- W and A at a point represent the *pressure* built-up at that point until that moment
@@ -3167,11 +3167,16 @@
 							+ Formulae
 							+ Diffusion
 					
-					- Redesign water pressure calcn's to a) simplify, and b) take rain into account (if possible)
-
+					+ Redesign water pressure calcn's to a) simplify, and b) take rain into account (if possible)
+						! Control: air=10.3008/10.301 @ startup; externalTotalPressure matches until underwater
+						+ Do
+						+ Cleanup logs
 
 				- Water pump
-					- Just nail down externalWaterHeight
+					+ Do we need externalWaterHeight for pumps, other than as a switch? NO
+					- Just nail down externalWaterHeight/internalWaterHeight
+						- internalWaterHeight is Water
+						- externalWaterHeight is pointDepth
 					- Nuke internal pressure
 
 				- Rain
@@ -3185,10 +3190,10 @@
 				- Cleanup
 					- Comments
 					- Code
-						- See if can simplify math by having Formulae directly in equivalent water height's
-							- Water
-							- Air
-					- Points.h: commented-out GetCumulatedOutflownAirPressure
+						+ See if can simplify math by having Formulae directly in equivalent water height's
+							+ Water
+							+ Air
+					+ Points.h: commented-out GetCumulatedOutflownAirPressure
 
 			+ Settings plan:
 				+ Intake adjust - water & air
@@ -3242,6 +3247,7 @@
 								- TODO: do we really need many reads for air? If not, can just be local to WaterDiffusion
 									- As we will probably introduce "effective water" concept for density adjustments, and those will be local
 									- Readings:
+										- Ingress/Egress
 										- Physics Probe tool
 										- Surface forces/mechanical pressure
 							! DiffusionSimulation:
@@ -3277,13 +3283,17 @@
 				- Flood, Internal Pressure:
 					- First off, rename: "Internal Pressure" -> "Air Pressure"
 						- Also @ SettingsDialog
-					- Both tools: rate, radius, and velocity injection
+						- Also @ tool itself
+					- Both tools: rate/flow, radius, and velocity injection
 						- But keep triangle thing, as this tool might be used on stretched surfaces
 							- Triangle thing only if no points faound in radius; keep exactly as it is then, but inject at all three points
 								- Based on bary coords?
 						- Also slider for velocity (momenta)
 							- -> Android plan: all new settings
 			- Imparted water and air velocities w/move tool - et other tools?
+
+			- Do we need to do anything for "internal" pressure diffused from ship physics metadata?
+				- Where do we distribute it?
 
 			+ Render full water range
 				! The +1 by rendering is due to bottom having full water, top having 0 - interpolation pushes blue all the way up
@@ -3371,9 +3381,16 @@
 			- Lower bulkheads @ default Titanic & make air escape, as it now takes forever
 
 
-		- New electrical element: pressure switch
-			- Acts with delta pressure - TODO: towards interior and towards exterior types?
-				- Total pressures
+		- New electrical elements: 
+			- Pressure switch
+				- Acts with delta pressure - TODO: towards interior and towards exterior types?
+					- Total pressures
+			- Depth switch
+			- Pumps rearc:
+				- First off: do we really need to deal with pumps at IntakeWaterAndAir? Only if we need to count them
+				- Kinds:
+					- WaterPump in/out
+					- AirPump in/out x with_tank_without_tank
 
 		- Android port plan:
 			- Water shader

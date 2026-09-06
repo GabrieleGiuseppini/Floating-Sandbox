@@ -2567,20 +2567,34 @@ void Ship::UpdatePressureAndWaterInflow(
 
             float const pointDepth = mPoints.GetCachedDepth(pointIndex);
 
-            // External water height
-            //
-            // We also incorporate rain in the sources of external water height:
-            // - If point is below water surface: external water height is due to depth
-            // - If point is above water surface: external water height is due to rain
-            float const externalWaterHeight = std::max(
-                pointDepth + 0.1f, // Magic number to force flotsam to take some water in and eventually sink
-                rainEquivalentWaterHeight); // At most is one meter, so does not interfere with underwater pressure
-
-            // Internal water height
-            float const internalWaterHeight = mPoints.GetWater(pointIndex);
-
             if (pointCompositeLeaking.LeakingSources.StructuralLeak != 0.0f)
             {
+                float const pointY = mPoints.GetPosition(pointIndex).y;
+
+                //
+                // Calculate atmospheric pressure at this point, in equivalent
+                // water units
+                //
+
+                float const oceanSurfaceY = pointY + pointDepth;
+
+                float const atmosphericPressureAtPoint = Formulae::CalculateAirColumnPressureInEquivalentWaterHeightAt(
+                    pointY,
+                    oceanSurfaceY,
+                    effectiveAirDensity,
+                    simulationParameters);
+
+                //
+                // Calculate water pressure at this point, in equivalent
+                // water units
+                //
+
+                float const oceanWaterPressureAtPoint = Formulae::CalculateOceanWaterPressureInEquivalentWaterHeightAt(
+                    pointY,
+                    oceanSurfaceY,
+                    effectiveWaterDensity,
+                    simulationParameters);
+
                 //
                 // 1. Update water due to structural leaks (holes)
                 //
@@ -2591,42 +2605,14 @@ void Ship::UpdatePressureAndWaterInflow(
                     //  v**2/2 + Dp/density = c (assuming y of incoming water does not change along the intake)
                     //      With: Dp = delta pressure = |total external pressure - total internal pressure|
                     //
-                    // However, given the simulation's propensity to compress air too much, we lower water intake
-                    // by only considering the external _water_ pressure (i.e. ignoring atmospheric pressure), also
-                    // simplifying the math along the way.
-                    //
-                    // With this simplification, Dp = Dh * density * g, with Dh = |external water height - internal water height|.
                     // Considering that at equilibrium we have v=0 and Dp=0, then c is 0, and thus velocity becomes:
-                    //  v = +/- sqrt(2*g*|Dh|)
+                    //  v = +/- sqrt(2*g*|Dp|)
                     //
 
+                    // External total pressure in equivalent water height units
+                    float const externalTotalPressure = atmosphericPressureAtPoint + oceanWaterPressureAtPoint;
 
-
-
-                    // TODOTEST: ORIG
-                    //float incomingWaterVelocity_Structural;
-                    //if (externalWaterHeight >= internalWaterHeight)
-                    //{
-                    //    // Incoming water
-                    //    incomingWaterVelocity_Structural = sqrtf(2.0f * SimulationParameters::GravityMagnitude * (externalWaterHeight - internalWaterHeight));
-                    //}
-                    //else
-                    //{
-                    //    // Outgoing water
-                    //    incomingWaterVelocity_Structural = -sqrtf(2.0f * SimulationParameters::GravityMagnitude * (internalWaterHeight - externalWaterHeight));
-                    //}
-
-
-                    // TODOTEST: NEW
-                    float const externalTotalPressure =
-                        Formulae::PressureToEquivalentWaterHeight(
-                            Formulae::CalculateTotalPressureAt(
-                                mPoints.GetPosition(pointIndex).y,
-                                mPoints.GetPosition(pointIndex).y + pointDepth, // oceanSurfaceY
-                                effectiveAirDensity,
-                                effectiveWaterDensity,
-                                simulationParameters));
-
+                    // Internal total pressure in equivalent water height units
                     float const internalTotalPressure = mPoints.GetWater(pointIndex) + mPoints.GetAirPressure(pointIndex);
 
                     float incomingWaterVelocity_Structural;
@@ -2644,18 +2630,6 @@ void Ship::UpdatePressureAndWaterInflow(
                         incomingWaterVelocity_Structural = -sqrtf(2.0f * SimulationParameters::GravityMagnitude * (internalTotalPressure - externalTotalPressure));
                     }
 
-
-
-
-
-
-
-
-
-
-
-
-
                     //
                     // 1.2) In/Outtake water according to velocity:
                     // - During dt, we move a volume of water Vw equal to A*v*dt; the equivalent change in water
@@ -2667,6 +2641,9 @@ void Ship::UpdatePressureAndWaterInflow(
                         * SimulationParameters::SimulationStepTimeDuration<float>
                         * mPoints.GetMaterialWaterIntake(pointIndex)
                         * simulationParameters.WaterIntakeAdjustment;
+
+                    // TODO: rain
+                    (void)rainEquivalentWaterHeight; // Rename it
 
                     //
                     // 1.3) Update water
@@ -2710,16 +2687,12 @@ void Ship::UpdatePressureAndWaterInflow(
                     // - If abovewater: enters/leaves and (air/total) pressure outside <> air pressure inside
                     //
 
-                    // External air pressure in equivalent water height
+                    // External air pressure in equivalent water height units
                     float const externalAirPressure = (pointDepth >= 0.0f)
                         ? 0.0f // Device to force all air to be expelled when underwater
-                        : Formulae::PressureToEquivalentWaterHeight(
-                            Formulae::CalculateAirColumnPressureAt(
-                                mPoints.GetPosition(pointIndex).y,
-                                effectiveAirDensity,
-                                simulationParameters));
+                        : atmosphericPressureAtPoint;
 
-                    // Internal pressure in equivalent water height
+                    // Internal air pressure in equivalent water height units
                     float const internalAirPressure = mPoints.GetAirPressure(pointIndex);
 
                     // Check conditions for air pressure moving:
@@ -2787,14 +2760,14 @@ void Ship::UpdatePressureAndWaterInflow(
                 if (waterPumpForce > 0.0f)
                 {
                     // Inward pump: only works if underwater
-                    deltaWater_Forced = (externalWaterHeight > 0.0f)
+                    deltaWater_Forced = (pointDepth > 0.0f)
                         ? waterPumpForce * waterPumpPowerMultiplier // No need to cap as sea is infinite
                         : 0.0f;
                 }
                 else
                 {
                     // Outward pump: only works if water inside
-                    deltaWater_Forced = (internalWaterHeight > 0.0f)
+                    deltaWater_Forced = (mPoints.GetWater(pointIndex) > 0.0f)
                         ? waterPumpForce * waterPumpPowerMultiplier // We'll cap it
                         : 0.0f;
                 }
