@@ -2968,7 +2968,7 @@
 
 			! Config: a_speed/w_speed=1.0/1.0; damp=1, bounce=1, squeeze=0.312, iters=2; lod=0.734375
 
-			= Ingress/Egress and bubbles
+			+ Ingress/Egress and bubbles
 				+ Water: enters or leaves based on internal total pressure <-> total external pressure differential
 					+ Consider total external and total internal pressures - thus including air
 					+ Put back material water intake
@@ -3188,15 +3188,15 @@
 					X Check if still needed (paper? test w/old)
 					X If so: just add offset (0.1) to y
 
-				= Cleanup
+				+ Cleanup
 					+ Comments
 					+ Code
 						+ See if can simplify math by having Formulae directly in equivalent water height's
 							+ Water
 							+ Air
 					+ Points.h: commented-out GetCumulatedOutflownAirPressure
-
-					- Check assembly of external pressure calculations
+					+ Check assembly of external pressure calculations
+						+ 761 -> 725
 
 			+ Settings plan:
 				+ Intake adjust - water & air
