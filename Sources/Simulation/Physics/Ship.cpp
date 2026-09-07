@@ -2536,19 +2536,23 @@ void Ship::UpdatePressureAndWaterInflow(
     float totalWaterIntakeMeasured = 0.0f;
     float totalAirIntakeMeasured = 0.0f;
 
-    // Equivalent depth of a point when it's exposed to rain
+    // Rain
+    // Equivalent depth of a point when it's exposed to rain...
     float const rainEquivalentWaterHeight =
         stormParameters.RainQuantity // m/h
         / 3600.0f // -> m/s
         * SimulationParameters::SimulationStepTimeDuration<float> // -> m/step
         * simulationParameters.RainFloodAdjustment;
+    // ...converted to a quantity of water via Bernoulli
+    float const rainWaterVelocity = std::sqrtf(2.0f * SimulationParameters::GravityMagnitude * rainEquivalentWaterHeight); // Bernoulli velocity
 
+    // Water pump power multiplier
     float const waterPumpPowerMultiplier =
         simulationParameters.WaterPumpPowerAdjustment
         * (simulationParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
+    // Air bubbles
     bool const doGenerateAirBubbles = (simulationParameters.AirBubblesDensity != 0.0f);
-
     float const cumulatedOutflownUnderwaterAirPressureThresholdForAirBubbles =
         SimulationParameters::AirBubblesDensityToCumulatedOutflownUnderwaterAirPressure(simulationParameters.AirBubblesDensity);
 
@@ -2628,7 +2632,16 @@ void Ship::UpdatePressureAndWaterInflow(
                     }
 
                     //
-                    // 1.2) In/Outtake water according to velocity:
+                    // 1.2) Add rain - but only if we're exposed
+                    //
+
+                    if (pointDepth <= 0.0f)
+                    {
+                        incomingWaterVelocity_Structural += rainWaterVelocity;
+                    }
+
+                    //
+                    // 1.3) In/Outtake water according to velocity:
                     // - During dt, we move a volume of water Vw equal to A*v*dt; the equivalent change in water
                     //   height is thus Vw/A, i.e. v*dt
                     //
@@ -2639,11 +2652,8 @@ void Ship::UpdatePressureAndWaterInflow(
                         * mPoints.GetMaterialWaterIntake(pointIndex)
                         * simulationParameters.WaterIntakeAdjustment;
 
-                    // TODO: rain
-                    (void)rainEquivalentWaterHeight; // Rename it
-
                     //
-                    // 1.3) Update water
+                    // 1.4) Update water
                     //
 
                     if (deltaWater_Structural < 0.0f)
@@ -2662,8 +2672,10 @@ void Ship::UpdatePressureAndWaterInflow(
                         pointIndex,
                         mPoints.GetWater(pointIndex) + deltaWater_Structural);
 
-                    // Update measured water intake
                     //
+                    // 1.5) Update measured water intake
+                    //
+
                     // Only count water taken if this point has a spring, to avoid counting
                     // water for orphaned particles, and not counting ropes, to prevent
                     // "rushing water" sound from playing for ropes

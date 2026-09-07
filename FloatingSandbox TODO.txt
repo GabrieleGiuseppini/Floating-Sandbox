@@ -3180,9 +3180,9 @@
 					+ Nuke internal pressure
 					+ Test pumps w/submersible
 
-				- Rain
-					- Add precalc'd rain water to incoming structural water
-						- Ideally only if above water, if there's an existing codepath for it
+				+ Rain
+					+ Add precalc'd rain water to incoming structural water
+						+ Ideally only if above water, if there's an existing codepath for it
 
 				X Flotsam
 					X Check if still needed (paper? test w/old)
@@ -3195,6 +3195,8 @@
 							+ Water
 							+ Air
 					+ Points.h: commented-out GetCumulatedOutflownAirPressure
+
+					- Check assembly of external pressure calculations
 
 			+ Settings plan:
 				+ Intake adjust - water & air
