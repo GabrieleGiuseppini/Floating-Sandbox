@@ -3228,11 +3228,11 @@
 				+ Remove:
 					+ Crazyness
 
-			- Scorecard:
-				- Config: 
-				- Shoot:
-				- Flood test:
-				- Default ship:
+			+ Scorecard:
+				+ Config: a_speed/w_speed=1.0/1.0; damp=1, bounce=1, squeeze=0.312, iters=2; lod=0.734375 (default); contrast=0.71875 (default)
+					+ Nail down contrast
+				+ Shoot: OK
+				+ Flood test: OK
 
 			----- Time for nailing down constants?
 
@@ -3303,7 +3303,7 @@
 				- BUT: conversion to Pa requires plugging-in correct densities (*)
 			- Tools:
 				- Flood, Internal Pressure:
-					- First off, rename: "Internal Pressure" -> "Air Pressure"
+					- First off, rename: "Internal Pressure" -> "(Inject) Air Pressure"
 						- Also @ SettingsDialog
 						- Also @ tool itself
 					- Both tools: rate/flow, radius, and velocity injection
