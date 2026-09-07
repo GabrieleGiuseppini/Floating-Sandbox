@@ -2567,10 +2567,12 @@ void Ship::UpdatePressureAndWaterInflow(
             // Point could be structurally hull or not; could be leaking if it's a watertight door
 
             float const pointDepth = mPoints.GetCachedDepth(pointIndex);
+            bool const isPointRope = mPoints.IsRope(pointIndex);
 
             if (pointCompositeLeaking.LeakingSources.StructuralLeak != 0.0f)
             {
                 float const pointY = mPoints.GetPosition(pointIndex).y;
+                bool const pointHasSprings = !mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty();
 
                 //
                 // Calculate atmospheric pressure at this point, in equivalent
@@ -2679,8 +2681,8 @@ void Ship::UpdatePressureAndWaterInflow(
                     // Only count water taken if this point has a spring, to avoid counting
                     // water for orphaned particles, and not counting ropes, to prevent
                     // "rushing water" sound from playing for ropes
-                    if (!mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty() // Note that leaking points have no connected triangles
-                        && !mPoints.IsRope(pointIndex))
+                    if (pointHasSprings // Note that leaking points have no connected triangles, hence we check for springs
+                        && !isPointRope)
                     {
                         totalWaterIntakeMeasured += deltaWater_Structural;
                     }
@@ -2748,8 +2750,8 @@ void Ship::UpdatePressureAndWaterInflow(
                         // Only count air taken if this point has a spring, to avoid counting
                         // air and generating bubbles for orphaned particles, and not counting
                         // ropes, for symmetry with water
-                        if (!mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty() // Note that leaking points have no connected triangles
-                            && !mPoints.IsRope(pointIndex))
+                        if (pointHasSprings // Note that leaking points have no connected triangles, hence we check for springs
+                            && !isPointRope)
                         {
                             totalAirIntakeMeasured += deltaAirGained;
                         }
@@ -2800,7 +2802,7 @@ void Ship::UpdatePressureAndWaterInflow(
                 // Generate air bubbles - but not on ropes as that looks awful,
                 // and only when underwater
                 if (doGenerateAirBubbles
-                    && !mPoints.IsRope(pointIndex)
+                    && !isPointRope
                     && pointDepth > 0.0f)
                 {
                     InternalSpawnAirBubble(
