@@ -4150,35 +4150,35 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            // Flood Radius
+            // Flood Tool Radius
             {
-                mFloodRadiusSlider = new SliderControl<float>(
+                mFloodToolRadiusSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Radius"),
-                    _("How wide an area is flooded or drained by the flood tool (m)."),
+                    _("How wide an area is flooded with or drained by the flood tool (m)."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::FloodRadius, value);
+                        this->mLiveSettings.SetValue(GameSettings::FloodToolRadius, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinFloodRadius(),
-                        mGameControllerSettingsOptions.GetMaxFloodRadius()));
+                        mGameControllerSettingsOptions.GetMinFloodToolRadius(),
+                        mGameControllerSettingsOptions.GetMaxFloodToolRadius()));
 
                 sizer->Add(
-                    mFloodRadiusSlider,
+                    mFloodToolRadiusSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            // Flood Quantity
+            // Flood Tool Flow
             {
-                mFloodQuantitySlider = new SliderControl<float>(
+                mFloodToolFlowSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
@@ -4187,16 +4187,43 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     _("How much water is injected or drained by the flood tool (m3)."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::FloodQuantity, value);
+                        this->mLiveSettings.SetValue(GameSettings::FloodToolFlow, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinFloodToolFlow(),
+                        10.0f,
+                        mGameControllerSettingsOptions.GetMaxFloodToolFlow()));
+
+                sizer->Add(
+                    mFloodToolFlowSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Flood Tool Velocity
+            {
+                mFloodToolVelocitySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Splatter"),
+                    _("The velocity with which water is injected by the flood tool (m/s)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FloodToolVelocity, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinFloodQuantity(),
-                        mGameControllerSettingsOptions.GetMaxFloodQuantity()));
+                        mGameControllerSettingsOptions.GetMinFloodToolVelocity(),
+                        mGameControllerSettingsOptions.GetMaxFloodToolVelocity()));
 
                 sizer->Add(
-                    mFloodQuantitySlider,
-                    wxGBPosition(0, 2),
+                    mFloodToolVelocitySlider,
+                    wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -4214,7 +4241,175 @@ void SettingsDialog::PopulateOtherToolsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 3),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
+    // Inject Air Tool
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Inject Air Tool"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Icons
+            {
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "air_tank_cursor_up"
+                    },
+                    gameAssetManager);
+
+                sizer->Add(
+                    iconVSizer,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
+            }
+
+            // Inject Air Tool Radius
+            {
+                mInjectAirToolRadiusSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Radius"),
+                    _("How wide an area is injected with or drained by the inject air tool (m)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::InjectAirToolRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinInjectAirToolRadius(),
+                        mGameControllerSettingsOptions.GetMaxInjectAirToolRadius()));
+
+                sizer->Add(
+                    mInjectAirToolRadiusSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Inject Air Tool Flow
+            {
+                mInjectAirToolFlowSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Flow"),
+                    _("How much air is injected or drained by the inject air tool (m3)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::InjectAirToolFlow, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinInjectAirToolFlow(),
+                        10.0f,
+                        mGameControllerSettingsOptions.GetMaxInjectAirToolFlow()));
+
+                sizer->Add(
+                    mInjectAirToolFlowSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Inject Air Tool Velocity
+            {
+                mInjectAirToolVelocitySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Splatter"),
+                    _("The velocity with which air is injected by the inject air tool (m/s)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::InjectAirToolVelocity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinInjectAirToolVelocity(),
+                        mGameControllerSettingsOptions.GetMaxInjectAirToolVelocity()));
+
+                sizer->Add(
+                    mInjectAirToolVelocitySlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            WxHelpers::MakeAllExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 3),
+            wxGBSpan(1, 3),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
+    // Options
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Options"));
+
+        // Apply Physics Tools to Ships
+        {
+            mDoApplyPhysicsToolsToShipsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect Ships"));
+            mDoApplyPhysicsToolsToShipsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on Ships."));
+            mDoApplyPhysicsToolsToShipsCheckBox->Bind(
+                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                [this](wxCommandEvent & event)
+                {
+                    mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToShips, event.IsChecked());
+                    OnLiveSettingsChanged();
+                });
+
+            boxSizer->Add(mDoApplyPhysicsToolsToShipsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+        }
+
+        // Apply Physics Tools to NPCs
+        {
+            mDoApplyPhysicsToolsToNpcsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect NPCs"));
+            mDoApplyPhysicsToolsToNpcsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on NPCs."));
+            mDoApplyPhysicsToolsToNpcsCheckBox->Bind(
+                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                [this](wxCommandEvent & event)
+                {
+                    mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs, event.IsChecked());
+                    OnLiveSettingsChanged();
+                });
+
+            boxSizer->Add(mDoApplyPhysicsToolsToNpcsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 6),
+            wxGBSpan(2, 1),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -4310,18 +4505,18 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 2),
+            wxGBPosition(1, 0),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     //
-    // Inject Pressure Tool
+    // WindMaker Tool
     //
 
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Inject Pressure Tool"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("WindMaker Tool"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
@@ -4331,7 +4526,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                 auto * iconVSizer = MakeToolVerticalStripIcons(
                     boxSizer->GetStaticBox(),
                     {
-                        "air_tank_cursor_up"
+                        "wind_cursor_up"
                     },
                     gameAssetManager);
 
@@ -4343,27 +4538,26 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            // Inject Pressure Quantity
+            // Wind speed
             {
-                mInjectPressureQuantitySlider = new SliderControl<float>(
+                mWindMakerWindSpeedSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Flow"),
-                    _("Adjusts the number of atmospheres that are injected or drained by the inject pressure tool (atm)."),
+                    _("Wind Speed"),
+                    _("Wind speed conjured by the WindMaker tool (Km/h)."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::InjectPressureQuantity, value);
+                        this->mLiveSettings.SetValue(GameSettings::WindMakerToolWindSpeed, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions.GetMinInjectPressureQuantity(),
-                        1.0f,
-                        mGameControllerSettingsOptions.GetMaxInjectPressureQuantity()));
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinWindMakerToolWindSpeed(),
+                        mGameControllerSettingsOptions.GetMaxWindMakerToolWindSpeed()));
 
                 sizer->Add(
-                    mInjectPressureQuantitySlider,
+                    mWindMakerWindSpeedSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -4381,7 +4575,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 4),
+            wxGBPosition(1, 2),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -4477,7 +4671,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 0),
+            wxGBPosition(1, 3),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -4548,122 +4742,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 2),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL,
-            CellBorderOuter);
-    }
-
-    //
-    // WindMaker Tool
-    //
-
-    {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("WindMaker Tool"));
-
-        {
-            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
-
-            // Icons
-            {
-                auto * iconVSizer = MakeToolVerticalStripIcons(
-                    boxSizer->GetStaticBox(),
-                    {
-                        "wind_cursor_up"
-                    },
-                    gameAssetManager);
-
-                sizer->Add(
-                    iconVSizer,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
-                    CellBorderInner);
-            }
-
-            // Wind speed
-            {
-                mWindMakerWindSpeedSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Wind Speed"),
-                    _("Wind speed conjured by the WindMaker tool (Km/h)."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::WindMakerToolWindSpeed, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinWindMakerToolWindSpeed(),
-                        mGameControllerSettingsOptions.GetMaxWindMakerToolWindSpeed()));
-
-                sizer->Add(
-                    mWindMakerWindSpeedSlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            WxHelpers::MakeAllExpandable(sizer);
-
-            boxSizer->Add(
-                sizer,
-                1,
-                wxEXPAND | wxALL,
-                StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            boxSizer,
-            wxGBPosition(1, 3),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL,
-            CellBorderOuter);
-    }
-
-    //
-    // Options
-    //
-
-    {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Options"));
-
-        // Apply Physics Tools to Ships
-        {
-            mDoApplyPhysicsToolsToShipsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect Ships"));
-            mDoApplyPhysicsToolsToShipsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on Ships."));
-            mDoApplyPhysicsToolsToShipsCheckBox->Bind(
-                wxEVT_COMMAND_CHECKBOX_CLICKED,
-                [this](wxCommandEvent & event)
-                {
-                    mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToShips, event.IsChecked());
-                    OnLiveSettingsChanged();
-                });
-
-            boxSizer->Add(mDoApplyPhysicsToolsToShipsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
-        }
-
-        // Apply Physics Tools to NPCs
-        {
-            mDoApplyPhysicsToolsToNpcsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect NPCs"));
-            mDoApplyPhysicsToolsToNpcsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on NPCs."));
-            mDoApplyPhysicsToolsToNpcsCheckBox->Bind(
-                wxEVT_COMMAND_CHECKBOX_CLICKED,
-                [this](wxCommandEvent & event)
-                {
-                    mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs, event.IsChecked());
-                    OnLiveSettingsChanged();
-                });
-
-            boxSizer->Add(mDoApplyPhysicsToolsToNpcsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
-        }
-
-        gridSizer->Add(
-            boxSizer,
-            wxGBPosition(1, 4),
+            wxGBPosition(1, 5),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -7049,11 +7128,14 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     // Other Tools
     //
 
-    mFloodRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodRadius));
-    mFloodQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::FloodQuantity));
+    mFloodToolRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodToolRadius));
+    mFloodToolFlowSlider->SetValue(settings.GetValue<float>(GameSettings::FloodToolFlow));
+    mFloodToolVelocitySlider->SetValue(settings.GetValue<float>(GameSettings::FloodToolVelocity));
+    mInjectAirToolRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::InjectAirToolRadius));
+    mInjectAirToolFlowSlider->SetValue(settings.GetValue<float>(GameSettings::InjectAirToolFlow));
+    mInjectAirToolVelocitySlider->SetValue(settings.GetValue<float>(GameSettings::InjectAirToolVelocity));
     mHeatBlasterRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterRadius));
     mHeatBlasterHeatFlowSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterHeatFlow));
-    mInjectPressureQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::InjectPressureQuantity));
     mRepairRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::RepairRadius));
     mRepairSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RepairSpeedAdjustment));
     mScrubRustRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::ScrubRustToolRadius));

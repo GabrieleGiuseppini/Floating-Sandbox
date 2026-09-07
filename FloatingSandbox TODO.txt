@@ -3294,6 +3294,7 @@
 				- We've changed unit of pressure, hence current math is invalid!
 				- Do we do it where we currently use InternalPressure, or do we bounce @ UpdateWaterAndAirPressure?
 					- Depending on answer: need to nail down diffusion in hull
+						- ...which also impacts InjectAir tool - either we do or we don't ignore hull points
 				- Option 1:
 					- One step (replacement of old "InternalPressure") sets all hull points to avg of their points
 						- TODO: should the looked at points also include hull points? If not can't propagate
@@ -3301,11 +3302,11 @@
 				- Test Inflatable Balloon
 			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure 
 				- BUT: conversion to Pa requires plugging-in correct densities (*)
-			- Tools:
-				- Flood, Internal Pressure:
-					- First off, rename: "Internal Pressure" -> "(Inject) Air Pressure"
-						- Also @ SettingsDialog
-						- Also @ tool itself
+			= Tools:
+				= Flood, Internal Pressure:
+					+ First off, rename: "Internal Pressure" -> "(Inject) Air Pressure"
+						+ Also @ SettingsDialog
+						+ Also @ tool itself
 					- Both tools: rate/flow, radius, and velocity injection
 						- But keep triangle thing, as this tool might be used on stretched surfaces
 							- Triangle thing only if no points faound in radius; keep exactly as it is then, but inject at all three points
@@ -3418,11 +3419,19 @@
 			- AirBubblesDensity setting de-serialization: 
 				- PostDeserialization hook @ Settings.cpp/h
 				- Use it at SettingsManager
+			- GameController:
+				- New settings
+					- Thew new ones relative to pressure
+					- Fllod/InjectAir tools
+				- Interactions:
+					- InjectPressureAt -> InjectAirAt, same signature as FloodAt
 			- New settings:
 				- "Pressure" or "Water and Pressure":
 					- Intake adjust - water & air
 					- Air and Water diffusion speeds
 					- Air pressure feedback on water
+					- Gone: crazyness
+				- Tools: new settings X 6
 				- Perf:
 					- # of water iters
 

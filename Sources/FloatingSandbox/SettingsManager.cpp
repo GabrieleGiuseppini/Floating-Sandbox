@@ -185,9 +185,12 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, BombBlastForceAdjustment);
     ADD_GC_SETTING(float, BombBlastHeat);
     ADD_GC_SETTING(float, AntiMatterBombImplosionStrength);
-    ADD_GC_SETTING(float, FloodRadius);
-    ADD_GC_SETTING(float, FloodQuantity);
-    ADD_GC_SETTING(float, InjectPressureQuantity);
+    ADD_GC_SETTING(float, FloodToolRadius);
+    ADD_GC_SETTING(float, FloodToolFlow);
+    ADD_GC_SETTING(float, FloodToolVelocity);
+    ADD_GC_SETTING(float, InjectAirToolRadius);
+    ADD_GC_SETTING(float, InjectAirToolFlow);
+    ADD_GC_SETTING(float, InjectAirToolVelocity);
     ADD_GC_SETTING(float, BlastToolRadius);
     ADD_GC_SETTING(float, BlastToolForceAdjustment);
     ADD_GC_SETTING(float, ScrubRustToolRadius);

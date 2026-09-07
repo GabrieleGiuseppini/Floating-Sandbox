@@ -49,8 +49,8 @@ enum class ToolType : std::uint32_t
     Swirl,
     AntiGravityField,
     Pin,
-    InjectPressure,
-    FloodHose,
+    InjectAir,
+    Flood,
     AntiMatterBomb,
     FireExtinguishingBomb,
     ImpactBomb,
@@ -1997,11 +1997,11 @@ private:
     wxImage const mCursorImage;
 };
 
-class InjectPressureTool final : public Tool
+class InjectAirTool final : public Tool
 {
 public:
 
-    InjectPressureTool(
+    InjectAirTool(
         IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,
@@ -2030,7 +2030,7 @@ public:
         std::optional<ActionType> newAction;
         if (inputState.IsLeftMouseDown)
         {
-            auto const locus = mGameController.InjectPressureAt(
+            auto const locus = mGameController.InjectAirAt(
                 inputState.MousePosition,
                 inputState.IsShiftKeyDown ? -1.0f : 1.0f);
 
@@ -2128,11 +2128,11 @@ private:
     wxImage const mDownCursorImage;
 };
 
-class FloodHoseTool final : public Tool
+class FloodTool final : public Tool
 {
 public:
 
-    FloodHoseTool(
+    FloodTool(
         IToolManager & toolManager,
         IGameController & gameController,
         SoundController & soundController,

@@ -757,17 +757,29 @@ struct SimulationParameters
 
     static float constexpr BombMass = 5000.0f; // Quite some fat bomb!
 
-    float InjectPressureQuantity; // atm
-    static float constexpr MinInjectPressureQuantity = 0.1f;
-    static float constexpr MaxInjectPressureQuantity = 1000.0f;
+    float FloodToolRadius; // m
+    static float constexpr MinFloodToolRadius = 0.1f;
+    static float constexpr MaxFloodToolRadius = 10.0f;
 
-    float FloodRadius;
-    static float constexpr MinFloodRadius = 0.1f;
-    static float constexpr MaxFloodRadius = 10.0f;
+    float FloodToolFlow; // In height-equivalent units / sec
+    static float constexpr MinFloodToolFlow = 1.0f;
+    static float constexpr MaxFloodToolFlow = 5000.0f;
 
-    float FloodQuantity;
-    static float constexpr MinFloodQuantity = 0.1f;
-    static float constexpr MaxFloodQuantity = 100.0f;
+    float FloodToolVelocity; // m/s
+    static float constexpr MinFloodToolVelocity = 0.0f;
+    static float constexpr MaxFloodToolVelocity = 100.0f;
+
+    float InjectAirToolRadius; // m
+    static float constexpr MinInjectAirToolRadius = 0.1f;
+    static float constexpr MaxInjectAirToolRadius = 10.0f;
+
+    float InjectAirToolFlow; // In height-equivalent units / sec
+    static float constexpr MinInjectAirToolFlow = 1.0f;
+    static float constexpr MaxInjectAirToolFlow = 5000.0f;
+
+    float InjectAirToolVelocity; // m/s
+    static float constexpr MinInjectAirToolVelocity = 0.0f;
+    static float constexpr MaxInjectAirToolVelocity = 100.0f;
 
     float FireExtinguisherRadius;
 

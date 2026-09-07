@@ -1249,46 +1249,99 @@ void Ship::RemoveAllPins()
     mPinnedPoints.RemoveAll();
 }
 
-std::optional<ToolApplicationLocus> Ship::InjectBubblesAt(
+bool Ship::FloodAt(
     vec2f const & targetPos,
-    float currentSimulationTime,
+    float radius,
+    float flowMultiplier,
     SimulationParameters const & simulationParameters)
 {
-    vec2f const position = targetPos.clamp(
-        -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth,
-        -SimulationParameters::HalfMaxWorldHeight, SimulationParameters::HalfMaxWorldHeight);
+    //
+    // New quantity of water:
+    //  - When adding: w' = w + DQ
+    //  - When removing: w' = max(w - max(AQ*w, DQ), 0) = w - min(max(AQ*w, DQ), w)
+    //
 
-    if (float const depth = mParentWorld.GetOceanSurface().GetDepth(position);
-        depth > 0.0f)
-    {
-        InternalSpawnAirBubble(
-            position,
-            depth,
-            SimulationParameters::ShipAirBubbleFinalScale,
-            SimulationParameters::Temperature0,
-            mMaxMaxPlaneId,
-            currentSimulationTime,
-            simulationParameters);
+    float const dq =
+        simulationParameters.FloodToolFlow
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-        return ToolApplicationLocus::World | ToolApplicationLocus::UnderWater;
-    }
-    else
+    float const aq = simulationParameters.IsUltraViolentMode ? 0.8f : 0.5f;
+
+    // Multiplier to get internal pressure delta from water delta
+    float const volumetricWaterPressure = Formulae::CalculateVolumetricWaterPressure(simulationParameters.WaterTemperature, simulationParameters);
+
+    //
+    // Find the (non-ephemeral) non-hull points in the radius
+    //
+
+    float const searchSquareRadius = radius * radius;
+
+    bool anyWasApplied = false;
+    for (auto const pointIndex : mPoints.RawShipPoints())
     {
-        return std::nullopt;
+        if (!mPoints.GetIsHull(pointIndex))
+        {
+            float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+            if (squareDistance < searchSquareRadius)
+            {
+                //
+                // Update water
+                //
+
+                float const w = mPoints.GetWater(pointIndex);
+
+                float actualQuantityOfWaterDelta;
+                if (flowMultiplier >= 0.0f)
+                {
+                    actualQuantityOfWaterDelta = dq;
+                }
+                else
+                {
+                    // Remove a lot when water above 1.0 (it's the extra water that doesn't impact rendered water)
+                    float const aqp = w > 5.0f ? 0.95f : aq;
+
+                    actualQuantityOfWaterDelta = -std::min(
+                        std::max(aqp * w, dq),
+                        w);
+                }
+
+                mPoints.SetWater(
+                    pointIndex,
+                    w + actualQuantityOfWaterDelta);
+
+                //
+                // Update internal pressure
+                //
+
+                float const actualInternalPressureDelta = actualQuantityOfWaterDelta * volumetricWaterPressure;
+
+                mPoints.SetInternalPressure(
+                    pointIndex,
+                    std::max(mPoints.GetInternalPressure(pointIndex) + actualInternalPressureDelta, 0.0f));
+
+                anyWasApplied = true;
+            }
+        }
     }
+
+    return anyWasApplied;
 }
 
-std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
+std::optional<ToolApplicationLocus> Ship::InjectAirAt(
     vec2f const & targetPos,
-    float pressureQuantityMultiplier,
+    float radius,
+    float flowMultiplier,
     SimulationParameters const & simulationParameters)
 {
-    // Delta quantity of pressure, added or removed;
+    // TODO
+    (void)radius;
+
+    // Delta quantity of pressure - in height equivalent units - added or removed;
     // actual quantity removed depends on pre-existing pressure
     float const quantityOfPressureDelta =
-        simulationParameters.InjectPressureQuantity // Number of atm
+        simulationParameters.InjectAirToolFlow // Height-equivalent units
         * SimulationParameters::AirPressureAtSeaLevel // Pressure of 1 atm
-        * pressureQuantityMultiplier
+        * flowMultiplier
         * (simulationParameters.IsUltraViolentMode ? 1000.0f : 1.0f);
 
     //
@@ -1383,7 +1436,7 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
         mPoints.SetAirPressure(
             bestPointIndex,
             std::max(
-                mPoints.GetAirPressure(bestPointIndex) + Formulae::PressureToEquivalentWaterHeight(SimulationParameters::AirPressureAtSeaLevel) * pressureQuantityMultiplier,
+                mPoints.GetAirPressure(bestPointIndex) + Formulae::PressureToEquivalentWaterHeight(SimulationParameters::AirPressureAtSeaLevel) * flowMultiplier,
                 0.0f));
             //std::max(mPoints.GetAirPressure(bestPointIndex) + quantityOfPressureDelta, 0.0f));
 
@@ -1397,82 +1450,33 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
     return std::nullopt;
 }
 
-bool Ship::FloodAt(
+std::optional<ToolApplicationLocus> Ship::InjectBubblesAt(
     vec2f const & targetPos,
-    float radius,
-    float flowSign,
+    float currentSimulationTime,
     SimulationParameters const & simulationParameters)
 {
-    //
-    // New quantity of water:
-    //  - When adding: w' = w + DQ
-    //  - When removing: w' = max(w - max(AQ*w, DQ), 0) = w - min(max(AQ*w, DQ), w)
-    //
+    vec2f const position = targetPos.clamp(
+        -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth,
+        -SimulationParameters::HalfMaxWorldHeight, SimulationParameters::HalfMaxWorldHeight);
 
-    float const dq =
-        simulationParameters.FloodQuantity
-        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-    float const aq = simulationParameters.IsUltraViolentMode ? 0.8f : 0.5f;
-
-    // Multiplier to get internal pressure delta from water delta
-    float const volumetricWaterPressure = Formulae::CalculateVolumetricWaterPressure(simulationParameters.WaterTemperature, simulationParameters);
-
-    //
-    // Find the (non-ephemeral) non-hull points in the radius
-    //
-
-    float const searchSquareRadius = radius * radius;
-
-    bool anyWasApplied = false;
-    for (auto const pointIndex : mPoints.RawShipPoints())
+    if (float const depth = mParentWorld.GetOceanSurface().GetDepth(position);
+        depth > 0.0f)
     {
-        if (!mPoints.GetIsHull(pointIndex))
-        {
-            float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-            if (squareDistance < searchSquareRadius)
-            {
-                //
-                // Update water
-                //
+        InternalSpawnAirBubble(
+            position,
+            depth,
+            SimulationParameters::ShipAirBubbleFinalScale,
+            SimulationParameters::Temperature0,
+            mMaxMaxPlaneId,
+            currentSimulationTime,
+            simulationParameters);
 
-                float const w = mPoints.GetWater(pointIndex);
-
-                float actualQuantityOfWaterDelta;
-                if (flowSign >= 0.0f)
-                {
-                    actualQuantityOfWaterDelta = dq;
-                }
-                else
-                {
-                    // Remove a lot when water above 1.0 (it's the extra water that doesn't impact rendered water)
-                    float const aqp = w > 5.0f ? 0.95f : aq;
-
-                    actualQuantityOfWaterDelta = -std::min(
-                        std::max(aqp * w, dq),
-                        w);
-                }
-
-                mPoints.SetWater(
-                    pointIndex,
-                    w + actualQuantityOfWaterDelta);
-
-                //
-                // Update internal pressure
-                //
-
-                float const actualInternalPressureDelta = actualQuantityOfWaterDelta * volumetricWaterPressure;
-
-                mPoints.SetInternalPressure(
-                    pointIndex,
-                    std::max(mPoints.GetInternalPressure(pointIndex) + actualInternalPressureDelta, 0.0f));
-
-                anyWasApplied = true;
-            }
-        }
+        return ToolApplicationLocus::World | ToolApplicationLocus::UnderWater;
     }
-
-    return anyWasApplied;
+    else
+    {
+        return std::nullopt;
+    }
 }
 
 bool Ship::ToggleAntiMatterBombAt(

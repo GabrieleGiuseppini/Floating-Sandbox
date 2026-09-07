@@ -179,11 +179,14 @@ private:
     SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
 
     // Other Tools
-    SliderControl<float> * mFloodRadiusSlider;
-    SliderControl<float> * mFloodQuantitySlider;
+    SliderControl<float> * mFloodToolRadiusSlider;
+    SliderControl<float> * mFloodToolFlowSlider;
+    SliderControl<float> * mFloodToolVelocitySlider;
+    SliderControl<float> * mInjectAirToolRadiusSlider;
+    SliderControl<float> * mInjectAirToolFlowSlider;
+    SliderControl<float> * mInjectAirToolVelocitySlider;
     SliderControl<float> * mHeatBlasterRadiusSlider;
     SliderControl<float> * mHeatBlasterHeatFlowSlider;
-    SliderControl<float> * mInjectPressureQuantitySlider;
     SliderControl<float> * mRepairRadiusSlider;
     SliderControl<float> * mRepairSpeedAdjustmentSlider;
     SliderControl<float> * mScrubRustRadiusSlider;

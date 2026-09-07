@@ -1342,17 +1342,33 @@ void GameController::RemoveAllPins()
     mWorld->RemoveAllPins();
 }
 
-std::optional<ToolApplicationLocus> GameController::InjectPressureAt(
+bool GameController::FloodAt(
     DisplayLogicalCoordinates const & screenCoordinates,
-    float pressureQuantityMultiplier)
+    float flowMultiplier)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
     assert(!!mWorld);
-    auto const applicationLocus = mWorld->InjectPressureAt(
+    return mWorld->FloodAt(
         worldCoordinates,
-        pressureQuantityMultiplier,
+        mSimulationParameters.FloodToolRadius,
+        flowMultiplier,
+        mSimulationParameters);
+}
+
+std::optional<ToolApplicationLocus> GameController::InjectAirAt(
+    DisplayLogicalCoordinates const & screenCoordinates,
+    float flowMultiplier)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    auto const applicationLocus = mWorld->InjectAirAt(
+        worldCoordinates,
+        mSimulationParameters.InjectAirToolRadius,
+        flowMultiplier,
         mSimulationParameters);
 
     if (applicationLocus.has_value()
@@ -1361,25 +1377,10 @@ std::optional<ToolApplicationLocus> GameController::InjectPressureAt(
         // Draw notification (one frame only)
         mNotificationLayer.SetPressureInjectionHalo(
             worldCoordinates,
-            pressureQuantityMultiplier);
+            flowMultiplier);
     }
 
     return applicationLocus;
-}
-
-bool GameController::FloodAt(
-    DisplayLogicalCoordinates const & screenCoordinates,
-    float flowSign)
-{
-    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
-
-    // Apply action
-    assert(!!mWorld);
-    return mWorld->FloodAt(
-        worldCoordinates,
-        mSimulationParameters.FloodRadius,
-        flowSign,
-        mSimulationParameters);
 }
 
 void GameController::ToggleAntiMatterBombAt(DisplayLogicalCoordinates const & screenCoordinates)

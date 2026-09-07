@@ -272,8 +272,8 @@ public:
     void EndPlaceTornado(ElementIndex tornadoId) override;
     void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void RemoveAllPins() override;
-    std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) override;
-    bool FloodAt(DisplayLogicalCoordinates const & screenCoordinates, float flowSign) override;
+    bool FloodAt(DisplayLogicalCoordinates const & screenCoordinates, float flowMultiplier) override;
+    std::optional<ToolApplicationLocus> InjectAirAt(DisplayLogicalCoordinates const & screenCoordinates, float flowMultiplier) override;
     void ToggleAntiMatterBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void ToggleFireExtinguishingBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void ToggleImpactBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
@@ -940,20 +940,35 @@ public:
     float GetMinAntiMatterBombImplosionStrength() const override { return SimulationParameters::MinAntiMatterBombImplosionStrength; }
     float GetMaxAntiMatterBombImplosionStrength() const override { return SimulationParameters::MaxAntiMatterBombImplosionStrength; }
 
-    float GetFloodRadius() const override { return mSimulationParameters.FloodRadius; }
-    void SetFloodRadius(float value) override { mSimulationParameters.FloodRadius = value; }
-    float GetMinFloodRadius() const override { return SimulationParameters::MinFloodRadius; }
-    float GetMaxFloodRadius() const override { return SimulationParameters::MaxFloodRadius; }
+    float GetFloodToolRadius() const override { return mSimulationParameters.FloodToolRadius; }
+    void SetFloodToolRadius(float value) override { mSimulationParameters.FloodToolRadius = value; }
+    float GetMinFloodToolRadius() const override { return SimulationParameters::MinFloodToolRadius; }
+    float GetMaxFloodToolRadius() const override { return SimulationParameters::MaxFloodToolRadius; }
 
-    float GetFloodQuantity() const override { return mSimulationParameters.FloodQuantity; }
-    void SetFloodQuantity(float value) override { mSimulationParameters.FloodQuantity = value; }
-    float GetMinFloodQuantity() const override { return SimulationParameters::MinFloodQuantity; }
-    float GetMaxFloodQuantity() const override { return SimulationParameters::MaxFloodQuantity; }
+    float GetFloodToolFlow() const override { return mSimulationParameters.FloodToolFlow; }
+    void SetFloodToolFlow(float value) override { mSimulationParameters.FloodToolFlow = value; }
+    float GetMinFloodToolFlow() const override { return SimulationParameters::MinFloodToolFlow; }
+    float GetMaxFloodToolFlow() const override { return SimulationParameters::MaxFloodToolFlow; }
 
-    float GetInjectPressureQuantity() const override { return mSimulationParameters.InjectPressureQuantity; }
-    void SetInjectPressureQuantity(float value) override { mSimulationParameters.InjectPressureQuantity = value; }
-    float GetMinInjectPressureQuantity() const override { return SimulationParameters::MinInjectPressureQuantity; }
-    float GetMaxInjectPressureQuantity() const override { return SimulationParameters::MaxInjectPressureQuantity; }
+    float GetFloodToolVelocity() const override { return mSimulationParameters.FloodToolVelocity; }
+    void SetFloodToolVelocity(float value) override { mSimulationParameters.FloodToolVelocity = value; }
+    float GetMinFloodToolVelocity() const override { return SimulationParameters::MinFloodToolVelocity; }
+    float GetMaxFloodToolVelocity() const override { return SimulationParameters::MaxFloodToolVelocity; }
+
+    float GetInjectAirToolRadius() const override { return mSimulationParameters.InjectAirToolRadius; }
+    void SetInjectAirToolRadius(float value) override { mSimulationParameters.InjectAirToolRadius = value; }
+    float GetMinInjectAirToolRadius() const override { return SimulationParameters::MinInjectAirToolRadius; }
+    float GetMaxInjectAirToolRadius() const override { return SimulationParameters::MaxInjectAirToolRadius; }
+
+    float GetInjectAirToolFlow() const override { return mSimulationParameters.InjectAirToolFlow; }
+    void SetInjectAirToolFlow(float value) override { mSimulationParameters.InjectAirToolFlow = value; }
+    float GetMinInjectAirToolFlow() const override { return SimulationParameters::MinInjectAirToolFlow; }
+    float GetMaxInjectAirToolFlow() const override { return SimulationParameters::MaxInjectAirToolFlow; }
+
+    float GetInjectAirToolVelocity() const override { return mSimulationParameters.InjectAirToolVelocity; }
+    void SetInjectAirToolVelocity(float value) override { mSimulationParameters.InjectAirToolVelocity = value; }
+    float GetMinInjectAirToolVelocity() const override { return SimulationParameters::MinInjectAirToolVelocity; }
+    float GetMaxInjectAirToolVelocity() const override { return SimulationParameters::MaxInjectAirToolVelocity; }
 
     float GetBlastToolRadius() const override { return mSimulationParameters.BlastToolRadius; }
     void SetBlastToolRadius(float value) override { mSimulationParameters.BlastToolRadius = value; }

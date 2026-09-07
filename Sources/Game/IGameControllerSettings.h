@@ -369,14 +369,23 @@ struct IGameControllerSettings
     virtual float GetAntiMatterBombImplosionStrength() const = 0;
     virtual void SetAntiMatterBombImplosionStrength(float value) = 0;
 
-    virtual float GetFloodRadius() const = 0;
-    virtual void SetFloodRadius(float value) = 0;
+    virtual float GetFloodToolRadius() const = 0;
+    virtual void SetFloodToolRadius(float value) = 0;
 
-    virtual float GetFloodQuantity() const = 0;
-    virtual void SetFloodQuantity(float value) = 0;
+    virtual float GetFloodToolFlow() const = 0;
+    virtual void SetFloodToolFlow(float value) = 0;
 
-    virtual float GetInjectPressureQuantity() const = 0;
-    virtual void SetInjectPressureQuantity(float value) = 0;
+    virtual float GetFloodToolVelocity() const = 0;
+    virtual void SetFloodToolVelocity(float value) = 0;
+
+    virtual float GetInjectAirToolRadius() const = 0;
+    virtual void SetInjectAirToolRadius(float value) = 0;
+
+    virtual float GetInjectAirToolFlow() const = 0;
+    virtual void SetInjectAirToolFlow(float value) = 0;
+
+    virtual float GetInjectAirToolVelocity() const = 0;
+    virtual void SetInjectAirToolVelocity(float value) = 0;
 
     virtual float GetBlastToolRadius() const = 0;
     virtual void SetBlastToolRadius(float value) = 0;

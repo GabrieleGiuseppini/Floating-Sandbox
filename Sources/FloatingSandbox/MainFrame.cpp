@@ -465,12 +465,12 @@ MainFrame::MainFrame(
             }
 
             {
-                auto menuItem = ADD_TOOL_MENUITEM(_("Inject/Remove Pressure"), wxS("\tB"), "air_tank_cursor_up", ToolType::InjectPressure, false);
+                auto menuItem = ADD_TOOL_MENUITEM(_("Inject/Remove Air"), wxS("\tB"), "air_tank_cursor_up", ToolType::InjectAir, false);
                 ADD_PLAIN_ACCELERATOR_KEY('B', menuItem);
             }
 
             {
-                auto menuItem = ADD_TOOL_MENUITEM(_("Flood/Dry"), wxS("\tF"), "flood_cursor_up", ToolType::FloodHose, false);
+                auto menuItem = ADD_TOOL_MENUITEM(_("Flood/Dry"), wxS("\tF"), "flood_cursor_up", ToolType::Flood, false);
                 ADD_PLAIN_ACCELERATOR_KEY('F', menuItem);
             }
 

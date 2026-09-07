@@ -252,20 +252,21 @@ public:
 
     void RemoveAllPins();
 
-    std::optional<ToolApplicationLocus> InjectBubblesAt(
-        vec2f const & targetPos,
-        float currentSimulationTime,
-        SimulationParameters const & simulationParameters);
-
-    std::optional<ToolApplicationLocus> InjectPressureAt(
-        vec2f const & targetPos,
-        float pressureQuantityMultiplier,
-        SimulationParameters const & simulationParameters);
-
     bool FloodAt(
         vec2f const & targetPos,
         float radius,
-        float flowSign,
+        float flowMultiplier,
+        SimulationParameters const & simulationParameters);
+
+    std::optional<ToolApplicationLocus> InjectAirAt(
+        vec2f const & targetPos,
+        float radius,
+        float flowMultiplier,
+        SimulationParameters const & simulationParameters);
+
+    std::optional<ToolApplicationLocus> InjectBubblesAt(
+        vec2f const & targetPos,
+        float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
     bool ToggleAntiMatterBombAt(
