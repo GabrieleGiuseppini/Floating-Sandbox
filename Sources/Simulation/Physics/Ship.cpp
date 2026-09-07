@@ -6152,7 +6152,7 @@ void Ship::SetAndPropagateResultantPointHullness(
 
     // Propagate springs' water permeability accordingly:
     // the spring is impermeable if at least one endpoint is hull
-    // (we don't want to propagate water towards a hull point)
+    // (we don't want to propagate water/air towards a hull point)
     for (auto const & cs : mPoints.GetConnectedSprings(pointElementIndex).ConnectedSprings)
     {
         mSprings.SetWaterPermeability(
@@ -7397,7 +7397,7 @@ void Ship::HandleWatertightDoorUpdated(
 
         // Dry up point
         mPoints.SetWater(pointElementIndex, 0.0f);
-        mPoints.SetAirPressureVelocity(pointElementIndex, vec2f::zero());
+        mPoints.SetAirPressureVelocity(pointElementIndex, vec2f::zero()); // Leave air, but stop it from (looking like it's) moving
 
         // Fire event
         mSimulationEventHandler.OnWatertightDoorClosed(

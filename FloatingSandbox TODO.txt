@@ -3265,12 +3265,10 @@
 						! During a simulation step:
 							! Interaction changes are made to TheoreticalAir
 							! Reads happen from EffectiveAir (assuming don't need immediately changes done in same step)
-								- TODO: do we really need many reads for air? If not, can just be local to WaterDiffusion
-									- As we will probably introduce "effective water" concept for density adjustments, and those will be local
-									- Readings:
-										- Ingress/Egress
-										- Physics Probe tool
-										- Surface forces/mechanical pressure
+								- Readings:
+									- Ingress/Egress
+									- Physics Probe tool
+									- Surface forces/mechanical pressure
 							! DiffusionSimulation:
 								! Theo->Effective (via T)
 								! Diffusion on Effective
@@ -3280,16 +3278,17 @@
 				+ Depends on choices above at Ingress/Egress pressure formulas (*)
 					! i.e. choice of reference density for Water and Air
 
+			- Water rush sounds (ingress/egress)
+			- Water splash sounds (kinetic energy)
+				- Scale kinetic energy by # of iters?
+				- Could use presence of air as replacement of freeness?
+
 			- Interact with air velocity @
 				- Blasts
 				- NPCs
 				- etc
 			+ Finalize unit of AirPressure
 				+ Also @ Points buffer comment
-			- Water rush sounds (ingress/egress)
-			- Water splash sounds (kinetic energy)
-				- Scale kinetic energy by # of iters?
-				- Could use presence of air as replacement of freeness?
 			- Air & Water Pressure <-> forces on "walls"
 				- We've changed unit of pressure, hence current math is invalid!
 				- Do we do it where we currently use InternalPressure, or do we bounce @ UpdateWaterAndAirPressure?
@@ -3297,6 +3296,8 @@
 						- ...which also impacts InjectAir tool - either we do or we don't ignore hull points
 				- Option 1:
 					- One step (replacement of old "InternalPressure") sets all hull points to avg of their points
+						- Can just set Air buffer, after ensuring we never read it during diffusion
+							- Water always 0, hence internal pressure = air pressure only
 						- TODO: should the looked at points also include hull points? If not can't propagate
 
 				- Test Inflatable Balloon
@@ -3312,7 +3313,8 @@
 							- Triangle thing only if no points faound in radius; keep exactly as it is then, but inject at all three points
 								- Based on bary coords?
 						- Also slider for velocity (momenta)
-							- -> Android plan: all new settings
+							+ -> Android plan: all new settings
+
 			- Imparted water and air velocities w/move tool - et other tools?
 
 			- Do we need to do anything for "internal" pressure diffused from ship physics metadata?
@@ -3373,8 +3375,9 @@
 				- Nuke InternalPressure concept
 					- Points
 					- ...
+					- See if Formulae::CalculateVolumetricWaterPressure still needed
 				- Nuke Ship::UpdateWaterVelocities
-				- Keep only winner of Ship::UpdatePressureAndWaterInflow: Newton-Rhapson
+				- Keep only winner of Ship::UpdatePressureAndWaterInflow
 				- Renames (Internal Pressure -> Air / Pressure):
 					- PhysicsData
 						- PhysicsData struct
@@ -3390,7 +3393,7 @@
 					- UI
 						- Do we want to lock down diffusion speeds?
 						- Whole section becomes Pressure?
-				- Cleanup upload of internal pressure
+				- Cleanup upload of internal pressure to rendering
 
 				- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
 					- Watchout: when we make copies of buffers we use mFloatBufferAllocator
@@ -3436,6 +3439,8 @@
 					- # of water iters
 
 			- Check ships for flooding
+				- Default Titanic
+				- All others
 
 
 	- When focusing on ship after ship moved in PAUSE, we focus on old position
