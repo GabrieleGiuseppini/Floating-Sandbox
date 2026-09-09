@@ -1267,8 +1267,13 @@ bool Ship::FloodAt(
 
     float const aq = simulationParameters.IsUltraViolentMode ? 0.8f : 0.5f;
 
-    // Multiplier to get internal pressure delta from water delta
-    float const volumetricWaterPressure = Formulae::CalculateVolumetricWaterPressure(simulationParameters.WaterTemperature, simulationParameters);
+    //
+    // Splat velocity
+    //
+
+    float const splatVelocity =
+        simulationParameters.FloodToolVelocity * 100.0f // Absurd multiplier to make sure water survives first diffusion iterations
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     //
     // Find the (non-ephemeral) non-hull points in the radius
@@ -1281,9 +1286,12 @@ bool Ship::FloodAt(
     {
         if (!mPoints.GetIsHull(pointIndex))
         {
-            float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+            vec2f const displacement = mPoints.GetPosition(pointIndex) - targetPos;
+            float squareDistance = displacement.squareLength();
             if (squareDistance < searchSquareRadius)
             {
+                float const dFactor = squareDistance / searchSquareRadius;
+
                 //
                 // Update water
                 //
@@ -1291,33 +1299,43 @@ bool Ship::FloodAt(
                 float const w = mPoints.GetWater(pointIndex);
 
                 float actualQuantityOfWaterDelta;
+                vec2f actualWaterVelocity;
                 if (flowMultiplier >= 0.0f)
                 {
-                    actualQuantityOfWaterDelta = dq;
+                    // Adding water
+
+                    // Quantity
+                    actualQuantityOfWaterDelta = dq * dFactor;
+
+                    // Velocity
+                    vec2f const v = displacement.normalise() * splatVelocity;
+                    actualWaterVelocity =
+                        (mPoints.GetWaterVelocity(pointIndex) * w + v * actualQuantityOfWaterDelta)
+                        / (w + actualQuantityOfWaterDelta);
                 }
                 else
                 {
+                    // Removing water
+
+                    // Quantity
+
                     // Remove a lot when water above 1.0 (it's the extra water that doesn't impact rendered water)
                     float const aqp = w > 5.0f ? 0.95f : aq;
-
                     actualQuantityOfWaterDelta = -std::min(
                         std::max(aqp * w, dq),
-                        w);
+                        w) * dFactor;
+
+                    // No velocity changes when removing
+                    actualWaterVelocity = mPoints.GetWaterVelocity(pointIndex);
                 }
 
                 mPoints.SetWater(
                     pointIndex,
                     w + actualQuantityOfWaterDelta);
 
-                //
-                // Update internal pressure
-                //
-
-                float const actualInternalPressureDelta = actualQuantityOfWaterDelta * volumetricWaterPressure;
-
-                mPoints.SetInternalPressure(
+                mPoints.SetWaterVelocity(
                     pointIndex,
-                    std::max(mPoints.GetInternalPressure(pointIndex) + actualInternalPressureDelta, 0.0f));
+                    actualWaterVelocity);
 
                 anyWasApplied = true;
             }
@@ -1333,36 +1351,94 @@ std::optional<ToolApplicationLocus> Ship::InjectAirAt(
     float flowMultiplier,
     SimulationParameters const & simulationParameters)
 {
-    // TODO
-    (void)radius;
-
-    // Delta quantity of pressure - in height equivalent units - added or removed;
-    // actual quantity removed depends on pre-existing pressure
-    float const quantityOfPressureDelta =
-        simulationParameters.InjectAirToolFlow // Height-equivalent units
-        * SimulationParameters::AirPressureAtSeaLevel // Pressure of 1 atm
-        * flowMultiplier
-        * (simulationParameters.IsUltraViolentMode ? 1000.0f : 1.0f);
-
     //
-    // Find closest (non-ephemeral) non-hull point in the radius
+    // New quantity of air:
+    //  - When adding: a' = a + DQ
+    //  - When removing: a' = max(a - max(AQ*a, DQ), 0) = a - min(max(AQ*a, DQ), a)
     //
 
-    float bestSquareDistance = 1.2f;
-    ElementIndex bestPointIndex = NoneElementIndex;
+    float const dq =
+        simulationParameters.InjectAirToolFlow
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    float const aq = simulationParameters.IsUltraViolentMode ? 0.8f : 0.5f;
+
+    //
+    // Splat velocity
+    //
+
+    float const splatVelocity =
+        simulationParameters.InjectAirToolVelocity
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    bool anyWasApplied = false;
+
+    auto const injectAir = [&](ElementIndex pointIndex, float dFactor)
+        {
+            float const a = mPoints.GetAirPressure(pointIndex);
+
+            float actualQuantityOfAirDelta;
+            vec2f actualAirVelocity;
+            if (flowMultiplier >= 0.0f)
+            {
+                // Adding air
+
+                // Quantity
+                actualQuantityOfAirDelta = dq * dFactor;
+
+                // Velocity
+                vec2f const v = (mPoints.GetPosition(pointIndex) - targetPos).normalise() * splatVelocity;
+                actualAirVelocity =
+                    (mPoints.GetAirPressureVelocity(pointIndex) * a + v * actualQuantityOfAirDelta)
+                    / (a + actualQuantityOfAirDelta);
+            }
+            else
+            {
+                // Removing air
+
+                // Quantity
+
+                actualQuantityOfAirDelta = -std::min(
+                    std::max(aq * a, dq),
+                    a) * dFactor;
+
+                // No velocity changes when removing
+                actualAirVelocity = mPoints.GetAirPressureVelocity(pointIndex);
+            }
+
+            mPoints.SetAirPressure(
+                pointIndex,
+                a + actualQuantityOfAirDelta);
+
+            mPoints.SetAirPressureVelocity(
+                pointIndex,
+                actualAirVelocity);
+        };
+
+
+    //
+    // Find the (non-ephemeral) non-hull points in the radius
+    //
+
+    float const searchSquareRadius = radius * radius;
 
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
-        float const squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-        if (squareDistance < bestSquareDistance
-            && !mPoints.GetIsHull(pointIndex))
+        if (!mPoints.GetIsHull(pointIndex))
         {
-            bestSquareDistance = squareDistance;
-            bestPointIndex = pointIndex;
+            vec2f const displacement = mPoints.GetPosition(pointIndex) - targetPos;
+            float squareDistance = displacement.squareLength();
+            if (squareDistance < searchSquareRadius)
+            {
+                float const dFactor = squareDistance / searchSquareRadius;
+
+                injectAir(pointIndex, dFactor);
+                anyWasApplied = true;
+            }
         }
     }
 
-    if (bestPointIndex == NoneElementIndex)
+    if (!anyWasApplied)
     {
         // Couldn't find a point within the search radius...
         // ...cater to the main use case of this tool: expanded structures, which by means
@@ -1388,66 +1464,28 @@ std::optional<ToolApplicationLocus> Ship::InjectAirAt(
                     pointBPosition,
                     pointCPosition))
                 {
-                    if ((targetPos - pointAPosition).length() < (targetPos - pointBPosition).length()
-                        && !mPoints.GetIsHull(pointAIndex))
-                    {
-                        // Closer to A than B
-                        if ((targetPos - pointAPosition).length() < (targetPos - pointCPosition).length()
-                            || mPoints.GetIsHull(pointCIndex))
-                        {
-                            bestPointIndex = pointAIndex;
-                        }
-                        else
-                        {
-                            bestPointIndex = pointCIndex;
-                        }
-                    }
-                    else
-                    {
-                        // Closer to B than A
-                        if (((targetPos - pointBPosition).length() < (targetPos - pointCPosition).length() || mPoints.GetIsHull(pointCIndex))
-                            && !mPoints.GetIsHull(pointBIndex))
-                        {
-                            bestPointIndex = pointBIndex;
-                        }
-                        else if (!mPoints.GetIsHull(pointCIndex))
-                        {
-                            bestPointIndex = pointCIndex;
-                        }
-                    }
+                    // Calculate barycentric coords
+                    auto const bCoords = mTriangles.ToBarycentricCoordinates(targetPos, t, mPoints);
 
-                    break;
+                    // Add to all 3 vertices, scaling on bary coords
+                    injectAir(pointAIndex, bCoords[0]);
+                    injectAir(pointBIndex, bCoords[1]);
+                    injectAir(pointCIndex, bCoords[2]);
+
+                    anyWasApplied = true;
                 }
             }
         }
     }
 
-    if (bestPointIndex != NoneElementIndex)
+    if (anyWasApplied)
     {
-        //
-        // Update internal pressure
-        //
-
-        mPoints.SetInternalPressure(
-            bestPointIndex,
-            std::max(mPoints.GetInternalPressure(bestPointIndex) + quantityOfPressureDelta, 0.0f));
-
-        // TODOTEST
-        mPoints.SetAirPressure(
-            bestPointIndex,
-            std::max(
-                mPoints.GetAirPressure(bestPointIndex) + Formulae::PressureToEquivalentWaterHeight(SimulationParameters::AirPressureAtSeaLevel) * flowMultiplier,
-                0.0f));
-            //std::max(mPoints.GetAirPressure(bestPointIndex) + quantityOfPressureDelta, 0.0f));
-
-        return (mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(bestPointIndex))
-            ? ToolApplicationLocus::UnderWater
-            : ToolApplicationLocus::AboveWater)
-            | ToolApplicationLocus::Ship;
-
+        return ToolApplicationLocus::Ship;
     }
-
-    return std::nullopt;
+    else
+    {
+        return std::nullopt;
+    }
 }
 
 std::optional<ToolApplicationLocus> Ship::InjectBubblesAt(

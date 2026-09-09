@@ -3244,9 +3244,8 @@
 					- "Classic" water pumps
 					- Rain flooding ship
 				- What still needs to be worked on?
-					- Changes to Flood and InjectPressure tools
-					- Internal pressure balancing "depth" (hydrostatic) pressure
-						- Read: no inflatable balloon
+					= Changes to Flood and InjectPressure tools
+					- Internal pressure against the ship walls (read: inflatable balloons) and balancing "depth" (hydrostatic) pressure (read: implosions)
 					- Physics Probe tool showing total air+water pressure
 					- Temperature affecting air pressure
 					- NPCs affected by air and water
@@ -3282,29 +3281,37 @@
 			- Water splash sounds (kinetic energy)
 				- Scale kinetic energy by # of iters?
 				- Could use presence of air as replacement of freeness?
+				- Try first only @ bounce
 
 			- Interact with air velocity @
 				- Blasts
+					- Explosions (bombs, material)
+					- Blast Tool
 				- NPCs
 				- etc
 			+ Finalize unit of AirPressure
 				+ Also @ Points buffer comment
 			- Air & Water Pressure <-> forces on "walls"
-				- We've changed unit of pressure, hence current math is invalid!
+				! Aka "Inflatable Balloon"
+				! We've changed unit of pressure, hence current math is invalid!
 				- Do we do it where we currently use InternalPressure, or do we bounce @ UpdateWaterAndAirPressure?
 					- Depending on answer: need to nail down diffusion in hull
 						- ...which also impacts InjectAir tool - either we do or we don't ignore hull points
 				- Option 1:
 					- One step (replacement of old "InternalPressure") sets all hull points to avg of their points
-						- Can just set Air buffer, after ensuring we never read it during diffusion
-							- Water always 0, hence internal pressure = air pressure only
-						- TODO: should the looked at points also include hull points? If not can't propagate
+						- Can just set Air buffer, after ensuring we never use it from hull points during diffusion
+							- Water always 0, hence internal pressure == air pressure only
+						- Can do it @ Air diffusion with switch(is hull) in point loop, after ensuring running real diffusion for hull points
+						  is moot
+					- ...but also forces @ bounces, just for fund
 
 				- Test Inflatable Balloon
+					- Keep in mind the barycentric coords work we've done there, untested
 			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure 
 				- BUT: conversion to Pa requires plugging-in correct densities (*)
+				- Also, consider reading EffectiveAirPressure (result of Diffusion step)
 			= Tools:
-				= Flood, Internal Pressure:
+				+ Flood, Internal Pressure:
 					+ First off, rename: "Internal Pressure" -> "(Inject) Air Pressure"
 						+ Also @ SettingsDialog
 						+ Also @ tool itself
@@ -3312,8 +3319,23 @@
 						- But keep triangle thing, as this tool might be used on stretched surfaces
 							- Triangle thing only if no points faound in radius; keep exactly as it is then, but inject at all three points
 								- Based on bary coords?
-						- Also slider for velocity (momenta)
+						+ Also slider for velocity (momenta)
 							+ -> Android plan: all new settings
+					= Flood
+						= Splatter > 0 gives weird shape; large splatter makes water fly away
+							X Try with root dFactor
+							X Try with larger radius
+							X Try with scaling quantity based on velocity (adding?)
+							+ Is it rel vel?
+								+ Yes, partly. But we cannot get rid of it.
+					+ Air
+				+ Nail down ranges
+					X Max water flow: OK
+					+ Max air flow: 20
+				+ Nail down UV mode
+				+ Ensure SettingsDialog descriptions match final implementation
+				+ Make sure bubbles work like before
+				- Nuke velocity? Wait for [Air & Water Pressure <-> forces on "walls"]
 
 			- Imparted water and air velocities w/move tool - et other tools?
 
