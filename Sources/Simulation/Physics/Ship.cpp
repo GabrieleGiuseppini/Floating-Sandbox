@@ -2091,7 +2091,7 @@ void Ship::ApplyStaticPressureForces(
     // At the end of the algorithm we will recover them by multiplying with the actual external pressure.
     //
 
-    float const totalExternalPressure = Formulae::CalculateTotalPressureAt(
+    float const totalExternalPressure = Formulae::CalculateTotalExternalPressureAt(
         geometricCenterPosition.y,
         oceanSurfaceY,
         effectiveAirDensity,

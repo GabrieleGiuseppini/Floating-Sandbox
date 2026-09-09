@@ -3303,7 +3303,11 @@
 							- Water always 0, hence internal pressure == air pressure only
 						- Can do it @ Air diffusion with switch(is hull) in point loop, after ensuring running real diffusion for hull points
 						  is moot
-					- ...but also forces @ bounces, just for fund
+						  - See if it also makes sense to disable step @ water for hull
+					- Then, redo math @ surface forces, using total pressure
+						- Make Points helper
+						- Will have to use EffectiveAir, see Temperature work item
+					- ...but also forces @ bounces, just for fun
 
 				- Test Inflatable Balloon
 					- Keep in mind the barycentric coords work we've done there, untested
@@ -3315,14 +3319,14 @@
 					+ First off, rename: "Internal Pressure" -> "(Inject) Air Pressure"
 						+ Also @ SettingsDialog
 						+ Also @ tool itself
-					- Both tools: rate/flow, radius, and velocity injection
-						- But keep triangle thing, as this tool might be used on stretched surfaces
-							- Triangle thing only if no points faound in radius; keep exactly as it is then, but inject at all three points
-								- Based on bary coords?
+					+ Both tools: rate/flow, radius, and velocity injection
+						+ But keep triangle thing, as this tool might be used on stretched surfaces
+							+ Triangle thing only if no points faound in radius; keep exactly as it is then, but inject at all three points
+								+ Based on bary coords
 						+ Also slider for velocity (momenta)
 							+ -> Android plan: all new settings
-					= Flood
-						= Splatter > 0 gives weird shape; large splatter makes water fly away
+					+ Flood
+						+ Splatter > 0 gives weird shape; large splatter makes water fly away
 							X Try with root dFactor
 							X Try with larger radius
 							X Try with scaling quantity based on velocity (adding?)
@@ -3374,12 +3378,12 @@
 				- "Air pressure" -> "Air"
 					- Also @ vector field rendering enum, @ settings dialog
 				- Momenta spirit:
-					- Points::Momenta only for rendering; byproduct of diffusion speed
-						- Only accessors:
+					- Points::Momenta only for rendering; byproduct of diffusion step
+						- Only exposed accessors:
 							+ Reset
 							- VelocitiesFromMomenta
 					- Simulation changes velocities only
-						- For rendering, might also modify momenta (e.g. after blast), iff that happens after water diffusion step
+						- For rendering, might also modify momenta (e.g. after blast), iff that happens after water diffusion step and before render
 				- Comments
 				- Code
 					- Back to single function - UpdateWaterAndAirPressure
@@ -3389,7 +3393,7 @@
 					- Put back restrict pointers where needed
 					- Nuke [iff not used]: velocity damping
 				- Remove cross-cut readings -- LATER!
-					- Also: decide whether to keep it or not; clean it up
+					- Also: decide whether to keep it or not; if so, clean it up
 						- Readings struct
 
 
@@ -3414,7 +3418,7 @@
 					- SimulationParameters setting
 					- UI
 						- Do we want to lock down diffusion speeds?
-						- Whole section becomes Pressure?
+						+ Whole section becomes Pressure?
 				- Cleanup upload of internal pressure to rendering
 
 				- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?

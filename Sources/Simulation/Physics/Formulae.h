@@ -119,7 +119,7 @@ public:
     }
 
     // Calculates the total (air above + water) pressure at the given y, in N/m2 (Pa)
-    static float CalculateTotalPressureAt(
+    static float CalculateTotalExternalPressureAt(
         float y,
         float oceanSurfaceY,
         float airDensity,

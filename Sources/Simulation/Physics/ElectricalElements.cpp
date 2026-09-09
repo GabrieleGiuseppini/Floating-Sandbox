@@ -2097,7 +2097,7 @@ void ElectricalElements::UpdateSinks(
                         // Calculate external pressure
                         vec2f const & pointPosition = points.GetPosition(GetPointIndex(sinkElementIndex));
                         float const totalExternalPressure =
-                            Formulae::CalculateTotalPressureAt(
+                            Formulae::CalculateTotalExternalPressureAt(
                                 pointPosition.y,
                                 mParentWorld.GetOceanSurface().GetHeightAt(pointPosition.x),
                                 effectiveAirDensity,
