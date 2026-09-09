@@ -1929,6 +1929,12 @@ public:
         }
     }
 
+    float GetTotalInternalPressureInEquivalentHeightUnits(ElementIndex pointElementIndex) const
+    {
+        // TODOHERE: use EffectiveAirPressure
+        return GetWater(pointElementIndex) + GetAirPressure(pointElementIndex);
+    }
+
     float GetCumulatedOutflownUnderwaterAirPressure(ElementIndex pointElementIndex) const
     {
         return mCumulatedOutflownUnderwaterAirPressure[pointElementIndex];
@@ -2703,7 +2709,7 @@ private:
     // Pressure and water dynamics
     //
 
-    Buffer<bool> mIsHullBuffer; // Externally-computed resultant of material hullness and dynamic hullness
+    Buffer<bool> mIsHullBuffer; // Externally-computed resultant of material hullness and dynamic hullness (e.g. watertight doors)
     Buffer<float> mInternalPressureBuffer; // Pressure at this particle (Pa)
     Buffer<float> mMaterialWaterIntakeBuffer;
     Buffer<float> mMaterialWaterRestitutionBuffer;

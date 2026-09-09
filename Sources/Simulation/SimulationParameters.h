@@ -763,7 +763,7 @@ struct SimulationParameters
 
     float FloodToolFlow; // In height-equivalent units / sec
     static float constexpr MinFloodToolFlow = 1.0f;
-    static float constexpr MaxFloodToolFlow = 100.0f;
+    static float constexpr MaxFloodToolFlow = 200.0f;
 
     float FloodToolVelocity; // m/s
     static float constexpr MinFloodToolVelocity = 0.0f;
@@ -775,7 +775,7 @@ struct SimulationParameters
 
     float InjectAirToolFlow; // In height-equivalent units / sec
     static float constexpr MinInjectAirToolFlow = 1.0f;
-    static float constexpr MaxInjectAirToolFlow = 20.0f;
+    static float constexpr MaxInjectAirToolFlow = 30.0f;
 
     float InjectAirToolVelocity; // m/s
     static float constexpr MinInjectAirToolVelocity = 0.0f;

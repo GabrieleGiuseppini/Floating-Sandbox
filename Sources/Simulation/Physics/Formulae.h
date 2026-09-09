@@ -147,6 +147,14 @@ public:
         return pressure / (SimulationParameters::WaterMass * SimulationParameters::GravityMagnitude);
     }
 
+    // Calculates the pascal pressure exercised by the specified height of a 1m2-wide column
+    // of water at reference density
+    static float EquivalentWaterHeightToPressure(float height)
+    {
+        // Pressure in Pa of a H-high column of water in a 1m2-wide tube: Pa = h * g * water_rho
+        return height * (SimulationParameters::WaterMass * SimulationParameters::GravityMagnitude);
+    }
+
     static float AtmospheresToPascal(float atmospheres) noexcept
     {
         return atmospheres * SimulationParameters::AirPressureAtSeaLevel;
