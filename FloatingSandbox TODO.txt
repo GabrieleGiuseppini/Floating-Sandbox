@@ -3328,11 +3328,6 @@
 				- ...but also forces @ bounces, just for fun
 					- Add to StaticForces
 
-			- LOOK INTO: when water is at 9k, we don't outtake enough
-				APs=5.14767 W=8669.31
-				Ingress/Egress: v=-412.09 v*dt=-6.43891 mat=1 adj=1 rest=0.95 delta=-6.11696
-
-
 			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure 
 				- BUT: conversion to Pa requires plugging-in correct densities (*)
 				- Also, consider reading EffectiveAirPressure (result of Diffusion step)
@@ -3361,6 +3356,10 @@
 				+ Nail down UV mode
 				+ Ensure SettingsDialog descriptions match final implementation
 				+ Make sure bubbles work like before
+				+ Prioritize radius over flow (high flow is ugly, when one might really want large radius)
+					+ Test
+					+ Reduce all flow ranges - & defaults?
+					+ UV mode
 				- Nuke velocity? Wait for [Air & Water Pressure <-> forces on "walls"]
 
 			- Imparted water and air velocities w/move tool - et other tools?

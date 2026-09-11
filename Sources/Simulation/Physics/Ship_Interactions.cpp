@@ -1256,6 +1256,14 @@ bool Ship::FloodAt(
     SimulationParameters const & simulationParameters)
 {
     //
+    // Radius
+    //
+
+    float const effectiveRadius =
+        radius
+        + (simulationParameters.IsUltraViolentMode ? 10.0f : 0.0f);
+
+    //
     // New quantity of water:
     //  - When adding: w' = w + DQ
     //  - When removing: w' = max(w - max(AQ*w, DQ), 0) = w - min(max(AQ*w, DQ), w)
@@ -1263,7 +1271,7 @@ bool Ship::FloodAt(
 
     float const dq =
         simulationParameters.FloodToolFlow
-        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 2.0f : 1.0f);
 
     float const aq = simulationParameters.IsUltraViolentMode ? 0.8f : 0.5f;
 
@@ -1279,7 +1287,7 @@ bool Ship::FloodAt(
     // Find the (non-ephemeral) non-hull points in the radius
     //
 
-    float const searchSquareRadius = radius * radius;
+    float const searchSquareRadius = effectiveRadius * effectiveRadius;
 
     bool anyWasApplied = false;
     for (auto const pointIndex : mPoints.RawShipPoints())
@@ -1352,6 +1360,14 @@ std::optional<ToolApplicationLocus> Ship::InjectAirAt(
     SimulationParameters const & simulationParameters)
 {
     //
+    // Radius
+    //
+
+    float const effectiveRadius =
+        radius
+        + (simulationParameters.IsUltraViolentMode ? 20.0f : 0.0f);
+
+    //
     // New quantity of air:
     //  - When adding: a' = a + DQ
     //  - When removing: a' = max(a - max(AQ*a, DQ), 0) = a - min(max(AQ*a, DQ), a)
@@ -1420,7 +1436,7 @@ std::optional<ToolApplicationLocus> Ship::InjectAirAt(
     // Find the (non-ephemeral) non-hull points in the radius
     //
 
-    float const searchSquareRadius = radius * radius;
+    float const searchSquareRadius = effectiveRadius * effectiveRadius;
 
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
