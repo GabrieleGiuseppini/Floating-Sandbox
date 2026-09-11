@@ -1256,14 +1256,6 @@ bool Ship::FloodAt(
     SimulationParameters const & simulationParameters)
 {
     //
-    // Radius
-    //
-
-    float const effectiveRadius =
-        radius
-        + (simulationParameters.IsUltraViolentMode ? 10.0f : 0.0f);
-
-    //
     // New quantity of water:
     //  - When adding: w' = w + DQ
     //  - When removing: w' = max(w - max(AQ*w, DQ), 0) = w - min(max(AQ*w, DQ), w)
@@ -1276,18 +1268,10 @@ bool Ship::FloodAt(
     float const aq = simulationParameters.IsUltraViolentMode ? 0.8f : 0.5f;
 
     //
-    // Splat velocity
-    //
-
-    float const splatVelocity =
-        simulationParameters.FloodToolVelocity * 100.0f // Absurd multiplier to make sure water survives first diffusion iterations
-        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-    //
     // Find the (non-ephemeral) non-hull points in the radius
     //
 
-    float const searchSquareRadius = effectiveRadius * effectiveRadius;
+    float const searchSquareRadius = radius * radius;
 
     bool anyWasApplied = false;
     for (auto const pointIndex : mPoints.RawShipPoints())
@@ -1307,43 +1291,26 @@ bool Ship::FloodAt(
                 float const w = mPoints.GetWater(pointIndex);
 
                 float actualQuantityOfWaterDelta;
-                vec2f actualWaterVelocity;
                 if (flowMultiplier >= 0.0f)
                 {
                     // Adding water
 
-                    // Quantity
                     actualQuantityOfWaterDelta = dq * dFactor;
-
-                    // Velocity
-                    vec2f const v = displacement.normalise() * splatVelocity;
-                    actualWaterVelocity =
-                        (mPoints.GetWaterVelocity(pointIndex) * w + v * actualQuantityOfWaterDelta)
-                        / (w + actualQuantityOfWaterDelta);
                 }
                 else
                 {
                     // Removing water
-
-                    // Quantity
 
                     // Remove a lot when water above 1.0 (it's the extra water that doesn't impact rendered water)
                     float const aqp = w > 5.0f ? 0.95f : aq;
                     actualQuantityOfWaterDelta = -std::min(
                         std::max(aqp * w, dq),
                         w) * dFactor;
-
-                    // No velocity changes when removing
-                    actualWaterVelocity = mPoints.GetWaterVelocity(pointIndex);
                 }
 
                 mPoints.SetWater(
                     pointIndex,
                     w + actualQuantityOfWaterDelta);
-
-                mPoints.SetWaterVelocity(
-                    pointIndex,
-                    actualWaterVelocity);
 
                 anyWasApplied = true;
             }
@@ -1360,14 +1327,6 @@ std::optional<ToolApplicationLocus> Ship::InjectAirAt(
     SimulationParameters const & simulationParameters)
 {
     //
-    // Radius
-    //
-
-    float const effectiveRadius =
-        radius
-        + (simulationParameters.IsUltraViolentMode ? 20.0f : 0.0f);
-
-    //
     // New quantity of air:
     //  - When adding: a' = a + DQ
     //  - When removing: a' = max(a - max(AQ*a, DQ), 0) = a - min(max(AQ*a, DQ), a)
@@ -1379,64 +1338,39 @@ std::optional<ToolApplicationLocus> Ship::InjectAirAt(
 
     float const aq = simulationParameters.IsUltraViolentMode ? 0.8f : 0.5f;
 
-    //
-    // Splat velocity
-    //
 
-    float const splatVelocity =
-        simulationParameters.InjectAirToolVelocity
-        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-    bool anyWasApplied = false;
+    //
+    // Find the (non-ephemeral) non-hull points in the radius
+    //
 
     auto const injectAir = [&](ElementIndex pointIndex, float dFactor)
         {
             float const a = mPoints.GetAirPressure(pointIndex);
 
             float actualQuantityOfAirDelta;
-            vec2f actualAirVelocity;
             if (flowMultiplier >= 0.0f)
             {
                 // Adding air
 
-                // Quantity
                 actualQuantityOfAirDelta = dq * dFactor;
-
-                // Velocity
-                vec2f const v = (mPoints.GetPosition(pointIndex) - targetPos).normalise() * splatVelocity;
-                actualAirVelocity =
-                    (mPoints.GetAirPressureVelocity(pointIndex) * a + v * actualQuantityOfAirDelta)
-                    / (a + actualQuantityOfAirDelta);
             }
             else
             {
                 // Removing air
 
-                // Quantity
-
                 actualQuantityOfAirDelta = -std::min(
                     std::max(aq * a, dq),
                     a) * dFactor;
-
-                // No velocity changes when removing
-                actualAirVelocity = mPoints.GetAirPressureVelocity(pointIndex);
             }
 
             mPoints.SetAirPressure(
                 pointIndex,
                 a + actualQuantityOfAirDelta);
-
-            mPoints.SetAirPressureVelocity(
-                pointIndex,
-                actualAirVelocity);
         };
 
+    bool anyWasApplied = false;
 
-    //
-    // Find the (non-ephemeral) non-hull points in the radius
-    //
-
-    float const searchSquareRadius = effectiveRadius * effectiveRadius;
+    float const searchSquareRadius = radius * radius;
 
     for (auto const pointIndex : mPoints.RawShipPoints())
     {

@@ -4203,32 +4203,6 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            // Flood Tool Velocity
-            {
-                mFloodToolVelocitySlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Splatter"),
-                    _("The velocity with which water is injected by the flood tool (m/s)."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::FloodToolVelocity, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinFloodToolVelocity(),
-                        mGameControllerSettingsOptions.GetMaxFloodToolVelocity()));
-
-                sizer->Add(
-                    mFloodToolVelocitySlider,
-                    wxGBPosition(0, 3),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
             WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
@@ -4241,7 +4215,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -4326,32 +4300,6 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            // Inject Air Tool Velocity
-            {
-                mInjectAirToolVelocitySlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Splatter"),
-                    _("The velocity with which air is injected by the inject air tool (m/s)."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::InjectAirToolVelocity, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinInjectAirToolVelocity(),
-                        mGameControllerSettingsOptions.GetMaxInjectAirToolVelocity()));
-
-                sizer->Add(
-                    mInjectAirToolVelocitySlider,
-                    wxGBPosition(0, 3),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
             WxHelpers::MakeAllExpandable(sizer);
 
             boxSizer->Add(
@@ -4363,8 +4311,8 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 3),
-            wxGBSpan(1, 3),
+            wxGBPosition(0, 2),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -4408,8 +4356,8 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 6),
-            wxGBSpan(2, 1),
+            wxGBPosition(0, 4),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -7130,10 +7078,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mFloodToolRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodToolRadius));
     mFloodToolFlowSlider->SetValue(settings.GetValue<float>(GameSettings::FloodToolFlow));
-    mFloodToolVelocitySlider->SetValue(settings.GetValue<float>(GameSettings::FloodToolVelocity));
     mInjectAirToolRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::InjectAirToolRadius));
     mInjectAirToolFlowSlider->SetValue(settings.GetValue<float>(GameSettings::InjectAirToolFlow));
-    mInjectAirToolVelocitySlider->SetValue(settings.GetValue<float>(GameSettings::InjectAirToolVelocity));
     mHeatBlasterRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterRadius));
     mHeatBlasterHeatFlowSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterHeatFlow));
     mRepairRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::RepairRadius));

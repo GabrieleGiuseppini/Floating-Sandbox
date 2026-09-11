@@ -181,10 +181,8 @@ private:
     // Other Tools
     SliderControl<float> * mFloodToolRadiusSlider;
     SliderControl<float> * mFloodToolFlowSlider;
-    SliderControl<float> * mFloodToolVelocitySlider;
     SliderControl<float> * mInjectAirToolRadiusSlider;
     SliderControl<float> * mInjectAirToolFlowSlider;
-    SliderControl<float> * mInjectAirToolVelocitySlider;
     SliderControl<float> * mHeatBlasterRadiusSlider;
     SliderControl<float> * mHeatBlasterHeatFlowSlider;
     SliderControl<float> * mRepairRadiusSlider;

@@ -375,17 +375,11 @@ struct IGameControllerSettings
     virtual float GetFloodToolFlow() const = 0;
     virtual void SetFloodToolFlow(float value) = 0;
 
-    virtual float GetFloodToolVelocity() const = 0;
-    virtual void SetFloodToolVelocity(float value) = 0;
-
     virtual float GetInjectAirToolRadius() const = 0;
     virtual void SetInjectAirToolRadius(float value) = 0;
 
     virtual float GetInjectAirToolFlow() const = 0;
     virtual void SetInjectAirToolFlow(float value) = 0;
-
-    virtual float GetInjectAirToolVelocity() const = 0;
-    virtual void SetInjectAirToolVelocity(float value) = 0;
 
     virtual float GetBlastToolRadius() const = 0;
     virtual void SetBlastToolRadius(float value) = 0;

@@ -109,10 +109,12 @@ public:
 	// One frame only; after Update() it's gone
 	inline void SetPressureInjectionHalo(
 		vec2f const & worldCoordinates,
+		float radius,
 		float flowMultiplier)
 	{
 		mPressureInjectionHaloToRender1.emplace(
 			worldCoordinates,
+			radius,
 			flowMultiplier);
 	}
 
@@ -368,12 +370,15 @@ private:
 	struct PressureInjectionHalo
 	{
 		vec2f WorldCoordinates;
+		float Radius;
 		float FlowMultiplier;
 
 		PressureInjectionHalo(
 			vec2f const & worldCoordinates,
+			float radius,
 			float flowMultiplier)
 			: WorldCoordinates(worldCoordinates)
+			, Radius(radius)
 			, FlowMultiplier(flowMultiplier)
 		{}
 	};

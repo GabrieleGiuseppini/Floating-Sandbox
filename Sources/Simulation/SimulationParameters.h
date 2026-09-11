@@ -765,21 +765,13 @@ struct SimulationParameters
     static float constexpr MinFloodToolFlow = 1.0f;
     static float constexpr MaxFloodToolFlow = 20.0f;
 
-    float FloodToolVelocity; // m/s
-    static float constexpr MinFloodToolVelocity = 0.0f;
-    static float constexpr MaxFloodToolVelocity = 100.0f;
-
     float InjectAirToolRadius; // m
     static float constexpr MinInjectAirToolRadius = 0.1f;
-    static float constexpr MaxInjectAirToolRadius = 10.0f;
+    static float constexpr MaxInjectAirToolRadius = 20.0f;
 
     float InjectAirToolFlow; // In height-equivalent units / sec
     static float constexpr MinInjectAirToolFlow = 1.0f;
     static float constexpr MaxInjectAirToolFlow = 50.0f;
-
-    float InjectAirToolVelocity; // m/s
-    static float constexpr MinInjectAirToolVelocity = 0.0f;
-    static float constexpr MaxInjectAirToolVelocity = 100.0f;
 
     float FireExtinguisherRadius;
 

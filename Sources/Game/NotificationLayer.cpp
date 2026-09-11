@@ -545,6 +545,7 @@ void NotificationLayer::RenderUpload(RenderContext & renderContext)
 	{
 		notificationRenderContext.UploadPressureInjectionHalo(
 			mPressureInjectionHaloToRender2->WorldCoordinates,
+			mPressureInjectionHaloToRender2->Radius,
 			mPressureInjectionHaloToRender2->FlowMultiplier);
 	}
 

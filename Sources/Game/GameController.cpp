@@ -1348,11 +1348,15 @@ bool GameController::FloodAt(
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
+    float const effectiveRadius =
+        mSimulationParameters.FloodToolRadius
+        + (mSimulationParameters.IsUltraViolentMode ? 10.0f : 0.0f);
+
     // Apply action
     assert(!!mWorld);
     return mWorld->FloodAt(
         worldCoordinates,
-        mSimulationParameters.FloodToolRadius,
+        effectiveRadius,
         flowMultiplier,
         mSimulationParameters);
 }
@@ -1363,11 +1367,15 @@ std::optional<ToolApplicationLocus> GameController::InjectAirAt(
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
+    float const effectiveRadius =
+        mSimulationParameters.InjectAirToolRadius
+        + (mSimulationParameters.IsUltraViolentMode ? 20.0f : 0.0f);
+
     // Apply action
     assert(!!mWorld);
     auto const applicationLocus = mWorld->InjectAirAt(
         worldCoordinates,
-        mSimulationParameters.InjectAirToolRadius,
+        effectiveRadius,
         flowMultiplier,
         mSimulationParameters);
 
@@ -1377,6 +1385,7 @@ std::optional<ToolApplicationLocus> GameController::InjectAirAt(
         // Draw notification (one frame only)
         mNotificationLayer.SetPressureInjectionHalo(
             worldCoordinates,
+            effectiveRadius,
             flowMultiplier);
     }
 

@@ -424,13 +424,14 @@ public:
 
     inline void UploadPressureInjectionHalo(
         vec2f const & centerPosition,
+        float radius,
         float flowMultiplier)
     {
         //
         // Populate vertices
         //
 
-        float const quadHalfSize = 9.0f / 2.0f; // Add some slack to account for transparency
+        float const quadHalfSize = (radius + 8.0f) / 2.0f; // Add some slack to account for transparency
         float const left = centerPosition.x - quadHalfSize;
         float const right = centerPosition.x + quadHalfSize;
         float const top = centerPosition.y + quadHalfSize;

@@ -3322,7 +3322,7 @@
 							= Water at bottom of tank
 								+ In air
 								- At depth
-							- Water w/inflatable balloon
+							+ Water w/inflatable balloon
 							+ Triton
 
 				- ...but also forces @ bounces, just for fun
@@ -3331,7 +3331,7 @@
 			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure 
 				- BUT: conversion to Pa requires plugging-in correct densities (*)
 				- Also, consider reading EffectiveAirPressure (result of Diffusion step)
-			= Tools:
+			+ Tools:
 				+ Flood, Internal Pressure:
 					+ First off, rename: "Internal Pressure" -> "(Inject) Air Pressure"
 						+ Also @ SettingsDialog
@@ -3360,7 +3360,14 @@
 					+ Test
 					+ Reduce all flow ranges - & defaults?
 					+ UV mode
-				- Nuke velocity? Wait for [Air & Water Pressure <-> forces on "walls"]
+				+ Nuke velocity? Wait for [Air & Water Pressure <-> forces on "walls"]
+					+ SettingsDialog layout
+				+ Make halo reflect radius
+					+ InjectPressureAt must take radius (X2)
+						+ GameController is the one calculating it
+					+ Incorporate in halo rendering
+					+ -> AndroidPlan
+					+ Re-test UV mode X 2
 
 			- Imparted water and air velocities w/move tool - et other tools?
 
@@ -3479,10 +3486,11 @@
 				- Use it at SettingsManager
 			- GameController:
 				- New settings
-					- Thew new ones relative to pressure
-					- Fllod/InjectAir tools
+					- The new ones relative to pressure
+					- Flood/InjectAir tools (2 each)
 				- Interactions:
 					- InjectPressureAt -> InjectAirAt, same signature as FloodAt
+						- AirPressure radius: GameController calculates it, notification should honor
 			- New settings:
 				- "Pressure" or "Water and Pressure":
 					- Intake adjust - water & air
