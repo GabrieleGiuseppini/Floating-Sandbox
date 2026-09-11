@@ -3243,11 +3243,11 @@
 					- New air bubbles
 					- "Classic" water pumps
 					- Rain flooding ship
-				- What still needs to be worked on?
-					= Changes to Flood and InjectPressure tools
+					- Redesigned Flood and InjectPressure (now "InjectAir") tools
 					- Internal pressure against the ship walls (read: inflatable balloons) and balancing "depth" (hydrostatic) pressure (read: implosions)
-					- Physics Probe tool showing total air+water pressure
+				- What still needs to be worked on?					
 					- Temperature affecting air pressure
+					- Physics Probe tool showing total air+water pressure
 					- NPCs affected by air and water
 					- New pumps and switches
 					- Blasts affecting air
@@ -3296,13 +3296,13 @@
 				- etc
 			+ Finalize unit of AirPressure
 				+ Also @ Points buffer comment
-			= Air & Water Pressure <-> forces on "walls"
+			+ Air & Water Pressure <-> forces on "walls"
 				! Aka "Inflatable Balloon" and implosions
 				! We've changed unit of pressure, hence current math is invalid!
-				- Do we do it where we currently use InternalPressure, or do we bounce @ UpdateWaterAndAirPressure?
-					- Depending on answer: need to nail down diffusion in hull
-						- ...which also impacts InjectAir tool - either we do or we don't ignore hull points
-				= Option 1:
+				! Do we do it where we currently use InternalPressure, or do we bounce @ UpdateWaterAndAirPressure?
+					! Depending on answer: need to nail down diffusion in hull
+						! ...which also impacts InjectAir tool - either we do or we don't ignore hull points
+				+ Option 1:
 					+ One step (replacement of old "InternalPressure") sets all hull points to avg of their neighbors
 						+ Include also hull points, so we propagate post-first layer
 						+ Can just set Air buffer, after ensuring we never use it from hull points during diffusion
@@ -3310,23 +3310,20 @@
 						+ Can do it @ Air diffusion with switch(is hull) in point loop, after ensuring running real diffusion for hull points
 						  is moot
 					+ Fix parallel tasks: ApplyStaticPressureForces needs to run in same thread as UpdateAirAndWaterPressure
-					= Then, redo math @ ApplyStaticPressureForces, using total pressure
+					+ Then, redo math @ ApplyStaticPressureForces, using total pressure
 						+ Make Points helper
 						! Will have to use EffectiveAir, see Temperature work item
-						= Test:
+						+ Test:
 							+ Air w/inflatable balloon
 								X Dynamic forces seem low
 									X Check released version: same
 								+ Make it break
 							+ FIX: we're not taking water into account when we diffuse along hull's
-							= Water at bottom of tank
+							+ Water at bottom of tank
 								+ In air
-								- At depth
+								+ At depth
 							+ Water w/inflatable balloon
 							+ Triton
-
-				- ...but also forces @ bounces, just for fun
-					- Add to StaticForces
 
 			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure 
 				- BUT: conversion to Pa requires plugging-in correct densities (*)

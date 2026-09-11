@@ -1342,6 +1342,8 @@ std::optional<ToolApplicationLocus> Ship::InjectAirAt(
     //
     // Find the (non-ephemeral) non-hull points in the radius
     //
+    // Note: hull points will equalize later
+    //
 
     auto const injectAir = [&](ElementIndex pointIndex, float dFactor)
         {
