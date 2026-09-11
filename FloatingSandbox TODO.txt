@@ -3234,9 +3234,14 @@
 				+ Shoot: OK
 				+ Flood test: OK
 
-			----- Time for nailing down constants?
+			+ Nail down constants
+				+ BlastToolForceAdjustment
+				+ AntiMatterBombImplosionStrength
+				+ ElectricalElementHeatProducedAdjustment
 
-			- PR:
+			+ Test thin tube - for capillarity
+
+			+ PR:
 				- What works already?
 					- Water and air intake and outtake
 					- Water/Air equilibrium physics
@@ -3253,6 +3258,8 @@
 					- Blasts affecting air
 					- Water splash sounds when water enters and moves within the ship (read: it's a cacophony now)
 					- Water gaining inertia when ship is moved manually
+
+			+ Bump up version
 
 			- Temperature <-> Air Pressure
 				! Theoretically: each temperature change should change Air (pressure)
@@ -3326,8 +3333,10 @@
 							+ Triton
 
 			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure 
-				- BUT: conversion to Pa requires plugging-in correct densities (*)
+				- Conversion to Pa: use Formulae::EquivalentWaterHeightToPressure
 				- Also, consider reading EffectiveAirPressure (result of Diffusion step)
+					- Incorporate in other work item(*), via Points::GetTotalPressureIn...(.)
+				- Add external pressure to reading
 			+ Tools:
 				+ Flood, Internal Pressure:
 					+ First off, rename: "Internal Pressure" -> "(Inject) Air Pressure"
@@ -3381,6 +3390,8 @@
 					+ TODOHERE: but now there's gap from hull walls
 				+ Final: @ vertex, using cubicity
 				+ Cleanup and add comment on cubicity
+
+			- New ephemeral particle like splashes but for air flying out of submerged parts venting air
 
 
 
@@ -3456,6 +3467,8 @@
 				- UpdateWaterAndAirPressure:
 					- See if makes sense to skip water step for hull points
 				- Rebalance thread tasks
+				- ApplyStaticPressureForces:
+					- Pre-multiply pressure conversion factors into forceNormalizationFactor
 
 			- Calibration for # of water iters
 				- -> Android plan
@@ -3502,6 +3515,16 @@
 				- Default Titanic
 				- All others
 
+	- Bandit's rusting:
+		- I was wondering if you might be asble to adjust the rusting values so the stuff from damage rusts first because it spreads from rust right now but it doesent seem to destroy itself from rust first because once it is covered in rust, it just rusts like it did before instead of more dynamically from damage. 
+		  because if you look these were taken a minute apart from each other once it fully was covered and well it kinda does what it used to...
+		  not another overhaul, but maybe tweaking the values so it rusts and destroys itself from damage points faster than just base deterioration.
+		  it also seems like it rusts the exact same on the above water too, so a ss america cant happen because somehow the entire thing seems to rust at the same rate.
+		  like i said this version of rusting is better, but i feel the values need to be tweaked because it still kinda behaves like it used to...
+
+		  as lusitania was saying maybe a slider to control base rust
+
+	- Water-soluble cables
 
 	- When focusing on ship after ship moved in PAUSE, we focus on old position
 

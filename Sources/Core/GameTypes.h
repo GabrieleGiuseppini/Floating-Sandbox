@@ -1339,7 +1339,6 @@ struct VisibleWorld
 struct PressureReading
 {
     float AirPressure;
-    float SqueezedAirPressure;
     float WaterPressure;
     float WorldY;
 };

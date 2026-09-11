@@ -2175,6 +2175,7 @@ void Ship::ApplyStaticPressureForces(
             // Calculate normalized pressure force: we want the force vector
             // to be zero when internal pressure == external pressure.
             // Note that will be negative when internal>external - outward force!
+            // TODO: pre-multiply pressure conversion factors into forceNormalizationFactor
             float const internalPressure = Formulae::EquivalentWaterHeightToPressure(mPoints.GetTotalInternalPressureInEquivalentHeightUnits(thisPointIndex));
             float const normalizedForceMagnitude = 1.0f - internalPressure * forceNormalizationFactor;
 
@@ -3294,7 +3295,6 @@ void Ship::UpdateWaterVelocities(
             // Read
             readings.emplace_back(PressureReading{
                 mPoints.GetAirPressure(pointIndex),
-                0.0f,
                 mPoints.GetWater(pointIndex),
                 mPoints.GetPosition(pointIndex).y });
 
@@ -3780,18 +3780,18 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
                     // Add "new momentum" (new velocity gained), but after bounce
                     newPointWaterMomentumBufferData[pointIndex] +=
-                        -springOutboundWaterVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f)
+                        -springOutboundWaterVelocities[s] // * (simulationParameters.BlastToolForceAdjustment / 10.0f)
                         * springOutboundQuantityOfWater;
 
                     // TODOTEST
                     if (pointIndex == mLastQueriedPointIndex)
                     {
                         LogMessage("  W Bounce: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector,
-                            " mom add=", -springOutboundWaterVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f),
+                            " mom add=", -springOutboundWaterVelocities[s] /* * (simulationParameters.BlastToolForceAdjustment / 10.0f)*/ * springOutboundQuantityOfWater,
                             " final mom=", newPointWaterMomentumBufferData[pointIndex]);
 
                         todoTotalWMomentumInAtQueriedPoint +=
-                            -springOutboundWaterVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f)
+                            -springOutboundWaterVelocities[s] // * (simulationParameters.BlastToolForceAdjustment / 10.0f)
                             * springOutboundQuantityOfWater;
                     }
 
@@ -3918,13 +3918,13 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
         vec2f lastQueriedPointInitialVelocity = vec2f::zero();
 
-        float const dampingFactor = std::min(simulationParameters.AntiMatterBombImplosionStrength / 10.0f, 1.0f);
-        for (auto pointIndex : mPoints.RawShipPoints())
-        {
-            if (pointIndex == mLastQueriedPointIndex)
-                lastQueriedPointInitialVelocity = mPoints.GetAirPressureVelocity(pointIndex);
-            mPoints.SetAirPressureVelocity(pointIndex, mPoints.GetAirPressureVelocity(pointIndex) * dampingFactor);
-        }
+        //float const dampingFactor = std::min(simulationParameters.AntiMatterBombImplosionStrength / 10.0f, 1.0f);
+        //for (auto pointIndex : mPoints.RawShipPoints())
+        //{
+        //    if (pointIndex == mLastQueriedPointIndex)
+        //        lastQueriedPointInitialVelocity = mPoints.GetAirPressureVelocity(pointIndex);
+        //    mPoints.SetAirPressureVelocity(pointIndex, mPoints.GetAirPressureVelocity(pointIndex) * dampingFactor);
+        //}
 
         vec2f const * const restrict oldPointAirPressureVelocityBufferData = mPoints.GetAirPressureVelocityBufferAsVec2();
 
@@ -4088,8 +4088,9 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
                     // Velocity along spring (only exists when going "up", and it's projected onto vertical)
                     float const upwardVelocity = std::max(
-                        //0.3f // Magic: bubble goes up at 0.25/0.40 m/s
-                        simulationParameters.ElectricalElementHeatProducedAdjustment * omega * springNormalizedVector.y,
+                        0.312245f // Magic: bubble goes up at 0.25/0.40 m/s
+                        //simulationParameters.ElectricalElementHeatProducedAdjustment
+                        * omega * springNormalizedVector.y,
                         0.0f);
 
                     springOutboundScalarAirPressureVelocity += upwardVelocity;
@@ -4273,13 +4274,13 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
 
                         // Add "new momentum" (new velocity gained), but after bounce
                         newPointAirPressureMomentumBufferData[pointIndex] +=
-                            -springOutboundAirPressureVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f)
+                            -springOutboundAirPressureVelocities[s] // * (simulationParameters.BlastToolForceAdjustment / 10.0f)
                             * springOutboundQuantityOfAirPressure;
 
                         if (pointIndex == mLastQueriedPointIndex)
                         {
                             LogMessage("    A Bounce back in: springOutboundQuantityOfAirPressure=", springOutboundQuantityOfAirPressure, " dir=", springNormalizedVector,
-                                " mom in=", (-springOutboundAirPressureVelocities[s] * (simulationParameters.BlastToolForceAdjustment / 10.0f) * springOutboundQuantityOfAirPressure),
+                                " mom in=", (-springOutboundAirPressureVelocities[s] /** (simulationParameters.BlastToolForceAdjustment / 10.0f)*/ * springOutboundQuantityOfAirPressure),
                                 " final mom=", newPointAirPressureMomentumBufferData[pointIndex]);
                         }
                     }
@@ -4328,48 +4329,45 @@ void Ship::UpdateWaterAndAirPressure_WithAirVelocities(
     // TODOTEST: readings
     //
 
-    std::vector<PressureReading> readings;
+    //std::vector<PressureReading> readings;
 
-    //ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8283;
-    ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8150;
-    //ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 639;
-    ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 640;
-    if (PressureCrossCutReadingsStartPointIndex < mPoints.GetRawShipPointCount())
-    {
-        ElementIndex prevPointIndex = PressureCrossCutReadingsStartPointIndex;
-        for (ElementIndex pointIndex = PressureCrossCutReadingsStartPointIndex; pointIndex != NoneElementIndex && pointIndex != PressureCrossCutReadingsEndPointIndex; /* updated in loop */)
-        {
-            // Read
-            readings.emplace_back(PressureReading{
-                mPoints.GetAirPressure(pointIndex),
-                0.0f,
-                mPoints.GetWater(pointIndex),
-                mPoints.GetPosition(pointIndex).y });
+    //ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8150;
+    //ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 640;
+    //if (PressureCrossCutReadingsStartPointIndex < mPoints.GetRawShipPointCount())
+    //{
+    //    ElementIndex prevPointIndex = PressureCrossCutReadingsStartPointIndex;
+    //    for (ElementIndex pointIndex = PressureCrossCutReadingsStartPointIndex; pointIndex != NoneElementIndex && pointIndex != PressureCrossCutReadingsEndPointIndex; /* updated in loop */)
+    //    {
+    //        // Read
+    //        readings.emplace_back(PressureReading{
+    //            mPoints.GetAirPressure(pointIndex),
+    //            mPoints.GetWater(pointIndex),
+    //            mPoints.GetPosition(pointIndex).y });
 
-            if (pointIndex == mLastQueriedPointIndex)
-            {
-                LogMessage("READ: this : a=", mPoints.GetAirPressure(pointIndex), " w=", mPoints.GetWater(pointIndex));
-                LogMessage("      other: a=", mPoints.GetAirPressure(prevPointIndex), " w=", mPoints.GetWater(prevPointIndex));
-            }
+    //        if (pointIndex == mLastQueriedPointIndex)
+    //        {
+    //            LogMessage("READ: this : a=", mPoints.GetAirPressure(pointIndex), " w=", mPoints.GetWater(pointIndex));
+    //            LogMessage("      other: a=", mPoints.GetAirPressure(prevPointIndex), " w=", mPoints.GetWater(prevPointIndex));
+    //        }
 
-            // Advance
-            ElementIndex nextPointIndex = NoneElementIndex;
-            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
-            {
-                auto const springOctant = mSprings.GetFactoryOtherEndpointOctant(cs.SpringIndex, pointIndex);
-                if (springOctant == 6)
-                {
-                    nextPointIndex = cs.OtherEndpointIndex;
-                    break;
-                }
-            }
+    //        // Advance
+    //        ElementIndex nextPointIndex = NoneElementIndex;
+    //        for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+    //        {
+    //            auto const springOctant = mSprings.GetFactoryOtherEndpointOctant(cs.SpringIndex, pointIndex);
+    //            if (springOctant == 6)
+    //            {
+    //                nextPointIndex = cs.OtherEndpointIndex;
+    //                break;
+    //            }
+    //        }
 
-            prevPointIndex = pointIndex;
-            pointIndex = nextPointIndex;
-        }
-    }
+    //        prevPointIndex = pointIndex;
+    //        pointIndex = nextPointIndex;
+    //    }
+    //}
 
-    mSimulationEventHandler.OnPressureReadings(readings);
+    //mSimulationEventHandler.OnPressureReadings(readings);
 
     // TODOTEST
     // Calculate total water after
