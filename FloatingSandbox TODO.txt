@@ -3263,28 +3263,55 @@
 
 			- Temperature <-> Air Pressure
 				! Theoretically: each temperature change should change Air (pressure)
-				! In practice:
-					- TODOHERE: rewrite based on learnings
-					- Option 1:
-						! Gist: we have TheoreticalAir and EffectiveAir
-							! Much like WaterVelocities and WaterMomenta
-						! During a simulation step:
-							! Interaction changes are made to TheoreticalAir
-							! Reads happen from EffectiveAir (assuming don't need immediately changes done in same step)
-								- Readings:
-									- Ingress/Egress
-									- Physics Probe tool
-									- ApplyStaticPressureForces (internal pressure)
-							! DiffusionSimulation:
-								! Theo->Effective (via T)
-								! Diffusion on Effective
-								! Effective->Theo
-									! And Effective stays for reading, exactly like WaterMomenta
-						- Finalize:
-							- Air pressure: rendering from EffectiveAir?
-							- Points::GetTotalInternalPressureInEquivalentHeightUnits: use EffectiveAir
-							- AirDiffusion: HullDiffusion: use EffectiveAir
-								- Via helpers? make sure buffer is ok
+				! In practice: we transform Air (theoretical) to EffectiveAir @ beginning of Diffuse, and EffectiveAir to Air at end, leaving EffectiveAir for readers
+					! Much like WaterVelocity and WaterMomenta
+					! Interaction changes are made to (theoretical) Air
+					! Reads happen from EffectiveAir (assuming don't need immediately changes done in same step)
+						- Readings:
+							- Ingress/Egress
+							- Physics Probe tool
+							- ApplyStaticPressureForces (internal pressure)
+					! DiffusionSimulation:
+						! Init: Theo->Effective (via T)
+						! Diffusion on Effective
+						! End: Effective->Theo
+							! And Effective stays for reading, exactly like WaterMomenta
+							! And Momenta->Velocities uses EffectiveAir
+				- Impl:
+					- Points:
+						- EffectiveAir buffer, with comments
+							- Air: is at reference temperature; real pressure depends on T (differently than with densities)
+						- UpdateAirPressureVelocitiesFromMomenta: needs to use EffectiveAir
+							- Make @ .cc
+							- Also move water counterpart to .cc
+						- Nuke:
+							- UpdateWaterMomentaFromVelocities
+							- UpdateAirPressureMomentaFromVelocities
+						- Add():
+							- EffectiveAir initialization: just assume Temperature0, that's what we init points' temperature with
+					- Diffuse:
+						- Init:
+							- In-place transform of Points::Air buffer into EffectiveAir, calls pointer "oldEffectiveAir" locally 
+								- Via Points helper
+							- Copy into Points::EffectiveAir buffer, calls pointer "newEffectiveAir" locally 
+								- Via Points::ResetXYZ()
+						- Steps: reads oldEffectiveAir and writes newEffectiveAir
+						- End:
+							- Points::EffectiveAir->Points::Air with inverse transform
+								- Via Points::~AirToEffectiveAir (see water momenta naming)
+							- UpdateAirPressureVelocitiesFromMomenta: uses EffectiveAir
+
+
+				- Finalize:
+					- InternalPressure rendering
+						- Rename (*)
+						- From EffectiveAir
+					- Points::GetTotalInternalPressureInEquivalentHeightUnits: use EffectiveAir
+					- AirDiffusion: HullDiffusion: use EffectiveAir
+						- Via helpers? make sure buffer is ok
+					- Ingress/Egress: use EffectiveAir for both Water and Air ingress/egress
+					- ApplyStaticPressureForces: use EffectiveAir 
+
 			+ Water and Air density adjustments
 				+ Depends on choices above at Ingress/Egress pressure formulas (*)
 					! i.e. choice of reference density for Water and Air
@@ -3295,11 +3322,13 @@
 				- Could use presence of air as replacement of freeness?
 				- Try first only @ bounce
 
-			- Interact with air velocity @
+			- Interact with air velocity/momenta @
 				- Blasts
 					- Explosions (bombs, material)
 					- Blast Tool
 				- NPCs
+					- Do that PressureTest ship with tubes
+				- Wind tool
 				- etc
 			+ Finalize unit of AirPressure
 				+ Also @ Points buffer comment
@@ -3469,6 +3498,10 @@
 				- Rebalance thread tasks
 				- ApplyStaticPressureForces:
 					- Pre-multiply pressure conversion factors into forceNormalizationFactor
+				- Points::UpdateAirPressureVelocitiesFromMomenta and UpdateWaterVelocitiesFromMomenta:
+					- Check if vectorized; if not => add to Algorithms
+						- With unit tests
+						- -> Android plan
 
 			- Calibration for # of water iters
 				- -> Android plan
