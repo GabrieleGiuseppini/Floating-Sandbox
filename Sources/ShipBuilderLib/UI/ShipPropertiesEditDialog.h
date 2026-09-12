@@ -97,7 +97,7 @@ private:
 
     EditSpinBox<float> * mOffsetXEditSpinBox;
     EditSpinBox<float> * mOffsetYEditSpinBox;
-    EditSpinBox<float> * mInternalPressureEditSpinBox;
+    EditSpinBox<float> * mInternalAirPressureEditSpinBox;
 
     BitmapRadioButton * mAutoTexturizationSettingsOffButton;
     BitmapRadioButton * mAutoTexturizationSettingsOnButton;

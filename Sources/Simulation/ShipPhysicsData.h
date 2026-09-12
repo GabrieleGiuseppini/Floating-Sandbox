@@ -16,20 +16,20 @@ struct ShipPhysicsData final
 public:
 
     vec2f Offset;
-    float InternalPressure; // atm
+    float InternalAirPressure; // atm, at T0
 
     ShipPhysicsData(
         vec2f offset,
-        float internalPressure)
+        float internalAirPressure)
         : Offset(std::move(offset))
-        , InternalPressure(internalPressure)
+        , InternalAirPressure(internalAirPressure)
     {
     }
 
     // Defaults
     ShipPhysicsData()
         : Offset(vec2f::zero())
-        , InternalPressure(1.0f)
+        , InternalAirPressure(1.0f)
     {}
 
     ShipPhysicsData(ShipPhysicsData const & other) = default;

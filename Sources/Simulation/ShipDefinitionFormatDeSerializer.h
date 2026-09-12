@@ -148,7 +148,7 @@ private:
 
         OffsetX = MAKE_TAG('O', 'F', 'X', '1'),
         OffsetY = MAKE_TAG('O', 'F', 'Y', '1'),
-        InternalPressure = MAKE_TAG('I', 'P', 'R', '1'),
+        InternalAirPressure = MAKE_TAG('I', 'P', 'R', '1'),
 
         Tail = 0xffffffff
     };

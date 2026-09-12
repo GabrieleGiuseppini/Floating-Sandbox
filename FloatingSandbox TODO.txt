@@ -3280,7 +3280,7 @@
 				- Impl:
 					- Points:
 						- EffectiveAir buffer, with comments
-							- Air: is at reference temperature; real pressure depends on T (differently than with densities)
+							- Air: is at reference temperature (T0); real pressure depends on T (differently than with densities)
 						- UpdateAirPressureVelocitiesFromMomenta: needs to use EffectiveAir
 							- Make @ .cc
 							- Also move water counterpart to .cc
@@ -3289,6 +3289,7 @@
 							- UpdateAirPressureMomentaFromVelocities
 						- Add():
 							- EffectiveAir initialization: just assume Temperature0, that's what we init points' temperature with
+						- Points::GetTotalInternalPressureInEquivalentHeightUnits: use EffectiveAir
 					- Diffuse:
 						- Init:
 							- In-place transform of Points::Air buffer into EffectiveAir, calls pointer "oldEffectiveAir" locally 
@@ -3304,13 +3305,13 @@
 
 				- Finalize:
 					- InternalPressure rendering
-						- Rename (*)
-						- From EffectiveAir
-					- Points::GetTotalInternalPressureInEquivalentHeightUnits: use EffectiveAir
+						+ Rename (*)
+						- From EffectiveAir					
 					- AirDiffusion: HullDiffusion: use EffectiveAir
 						- Via helpers? make sure buffer is ok
 					- Ingress/Egress: use EffectiveAir for both Water and Air ingress/egress
 					- ApplyStaticPressureForces: use EffectiveAir 
+					- Points::Query: show effective
 
 			+ Water and Air density adjustments
 				+ Depends on choices above at Ingress/Egress pressure formulas (*)
@@ -3420,6 +3421,10 @@
 				+ Final: @ vertex, using cubicity
 				+ Cleanup and add comment on cubicity
 
+			- Vector field rendering: add option for Water+Air momenta
+				- SettingsDialog
+				- ShipRenderContext is ready, as long as UploadStart gives correct count
+
 			- New ephemeral particle like splashes but for air flying out of submerged parts venting air
 
 
@@ -3441,7 +3446,8 @@
 
 			- Cleanup 1:
 				- "Air pressure" -> "Air"
-					- Also @ vector field rendering enum, @ settings dialog
+					- Points buffers and all its uses
+					+ Also @ vector field rendering enum & shaders, @ settings dialog
 				- Momenta spirit:
 					- Points::Momenta only for rendering; byproduct of diffusion step
 						- Only exposed accessors:
@@ -3473,24 +3479,24 @@
 				- Nuke Ship::UpdateWaterVelocities
 				- Keep only winner of Ship::UpdatePressureAndWaterInflow
 				- Renames (Internal Pressure -> Air / Pressure):
-					- PhysicsData
-						- PhysicsData struct
-						- De/Serialization
-						- ShipBuilder UI
-					- Points::Add args
-					- DebugShipRenderModeType::InternalPressure
-						- Shader
-					- Internal pressure view: code and UI
+					+ PhysicsData
+						+ PhysicsData struct
+						+ De/Serialization
+						+ ShipBuilder UI
+					+ Points::Add args
+					+ DebugShipRenderModeType::InternalPressure
+						+ Shader
+					+ Internal pressure view: code and UI
 				- Rename: water diffusion speed -> water & air diffusion speed
 					- Material properties: code + json
 					- SimulationParameters setting
 					- UI
 						- Do we want to lock down diffusion speeds?
 						+ Whole section becomes Pressure?
-				- Cleanup upload of internal pressure to rendering
 
 				- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
 					- Watchout: when we make copies of buffers we use mFloatBufferAllocator
+					- If we do, nuke all commented-out sanity lines for ephemerals
 
 			- Optimizations:
 				- UpdateWaterAndAirPressure:
@@ -3523,6 +3529,7 @@
 					- AirPump in/out x with_tank_without_tank
 
 		- Android port plan:
+			- Shader and ShaderSets renames for InternalPressure->AirPressure
 			- Water shader
 			- AirBubblesDensity setting de-serialization: 
 				- PostDeserialization hook @ Settings.cpp/h

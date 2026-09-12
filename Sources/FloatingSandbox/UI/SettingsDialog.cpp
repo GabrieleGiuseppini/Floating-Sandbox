@@ -6022,7 +6022,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             _("Draw Only Springs"),
             _("Draw Only Edge Springs"),
             _("Draw Structure"),
-            _("Draw Internal Pressure"),
+            _("Draw Air Pressure"),
             _("Draw Strength")
         };
 
@@ -6059,7 +6059,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                 }
                 else if (6 == selectedDebugShipRenderMode)
                 {
-                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::InternalPressure);
+                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::AirPressure);
                 }
                 else
                 {
@@ -7330,7 +7330,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
 
-        case DebugShipRenderModeType::InternalPressure:
+        case DebugShipRenderModeType::AirPressure:
         {
             mDebugShipRenderModeRadioBox->SetSelection(6);
             break;

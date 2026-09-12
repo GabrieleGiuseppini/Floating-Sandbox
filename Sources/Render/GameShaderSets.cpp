@@ -141,6 +141,8 @@ ProgramKind ShaderNameToProgramKind(std::string const & str)
         return ProgramKind::ShipRopesIncandescenceStress;
     else if (lstr == "ship_sparkles")
         return ProgramKind::ShipSparkles;
+    else if (lstr == "ship_springs_air_pressure")
+        return ProgramKind::ShipSpringsAirPressure;
     else if (lstr == "ship_springs_color")
         return ProgramKind::ShipSpringsColor;
     else if (lstr == "ship_springs_color_stress")
@@ -153,8 +155,6 @@ ProgramKind ShaderNameToProgramKind(std::string const & str)
         return ProgramKind::ShipSpringsColorIncandescence;
     else if (lstr == "ship_springs_color_incandescence_stress")
         return ProgramKind::ShipSpringsColorIncandescenceStress;
-    else if (lstr == "ship_springs_internal_pressure")
-        return ProgramKind::ShipSpringsInternalPressure;
     else if (lstr == "ship_springs_strength")
         return ProgramKind::ShipSpringsStrength;
     else if (lstr == "ship_springs_texture")
@@ -171,6 +171,8 @@ ProgramKind ShaderNameToProgramKind(std::string const & str)
         return ProgramKind::ShipSpringsTextureIncandescenceStress;
     else if (lstr == "ship_stressed_springs")
         return ProgramKind::ShipStressedSprings;
+    else if (lstr == "ship_triangles_air_pressure")
+        return ProgramKind::ShipTrianglesAirPressure;
     else if (lstr == "ship_triangles_color")
         return ProgramKind::ShipTrianglesColor;
     else if (lstr == "ship_triangles_color_stress")
@@ -183,8 +185,6 @@ ProgramKind ShaderNameToProgramKind(std::string const & str)
         return ProgramKind::ShipTrianglesColorIncandescence;
     else if (lstr == "ship_triangles_color_incandescence_stress")
         return ProgramKind::ShipTrianglesColorIncandescenceStress;
-    else if (lstr == "ship_triangles_internal_pressure")
-        return ProgramKind::ShipTrianglesInternalPressure;
     else if (lstr == "ship_triangles_strength")
         return ProgramKind::ShipTrianglesStrength;
     else if (lstr == "ship_triangles_texture")
@@ -349,6 +349,8 @@ std::string ProgramKindToStr(ProgramKind program)
             return "ShipRopesIncandescenceStress";
         case ProgramKind::ShipSparkles:
             return "ShipSparkles";
+        case ProgramKind::ShipSpringsAirPressure:
+            return "ShipSpringsAirPressure";
         case ProgramKind::ShipSpringsColor:
             return "ShipSpringsColor";
         case ProgramKind::ShipSpringsColorStress:
@@ -361,8 +363,6 @@ std::string ProgramKindToStr(ProgramKind program)
             return "ShipSpringsColorIncandescence";
         case ProgramKind::ShipSpringsColorIncandescenceStress:
             return "ShipSpringsColorIncandescenceStress";
-        case ProgramKind::ShipSpringsInternalPressure:
-            return "ShipSpringsInternalPressure";
         case ProgramKind::ShipSpringsStrength:
             return "ShipSpringsStrength";
         case ProgramKind::ShipSpringsTexture:
@@ -379,6 +379,8 @@ std::string ProgramKindToStr(ProgramKind program)
             return "ShipSpringsTextureIncandescenceStress";
         case ProgramKind::ShipStressedSprings:
             return "ShipStressedSprings";
+        case ProgramKind::ShipTrianglesAirPressure:
+            return "ShipTrianglesAirPressure";
         case ProgramKind::ShipTrianglesColor:
             return "ShipTrianglesColor";
         case ProgramKind::ShipTrianglesColorStress:
@@ -391,8 +393,6 @@ std::string ProgramKindToStr(ProgramKind program)
             return "ShipTrianglesColorIncandescence";
         case ProgramKind::ShipTrianglesColorIncandescenceStress:
             return "ShipTrianglesColorIncandescenceStress";
-        case ProgramKind::ShipTrianglesInternalPressure:
-            return "ShipTrianglesInternalPressure";
         case ProgramKind::ShipTrianglesStrength:
             return "ShipTrianglesStrength";
         case ProgramKind::ShipTrianglesTexture:

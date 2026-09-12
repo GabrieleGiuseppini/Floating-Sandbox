@@ -18,7 +18,7 @@ namespace Physics {
 void Points::Add(
     vec2f const & position,
     float water,
-    float internalPressure,
+    float internalAirPressure, // Pa, @ T0
     StructuralMaterial const & structuralMaterial,
     ElectricalMaterial const * electricalMaterial,
     bool isRope,
@@ -66,7 +66,7 @@ void Points::Add(
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
 
-    mInternalPressureBuffer.emplace_back(internalPressure);
+    mInternalPressureBuffer.emplace_back(internalAirPressure);
     mIsHullBuffer.emplace_back(structuralMaterial.IsHull); // Default is from material
     mMaterialWaterIntakeBuffer.emplace_back(structuralMaterial.WaterIntake);
     mMaterialWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
@@ -76,7 +76,7 @@ void Points::Add(
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
 
-    mAirPressureBuffer.emplace_back(Formulae::PressureToEquivalentWaterHeight(internalPressure));
+    mAirPressureBuffer.emplace_back(Formulae::PressureToEquivalentWaterHeight(internalAirPressure));
     mAirPressureVelocityBuffer.emplace_back(vec2f::zero());
     mAirPressureMomentumBuffer.emplace_back(vec2f::zero());
 
@@ -2376,7 +2376,7 @@ void Points::UploadAttributes(
             mStressBuffer.data());
     }
 
-    if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::InternalPressure)
+    if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::AirPressure)
     {
         renderContext.UploadShipPointAuxiliaryDataAsync(
             shipId,

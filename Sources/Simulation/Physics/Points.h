@@ -956,7 +956,7 @@ public:
     void Add(
         vec2f const & position,
         float water,
-        float internalPressure,
+        float internalAirPressure, // Pa, @ T0
         StructuralMaterial const & structuralMaterial,
         ElectricalMaterial const * electricalMaterial,
         bool isRope,
