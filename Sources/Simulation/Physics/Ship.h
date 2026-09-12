@@ -757,11 +757,7 @@ private:
 
     void EqualizeInternalPressure(SimulationParameters const & simulationParameters);
 
-    void UpdateWaterVelocities(
-        SimulationParameters const & simulationParameters,
-        float & waterSplashed);
-
-    void UpdateWaterAndAirPressure_WithAirVelocities(
+    void UpdateAirAndWaterPressure(
         float effectiveAirDensity,
         float effectiveWaterDensity,
         SimulationParameters const & simulationParameters,

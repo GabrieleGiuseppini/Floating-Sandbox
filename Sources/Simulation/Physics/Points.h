@@ -788,6 +788,7 @@ public:
         , mAirPressureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mAirPressureVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAirPressureMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mEffectiveAirPressureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mCumulatedOutflownUnderwaterAirPressure(mBufferElementCount, shipPointCount, 0.0f)
         , mLeakingCompositeBuffer(mBufferElementCount, shipPointCount, LeakingComposite(false))
         , mFactoryIsStructurallyLeakingBuffer(mBufferElementCount, shipPointCount, false)
@@ -1756,11 +1757,6 @@ public:
         return waterBufferCopy;
     }
 
-    void UpdateWaterBuffer(std::shared_ptr<Buffer<float>> newWaterBuffer)
-    {
-        mWaterBuffer.copy_from(*newWaterBuffer);
-    }
-
     vec2f const & GetWaterVelocity(ElementIndex pointElementIndex) const
     {
         return mWaterVelocityBuffer[pointElementIndex];
@@ -1783,33 +1779,9 @@ public:
         mWaterMomentumBuffer.fill(vec2f::zero());
     }
 
-    // TODOTEST: these should go and be replaced by a simple work buffer, which is then passed to UpdateWaterVelocitiesFromMomenta
-    // or UpdateWaterVelocitiesFromMomenta is moved inline @ caller
-    void SetWaterMomentum(
-        ElementIndex pointElementIndex,
-        vec2f const & waterMomentum)
-    {
-        mWaterMomentumBuffer[pointElementIndex] = waterMomentum;
-    }
-
     vec2f * GetWaterMomentumBufferAsVec2f()
     {
         return mWaterMomentumBuffer.data();
-    }
-
-    void UpdateWaterMomentaFromVelocities()
-    {
-        float * const restrict waterBuffer = mWaterBuffer.data();
-        vec2f * const restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
-        vec2f * restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
-
-        // No need to visit ephemerals, as they don't get water
-        for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
-        {
-            waterMomentumBuffer[p] =
-                waterVelocityBuffer[p]
-                * waterBuffer[p];
-        }
     }
 
     void UpdateWaterVelocitiesFromMomenta()
@@ -1835,11 +1807,14 @@ public:
         }
     }
 
+    // At T0; effective air at current particle's air temperature is at EffectiveAirPressure
     float GetAirPressure(ElementIndex pointElementIndex) const
     {
         return mAirPressureBuffer[pointElementIndex];
     }
 
+    // If called with air pressure coming from effective air,
+    // values needs to be scaled down to Temperature0
     void SetAirPressure(
         ElementIndex pointElementIndex,
         float value)
@@ -1850,14 +1825,6 @@ public:
     float * GetAirPressureBufferAsFloat()
     {
         return mAirPressureBuffer.data();
-    }
-
-    std::shared_ptr<Buffer<float>> MakeAirPressureBufferCopy()
-    {
-        auto airPressureBufferCopy = mFloatBufferAllocator.Allocate();
-        airPressureBufferCopy->copy_from(mAirPressureBuffer);
-
-        return airPressureBufferCopy;
     }
 
     vec2f const & GetAirPressureVelocity(ElementIndex pointElementIndex) const
@@ -1877,13 +1844,9 @@ public:
         return mAirPressureVelocityBuffer.data();
     }
 
-    // TODOTEST: these should go and be replaced by a simple work buffer, which is then passed to UpdateAirPressureVelocitiesFromMomenta
-    // or UpdateAirPressureVelocitiesFromMomenta is moved inline @ caller
-    void SetAirPressureMomentum(
-        ElementIndex pointElementIndex,
-        vec2f const & airPressureMomentum)
+    void ResetAirPressureMomenta()
     {
-        mAirPressureMomentumBuffer[pointElementIndex] = airPressureMomentum;
+        mAirPressureMomentumBuffer.fill(vec2f::zero());
     }
 
     vec2f * GetAirPressureMomentumBufferAsVec2f()
@@ -1891,35 +1854,22 @@ public:
         return mAirPressureMomentumBuffer.data();
     }
 
-    void UpdateAirPressureMomentaFromVelocities()
+    // Note: sources from EffectiveAir buffer, so it must be "fresh" - i.e.
+    // consistent with current Air buffer
+    void UpdateAirPressureVelocitiesFromMomenta()
     {
-        float * const restrict airPressureBuffer = mAirPressureBuffer.data();
-        vec2f * const restrict airPressureVelocityBuffer = mAirPressureVelocityBuffer.data();
-        vec2f * restrict airPressureMomentumBuffer = mAirPressureMomentumBuffer.data();
+        float * const restrict effectiveAirPressureBuffer = mEffectiveAirPressureBuffer.data();
+        vec2f * restrict airPressureVelocityBuffer = mAirPressureVelocityBuffer.data();
+        vec2f * const restrict airPressureMomentumBuffer = mAirPressureMomentumBuffer.data();
 
         // No need to visit ephemerals, as they don't get air
         for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
         {
-            airPressureMomentumBuffer[p] =
-                airPressureVelocityBuffer[p]
-                * airPressureBuffer[p];
-        }
-    }
-
-    void UpdateAirPressureVelocitiesFromMomenta()
-    {
-        float * const restrict airPressureBuffer = mAirPressureBuffer.data();
-        vec2f * restrict airPressureVelocityBuffer = mAirPressureVelocityBuffer.data();
-        vec2f * const restrict airPressureMomentumBuffer = mAirPressureMomentumBuffer.data();
-
-        // No need to visit ephemerals, as they don't get water
-        for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
-        {
-            if (airPressureBuffer[p] != 0.0f)
+            if (effectiveAirPressureBuffer[p] != 0.0f)
             {
                 airPressureVelocityBuffer[p] =
                     airPressureMomentumBuffer[p]
-                    / airPressureBuffer[p];
+                    / effectiveAirPressureBuffer[p];
             }
             else
             {
@@ -1929,10 +1879,60 @@ public:
         }
     }
 
+    float GetEffectiveAirPressure(ElementIndex pointElementIndex) const
+    {
+        return mEffectiveAirPressureBuffer[pointElementIndex];
+    }
+
+    float * GetEffectiveAirPressureBufferAsFloat()
+    {
+        return mEffectiveAirPressureBuffer.data();
+    }
+
+    void ResetEffectiveAirPressure(float const * restrict sourceBufferData)
+    {
+        // No need to copy ephemerals, as they don't get air
+        mEffectiveAirPressureBuffer.copy_from(sourceBufferData, static_cast<size_t>(mRawShipPointCount));
+    }
+
+    // Modifies in-place the AirPressure buffer to take into account
+    // the particle's air temperature, effectively making the AirPressure buffer
+    // an EffectiveAirPressure buffer.
+    // Only used during air diffusion step; after that, the AirPressure buffer
+    // reverts to represent air pressure at Temperature0.
+    void TransformAirPressureToEffectiveAirPressure()
+    {
+        float * restrict const airPressureBuffer = mAirPressureBuffer.data();
+        float const * restrict const temperatureBuffer = mTemperatureBuffer.data();
+
+        // No need to visit ephemerals, as they don't get air
+        for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
+        {
+            airPressureBuffer[p] *= temperatureBuffer[p] / SimulationParameters::Temperature0;
+        }
+    }
+
+    // Overwrites the AirPressure buffer from the EffectiveAirPressure buffer,
+    // scaling back pressures to Temperature0.
+    // Happens at end of diffusion step, so that afterwards AirPressure buffer
+    // is consistent with EffectiveAirPressure buffer.
+    void UpdateAirPressureFromEffective()
+    {
+        float * restrict const airPressureBuffer = mAirPressureBuffer.data();
+        float const * restrict const effectiveAirPressureBuffer = mEffectiveAirPressureBuffer.data();
+        float const * restrict const temperatureBuffer = mTemperatureBuffer.data();
+
+        // No need to visit ephemerals, as they don't get air
+        for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
+        {
+            assert(temperatureBuffer[p] != 0.0f); // We don't reach absolute zero
+            airPressureBuffer[p] = effectiveAirPressureBuffer[p] * SimulationParameters::Temperature0 / temperatureBuffer[p];
+        }
+    }
+
     float GetTotalInternalPressureInEquivalentHeightUnits(ElementIndex pointElementIndex) const
     {
-        // TODOHERE: use EffectiveAirPressure
-        return GetWater(pointElementIndex) + GetAirPressure(pointElementIndex);
+        return GetWater(pointElementIndex) + GetEffectiveAirPressure(pointElementIndex);
     }
 
     float GetCumulatedOutflownUnderwaterAirPressure(ElementIndex pointElementIndex) const
@@ -2146,7 +2146,7 @@ public:
         mIsElectrifiedBuffer[pointElementIndex] = value;
     }
 
-    void ResetIsElectrifiedBuffer()
+    void ResetIsElectrified()
     {
         mIsElectrifiedBuffer.fill(false);
     }
@@ -2745,7 +2745,8 @@ private:
     // Total momentum of the water at this point [TODO: work buffer]
     Buffer<vec2f> mWaterMomentumBuffer;
 
-    // Air pressure at this particle, in equivalent meters of a 1m2-wide column of water at reference density
+    // Air pressure at this particle, in equivalent meters of a 1m2-wide column of water at reference density, for air at Temperature0.
+    // Needs to scale with actual particle's air temperature - differently than with densities, see comment above.
     Buffer<float> mAirPressureBuffer;
 
     // Total velocity of air at this point
@@ -2753,6 +2754,10 @@ private:
 
     // Total momentum of air at this point [TODO: work buffer]
     Buffer<vec2f> mAirPressureMomentumBuffer;
+
+    // Effective air pressure at this particle: same as AirPressure, but scaled with actual particle's air temperature.
+    // Calculated at air and water diffusion, and strives to be maintained until next iteration.
+    Buffer<float> mEffectiveAirPressureBuffer;
 
     // Total amount of air pressure lost when underwater, which has not yet been
     // utilized for air bubbles

@@ -3261,7 +3261,7 @@
 
 			+ Bump up version
 
-			- Temperature <-> Air Pressure
+			+ Temperature <-> Air Pressure
 				! Theoretically: each temperature change should change Air (pressure)
 				! In practice: we transform Air (theoretical) to EffectiveAir @ beginning of Diffuse, and EffectiveAir to Air at end, leaving EffectiveAir for readers
 					! Much like WaterVelocity and WaterMomenta
@@ -3277,41 +3277,58 @@
 						! End: Effective->Theo
 							! And Effective stays for reading, exactly like WaterMomenta
 							! And Momenta->Velocities uses EffectiveAir
-				- Impl:
-					- Points:
-						- EffectiveAir buffer, with comments
-							- Air: is at reference temperature (T0); real pressure depends on T (differently than with densities)
-						- UpdateAirPressureVelocitiesFromMomenta: needs to use EffectiveAir
-							- Make @ .cc
-							- Also move water counterpart to .cc
-						- Nuke:
-							- UpdateWaterMomentaFromVelocities
-							- UpdateAirPressureMomentaFromVelocities
-						- Add():
-							- EffectiveAir initialization: just assume Temperature0, that's what we init points' temperature with
-						- Points::GetTotalInternalPressureInEquivalentHeightUnits: use EffectiveAir
-					- Diffuse:
-						- Init:
-							- In-place transform of Points::Air buffer into EffectiveAir, calls pointer "oldEffectiveAir" locally 
-								- Via Points helper
-							- Copy into Points::EffectiveAir buffer, calls pointer "newEffectiveAir" locally 
-								- Via Points::ResetXYZ()
-						- Steps: reads oldEffectiveAir and writes newEffectiveAir
-						- End:
-							- Points::EffectiveAir->Points::Air with inverse transform
-								- Via Points::~AirToEffectiveAir (see water momenta naming)
-							- UpdateAirPressureVelocitiesFromMomenta: uses EffectiveAir
+				+ Impl:
+					! Commit only at end, as we don't know whether it'll really work
+						! Also means, resist urge to make cleanups
+					+ Points:
+						+ EffectiveAir buffer, with comments
+							+ Air: is at reference temperature (T0); real pressure depends on T (differently than with densities)
+						+ UpdateAirPressureVelocitiesFromMomenta: needs to use EffectiveAir
+						+ Add():
+							+ EffectiveAir initialization: just assume Temperature0, that's what we init points' temperature with
+						+ Points::GetTotalInternalPressureInEquivalentHeightUnits: use EffectiveAir
+						+ Points::TransformAirPressureBufferToEffectiveAirPressure()
+							+ In-place transform of Points::Air buffer into EffectiveAir
+						+ Points::UpdateAirPressureFromEffective()
+							+ Source: mEffectiveAirPressureBuffer
+							+ Dest: mAirPressureBuffer
+					+ Diffuse:
+						+ Init:
+							+ In-place transform of Points::Air buffer into EffectiveAir, calls pointer "oldEffectiveAir" locally 
+								+ Via Points::TransformAirPressureBufferToEffectiveAirPressure
+								+ Use @ Water step
+								+ Use @ Air step
+							+ @ beginning of Air step: copy Points::AirPressure buffer into Points::EffectiveAirPressure buffer, calls pointer "newEffectiveAir" locally 
+								+ Via Points::ResetEffectiveAirPressure()
+						+ Steps: reads oldEffectiveAir and writes newEffectiveAir (Points::EffectiveAir buffer)
+						+ End:
+							+ Call UpdateAirPressureVelocitiesFromMomenta
+								+ Uses EffectiveAir buffer, i.e. newEffectiveAir
+							+ Points::EffectiveAir->Points::Air with inverse transform
+								+ Via new Points::UpdateAirPressureFromEffective()
+					+ Readings: from effective air
 
+					+ Ingress/Egress:
+						+ Use EffectiveAir for both Water and Air ingress/egress when reading internally
+						+ Write effective pressure
+				+ Test: 
+					+ Air pocket heated
+					+ Scorecard:
+						+ Shoot
+						+ default_ship
+						+ flood test
+				+ Finalize (iff ok):
+					+ All AirPressure writes: check if it's adding effective, in which case needs conversion
+					+ Nuke:
+						+ UpdateWaterMomentaFromVelocities
+						+ UpdateAirPressureMomentaFromVelocities
 
-				- Finalize:
-					- InternalPressure rendering
+					+ InternalPressure rendering
 						+ Rename (*)
-						- From EffectiveAir					
-					- AirDiffusion: HullDiffusion: use EffectiveAir
-						- Via helpers? make sure buffer is ok
-					- Ingress/Egress: use EffectiveAir for both Water and Air ingress/egress
-					- ApplyStaticPressureForces: use EffectiveAir 
-					- Points::Query: show effective
+						+ From EffectiveAir					
+					+ AirDiffusion: HullDiffusion: use EffectiveAir
+					+ ApplyStaticPressureForces: use EffectiveAir 
+					+ Points::Query: show effective
 
 			+ Water and Air density adjustments
 				+ Depends on choices above at Ingress/Egress pressure formulas (*)
@@ -3362,7 +3379,7 @@
 							+ Water w/inflatable balloon
 							+ Triton
 
-			- Physics Probe pressure reading: tank pressure, thus air pressure + water pressure 
+			- Physics Probe pressure reading: tank pressure, thus (effective) air pressure + water pressure 
 				- Conversion to Pa: use Formulae::EquivalentWaterHeightToPressure
 				- Also, consider reading EffectiveAirPressure (result of Diffusion step)
 					- Incorporate in other work item(*), via Points::GetTotalPressureIn...(.)
@@ -3425,8 +3442,6 @@
 				+ SettingsDialog
 				+ ShipRenderContext is ready, as long as UploadStart gives correct count
 
-			- New ephemeral particle like splashes but for air flying out of submerged parts venting air
-
 
 
 			- Tests:
@@ -3446,9 +3461,9 @@
 
 			- Cleanup 1:
 				- "Air pressure" -> "Air"
-					- Points buffers and all its uses
+					- Points buffers and all its uses - search for AirPressure
 					- VectorFieldRenderModeType enum values
-						+ SettingsDialog
+						+ SettingsDialog labels
 					+ Also @ vector field rendering enum & shaders, @ settings dialog
 				- Momenta spirit:
 					- Points::Momenta only for rendering; byproduct of diffusion step
@@ -3459,7 +3474,7 @@
 						- For rendering, might also modify momenta (e.g. after blast), iff that happens after water diffusion step and before render
 				- Comments
 				- Code
-					- Back to single function - UpdateAirAndWaterPressure (rename it: air before water)
+					+ Back to single function - UpdateAirAndWaterPressure (rename it: air before water)
 					- Nuke log lines
 					- Finalize settings and constants
 						- -> Android plan: all new settings
@@ -3498,7 +3513,11 @@
 
 				- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
 					- Watchout: when we make copies of buffers we use mFloatBufferAllocator
-					- If we do, nuke all commented-out sanity lines for ephemerals
+						- TODO: not anymore? We've cleaned up up, but double-check
+					- If we do:
+						- Add asserts at setters and getters
+						- Nuke all commented-out sanity lines for ephemeral creation functions
+						- ResetEffectiveAirPressure: no need for size arg
 
 			- Optimizations:
 				- UpdateWaterAndAirPressure:
@@ -3514,10 +3533,12 @@
 			- Calibration for # of water iters
 				- -> Android plan
 
-			- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
-
 			- Lower bulkheads @ default Titanic & make air escape, as it now takes forever
 
+
+		- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
+		
+		- New ephemeral particle like splashes but for air flying out of submerged parts venting air
 
 		- New electrical elements: 
 			- Pressure switch
@@ -3571,6 +3592,9 @@
 		  as lusitania was saying maybe a slider to control base rust
 
 	- Water-soluble cables
+	- Electrical material for explosions when powered
+	- New NPCs from TimCan (cameo)
+		- Cameo category?
 
 	- When focusing on ship after ship moved in PAUSE, we focus on old position
 

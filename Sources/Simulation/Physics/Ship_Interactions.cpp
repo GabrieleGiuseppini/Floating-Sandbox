@@ -1367,7 +1367,7 @@ std::optional<ToolApplicationLocus> Ship::InjectAirAt(
 
             mPoints.SetAirPressure(
                 pointIndex,
-                a + actualQuantityOfAirDelta);
+                a + actualQuantityOfAirDelta); // No need to convert to T0, quantities here are in T0 terms
         };
 
     bool anyWasApplied = false;

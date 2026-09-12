@@ -218,6 +218,17 @@ public:
         mCurrentPopulatedSize = other.mCurrentPopulatedSize;
     }
 
+    /*
+     * Copies a buffer into this buffer.
+     */
+    void copy_from(TElement const * restrict other, size_t size)
+    {
+        assert(size <= mSize);
+        std::memcpy(mBuffer.get(), other, size * sizeof(TElement));
+
+        mCurrentPopulatedSize = size;
+    }
+
     void swap(Buffer & other) noexcept
     {
         std::swap(mBuffer, other.mBuffer);
