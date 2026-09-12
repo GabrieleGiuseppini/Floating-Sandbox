@@ -3407,8 +3407,8 @@
 
 			- Imparted water and air velocities w/move tool - et other tools?
 
-			- Do we need to do anything for "internal" pressure diffused from ship physics metadata?
-				- Set it also for hull points, so we jumpstart a step
+			+ Do we need to do anything for "internal" pressure diffused from ship physics metadata?
+				+ Points:Add: Set it also for hull points, so we jumpstart a step
 
 			+ Render full water range
 				! The +1 by rendering is due to bottom having full water, top having 0 - interpolation pushes blue all the way up
@@ -3421,9 +3421,9 @@
 				+ Final: @ vertex, using cubicity
 				+ Cleanup and add comment on cubicity
 
-			- Vector field rendering: add option for Water+Air momenta
-				- SettingsDialog
-				- ShipRenderContext is ready, as long as UploadStart gives correct count
+			+ Vector field rendering: add option for Water+Air momenta
+				+ SettingsDialog
+				+ ShipRenderContext is ready, as long as UploadStart gives correct count
 
 			- New ephemeral particle like splashes but for air flying out of submerged parts venting air
 
@@ -3447,6 +3447,8 @@
 			- Cleanup 1:
 				- "Air pressure" -> "Air"
 					- Points buffers and all its uses
+					- VectorFieldRenderModeType enum values
+						+ SettingsDialog
 					+ Also @ vector field rendering enum & shaders, @ settings dialog
 				- Momenta spirit:
 					- Points::Momenta only for rendering; byproduct of diffusion step
@@ -3554,6 +3556,10 @@
 			- Check ships for flooding
 				- Default Titanic
 				- All others
+
+			- Rendering of ship vectors (if at all implemented)
+				- New enum value for VectorFieldRenderMode
+				- Color moved from param to vertex, which is now struct
 
 	- Bandit's rusting:
 		- I was wondering if you might be asble to adjust the rusting values so the stuff from damage rusts first because it spreads from rust right now but it doesent seem to destroy itself from rust first because once it is covered in rust, it just rusts like it did before instead of more dynamically from damage. 

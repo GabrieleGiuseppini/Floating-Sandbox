@@ -300,7 +300,8 @@ enum class VertexAttributeKind : std::uint32_t
     Highlight2 = 1,
     Highlight3 = 2,
 
-    VectorArrow = 0,
+    VectorArrow1 = 0,
+    VectorArrow2 = 1,
 
     Center1 = 0,
     Center2 = 1,

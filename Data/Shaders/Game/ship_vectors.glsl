@@ -4,24 +4,29 @@
 #define out varying
 
 // Inputs
-in vec3 inVectorArrow; // Position
+in vec3 inVectorArrow1; // Position, PlaneId
+in vec3 inVectorArrow2; // Color
+
+// Outputs
+out vec3 vertexColor;
 
 // Params
 uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(inVectorArrow.xyz, 1.0);
+    vertexColor = inVectorArrow2;
+    gl_Position = paramOrthoMatrix * vec4(inVectorArrow1, 1.0);
 }
 
 ###FRAGMENT-120
 
 #define in varying
 
-// Params
-uniform vec4 paramMatteColor;
+// Inputs
+in vec3 vertexColor;
 
 void main()
 {
-    gl_FragColor = paramMatteColor;
+    gl_FragColor = vec4(vertexColor, 1.0);
 } 

@@ -105,8 +105,6 @@ ShipRenderContext::ShipRenderContext(
     , mVectorArrowVertexBuffer()
     , mVectorArrowVBO()
     , mVectorArrowVBOAllocatedVertexSize(0u)
-    , mVectorArrowColor(0.0f, 0.0f, 0.0f, 1.0f)
-    , mIsVectorArrowColorDirty(true)
     //
     , mCenterVertexBuffer()
     , mIsCenterVertexBufferDirty(true)
@@ -694,8 +692,11 @@ ShipRenderContext::ShipRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
+        static_assert(sizeof(VectorArrowVertex) == (2 + 1 + 3) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow1), 3, GL_FLOAT, GL_FALSE, sizeof(VectorArrowVertex), (void*)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow2), 3, GL_FLOAT, GL_FALSE, sizeof(VectorArrowVertex), (void*)((3) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -1129,25 +1130,15 @@ void ShipRenderContext::UploadJetEngineFlamesEnd()
     // Nop
 }
 
-void ShipRenderContext::UploadVectorsStart(
-    size_t maxCount,
-    vec4f const & color)
+void ShipRenderContext::UploadVectorsStart(size_t maxCount)
 {
     mVectorArrowVertexBuffer.reserve(maxCount * 3 * 2);
-
-    if (color != mVectorArrowColor)
-    {
-        mVectorArrowColor = color;
-
-        mIsVectorArrowColorDirty = true;
-    }
 }
 
 void ShipRenderContext::UploadVectorsEnd()
 {
     // Nop
 }
-
 
 void ShipRenderContext::UploadCentersStart(size_t count)
 {
@@ -2439,25 +2430,12 @@ void ShipRenderContext::RenderPrepareVectorArrows(RenderParameters const & /*ren
 {
     if (!mVectorArrowVertexBuffer.empty())
     {
-        //
-        // Color
-        //
-
-        if (mIsVectorArrowColorDirty)
-        {
-            mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipVectors>();
-
-            mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipVectors, GameShaderSets::ProgramParameterKind::MatteColor>(mVectorArrowColor);
-
-            mIsVectorArrowColorDirty = false;
-        }
-
         glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
 
         if (mVectorArrowVertexBuffer.size() > mVectorArrowVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
-            glBufferData(GL_ARRAY_BUFFER, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mVectorArrowVertexBuffer.size() * sizeof(VectorArrowVertex), mVectorArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);
             CheckOpenGLError();
 
             mVectorArrowVBOAllocatedVertexSize = mVectorArrowVertexBuffer.size();
@@ -2465,7 +2443,7 @@ void ShipRenderContext::RenderPrepareVectorArrows(RenderParameters const & /*ren
         else
         {
             // No size change, just upload VBO buffer
-            glBufferSubData(GL_ARRAY_BUFFER, 0, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mVectorArrowVertexBuffer.size() * sizeof(VectorArrowVertex), mVectorArrowVertexBuffer.data());
             CheckOpenGLError();
         }
 

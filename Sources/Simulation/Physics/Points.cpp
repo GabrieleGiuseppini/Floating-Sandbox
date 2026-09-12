@@ -2455,96 +2455,138 @@ void Points::UploadVectors(
     ShipId shipId,
     RenderContext & renderContext) const
 {
+    auto const vectorFieldRenderMode = renderContext.GetVectorFieldRenderMode();
+
+    if (vectorFieldRenderMode == VectorFieldRenderModeType::None)
+        return;
+
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
-    vec4f color;
-    vec2f const * vectorBuffer = nullptr;
-    float lengthAdjustment = 0.0f;
-
-    switch (renderContext.GetVectorFieldRenderMode())
+    if (vectorFieldRenderMode == VectorFieldRenderModeType::PointAirPressureMomentum
+        || vectorFieldRenderMode == VectorFieldRenderModeType::PointWaterMomentum
+        || vectorFieldRenderMode == VectorFieldRenderModeType::PointAirAndWaterMomentum)
     {
-        case VectorFieldRenderModeType::PointStaticForce:
+        shipRenderContext.UploadVectorsStart(mRawShipPointCount + (vectorFieldRenderMode == VectorFieldRenderModeType::PointAirAndWaterMomentum) ? mRawShipPointCount : 0);
+
+        if (vectorFieldRenderMode == VectorFieldRenderModeType::PointAirPressureMomentum
+            || vectorFieldRenderMode == VectorFieldRenderModeType::PointAirAndWaterMomentum)
         {
-            color = vec4f(0.5f, 0.1f, 0.f, 1.0f);
-            vectorBuffer = mStaticForceBuffer.data();
-            lengthAdjustment = 0.00075f;
+            vec3f constexpr Color = vec3f(0.794f, 0.309f, 0.309f);
+            float constexpr LengthAdjustment = 0.8f;
 
-            break;
-        }
-
-        case VectorFieldRenderModeType::PointDynamicForce:
-        {
-            color = vec4f(1.0f, 0.266f, 0.16f, 1.0f);
-            // First buffer implicitly
-            assert(mDynamicForceBuffers.size() >= 1);
-            vectorBuffer = mDynamicForceBuffers[0].data();
-            lengthAdjustment = 0.000001f;
-
-            break;
-        }
-
-        case VectorFieldRenderModeType::PointVelocity:
-        {
-            color = vec4f(0.203f, 0.552f, 0.219f, 1.0f);
-            vectorBuffer = mVelocityBuffer.data();
-            lengthAdjustment = 0.25f;
-
-            break;
-        }
-
-        case VectorFieldRenderModeType::PointWaterMomentum:
-        {
-            color = vec4f(0.054f, 0.066f, 0.443f, 1.0f);
-            vectorBuffer = mWaterMomentumBuffer.data();
-            lengthAdjustment = 0.1f;
-
-            break;
-        }
-
-        case VectorFieldRenderModeType::PointAirPressureMomentum:
-        {
-            color = vec4f(0.794f, 0.309f, 0.309f, 1.0f);
-            vectorBuffer = mAirPressureMomentumBuffer.data();
-            lengthAdjustment = 0.8f;
-
-            break;
-        }
-
-        case VectorFieldRenderModeType::None:
-        {
-            return;
-        }
-    }
-
-    shipRenderContext.UploadVectorsStart(mElementCount, color);
-
-    for (auto const p : this->RawShipPoints())
-    {
-        shipRenderContext.UploadVector(
-            GetPosition(p),
-            mPlaneIdFloatBuffer[p],
-            vectorBuffer[p],
-            lengthAdjustment);
-    }
-
-    if (renderContext.GetVectorFieldRenderMode() != VectorFieldRenderModeType::PointDynamicForce)
-    {
-        for (auto const p : this->EphemeralPoints())
-        {
-            if (mEphemeralParticleAttributesBuffer[p].Type != EphemeralType::None)
+            for (auto const p : this->RawShipPoints())
             {
-                auto const pointIndex = EphemeralParticleIndexToPointIndex(p);
-
                 shipRenderContext.UploadVector(
-                    GetPosition(pointIndex),
-                    mPlaneIdFloatBuffer[pointIndex],
-                    vectorBuffer[pointIndex],
-                    lengthAdjustment);
+                    GetPosition(p),
+                    Color,
+                    mPlaneIdFloatBuffer[p],
+                    mAirPressureMomentumBuffer[p],
+                    LengthAdjustment);
             }
         }
-    }
 
-    shipRenderContext.UploadVectorsEnd();
+        if (vectorFieldRenderMode == VectorFieldRenderModeType::PointWaterMomentum
+            || vectorFieldRenderMode == VectorFieldRenderModeType::PointAirAndWaterMomentum)
+        {
+            vec3f constexpr Color = vec3f(0.054f, 0.066f, 0.443f);
+            float constexpr LengthAdjustment = 0.1f;
+
+            for (auto const p : this->RawShipPoints())
+            {
+                shipRenderContext.UploadVector(
+                    GetPosition(p),
+                    Color,
+                    mPlaneIdFloatBuffer[p],
+                    mWaterMomentumBuffer[p],
+                    LengthAdjustment);
+            }
+        }
+
+        shipRenderContext.UploadVectorsEnd();
+    }
+    else
+    {
+        vec3f color;
+        vec2f const * vectorBuffer = nullptr;
+        float lengthAdjustment = 0.0f;
+
+        switch (vectorFieldRenderMode)
+        {
+            case VectorFieldRenderModeType::PointStaticForce:
+            {
+                color = vec3f(0.5f, 0.1f, 0.f);
+                vectorBuffer = mStaticForceBuffer.data();
+                lengthAdjustment = 0.00075f;
+
+                break;
+            }
+
+            case VectorFieldRenderModeType::PointDynamicForce:
+            {
+                color = vec3f(1.0f, 0.266f, 0.16f);
+                // First buffer implicitly
+                assert(mDynamicForceBuffers.size() >= 1);
+                vectorBuffer = mDynamicForceBuffers[0].data();
+                lengthAdjustment = 0.000001f;
+
+                break;
+            }
+
+            case VectorFieldRenderModeType::PointVelocity:
+            {
+                color = vec3f(0.203f, 0.552f, 0.219f);
+                vectorBuffer = mVelocityBuffer.data();
+                lengthAdjustment = 0.25f;
+
+                break;
+            }
+
+            case VectorFieldRenderModeType::PointAirPressureMomentum:
+            case VectorFieldRenderModeType::PointWaterMomentum:
+            case VectorFieldRenderModeType::PointAirAndWaterMomentum:
+            {
+                assert(false); // Taken care of earlier
+                return;
+            }
+
+            case VectorFieldRenderModeType::None:
+            {
+                return;
+            }
+        }
+
+        shipRenderContext.UploadVectorsStart(mElementCount);
+
+        for (auto const p : this->RawShipPoints())
+        {
+            shipRenderContext.UploadVector(
+                GetPosition(p),
+                color,
+                mPlaneIdFloatBuffer[p],
+                vectorBuffer[p],
+                lengthAdjustment);
+        }
+
+        if (renderContext.GetVectorFieldRenderMode() != VectorFieldRenderModeType::PointDynamicForce)
+        {
+            for (auto const p : this->EphemeralPoints())
+            {
+                if (mEphemeralParticleAttributesBuffer[p].Type != EphemeralType::None)
+                {
+                    auto const pointIndex = EphemeralParticleIndexToPointIndex(p);
+
+                    shipRenderContext.UploadVector(
+                        GetPosition(pointIndex),
+                        color,
+                        mPlaneIdFloatBuffer[pointIndex],
+                        vectorBuffer[pointIndex],
+                        lengthAdjustment);
+                }
+            }
+        }
+
+        shipRenderContext.UploadVectorsEnd();
+    }
 }
 
 void Points::UploadEphemeralParticles(

@@ -1104,12 +1104,14 @@ void Ship::RenderUpload(RenderContext & renderContext)
 
     if (!mDebugVectors.empty())
     {
-        shipRenderContext.UploadVectorsStart(mDebugVectors.size(), vec4f(0.8f, 0.0f, 0.0f, 1.0f));
+        shipRenderContext.UploadVectorsStart(mDebugVectors.size());
 
+        vec3f constexpr Color = vec3f(0.8f, 0.0f, 0.0f);
         for (auto const & [p, v] : mDebugVectors)
         {
             shipRenderContext.UploadVector(
                 p,
+                Color,
                 static_cast<float>(mMaxMaxPlaneId),
                 v,
                 50.0f);

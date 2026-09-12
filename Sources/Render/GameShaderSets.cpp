@@ -813,8 +813,10 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
         return VertexAttributeKind::Highlight2;
     else if (Utils::CaseInsensitiveEquals(str, "Highlight3"))
         return VertexAttributeKind::Highlight3;
-    else if (Utils::CaseInsensitiveEquals(str, "VectorArrow"))
-        return VertexAttributeKind::VectorArrow;
+    else if (Utils::CaseInsensitiveEquals(str, "VectorArrow1"))
+        return VertexAttributeKind::VectorArrow1;
+    else if (Utils::CaseInsensitiveEquals(str, "VectorArrow2"))
+        return VertexAttributeKind::VectorArrow2;
     else if (Utils::CaseInsensitiveEquals(str, "Center1"))
         return VertexAttributeKind::Center1;
     else if (Utils::CaseInsensitiveEquals(str, "Center2"))
