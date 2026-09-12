@@ -542,6 +542,7 @@ private:
     bool mPlayWindSound;
     bool mPlayAirBubbleSurfaceSound;
 
+    // Wind state
     float mLastWindSpeedAbsoluteMagnitude;
     RunningAverage<70> mWindVolumeRunningAverage;
 
@@ -552,6 +553,9 @@ private:
     // Water displacement state
     float mLastWaterDisplacedMagnitude;
     float mLastWaterDisplacedMagnitudeDerivative;
+
+    // Water rush state
+    RunningAverage<64> mWaterRushRunningAverage;
 
     //
     // One-Shot sounds

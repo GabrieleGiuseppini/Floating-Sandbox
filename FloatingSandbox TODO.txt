@@ -3333,8 +3333,8 @@
 			+ Water and Air density adjustments
 				+ Depends on choices above at Ingress/Egress pressure formulas (*)
 					! i.e. choice of reference density for Water and Air
+			+ Water rush sounds (ingress/egress)
 
-			- Water rush sounds (ingress/egress)
 			- Water splash sounds (kinetic energy)
 				- Scale kinetic energy by # of iters?
 				- Could use presence of air as replacement of freeness?

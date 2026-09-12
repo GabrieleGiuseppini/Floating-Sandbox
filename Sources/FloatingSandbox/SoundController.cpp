@@ -53,6 +53,7 @@ SoundController::SoundController(
     , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
     , mLastWaterDisplacedMagnitude(0.0f)
     , mLastWaterDisplacedMagnitudeDerivative(0.0f)
+    , mWaterRushRunningAverage()
     // One-shot sounds
     , mMSUOneShotMultipleChoiceSounds()
     , mMOneShotMultipleChoiceSounds()
@@ -1771,6 +1772,7 @@ void SoundController::Reset()
     mCurrentWaterSplashedTrigger = WaveSplashTriggerSize;
     mLastWaterDisplacedMagnitude = 0.0f;
     mLastWaterDisplacedMagnitudeDerivative = 0.0f;
+    mWaterRushRunningAverage.Reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -2046,7 +2048,7 @@ void SoundController::OnPressureIntake(
     float rushVolume = 40.f * (-1.f / std::pow(2.4f, std::min(90.0f, 0.5f * std::abs(waterTaken))) + 1.f);
 
     // Starts automatically if volume greater than zero
-    mWaterRushSound.SetVolume(rushVolume);
+    mWaterRushSound.SetVolume(mWaterRushRunningAverage.Update(rushVolume));
 }
 
 void SoundController::OnWaterSplashed(float waterSplashed)
@@ -2144,9 +2146,9 @@ void SoundController::OnWaterDisplaced(float waterDisplacedMagnitude)
 
 void SoundController::OnAirBubbleSurfaced(unsigned int size)
 {
-    // 2.2 * x - 0.04 * x ^ 2
+    // 1.5 * x - 0.03 * x ^ 2
     float const sf = static_cast<float>(std::min(size, 25u));
-    float const volume = 2.2f * sf - 0.04f * sf * sf;
+    float const volume = 1.5f * sf - 0.03f * sf * sf;
 
     mAirBubblesSurfacingSound.Pulse(volume);
 }
