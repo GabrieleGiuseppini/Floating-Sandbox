@@ -125,10 +125,11 @@ void ProbePanel::OnGameReset()
 }
 
 void ProbePanel::OnPressureIntake(
-    float waterTaken,
+    float waterTakenAbove,
+    float waterTakenBelow,
     float airTaken)
 {
-    mPressureIntakeProbe->RegisterSample({ waterTaken, airTaken });
+    mPressureIntakeProbe->RegisterSample({ waterTakenAbove + waterTakenBelow, airTaken });
 }
 
 void ProbePanel::OnWindSpeedUpdated(

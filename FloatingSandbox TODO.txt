@@ -3333,20 +3333,40 @@
 			+ Water and Air density adjustments
 				+ Depends on choices above at Ingress/Egress pressure formulas (*)
 					! i.e. choice of reference density for Water and Air
+
 			+ Water rush sounds (ingress/egress)
+				+ Current
+				+ New idea:
+					+ Find new sounds
+					+ Make two versions: above and below water
+						! Above: 163543, 3708.46| 971181, 22022.2
+						! Below: 29277, 663.878 | 986380, 22366.9
+						+ Cut sounds for loop
+					+ Ingress/Egress:
+						+ Calc freeness = LinearStep(air @ ppint)
+						+ WaterTakenAbove = taken*freeness
+						+ WaterTakenBelow = taken*(1-freeness)
+						+ Publish event with both
+					+ SoundController: run both sounds, two vols
+						+ Sound members
+						+ Callback
+					+ -> Android
 
 			- Water splash sounds (kinetic energy)
 				- Scale kinetic energy by # of iters?
 				- Could use presence of air as replacement of freeness?
 				- Try first only @ bounce
 
+			- Imparted water and air velocities w/move tool - et other tools?
+
 			- Interact with air velocity/momenta @
-				- Blasts
+				- Blasts: impart
 					- Explosions (bombs, material)
 					- Blast Tool
-				- NPCs
+				- NPCs: feel
+					- Water: current we feel velocity; should be momenta?
 					- Do that PressureTest ship with tubes
-				- Wind tool
+				- Wind tool: impart
 				- etc
 			+ Finalize unit of AirPressure
 				+ Also @ Points buffer comment
@@ -3421,8 +3441,6 @@
 					+ Incorporate in halo rendering
 					+ -> AndroidPlan
 					+ Re-test UV mode X 2
-
-			- Imparted water and air velocities w/move tool - et other tools?
 
 			+ Do we need to do anything for "internal" pressure diffused from ship physics metadata?
 				+ Points:Add: Set it also for hull points, so we jumpstart a step
@@ -3581,6 +3599,11 @@
 			- Rendering of ship vectors (if at all implemented)
 				- New enum value for VectorFieldRenderMode
 				- Color moved from param to vertex, which is now struct
+
+			- Water rush sounds (ingress/egress): was split in 2: above and under
+				- New sounds
+				- SoundController
+
 
 	- Bandit's rusting:
 		- I was wondering if you might be asble to adjust the rusting values so the stuff from damage rusts first because it spreads from rust right now but it doesent seem to destroy itself from rust first because once it is covered in rust, it just rusts like it did before instead of more dynamically from damage. 

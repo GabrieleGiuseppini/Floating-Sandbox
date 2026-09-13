@@ -51,7 +51,8 @@ public:
     }
 
     void OnPressureIntake(
-        float waterTaken,
+        float waterTakenAbove,
+        float waterTakenBelow,
         float airTaken) override;
 
     void OnWindSpeedUpdated(

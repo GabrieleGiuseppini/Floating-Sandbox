@@ -2534,7 +2534,8 @@ void Ship::UpdatePressureAndWaterInflow(
     //
 
     // Totals for broadcasting pressure ingress event
-    float totalWaterIntakeMeasured = 0.0f;
+    float totalWaterIntakeAboveMeasured = 0.0f;
+    float totalWaterIntakeBelowMeasured = 0.0f;
     float totalAirIntakeMeasured = 0.0f;
 
     // Rain
@@ -2569,6 +2570,7 @@ void Ship::UpdatePressureAndWaterInflow(
 
             float const pointDepth = mPoints.GetCachedDepth(pointIndex);
             bool const isPointRope = mPoints.IsRope(pointIndex);
+            float const pointAboveness = LinearStep(0.5f, 2.0f, mPoints.GetAirPressure(pointIndex)); // 0.0=underwater, 1.0=abovewater
 
             if (pointCompositeLeaking.LeakingSources.StructuralLeak != 0.0f)
             {
@@ -2691,7 +2693,8 @@ void Ship::UpdatePressureAndWaterInflow(
                     if (pointHasSprings // Note that leaking points have no connected triangles, hence we check for springs
                         && !isPointRope)
                     {
-                        totalWaterIntakeMeasured += deltaWater_Structural;
+                        totalWaterIntakeAboveMeasured += deltaWater_Structural * pointAboveness;
+                        totalWaterIntakeBelowMeasured += deltaWater_Structural * (1.0f - pointAboveness);
                     }
                 }
 
@@ -2797,7 +2800,8 @@ void Ship::UpdatePressureAndWaterInflow(
                     mPoints.GetWater(pointIndex) + deltaWater_Forced);
 
                 // Update measured water intake
-                totalWaterIntakeMeasured += deltaWater_Forced;
+                totalWaterIntakeAboveMeasured += deltaWater_Forced * pointAboveness;
+                totalWaterIntakeBelowMeasured += deltaWater_Forced * (1.0f - pointAboveness);
             }
 
             //
@@ -2842,7 +2846,7 @@ void Ship::UpdatePressureAndWaterInflow(
     // Notify pressure intake
     //
 
-    mSimulationEventHandler.OnPressureIntake(totalWaterIntakeMeasured, totalAirIntakeMeasured);
+    mSimulationEventHandler.OnPressureIntake(totalWaterIntakeAboveMeasured, totalWaterIntakeBelowMeasured, totalAirIntakeMeasured);
 }
 
 void Ship::EqualizeInternalPressure(SimulationParameters const & /*simulationParameters*/)

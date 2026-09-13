@@ -119,8 +119,10 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::ShipEvacuationAlarm1;
     else if (Utils::CaseInsensitiveEquals(str, "ShipEvacuationAlarm2"))
         return SoundType::ShipEvacuationAlarm2;
-    else if (Utils::CaseInsensitiveEquals(str, "WaterRush"))
-        return SoundType::WaterRush;
+    else if (Utils::CaseInsensitiveEquals(str, "WaterRushAbove"))
+        return SoundType::WaterRushAbove;
+    else if (Utils::CaseInsensitiveEquals(str, "WaterRushBelow"))
+        return SoundType::WaterRushBelow;
     else if (Utils::CaseInsensitiveEquals(str, "WaterSplash"))
         return SoundType::WaterSplash;
     else if (Utils::CaseInsensitiveEquals(str, "WaterDisplacementSplash"))

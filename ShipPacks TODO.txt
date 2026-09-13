@@ -1,0 +1,5 @@
+- Random points:
+	- Ship metadata must include complexity, so Android may warn- Download pack in bulk
+	- "Follow users" feature
+	- Authors' profiles
+	- Password-protected issues

@@ -179,12 +179,13 @@ public:
     }
 
     void OnPressureIntake(
-        float waterTaken,
+        float waterTakenAbove,
+        float waterTakenBelow,
         float airTaken) override
     {
         for (auto sink : mGenericShipSinks)
         {
-            sink->OnPressureIntake(waterTaken, airTaken);
+            sink->OnPressureIntake(waterTakenAbove, waterTakenBelow, airTaken);
         }
     }
 

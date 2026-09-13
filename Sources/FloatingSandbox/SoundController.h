@@ -290,7 +290,8 @@ public:
         bool isUnderwater) override;
 
     void OnPressureIntake(
-        float waterTaken,
+        float waterTakenAbove,
+        float waterTakenBelow,
         float airTaken) override;
 
     void OnWaterSplashed(float waterSplashed) override;
@@ -555,7 +556,8 @@ private:
     float mLastWaterDisplacedMagnitudeDerivative;
 
     // Water rush state
-    RunningAverage<64> mWaterRushRunningAverage;
+    RunningAverage<60> mWaterRushAboveRunningAverage;
+    RunningAverage<60> mWaterRushBelowRunningAverage;
 
     //
     // One-Shot sounds
@@ -665,7 +667,8 @@ private:
     OneShotSingleChoiceSound mBlastToolFastSound;
     ContinuousSingleChoiceSound mWindMakerWindSound;
 
-    ContinuousSingleChoiceSound mWaterRushSound;
+    ContinuousSingleChoiceSound mWaterRushAboveSound;
+    ContinuousSingleChoiceSound mWaterRushBelowSound;
     ContinuousSingleChoiceSound mWaterSplashSound;
     ContinuousPulsedSound mAirBubblesSurfacingSound;
     ContinuousSingleChoiceSound mWindSound;
