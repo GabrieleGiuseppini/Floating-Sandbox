@@ -3352,15 +3352,32 @@
 						+ Callback
 					+ -> Android
 
-			- Water splash sounds (kinetic energy)
-				- Scale kinetic energy by # of iters?
-				- Could use presence of air as replacement of freeness?
-				- Try first only @ bounce
+			= Water splash sounds (kinetic energy)
+				+ Scale kinetic energy by # of iters
+				= Try with presence of air as replacement of freeness
+				= Try first only @ bounce
+
+				= SoundController:
+					= Try without waves sound - just clean splash sound
+
+				X Filter (@ diffusion, not SoundController):
+					- 1.0 when going up and then level;
+					- 0.0 when going down - more than x% of current avg level
+					- Then low-pass
+				= Idea 2: when a point encounters another point and they have opposite momenta - against each other, and point is free; 
+				          or encounters a wall with momentum against it, and point is free.
+					+ Encounters: sizeable flow towards that point
+					! WINNER!
+					- Better sound
+					- Better clipping bottom values 
 
 				- Cleanup:
 					- Re-enable OnPressureIntake notification @ UpdatePressureAndWaterInflow
 					- Remove custom probe for water splashes
 					- Ensure we notify for water splashes
+
+					- If we don't nee anymore Ship::mWaterSplashedRunningAverage, nuke it
+					- If we don't need waves sound or continuous splash sound anymore @ splashes, cleanup SoundController
 
 			- Imparted water and air velocities w/move tool - et other tools?
 
@@ -3498,9 +3515,9 @@
 				- Comments
 				- Code
 					+ Back to single function - UpdateAirAndWaterPressure (rename it: air before water)
-					- Nuke log lines
-					- Finalize settings and constants
-						- -> Android plan: all new settings
+					- Cleanup log lines
+					= Finalize settings and constants
+						+ -> Android plan: all new settings
 					- Put back restrict pointers where needed
 					- Nuke [iff not used]: velocity damping
 				- Remove cross-cut readings -- LATER!
@@ -3561,7 +3578,13 @@
 
 
 		- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
-		
+		- Consider rendering kinetic energy loss! Makes for foam
+			- Test: 
+				- Add both quantities to vertex struct
+				- Shader:
+					- Kinetic energy loss: whiteish
+					- Vels: offset for texture and all based on pos
+
 		- New ephemeral particle like splashes but for air flying out of submerged parts venting air
 
 		- New electrical elements: 

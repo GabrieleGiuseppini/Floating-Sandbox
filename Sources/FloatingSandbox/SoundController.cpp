@@ -2073,43 +2073,45 @@ void SoundController::OnPressureIntake(
 
 void SoundController::OnWaterSplashed(float waterSplashed)
 {
-    //
-    // Trigger waves
-    //
+    // TODOTEST
 
-    // We only want to trigger a wave when the quantity of water splashed is growing...
-    if (waterSplashed > mLastWaterSplashed)
-    {
-        //...but only by discrete leaps
-        if (waterSplashed > mCurrentWaterSplashedTrigger)
-        {
-            // 9 * (1 - 1.8^(-0.08 * x))
-            float const waveVolume = 9.0f * (1.0f - std::pow(1.8f, -0.08f * std::min(1800.0f, std::abs(waterSplashed))));
+    ////
+    //// Trigger waves
+    ////
 
-            PlayOneShotMultipleChoiceSound(
-                SoundType::Wave,
-                SoundGroupType::Effects,
-                waveVolume,
-                true);
+    //// We only want to trigger a wave when the quantity of water splashed is growing...
+    //if (waterSplashed > mLastWaterSplashed)
+    //{
+    //    //...but only by discrete leaps
+    //    if (waterSplashed > mCurrentWaterSplashedTrigger)
+    //    {
+    //        // 9 * (1 - 1.8^(-0.08 * x))
+    //        float const waveVolume = 9.0f * (1.0f - std::pow(1.8f, -0.08f * std::min(1800.0f, std::abs(waterSplashed))));
 
-            // Raise next trigger
-            mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
-        }
-    }
-    else
-    {
-        // Lower trigger
-        mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
-    }
+    //        PlayOneShotMultipleChoiceSound(
+    //            SoundType::Wave,
+    //            SoundGroupType::Effects,
+    //            waveVolume,
+    //            true);
 
-    mLastWaterSplashed = waterSplashed;
+    //        // Raise next trigger
+    //        mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
+    //    }
+    //}
+    //else
+    //{
+    //    // Lower trigger
+    //    mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
+    //}
+
+    //mLastWaterSplashed = waterSplashed;
 
     //
     // Adjust continuous splash sound
     //
 
-    // 12 * (1 - 1.3^(-0.01*x))
-    float splashVolume = 12.f * (1.0f - std::pow(1.3f, -0.01f * std::abs(waterSplashed)));
+    // 100 * (1 - 1.1^(-x))
+    float splashVolume = 100.f * (1.0f - std::pow(1.1f, -std::abs(waterSplashed)));
     if (splashVolume < 1.0f)
         splashVolume = 0.0f;
 

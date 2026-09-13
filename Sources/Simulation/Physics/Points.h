@@ -1774,6 +1774,14 @@ public:
         return mWaterVelocityBuffer.data();
     }
 
+    std::shared_ptr<Buffer<vec2f>> MakeWaterVelocityBufferCopy()
+    {
+        auto copy = mVec2fBufferAllocator.Allocate();
+        copy->copy_from(mWaterVelocityBuffer);
+
+        return copy;
+    }
+
     void ResetWaterMomenta()
     {
         mWaterMomentumBuffer.fill(vec2f::zero());
