@@ -3571,7 +3571,7 @@
 
 		- Android port plan:
 			- Shader and ShaderSets renames for InternalPressure->AirPressure
-			- Water shader
+			- Water shading (ship_element)
 			- AirBubblesDensity setting de-serialization: 
 				- PostDeserialization hook @ Settings.cpp/h
 				- Use it at SettingsManager
@@ -3583,27 +3583,28 @@
 					- InjectPressureAt -> InjectAirAt, same signature as FloodAt
 						- AirPressure radius: GameController calculates it, notification should honor
 			- New settings:
-				- "Pressure" or "Water and Pressure":
+				- "Pressure" or "Water and Pressure" section:
 					- Intake adjust - water & air
 					- Air and Water diffusion speeds
 					- Air pressure feedback on water
 					- Gone: crazyness
-				- Tools: new settings X 6
+				- Tools: new settings X 4
 				- Perf:
 					- # of water iters
 
-			- Check ships for flooding
-				- Default Titanic
-				- All others
+			- New air bubble texture
 
 			- Rendering of ship vectors (if at all implemented)
 				- New enum value for VectorFieldRenderMode
 				- Color moved from param to vertex, which is now struct
 
-			- Water rush sounds (ingress/egress): was split in 2: above and under
+			- Water rush sounds (ingress/egress): split in 2: above and under
 				- New sounds
 				- SoundController
 
+			- Check ships for flooding
+				- Default Titanic
+				- All others
 
 	- Bandit's rusting:
 		- I was wondering if you might be asble to adjust the rusting values so the stuff from damage rusts first because it spreads from rust right now but it doesent seem to destroy itself from rust first because once it is covered in rust, it just rusts like it did before instead of more dynamically from damage. 
