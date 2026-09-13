@@ -528,8 +528,8 @@ void Ship::Update(
 
             float waterSplashedInStep = 0.f;
 
-            // - Inputs: Position, Temperature, Water, WaterVelocity, Air, AirVelocity, ConnectedSprings
-            // - Outputs: Water, WaterVelocity, WaterMomentum, Air, AirVelocity, AirMomentum
+            // - Inputs: P.Position, P.Temperature, P.Water, P.WaterVelocity, P.Air, P.AirVelocity, P.ConnectedSprings
+            // - Outputs: P.Water, P.WaterVelocity, P.WaterMomentum, P.Air, P.AirVelocity, P.AirMomentum
             UpdateAirAndWaterPressure(
                 effectiveAirDensity,
                 effectiveWaterDensity,
@@ -2846,7 +2846,8 @@ void Ship::UpdatePressureAndWaterInflow(
     // Notify pressure intake
     //
 
-    mSimulationEventHandler.OnPressureIntake(totalWaterIntakeAboveMeasured, totalWaterIntakeBelowMeasured, totalAirIntakeMeasured);
+    // TODOTEST
+    //mSimulationEventHandler.OnPressureIntake(totalWaterIntakeAboveMeasured, totalWaterIntakeBelowMeasured, totalAirIntakeMeasured);
 }
 
 void Ship::EqualizeInternalPressure(SimulationParameters const & /*simulationParameters*/)
@@ -3962,43 +3963,43 @@ void Ship::UpdateAirAndWaterPressure(
 
 
 
-    //
-    // Pressure readings
-    //
+    ////
+    //// Pressure readings
+    ////
 
-    std::vector<PressureReading> readings;
+    //std::vector<PressureReading> readings;
 
-    ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8150;
-    ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 640;
-    if (PressureCrossCutReadingsStartPointIndex < mPoints.GetRawShipPointCount())
-    {
-        ElementIndex prevPointIndex = PressureCrossCutReadingsStartPointIndex;
-        for (ElementIndex pointIndex = PressureCrossCutReadingsStartPointIndex; pointIndex != NoneElementIndex && pointIndex != PressureCrossCutReadingsEndPointIndex; /* updated in loop */)
-        {
-            // Read
-            readings.emplace_back(PressureReading{
-                mPoints.GetEffectiveAirPressure(pointIndex),
-                mPoints.GetWater(pointIndex),
-                mPoints.GetPosition(pointIndex).y });
+    //ElementIndex constexpr PressureCrossCutReadingsStartPointIndex = 8150;
+    //ElementIndex constexpr PressureCrossCutReadingsEndPointIndex = 640;
+    //if (PressureCrossCutReadingsStartPointIndex < mPoints.GetRawShipPointCount())
+    //{
+    //    ElementIndex prevPointIndex = PressureCrossCutReadingsStartPointIndex;
+    //    for (ElementIndex pointIndex = PressureCrossCutReadingsStartPointIndex; pointIndex != NoneElementIndex && pointIndex != PressureCrossCutReadingsEndPointIndex; /* updated in loop */)
+    //    {
+    //        // Read
+    //        readings.emplace_back(PressureReading{
+    //            mPoints.GetEffectiveAirPressure(pointIndex),
+    //            mPoints.GetWater(pointIndex),
+    //            mPoints.GetPosition(pointIndex).y });
 
-            // Advance
-            ElementIndex nextPointIndex = NoneElementIndex;
-            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
-            {
-                auto const springOctant = mSprings.GetFactoryOtherEndpointOctant(cs.SpringIndex, pointIndex);
-                if (springOctant == 6)
-                {
-                    nextPointIndex = cs.OtherEndpointIndex;
-                    break;
-                }
-            }
+    //        // Advance
+    //        ElementIndex nextPointIndex = NoneElementIndex;
+    //        for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+    //        {
+    //            auto const springOctant = mSprings.GetFactoryOtherEndpointOctant(cs.SpringIndex, pointIndex);
+    //            if (springOctant == 6)
+    //            {
+    //                nextPointIndex = cs.OtherEndpointIndex;
+    //                break;
+    //            }
+    //        }
 
-            prevPointIndex = pointIndex;
-            pointIndex = nextPointIndex;
-        }
-    }
+    //        prevPointIndex = pointIndex;
+    //        pointIndex = nextPointIndex;
+    //    }
+    //}
 
-    mSimulationEventHandler.OnPressureReadings(readings);
+    //mSimulationEventHandler.OnPressureReadings(readings);
 
 
     // TODOTEST
@@ -4010,6 +4011,10 @@ void Ship::UpdateAirAndWaterPressure(
     }
 
     mSimulationEventHandler.OnCustomProbe("Total W Inside", totalWaterPost);
+
+
+    // TODOTEST
+    mSimulationEventHandler.OnCustomProbe("Water Splashes", waterSplashed);
 }
 
 void Ship::UpdateSinking(float /*currentSimulationTime*/)

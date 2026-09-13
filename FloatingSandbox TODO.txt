@@ -3357,6 +3357,11 @@
 				- Could use presence of air as replacement of freeness?
 				- Try first only @ bounce
 
+				- Cleanup:
+					- Re-enable OnPressureIntake notification @ UpdatePressureAndWaterInflow
+					- Remove custom probe for water splashes
+					- Ensure we notify for water splashes
+
 			- Imparted water and air velocities w/move tool - et other tools?
 
 			- Interact with air velocity/momenta @
@@ -3509,6 +3514,7 @@
 				- Rename Ship::UpdatePressureAndWaterInflow to UpdateAirAndWaterInflow - also neighboring comments
 				- Nuke InternalPressure concept
 					- Points
+					- Ship::EqualizeInternalPressure
 					- ...
 					- See if Formulae::CalculateVolumetricWaterPressure still needed
 				- Nuke Ship::UpdateWaterVelocities
