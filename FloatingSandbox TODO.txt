@@ -3368,8 +3368,12 @@
 				          or encounters a wall with momentum against it, and point is free.
 					+ Encounters: sizeable flow towards that point
 					! WINNER!
-					- Better sound
-					- Better clipping bottom values 
+					= Better sound
+					+ Try curve: first 2.0 raises little then more (flex at 2.5)
+					+ Trick for faster slope up: rate/direction
+
+					- Move smoothing to SoundController, and on volume itself						
+					- Adjust volume via global
 
 				- Cleanup:
 					- Re-enable OnPressureIntake notification @ UpdatePressureAndWaterInflow
@@ -3580,10 +3584,22 @@
 		- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
 		- Consider rendering kinetic energy loss! Makes for foam
 			- Test: 
+				- ShipSize param, set into all shaders
 				- Add both quantities to vertex struct
 				- Shader:
-					- Kinetic energy loss: whiteish
+					- Kinetic energy loss: 
+						- Whiteish or texture from mipmapped, given texture coords as new param
+							- Texture coords math: 
+								- world=ship_texture_coords * ship_size
+								- tile_vcoords = (world % WIDTH constant) / WIDTH constant
+								- texture_coords = tile_vcoords * new param.size + new_pram.origin
+						- If too fast, do smoothing @ ShipRenderContext
+
 					- Vels: offset for texture and all based on pos
+						- Scale down vel vector length to world
+						- ship_texture_coords = world / ship_size
+						- sample both orig and offseted
+							- weight: length of vel
 
 		- New ephemeral particle like splashes but for air flying out of submerged parts venting air
 

@@ -120,6 +120,7 @@ Ship::Ship(
     , mBrokenSpringsCount(0)
     , mBrokenTrianglesCount(0)
     , mIsSinking(false)
+    , mCurrentWaterSplashedVolume(0.0f)
     , mWaterSplashedRunningAverage()
     , mWaterSplashedDerivativeRunningAverage()
     , mIsLightBufferPopulated(false)
@@ -3542,16 +3543,24 @@ void Ship::UpdateAirAndWaterPressure(
 
 
     // TODOTEST: filter attempt
-    //float waterSplashedDerivative = waterSplashed - mWaterSplashedRunningAverage.GetCurrentAverage();
-    //mWaterSplashedDerivativeRunningAverage.Update(waterSplashedDerivative);
-    //mSimulationEventHandler.OnCustomProbe("FILTER", mWaterSplashedDerivativeRunningAverage.GetCurrentAverage());
+    //float foo = mWaterSplashedRunningAverage.Update(waterSplashed);
+    //waterSplashed = std::max(waterSplashed, foo);
 
+    if (waterSplashed >= mCurrentWaterSplashedVolume)
+    {
+        float constexpr Rate = 0.7f;
+        mCurrentWaterSplashedVolume += Rate * (waterSplashed - mCurrentWaterSplashedVolume);
+    }
+    else
+    {
+        float constexpr Rate = 0.03f;
+        mCurrentWaterSplashedVolume += Rate * (waterSplashed - mCurrentWaterSplashedVolume);
+    }
+    waterSplashed = mCurrentWaterSplashedVolume;
 
-
-    //waterSplashed = mWaterSplashedRunningAverage.Update(waterSplashed);
-
+    // TODOTEST
     // Average kinetic energy loss
-    waterSplashed = mWaterSplashedRunningAverage.Update(waterSplashed);
+    //waterSplashed = mWaterSplashedRunningAverage.Update(waterSplashed);
 #endif
 
     //

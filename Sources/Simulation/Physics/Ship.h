@@ -1124,7 +1124,8 @@ private:
     bool mIsSinking;
 
     // Water splashes
-    RunningAverage<10> mWaterSplashedRunningAverage;
+    float mCurrentWaterSplashedVolume;
+    RunningAverage<64> mWaterSplashedRunningAverage;
     RunningAverage<50> mWaterSplashedDerivativeRunningAverage;
 
     // Remembers whether we've populated the light buffer at the previous step;
