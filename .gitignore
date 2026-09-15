@@ -5,3 +5,7 @@ PerfReports/
 *.aps
 UserSettings.cmake
 .floatingsandbox_shipdb
+
+build-macos-arm64/
+
+.DS_Store

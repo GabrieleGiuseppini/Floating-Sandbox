@@ -9,6 +9,20 @@
 #include <Game/GameVersion.h>
 
 #include <Core/Utils.h>
+#include <Core/SysSpecifics.h>
+#include <UILib/StandardSystemPaths.h>
+
+std::filesystem::path BootSettings::GetFilePath(GameAssetManager const & assetManager)
+{
+#if FS_IS_OS_MACOS()
+    // User settings must never modify a signed application bundle.
+    auto const directory = StandardSystemPaths::GetInstance().GetUserGameRootFolderPath();
+    std::filesystem::create_directories(directory);
+    return directory / "boot_settings.json";
+#else
+    return assetManager.GetBootSettingsFilePath();
+#endif
+}
 
 BootSettings BootSettings::Load(std::filesystem::path const & filePath)
 {
