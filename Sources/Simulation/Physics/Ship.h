@@ -1124,9 +1124,7 @@ private:
     bool mIsSinking;
 
     // Water splashes
-    float mCurrentWaterSplashedVolume;
-    RunningAverage<64> mWaterSplashedRunningAverage;
-    RunningAverage<50> mWaterSplashedDerivativeRunningAverage;
+    float mLastWaterSplashed;
 
     // Remembers whether we've populated the light buffer at the previous step;
     // used to zero out buffer when luminiscence is disabled

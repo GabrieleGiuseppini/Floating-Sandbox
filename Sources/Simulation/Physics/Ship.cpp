@@ -120,9 +120,7 @@ Ship::Ship(
     , mBrokenSpringsCount(0)
     , mBrokenTrianglesCount(0)
     , mIsSinking(false)
-    , mCurrentWaterSplashedVolume(0.0f)
-    , mWaterSplashedRunningAverage()
-    , mWaterSplashedDerivativeRunningAverage()
+    , mLastWaterSplashed(0.0f)
     , mIsLightBufferPopulated(false)
     , mRepairGracePeriodMultiplier(1.0f)
     , mAirBubblesCreatedCount(0)
@@ -2572,7 +2570,7 @@ void Ship::UpdatePressureAndWaterInflow(
 
             float const pointDepth = mPoints.GetCachedDepth(pointIndex);
             bool const isPointRope = mPoints.IsRope(pointIndex);
-            float const pointAboveness = LinearStep(0.5f, 2.0f, mPoints.GetAirPressure(pointIndex)); // 0.0=underwater, 1.0=abovewater
+            float const pointAboveness = LinearStep(0.1f, 1.0f, mPoints.GetAirPressure(pointIndex)); // 0.0=under internal water, 1.0=above internal water
 
             if (pointCompositeLeaking.LeakingSources.StructuralLeak != 0.0f)
             {
@@ -2848,8 +2846,7 @@ void Ship::UpdatePressureAndWaterInflow(
     // Notify pressure intake
     //
 
-    // TODOTEST
-    //mSimulationEventHandler.OnPressureIntake(totalWaterIntakeAboveMeasured, totalWaterIntakeBelowMeasured, totalAirIntakeMeasured);
+    mSimulationEventHandler.OnPressureIntake(totalWaterIntakeAboveMeasured, totalWaterIntakeBelowMeasured, totalAirIntakeMeasured);
 }
 
 void Ship::EqualizeInternalPressure(SimulationParameters const & /*simulationParameters*/)
@@ -3329,36 +3326,6 @@ void Ship::UpdateAirAndWaterPressure(
                     }
 
 #if !FS_IS_PLATFORM_MOBILE()
-
-                    // TODOTEST
-                    ////
-                    //// Update point's kinetic energy loss:
-                    //// splintered water colliding with whole other endpoint
-                    ////
-
-                    //float const ma = springOutboundQuantityOfWater;
-                    //float const va = springOutboundWaterVelocities[s].length();
-                    //float const mb = oldPointWaterBufferData[cs.OtherEndpointIndex];
-                    //float const vb = oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector);
-
-                    //float vf = 0.0f;
-                    //if (ma + mb != 0.0f)
-                    //    vf = (ma * va + mb * vb) / (ma + mb);
-
-                    //float const deltaKa =
-                    //    0.5f
-                    //    * ma
-                    //    * (va * va - vf * vf);
-
-                    //// Note: deltaKa might be negative, in which case deltaKb would have been
-                    //// more positive (perfectly inelastic -> deltaK == max); we will pickup
-                    //// deltaKb later
-                    //pointKineticEnergyLoss += std::max(deltaKa, 0.0f);
-
-
-
-                    // TODONEW
-
                     if (oldPointWaterVelocityBufferData[pointIndex].dot(springNormalizedVector) > 0.0f)
                     {
                         if (oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) < 0.0f)
@@ -3367,13 +3334,8 @@ void Ship::UpdateAirAndWaterPressure(
 
                             // Collision
                             pointKineticEnergyLoss += std::min(
-                                //oldPointWaterVelocityBufferData[pointIndex].dot(springNormalizedVector) * oldPointWaterBufferData[pointIndex],
-                                //-oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * oldPointWaterBufferData[cs.OtherEndpointIndex]);
                                 oldPointWaterVelocityBufferData[pointIndex].dot(springNormalizedVector) * springOutboundQuantityOfWater,
                                 -oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector) * springOutboundQuantityOfWater);
-
-                            //float const pointFreeness = LinearStep(2.5f, 9.0f, oldPointEffectiveAirPressureBufferData[pointIndex]); // 0.0=underwater, 1.0=abovewater
-                            //mDebugVectors.emplace_back(mPoints.GetPosition(pointIndex), springNormalizedVector * pointKineticEnergyLoss * pointFreeness);
 
                             if (pointIndex == mLastQueriedPointIndex)
                             {
@@ -3416,40 +3378,14 @@ void Ship::UpdateAirAndWaterPressure(
                     }
 
 #if !FS_IS_PLATFORM_MOBILE()
-                    // TODOTEST
-                    ////
-                    //// Update point's kinetic energy loss:
-                    //// entire bounced water, i.e. twice the outbound amount
-                    ////
-
-                    //float const ma = springOutboundQuantityOfWater;
-                    //float const va_squared = springOutboundWaterVelocities[s].squareLength();
-
-                    //float const deltaKa =
-                    //    // 1/2 * 2
-                    //    ma
-                    //    //* std::max(va_squared - 35.0f, 0.0f); // Remove low-vel noise
-                    //    * va_squared;
-
-                    //////float const deltaKa = std::max(ma * va_squared - 0.6f, 0.0f);
-
-                    //assert(deltaKa >= 0.0f);
-                    //pointKineticEnergyLoss += deltaKa;
-
-
-                    // TODONEW
-
                     if (oldPointWaterVelocityBufferData[pointIndex].dot(springNormalizedVector) > 0.0f)
                     {
+                        // TODOTEST
                         auto const todoOldPointKineticEnergyLoss = pointKineticEnergyLoss;
 
                         // Collision
                         pointKineticEnergyLoss +=
-                            //oldPointWaterVelocityBufferData[pointIndex].dot(springNormalizedVector) * oldPointWaterBufferData[pointIndex];
                             oldPointWaterVelocityBufferData[pointIndex].dot(springNormalizedVector) * springOutboundQuantityOfWater;
-
-                        //float const pointFreeness = LinearStep(2.5f, 9.0f, oldPointEffectiveAirPressureBufferData[pointIndex]); // 0.0=underwater, 1.0=abovewater
-                        //mDebugVectors.emplace_back(mPoints.GetPosition(pointIndex), springNormalizedVector * pointKineticEnergyLoss * pointFreeness);
 
                         if (pointIndex == mLastQueriedPointIndex)
                         {
@@ -3458,7 +3394,6 @@ void Ship::UpdateAirAndWaterPressure(
                             LogMessage("!!!!!! KINETIC RES  : pointKineticEnergyLoss: ", todoOldPointKineticEnergyLoss, " -> ", pointKineticEnergyLoss);
                         }
                     }
-
 #endif
                 }
             }
@@ -3468,13 +3403,11 @@ void Ship::UpdateAirAndWaterPressure(
             // 5) Update water splash
             //
 
-            //float const pointFreeness = LinearStep(0.5f, 2.0f, oldPointEffectiveAirPressureBufferData[pointIndex]); // 0.0=underwater, 1.0=abovewater
             float const pointFreeness = LinearStep(2.0f, 9.0f, oldPointEffectiveAirPressureBufferData[pointIndex]); // 0.0=underwater, 1.0=abovewater
             waterSplashed += pointKineticEnergyLoss * pointFreeness;
 
-            //mDebugVectors.emplace_back(mPoints.GetPosition(pointIndex), vec2f(0.0f, pointKineticEnergyLoss * pointFreeness));
+            // TODOTEST
             mDebugVectors.emplace_back(mPoints.GetPosition(pointIndex), oldPointWaterVelocityBufferData[pointIndex].normalise() * pointKineticEnergyLoss * pointFreeness);
-
 #endif
         }
 
@@ -3503,64 +3436,14 @@ void Ship::UpdateAirAndWaterPressure(
     } // Iter loop
 
 #if !FS_IS_PLATFORM_MOBILE()
-
-    //mDebugVectors.clear();
-    //for (auto pointIndex : mPoints.RawShipPoints())
-    //{
-    //    float const pointFreeness = LinearStep(2.5f, 4.0f, oldPointEffectiveAirPressureBufferData[pointIndex]); // 0.0=underwater, 1.0=abovewater
-
-    //    //float const oldPointKineticEnergy = (*foobarWaterBuffer)[pointIndex] * (*foobarVelocityBuffer)[pointIndex].squareLength();
-    //    //float const newPointKineticEnergy = mPoints.GetWater(pointIndex) * mPoints.GetWaterVelocity(pointIndex).squareLength();
-    //    //float const pointKineticEnergyLoss = std::max(oldPointKineticEnergy - newPointKineticEnergy, 0.0f);
-
-    //    //vec2f const deltaV = (*foobarVelocityBuffer)[pointIndex] - mPoints.GetWaterVelocity(pointIndex);
-    //    ////float const pointKineticEnergyLoss = mPoints.GetWater(pointIndex) * deltaV.squareLength();
-    //    ////float const pointKineticEnergyLoss = std::min(mPoints.GetWater(pointIndex), 1.0f) * deltaV.squareLength();
-    //    //float const pointKineticEnergyLoss = std::min(mPoints.GetWater(pointIndex), 1.0f) * deltaV.length();
-
-    //    //float const vAlignment = -(*foobarVelocityBuffer)[pointIndex].dot(mPoints.GetWaterVelocity(pointIndex));
-    //    //float const pointKineticEnergyLoss = mPoints.GetWater(pointIndex) * std::max(vAlignment, 0.0f);
-
-    //    float pointKineticEnergyLoss = 0.0f;
-    //    float const newVelAlongOld = mPoints.GetWaterVelocity(pointIndex).dot((*foobarVelocityBuffer)[pointIndex]);
-    //    //if (newVelAlongOld < 0.0f)
-    //    {
-    //        float vExtent = mPoints.GetWaterVelocity(pointIndex).length() - newVelAlongOld;
-    //        vExtent = std::max(vExtent, 0.0f);
-    //        pointKineticEnergyLoss = std::min(mPoints.GetWater(pointIndex), 1.0f) * vExtent;
-    //    }
-
-
-    //    waterSplashed += pointKineticEnergyLoss * pointFreeness;
-
-    //    mDebugVectors.emplace_back(mPoints.GetPosition(pointIndex), vec2f(0.0f, pointKineticEnergyLoss * pointFreeness));
-    //}
-
-
-
     waterSplashed *= inverseNumberOfWaterIterations;
 
-
-
-    // TODOTEST: filter attempt
-    //float foo = mWaterSplashedRunningAverage.Update(waterSplashed);
-    //waterSplashed = std::max(waterSplashed, foo);
-
-    if (waterSplashed >= mCurrentWaterSplashedVolume)
-    {
-        float constexpr Rate = 0.7f;
-        mCurrentWaterSplashedVolume += Rate * (waterSplashed - mCurrentWaterSplashedVolume);
-    }
-    else
-    {
-        float constexpr Rate = 0.03f;
-        mCurrentWaterSplashedVolume += Rate * (waterSplashed - mCurrentWaterSplashedVolume);
-    }
-    waterSplashed = mCurrentWaterSplashedVolume;
-
-    // TODOTEST
-    // Average kinetic energy loss
-    //waterSplashed = mWaterSplashedRunningAverage.Update(waterSplashed);
+    // Smooth curve: rise quickly and decrease slowly
+    float const rate = (waterSplashed >= mLastWaterSplashed)
+        ? 0.7f
+        : 0.03f;
+    mLastWaterSplashed += rate * (waterSplashed - mLastWaterSplashed);
+    waterSplashed = mLastWaterSplashed;
 #endif
 
     //

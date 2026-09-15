@@ -2111,11 +2111,10 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     // Adjust continuous splash sound
     //
 
-    // 100 * (1 - 1.1^(-x*4))
-    //float splashVolume = 100.f * (1.0f - std::pow(1.1f, -std::abs(waterSplashed) * 4.0f));
-    //float splashVolume = 100.f * (1.0f - std::pow(1.1f, -std::max(waterSplashed - 0.5f, 0.0f) * 4.0f));
-    float splashVolume = 100.f * (1.0f - std::pow(1.1f, -waterSplashed* waterSplashed* waterSplashed*0.5f*0.5f*0.5f * 4.0f));
-    if (splashVolume < 0.01f)
+    // 100 * (1 - 1.1^(-(x*0.6)^3*4))
+    float const ws2 = waterSplashed * 0.56f;
+    float splashVolume = 100.f * (1.0f - std::pow(1.1f, -ws2 * ws2 * ws2 * 4.0f));
+    if (splashVolume < 0.005f)
         splashVolume = 0.0f;
 
     // Starts automatically if volume greater than zero
