@@ -60,6 +60,7 @@ SoundController::SoundController(
     , mWaterRushBelowRunningAverage()
     , mWaterSplashedRunningAverage1()
     , mWaterSplashedRunningAverage2()
+    , mWaterSplashedLastValue3(0.0f)
     // One-shot sounds
     , mMSUOneShotMultipleChoiceSounds()
     , mMOneShotMultipleChoiceSounds()
@@ -1795,6 +1796,7 @@ void SoundController::Reset()
     mWaterRushBelowRunningAverage.Reset();
     mWaterSplashedRunningAverage1.Reset();
     mWaterSplashedRunningAverage2.Reset();
+    mWaterSplashedLastValue3 = 0.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -2120,7 +2122,12 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     // TODOHERE: remove DC
     splashVolume = std::max(splashVolume - mWaterSplashedRunningAverage1.Update(splashVolume), 0.0f);
 
-    splashVolume = mWaterSplashedRunningAverage2.Update(splashVolume);
+    //splashVolume = mWaterSplashedRunningAverage2.Update(splashVolume);
+    float const rate = (splashVolume >= mWaterSplashedLastValue3)
+        ? 0.65f
+        : 0.015f;
+    mWaterSplashedLastValue3 += rate * (splashVolume - mWaterSplashedLastValue3);
+    splashVolume = mWaterSplashedLastValue3;
 
     // Starts automatically if volume greater than zero
     mWaterSplashSound.SetVolume(splashVolume);

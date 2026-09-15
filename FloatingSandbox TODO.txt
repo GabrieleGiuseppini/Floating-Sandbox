@@ -3373,8 +3373,8 @@
 					+ Trick for faster slope up: rate/direction
 					= Adjust volume via global
 					= Remove DC; then:
-						= Option 1: another running avg: good: 100, 80
-						- Option 2: a rate-based filter
+						+ Option 1: another running avg: good: 100, 80
+						= Option 2: a rate-based filter
 
 				- Cleanup:
 					+ Re-enable OnPressureIntake notification @ UpdatePressureAndWaterInflow

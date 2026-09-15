@@ -560,6 +560,7 @@ private:
     RunningAverage<60> mWaterRushBelowRunningAverage;
     RunningAverage<100> mWaterSplashedRunningAverage1;
     RunningAverage<80> mWaterSplashedRunningAverage2;
+    float mWaterSplashedLastValue3;
 
     //
     // One-Shot sounds
