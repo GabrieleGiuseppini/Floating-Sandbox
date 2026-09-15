@@ -32,7 +32,7 @@ std::chrono::milliseconds constexpr SawedInertiaDuration = 200ms;
 float constexpr LaserCutVolume = 100.0f;
 std::chrono::milliseconds constexpr LaserCutInertiaDuration = 200ms;
 float constexpr WaveSplashTriggerSize = 0.5f;
-float constexpr WaterSplashVolume = 20.0f;
+float constexpr WaterSplashVolume = 30.0f;
 float constexpr WaterRushAboveVolume = 70.0f;
 float constexpr WaterRushBelowVolume = 100.0f;
 float constexpr LaserRayVolume = 50.0f;
@@ -58,6 +58,8 @@ SoundController::SoundController(
     , mLastWaterDisplacedMagnitudeDerivative(0.0f)
     , mWaterRushAboveRunningAverage()
     , mWaterRushBelowRunningAverage()
+    , mWaterSplashedRunningAverage1()
+    , mWaterSplashedRunningAverage2()
     // One-shot sounds
     , mMSUOneShotMultipleChoiceSounds()
     , mMOneShotMultipleChoiceSounds()
@@ -1791,6 +1793,8 @@ void SoundController::Reset()
     mLastWaterDisplacedMagnitudeDerivative = 0.0f;
     mWaterRushAboveRunningAverage.Reset();
     mWaterRushBelowRunningAverage.Reset();
+    mWaterSplashedRunningAverage1.Reset();
+    mWaterSplashedRunningAverage2.Reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -2112,6 +2116,11 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     //
 
     float splashVolume = WaterSplashVolume * LinearStep(0.1f, 2.0f, waterSplashed);
+
+    // TODOHERE: remove DC
+    splashVolume = std::max(splashVolume - mWaterSplashedRunningAverage1.Update(splashVolume), 0.0f);
+
+    splashVolume = mWaterSplashedRunningAverage2.Update(splashVolume);
 
     // Starts automatically if volume greater than zero
     mWaterSplashSound.SetVolume(splashVolume);

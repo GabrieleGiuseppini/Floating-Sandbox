@@ -3354,8 +3354,8 @@
 
 			= Water splash sounds (kinetic energy)
 				+ Scale kinetic energy by # of iters
-				= Try with presence of air as replacement of freeness
-				= Try first only @ bounce
+				+ Try with presence of air as replacement of freeness
+				X Try first only @ bounce
 
 				= SoundController:
 					= Try without waves sound - just clean splash sound
@@ -3368,11 +3368,13 @@
 				          or encounters a wall with momentum against it, and point is free.
 					+ Encounters: sizeable flow towards that point
 					! WINNER!
-					= Better sound
+					+ Better sound
 					+ Try curve: first 2.0 raises little then more (flex at 2.5)
 					+ Trick for faster slope up: rate/direction
-					- Adjust volume via global
-					- Fix DC
+					= Adjust volume via global
+					= Remove DC; then:
+						= Option 1: another running avg: good: 100, 80
+						- Option 2: a rate-based filter
 
 				- Cleanup:
 					+ Re-enable OnPressureIntake notification @ UpdatePressureAndWaterInflow

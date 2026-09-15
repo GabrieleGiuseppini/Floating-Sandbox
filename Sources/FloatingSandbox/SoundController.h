@@ -558,6 +558,8 @@ private:
     // Water rush state
     RunningAverage<60> mWaterRushAboveRunningAverage;
     RunningAverage<60> mWaterRushBelowRunningAverage;
+    RunningAverage<100> mWaterSplashedRunningAverage1;
+    RunningAverage<80> mWaterSplashedRunningAverage2;
 
     //
     // One-Shot sounds
