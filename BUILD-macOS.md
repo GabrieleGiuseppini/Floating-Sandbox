@@ -251,12 +251,4 @@ ship browsing must not modify the bundle.
 | `MACOS_PORT.md` | Investigation, crash evidence, milestones and test history. |
 | `BUILD-macOS.md` | This consolidated source-change and reproduction guide. |
 
-The physics algorithms, shaders and renderer architecture remain intact. The
-OpenAL fix is a dependency configuration change, not an SFML rewrite. Windows and
-Linux code paths were preserved but have not been built on this Mac.
 
-## Scope
-
-Personal-use Apple Silicon/macOS 26+ package, ad-hoc signed. No notarization,
-Developer ID distribution, DMG, Intel or Universal build. Public distribution
-would require separate signing/notarization and dependency-license review.
