@@ -8,6 +8,8 @@
 #include <filesystem>
 #include <optional>
 
+class GameAssetManager;
+
 struct BootSettings
 {
 public:
@@ -39,6 +41,8 @@ public:
     }
 
 public:
+
+    static std::filesystem::path GetFilePath(GameAssetManager const & assetManager);
 
     static BootSettings Load(std::filesystem::path const & filePath);
     static void Save(BootSettings const & settings, std::filesystem::path const & filePath);

@@ -8,9 +8,12 @@ endif()
 # Setup google test
 #
 
-set_property(
-	TARGET gmock gtest gtest_main
-	PROPERTY FOLDER "GoogleTest")
+if(GTEST_DIR)
+	set_property(TARGET gmock gtest gtest_main PROPERTY FOLDER "GoogleTest")
+	set(FS_TEST_LIBRARIES gmock gtest)
+else()
+	set(FS_TEST_LIBRARIES GTest::gmock GTest::gtest)
+endif()
 
 #
 # Setup target
@@ -91,17 +94,8 @@ target_link_libraries (UnitTests
 	Simulation
 	ShipBuilderLib
 	UILib	
-	gmock
-	gtest
+	${FS_TEST_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
-
-#
-# Setup test
-#
-
-if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	add_test(NAME RunUnitTests COMMAND $<TARGET_FILE:UnitTests>)
-endif ()
 
 #
 # Set VS properties

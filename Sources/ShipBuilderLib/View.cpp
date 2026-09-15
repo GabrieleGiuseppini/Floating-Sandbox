@@ -1495,8 +1495,16 @@ void View::RemoveWaterline()
     mHasWaterline = false;
 }
 
+View::~View()
+{
+    // Member destructors delete GL objects. Other windows may have changed the
+    // current context since the last editor render.
+    mOpenGLContext->MakeCurrent();
+}
+
 void View::Render()
 {
+    mOpenGLContext->MakeCurrent();
     //
     // Initialize
     //
