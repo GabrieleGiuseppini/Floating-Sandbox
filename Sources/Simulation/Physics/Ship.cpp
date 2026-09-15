@@ -3040,12 +3040,6 @@ void Ship::UpdateAirAndWaterPressure(
     // We will scale down transfers by # of iterations, for a smoother experience
     float const inverseNumberOfWaterIterations = 1.0f / static_cast<float>(simulationParameters.WaterDiffusionNumberOfIterations);
 
-#if !FS_IS_PLATFORM_MOBILE()
-    //// TODOTEST
-    //auto const foobarWaterBuffer = mPoints.MakeWaterBufferCopy();
-    //auto const foobarVelocityBuffer = mPoints.MakeWaterVelocityBufferCopy();
-#endif
-
     //
     // Visit all non-ephemeral points
     //
@@ -3440,8 +3434,8 @@ void Ship::UpdateAirAndWaterPressure(
 
     // Smooth curve: rise quickly and decrease slowly
     float const rate = (waterSplashed >= mLastWaterSplashed)
-        ? 0.7f
-        : 0.03f;
+        ? 0.65f
+        : 0.015f;
     mLastWaterSplashed += rate * (waterSplashed - mLastWaterSplashed);
     waterSplashed = mLastWaterSplashed;
 #endif

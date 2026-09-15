@@ -3372,14 +3372,16 @@
 					+ Try curve: first 2.0 raises little then more (flex at 2.5)
 					+ Trick for faster slope up: rate/direction
 					- Adjust volume via global
+					- Fix DC
 
 				- Cleanup:
 					+ Re-enable OnPressureIntake notification @ UpdatePressureAndWaterInflow
 					- Remove custom probe for water splashes
 					+ Ensure we notify for water splashes
-
 					+ If we don't nee anymore Ship::mWaterSplashedRunningAverage, nuke it
+
 					- If we don't need waves sound anymore @ splashes, cleanup SoundController
+						- And Wave sound
 
 			- Imparted water and air velocities w/move tool - et other tools?
 

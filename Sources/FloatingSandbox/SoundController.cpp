@@ -32,7 +32,7 @@ std::chrono::milliseconds constexpr SawedInertiaDuration = 200ms;
 float constexpr LaserCutVolume = 100.0f;
 std::chrono::milliseconds constexpr LaserCutInertiaDuration = 200ms;
 float constexpr WaveSplashTriggerSize = 0.5f;
-float constexpr WaveSplashVolume = 100.0f;
+float constexpr WaterSplashVolume = 20.0f;
 float constexpr WaterRushAboveVolume = 70.0f;
 float constexpr WaterRushBelowVolume = 100.0f;
 float constexpr LaserRayVolume = 50.0f;
@@ -377,7 +377,7 @@ SoundController::SoundController(
         {
             mWaterSplashSound.Initialize(
                 std::move(soundFile),
-                WaveSplashVolume,
+                WaterSplashVolume,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
@@ -2111,11 +2111,7 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     // Adjust continuous splash sound
     //
 
-    // 100 * (1 - 1.1^(-(x*0.6)^3*4))
-    float const ws2 = waterSplashed * 0.56f;
-    float splashVolume = 100.f * (1.0f - std::pow(1.1f, -ws2 * ws2 * ws2 * 4.0f));
-    if (splashVolume < 0.005f)
-        splashVolume = 0.0f;
+    float splashVolume = WaterSplashVolume * LinearStep(0.1f, 2.0f, waterSplashed);
 
     // Starts automatically if volume greater than zero
     mWaterSplashSound.SetVolume(splashVolume);
