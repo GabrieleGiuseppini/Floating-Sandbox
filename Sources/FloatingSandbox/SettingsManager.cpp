@@ -265,6 +265,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_SC_SETTING(bool, PlayStressSounds);
     ADD_SC_SETTING(bool, PlayWindSound);
     ADD_SC_SETTING(bool, PlayAirBubbleSurfaceSound);
+    ADD_SC_SETTING(bool, PlayInteriorWaterSounds);
 
     return factory;
 }

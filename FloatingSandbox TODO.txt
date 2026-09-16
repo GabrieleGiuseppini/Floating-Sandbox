@@ -3371,19 +3371,27 @@
 					+ Better sound
 					+ Try curve: first 2.0 raises little then more (flex at 2.5)
 					+ Trick for faster slope up: rate/direction
-					= Adjust volume via global
-					= Remove DC; then:
+					+ Adjust volume via global
+					+ Remove DC; then:
 						+ Option 1: another running avg: good: 100, 80
-						= Option 2: a rate-based filter
+						+ Option 2: a rate-based filter
+						+ Fix saturation
+					- New sound
 
 				- Cleanup:
 					+ Re-enable OnPressureIntake notification @ UpdatePressureAndWaterInflow
 					- Remove custom probe for water splashes
 					+ Ensure we notify for water splashes
 					+ If we don't nee anymore Ship::mWaterSplashedRunningAverage, nuke it
+					- Ship code
+					- SoundController code
+						- Remove unused splash variables
+						- Put back lower global volume
+						- If we don't need waves sound anymore @ splashes, cleanup SoundController
+							- And Wave sound
 
-					- If we don't need waves sound anymore @ splashes, cleanup SoundController
-						- And Wave sound
+				+ Setting for "Interior Water Sounds"
+					+ Android
 
 			- Imparted water and air velocities w/move tool - et other tools?
 
@@ -3603,19 +3611,6 @@
 						- sample both orig and offseted
 							- weight: length of vel
 
-		- New ephemeral particle like splashes but for air flying out of submerged parts venting air
-
-		- New electrical elements: 
-			- Pressure switch
-				- Acts with delta pressure - TODO: towards interior and towards exterior types?
-					- Total pressures
-			- Depth switch
-			- Pumps rearc:
-				- First off: do we really need to deal with pumps at IntakeWaterAndAir? Only if we need to count them
-				- Kinds:
-					- WaterPump in/out
-					- AirPump in/out x with_tank_without_tank
-
 		- Android port plan:
 			- Shader and ShaderSets renames for InternalPressure->AirPressure
 			- Water shading (ship_element)
@@ -3638,6 +3633,8 @@
 				- Tools: new settings X 4
 				- Perf:
 					- # of water iters
+				- Sounds:
+					- Play Interior Water Sounds (if we decide to have it in Mobile)
 
 			- New air bubble texture
 
@@ -3666,6 +3663,21 @@
 	- Electrical material for explosions when powered
 	- New NPCs from TimCan (cameo)
 		- Cameo category?
+
+	- Fix ScareFish: fishes should move away from locus
+
+	- New ephemeral particle like splashes but for air flying out of submerged parts venting air
+
+	- New electrical elements: 
+		- Pressure switch
+			- Acts with delta pressure - TODO: towards interior and towards exterior types?
+				- Total pressures
+		- Depth switch
+		- Pumps rearc:
+			- First off: do we really need to deal with pumps at IntakeWaterAndAir? Only if we need to count them
+			- Kinds:
+				- WaterPump in/out
+				- AirPump in/out x with_tank_without_tank
 
 	- When focusing on ship after ship moved in PAUSE, we focus on old position
 

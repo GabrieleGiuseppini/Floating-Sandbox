@@ -118,6 +118,13 @@ public:
 
     void SetPlayAirBubbleSurfaceSound(bool playAirBubbleSurfaceSound);
 
+    bool GetPlayInteriorWaterSounds() const
+    {
+        return mPlayInteriorWaterSounds;
+    }
+
+    void SetPlayInteriorWaterSounds(bool playInteriorWaterSounds);
+
     void PlayDrawSound(bool isUnderwater);
     void StopDrawSound();
 
@@ -542,6 +549,7 @@ private:
     bool mPlayStressSounds;
     bool mPlayWindSound;
     bool mPlayAirBubbleSurfaceSound;
+    bool mPlayInteriorWaterSounds;
 
     // Wind state
     float mLastWindSpeedAbsoluteMagnitude;

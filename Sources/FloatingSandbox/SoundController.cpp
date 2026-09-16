@@ -32,9 +32,9 @@ std::chrono::milliseconds constexpr SawedInertiaDuration = 200ms;
 float constexpr LaserCutVolume = 100.0f;
 std::chrono::milliseconds constexpr LaserCutInertiaDuration = 200ms;
 float constexpr WaveSplashTriggerSize = 0.5f;
-float constexpr WaterSplashVolume = 30.0f;
 float constexpr WaterRushAboveVolume = 70.0f;
 float constexpr WaterRushBelowVolume = 100.0f;
+float constexpr WaterSplashVolume = 80.0f; // TODOTEST  30.0f;
 float constexpr LaserRayVolume = 50.0f;
 float constexpr WindMaxVolume = 70.0f;
 
@@ -50,6 +50,7 @@ SoundController::SoundController(
     , mPlayStressSounds(true)
     , mPlayWindSound(true)
     , mPlayAirBubbleSurfaceSound(true)
+    , mPlayInteriorWaterSounds(true)
     , mLastWindSpeedAbsoluteMagnitude(0.0f)
     , mWindVolumeRunningAverage()
     , mLastWaterSplashed(0.0f)
@@ -1325,6 +1326,18 @@ void SoundController::SetPlayAirBubbleSurfaceSound(bool playAirBubbleSurfaceSoun
     }
 }
 
+void SoundController::SetPlayInteriorWaterSounds(bool playInteriorWaterSounds)
+{
+    mPlayInteriorWaterSounds = playInteriorWaterSounds;
+
+    if (!mPlayInteriorWaterSounds)
+    {
+        mWaterRushAboveSound.Stop();
+        mWaterRushBelowSound.Stop();
+        mWaterSplashSound.Stop();
+    }
+}
+
 // Misc
 
 void SoundController::PlayDrawSound(bool /*isUnderwater*/)
@@ -2073,9 +2086,12 @@ void SoundController::OnPressureIntake(
     float rushVolumeAbove = 40.f * (-1.f / std::pow(2.4f, std::min(90.0f, 0.5f * std::abs(waterTakenAbove))) + 1.f);
     float rushVolumeBelow = 40.f * (-1.f / std::pow(2.4f, std::min(90.0f, 0.5f * std::abs(waterTakenBelow))) + 1.f);
 
-    // Starts automatically if volume greater than zero
-    mWaterRushAboveSound.SetVolume(mWaterRushAboveRunningAverage.Update(rushVolumeAbove));
-    mWaterRushBelowSound.SetVolume(mWaterRushBelowRunningAverage.Update(rushVolumeBelow));
+    if (mPlayInteriorWaterSounds)
+    {
+        // Starts automatically if volume greater than zero
+        mWaterRushAboveSound.SetVolume(mWaterRushAboveRunningAverage.Update(rushVolumeAbove));
+        mWaterRushBelowSound.SetVolume(mWaterRushBelowRunningAverage.Update(rushVolumeBelow));
+    }
 }
 
 void SoundController::OnWaterSplashed(float waterSplashed)
@@ -2117,20 +2133,24 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     // Adjust continuous splash sound
     //
 
+    // Remove bottom noise
     float splashVolume = WaterSplashVolume * LinearStep(0.1f, 2.0f, waterSplashed);
 
-    // TODOHERE: remove DC
+    // Remove DC
     splashVolume = std::max(splashVolume - mWaterSplashedRunningAverage1.Update(splashVolume), 0.0f);
 
-    //splashVolume = mWaterSplashedRunningAverage2.Update(splashVolume);
+    // Smooth curve: rise quickly and decrease slowly
     float const rate = (splashVolume >= mWaterSplashedLastValue3)
         ? 0.65f
         : 0.015f;
     mWaterSplashedLastValue3 += rate * (splashVolume - mWaterSplashedLastValue3);
     splashVolume = mWaterSplashedLastValue3;
 
-    // Starts automatically if volume greater than zero
-    mWaterSplashSound.SetVolume(splashVolume);
+    if (mPlayInteriorWaterSounds)
+    {
+        // Starts automatically if volume greater than zero
+        mWaterSplashSound.SetVolume(splashVolume);
+    }
 }
 
 void SoundController::OnWaterDisplaced(float waterDisplacedMagnitude)

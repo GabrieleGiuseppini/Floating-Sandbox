@@ -213,8 +213,9 @@ enum class GameSettings : size_t
     PlayStressSounds,
     PlayWindSound,
     PlayAirBubbleSurfaceSound,
+    PlayInteriorWaterSounds,
 
-    _Last = PlayAirBubbleSurfaceSound
+    _Last = PlayInteriorWaterSounds
 };
 
 class SettingsManager final : public BaseSettingsManager<GameSettings>

@@ -241,6 +241,7 @@ private:
     wxCheckBox * mPlayStressSoundsCheckBox;
     wxCheckBox * mPlayWindSoundCheckBox;
     wxCheckBox * mPlayAirBubbleSurfaceSoundCheckBox;
+    wxCheckBox * mPlayInteriorWaterSoundsCheckBox;
     SliderControl<float> * mStrengthRandomizationDensityAdjustmentSlider;
     SliderControl<float> * mStrengthRandomizationExtentSlider;
     SliderControl<float> * mSpringStiffnessSlider;

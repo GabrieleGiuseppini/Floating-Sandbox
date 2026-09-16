@@ -5830,6 +5830,20 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     checkboxesSizer->Add(mPlayAirBubbleSurfaceSoundCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
                 }
 
+                {
+                    mPlayInteriorWaterSoundsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Play Interior Water Sounds"));
+                    mPlayInteriorWaterSoundsCheckBox->SetToolTip(_("Enables or disables the splashing and rushing sounds when water enters and moves inside the ship."));
+                    mPlayInteriorWaterSoundsCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue(GameSettings::PlayInteriorWaterSounds, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
+
+                    checkboxesSizer->Add(mPlayInteriorWaterSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+                }
+
                 sizer->Add(
                     checkboxesSizer,
                     wxGBPosition(0, 2),
@@ -7293,6 +7307,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mPlayStressSoundsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayStressSounds));
     mPlayWindSoundCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayWindSound));
     mPlayAirBubbleSurfaceSoundCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayAirBubbleSurfaceSound));
+    mPlayInteriorWaterSoundsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayInteriorWaterSounds));
 
     mStrengthRandomizationDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipStrengthRandomizationDensityAdjustment));
     mStrengthRandomizationExtentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipStrengthRandomizationExtent));
