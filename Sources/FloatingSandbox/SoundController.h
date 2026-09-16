@@ -555,10 +555,6 @@ private:
     float mLastWindSpeedAbsoluteMagnitude;
     RunningAverage<70> mWindVolumeRunningAverage;
 
-    // Water splash state
-    float mLastWaterSplashed;
-    float mCurrentWaterSplashedTrigger;
-
     // Water displacement state
     float mLastWaterDisplacedMagnitude;
     float mLastWaterDisplacedMagnitudeDerivative;
@@ -566,9 +562,10 @@ private:
     // Water rush state
     RunningAverage<60> mWaterRushAboveRunningAverage;
     RunningAverage<60> mWaterRushBelowRunningAverage;
-    RunningAverage<100> mWaterSplashedRunningAverage1;
-    RunningAverage<80> mWaterSplashedRunningAverage2;
-    float mWaterSplashedLastValue3;
+
+    // Water splash state
+    RunningAverage<100> mWaterSplashedVolumeRunningAverage;
+    float mWaterSplashedLastVolumeValue;
 
     //
     // One-Shot sounds

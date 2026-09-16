@@ -3376,7 +3376,7 @@
 						+ Option 1: another running avg: good: 100, 80
 						+ Option 2: a rate-based filter
 						+ Fix saturation
-					- New sound
+					= New sound
 
 				- Cleanup:
 					+ Re-enable OnPressureIntake notification @ UpdatePressureAndWaterInflow
@@ -3384,10 +3384,9 @@
 					+ Ensure we notify for water splashes
 					+ If we don't nee anymore Ship::mWaterSplashedRunningAverage, nuke it
 					- Ship code
-					- SoundController code
-						- Remove unused splash variables
-						- Put back lower global volume
-						- If we don't need waves sound anymore @ splashes, cleanup SoundController
+					= SoundController code
+						+ Remove unused splash variables
+						= If we don't need waves sound anymore @ splashes, cleanup SoundController
 							- And Wave sound
 
 				+ Setting for "Interior Water Sounds"

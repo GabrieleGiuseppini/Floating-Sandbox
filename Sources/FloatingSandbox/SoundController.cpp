@@ -31,10 +31,9 @@ float constexpr SawedVolume = 80.0f;
 std::chrono::milliseconds constexpr SawedInertiaDuration = 200ms;
 float constexpr LaserCutVolume = 100.0f;
 std::chrono::milliseconds constexpr LaserCutInertiaDuration = 200ms;
-float constexpr WaveSplashTriggerSize = 0.5f;
 float constexpr WaterRushAboveVolume = 70.0f;
 float constexpr WaterRushBelowVolume = 100.0f;
-float constexpr WaterSplashVolume = 80.0f; // TODOTEST  30.0f;
+float constexpr WaterSplashVolume = 85.0f;
 float constexpr LaserRayVolume = 50.0f;
 float constexpr WindMaxVolume = 70.0f;
 
@@ -53,15 +52,12 @@ SoundController::SoundController(
     , mPlayInteriorWaterSounds(true)
     , mLastWindSpeedAbsoluteMagnitude(0.0f)
     , mWindVolumeRunningAverage()
-    , mLastWaterSplashed(0.0f)
-    , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
     , mLastWaterDisplacedMagnitude(0.0f)
     , mLastWaterDisplacedMagnitudeDerivative(0.0f)
     , mWaterRushAboveRunningAverage()
     , mWaterRushBelowRunningAverage()
-    , mWaterSplashedRunningAverage1()
-    , mWaterSplashedRunningAverage2()
-    , mWaterSplashedLastValue3(0.0f)
+    , mWaterSplashedVolumeRunningAverage()
+    , mWaterSplashedLastVolumeValue(0.0f)
     // One-shot sounds
     , mMSUOneShotMultipleChoiceSounds()
     , mMOneShotMultipleChoiceSounds()
@@ -1801,15 +1797,12 @@ void SoundController::Reset()
 
     mLastWindSpeedAbsoluteMagnitude = 0.0f;
     mWindVolumeRunningAverage.Reset();
-    mLastWaterSplashed = 0.0f;
-    mCurrentWaterSplashedTrigger = WaveSplashTriggerSize;
     mLastWaterDisplacedMagnitude = 0.0f;
     mLastWaterDisplacedMagnitudeDerivative = 0.0f;
     mWaterRushAboveRunningAverage.Reset();
     mWaterRushBelowRunningAverage.Reset();
-    mWaterSplashedRunningAverage1.Reset();
-    mWaterSplashedRunningAverage2.Reset();
-    mWaterSplashedLastValue3 = 0.0f;
+    mWaterSplashedVolumeRunningAverage.Reset();
+    mWaterSplashedLastVolumeValue = 0.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -2096,39 +2089,6 @@ void SoundController::OnPressureIntake(
 
 void SoundController::OnWaterSplashed(float waterSplashed)
 {
-    // TODOTEST
-
-    ////
-    //// Trigger waves
-    ////
-
-    //// We only want to trigger a wave when the quantity of water splashed is growing...
-    //if (waterSplashed > mLastWaterSplashed)
-    //{
-    //    //...but only by discrete leaps
-    //    if (waterSplashed > mCurrentWaterSplashedTrigger)
-    //    {
-    //        // 9 * (1 - 1.8^(-0.08 * x))
-    //        float const waveVolume = 9.0f * (1.0f - std::pow(1.8f, -0.08f * std::min(1800.0f, std::abs(waterSplashed))));
-
-    //        PlayOneShotMultipleChoiceSound(
-    //            SoundType::Wave,
-    //            SoundGroupType::Effects,
-    //            waveVolume,
-    //            true);
-
-    //        // Raise next trigger
-    //        mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
-    //    }
-    //}
-    //else
-    //{
-    //    // Lower trigger
-    //    mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
-    //}
-
-    //mLastWaterSplashed = waterSplashed;
-
     //
     // Adjust continuous splash sound
     //
@@ -2137,14 +2097,14 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     float splashVolume = WaterSplashVolume * LinearStep(0.0f, 2.0f, waterSplashed);
 
     // Remove DC
-    splashVolume = std::max(splashVolume - mWaterSplashedRunningAverage1.Update(splashVolume), 0.0f);
+    splashVolume = std::max(splashVolume - mWaterSplashedVolumeRunningAverage.Update(splashVolume), 0.0f);
 
     // Smooth curve: rise quickly and decrease slowly
-    float const rate = (splashVolume >= mWaterSplashedLastValue3)
+    float const rate = (splashVolume >= mWaterSplashedLastVolumeValue)
         ? 0.65f
         : 0.015f;
-    mWaterSplashedLastValue3 += rate * (splashVolume - mWaterSplashedLastValue3);
-    splashVolume = mWaterSplashedLastValue3;
+    mWaterSplashedLastVolumeValue += rate * (splashVolume - mWaterSplashedLastVolumeValue);
+    splashVolume = mWaterSplashedLastVolumeValue;
 
     if (mPlayInteriorWaterSounds)
     {
