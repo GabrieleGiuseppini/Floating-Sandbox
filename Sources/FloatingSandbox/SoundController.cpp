@@ -2133,8 +2133,8 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     // Adjust continuous splash sound
     //
 
-    // Remove bottom noise
-    float splashVolume = WaterSplashVolume * LinearStep(0.1f, 2.0f, waterSplashed);
+    // Map to volume
+    float splashVolume = WaterSplashVolume * LinearStep(0.0f, 2.0f, waterSplashed);
 
     // Remove DC
     splashVolume = std::max(splashVolume - mWaterSplashedRunningAverage1.Update(splashVolume), 0.0f);
