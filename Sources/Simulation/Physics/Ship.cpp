@@ -2570,7 +2570,7 @@ void Ship::UpdatePressureAndWaterInflow(
 
             float const pointDepth = mPoints.GetCachedDepth(pointIndex);
             bool const isPointRope = mPoints.IsRope(pointIndex);
-            float const pointAboveness = LinearStep(0.1f, 1.0f, mPoints.GetAirPressure(pointIndex)); // 0.0=under internal water, 1.0=above internal water
+            float const pointAboveness = LinearStep(0.05f, 0.8f, mPoints.GetAirPressure(pointIndex)); // 0.0=under internal water, 1.0=above internal water
 
             if (pointCompositeLeaking.LeakingSources.StructuralLeak != 0.0f)
             {
