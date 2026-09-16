@@ -564,8 +564,7 @@ SoundController::SoundController(
             mDslUOneShotMultipleChoiceSounds[std::make_tuple(soundType, durationType, isUnderwater)]
                 .Choices.emplace_back(std::move(soundFile));
         }
-        else if (soundType == SoundType::Wave
-                || soundType == SoundType::WindGust
+        else if (soundType == SoundType::WindGust
                 || soundType == SoundType::WindGustShort
                 || soundType == SoundType::Thunder
                 || soundType == SoundType::Lightning

@@ -90,7 +90,6 @@ enum class SoundType : uint32_t
     WaterDisplacementSplash,
     WaterDisplacementWave,
     AirBubblesSurface,
-    Wave,
     Wind,
     WindGust,
     WindGustShort,

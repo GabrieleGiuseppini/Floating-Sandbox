@@ -131,8 +131,6 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::WaterDisplacementWave;
     else if (Utils::CaseInsensitiveEquals(str, "AirBubblesSurface"))
         return SoundType::AirBubblesSurface;
-    else if (Utils::CaseInsensitiveEquals(str, "Wave"))
-        return SoundType::Wave;
     else if (Utils::CaseInsensitiveEquals(str, "Wind"))
         return SoundType::Wind;
     else if (Utils::CaseInsensitiveEquals(str, "WindGust"))

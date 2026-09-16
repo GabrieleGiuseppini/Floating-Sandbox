@@ -3378,16 +3378,16 @@
 						+ Fix saturation
 					= New sound
 
-				- Cleanup:
-					+ Re-enable OnPressureIntake notification @ UpdatePressureAndWaterInflow
-					- Remove custom probe for water splashes
+				= Cleanup:
+					+ Re-enable OnPressureIntake notification @ UpdatePressureAndWaterInflow					
 					+ Ensure we notify for water splashes
 					+ If we don't nee anymore Ship::mWaterSplashedRunningAverage, nuke it
 					- Ship code
-					= SoundController code
+						- Remove custom probe for water splashes
+					+ SoundController code
 						+ Remove unused splash variables
-						= If we don't need waves sound anymore @ splashes, cleanup SoundController
-							- And Wave sound
+						+ If we don't need waves sound anymore @ splashes, cleanup SoundController
+							+ And Wave sound
 
 				+ Setting for "Interior Water Sounds"
 					+ Android
