@@ -3356,10 +3356,6 @@
 				+ Scale kinetic energy by # of iters
 				+ Try with presence of air as replacement of freeness
 				X Try first only @ bounce
-
-				= SoundController:
-					= Try without waves sound - just clean splash sound
-
 				X Filter (@ diffusion, not SoundController):
 					- 1.0 when going up and then level;
 					- 0.0 when going down - more than x% of current avg level
@@ -3375,7 +3371,7 @@
 					+ Remove DC; then:
 						+ Option 1: another running avg: good: 100, 80
 						+ Option 2: a rate-based filter
-						+ Fix saturation
+						+ Fix saturation: 
 					= New sound
 
 				= Cleanup:
@@ -3384,6 +3380,8 @@
 					+ If we don't nee anymore Ship::mWaterSplashedRunningAverage, nuke it
 					- Ship code
 						- Remove custom probe for water splashes
+						- Remove debug vectors
+						- Cleanup
 					+ SoundController code
 						+ Remove unused splash variables
 						+ If we don't need waves sound anymore @ splashes, cleanup SoundController
