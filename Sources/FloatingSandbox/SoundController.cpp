@@ -2092,15 +2092,15 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     // Adjust continuous splash sound
     //
 
-    // Map to volume
-    float splashVolume = WaterSplashVolume * LinearStep(0.0f, 2.0f, waterSplashed);
-
     // Remove DC
-    splashVolume = std::max(splashVolume - mWaterSplashedVolumeRunningAverage.Update(splashVolume), 0.0f);
+    float const waterSplashedWithoutDc = std::max(waterSplashed - mWaterSplashedVolumeRunningAverage.Update(waterSplashed), 0.0f);
+
+    // Map to volume
+    float splashVolume = WaterSplashVolume * LinearStep(0.0f, 2.0f, waterSplashedWithoutDc);
 
     // Smooth curve: rise quickly and decrease slowly
     float const rate = (splashVolume >= mWaterSplashedLastVolumeValue)
-        ? 0.65f
+        ? 0.15f
         : 0.015f;
     mWaterSplashedLastVolumeValue += rate * (splashVolume - mWaterSplashedLastVolumeValue);
     splashVolume = mWaterSplashedLastVolumeValue;

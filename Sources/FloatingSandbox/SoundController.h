@@ -564,7 +564,7 @@ private:
     RunningAverage<60> mWaterRushBelowRunningAverage;
 
     // Water splash state
-    RunningAverage<85> mWaterSplashedVolumeRunningAverage; // To remove DC
+    RunningAverage<100> mWaterSplashedVolumeRunningAverage; // To remove DC
     float mWaterSplashedLastVolumeValue;
 
     //

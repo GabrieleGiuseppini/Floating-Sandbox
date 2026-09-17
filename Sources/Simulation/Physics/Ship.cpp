@@ -3431,13 +3431,6 @@ void Ship::UpdateAirAndWaterPressure(
 
 #if !FS_IS_PLATFORM_MOBILE()
     waterSplashed *= inverseNumberOfWaterIterations;
-
-    // Smooth curve: rise quickly and decrease slowly
-    float const rate = (waterSplashed >= mLastWaterSplashed)
-        ? 0.65f
-        : 0.015f;
-    mLastWaterSplashed += rate * (waterSplashed - mLastWaterSplashed);
-    waterSplashed = mLastWaterSplashed;
 #endif
 
     //
@@ -3958,10 +3951,6 @@ void Ship::UpdateAirAndWaterPressure(
     }
 
     mSimulationEventHandler.OnCustomProbe("Total W Inside", totalWaterPost);
-
-
-    // TODOTEST
-    mSimulationEventHandler.OnCustomProbe("Water Splashes", waterSplashed);
 }
 
 void Ship::UpdateSinking(float /*currentSimulationTime*/)

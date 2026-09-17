@@ -3360,7 +3360,7 @@
 					- 1.0 when going up and then level;
 					- 0.0 when going down - more than x% of current avg level
 					- Then low-pass
-				= Idea 2: when a point encounters another point and they have opposite momenta - against each other, and point is free; 
+				+ Idea 2: when a point encounters another point and they have opposite momenta - against each other, and point is free; 
 				          or encounters a wall with momentum against it, and point is free.
 					+ Encounters: sizeable flow towards that point
 					! WINNER!
@@ -3372,14 +3372,17 @@
 						+ Option 1: another running avg: good: 100, 80
 						+ Option 2: a rate-based filter
 						+ Fix saturation: 
-					= New sound
+							+ [ship: no smoothing]
+							+ Swap @ SoundController: first DC, then mapping to volume
+								+ Otherwise high splash values are always saturated at 100.0 
+				= New sound
 
 				= Cleanup:
 					+ Re-enable OnPressureIntake notification @ UpdatePressureAndWaterInflow					
 					+ Ensure we notify for water splashes
 					+ If we don't nee anymore Ship::mWaterSplashedRunningAverage, nuke it
-					- Ship code
-						- Remove custom probe for water splashes
+					= Ship code
+						+ Remove custom probe for water splashes
 						- Remove debug vectors
 						- Cleanup
 					+ SoundController code
