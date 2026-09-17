@@ -104,6 +104,7 @@ void Ship::MoveBy(
             {
                 mPoints.SetVelocity(p, actualInertialVelocity);
                 mPoints.SetWaterVelocity(p, -actualInertialVelocity);
+                mPoints.SetAirPressureVelocity(p, -actualInertialVelocity);
             }
 
             // Zero-out already-existing forces
@@ -178,6 +179,7 @@ void Ship::RotateBy(
                 vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
                 mPoints.SetVelocity(p, linearInertialVelocity);
                 mPoints.SetWaterVelocity(p, -linearInertialVelocity);
+                mPoints.SetAirPressureVelocity(p, -linearInertialVelocity);
             }
 
             // Zero-out already-existing forces
@@ -822,6 +824,8 @@ void Ship::ApplyBlastAt(
         {
             float const pointRadiusLength = std::sqrt(squarePointDistance);
 
+            vec2f const blastDir = pointRadius.normalise_approx(pointRadiusLength);
+
             //
             // Apply blast force
             //
@@ -830,9 +834,19 @@ void Ship::ApplyBlastAt(
 
             mPoints.AddStaticForce(
                 pointIndex,
-                pointRadius.normalise(pointRadiusLength)
+                blastDir
                 * args.ForceMagnitude * mPoints.GetFoobarSensitivity(pointIndex)
                 / std::sqrt(std::max((pointRadiusLength * 0.4f) + 0.6f, 1.0f)));
+
+            // Update water velocity
+            mPoints.SetWaterVelocity(
+                pointIndex,
+                mPoints.GetWaterVelocity(pointIndex) + blastDir * 1000.0f); // Magic number
+
+            // Update air velocity
+            mPoints.SetAirPressureVelocity(
+                pointIndex,
+                mPoints.GetAirPressureVelocity(pointIndex) + blastDir * 1000.0f); // Magic number
         }
     }
 }

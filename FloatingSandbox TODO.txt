@@ -3390,12 +3390,12 @@
 				+ Setting for "Interior Water Sounds"
 					+ Android
 
-			- Imparted water and air velocities w/move tool - et other tools?
+			+ Imparted water and air velocities w/move tool
 
-			- Interact with air velocity/momenta @
-				- Blasts: impart
-					- Explosions (bombs, material)
-					- Blast Tool
+			= Interact with air velocity/momenta @
+				+ Blasts: impart
+					+ Explosions (bombs, material)
+					+ Blast Tool
 				- NPCs: feel
 					- Water: current we feel velocity; should be momenta?
 					- Do that PressureTest ship with tubes

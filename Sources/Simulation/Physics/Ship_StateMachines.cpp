@@ -167,7 +167,12 @@ void Ship::InternalUpdateExplosionStateMachine(
             // Update water velocity
             mPoints.SetWaterVelocity(
                 pointIndex,
-                mPoints.GetWaterVelocity(pointIndex) + blastDir * 100.0f * mPoints.GetWater(pointIndex)); // Magic number
+                mPoints.GetWaterVelocity(pointIndex) + blastDir * 1000.0f); // Magic number
+
+            // Update air velocity
+            mPoints.SetAirPressureVelocity(
+                pointIndex,
+                mPoints.GetAirPressureVelocity(pointIndex) + blastDir * 1000.0f); // Magic number
 
             if constexpr (DoDetachNearestPoint)
             {
