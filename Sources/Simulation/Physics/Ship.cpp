@@ -2733,15 +2733,21 @@ void Ship::UpdatePressureAndWaterInflow(
                             1.0f // Magic
                             * simulationParameters.AirIntakeAdjustment;
 
+                        // Calculate delta air - in effective terms (i.e. at current temperature)
                         float const deltaAirGained = Clamp(
                             externalAirPressure - internalAirPressure,
                             std::max(-deltaAirCap, -internalAirPressure), // Don't overdrain the point - if draining (<0)
                             deltaAirCap);
 
+                        assert(mPoints.GetAirPressure(pointIndex) >= 0.0f);
+
+                        // Add delta-air, after converting it from effective back to T0
+                        float const effectiveAirToAir = SimulationParameters::Temperature0 / mPoints.GetTemperature(pointIndex);
                         mPoints.SetAirPressure(
                             pointIndex,
-                            mPoints.GetAirPressure(pointIndex)
-                                + deltaAirGained * SimulationParameters::Temperature0 / mPoints.GetTemperature(pointIndex)); // Delta-air is from effective, convert back to T0
+                            std::max(
+                                mPoints.GetAirPressure(pointIndex) + deltaAirGained * effectiveAirToAir,
+                                0.0f));
 
                         // Update cumulative air *lost* when *underwater* - for air bubbles
                         if (pointDepth > 0.0f && deltaAirGained < 0.0f)
@@ -3801,8 +3807,10 @@ void Ship::UpdateAirAndWaterPressure(
                         // Air pressure moves from point to endpoint
                         //
 
+                        assert(newPointEffectiveAirPressureBufferData[pointIndex] >= 0.0f);
                         newPointEffectiveAirPressureBufferData[pointIndex] -= springOutboundQuantityOfAirPressure;
                         assert(newPointEffectiveAirPressureBufferData[pointIndex] >= 0.0f);
+                        assert(newPointEffectiveAirPressureBufferData[cs.OtherEndpointIndex] >= 0.0f);
                         newPointEffectiveAirPressureBufferData[cs.OtherEndpointIndex] += springOutboundQuantityOfAirPressure;
                         assert(newPointEffectiveAirPressureBufferData[cs.OtherEndpointIndex] >= 0.0f);
 
@@ -3872,7 +3880,9 @@ void Ship::UpdateAirAndWaterPressure(
                         sumInternalAir += oldPointEffectiveAirPressureBufferData[cs.OtherEndpointIndex] + oldPointWaterBufferData[cs.OtherEndpointIndex];
                     }
 
+                    assert(newPointEffectiveAirPressureBufferData[pointIndex] >= 0.0f);
                     newPointEffectiveAirPressureBufferData[pointIndex] = sumInternalAir / static_cast<float>(mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() + 1);
+                    assert(newPointEffectiveAirPressureBufferData[pointIndex] >= 0.0f);
                 }
             }
         }

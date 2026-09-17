@@ -3392,7 +3392,7 @@
 
 			+ Imparted water and air velocities w/move tool
 
-			- FIX: negative air
+			+ FIX: negative air
 
 			= Interact with air velocity/momenta @
 				+ Blasts: impart
