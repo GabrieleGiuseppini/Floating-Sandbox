@@ -3259,6 +3259,7 @@ void Ship::UpdateAirAndWaterPressure(
             // Not on Mobile (as it's a small feature that costs a lot!)
 #if !FS_IS_PLATFORM_MOBILE()
             // Kinetic energy lost at this point
+            // (more than kinetic energy, this has the dimensions of a momentum)
             float pointKineticEnergyLoss = 0.0f;
 #endif
 
@@ -3399,9 +3400,6 @@ void Ship::UpdateAirAndWaterPressure(
 
             float const pointFreeness = LinearStep(2.0f, 9.0f, oldPointEffectiveAirPressureBufferData[pointIndex]); // 0.0=underwater, 1.0=abovewater
             waterSplashed += pointKineticEnergyLoss * pointFreeness;
-
-            // TODOTEST
-            mDebugVectors.emplace_back(mPoints.GetPosition(pointIndex), oldPointWaterVelocityBufferData[pointIndex].normalise() * pointKineticEnergyLoss * pointFreeness);
 #endif
         }
 
