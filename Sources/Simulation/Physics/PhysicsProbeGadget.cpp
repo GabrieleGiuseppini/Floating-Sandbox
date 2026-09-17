@@ -36,8 +36,8 @@ PhysicsProbeGadget::PhysicsProbeGadget(
 bool PhysicsProbeGadget::Update(
     GameWallClock::time_point currentWallClockTime,
     float /*currentSimulationTime*/,
-    Storm::Parameters const & /*stormParameters*/,
-    SimulationParameters const & /*simulationParameters*/)
+    Storm::Parameters const & stormParameters,
+    SimulationParameters const & simulationParameters)
 {
     switch (mState)
     {
@@ -54,12 +54,33 @@ bool PhysicsProbeGadget::Update(
                 // Schedule next transition
                 mNextStateTransitionTimePoint = currentWallClockTime + PingOnInterval;
 
+                //
                 // Emit reading
+                //
+
+                vec2f const & position = mShipPoints.GetPosition(mPointIndex);
+
+                float const depth = mParentWorld.GetOceanSurface().GetDepth(position);
+
+                float const effectiveAirDensity = Formulae::CalculateAirDensity(
+                    simulationParameters.AirTemperature + stormParameters.AirTemperatureDelta,
+                    simulationParameters);
+
+                float const effectiveWaterDensity = Formulae::CalculateWaterDensity(
+                    simulationParameters.WaterTemperature,
+                    simulationParameters);
+
                 mSimulationEventHandler.OnPhysicsProbeReading(
                     mShipPoints.GetVelocity(mPointIndex),
                     mShipPoints.GetTemperature(mPointIndex),
-                    mParentWorld.GetOceanSurface().GetDepth(mShipPoints.GetPosition(mPointIndex)),
-                    mShipPoints.GetInternalPressure(mPointIndex));
+                    depth,
+                    Formulae::CalculateTotalExternalPressureAt(
+                        position.y,
+                        depth + position.y, // oceanSurfaceY
+                        effectiveAirDensity,
+                        effectiveWaterDensity,
+                        simulationParameters),
+                    Formulae::EquivalentWaterHeightToPressure(mShipPoints.GetTotalInternalPressureInEquivalentHeightUnits(mPointIndex)));
             }
 
             return true;

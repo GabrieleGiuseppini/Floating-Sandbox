@@ -1285,7 +1285,8 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
     vec2f constexpr PhysicsProbePanelSpeedBottomRight(101.0f, PhysicsProbePanelTextBottomY);
     vec2f constexpr PhysicsProbePanelTemperatureBottomRight(235.0f, PhysicsProbePanelTextBottomY);
     vec2f constexpr PhysicsProbePanelDepthBottomRight(371.0f, PhysicsProbePanelTextBottomY);
-    vec2f constexpr PhysicsProbePanelPressureBottomRight(506.0f, PhysicsProbePanelTextBottomY);
+    vec2f constexpr PhysicsProbePanelExternalPressureBottomRight(506.0f, PhysicsProbePanelTextBottomY);
+    vec2f constexpr PhysicsProbePanelInternalPressureBottomRight(641.0f, PhysicsProbePanelTextBottomY);
 
     for (auto const & textLine : context.TextLines)
     {
@@ -1356,15 +1357,28 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                 break;
             }
 
-            case NotificationAnchorPositionType::PhysicsProbeReadingPressure:
+            case NotificationAnchorPositionType::PhysicsProbeReadingExternalPressure:
             {
                 auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
                     textLine.Text.c_str(),
                     textLine.Text.length());
 
                 linePositionNdc += vec2f(
-                    -1.f + (PhysicsProbePanelPressureBottomRight.x - static_cast<float>(lineExtent.width)) * mScreenToNdcX,
-                    -1.f + PhysicsProbePanelPressureBottomRight.y * mScreenToNdcY);
+                    -1.f + (PhysicsProbePanelExternalPressureBottomRight.x - static_cast<float>(lineExtent.width)) * mScreenToNdcX,
+                    -1.f + PhysicsProbePanelExternalPressureBottomRight.y * mScreenToNdcY);
+
+                break;
+            }
+
+            case NotificationAnchorPositionType::PhysicsProbeReadingInternalPressure:
+            {
+                auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
+                    textLine.Text.c_str(),
+                    textLine.Text.length());
+
+                linePositionNdc += vec2f(
+                    -1.f + (PhysicsProbePanelInternalPressureBottomRight.x - static_cast<float>(lineExtent.width)) * mScreenToNdcX,
+                    -1.f + PhysicsProbePanelInternalPressureBottomRight.y * mScreenToNdcY);
 
                 break;
             }

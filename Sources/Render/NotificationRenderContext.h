@@ -54,7 +54,8 @@ private:
         BottomLeft,
         BottomRight,
         PhysicsProbeReadingDepth,
-        PhysicsProbeReadingPressure,
+        PhysicsProbeReadingExternalPressure,
+        PhysicsProbeReadingInternalPressure,
         PhysicsProbeReadingSpeed,
         PhysicsProbeReadingTemperature,
     };
@@ -173,7 +174,8 @@ public:
         std::string const & speed,
         std::string const & temperature,
         std::string const & depth,
-        std::string const & pressure)
+        std::string const & externalPressure,
+        std::string const & internalPressure)
     {
         auto & textNotificationContext = mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::PhysicsProbeReading)];
 
@@ -198,8 +200,14 @@ public:
             1.0f);
 
         textNotificationContext.TextLines.emplace_back(
-            pressure,
-            NotificationAnchorPositionType::PhysicsProbeReadingPressure,
+            externalPressure,
+            NotificationAnchorPositionType::PhysicsProbeReadingExternalPressure,
+            vec2f::zero(),
+            1.0f);
+
+        textNotificationContext.TextLines.emplace_back(
+            internalPressure,
+            NotificationAnchorPositionType::PhysicsProbeReadingInternalPressure,
             vec2f::zero(),
             1.0f);
 

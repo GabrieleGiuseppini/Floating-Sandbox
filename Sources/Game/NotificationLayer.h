@@ -200,7 +200,8 @@ private:
 		vec2f const & velocity,
 		float temperature,
 		float depth,
-		float pressure) override;
+		float externalPressure, // Pa
+		float internalPressure) override; // Pa
 
 private:
 
@@ -272,7 +273,8 @@ private:
 		float Speed;
 		float Temperature;
 		float Depth;
-		float Pressure;
+		float ExternalPressure;
+		float InternalPressure;
 	};
 
 	PhysicsProbeReading mPhysicsProbeReading; // Storage for raw reading values
@@ -282,17 +284,20 @@ private:
 		std::string Speed;
 		std::string Temperature;
 		std::string Depth;
-		std::string Pressure;
+		std::string ExternalPressure;
+		std::string InternalPressure;
 
 		PhysicsProbeReadingStrings(
 			std::string && speed,
 			std::string && temperature,
 			std::string && depth,
-			std::string && pressure)
+			std::string && externalPressure,
+			std::string && internalPressure)
 			: Speed(std::move(speed))
 			, Temperature(std::move(temperature))
 			, Depth(std::move(depth))
-			, Pressure(std::move(pressure))
+			, ExternalPressure(std::move(externalPressure))
+			, InternalPressure(std::move(internalPressure))
 		{}
 	};
 

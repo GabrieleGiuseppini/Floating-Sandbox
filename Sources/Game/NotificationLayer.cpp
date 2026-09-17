@@ -502,7 +502,8 @@ void NotificationLayer::RenderUpload(RenderContext & renderContext)
 				mPhysicsProbeReadingStrings->Speed,
 				mPhysicsProbeReadingStrings->Temperature,
 				mPhysicsProbeReadingStrings->Depth,
-				mPhysicsProbeReadingStrings->Pressure);
+				mPhysicsProbeReadingStrings->ExternalPressure,
+				mPhysicsProbeReadingStrings->InternalPressure);
 		}
 		else
 		{
@@ -601,12 +602,14 @@ void NotificationLayer::OnPhysicsProbeReading(
 	vec2f const & velocity,
 	float temperature,
 	float depth,
-	float pressure)
+	float externalPressure,
+	float internalPressure)
 {
 	mPhysicsProbeReading.Speed = velocity.length();
 	mPhysicsProbeReading.Temperature = temperature;
 	mPhysicsProbeReading.Depth = depth;
-	mPhysicsProbeReading.Pressure = pressure;
+	mPhysicsProbeReading.ExternalPressure = externalPressure;
+	mPhysicsProbeReading.InternalPressure = internalPressure;
 
 	RegeneratePhysicsProbeReadingStrings();
 }
@@ -645,7 +648,8 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 		float v{ 0.0f };
 		float t{ 0.0f };
 		float d{ 0.0f };
-		float p{ 0.0f };
+		float extP{ 0.0f };
+		float intP{ 0.0f };
 		switch (mDisplayUnitsSystem)
 		{
 			case UnitsSystem::SI_Celsius:
@@ -653,7 +657,8 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 				v = mPhysicsProbeReading.Speed;
 				t = mPhysicsProbeReading.Temperature - 273.15f;
 				d = mPhysicsProbeReading.Depth;
-				p = mPhysicsProbeReading.Pressure / SimulationParameters::AirPressureAtSeaLevel;
+				extP = mPhysicsProbeReading.ExternalPressure / SimulationParameters::AirPressureAtSeaLevel;
+				intP = mPhysicsProbeReading.InternalPressure / SimulationParameters::AirPressureAtSeaLevel;
 				break;
 			}
 
@@ -662,7 +667,8 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 				v = mPhysicsProbeReading.Speed;
 				t = mPhysicsProbeReading.Temperature;
 				d = mPhysicsProbeReading.Depth;
-				p = mPhysicsProbeReading.Pressure / SimulationParameters::AirPressureAtSeaLevel;
+				extP = mPhysicsProbeReading.ExternalPressure / SimulationParameters::AirPressureAtSeaLevel;
+				intP = mPhysicsProbeReading.InternalPressure / SimulationParameters::AirPressureAtSeaLevel;
 				break;
 			}
 
@@ -671,7 +677,8 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 				v = Conversions::MeterToFoot(mPhysicsProbeReading.Speed);
 				t = Conversions::CelsiusToFahrenheit(mPhysicsProbeReading.Temperature);
 				d = Conversions::MeterToFoot(mPhysicsProbeReading.Depth);
-				p = Conversions::PascalToPsi(mPhysicsProbeReading.Pressure);
+				extP = Conversions::PascalToPsi(mPhysicsProbeReading.ExternalPressure);
+				intP = Conversions::PascalToPsi(mPhysicsProbeReading.InternalPressure);
 				break;
 			}
 		}
@@ -705,15 +712,26 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 			ss
 				<< std::fixed
 				<< (mDisplayUnitsSystem == UnitsSystem::USCS ? std::setprecision(0) : std::setprecision(1))
-				<< p;
+				<< extP;
 		}
-		std::string pressureStr = ss.str();
+		std::string extPressureStr = ss.str();
+
+		ss.str("");
+
+		{
+			ss
+				<< std::fixed
+				<< (mDisplayUnitsSystem == UnitsSystem::USCS ? std::setprecision(0) : std::setprecision(1))
+				<< intP;
+		}
+		std::string intPressureStr = ss.str();
 
 		mPhysicsProbeReadingStrings.emplace(
 			std::move(speedStr),
 			std::move(temperatureStr),
 			std::move(depthStr),
-			std::move(pressureStr));
+			std::move(extPressureStr),
+			std::move(intPressureStr));
 
 		// Reading has to be uploaded
 		mArePhysicsProbeReadingStringsDirty = true;

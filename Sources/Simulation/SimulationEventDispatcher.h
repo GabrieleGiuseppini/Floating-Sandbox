@@ -231,7 +231,8 @@ public:
         vec2f const & velocity,
         float temperature,
         float depth,
-        float pressure) override
+        float externalPressure,
+        float internalPressure) override
     {
         for (auto sink : mGenericShipSinks)
         {
@@ -239,7 +240,8 @@ public:
                 velocity,
                 temperature,
                 depth,
-                pressure);
+                externalPressure,
+                internalPressure);
         }
     }
 

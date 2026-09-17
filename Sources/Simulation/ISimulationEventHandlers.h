@@ -149,7 +149,8 @@ struct IGenericShipEventHandler
         vec2f const & /*velocity*/,
         float /*temperature*/,
         float /*depth*/,
-        float /*pressure*/)
+        float /*externalPressure*/, // Pa
+        float /*internalPressure*/) // Pa
     {
         // Default-implemented
     }

@@ -3392,6 +3392,8 @@
 
 			+ Imparted water and air velocities w/move tool
 
+			- FIX: negative air
+
 			= Interact with air velocity/momenta @
 				+ Blasts: impart
 					+ Explosions (bombs, material)
@@ -3432,11 +3434,9 @@
 							+ Water w/inflatable balloon
 							+ Triton
 
-			- Physics Probe pressure reading: tank pressure, thus (effective) air pressure + water pressure 
-				- Conversion to Pa: use Formulae::EquivalentWaterHeightToPressure
-				- Also, consider reading EffectiveAirPressure (result of Diffusion step)
-					- Incorporate in other work item(*), via Points::GetTotalPressureIn...(.)
-				- Add external pressure to reading
+			+ Physics Probe pressure reading: tank pressure, thus (effective) air pressure + water pressure 
+				+ Conversion to Pa: use Formulae::EquivalentWaterHeightToPressure
+				+ Add external pressure to reading
 			+ Tools:
 				+ Flood, Internal Pressure:
 					+ First off, rename: "Internal Pressure" -> "(Inject) Air Pressure"
