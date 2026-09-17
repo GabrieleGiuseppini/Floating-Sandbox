@@ -2734,20 +2734,24 @@ void Ship::UpdatePressureAndWaterInflow(
                             * simulationParameters.AirIntakeAdjustment;
 
                         // Calculate delta air - in effective terms (i.e. at current temperature)
-                        float const deltaAirGained = Clamp(
+                        float const deltaEffectiveAirGained = Clamp(
                             externalAirPressure - internalAirPressure,
-                            std::max(-deltaAirCap, -internalAirPressure), // Don't overdrain the point - if draining (<0)
+                            -deltaAirCap,
                             deltaAirCap);
 
-                        assert(mPoints.GetAirPressure(pointIndex) >= 0.0f);
+                        // Calculate delta air - in air terms (i.e. at T0), ensuring we don't overdrain points
+                        float const oldAirPressure = mPoints.GetAirPressure(pointIndex);
+                        float const effectiveAirToAir = SimulationParameters::Temperature0 / mPoints.GetTemperature(pointIndex);
+                        float const deltaAirGained = std::max(
+                            deltaEffectiveAirGained * effectiveAirToAir,
+                            -oldAirPressure);
 
                         // Add delta-air, after converting it from effective back to T0
-                        float const effectiveAirToAir = SimulationParameters::Temperature0 / mPoints.GetTemperature(pointIndex);
+                        assert(mPoints.GetAirPressure(pointIndex) >= 0.0f);
                         mPoints.SetAirPressure(
                             pointIndex,
-                            std::max(
-                                mPoints.GetAirPressure(pointIndex) + deltaAirGained * effectiveAirToAir,
-                                0.0f));
+                            oldAirPressure + deltaAirGained);
+                        assert(mPoints.GetAirPressure(pointIndex) >= 0.0f);
 
                         // Update cumulative air *lost* when *underwater* - for air bubbles
                         if (pointDepth > 0.0f && deltaAirGained < 0.0f)
