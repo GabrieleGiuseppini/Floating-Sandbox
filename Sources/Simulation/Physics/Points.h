@@ -1782,15 +1782,21 @@ public:
         return copy;
     }
 
-    void ResetWaterMomenta()
+    vec2f const & GetWaterMomentum(ElementIndex pointElementIndex) const
     {
-        mWaterMomentumBuffer.fill(vec2f::zero());
+        return mWaterMomentumBuffer[pointElementIndex];
     }
 
     vec2f * GetWaterMomentumBufferAsVec2f()
     {
         return mWaterMomentumBuffer.data();
     }
+
+    void ResetWaterMomenta()
+    {
+        mWaterMomentumBuffer.fill(vec2f::zero());
+    }
+
 
     void UpdateWaterVelocitiesFromMomenta()
     {
@@ -1852,14 +1858,19 @@ public:
         return mAirPressureVelocityBuffer.data();
     }
 
-    void ResetAirPressureMomenta()
+    vec2f const & GetAirPressureMomentum(ElementIndex pointElementIndex) const
     {
-        mAirPressureMomentumBuffer.fill(vec2f::zero());
+        return mAirPressureMomentumBuffer[pointElementIndex];
     }
 
     vec2f * GetAirPressureMomentumBufferAsVec2f()
     {
         return mAirPressureMomentumBuffer.data();
+    }
+
+    void ResetAirPressureMomenta()
+    {
+        mAirPressureMomentumBuffer.fill(vec2f::zero());
     }
 
     // Note: sources from EffectiveAir buffer, so it must be "fresh" - i.e.
