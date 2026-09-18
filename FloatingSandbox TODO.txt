@@ -3555,6 +3555,12 @@
 					- Optimizing the whole
 
 			- Cleanup 1:
+				- Nuke InternalPressure concept
+					- Points
+					- Ship::EqualizeInternalPressure
+					- ...
+					- See if Formulae::CalculateVolumetricWaterPressure still needed
+
 				- "Air pressure" -> "Air"
 					- Points buffers and all its uses - search for AirPressure
 					- VectorFieldRenderModeType enum values
@@ -3567,6 +3573,9 @@
 							- VelocitiesFromMomenta
 					- Simulation changes velocities only
 						- For rendering, might also modify momenta (e.g. after blast), iff that happens after water diffusion step and before render
+				- Rename Ship::UpdatePressureAndWaterInflow to UpdateAirAndWaterInflow - also neighboring comments
+				- Comments at main Ship::Update
+					- And renames of PROFILE timing variables
 				- Comments
 				- Code
 					+ Back to single function - UpdateAirAndWaterPressure (rename it: air before water)
@@ -3575,23 +3584,9 @@
 						+ -> Android plan: all new settings
 					- Put back restrict pointers where needed
 					- Nuke [iff not used]: velocity damping
-				- Remove cross-cut readings -- LATER!
-					- Also: decide whether to keep it or not; if so, clean it up
-						- Readings struct
-
-
-			- Cleanup 2:
-				- Comments at main Ship::Update
-					- End renames of PROFILE timing variables
-				- Rename Ship::UpdatePressureAndWaterInflow to UpdateAirAndWaterInflow - also neighboring comments
-				- Nuke InternalPressure concept
-					- Points
-					- Ship::EqualizeInternalPressure
-					- ...
-					- See if Formulae::CalculateVolumetricWaterPressure still needed
-				- Nuke Ship::UpdateWaterVelocities
-				- Keep only winner of Ship::UpdatePressureAndWaterInflow
-				- Renames (Internal Pressure -> Air / Pressure):
+				+ Nuke Ship::UpdateWaterVelocities
+				+ Keep only winner of Ship::UpdatePressureAndWaterInflow
+				+ Renames (Internal Pressure -> Air / Pressure):
 					+ PhysicsData
 						+ PhysicsData struct
 						+ De/Serialization
@@ -3600,20 +3595,17 @@
 					+ DebugShipRenderModeType::InternalPressure
 						+ Shader
 					+ Internal pressure view: code and UI
-				- Rename: water diffusion speed -> water & air diffusion speed
-					- Material properties: code + json
-					- SimulationParameters setting
-					- UI
-						- Do we want to lock down diffusion speeds?
-						+ Whole section becomes Pressure?
 
-				- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
-					- Watchout: when we make copies of buffers we use mFloatBufferAllocator
-						- TODO: not anymore? We've cleaned up up, but double-check
-					- If we do:
-						- Add asserts at setters and getters
-						- Nuke all commented-out sanity lines for ephemeral creation functions
-						- ResetEffectiveAirPressure: no need for size arg
+
+			- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
+				- Watchout: when we make copies of buffers we use mFloatBufferAllocator
+					- TODO: not anymore? We've cleaned up up, but double-check
+				- If we do:
+					- Add asserts at setters and getters
+					- Nuke all commented-out sanity lines for ephemeral creation functions
+					- ResetEffectiveAirPressure: no need for size arg
+
+			- Comment-out cross-cut readings
 
 			- Optimizations:
 				- UpdateWaterAndAirPressure:
