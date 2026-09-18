@@ -434,7 +434,7 @@ void Npcs::UpdateNpcPhysics(
 
                             if (!homeShip.GetPoints().GetIsHull(pointElementIndex))
                             {
-                                totalMeshAirMomentum += homeShip.GetPoints().GetAirPressureMomentum(pointElementIndex); // ...but the same is not true for air
+                                totalMeshAirMomentum += homeShip.GetPoints().GetAirMomentum(pointElementIndex); // ...but the same is not true for air
 
                                 meshNonHullPointCount += 1.0f;
                             }

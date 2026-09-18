@@ -3554,32 +3554,30 @@
 					- New pumps and switches
 					- Optimizing the whole
 
-			- Cleanup 1:
-				- Nuke InternalPressure concept
-					- Points
-					- Ship::EqualizeInternalPressure
-					- ...
-					- See if Formulae::CalculateVolumetricWaterPressure still needed
-
-				- "Air pressure" -> "Air"
-					- Points buffers and all its uses - search for AirPressure
-					- VectorFieldRenderModeType enum values
-						+ SettingsDialog labels
+			= Cleanup 1:
+				+ Nuke InternalPressure concept
+					+ Points
+					+ Ship::EqualizeInternalPressure
+					+ See if Formulae::CalculateVolumetricWaterPressure still needed
+				+ "Air pressure" -> "Air"
+					+ Points buffers and all its uses - search for AirPressure
+					+ VectorFieldRenderMode enum value
+						+ SettingsDialog label
 					+ Also @ vector field rendering enum & shaders, @ settings dialog
-				- Momenta spirit (add comments to Points.h):
-					- Points::Momenta only for rendering; byproduct of diffusion step
-						- Only exposed accessors:
+				+ Momenta spirit (add comments to Points.h):
+					+ Points::Momenta only for rendering; byproduct of diffusion step
+						+ Only exposed accessors:
 							+ Reset
-							- VelocitiesFromMomenta
-					- Simulation changes velocities only
-						- For rendering, might also modify momenta (e.g. after blast), iff that happens after water diffusion step and before render
-				- Ship::UpdateAirAndWaterInflow:
-					- Rename Ship::UpdatePressureAndWaterInflow to UpdateAirAndWaterInflow - also neighboring comments
-					- Comments
-					- Code
-				- Ship::Update:
-					- Comments 
-					- Renames of PROFILE timing variables
+							+ VelocitiesFromMomenta
+					+ Simulation changes velocities only
+						+ For rendering, might also modify momenta (e.g. after blast), iff that happens after water diffusion step and before render
+				+ Ship::UpdateAirAndWaterInflow:
+					+ Rename Ship::UpdatePressureAndWaterInflow to UpdateAirAndWaterInflow - also neighboring comments
+					+ Comments
+					+ Code
+				+ Ship::Update:
+					+ Comments 
+					+ Renames of PROFILE timing variables
 				- Ship::UpdateAirAndWaterPressure:
 					- Comments
 					- Code
@@ -3620,7 +3618,14 @@
 				- Prep:
 					- Profile with released version; note both InternalPressure and UpdateWaterVelocities
 				- UpdateWaterAndAirPressure:
+					- Codework
+
 					- See if makes sense to skip water step for hull points
+					- See if these Points buffers make sense, instead of taking material:
+						- mMaterialWaterIntakeBuffer
+						- mMaterialWaterRestitutionBuffer
+						- mMaterialWaterDiffusionSpeedBuffer
+
 				- Rebalance thread tasks
 				- ApplyStaticPressureForces:
 					- Pre-multiply pressure conversion factors into forceNormalizationFactor

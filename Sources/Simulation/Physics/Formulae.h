@@ -42,16 +42,6 @@ public:
             * simulationParameters.WaterDensityAdjustment;
     }
 
-    // Calculates the ideal pressure at the bottom of 1 cubic meter of water at this temperature,
-    // in the void
-    static float CalculateVolumetricWaterPressure(
-        float waterTemperature,
-        SimulationParameters const & simulationParameters)
-    {
-        return CalculateWaterDensity(waterTemperature, simulationParameters)
-            * SimulationParameters::GravityMagnitude;
-    }
-
     // Calculates the pressure exherted by the 1m2 column of air at the given y, in Pa.
     // Ignores ocean surface
     static float CalculateAirColumnPressureAt(

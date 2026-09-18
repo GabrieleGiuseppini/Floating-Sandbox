@@ -746,16 +746,14 @@ private:
 
     void TrimForWorldBounds(SimulationParameters const & simulationParameters);
 
-    // Pressure and water
+    // Pressure, air and water
 
-    void UpdatePressureAndWaterInflow(
+    void UpdateAirAndWaterInflow(
         float effectiveAirDensity,
         float effectiveWaterDensity,
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
         SimulationParameters const & simulationParameters);
-
-    void EqualizeInternalPressure(SimulationParameters const & simulationParameters);
 
     void UpdateAirAndWaterPressure(
         float effectiveAirDensity,

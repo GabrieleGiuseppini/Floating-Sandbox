@@ -104,7 +104,7 @@ void Ship::MoveBy(
             {
                 mPoints.SetVelocity(p, actualInertialVelocity);
                 mPoints.SetWaterVelocity(p, -actualInertialVelocity);
-                mPoints.SetAirPressureVelocity(p, -actualInertialVelocity);
+                mPoints.SetAirVelocity(p, -actualInertialVelocity);
             }
 
             // Zero-out already-existing forces
@@ -179,7 +179,7 @@ void Ship::RotateBy(
                 vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
                 mPoints.SetVelocity(p, linearInertialVelocity);
                 mPoints.SetWaterVelocity(p, -linearInertialVelocity);
-                mPoints.SetAirPressureVelocity(p, -linearInertialVelocity);
+                mPoints.SetAirVelocity(p, -linearInertialVelocity);
             }
 
             // Zero-out already-existing forces
@@ -844,9 +844,9 @@ void Ship::ApplyBlastAt(
                 mPoints.GetWaterVelocity(pointIndex) + blastDir * 1000.0f); // Magic number
 
             // Update air velocity
-            mPoints.SetAirPressureVelocity(
+            mPoints.SetAirVelocity(
                 pointIndex,
-                mPoints.GetAirPressureVelocity(pointIndex) + blastDir * 1000.0f); // Magic number
+                mPoints.GetAirVelocity(pointIndex) + blastDir * 1000.0f); // Magic number
         }
     }
 }
@@ -1361,7 +1361,7 @@ std::optional<ToolApplicationLocus> Ship::InjectAirAt(
 
     auto const injectAir = [&](ElementIndex pointIndex, float dFactor)
         {
-            float const a = mPoints.GetAirPressure(pointIndex);
+            float const a = mPoints.GetAir(pointIndex);
 
             float actualQuantityOfAirDelta;
             if (flowMultiplier >= 0.0f)
@@ -1379,7 +1379,7 @@ std::optional<ToolApplicationLocus> Ship::InjectAirAt(
                     a) * dFactor;
             }
 
-            mPoints.SetAirPressure(
+            mPoints.SetAir(
                 pointIndex,
                 a + actualQuantityOfAirDelta); // No need to convert to T0, quantities here are in T0 terms
         };

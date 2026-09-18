@@ -6250,7 +6250,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
                     case 4:
                     {
-                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointAirPressureMomentum);
+                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointAirMomentum);
                         break;
                     }
 
@@ -7399,7 +7399,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
 
-        case VectorFieldRenderModeType::PointAirPressureMomentum:
+        case VectorFieldRenderModeType::PointAirMomentum:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(4);
             break;
