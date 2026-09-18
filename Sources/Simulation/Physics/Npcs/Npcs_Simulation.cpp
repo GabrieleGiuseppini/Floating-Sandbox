@@ -1938,15 +1938,6 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                 vec2f const waterVelocityDir = waterVelocity.normalise_approx(waterVelocityMagnitude);
                 float const dampedWaterVelocityMagnitude = Clamp(waterVelocityMagnitude - 0.0f, 0.0f, 4.0f);
 
-                // TODOTEST
-                static float TODO = 0.0f;
-                if (waterVelocityMagnitude > TODO)
-                {
-                    LogMessage("TODO: waterMag=", waterVelocityMagnitude);
-                    //TODO = airVelocityMagnitude;
-                }
-                LogMessage("TODO: waterVelocityMagnitude=", waterVelocityMagnitude);
-
                 float constexpr MaxParticleVelocityForApplyingWaterVelocity = 15.0f;
 
                 float velocityIncrement;

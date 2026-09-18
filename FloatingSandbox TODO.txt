@@ -3398,8 +3398,52 @@
 				+ Blasts: impart
 					+ Explosions (bombs, material)
 					+ Blast Tool
-				- NPCs: feel
-					- Water: current we feel velocity; should be momenta?
+				= NPCs: feel
+					+ Test cur first
+					+ Change "waterVelocity" to "fluidMomenta": members, funcs, and locals
+					+ FIX: air pressuring against hull kills the whole experience, find a fix for it
+						! Reason: outbound vel (hitting wall) is very small, as it's due only to vel (no delta pressure)
+							! This makes outbound weight also very small
+							! Bounce momentum is then basically square small, as it's weight*normFactor*velocity
+						+ FIX: relVelocity against hull is wrong: we use zero vel from hull, but then divide by sume of airs, and hull has air
+							+ Fix at Air
+								+ Fix works, but doesn't solve the problem
+							+ Assert at Water
+							+ Test shoot
+						X Opt 1:  X Can't work: you can't decompose vel like this
+							X @ Air:
+								- Replace "initializing" remaining momentum with:
+									- Add pointRemainingAir (calc'd like now) * totalFreeVelocity
+										- totalFreeVelocity: sum of oldPointAirPressureVelocityBufferData.dot(springDir) for each non-hull spring
+											- Calc @ phase I of air loop, since we calc pointAirPressureVelocityAlongSpring there
+										! @ bounces, we'll add missing velocities back, but following bounce physics (i.e. based off outgoing)
+
+							X If ok: do also @ Water
+							+ Remove freeVel
+
+						+ Opt 2: At end, do another round and remove mom components against springs leading to hull
+							+ @ Air
+							+ @ Water
+								+ REDO BOTH: needs to be done after all incoming are also done
+							+ Shoot test: OK
+
+					+ Lower impact of air momentum on NPC
+					+ FIX: at bottom , tank with water, NPCs still get trapped
+						X A: Try bouncing water
+							+ Do 0.9
+							X Test bottom layer momenta: doesn't change much, layer above still pushes
+						+ B: Ignore small momenta; find min momenta
+							+ Bottom water mon is 5.0; wave running is 6-15-100
+							+ Mesh vel: also 4/5; wave running is also 6-12
+							+ Re-bracket value
+						+ C: lower all verticals, also down
+					+ See if can simplify water, given that there's no eddies
+						+ Verticality adjustment: make it abs (both up and down)
+							+ See if can avoid smoothstep
+						X Do we need orthoDamper adjustment?
+						X Can we use same simpler velocityIncrement calc'n as air?
+					- Cleanup NPCs (log messages)
+					- Remove hack at Points::QueryAt
 					- Do that PressureTest ship with tubes
 				- Wind tool: impart
 				- etc
