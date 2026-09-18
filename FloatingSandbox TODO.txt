@@ -3677,6 +3677,8 @@
 						- Nuke all commented-out sanity lines for ephemeral creation functions
 						- ResetEffectiveAirPressure: no need for size arg
 
+			- Check: heating and cooling hole doesn't make water flow in anymore
+				
 			- Calibration for # of water iters
 				- -> Android plan
 
