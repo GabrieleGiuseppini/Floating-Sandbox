@@ -3394,11 +3394,11 @@
 
 			+ FIX: negative air
 
-			= Interact with air velocity/momenta @
+			+ Interact with air velocity/momenta @
 				+ Blasts: impart
 					+ Explosions (bombs, material)
 					+ Blast Tool
-				= NPCs: feel
+				+ NPCs: feel
 					+ Test cur first
 					+ Change "waterVelocity" to "fluidMomenta": members, funcs, and locals
 					+ FIX: air pressuring against hull kills the whole experience, find a fix for it
@@ -3444,10 +3444,8 @@
 						X Can we use same simpler velocityIncrement calc'n as air?
 					+ Do that PressureTest ship with tubes
 						+ Works: 20 atm, bounce_air=1.0
-					- Cleanup NPCs (log messages)
+					+ Cleanup NPCs (log messages)
 					+ Remove hack at Points::QueryAt					
-				- Wind tool: impart
-				- etc
 			+ Finalize unit of AirPressure
 				+ Also @ Points buffer comment
 			+ Air & Water Pressure <-> forces on "walls"
@@ -3538,22 +3536,23 @@
 				+ SettingsDialog
 				+ ShipRenderContext is ready, as long as UploadStart gives correct count
 
-
-
-			- Tests:
-				- Success criteria:
-					- Water level stops in bell
-						- At right height
-					- Water level reaching ocean 
-					- Water level obliqueness (was fixed with upness being n.y instead of being step-like)
-					- Water interface ugly flatness
-						- Depends on step: the steeper and chaotic, the more lively the interface is
-					- Water in ropes
-				- Flotsam: water intake
-				- Rain: water intake
-				- Cloth, ropes: intake, retention (of water and air)
-				- Kinetic energy->Splash sounds
-				- Ingress/Egress Rush sounds
+			- PR:
+				- What works already?
+					- Water and air intake and outtake
+					- Water/Air equilibrium physics
+					- New air bubbles
+					- "Classic" water pumps
+					- Rain flooding ship
+					- Redesigned Flood and InjectPressure (now "InjectAir") tools
+					- Internal pressure against the ship walls (read: inflatable balloons) and balancing "depth" (hydrostatic) pressure (read: implosions)
+					- Temperature affecting air pressure
+					- Physics Probe tool showing total air+water pressure
+					- NPCs affected by air and water
+					- Blasts affecting air
+					- Water splash sounds when water enters and moves within the ship (read: it's a cacophony now)
+				- What still needs to be worked on?					
+					- New pumps and switches
+					- Optimizing the whole
 
 			- Cleanup 1:
 				- "Air pressure" -> "Air"
@@ -3629,6 +3628,21 @@
 
 			- Calibration for # of water iters
 				- -> Android plan
+
+			- Tests:
+				- Success criteria:
+					- Water level stops in bell
+						- At right height
+					- Water level reaching ocean 
+					- Water level obliqueness (was fixed with upness being n.y instead of being step-like)
+					- Water interface ugly flatness
+						- Depends on step size: the steeper and chaotic, the more lively the interface is
+					- Water in ropes
+				- Flotsam: water intake
+				- Rain: water intake
+				- Cloth, ropes: intake, retention (of water and air)
+				- Kinetic energy->Splash sounds
+				- Ingress/Egress Rush sounds
 
 			- Lower bulkheads @ default Titanic & make air escape, as it now takes forever
 

@@ -87,7 +87,7 @@ SimulationParameters::SimulationParameters()
     , LightningBlastRadius(8.0f)
     , LightningBlastHeat(4000.0f)
     , DoRainWithStorm(true)
-    , RainFloodAdjustment(10000.0f) // Partially visible after ~1m
+    , RainFloodAdjustment(1000.0f) // Partially visible after ~1m
     // Heat and combustion
     , AirTemperature(298.15f) // 25C
     , WaterTemperature(288.15f) // 15C

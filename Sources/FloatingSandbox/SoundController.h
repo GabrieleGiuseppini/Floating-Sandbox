@@ -580,6 +580,8 @@ private:
                 return 45;
             case SoundType::Stress:
                 return 30;
+            case SoundType::Impact:
+                return 20;
             case SoundType::TerrainAdjust:
             case SoundType::ThanosSnap:
             case SoundType::Scrub:
@@ -603,6 +605,7 @@ private:
             case SoundType::WaterDisplacementWave:
             case SoundType::Break:
             case SoundType::Destroy:
+            case SoundType::Impact:
             case SoundType::LightFlicker:
             case SoundType::RepairSpring:
             case SoundType::RepairTriangle:
