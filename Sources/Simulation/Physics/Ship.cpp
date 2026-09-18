@@ -3415,6 +3415,59 @@ void Ship::UpdateAirAndWaterPressure(
         }
 
         //
+        // Zero out momenta against hull
+        //
+
+        for (auto const s : mSprings)
+        {
+            if (mSprings.GetWaterPermeability(s) == 0.0f)
+            {
+                assert(mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)) || mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)));
+
+                if (!mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)))
+                {
+                    assert(mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)));
+
+                    // A not hull => against hull
+
+                    // Normalized spring vector, oriented point -> other endpoint (hull)
+                    vec2f const springNormalizedVector = mSprings.GetCachedVectorialNormalizedVector(s);
+
+                    float const momentumAlongSpring = newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)].dot(springNormalizedVector);
+
+                    auto const todoOldMom = newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)];
+
+                    newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f);
+
+                    if (mSprings.GetEndpointAIndex(s) == mLastQueriedPointIndex)
+                    {
+                        LogMessage("  AMomCorrection: dir=", springNormalizedVector, " mom: ", todoOldMom, " -> ", newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)]);
+                    }
+                }
+                else if (!mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)))
+                {
+                    assert(mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)));
+
+                    // B not hull => against hull
+
+                    // Normalized spring vector, oriented point -> other endpoint (hull)
+                    vec2f const springNormalizedVector = -mSprings.GetCachedVectorialNormalizedVector(s);
+
+                    float const momentumAlongSpring = newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)].dot(springNormalizedVector);
+
+                    auto const todoOldMom = newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)];
+
+                    newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f);
+
+                    if (mSprings.GetEndpointBIndex(s) == mLastQueriedPointIndex)
+                    {
+                        LogMessage("  AMomCorrection: dir=", springNormalizedVector, " mom: ", todoOldMom, " -> ", newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)]);
+                    }
+                }
+            }
+        }
+
+        //
         // Transform momenta into velocities
         //
 
@@ -3520,6 +3573,10 @@ void Ship::UpdateAirAndWaterPressure(
 
         // Prepare result buffers
         float * restrict newPointEffectiveAirPressureBufferData = mPoints.GetEffectiveAirPressureBufferAsFloat();
+
+        //
+        // Loop for all points
+        //
 
         // TODOTEST
         if (mLastQueriedPointIndex != NoneElementIndex)
@@ -3890,6 +3947,59 @@ void Ship::UpdateAirAndWaterPressure(
         if (mLastQueriedPointIndex != NoneElementIndex)
         {
             LogMessage("Total AOut=", todoTotalAOutAtQueriedPoint, " AIn=", todoTotalAInAtQueriedPoint, " ANetOut=", (todoTotalAOutAtQueriedPoint - todoTotalAInAtQueriedPoint));
+        }
+
+        //
+        // Zero out momenta against hull
+        //
+
+        for (auto const s : mSprings)
+        {
+            if (mSprings.GetWaterPermeability(s) == 0.0f)
+            {
+                assert(mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)) || mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)));
+
+                if (!mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)))
+                {
+                    assert(mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)));
+
+                    // A not hull => against hull
+
+                    // Normalized spring vector, oriented point -> other endpoint (hull)
+                    vec2f const springNormalizedVector = mSprings.GetCachedVectorialNormalizedVector(s);
+
+                    float const momentumAlongSpring = newPointAirPressureMomentumBufferData[mSprings.GetEndpointAIndex(s)].dot(springNormalizedVector);
+
+                    auto const todoOldMom = newPointAirPressureMomentumBufferData[mSprings.GetEndpointAIndex(s)];
+
+                    newPointAirPressureMomentumBufferData[mSprings.GetEndpointAIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f);
+
+                    if (mSprings.GetEndpointAIndex(s) == mLastQueriedPointIndex)
+                    {
+                        LogMessage("  AMomCorrection: dir=", springNormalizedVector, " mom: ", todoOldMom, " -> ", newPointAirPressureMomentumBufferData[mSprings.GetEndpointAIndex(s)]);
+                    }
+                }
+                else if (!mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)))
+                {
+                    assert(mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)));
+
+                    // B not hull => against hull
+
+                    // Normalized spring vector, oriented point -> other endpoint (hull)
+                    vec2f const springNormalizedVector = -mSprings.GetCachedVectorialNormalizedVector(s);
+
+                    float const momentumAlongSpring = newPointAirPressureMomentumBufferData[mSprings.GetEndpointBIndex(s)].dot(springNormalizedVector);
+
+                    auto const todoOldMom = newPointAirPressureMomentumBufferData[mSprings.GetEndpointBIndex(s)];
+
+                    newPointAirPressureMomentumBufferData[mSprings.GetEndpointBIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f);
+
+                    if (mSprings.GetEndpointBIndex(s) == mLastQueriedPointIndex)
+                    {
+                        LogMessage("  AMomCorrection: dir=", springNormalizedVector, " mom: ", todoOldMom, " -> ", newPointAirPressureMomentumBufferData[mSprings.GetEndpointBIndex(s)]);
+                    }
+                }
+            }
         }
 
         //
