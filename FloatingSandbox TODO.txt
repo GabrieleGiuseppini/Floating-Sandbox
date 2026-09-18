@@ -3601,14 +3601,57 @@
 						+ Shader
 					+ Internal pressure view: code and UI
 
-			- Comment-out Ship log lines
-			- Comment-out Ship::UpdateAirAndWaterPressure:
-				- Total Water and Air readings
-				- Cross-cut readings
+			+ Comment-out Ship log lines
+			+ Comment-out Ship::UpdateAirAndWaterPressure:
+				+ Total Water and Air readings
+				+ Cross-cut readings
 
-			- Optimizations:
-				- Prep:
-					- Profile with released version; note both InternalPressure and UpdateWaterVelocities
+			= Optimizations:
+				+ Prep: profile with released version
+					- Update: 2.38-2.51ms
+					- Profiling Results: (30s, selection between 10 and 30)
+						- EqualizeInternalPressure: 2.36%
+						- ApplyStaticPressureForces: 0.34%
+						- World::Update: 35.73%
+							- Ship::Update: 29.08%
+								- UpdatePressureAndWaterInflow: 0.18%
+								- UpdateWaterVelocities: 6.46%
+					- FS_PROFILE:
+						20:58:33.730535:*** Ship update: springRelax=1.122 updateForStress=0.07 decayPoints=0.002 worldForces=0.198 waterDynamics=0.013 parallel1=0.513 (waterDiffusion=0.492 equalizeInternalPressure=0.131 staticPressure=0.012 heatPropagation=0.171) lightDiffusion=0.065 combustion=0.001 updateSpringParameters=0.003 ephemeralParticles=0.053 total: 2.149ms
+						20:58:34.382858:*** Ship update: springRelax=1.08 updateForStress=0.063 decayPoints=0.002 worldForces=0.186 waterDynamics=0.01 parallel1=0.464 (waterDiffusion=0.446 equalizeInternalPressure=0.144 staticPressure=0.012 heatPropagation=0.158) lightDiffusion=0.065 combustion=0.001 updateSpringParameters=0.005 ephemeralParticles=0.04 total: 2.002ms
+						20:58:35.069712:*** Ship update: springRelax=1.019 updateForStress=0.062 decayPoints=0.002 worldForces=0.182 waterDynamics=0.009 parallel1=0.453 (waterDiffusion=0.437 equalizeInternalPressure=0.158 staticPressure=0.017 heatPropagation=0.171) lightDiffusion=0.065 combustion=0.002 updateSpringParameters=0.004 ephemeralParticles=0.049 total: 1.936ms
+						20:58:35.700153:*** Ship update: springRelax=1.058 updateForStress=0.069 decayPoints=0.002 worldForces=0.185 waterDynamics=0.009 parallel1=0.43 (waterDiffusion=0.413 equalizeInternalPressure=0.149 staticPressure=0.013 heatPropagation=0.164) lightDiffusion=0.066 combustion=0.001 updateSpringParameters=0.004 ephemeralParticles=0.047 total: 1.963ms
+						20:58:36.347486:*** Ship update: springRelax=1.056 updateForStress=0.064 decayPoints=0.005 worldForces=0.184 waterDynamics=0.01 parallel1=0.428 (waterDiffusion=0.409 equalizeInternalPressure=0.154 staticPressure=0.01 heatPropagation=0.163) lightDiffusion=0.064 combustion=0.001 updateSpringParameters=0.003 ephemeralParticles=0.05 total: 1.956ms
+						20:58:36.971883:*** Ship update: springRelax=1.171 updateForStress=0.069 decayPoints=0.002 worldForces=0.186 waterDynamics=0.01 parallel1=0.459 (waterDiffusion=0.438 equalizeInternalPressure=0.167 staticPressure=0.01 heatPropagation=0.172) lightDiffusion=0.06 combustion=0.001 updateSpringParameters=0.004 ephemeralParticles=0.051 total: 2.101ms
+						20:58:37.615292:*** Ship update: springRelax=1.212 updateForStress=0.063 decayPoints=0.002 worldForces=0.185 waterDynamics=0.009 parallel1=0.432 (waterDiffusion=0.413 equalizeInternalPressure=0.152 staticPressure=0.012 heatPropagation=0.17) lightDiffusion=0.057 combustion=0.001 updateSpringParameters=0.004 ephemeralParticles=0.047 total: 2.095ms
+						20:58:38.291335:*** Ship update: springRelax=1.085 updateForStress=0.069 decayPoints=0.002 worldForces=0.186 waterDynamics=0.01 parallel1=0.449 (waterDiffusion=0.426 equalizeInternalPressure=0.172 staticPressure=0.017 heatPropagation=0.164) lightDiffusion=0.071 combustion=0.001 updateSpringParameters=0.004 ephemeralParticles=0.055 total: 2.029ms
+						20:58:38.923622:*** Ship update: springRelax=1.094 updateForStress=0.067 decayPoints=0.003 worldForces=0.185 waterDynamics=0.009 parallel1=0.439 (waterDiffusion=0.422 equalizeInternalPressure=0.163 staticPressure=0.021 heatPropagation=0.172) lightDiffusion=0.062 combustion=0.001 updateSpringParameters=0.003 ephemeralParticles=0.047 total: 2.003ms
+						20:58:39.559710:*** Ship update: springRelax=1.059 updateForStress=0.06 decayPoints=0.002 worldForces=0.178 waterDynamics=0.01 parallel1=0.445 (waterDiffusion=0.425 equalizeInternalPressure=0.165 staticPressure=0.037 heatPropagation=0.165) lightDiffusion=0.055 combustion=0.001 updateSpringParameters=0.003 ephemeralParticles=0.043 total: 1.94ms
+
+				+ Profile with now
+					- Update: 3.77-3.90ms
+					- Profiling Results: (30s, selection between 10 and 30)
+						- World::Update: 43.61%
+							- Ship::Update: 38.99%
+								- UpdateAirAndWaterInflow: 0.13%
+								- UpdateAirAndWaterPressure: 18.33%
+								- ApplyStaticPressureForces: 1.95%
+					- FS_PROFILE:
+						21:22:02.752731:*** Ship update: springRelax=1.126 updateForStress=0.07 decayPoints=0.002 worldForces=0.2 airAndWaterInflow = 0.012 parallel1=2.19 (airAndWaterDiffusion=1.888 staticPressure=0.112 heatPropagation=0.167) lightDiffusion=0.067 combustion=0.002 updateSpringParameters=0.003 ephemeralParticles=0.044 total: 3.856ms
+						21:22:03.393915:*** Ship update: springRelax=1.067 updateForStress=0.064 decayPoints=0.004 worldForces=0.193 airAndWaterInflow = 0.011 parallel1=2.118 (airAndWaterDiffusion=1.76 staticPressure=0.188 heatPropagation=0.149) lightDiffusion=0.067 combustion=0.001 updateSpringParameters=0.004 ephemeralParticles=0.044 total: 3.667ms
+						21:22:04.045254:*** Ship update: springRelax=1.122 updateForStress=0.066 decayPoints=0.002 worldForces=0.19 airAndWaterInflow = 0.01 parallel1=2.168 (airAndWaterDiffusion=1.737 staticPressure=0.254 heatPropagation=0.158) lightDiffusion=0.078 combustion=0.001 updateSpringParameters=0.003 ephemeralParticles=0.051 total: 3.787ms
+						21:22:04.686494:*** Ship update: springRelax=1.03 updateForStress=0.068 decayPoints=0.002 worldForces=0.187 airAndWaterInflow = 0.012 parallel1=2.108 (airAndWaterDiffusion=1.697 staticPressure=0.229 heatPropagation=0.16) lightDiffusion=0.071 combustion=0.001 updateSpringParameters=0.006 ephemeralParticles=0.054 total: 3.638ms
+						21:22:05.335120:*** Ship update: springRelax=1.098 updateForStress=0.075 decayPoints=0.003 worldForces=0.186 airAndWaterInflow = 0.01 parallel1=2.147 (airAndWaterDiffusion=1.687 staticPressure=0.264 heatPropagation=0.177) lightDiffusion=0.067 combustion=0.002 updateSpringParameters=0.003 ephemeralParticles=0.051 total: 3.738ms
+						21:22:05.974393:*** Ship update: springRelax=1.05 updateForStress=0.066 decayPoints=0.002 worldForces=0.19 airAndWaterInflow = 0.011 parallel1=2.077 (airAndWaterDiffusion=1.694 staticPressure=0.2 heatPropagation=0.162) lightDiffusion=0.067 combustion=0.001 updateSpringParameters=0.006 ephemeralParticles=0.049 total: 3.615ms
+						21:22:06.605924:*** Ship update: springRelax=1.077 updateForStress=0.068 decayPoints=0.002 worldForces=0.198 airAndWaterInflow = 0.012 parallel1=2.11 (airAndWaterDiffusion=1.765 staticPressure=0.162 heatPropagation=0.161) lightDiffusion=0.066 combustion=0.001 updateSpringParameters=0.004 ephemeralParticles=0.046 total: 3.68ms
+						21:22:07.246342:*** Ship update: springRelax=0.983 updateForStress=0.065 decayPoints=0.002 worldForces=0.181 airAndWaterInflow = 0.01 parallel1=2.069 (airAndWaterDiffusion=1.673 staticPressure=0.228 heatPropagation=0.149) lightDiffusion=0.067 combustion=0.001 updateSpringParameters=0.004 ephemeralParticles=0.041 total: 3.517ms
+						21:22:07.871807:*** Ship update: springRelax=1.054 updateForStress=0.07 decayPoints=0.002 worldForces=0.19 airAndWaterInflow = 0.011 parallel1=2.023 (airAndWaterDiffusion=1.687 staticPressure=0.161 heatPropagation=0.154) lightDiffusion=0.069 combustion=0.001 updateSpringParameters=0.003 ephemeralParticles=0.045 total: 3.554ms
+						21:22:08.515540:*** Ship update: springRelax=1.106 updateForStress=0.061 decayPoints=0.002 worldForces=0.18 airAndWaterInflow = 0.01 parallel1=2.044 (airAndWaterDiffusion=1.681 staticPressure=0.197 heatPropagation=0.148) lightDiffusion=0.069 combustion=0.001 updateSpringParameters=0.004 ephemeralParticles=0.048 total: 3.614ms
+
+
+				- Check ApplyStaticPressureForces: what changed?
+					- Possibly net force complexity? Check values in both versions: 0.03/0.04 -> 0.1/0.4
+
 				- UpdateWaterAndAirPressure:
 					- Codework
 					- See if makes sense to skip water step for hull points
