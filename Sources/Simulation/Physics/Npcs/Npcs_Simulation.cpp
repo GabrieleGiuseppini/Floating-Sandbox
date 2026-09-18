@@ -1993,7 +1993,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                 float const airVelocityMagnitude = airVelocity.length();
                 vec2f const airVelocityDir = airVelocity.normalise_approx(airVelocityMagnitude);
                 // Remove background air velocity noise, and clamp to a max
-                float const dampedAirVelocityMagnitude = Clamp(airVelocityMagnitude - 4.0f, 0.0f, 40.0f);
+                float const dampedAirVelocityMagnitude = Clamp(airVelocityMagnitude - 4.0f, 0.0f, 30.0f);
 
                 float velocityIncrement;
                 float const particleVelocityDirAlongAirDir = particleVelocityDir.dot(airVelocityDir);
