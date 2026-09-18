@@ -3601,15 +3601,6 @@
 						+ Shader
 					+ Internal pressure view: code and UI
 
-			- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
-				- Watchout: when we make copies of buffers we use mFloatBufferAllocator
-					- TODO: not anymore? We've cleaned up up, but double-check
-				- If we do:
-					- Add asserts at setters and getters
-					- Check all callers of setters and getters
-					- Nuke all commented-out sanity lines for ephemeral creation functions
-					- ResetEffectiveAirPressure: no need for size arg
-
 			- Comment-out Ship log lines
 			- Comment-out Ship::UpdateAirAndWaterPressure:
 				- Total Water and Air readings
@@ -3633,6 +3624,15 @@
 					- Check if vectorized; if not => add to Algorithms
 						- With unit tests
 						- -> Android plan
+
+				- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
+					- Watchout: when we make copies of buffers we use mFloatBufferAllocator
+						- TODO: not anymore? We've cleaned up up, but double-check
+					- If we do:
+						- Add asserts at setters and getters
+						- Check all callers of setters and getters
+						- Nuke all commented-out sanity lines for ephemeral creation functions
+						- ResetEffectiveAirPressure: no need for size arg
 
 			- Calibration for # of water iters
 				- -> Android plan
