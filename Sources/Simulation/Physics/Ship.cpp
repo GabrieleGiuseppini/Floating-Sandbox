@@ -3962,6 +3962,9 @@ void Ship::UpdateAirAndWaterPressure(
             {
                 assert(mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)) || mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)));
 
+                // TODOTEST
+                float constexpr BounceCoeff = 1.0f;
+
                 if (!mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)))
                 {
                     assert(mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)));
@@ -3975,7 +3978,7 @@ void Ship::UpdateAirAndWaterPressure(
 
                     auto const todoOldMom = newPointAirPressureMomentumBufferData[mSprings.GetEndpointAIndex(s)];
 
-                    newPointAirPressureMomentumBufferData[mSprings.GetEndpointAIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f);
+                    newPointAirPressureMomentumBufferData[mSprings.GetEndpointAIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f) * BounceCoeff;
 
                     if (mSprings.GetEndpointAIndex(s) == mLastQueriedPointIndex)
                     {
@@ -3995,7 +3998,7 @@ void Ship::UpdateAirAndWaterPressure(
 
                     auto const todoOldMom = newPointAirPressureMomentumBufferData[mSprings.GetEndpointBIndex(s)];
 
-                    newPointAirPressureMomentumBufferData[mSprings.GetEndpointBIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f);
+                    newPointAirPressureMomentumBufferData[mSprings.GetEndpointBIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f) * BounceCoeff;
 
                     if (mSprings.GetEndpointBIndex(s) == mLastQueriedPointIndex)
                     {

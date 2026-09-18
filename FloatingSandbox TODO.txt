@@ -3442,9 +3442,10 @@
 							+ See if can avoid smoothstep
 						X Do we need orthoDamper adjustment?
 						X Can we use same simpler velocityIncrement calc'n as air?
+					+ Do that PressureTest ship with tubes
+						+ Works: 20 atm, bounce_air=1.0
 					- Cleanup NPCs (log messages)
-					- Remove hack at Points::QueryAt
-					- Do that PressureTest ship with tubes
+					+ Remove hack at Points::QueryAt					
 				- Wind tool: impart
 				- etc
 			+ Finalize unit of AirPressure
@@ -3651,6 +3652,9 @@
 						- ship_texture_coords = world / ship_size
 						- sample both orig and offseted
 							- weight: length of vel
+
+		- Video:
+			- That pressure w/watertight doors ship, with NPCs (20 atm)
 
 		- Android port plan:
 			- Shader and ShaderSets renames for InternalPressure->AirPressure

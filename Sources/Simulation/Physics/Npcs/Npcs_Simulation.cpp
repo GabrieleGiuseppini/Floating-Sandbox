@@ -2015,18 +2015,6 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
 
                 assert(velocityIncrement >= 0.0f);
 
-                // TODOTEST
-                static float TODO = 0.0f;
-                if (airVelocityMagnitude > TODO)
-                {
-                    LogMessage("TODO: airMag=", airVelocityMagnitude, " incr=", velocityIncrement);
-                    TODO = airVelocityMagnitude;
-                }
-                if (velocityIncrement != 0.0f)
-                {
-                    LogMessage("   VelIncr=", velocityIncrement);
-                }
-
                 vec2f const absoluteVelocityDelta =
                     airVelocityDir
                     * velocityIncrement;
