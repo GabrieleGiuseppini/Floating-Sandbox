@@ -3554,7 +3554,7 @@
 					- New pumps and switches
 					- Optimizing the whole
 
-			= Cleanup 1:
+			+ Cleanup:
 				+ Nuke InternalPressure concept
 					+ Points
 					+ Ship::EqualizeInternalPressure
@@ -3578,16 +3578,17 @@
 				+ Ship::Update:
 					+ Comments 
 					+ Renames of PROFILE timing variables
-				- Ship::UpdateAirAndWaterPressure:
-					- Comments
-					- Code
+				+ Ship::UpdateAirAndWaterPressure:
+					+ Comments
+					+ Code
 						+ Back to single function - UpdateAirAndWaterPressure (rename it: air before water)
-						- Cleanup log lines (we keep them, and will comment out)
-						= Finalize settings and constants
+						+ Cleanup log lines (we keep them, and will comment out)
+						+ Finalize settings and constants
 							+ -> Android plan: all new settings
-						- Put back restrict pointers where needed
-						- Cleanup total water & total air (we keep them, and will comment out)
-						- Nuke [iff not used]: velocity damping
+						+ Put back restrict pointers where needed
+						+ Cleanup total water & total air (we keep them, and will comment out)
+						+ Nuke [iff not used]: velocity damping
+					+ Test
 				+ Nuke Ship::UpdateWaterVelocities
 				+ Keep only winner of Ship::UpdatePressureAndWaterInflow
 				+ Renames (Internal Pressure -> Air / Pressure):
@@ -3600,12 +3601,12 @@
 						+ Shader
 					+ Internal pressure view: code and UI
 
-
 			- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
 				- Watchout: when we make copies of buffers we use mFloatBufferAllocator
 					- TODO: not anymore? We've cleaned up up, but double-check
 				- If we do:
 					- Add asserts at setters and getters
+					- Check all callers of setters and getters
 					- Nuke all commented-out sanity lines for ephemeral creation functions
 					- ResetEffectiveAirPressure: no need for size arg
 
@@ -3619,7 +3620,6 @@
 					- Profile with released version; note both InternalPressure and UpdateWaterVelocities
 				- UpdateWaterAndAirPressure:
 					- Codework
-
 					- See if makes sense to skip water step for hull points
 					- See if these Points buffers make sense, instead of taking material:
 						- mMaterialWaterIntakeBuffer
