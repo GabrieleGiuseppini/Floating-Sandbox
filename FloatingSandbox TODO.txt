@@ -3536,7 +3536,7 @@
 				+ SettingsDialog
 				+ ShipRenderContext is ready, as long as UploadStart gives correct count
 
-			- PR:
+			+ PR:
 				- What works already?
 					- Water and air intake and outtake
 					- Water/Air equilibrium physics
@@ -3649,16 +3649,40 @@
 						21:22:08.515540:*** Ship update: springRelax=1.106 updateForStress=0.061 decayPoints=0.002 worldForces=0.18 airAndWaterInflow = 0.01 parallel1=2.044 (airAndWaterDiffusion=1.681 staticPressure=0.197 heatPropagation=0.148) lightDiffusion=0.069 combustion=0.001 updateSpringParameters=0.004 ephemeralParticles=0.048 total: 3.614ms
 
 
-				- Check ApplyStaticPressureForces: what changed?
-					- Possibly net force complexity? Check values in both versions: 0.03/0.04 -> 0.1/0.4
-
 				- UpdateWaterAndAirPressure:
-					- Codework
+					- Try: loop by springs:
+						! Old complexity: (P + 2S)*a10 + S*a1 ~= (S=3.5P) 8P*a10 + 3.5P*a1
+						! New complexity: S*a5 + P*a1 + S*a5 + S*a1 ~= S*a10 + P*a1 + S*a1 = 3.5P*a10 + 4.5P*a1
+						- Water:
+							- For each iter:
+								- Init s.TODO with zeros
+									- New workbuffer at Springs
+								- Init p.TODO with zeros
+									- New workbuffer at Points
+								- Init p.WaterDiffusionKineticEnergyLoss
+									- New buffer at Points, useful for rendering eventually
+								- For all springs s:
+									- Calc s.OutboundWaterFlowWeights
+									- Calc s.OutboundWaterVelocities
+									- Update p1,p2.TotalOutboundWaterFlowWeight (one is always zero)
+									- Update p1,p2.MaxOutboundWaterFlowWeight (one is always zero)
+								- For all points p:
+									- Calc p.WaterQuantityNormalizationFactor
+									- Calc initial p.WaterMomentum (directly in buffer)
+								- For all springs s:
+									- Update endpoints' water, momenta, kineticEnergyLoss
+								- For all springs s:
+									- Zero out endpoints' momenta against hull
+								- Transform Point's momenta into velocities
+						- Air
 					- See if makes sense to skip water step for hull points
 					- See if these Points buffers make sense, instead of taking material:
 						- mMaterialWaterIntakeBuffer
 						- mMaterialWaterRestitutionBuffer
 						- mMaterialWaterDiffusionSpeedBuffer
+
+				- Check ApplyStaticPressureForces: what changed?
+					- Possibly net force complexity? Check values in both versions: 0.03/0.04 -> 0.1/0.4
 
 				- Rebalance thread tasks
 				- ApplyStaticPressureForces:
@@ -3719,6 +3743,8 @@
 						- ship_texture_coords = world / ship_size
 						- sample both orig and offseted
 							- weight: length of vel
+
+			- If doesn't go through, nuke Points::WaterDiffusionKineticEnergyLoss and incorporate in Points::<workbuffer for WaterDiffusion algo>
 
 		- Video:
 			- That pressure w/watertight doors ship, with NPCs (20 atm)
