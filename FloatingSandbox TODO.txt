@@ -3648,32 +3648,40 @@
 						21:22:07.871807:*** Ship update: springRelax=1.054 updateForStress=0.07 decayPoints=0.002 worldForces=0.19 airAndWaterInflow = 0.011 parallel1=2.023 (airAndWaterDiffusion=1.687 staticPressure=0.161 heatPropagation=0.154) lightDiffusion=0.069 combustion=0.001 updateSpringParameters=0.003 ephemeralParticles=0.045 total: 3.554ms
 						21:22:08.515540:*** Ship update: springRelax=1.106 updateForStress=0.061 decayPoints=0.002 worldForces=0.18 airAndWaterInflow = 0.01 parallel1=2.044 (airAndWaterDiffusion=1.681 staticPressure=0.197 heatPropagation=0.148) lightDiffusion=0.069 combustion=0.001 updateSpringParameters=0.004 ephemeralParticles=0.048 total: 3.614ms
 
+				+ Merged into pressure_redesign
 
-				- UpdateWaterAndAirPressure:
-					- Try: loop by springs:
+				= UpdateWaterAndAirPressure:
+					= Try: loop by springs:
 						! Old complexity: (P + 2S)*a10 + S*a1 ~= (S=3.5P) 8P*a10 + 3.5P*a1
 						! New complexity: S*a5 + P*a1 + S*a5 + S*a1 ~= S*a10 + P*a1 + S*a1 = 3.5P*a10 + 4.5P*a1
-						- Water:
-							- For each iter:
-								- Init s.TODO with zeros
-									- New workbuffer at Springs
-								- Init p.TODO with zeros
-									- New workbuffer at Points
-								- Init p.WaterDiffusionKineticEnergyLoss
-									- New buffer at Points, useful for rendering eventually
-								- For all springs s:
-									- Calc s.OutboundWaterFlowWeights
-									- Calc s.OutboundWaterVelocities
-									- Update p1,p2.TotalOutboundWaterFlowWeight (one is always zero)
-									- Update p1,p2.MaxOutboundWaterFlowWeight (one is always zero)
-								- For all points p:
-									- Calc p.WaterQuantityNormalizationFactor
-									- Calc initial p.WaterMomentum (directly in buffer)
-								- For all springs s:
-									- Update endpoints' water, momenta, kineticEnergyLoss
-								- For all springs s:
-									- Zero out endpoints' momenta against hull
-								- Transform Point's momenta into velocities
+						= Water:
+							= For each iter:
+								= Init s.FluidDiffusionAlgorithmVariables with zeros
+									+ New workbuffer at Springs
+									- Verify zeroing is optimal
+								= Init p.FluidDiffusionAlgorithmVariables with zeros
+									+ New workbuffer at Points
+									- Verify zeroing is optimal
+								= Init p.WaterDiffusionKineticEnergyLoss
+									+ New buffer at Points, useful for rendering eventually
+									- Verify zeroing is optimal
+								+ For all springs s:
+									+ Calc s.FlowWeight
+									+ Calc s.FlowVelocity
+									+ Update p1,p2.TotalOutboundWaterFlowWeight (one is always zero)
+									+ Update p1,p2.MaxOutboundWaterFlowWeight (one is always zero)
+								+ For all points p:
+									+ Calc p.WaterQuantityNormalizationFactor
+									+ Calc initial p.WaterMomentum (directly in buffer)
+								+ For all springs s:
+									+ Update endpoints' water, momenta, kineticEnergyLoss
+								+ For all springs s:
+									+ Zero out endpoints' momenta against hull
+								+ Update water splashes
+								+ Transform Point's momenta into velocities
+							+ airAndWaterDiffusion: 1.694 -> 1.1/1.2, 3.3ms
+							- Flood:
+							- Shoot: 
 						- Air
 					- See if makes sense to skip water step for hull points
 					- See if these Points buffers make sense, instead of taking material:
@@ -3700,6 +3708,9 @@
 						- Check all callers of setters and getters
 						- Nuke all commented-out sanity lines for ephemeral creation functions
 						- ResetEffectiveAirPressure: no need for size arg
+
+				- Cleanup:
+					- Remove FS_PROFILE
 
 			- Check: heating and cooling hole doesn't make water flow in anymore
 				

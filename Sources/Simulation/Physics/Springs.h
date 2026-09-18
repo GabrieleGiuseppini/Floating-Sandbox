@@ -53,6 +53,21 @@ public:
         {}
     };
 
+    /*
+     * Work variables for the air and water diffusion algorithm.
+     */
+    struct FluidDiffusionAlgorithmVariables
+    {
+        float FlowWeight;
+        vec2f FlowVelocity;
+
+        FluidDiffusionAlgorithmVariables()
+            : FlowWeight(0.0f)
+            , FlowVelocity(vec2f::zero())
+        {
+        }
+    };
+
 private:
 
     /*
@@ -155,6 +170,8 @@ public:
         , mWaterPermeabilityBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Heat
         , mMaterialThermalConductivityBuffer(mBufferElementCount, mElementCount, 0.0f)
+        // Work buffers
+        , mFluidDiffusionAlgorithmVariablesBuffer(mBufferElementCount)
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -588,6 +605,26 @@ public:
     }
 
     //
+    // Work buffers
+    //
+
+    FluidDiffusionAlgorithmVariables const * GetFluidDiffusionAlgorithmVariablesBuffer() const
+    {
+        return mFluidDiffusionAlgorithmVariablesBuffer.data();
+    }
+
+    FluidDiffusionAlgorithmVariables * GetFluidDiffusionAlgorithmVariablesBuffer()
+    {
+        return mFluidDiffusionAlgorithmVariablesBuffer.data();
+    }
+
+    FluidDiffusionAlgorithmVariables * ResetFluidDiffusionAlgorithmVariablesBuffer()
+    {
+        mFluidDiffusionAlgorithmVariablesBuffer.fill(FluidDiffusionAlgorithmVariables());
+        return mFluidDiffusionAlgorithmVariablesBuffer.data();
+    }
+
+    //
     // Temporary buffer
     //
 
@@ -685,6 +722,12 @@ private:
     //
 
     Buffer<float> mMaterialThermalConductivityBuffer;
+
+    //
+    // Work buffers
+    //
+
+    Buffer<FluidDiffusionAlgorithmVariables> mFluidDiffusionAlgorithmVariablesBuffer;
 
     //////////////////////////////////////////////////////////
     // Container

@@ -248,6 +248,22 @@ public:
         {}
     };
 
+    /*
+     * Work variables for the air and water diffusion algorithm.
+     */
+    struct FluidDiffusionAlgorithmVariables
+    {
+        float TotalOutboundFlowWeight;
+        float MaxOutboundFlowWeight;
+        float FlowNormalizationFactor;
+
+        FluidDiffusionAlgorithmVariables()
+            : TotalOutboundFlowWeight(0.0f)
+            , MaxOutboundFlowWeight(0.0f)
+            , FlowNormalizationFactor(0.0f)
+        { }
+    };
+
 private:
 
     /*
@@ -788,7 +804,9 @@ public:
         , mAirVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAirMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mEffectiveAirBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mCumulatedOutflownUnderwaterAir(mBufferElementCount, shipPointCount, 0.0f)
+        , mCumulatedOutflownUnderwaterAirBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mWaterDiffusionKineticEnergyLossBuffer(mAlignedShipPointCount, 0, 0.0f)
+        , mFluidDiffusionAlgorithmVariablesBuffer(mAlignedShipPointCount)
         , mLeakingCompositeBuffer(mBufferElementCount, shipPointCount, LeakingComposite(false))
         , mFactoryIsStructurallyLeakingBuffer(mBufferElementCount, shipPointCount, false)
         , mTotalFactoryWetPoints(0)
@@ -1937,12 +1955,44 @@ public:
 
     float GetCumulatedOutflownUnderwaterAir(ElementIndex pointElementIndex) const
     {
-        return mCumulatedOutflownUnderwaterAir[pointElementIndex];
+        return mCumulatedOutflownUnderwaterAirBuffer[pointElementIndex];
     }
 
     void SetCumulatedOutflownUnderwaterAir(ElementIndex pointElementIndex, float value)
     {
-        mCumulatedOutflownUnderwaterAir[pointElementIndex] = value;
+        mCumulatedOutflownUnderwaterAirBuffer[pointElementIndex] = value;
+    }
+
+    float const * GetWaterDiffusionKineticEnergyLossBuffer() const
+    {
+        return mWaterDiffusionKineticEnergyLossBuffer.data();
+    }
+
+    float * GetWaterDiffusionKineticEnergyLossBuffer()
+    {
+        return mWaterDiffusionKineticEnergyLossBuffer.data();
+    }
+
+    float * ResetWaterDiffusionKineticEnergyLossBuffer()
+    {
+        mWaterDiffusionKineticEnergyLossBuffer.fill(0.0f);
+        return mWaterDiffusionKineticEnergyLossBuffer.data();
+    }
+
+    FluidDiffusionAlgorithmVariables const * GetFluidDiffusionAlgorithmVariablesBuffer() const
+    {
+        return mFluidDiffusionAlgorithmVariablesBuffer.data();
+    }
+
+    FluidDiffusionAlgorithmVariables * GetFluidDiffusionAlgorithmVariablesBuffer()
+    {
+        return mFluidDiffusionAlgorithmVariablesBuffer.data();
+    }
+
+    FluidDiffusionAlgorithmVariables * ResetFluidDiffusionAlgorithmVariablesBuffer()
+    {
+        mFluidDiffusionAlgorithmVariablesBuffer.fill(FluidDiffusionAlgorithmVariables());
+        return mFluidDiffusionAlgorithmVariablesBuffer.data();
     }
 
     LeakingComposite const & GetLeakingComposite(ElementIndex pointElementIndex) const
@@ -2616,7 +2666,7 @@ private:
         mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak = 1.0f;
 
         // Randomize the initial air pressure outflown, so that air bubbles won't come out all at the same moment
-        mCumulatedOutflownUnderwaterAir[pointElementIndex] = RandomizeCumulatedOutflownUnderwaterAir(mCurrentCumulatedOutflownUnderwaterAirThresholdForAirBubbles);
+        mCumulatedOutflownUnderwaterAirBuffer[pointElementIndex] = RandomizeCumulatedOutflownUnderwaterAir(mCurrentCumulatedOutflownUnderwaterAirThresholdForAirBubbles);
     }
 
     inline ElementIndex PointIndexToEphemeralParticleIndex(ElementIndex pointElementIndex) const
@@ -2776,7 +2826,14 @@ private:
 
     // Total amount of air lost when underwater, which has not yet been
     // utilized for air bubbles
-    Buffer<float> mCumulatedOutflownUnderwaterAir;
+    Buffer<float> mCumulatedOutflownUnderwaterAirBuffer;
+
+    // Kinetic energy lost (actually, momentum) during
+    // water diffusion algorithm
+    Buffer<float> mWaterDiffusionKineticEnergyLossBuffer;
+
+    // Work buffer for water and air diffusion algorithms
+    Buffer<FluidDiffusionAlgorithmVariables> mFluidDiffusionAlgorithmVariablesBuffer;
 
     // Indicators of point intaking water
     Buffer<LeakingComposite> mLeakingCompositeBuffer;

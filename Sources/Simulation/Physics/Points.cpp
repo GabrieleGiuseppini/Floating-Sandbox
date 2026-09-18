@@ -81,7 +81,7 @@ void Points::Add(
     mAirMomentumBuffer.emplace_back(vec2f::zero());
     mEffectiveAirBuffer.emplace_back(internalAirInEquivalentWaterHeight); // We start at temperature=Temperature0
 
-    mCumulatedOutflownUnderwaterAir.emplace_back(0.0f);
+    mCumulatedOutflownUnderwaterAirBuffer.emplace_back(0.0f);
     mLeakingCompositeBuffer.emplace_back(LeakingComposite(isStructurallyLeaking));
     if (isStructurallyLeaking)
         SetStructurallyLeaking(pointIndex);
@@ -1148,7 +1148,7 @@ void Points::UpdateForSimulationParameters(SimulationParameters const & simulati
         {
             if (GetLeakingComposite(i).IsCumulativelyLeaking)
             {
-                mCumulatedOutflownUnderwaterAir[i] = RandomizeCumulatedOutflownUnderwaterAir(cumulatedOutflownUnderwaterAirThresholdForAirBubbles);
+                mCumulatedOutflownUnderwaterAirBuffer[i] = RandomizeCumulatedOutflownUnderwaterAir(cumulatedOutflownUnderwaterAirThresholdForAirBubbles);
             }
         }
 
