@@ -3846,6 +3846,8 @@ void Ship::UpdateAirAndWaterPressure(
                         assert(!mPoints.GetIsHull(pointIndex) || springOutboundQuantityOfAirPressure == 0.0f);
 
                         // Add "new momentum" (new velocity gained), but after bounce
+                        // (note: the outgoing momentum has already been accounted for, so by removing this one here
+                        //  we effectively bounce it back)
                         newPointAirPressureMomentumBufferData[pointIndex] +=
                             -springOutboundAirPressureVelocities[s] // * (simulationParameters.BlastToolForceAdjustment / 10.0f)
                             * springOutboundQuantityOfAirPressure;
