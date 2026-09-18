@@ -46,8 +46,9 @@ public:
         , mExternalForcesBuffer(maxParticleCount, vec2f::zero())
         , mTemperatureBuffer(maxParticleCount, 0.0f)
         , mMeshWaternessBuffer(maxParticleCount, 0.0f)
-        , mMeshWaterVelocityBuffer(maxParticleCount, vec2f::zero())
+        , mMeshWaterMomentumBuffer(maxParticleCount, vec2f::zero())
         , mAnyWaternessBuffer(maxParticleCount, 0.0f)
+        , mMeshAirMomentumBuffer(maxParticleCount, vec2f::zero())
         , mLightBuffer(maxParticleCount, 0.0f)
         , mRandomNormalizedUniformFloatBuffer(maxParticleCount, 0.0f)
         // Render
@@ -289,16 +290,16 @@ public:
         mMeshWaternessBuffer[particleElementIndex] = value;
     }
 
-    vec2f const & GetMeshWaterVelocity(ElementIndex particleElementIndex) const noexcept
+    vec2f const & GetMeshWaterMomentum(ElementIndex particleElementIndex) const noexcept
     {
-        return mMeshWaterVelocityBuffer[particleElementIndex];
+        return mMeshWaterMomentumBuffer[particleElementIndex];
     }
 
-    void SetMeshWaterVelocity(
+    void SetMeshWaterMomentum(
         ElementIndex particleElementIndex,
         vec2f const & value) noexcept
     {
-        mMeshWaterVelocityBuffer[particleElementIndex] = value;
+        mMeshWaterMomentumBuffer[particleElementIndex] = value;
     }
 
     float const GetAnyWaterness(ElementIndex particleElementIndex) const noexcept
@@ -311,6 +312,18 @@ public:
         float value) noexcept
     {
         mAnyWaternessBuffer[particleElementIndex] = value;
+    }
+
+    vec2f const & GetMeshAirMomentum(ElementIndex particleElementIndex) const noexcept
+    {
+        return mMeshAirMomentumBuffer[particleElementIndex];
+    }
+
+    void SetMeshAirMomentum(
+        ElementIndex particleElementIndex,
+        vec2f const & value) noexcept
+    {
+        mMeshAirMomentumBuffer[particleElementIndex] = value;
     }
 
     float GetLight(ElementIndex pointElementIndex) const
@@ -384,8 +397,10 @@ private:
     Buffer<float> mTemperatureBuffer;
 
     Buffer<float> mMeshWaternessBuffer; // Mesh water at triangle (when constrained); // [0.0, ~1.0]
-    Buffer<vec2f> mMeshWaterVelocityBuffer; // (when constrained)
+    Buffer<vec2f> mMeshWaterMomentumBuffer; // (when constrained)
     Buffer<float> mAnyWaternessBuffer; // Mesh water at triangle (when constrained), depth (when free); [0.0, 1.0]
+
+    Buffer<vec2f> mMeshAirMomentumBuffer; // (when constrained)
 
     Buffer<float> mLightBuffer;
 
