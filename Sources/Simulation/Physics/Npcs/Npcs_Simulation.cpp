@@ -1992,9 +1992,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                     absoluteVelocityDelta
                     / SimulationParameters::SimulationStepTimeDuration<float>
                     * anyWaterness // Mess with velocity only if enough water
-                    // TODOTEST
-                    //* (1.0f - SmoothStep(0.0f, 0.9f, waterVelocityDir.y)) // Lower acceleration with verticality - water close to surface pushes up and we don't like that
-                    * (1.0f - SmoothStep(0.0f, 0.9f, std::fabsf(waterVelocityDir.y))) // Lower acceleration with verticality - water close to surface pushes up and we don't like that
+                    * (1.0f - LinearStep(0.0f, 0.9f, std::fabsf(waterVelocityDir.y))) // Lower acceleration with verticality - don't want NPCs pushed up or down
                     * std::min(particleMass, 35.0f); // This magic number is to ensure the numbers above perform OK on the reference human particles
             }
 
