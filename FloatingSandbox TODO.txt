@@ -3566,24 +3566,30 @@
 					- VectorFieldRenderModeType enum values
 						+ SettingsDialog labels
 					+ Also @ vector field rendering enum & shaders, @ settings dialog
-				- Momenta spirit:
+				- Momenta spirit (add comments to Points.h):
 					- Points::Momenta only for rendering; byproduct of diffusion step
 						- Only exposed accessors:
 							+ Reset
 							- VelocitiesFromMomenta
 					- Simulation changes velocities only
 						- For rendering, might also modify momenta (e.g. after blast), iff that happens after water diffusion step and before render
-				- Rename Ship::UpdatePressureAndWaterInflow to UpdateAirAndWaterInflow - also neighboring comments
-				- Comments at main Ship::Update
-					- And renames of PROFILE timing variables
-				- Comments
-				- Code
-					+ Back to single function - UpdateAirAndWaterPressure (rename it: air before water)
-					- Cleanup log lines
-					= Finalize settings and constants
-						+ -> Android plan: all new settings
-					- Put back restrict pointers where needed
-					- Nuke [iff not used]: velocity damping
+				- Ship::UpdateAirAndWaterInflow:
+					- Rename Ship::UpdatePressureAndWaterInflow to UpdateAirAndWaterInflow - also neighboring comments
+					- Comments
+					- Code
+				- Ship::Update:
+					- Comments 
+					- Renames of PROFILE timing variables
+				- Ship::UpdateAirAndWaterPressure:
+					- Comments
+					- Code
+						+ Back to single function - UpdateAirAndWaterPressure (rename it: air before water)
+						- Cleanup log lines (we keep them, and will comment out)
+						= Finalize settings and constants
+							+ -> Android plan: all new settings
+						- Put back restrict pointers where needed
+						- Cleanup total water & total air (we keep them, and will comment out)
+						- Nuke [iff not used]: velocity damping
 				+ Nuke Ship::UpdateWaterVelocities
 				+ Keep only winner of Ship::UpdatePressureAndWaterInflow
 				+ Renames (Internal Pressure -> Air / Pressure):
@@ -3605,9 +3611,14 @@
 					- Nuke all commented-out sanity lines for ephemeral creation functions
 					- ResetEffectiveAirPressure: no need for size arg
 
-			- Comment-out cross-cut readings
+			- Comment-out Ship log lines
+			- Comment-out Ship::UpdateAirAndWaterPressure:
+				- Total Water and Air readings
+				- Cross-cut readings
 
 			- Optimizations:
+				- Prep:
+					- Profile with released version; note both InternalPressure and UpdateWaterVelocities
 				- UpdateWaterAndAirPressure:
 					- See if makes sense to skip water step for hull points
 				- Rebalance thread tasks
