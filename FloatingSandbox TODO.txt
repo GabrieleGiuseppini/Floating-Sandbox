@@ -3662,9 +3662,9 @@
 								= Init p.FluidDiffusionAlgorithmVariables with zeros
 									+ New workbuffer at Points
 									- Verify zeroing is optimal
-								= Init p.WaterDiffusionKineticEnergyLoss
+								+ Init p.WaterDiffusionKineticEnergyLoss
 									+ New buffer at Points, useful for rendering eventually
-									- Verify zeroing is optimal
+									+ Verify zeroing is optimal
 								+ For all springs s:
 									+ Calc s.FlowWeight
 									+ Calc s.FlowVelocity
@@ -3682,7 +3682,10 @@
 							+ airAndWaterDiffusion: 1.694 -> 1.1/1.2, 3.3ms
 							- Flood:
 							- Shoot: 
+							- Splash sounds:
 						- Air
+
+						- Merge pressure_redesign_by_springs back into pressure_redesign
 					- See if makes sense to skip water step for hull points
 					- See if these Points buffers make sense, instead of taking material:
 						- mMaterialWaterIntakeBuffer
