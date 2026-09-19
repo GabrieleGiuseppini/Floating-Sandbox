@@ -3609,6 +3609,7 @@
 			= Optimizations:
 				+ Prep: profile with released version
 					- Update: 2.38-2.51ms
+					- Avergne test: 10ms
 					- Profiling Results: (30s, selection between 10 and 30)
 						- EqualizeInternalPressure: 2.36%
 						- ApplyStaticPressureForces: 0.34%
@@ -3654,7 +3655,7 @@
 					= Try: loop by springs:
 						! Old complexity: (P + 2S)*a10 + S*a1 ~= (S=3.5P) 8P*a10 + 3.5P*a1
 						! New complexity: S*a5 + P*a1 + S*a5 + S*a1 ~= S*a10 + P*a1 + S*a1 = 3.5P*a10 + 4.5P*a1
-						= Water:
+						+ Water:
 							= For each iter:
 								= Init s.FluidDiffusionAlgorithmVariables with zeros
 									+ New workbuffer at Springs
@@ -3677,11 +3678,13 @@
 									+ Update endpoints' water, momenta, kineticEnergyLoss
 								+ For all springs s:
 									+ Zero out endpoints' momenta against hull
-								+ Update water splashes
-								+ Transform Point's momenta into velocities
+								+ For all points p:
+									+ Calc total waterSplashed
+								+ For all points p:
+									+ Transform Point's momentum into velocity
 							+ Prelim profiling: airAndWaterDiffusion: 1.694 -> 1.1/1.2, 3.3ms
 							+ Fix: wrong velocity sign
-							= Fix: resultant vel = bvel + relvel: it's wrong
+							+ Fix: resultant vel = bvel + relvel: it's wrong
 								! Note 1: relvel is always the same for a srping - including sign - no matter from which side you look at it from: it's the vel each sees separating the two along the spring
 								! Note 2: A negative relvel (points getting apart) cannot cause a flip of the diffusion direction wrt bernoulli
 									! Thus sign of Bernoulli tells it all
@@ -3691,18 +3694,23 @@
 										! B->A: bVel=-2.1299 rVel=2.9967 -- resultant_vel=0.866799
 								+ Fix at ORIG: if bvel>=0: resvel=max(b+r, 0) else: resvel=0
 									+ At other way around: bvel>=0 then resvel=max(b+r, 0), from pov of 1st spring: resvel=-max(-b+r, 0) aka min(b-r, 0)
-								- Fix at NEW: if bvel>=0: resvel=max(b+r, 0) else: resvel=min(b-r, 0) // negative
-
-
-
-							- Flood:
-							- Shoot: 
-							- Splash sounds:
+								+ Fix at NEW: if bvel>=0: resvel=max(b+r, 0) else: resvel=min(b-r, 0) // negative
+									+ Use branching that we do for sign of dp
+							+ Flood: OK
+							+ Shoot: OK
+							+ Splash sounds: OK
+							+ Profiling: airAndWaterDiffusion: 1.694 -> 1.2/1.3, 3.4-3.5ms
+								+ Avergne test: 18ms
 						- Air
 
-						- Merge zero momenta against hull 
+						- Merge zero momenta against hull in single loop at end
+							- If Air doesn't need water momenta
+							- That means one single zero for all points' iterations, test with max # of iters
+						- Merge MomentaToVels with point-by-point loops
+							- If Air doesn't need water vels
 
-						- Merge pressure_redesign_by_springs back into pressure_redesign
+						- Merge branch: pressure_redesign_by_springs back into pressure_redesign
+
 					- See if makes sense to skip water step for hull points
 					- See if these Points buffers make sense, instead of taking material:
 						- mMaterialWaterIntakeBuffer
@@ -3734,6 +3742,13 @@
 					- Remove FS_PROFILE
 
 			- Check: heating and cooling hole doesn't make water flow in anymore
+				- so apparently rapidly cooling water makes it straight up vanish?
+				  heating it doesnt affect it but cooling it makes it flow upwards momentarily, then it drops and vanishes
+				  afterwards it refuses to flood
+				- !!!! The cooling makes air momenta explode
+					- Zero Kelvin!
+					- See first what's going on
+					- If problem is just with numbers: see real curve of pressure with low temp
 				
 			- Calibration for # of water iters
 				- -> Android plan
@@ -3828,6 +3843,7 @@
 		  like i said this version of rusting is better, but i feel the values need to be tweaked because it still kinda behaves like it used to...
 
 		  as lusitania was saying maybe a slider to control base rust
+		- See if could just be solved by slowing "general" rusting - which is a tad too fast imho
 
 	- Water-soluble cables
 	- Electrical material for explosions when powered
@@ -3850,6 +3866,9 @@
 				- AirPump in/out x with_tank_without_tank
 
 	- When focusing on ship after ship moved in PAUSE, we focus on old position
+
+	- Pixelation:
+		- "Vanilla" mode vs "Voxel" mode
 
 	- Fix foam with angley waves: is it because it becomes too wide?
 
@@ -4358,6 +4377,10 @@
 
 - Suggestions to spec:
 
+	- Angler fish should go up with dark
+
+	- Bioluminiscence - on a wake
+
 	- Sails system: new layer with sails, so they can be on top of structure
 		- Or: one sets *nodes* in new layer, and a sail is spawn
 
@@ -4503,6 +4526,8 @@
 		* Slow-motion mode – observe destruction in cinematic slow-motion.
 		How Would It Look in the Game?
 		Imagine: you drop the bomb, and within a second, the screen is engulfed in a blinding flash. The ship begins to melt, and in an instant, a massive blast wave obliterates everything into splinters. The water boils, debris flies in all directions, and then... silence—only broken by a colossal tsunami surging towards the remnants.
+
+		- Another from TimCan: explodes above; ship melts and at the same time it's pushed underwater, so it cools immediately - see uss gilliam
 
 	- 1. bombs
 		Types:

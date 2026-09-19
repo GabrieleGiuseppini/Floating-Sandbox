@@ -530,28 +530,19 @@ void Ship::Update(
 
             float waterSplashedInStep = 0.f;
 
-            // TODOTEST
-            static bool TODO = false;
-            if (!TODO)
-            {
-                mLastQueriedPointIndex = 275;
-                mPoints.SetWater(487, 10.0f);
-                TODO = true;
-            }
-
             // - Inputs: P.Position, P.Temperature, P.Water, P.WaterVelocity, P.Air, P.AirVelocity, P.ConnectedSprings
             // - Outputs: P.Water, P.WaterVelocity, P.WaterMomentum, P.Air, P.AirVelocity, P.AirMomentum
             // TODOTEST
-            UpdateAirAndWaterPressure(
-                effectiveAirDensity,
-                effectiveWaterDensity,
-                simulationParameters,
-                waterSplashedInStep);
-            //UpdateAirAndWaterPressure_BySprings(
+            //UpdateAirAndWaterPressure(
             //    effectiveAirDensity,
             //    effectiveWaterDensity,
             //    simulationParameters,
             //    waterSplashedInStep);
+            UpdateAirAndWaterPressure_BySprings(
+                effectiveAirDensity,
+                effectiveWaterDensity,
+                simulationParameters,
+                waterSplashedInStep);
 
             // Notify
             mSimulationEventHandler.OnWaterSplashed(waterSplashedInStep);
@@ -3875,46 +3866,12 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                 vec2f const springNormalizedVector = mSprings.GetCachedVectorialNormalizedVector(s);
 
                 //
-                // Calculate flow according to water momentum + pressure differentials
+                // Calculate flow according to water momentum (relative vels) + pressure differentials
                 //    - Source pressure: water pressure + air pressure (only when diffusing down)
                 //    - Destination pressure: water pressure + air pressure (only when diffusing up) (Rayleigh–Taylor instability: water is not stopped by air below - actually drawn down)
                 //
-
-                float const dp = (
-                    (oldPointWaterBufferData[pA] + oldPointEffectiveAirBufferData[pA] * springDownness * simulationParameters.AirPressureFeedbackOnWater)
-                    - (oldPointWaterBufferData[pB] + oldPointEffectiveAirBufferData[pB] * springUpness * simulationParameters.AirPressureFeedbackOnWater)
-                    ) * mSprings.GetWaterPermeability(s); // Enforce no delta-pressure with (dry) wall
-
-                // Gravity potential difference (positive implies A -> B flow)
-                float const dy = -deltaH;
-
+                // Pressure differentials yield a move velocity according to Bernoulli's principle (1738)
                 //
-                // Calculate gained water velocity along this spring, from point to other endpoint
-                // (Bernoulli, 1738)
-                //
-                // We add pressure and heights as pressure is in "height equivalent units"
-                // - In Bernoulli, the pressure factor inside the square root is P/rho, which
-                //   can be easily shown to be g*Pfs, considering that Pfs is h of cube of water
-                //
-
-                float bernoulliVelocityAlongSpring;
-                float const dpy = dp * waterColumnHeightDensityFactor + dy;
-                if (dpy >= 0.0f)
-                {
-                    // Gained velocity goes from point to other endpoint
-                    bernoulliVelocityAlongSpring = sqrtf(2.0f * SimulationParameters::GravityMagnitude * dpy);
-                }
-                else
-                {
-                    // Gained velocity goes from other endpoint to point
-                    bernoulliVelocityAlongSpring = -sqrtf(2.0f * SimulationParameters::GravityMagnitude * -dpy);
-                }
-
-                // Resultant scalar velocity along spring; outbound only, as
-                // if this were inbound it wouldn't result in any movement of the point's
-                // water between these two springs. Morevoer, Bernoulli's velocity injected
-                // along this spring will be picked up later also by the other endpoint,
-                // and at that time it would move water if it agrees with its velocity
 
                 // Components of the points' own water velocities along the spring
                 float const pointAWaterVelocityAlongSpring = oldPointWaterVelocityBufferData[pA].dot(springNormalizedVector);
@@ -3926,29 +3883,76 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                     ? (pointAWaterVelocityAlongSpring * oldPointWaterBufferData[pA] - pointBWaterVelocityAlongSpring * oldPointWaterBufferData[pB]) / totalMass
                     : 0.0f;
 
-                // Resultant
-                // TODOHERE: BUGBUG: relVelocity is independent from which side we're looking at, but here
-                // we pretend that e.g. a negative relvel means there's more flow in the other direction
-                float const springOutboundScalarWaterVelocity = bernoulliVelocityAlongSpring + relVelocity;
+                // Pressure differential
+                float const dp = (
+                    (oldPointWaterBufferData[pA] + oldPointEffectiveAirBufferData[pA] * springDownness * simulationParameters.AirPressureFeedbackOnWater)
+                    - (oldPointWaterBufferData[pB] + oldPointEffectiveAirBufferData[pB] * springUpness * simulationParameters.AirPressureFeedbackOnWater)
+                    ) * mSprings.GetWaterPermeability(s); // Enforce no delta-pressure with (dry) wall
 
-                // Store weight along spring, using final velocity as a proxy;
-                // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
-                springVariables[s].FlowWeight =
-                    springOutboundScalarWaterVelocity
-                    / mSprings.GetFactoryRestLength(s);
+                // Gravity potential differential (positive implies A -> B flow)
+                float const dy = -deltaH;
+
+                // Total differential
+                //
+                // We add pressure and heights together, since pressure is in "height equivalent units"
+                // - In Bernoulli, the pressure factor inside the square root is P/rho, which
+                //   can be easily shown to be g*Pfs, considering that Pfs is h of cube of water
+                //
+                float const dpy = dp * waterColumnHeightDensityFactor + dy;
+
+                float bernoulliVelocityAlongSpring;
+                float springScalarResultantVelocity;
+                if (dpy >= 0.0f)
+                {
+                    //
+                    // Flow goes from A to B (thus positive)
+                    //
+
+                    bernoulliVelocityAlongSpring = sqrtf(2.0f * SimulationParameters::GravityMagnitude * dpy);
+
+                    // A negative relvel means masses are getting apart - that won't reverse the flow,
+                    // it would only lessen it
+                    springScalarResultantVelocity = std::max(bernoulliVelocityAlongSpring + relVelocity, 0.0f);
+
+                    // Use final velocity as a proxy;
+                    // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
+                    springVariables[s].FlowWeight =
+                        springScalarResultantVelocity
+                        / mSprings.GetFactoryRestLength(s);
+
+                    assert(springVariables[s].FlowWeight >= 0.0f);
+
+                    pointsVariables[pA].TotalOutboundFlowWeight += springVariables[s].FlowWeight;
+                    pointsVariables[pA].MaxOutboundFlowWeight = std::max(pointsVariables[pA].MaxOutboundFlowWeight, springVariables[s].FlowWeight);
+                }
+                else
+                {
+                    //
+                    // Flow goes from B to A (thus negative)
+                    //
+
+                    bernoulliVelocityAlongSpring = -sqrtf(2.0f * SimulationParameters::GravityMagnitude * -dpy);
+
+                    // A negative relvel means masses are getting apart - that won't reverse the flow,
+                    // it would only lessen it
+                    springScalarResultantVelocity = std::min(bernoulliVelocityAlongSpring - relVelocity, 0.0f);
+
+                    // Use final velocity as a proxy;
+                    // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
+                    springVariables[s].FlowWeight =
+                        springScalarResultantVelocity
+                        / mSprings.GetFactoryRestLength(s);
+
+                    assert(springVariables[s].FlowWeight <= 0.0f);
+
+                    pointsVariables[pB].TotalOutboundFlowWeight += -springVariables[s].FlowWeight;
+                    pointsVariables[pB].MaxOutboundFlowWeight = std::max(pointsVariables[pB].MaxOutboundFlowWeight, -springVariables[s].FlowWeight);
+                }
 
                 // Resultant outbound velocity vector along spring
                 springVariables[s].FlowVelocity =
                     springNormalizedVector
-                    * springOutboundScalarWaterVelocity;
-
-                // Update total outbound flow weight
-                float const aFlowWeight = std::max(springVariables[s].FlowWeight, 0.0f);
-                float const bFlowWeight = std::max(-springVariables[s].FlowWeight, 0.0f);
-                pointsVariables[pA].TotalOutboundFlowWeight += aFlowWeight;
-                pointsVariables[pB].TotalOutboundFlowWeight += bFlowWeight;
-                pointsVariables[pA].MaxOutboundFlowWeight = std::max(pointsVariables[pA].MaxOutboundFlowWeight, aFlowWeight);
-                pointsVariables[pB].MaxOutboundFlowWeight = std::max(pointsVariables[pB].MaxOutboundFlowWeight, bFlowWeight);
+                    * springScalarResultantVelocity;
 
                 if (pA == mLastQueriedPointIndex
                     || pB == mLastQueriedPointIndex)
@@ -3958,14 +3962,15 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                         " pB=", oldPointWaterBufferData[pB] + oldPointEffectiveAirBufferData[pB] * springUpness,
                         " springDir=", springNormalizedVector, " upness=", springUpness, " downness=", springDownness);
                     LogMessage("  bVel=", bernoulliVelocityAlongSpring, " wVelA=", pointAWaterVelocityAlongSpring, " wVelB=", pointBWaterVelocityAlongSpring, " rVel=", relVelocity,
-                        " ->  springOutboundScalarWaterVelocity=", springOutboundScalarWaterVelocity, " flowVel=", springVariables[s].FlowVelocity,
+                        " ->  springScalarResultantVelocity=", springScalarResultantVelocity, " flowVel=", springVariables[s].FlowVelocity,
                         " springPerm=", mSprings.GetWaterPermeability(s));
                 }
             }
         }
 
         //
-        // Calculate points' normalization factors, and initialize them
+        // Calculate points' normalization factors, and initialize
+        // their momenta
         //
 
         for (auto const p : mPoints.RawShipPoints())
