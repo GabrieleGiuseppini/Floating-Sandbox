@@ -3679,11 +3679,28 @@
 									+ Zero out endpoints' momenta against hull
 								+ Update water splashes
 								+ Transform Point's momenta into velocities
-							+ airAndWaterDiffusion: 1.694 -> 1.1/1.2, 3.3ms
+							+ Prelim profiling: airAndWaterDiffusion: 1.694 -> 1.1/1.2, 3.3ms
+							+ Fix: wrong velocity sign
+							= Fix: resultant vel = bvel + relvel: it's wrong
+								! Note 1: relvel is always the same for a srping - including sign - no matter from which side you look at it from: it's the vel each sees separating the two along the spring
+								! Note 2: A negative relvel (points getting apart) cannot cause a flip of the diffusion direction wrt bernoulli
+									! Thus sign of Bernoulli tells it all
+								! Broken in orig: we could have two flows along the same spring
+									! Example: 
+										! A->B: bVel=2.1299 rVel=2.9967 -- resultant_vel=5.12659
+										! B->A: bVel=-2.1299 rVel=2.9967 -- resultant_vel=0.866799
+								+ Fix at ORIG: if bvel>=0: resvel=max(b+r, 0) else: resvel=0
+									+ At other way around: bvel>=0 then resvel=max(b+r, 0), from pov of 1st spring: resvel=-max(-b+r, 0) aka min(b-r, 0)
+								- Fix at NEW: if bvel>=0: resvel=max(b+r, 0) else: resvel=min(b-r, 0) // negative
+
+
+
 							- Flood:
 							- Shoot: 
 							- Splash sounds:
 						- Air
+
+						- Merge zero momenta against hull 
 
 						- Merge pressure_redesign_by_springs back into pressure_redesign
 					- See if makes sense to skip water step for hull points
@@ -3696,6 +3713,7 @@
 					- Possibly net force complexity? Check values in both versions: 0.03/0.04 -> 0.1/0.4
 
 				- Rebalance thread tasks
+					- Consider moving StaticPressure to other thread
 				- ApplyStaticPressureForces:
 					- Pre-multiply pressure conversion factors into forceNormalizationFactor
 				- Points::UpdateAirPressureVelocitiesFromMomenta and UpdateWaterVelocitiesFromMomenta:

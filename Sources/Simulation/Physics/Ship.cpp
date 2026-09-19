@@ -3027,9 +3027,20 @@ void Ship::UpdateAirAndWaterPressure(
                         / (oldPointWaterBufferData[pointIndex] + oldPointWaterBufferData[cs.OtherEndpointIndex])
                     : 0.0f;
 
-                float const springOutboundScalarWaterVelocity = std::max(
-                    bernoulliVelocityAlongSpring + relVelocity,
-                    0.0f);
+                // TODOTEST: to align with fix @ by-spring loop
+                //float const springOutboundScalarWaterVelocity = std::max(
+                //    bernoulliVelocityAlongSpring + relVelocity,
+                //    0.0f);
+                float springOutboundScalarWaterVelocity;
+                if (bernoulliVelocityAlongSpring >= 0.0f)
+                {
+                    springOutboundScalarWaterVelocity = std::max(bernoulliVelocityAlongSpring + relVelocity, 0.0f);
+                }
+                else
+                {
+                    // Let's do it the other way around
+                    springOutboundScalarWaterVelocity = 0.0f;
+                }
 
                 // Store weight along spring, using final velocity as a proxy;
                 // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
@@ -3054,7 +3065,7 @@ void Ship::UpdateAirAndWaterPressure(
                                " pOther=", oldPointWaterBufferData[cs.OtherEndpointIndex] + oldPointEffectiveAirBufferData[cs.OtherEndpointIndex] * springUpness,
                                " springDir=", springNormalizedVector, " upness=", springUpness, " downness=", springDownness);
                     LogMessage("  bVel=", bernoulliVelocityAlongSpring, " wVel=", pointWaterVelocityAlongSpring, " rVel=", relVelocity,
-                               " ->  springOutboundScalarWaterVelocity=", springOutboundScalarWaterVelocity, " springOutboundWaterVelocities=", springOutboundWaterVelocities[s],
+                               " -> springOutboundScalarWaterVelocity=", springOutboundScalarWaterVelocity, " springOutboundWaterVelocities=", springOutboundWaterVelocities[s],
                                " springPerm=", mSprings.GetWaterPermeability(cs.SpringIndex));
                 }
             }
@@ -3916,6 +3927,8 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                     : 0.0f;
 
                 // Resultant
+                // TODOHERE: BUGBUG: relVelocity is independent from which side we're looking at, but here
+                // we pretend that e.g. a negative relvel means there's more flow in the other direction
                 float const springOutboundScalarWaterVelocity = bernoulliVelocityAlongSpring + relVelocity;
 
                 // Store weight along spring, using final velocity as a proxy;
