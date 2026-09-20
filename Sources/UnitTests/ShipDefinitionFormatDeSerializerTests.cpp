@@ -158,7 +158,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, PhysicsData)
     ShipPhysicsData const targetPd = ShipDefinitionFormatDeSerializer::ReadPhysicsData(buffer);
 
     EXPECT_EQ(sourcePd.Offset, targetPd.Offset);
-    EXPECT_EQ(sourcePd.InternalPressure, targetPd.InternalPressure);
+    EXPECT_EQ(sourcePd.InternalAirPressure, targetPd.InternalAirPressure);
 }
 
 TEST(ShipDefinitionFormatDeSerializerTests, AutoTexturizationSettings)
@@ -1172,7 +1172,7 @@ TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
     // Physics Data
 
     EXPECT_EQ(sd.PhysicsData.Offset, shipDefinition.PhysicsData.Offset);
-    EXPECT_EQ(sd.PhysicsData.InternalPressure, shipDefinition.PhysicsData.InternalPressure);
+    EXPECT_EQ(sd.PhysicsData.InternalAirPressure, shipDefinition.PhysicsData.InternalAirPressure);
 
     // Auto-texturization settings
 

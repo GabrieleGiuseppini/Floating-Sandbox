@@ -27,12 +27,12 @@ namespace Algorithms {
 inline void DiffuseLight_Naive(
     vec2f const * pointPositions,
     PlaneId const * pointPlaneIds,
-    ElementIndex const pointCount,
+    ElementCount const pointCount,
     vec2f const * lampPositions,
     PlaneId const * lampPlaneIds,
     float const * lampDistanceCoeffs,
     float const * lampSpreadMaxDistances,
-    ElementIndex const lampCount,
+    ElementCount const lampCount,
     float * restrict outLightBuffer) noexcept
 {
     for (ElementIndex p = 0; p < pointCount; ++p)
@@ -77,7 +77,7 @@ inline void DiffuseLight_Vectorized(
     PlaneId const * restrict lampPlaneIds,
     float const * restrict lampDistanceCoeffs,
     float const * restrict lampSpreadMaxDistances,
-    ElementIndex const lampCount,
+    ElementCount const lampCount,
     float * restrict outLightBuffer) noexcept
 {
     // This code is vectorized for 4 floats
@@ -164,7 +164,7 @@ inline void DiffuseLight_SSEVectorized(
     PlaneId const * restrict lampPlaneIds,
     float const * restrict lampDistanceCoeffs,
     float const * restrict lampSpreadMaxDistances,
-    ElementIndex const lampCount,
+    ElementCount const lampCount,
     float * restrict outLightBuffer) noexcept
 {
     // This code is vectorized for SSE = 4 floats
@@ -538,7 +538,7 @@ inline void DiffuseLight(
     PlaneId const * lampPlaneIds,
     float const * lampDistanceCoeffs,
     float const * lampSpreadMaxDistances,
-    ElementIndex const lampCount,
+    ElementCount const lampCount,
     float * restrict outLightBuffer) noexcept
 {
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
@@ -2939,4 +2939,146 @@ inline vec4f Mix(vec4f const & v1, vec4f const & v2, float w)
         w);
 
     return output;
+}
+
+namespace Algorithms {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// TransformMomentaToVelocities
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+inline void TransformMomentaToVelocities_Naive(
+    vec2f const * const restrict momentumBuffer,
+    float const * const restrict massBuffer,
+    vec2f * const restrict velocityBuffer,
+    ElementCount const pointCount) noexcept
+{
+    for (ElementIndex p = 0; p < pointCount; ++p)
+    {
+        if (massBuffer[p] != 0.0f)
+        {
+            velocityBuffer[p] =
+                momentumBuffer[p]
+                / massBuffer[p];
+        }
+        else
+        {
+            // No mass, no velocity
+            velocityBuffer[p] = vec2f::zero();
+        }
+    }
+}
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+inline void TransformMomentaToVelocities_SSEVectorized(
+    vec2f const * const restrict momentumBuffer,
+    float const * const restrict massBuffer,
+    vec2f * const restrict velocityBuffer,
+    ElementCount const pointCount) noexcept
+{
+    // This code is vectorized for SSE = 4 floats
+    static_assert(vectorization_float_count<size_t> >= 4);
+    assert(is_aligned_to_vectorization_word(momentumBuffer));
+    assert(is_aligned_to_vectorization_word(massBuffer));
+    assert(is_aligned_to_vectorization_word(velocityBuffer));
+    assert(is_aligned_to_float_element_count(pointCount));
+
+    __m128 const Zero = _mm_setzero_ps();
+
+    for (ElementIndex i = 0; i < pointCount; i += 4)
+    {
+        __m128 const masses = _mm_load_ps(massBuffer + i);
+        __m128 const validMask = _mm_cmpneq_ps(masses, Zero);
+
+        __m128 const momentum01 = _mm_load_ps(reinterpret_cast<float const *>(momentumBuffer + i)); // x0,y0,x1,y1
+        __m128 const momentum23 = _mm_load_ps(reinterpret_cast<float const *>(momentumBuffer + i + 2)); // x2,y2,x3,y3
+        __m128 momentumX = _mm_shuffle_ps(momentum01, momentum23, _MM_SHUFFLE(2, 0, 2, 0)); // x0,x1,x2,x3
+        __m128 momentumY = _mm_shuffle_ps(momentum01, momentum23, _MM_SHUFFLE(3, 1, 3, 1)); // y0,y1,y2,y3
+
+        __m128 const velocityX = _mm_and_ps(
+            _mm_div_ps(momentumX, masses),
+            validMask);
+        __m128 const velocityY = _mm_and_ps(
+            _mm_div_ps(momentumY, masses),
+            validMask);
+
+        __m128 velocity01 = _mm_unpacklo_ps(velocityX, velocityY); // a[0], b[0], a[1], b[1]
+        __m128 velocity02 = _mm_unpackhi_ps(velocityX, velocityY); // a[2], b[2], a[3], b[3]
+        _mm_store_ps(reinterpret_cast<float *>(velocityBuffer + i), velocity01);
+        _mm_store_ps(reinterpret_cast<float *>(velocityBuffer + i + 2), velocity02);
+    }
+}
+#endif
+
+#if FS_IS_ARM_NEON() // Implies ARM anyways
+inline void TransformMomentaToVelocities_NeonVectorized(
+    vec2f const * const restrict momentumBuffer,
+    float const * const restrict massBuffer,
+    vec2f * const restrict velocityBuffer,
+    ElementCount const pointCount) noexcept
+{
+    // This code is vectorized for Neon = 4 floats
+    static_assert(vectorization_float_count<size_t> >= 4);
+    assert(is_aligned_to_vectorization_word(momentumBuffer));
+    assert(is_aligned_to_vectorization_word(massBuffer));
+    assert(is_aligned_to_vectorization_word(velocityBuffer));
+    assert(is_aligned_to_float_element_count(pointCount));
+
+    // TODO
+
+    float32x4_t const centralWeight = vdupq_n_f32(static_cast<float>((SmoothingSize / 2) + 1));
+    float32x4_t const scaling = vdupq_n_f32(
+        (1.0f / static_cast<float>(SmoothingSize))
+        * (1.0f / static_cast<float>(SmoothingSize)));
+
+    for (size_t i = 0; i < BufferSize; i += 4)
+    {
+        // Central sample
+        float32x4_t accumulatedHeight = vmulq_f32(
+            vld1q_f32(inBuffer + i),
+            centralWeight);
+
+        // Lateral samples; l is offset from central
+        for (size_t l = 1; l <= SmoothingSize / 2; ++l)
+        {
+            float32x4_t const lateralWeight = vdupq_n_f32(static_cast<float>((SmoothingSize / 2) + 1 - l));
+
+            accumulatedHeight = vmlaq_f32(
+                accumulatedHeight,
+                vaddq_f32(
+                    vld1q_f32(inBuffer + i - l),
+                    vld1q_f32(inBuffer + i + l)),
+                lateralWeight);
+        }
+
+        // Update output
+        vst1q_f32(
+            outBuffer + i,
+            vmlaq_f32(
+                vld1q_f32(outBuffer + i),
+                accumulatedHeight,
+                scaling));
+    }
+}
+#endif
+
+/*
+ * Transforms a buffer of momenta into velocities, via masses.
+ */
+inline void TransformMomentaToVelocities(
+    vec2f const * const restrict momentumBuffer,
+    float const * const restrict massBuffer,
+    vec2f * const restrict velocityBuffer,
+    ElementCount const pointCount) noexcept
+{
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+    TransformMomentaToVelocities_SSEVectorized(momentumBuffer, massBuffer, velocityBuffer, pointCount);
+#elif FS_IS_ARM_NEON()
+    TransformMomentaToVelocities_NeonVectorized(momentumBuffer, massBuffer, velocityBuffer, pointCount);
+#else
+    TransformMomentaToVelocities_Naive(momentumBuffer, massBuffer, velocityBuffer, pointCount);
+#endif
+}
+
 }

@@ -13,6 +13,7 @@
 #include <Render/RenderContext.h>
 
 #include <Core/AABB.h>
+#include <Core/Algorithms.h>
 #include <Core/Buffer.h>
 #include <Core/BufferAllocator.h>
 #include <Core/ElementContainer.h>
@@ -1799,25 +1800,11 @@ public:
 
     void UpdateWaterVelocitiesFromMomenta()
     {
-        float * const restrict waterBuffer = mWaterBuffer.data();
-        vec2f * restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
-        vec2f * const restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
-
-        // No need to visit ephemerals, as they don't get water
-        for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
-        {
-            if (waterBuffer[p] != 0.0f)
-            {
-                waterVelocityBuffer[p] =
-                    waterMomentumBuffer[p]
-                    / waterBuffer[p];
-            }
-            else
-            {
-                // No mass, no velocity
-                waterVelocityBuffer[p] = vec2f::zero();
-            }
-        }
+        Algorithms::TransformMomentaToVelocities(
+            mWaterMomentumBuffer.data(),
+            mWaterBuffer.data(),
+            mWaterVelocityBuffer.data(),
+            mAlignedShipPointCount);
     }
 
     // At T0; effective air at current particle's air temperature is at EffectiveAir
@@ -1876,25 +1863,11 @@ public:
     // consistent with current Air buffer
     void UpdateAirVelocitiesFromMomenta()
     {
-        float * const restrict effectiveAirBuffer = mEffectiveAirBuffer.data();
-        vec2f * restrict airVelocityBuffer = mAirVelocityBuffer.data();
-        vec2f * const restrict airMomentumBuffer = mAirMomentumBuffer.data();
-
-        // No need to visit ephemerals, as they don't get air
-        for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
-        {
-            if (effectiveAirBuffer[p] != 0.0f)
-            {
-                airVelocityBuffer[p] =
-                    airMomentumBuffer[p]
-                    / effectiveAirBuffer[p];
-            }
-            else
-            {
-                // No mass, no velocity
-                airVelocityBuffer[p] = vec2f::zero();
-            }
-        }
+        Algorithms::TransformMomentaToVelocities(
+            mAirMomentumBuffer.data(),
+            mEffectiveAirBuffer.data(),
+            mAirVelocityBuffer.data(),
+            mAlignedShipPointCount);
     }
 
     float GetEffectiveAir(ElementIndex pointElementIndex) const
@@ -1910,7 +1883,7 @@ public:
     void ResetEffectiveAir(float const * restrict sourceBufferData)
     {
         // No need to copy ephemerals, as they don't get air
-        mEffectiveAirBuffer.copy_from(sourceBufferData, static_cast<size_t>(mRawShipPointCount));
+        mEffectiveAirBuffer.copy_from(sourceBufferData, static_cast<size_t>(mAlignedShipPointCount));
     }
 
     // Modifies in-place the Air buffer to take into account

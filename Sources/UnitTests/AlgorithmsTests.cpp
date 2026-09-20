@@ -1357,3 +1357,72 @@ TEST(AlgorithmsTests, MixVec4f_NeonVectorized)
     RunMixVec4fTest(Algorithms::MixVec4f_NeonVectorized);
 }
 #endif
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// MixVec4f
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename Algorithm>
+void RunTransformMomentaToVelocitiesTest(Algorithm algorithm)
+{
+    aligned_to_vword vec2f const momenta[8] = {
+        vec2f(0.0f, 0.0f),
+        vec2f(1.0f, 2.0f),
+        vec2f(3.0f, 4.0f),
+        vec2f(5.0f, 6.0f),
+        vec2f(10.0f, 10.0f),
+        vec2f(11.0f, 12.0f),
+        vec2f(13.0f, 14.0f),
+        vec2f(15.0f, 16.0f) };
+
+    aligned_to_vword float const masses[8] = {
+        1.0f,
+        0.0f,
+        2.0f,
+        3.0f,
+        100.0f,
+        110.0f,
+        120.0,
+        130.0f };
+
+    aligned_to_vword vec2f velocities[8] = { vec2f::zero() };
+
+    algorithm(
+        momenta,
+        masses,
+        velocities,
+        8);
+
+    for (int i = 0; i < 8; ++i)
+    {
+        if (i == 1)
+        {
+            EXPECT_FLOAT_EQ(velocities[1].x, 0.0f);
+            EXPECT_FLOAT_EQ(velocities[1].y, 0.0f);
+        }
+        else
+        {
+            EXPECT_FLOAT_EQ(velocities[i].x, momenta[i].x / masses[i]);
+            EXPECT_FLOAT_EQ(velocities[i].y, momenta[i].y / masses[i]);
+        }
+    }
+}
+
+TEST(AlgorithmsTests, TransformMomentaToVelocities_Naive)
+{
+    RunTransformMomentaToVelocitiesTest(Algorithms::TransformMomentaToVelocities_Naive);
+}
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+TEST(AlgorithmsTests, TransformMomentaToVelocities_SSEVectorized)
+{
+    RunTransformMomentaToVelocitiesTest(Algorithms::TransformMomentaToVelocities_SSEVectorized);
+}
+#endif
+
+#if FS_IS_ARM_NEON()
+TEST(AlgorithmsTests, TransformMomentaToVelocities_NeonVectorized)
+{
+    RunTransformMomentaToVelocitiesTest(Algorithms::TransformMomentaToVelocities_NeonVectorized);
+}
+#endif
