@@ -3759,13 +3759,19 @@
 						+ Profiling: airAndWaterDiffusion: 1.694 -> 1.1/1.2 -> 0.9/1.0, 3.3-3.4ms -> 3.1-3.3ms
 
 						- Merge zero momenta against hull in single loop, and at end
-							- If Air doesn't need water momenta
+							! Air doesn't need water momenta
 							- That means one single zeroing for all points' iterations, test with max # of iters
 								- Test: just view air + water momenta
 
-							- Can also incorporate other things we do at last spring loop
+							- Merge the two zero-momenta with the map step of hull diffusion
+							- Move the last 2x Momenta->Velocities to end
+							- Update schema above
 						- Merge MomentaToVels with point-by-point loops
 							! Air doesn't need water vels
+
+						- Copy schema above into code
+
+						- Nuke old UpdateAirAndWaterPressure and rename
 
 						- Merge branch: pressure_redesign_by_springs back into pressure_redesign
 
@@ -3791,7 +3797,7 @@
 						- Nuke all commented-out sanity lines for ephemeral creation functions
 						- ResetEffectiveAirPressure: no need for size arg
 
-				- Points::UpdateAirPressureVelocitiesFromMomenta and UpdateWaterVelocitiesFromMomenta:
+				- Points::UpdateAirPressureVelocitiesFromMomenta and UpdateWaterVelocitiesFromMomenta and TransformAirToEffectiveAir and UpdateAirFromEffectiveAir:
 					- Check if vectorized; if not => add to Algorithms
 						- Buffers must be on aligned point count
 						- With unit tests
