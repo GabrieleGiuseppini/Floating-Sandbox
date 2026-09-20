@@ -18,6 +18,7 @@
 #include <Core/FixedSizeVector.h>
 
 #include <cassert>
+#include <cstring>
 #include <functional>
 #include <limits>
 
@@ -53,6 +54,8 @@ public:
         {}
     };
 
+#pragma pack(push, 1)
+
     /*
      * Work variables for the air and water diffusion algorithm.
      */
@@ -67,6 +70,8 @@ public:
         {
         }
     };
+
+#pragma pack(pop)
 
 private:
 
@@ -608,19 +613,14 @@ public:
     // Work buffers
     //
 
-    FluidDiffusionAlgorithmVariables const * GetFluidDiffusionAlgorithmVariablesBuffer() const
-    {
-        return mFluidDiffusionAlgorithmVariablesBuffer.data();
-    }
-
-    FluidDiffusionAlgorithmVariables * GetFluidDiffusionAlgorithmVariablesBuffer()
-    {
-        return mFluidDiffusionAlgorithmVariablesBuffer.data();
-    }
-
     FluidDiffusionAlgorithmVariables * ResetFluidDiffusionAlgorithmVariablesBuffer()
     {
-        mFluidDiffusionAlgorithmVariablesBuffer.fill(FluidDiffusionAlgorithmVariables());
+        // Dirty...yeah
+        std::memset(
+            mFluidDiffusionAlgorithmVariablesBuffer.data(),
+            0,
+            mFluidDiffusionAlgorithmVariablesBuffer.GetSize() * sizeof(FluidDiffusionAlgorithmVariables));
+
         return mFluidDiffusionAlgorithmVariablesBuffer.data();
     }
 
