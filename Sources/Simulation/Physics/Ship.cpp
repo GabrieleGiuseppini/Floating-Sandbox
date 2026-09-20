@@ -3697,7 +3697,7 @@ void Ship::UpdateAirAndWaterPressure(
     // Air finalization: reset Air to result EffectiveAir
     //
 
-    mPoints.UpdateAirFromEffective();
+    mPoints.UpdateAirFromEffectiveAir();
 
 
 
@@ -3817,12 +3817,12 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
 
     for (int iter = 0; iter < simulationParameters.WaterDiffusionNumberOfIterations; ++iter)
     {
-        if (mLastQueriedPointIndex != NoneElementIndex)
-        {
-            LogMessage("================ @", mLastQueriedPointIndex);
-            LogMessage("Start W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", mPoints.GetWaterVelocity(mLastQueriedPointIndex),
-                " EA=", oldPointEffectiveAirBufferData[mLastQueriedPointIndex]);
-        }
+        //if (mLastQueriedPointIndex != NoneElementIndex)
+        //{
+        //    LogMessage("================ @", mLastQueriedPointIndex);
+        //    LogMessage("Start W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", mPoints.GetWaterVelocity(mLastQueriedPointIndex),
+        //        " EA=", oldPointEffectiveAirBufferData[mLastQueriedPointIndex]);
+        //}
 
         // Prepare water buffer
         auto oldPointWaterBuffer = mPoints.MakeWaterBufferCopy();
@@ -3954,17 +3954,17 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                     springNormalizedVector
                     * springScalarResultantVelocity;
 
-                if (pA == mLastQueriedPointIndex
-                    || pB == mLastQueriedPointIndex)
-                {
-                    LogMessage("  W ", pA, "->", pB, ": springOutboundWaterFlowWeights=", springVariables[s].FlowWeight,
-                        " dp=", dp, " pA=", oldPointWaterBufferData[pA] + oldPointEffectiveAirBufferData[pA] * springDownness,
-                        " pB=", oldPointWaterBufferData[pB] + oldPointEffectiveAirBufferData[pB] * springUpness,
-                        " springDir=", springNormalizedVector, " upness=", springUpness, " downness=", springDownness);
-                    LogMessage("  bVel=", bernoulliVelocityAlongSpring, " wVelA=", pointAWaterVelocityAlongSpring, " wVelB=", pointBWaterVelocityAlongSpring, " rVel=", relVelocity,
-                        " ->  springScalarResultantVelocity=", springScalarResultantVelocity, " flowVel=", springVariables[s].FlowVelocity,
-                        " springPerm=", mSprings.GetWaterPermeability(s));
-                }
+                //if (pA == mLastQueriedPointIndex
+                //    || pB == mLastQueriedPointIndex)
+                //{
+                //    LogMessage("  W ", pA, "->", pB, ": springOutboundWaterFlowWeights=", springVariables[s].FlowWeight,
+                //        " dp=", dp, " pA=", oldPointWaterBufferData[pA] + oldPointEffectiveAirBufferData[pA] * springDownness,
+                //        " pB=", oldPointWaterBufferData[pB] + oldPointEffectiveAirBufferData[pB] * springUpness,
+                //        " springDir=", springNormalizedVector, " upness=", springUpness, " downness=", springDownness);
+                //    LogMessage("  bVel=", bernoulliVelocityAlongSpring, " wVelA=", pointAWaterVelocityAlongSpring, " wVelB=", pointBWaterVelocityAlongSpring, " rVel=", relVelocity,
+                //        " ->  springScalarResultantVelocity=", springScalarResultantVelocity, " flowVel=", springVariables[s].FlowVelocity,
+                //        " springPerm=", mSprings.GetWaterPermeability(s));
+                //}
             }
         }
 
@@ -3998,12 +3998,12 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                     1.0f)
                     * inverseNumberOfWaterIterations; // Chop up quantum
 
-                if (p == mLastQueriedPointIndex)
-                {
-                    LogMessage("W: normFactor=", pointsVariables[p].FlowNormalizationFactor, " (oldWater=", oldPointWaterBufferData[p], " max=", maxOutboundFlowWeight,
-                        " mat=", mPoints.GetMaterialWaterDiffusionSpeed(p), " effDiffSpeed=", effectiveWaterDiffusionSpeedAdjustment,
-                        " itersFactor=", inverseNumberOfWaterIterations, " tot=", pointsVariables[p].TotalOutboundFlowWeight, ")");
-                }
+                //if (p == mLastQueriedPointIndex)
+                //{
+                //    LogMessage("W: normFactor=", pointsVariables[p].FlowNormalizationFactor, " (oldWater=", oldPointWaterBufferData[p], " max=", maxOutboundFlowWeight,
+                //        " mat=", mPoints.GetMaterialWaterDiffusionSpeed(p), " effDiffSpeed=", effectiveWaterDiffusionSpeedAdjustment,
+                //        " itersFactor=", inverseNumberOfWaterIterations, " tot=", pointsVariables[p].TotalOutboundFlowWeight, ")");
+                //}
             }
 
             //
@@ -4016,10 +4016,10 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
             float const pointRemainingWater = std::max(oldPointWaterBufferData[p] - pointTotalWaterOut, 0.0f);
             newPointWaterMomentumBufferData[p] = oldPointWaterVelocityBufferData[p] * pointRemainingWater;
 
-            if (p == mLastQueriedPointIndex)
-            {
-                LogMessage("  W Init: remaining=", pointRemainingWater, " add mom=", oldPointWaterVelocityBufferData[p] * pointRemainingWater, " final mom=", newPointWaterMomentumBufferData[p]);
-            }
+            //if (p == mLastQueriedPointIndex)
+            //{
+            //    LogMessage("  W Init: remaining=", pointRemainingWater, " add mom=", oldPointWaterVelocityBufferData[p] * pointRemainingWater, " final mom=", newPointWaterMomentumBufferData[p]);
+            //}
         }
 
         //
@@ -4074,15 +4074,15 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                         springVariables[s].FlowVelocity
                         * springOutboundQuantityOfWater;
 
-                    if (pSrc == mLastQueriedPointIndex)
-                    {
-                        LogMessage("  W Out: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector);
-                    }
-                    else if (pDst == mLastQueriedPointIndex)
-                    {
-                        LogMessage("  W In: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector,
-                            " mom in=", springVariables[s].FlowVelocity * springOutboundQuantityOfWater, " final mom=", newPointWaterMomentumBufferData[pDst]);
-                    }
+                    //if (pSrc == mLastQueriedPointIndex)
+                    //{
+                    //    LogMessage("  W Out: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector);
+                    //}
+                    //else if (pDst == mLastQueriedPointIndex)
+                    //{
+                    //    LogMessage("  W In: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector,
+                    //        " mom in=", springVariables[s].FlowVelocity * springOutboundQuantityOfWater, " final mom=", newPointWaterMomentumBufferData[pDst]);
+                    //}
 
 #if !FS_IS_PLATFORM_MOBILE()
                     if (oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) > 0.0f)
@@ -4126,12 +4126,12 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                         -springVariables[s].FlowVelocity
                         * springOutboundQuantityOfWater;
 
-                    if (pSrc == mLastQueriedPointIndex)
-                    {
-                        LogMessage("  W Bounce back in: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector,
-                            " mom add=", -springVariables[s].FlowVelocity * springOutboundQuantityOfWater,
-                            " final mom=", newPointWaterMomentumBufferData[pSrc]);
-                    }
+                    //if (pSrc == mLastQueriedPointIndex)
+                    //{
+                    //    LogMessage("  W Bounce back in: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector,
+                    //        " mom add=", -springVariables[s].FlowVelocity * springOutboundQuantityOfWater,
+                    //        " final mom=", newPointWaterMomentumBufferData[pSrc]);
+                    //}
 
 #if !FS_IS_PLATFORM_MOBILE()
                     if (oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) > 0.0f)
@@ -4164,12 +4164,12 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                     vec2f const springNormalizedVector = mSprings.GetCachedVectorialNormalizedVector(s);
                     float const momentumAlongSpring = newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)].dot(springNormalizedVector);
 
-                    if (mSprings.GetEndpointAIndex(s) == mLastQueriedPointIndex)
-                    {
-                        LogMessage("  WMomCorrection: dir=", springNormalizedVector,
-                                   " mom: ", newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)],
-                                   " -> ", newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)] - springNormalizedVector * std::max(momentumAlongSpring, 0.0f));
-                    }
+                    //if (mSprings.GetEndpointAIndex(s) == mLastQueriedPointIndex)
+                    //{
+                    //    LogMessage("  WMomCorrection: dir=", springNormalizedVector,
+                    //               " mom: ", newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)],
+                    //               " -> ", newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)] - springNormalizedVector * std::max(momentumAlongSpring, 0.0f));
+                    //}
 
                     newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f);
                 }
@@ -4182,12 +4182,12 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                     vec2f const springNormalizedVector = -mSprings.GetCachedVectorialNormalizedVector(s);
                     float const momentumAlongSpring = newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)].dot(springNormalizedVector);
 
-                    if (mSprings.GetEndpointBIndex(s) == mLastQueriedPointIndex)
-                    {
-                        LogMessage("  WMomCorrection: dir=", springNormalizedVector,
-                            " mom: ", newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)],
-                            " -> ", newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)] - springNormalizedVector * std::max(momentumAlongSpring, 0.0f));
-                    }
+                    //if (mSprings.GetEndpointBIndex(s) == mLastQueriedPointIndex)
+                    //{
+                    //    LogMessage("  WMomCorrection: dir=", springNormalizedVector,
+                    //        " mom: ", newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)],
+                    //        " -> ", newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)] - springNormalizedVector * std::max(momentumAlongSpring, 0.0f));
+                    //}
 
                     newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f);
                 }
@@ -4212,12 +4212,12 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
 
         mPoints.UpdateWaterVelocitiesFromMomenta();
 
-        if (mLastQueriedPointIndex != NoneElementIndex)
-        {
-            LogMessage("================");
-            LogMessage("End W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", mPoints.GetWaterVelocity(mLastQueriedPointIndex),
-                " WMom=", mPoints.GetWaterMomentum(mLastQueriedPointIndex), " A=", oldPointEffectiveAirBufferData[mLastQueriedPointIndex]);
-        }
+        //if (mLastQueriedPointIndex != NoneElementIndex)
+        //{
+        //    LogMessage("================");
+        //    LogMessage("End W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", mPoints.GetWaterVelocity(mLastQueriedPointIndex),
+        //        " WMom=", mPoints.GetWaterMomentum(mLastQueriedPointIndex), " A=", oldPointEffectiveAirBufferData[mLastQueriedPointIndex]);
+        //}
     } // Iter loop
 
 #if !FS_IS_PLATFORM_MOBILE()
