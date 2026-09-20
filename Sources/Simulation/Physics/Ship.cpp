@@ -4033,7 +4033,7 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                 // Determine source and destination of flow
                 ElementIndex pSrc;
                 ElementIndex pDst;
-                float outboundFlowWeight;
+                float outboundFlowWeight; // >= 0.0
                 vec2f springNormalizedVector;
                 if (springVariables[s].FlowWeight >= 0.0f)
                 {
@@ -4052,7 +4052,7 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                     springNormalizedVector = -mSprings.GetCachedVectorialNormalizedVector(s);
                 }
 
-                // Calculate quantity of water directed from src to dst
+                // Calculate quantity of water directed from src to dst (>= 0.0)
                 float const springOutboundQuantityOfWater =
                     outboundFlowWeight
                     * pointsVariables[pSrc].FlowNormalizationFactor;
@@ -4066,6 +4066,7 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                     //
 
                     // Move water quantity
+                    assert(newPointWaterBufferData[pSrc] >= springOutboundQuantityOfWater);
                     newPointWaterBufferData[pSrc] -= springOutboundQuantityOfWater;
                     newPointWaterBufferData[pDst] += springOutboundQuantityOfWater;
 

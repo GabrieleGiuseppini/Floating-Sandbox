@@ -3655,8 +3655,15 @@
 					= Try: loop by springs:
 						! Old complexity: (P + 2S)*a10 + S*a1 ~= (S=3.5P) 8P*a10 + 3.5P*a1
 						! New complexity: S*a5 + P*a1 + S*a5 + S*a1 ~= S*a10 + P*a1 + S*a1 = 3.5P*a10 + 4.5P*a1
+
+						===
+						===
+						===
+						+ For all points p:
+							+ Transform p.Air into p.EffectiveAir
 						+ Water:
 							+ For each iter:
+								+ Init p.momentum to zero
 								+ Init s.FluidDiffusionAlgorithmVariables with zeros
 									+ New workbuffer at Springs
 								+ Init p.FluidDiffusionAlgorithmVariables with zeros
@@ -3675,11 +3682,14 @@
 								+ For all springs s:
 									+ Update endpoints' water, momenta, kineticEnergyLoss
 								+ For all springs s:
-									+ Zero out endpoints' momenta against hull
+									+ If s is impermeable:
+										+ Zero out endpoints' momenta against hull
 								+ For all points p:
 									+ Calc total waterSplashed
 								+ For all points p:
-									+ Transform Point's momentum into velocity
+									+ Transform p.momentum into p.velocity
+						===
+
 							+ Fix: wrong velocity sign
 							+ Fix: resultant vel = bvel + relvel: it's wrong
 								! Note 1: relvel is always the same for a srping - including sign - no matter from which side you look at it from: it's the vel each sees separating the two along the spring
@@ -3696,30 +3706,66 @@
 							+ Flood: OK
 							+ Shoot: OK
 							+ Splash sounds: OK
+
 						+ Profiling: airAndWaterDiffusion: 1.694 -> 1.1/1.2, 3.3-3.4ms
 							+ Avergne test: 18ms
 
-						+ See how much it changes without any bounces: OK, can sacrifice
-							+ Test ignoring all imperm springs
+						===
+						+ See how much it changes without any air bounces: OK, can sacrifice
+							+ Test NPCs with doors ignoring all imperm springs
 							+ Then undo changes
-
+						===
 						- Air
 							- For each iter:
+								- Init p.momentum to zero
 								- Init s.FluidDiffusionAlgorithmVariables with zeros
 								- Init p.FluidDiffusionAlgorithmVariables with zeros
-								- TODO: have to sacrifice bounce so that we may switch on WaterPerm for hull points
+								- For all springs s:
+									- If s is permeable:
+										- Calc s.FlowWeight
+										- Calc s.FlowVelocity
+										- Update p1,p2.TotalOutboundWaterFlowWeight (one is always zero)
+										- Update p1,p2.MaxOutboundWaterFlowWeight (one is always zero)
+								- For all points p:
+									- If p is not hull:
+										- Calc p.AirQuantityNormalizationFactor
+										- Calc initial p.AirMomentum (directly in buffer)
+											- Make sure that non-hull points on impermeable springs have their momenta unchanged
+								- For all springs s:
+									- If s is permeable:
+										- Update endpoints' air, momenta
+											- Watch out for overdraining
+								- For all springs s:
+									- If s is impermeable:
+										- Zero out endpoints' momenta against hull
+								- For all points p:
+									- Transform p.momentum into p.velocity
+							- For all springs s:
+								// Hull points=avg
+								- If s is impermeable:
+									- For each hull endpoint: add other endpoint's total pressure to its effectiveAir
 							- For all points p:
-								- Transform Point's EffectiveAir into Air
+								// Hull points=avg
+								- If p is hull: divide effective air by p.ConnectedSprings.size()+1
+							- For all points p:
+								- Transform p.EffectiveAir into p.Air
+						===
+						===
+						===
 
-						- Merge zero momenta against hull in single loop at end
+						- Merge zero momenta against hull in single loop, and at end
 							- If Air doesn't need water momenta
-							- That means one single zero for all points' iterations, test with max # of iters
+							- That means one single zeroing for all points' iterations, test with max # of iters
+							- Can also incorporate other things we do at last spring loop
 						- Merge MomentaToVels with point-by-point loops
 							- If Air doesn't need water vels
 
 						- Merge branch: pressure_redesign_by_springs back into pressure_redesign
 
 					- See if makes sense to skip also water step for perm=0 springs
+						+ See how much it changes without any water bounces: OK, can sacrifice
+							+ Test ignoring all imperm springs
+							+ Then undo changes
 						- But needs to calc kinetic energy loss
 							- Option 1: redo kinetic energy loss @ zero-hull-momenta loop
 
@@ -3747,6 +3793,7 @@
 					- If we do:
 						- Add asserts at setters and getters
 						- Check all callers of setters and getters
+						- Watch for mass augmentation/update
 						- Nuke all commented-out sanity lines for ephemeral creation functions
 						- ResetEffectiveAirPressure: no need for size arg
 
