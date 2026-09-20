@@ -3714,50 +3714,58 @@
 								+ Test NPCs with doors ignoring all imperm springs
 								+ Then undo changes
 						===
-						- Air
-							- For each iter:
-								- Init p.momentum to zero
-								- Init s.FluidDiffusionAlgorithmVariables with zeros
-								- Init p.FluidDiffusionAlgorithmVariables with zeros
-								- For all springs s:
-									- If s is permeable:
-										- Calc s.FlowWeight
-										- Calc s.FlowVelocity
-										- Update p1,p2.TotalOutboundWaterFlowWeight (one is always zero)
-										- Update p1,p2.MaxOutboundWaterFlowWeight (one is always zero)
-								- For all points p:
-									- If p is not hull:
-										- Calc p.AirQuantityNormalizationFactor
-										- Calc initial p.AirMomentum (directly in buffer)
-											- Make sure that non-hull points on impermeable springs have their momenta unchanged
-								- For all springs s:
-									- If s is permeable:
-										- Update endpoints' air, momenta
-											- Watch out for overdraining
-								- For all springs s:
-									- If s is impermeable:
-										- Zero out endpoints' momenta against hull
-								- For all points p:
-									- Transform p.momentum into p.velocity
-							- For all springs s:
+						+ Air
+							+ For each iter:
+								+ Init p.momentum to zero
+								+ Init s.FluidDiffusionAlgorithmVariables with zeros
+								+ Init p.FluidDiffusionAlgorithmVariables with zeros
+								+ For all springs s:
+									+ If s is permeable:
+										+ Calc s.FlowWeight
+										+ Calc s.FlowVelocity
+										+ Update p1,p2.TotalOutboundWaterFlowWeight (one is always zero)
+										+ Update p1,p2.MaxOutboundWaterFlowWeight (one is always zero)
+								+ For all points p:
+									+ If p is not hull:
+										+ Calc p.AirQuantityNormalizationFactor
+										+ Calc initial p.AirMomentum (directly in buffer)
+											+ Make sure that non-hull points on impermeable springs have their momenta unchanged
+								+ For all springs s:
+									+ If s is permeable:
+										+ Update endpoints' air, momenta
+											+ Watch out for overdraining
+								+ For all springs s:
+									+ If s is impermeable:
+										+ Zero out endpoints' momenta against hull
+								+ For all points p:
+									+ Transform p.momentum into p.velocity
+							+ For all springs s:
 								// Hull points=avg
-								- If s is impermeable:
-									- For each hull endpoint: add other endpoint's total pressure to its effectiveAir
-							- For all points p:
+								+ If s is impermeable:
+									+ For each hull endpoint: add other endpoint's total pressure to its effectiveAir
+							+ For all points p:
 								// Hull points=avg
-								- If p is hull: divide effective air by p.ConnectedSprings.size()+1
-							- For all points p:
-								- Transform p.EffectiveAir into p.Air
+								+ If p is hull: divide effective air by p.ConnectedSprings.size()+1
+							+ For all points p:
+								+ Transform p.EffectiveAir into p.Air
 						===
 						===
 						===
 
+						+ Flood: OK
+						+ Shoot:
+						+ Triton (for hull avg)
+						+ Remove logs
+						+ Profiling: airAndWaterDiffusion: 1.694 -> 1.1/1.2 -> 0.9/1.0, 3.3-3.4ms -> 3.1-3.3ms
+
 						- Merge zero momenta against hull in single loop, and at end
 							- If Air doesn't need water momenta
 							- That means one single zeroing for all points' iterations, test with max # of iters
+								- Test: just view air + water momenta
+
 							- Can also incorporate other things we do at last spring loop
 						- Merge MomentaToVels with point-by-point loops
-							- If Air doesn't need water vels
+							! Air doesn't need water vels
 
 						- Merge branch: pressure_redesign_by_springs back into pressure_redesign
 
@@ -3773,19 +3781,6 @@
 						- mMaterialWaterRestitutionBuffer
 						- mMaterialWaterDiffusionSpeedBuffer
 
-				- Reduce ApplyStaticPressureForces net force complexity
-					! Complexity changed across versions: 0.03/0.04 -> 0.1/0.4
-					- Analyze algo and see if can be more aggressive
-
-				- Rebalance thread tasks
-					- Consider moving StaticPressure to other thread
-				- ApplyStaticPressureForces:
-					- Pre-multiply pressure conversion factors into forceNormalizationFactor
-				- Points::UpdateAirPressureVelocitiesFromMomenta and UpdateWaterVelocitiesFromMomenta:
-					- Check if vectorized; if not => add to Algorithms
-						- With unit tests
-						- -> Android plan
-
 				- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
 					- Watchout: when we make copies of buffers we use mFloatBufferAllocator
 						- TODO: not anymore? We've cleaned up up, but double-check
@@ -3796,9 +3791,25 @@
 						- Nuke all commented-out sanity lines for ephemeral creation functions
 						- ResetEffectiveAirPressure: no need for size arg
 
+				- Points::UpdateAirPressureVelocitiesFromMomenta and UpdateWaterVelocitiesFromMomenta:
+					- Check if vectorized; if not => add to Algorithms
+						- Buffers must be on aligned point count
+						- With unit tests
+						- -> Android plan
+
 				- Better zeroing of buffers
 					- Springs.FluidDiffusionAlgorithmVariables
 					- Points.FluidDiffusionAlgorithmVariables
+
+				- ApplyStaticPressureForces:
+					- Pre-multiply pressure conversion factors into forceNormalizationFactor
+
+				- Reduce ApplyStaticPressureForces net force complexity
+					! Complexity changed across versions: 0.03/0.04 -> 0.1/0.4
+					- Analyze algo and see if can be more aggressive
+
+				- Rebalance thread tasks
+					- Consider moving StaticPressure to other thread
 
 				- Cleanup:
 					- Remove FS_PROFILE
@@ -3856,6 +3867,8 @@
 			- If doesn't go through, nuke Points::WaterDiffusionKineticEnergyLoss and incorporate in Points::<workbuffer for WaterDiffusion algo>
 
 		- Video:
+			- Momenta: semi-transparent
+				- Make VectorField rendering use vec4f
 			- That pressure w/watertight doors ship, with NPCs (20 atm)
 
 		- Android port plan:
