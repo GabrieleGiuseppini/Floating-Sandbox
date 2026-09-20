@@ -4146,55 +4146,6 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
             }
         }
 
-        //
-        // Zero out momenta against hull
-        //
-
-        for (auto const s : mSprings)
-        {
-            if (!mSprings.IsDeleted(s) && mSprings.GetWaterPermeability(s) == 0.0f)
-            {
-                assert(mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)) || mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)));
-
-                if (!mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)))
-                {
-                    assert(mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)));
-
-                    // A not hull => against hull
-
-                    vec2f const springNormalizedVector = mSprings.GetCachedVectorialNormalizedVector(s);
-                    float const momentumAlongSpring = newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)].dot(springNormalizedVector);
-
-                    //if (mSprings.GetEndpointAIndex(s) == mLastQueriedPointIndex)
-                    //{
-                    //    LogMessage("  WMomCorrection: dir=", springNormalizedVector,
-                    //               " mom: ", newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)],
-                    //               " -> ", newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)] - springNormalizedVector * std::max(momentumAlongSpring, 0.0f));
-                    //}
-
-                    newPointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f);
-                }
-                else if (!mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)))
-                {
-                    assert(mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)));
-
-                    // B not hull => against hull
-
-                    vec2f const springNormalizedVector = -mSprings.GetCachedVectorialNormalizedVector(s);
-                    float const momentumAlongSpring = newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)].dot(springNormalizedVector);
-
-                    //if (mSprings.GetEndpointBIndex(s) == mLastQueriedPointIndex)
-                    //{
-                    //    LogMessage("  WMomCorrection: dir=", springNormalizedVector,
-                    //        " mom: ", newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)],
-                    //        " -> ", newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)] - springNormalizedVector * std::max(momentumAlongSpring, 0.0f));
-                    //}
-
-                    newPointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f);
-                }
-            }
-        }
-
 #if !FS_IS_PLATFORM_MOBILE()
         //
         // Update total water splash
@@ -4207,11 +4158,14 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
         }
 #endif
 
-        //
-        // Transform momenta into velocities
-        //
+        if (iter < simulationParameters.WaterDiffusionNumberOfIterations - 1) // We do the last one later, after zeroing out momenta against hull
+        {
+            //
+            // Transform momenta into velocities
+            //
 
-        mPoints.UpdateWaterVelocitiesFromMomenta();
+            mPoints.UpdateWaterVelocitiesFromMomenta();
+        }
 
         //if (mLastQueriedPointIndex != NoneElementIndex)
         //{
@@ -4540,60 +4494,14 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
         }
 
         //
-        // Zero out momenta against hull
-        //
-
-        for (auto const s : mSprings)
-        {
-            if (!mSprings.IsDeleted(s) && mSprings.GetWaterPermeability(s) == 0.0f)
-            {
-                assert(mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)) || mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)));
-
-                if (!mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)))
-                {
-                    assert(mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)));
-
-                    // A not hull => against hull
-
-                    vec2f const springNormalizedVector = mSprings.GetCachedVectorialNormalizedVector(s);
-                    float const momentumAlongSpring = newPointAirMomentumBufferData[mSprings.GetEndpointAIndex(s)].dot(springNormalizedVector);
-
-                    //if (mSprings.GetEndpointAIndex(s) == mLastQueriedPointIndex)
-                    //{
-                    //    LogMessage("  AMomCorrection: dir=", springNormalizedVector,
-                    //               " mom: ", newPointAirMomentumBufferData[mSprings.GetEndpointAIndex(s)],
-                    //               " -> ", newPointAirMomentumBufferData[mSprings.GetEndpointAIndex(s)] - springNormalizedVector * std::max(momentumAlongSpring, 0.0f));
-                    //}
-
-                    newPointAirMomentumBufferData[mSprings.GetEndpointAIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f);
-                }
-                else if (!mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)))
-                {
-                    assert(mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)));
-
-                    // B not hull => against hull
-
-                    vec2f const springNormalizedVector = -mSprings.GetCachedVectorialNormalizedVector(s);
-                    float const momentumAlongSpring = newPointAirMomentumBufferData[mSprings.GetEndpointBIndex(s)].dot(springNormalizedVector);
-
-                    //if (mSprings.GetEndpointBIndex(s) == mLastQueriedPointIndex)
-                    //{
-                    //    LogMessage("  AMomCorrection: dir=", springNormalizedVector,
-                    //        " mom: ", newPointAirMomentumBufferData[mSprings.GetEndpointBIndex(s)],
-                    //        " -> ", newPointAirMomentumBufferData[mSprings.GetEndpointBIndex(s)] - springNormalizedVector * std::max(momentumAlongSpring, 0.0f));
-                    //}
-
-                    newPointAirMomentumBufferData[mSprings.GetEndpointBIndex(s)] -= springNormalizedVector * std::max(momentumAlongSpring, 0.0f);
-                }
-            }
-        }
-
-        //
         // Transform momenta into velocities
         //
 
-        // Uses EffectiveAir
-        mPoints.UpdateAirVelocitiesFromMomenta();
+        if (iter < NumberOfAirIterations - 1) // We do the last one later, after zeroing out momenta against hull
+        {
+            // Uses EffectiveAir
+            mPoints.UpdateAirVelocitiesFromMomenta();
+        }
 
         //if (mLastQueriedPointIndex != NoneElementIndex)
         //{
@@ -4604,21 +4512,25 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
     } // Iter loop
 
     //
-    // Transfer the internal (i.e. non-hull) pressure to hull walls,
-    // so we may correctly apply surface forces.
+    // Finalizations, merged together to use single loops
     //
-    // We write to the air buffer, rather than to the water buffer, as a for a hull point
-    // water is always 0, hence internal pressure == air pressure only
+    // - Transfer the internal (i.e. non-hull) pressure to hull walls,
+    //   so we may correctly apply surface forces.
+    //       We write to the air buffer, rather than to the water buffer, as a for a hull point
+    //       water is always 0, hence internal pressure == air pressure only
+    // - Zero out air and water momenta against hull
     //
 
     auto tmpBuffer = mPoints.AllocateWorkBufferFloat();
     tmpBuffer->fill(0.0f); // TODO: buffer at this moment is over-large (contains also ephemerals)
 
-    // Map step
     {
         float const * const restrict pointSrcWaterBufferData = mPoints.GetWaterBufferAsFloat();
         float const * const restrict pointSrcEffectiveAirBufferData = mPoints.GetEffectiveAirBufferAsFloat();
-        float * const restrict pointDstEffectiveAirBufferData = tmpBuffer.get()->data();
+
+        float * const restrict pointDstHullEffectiveAirBufferData = tmpBuffer.get()->data();
+        vec2f * const restrict pointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
+        vec2f * const restrict pointAirMomentumBufferData = mPoints.GetAirMomentumBufferAsVec2f();
 
         for (auto const s : mSprings)
         {
@@ -4627,24 +4539,75 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                 auto const pA = mSprings.GetEndpointAIndex(s);
                 auto const pB = mSprings.GetEndpointBIndex(s);
 
-                // For each hull endpoint: add other endpoint's total pressure to its effectiveAir
-
                 assert(mPoints.GetIsHull(pA) || mPoints.GetIsHull(pB));
+
+                //
+                // For each hull endpoint: add other endpoint's total pressure to its effectiveAir
+                //
 
                 if (mPoints.GetIsHull(pA))
                 {
-                    pointDstEffectiveAirBufferData[pA] += pointSrcEffectiveAirBufferData[pB] + pointSrcWaterBufferData[pB];
+                    pointDstHullEffectiveAirBufferData[pA] += pointSrcEffectiveAirBufferData[pB] + pointSrcWaterBufferData[pB];
                 }
 
                 if (mPoints.GetIsHull(pB))
                 {
-                    pointDstEffectiveAirBufferData[pB] += pointSrcEffectiveAirBufferData[pA] + pointSrcWaterBufferData[pA];
+                    pointDstHullEffectiveAirBufferData[pB] += pointSrcEffectiveAirBufferData[pA] + pointSrcWaterBufferData[pA];
+                }
+
+                //
+                // Zero out water and air momenta against hull
+                //
+
+                if (!mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)))
+                {
+                    assert(mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)));
+
+                    // A not hull => against hull
+
+                    vec2f const springNormalizedVector = mSprings.GetCachedVectorialNormalizedVector(s);
+                    float const waterMomentumAlongSpring = pointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)].dot(springNormalizedVector);
+                    float const airMomentumAlongSpring = pointAirMomentumBufferData[mSprings.GetEndpointAIndex(s)].dot(springNormalizedVector);
+
+                    //if (mSprings.GetEndpointAIndex(s) == mLastQueriedPointIndex)
+                    //{
+                    //    LogMessage("  MomCorrection: dir=", springNormalizedVector,
+                    //               " wmom: ", pointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)],
+                    //               " -> ", pointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)] - springNormalizedVector * std::max(waterMomentumAlongSpring, 0.0f),
+                    //               " amom: ", pointAirMomentumBufferData[mSprings.GetEndpointAIndex(s)],
+                    //               " -> ", pointAirMomentumBufferData[mSprings.GetEndpointAIndex(s)] - springNormalizedVector * std::max(airMomentumAlongSpring, 0.0f));
+                    //}
+
+                    pointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)] -= springNormalizedVector * std::max(waterMomentumAlongSpring, 0.0f);
+                    pointAirMomentumBufferData[mSprings.GetEndpointAIndex(s)] -= springNormalizedVector * std::max(airMomentumAlongSpring, 0.0f);
+                }
+                else if (!mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)))
+                {
+                    assert(mPoints.GetIsHull(mSprings.GetEndpointAIndex(s)));
+
+                    // B not hull => against hull
+
+                    vec2f const springNormalizedVector = -mSprings.GetCachedVectorialNormalizedVector(s);
+                    float const waterMomentumAlongSpring = pointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)].dot(springNormalizedVector);
+                    float const airMomentumAlongSpring = pointAirMomentumBufferData[mSprings.GetEndpointBIndex(s)].dot(springNormalizedVector);
+
+                    //if (mSprings.GetEndpointBIndex(s) == mLastQueriedPointIndex)
+                    //{
+                    //    LogMessage("  MomCorrection: dir=", springNormalizedVector,
+                    //               " wmom: ", pointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)],
+                    //               " -> ", pointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)] - springNormalizedVector * std::max(waterMomentumAlongSpring, 0.0f),
+                    //               " amom: ", pointAirMomentumBufferData[mSprings.GetEndpointBIndex(s)],
+                    //               " -> ", pointAirMomentumBufferData[mSprings.GetEndpointBIndex(s)] - springNormalizedVector * std::max(airMomentumAlongSpring, 0.0f));
+                    //}
+
+                    pointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)] -= springNormalizedVector * std::max(waterMomentumAlongSpring, 0.0f);
+                    pointAirMomentumBufferData[mSprings.GetEndpointBIndex(s)] -= springNormalizedVector * std::max(airMomentumAlongSpring, 0.0f);
                 }
             }
         }
     }
 
-    // Reduce step
+    // Hull pressure averaging
     {
         float const * const restrict pointSrcEffectiveAirBufferData = tmpBuffer.get()->data();
         float * const restrict pointDstEffectiveAirBufferData = mPoints.GetEffectiveAirBufferAsFloat();
@@ -4658,6 +4621,18 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
             }
         }
     }
+
+    //
+    // Transform momenta into velocities
+    //
+    // Skipped during last step of iterations, so we may now take into account
+    // the momenta that have been zeroed against hull
+    //
+
+    mPoints.UpdateWaterVelocitiesFromMomenta();
+
+    // Uses EffectiveAir
+    mPoints.UpdateAirVelocitiesFromMomenta();
 
     //
     // Air finalization: reset Air to result EffectiveAir

@@ -3681,13 +3681,11 @@
 									+ Calc initial p.WaterMomentum (directly in buffer)
 								+ For all springs s:
 									+ Update endpoints' water, momenta, kineticEnergyLoss
-								+ For all springs s:
-									+ If s is impermeable:
-										+ Zero out endpoints' momenta against hull
 								+ For all points p:
 									+ Calc total waterSplashed
-								+ For all points p:
-									+ Transform p.momentum into p.velocity
+								- If not last iteration:
+									+ For all points p:
+										+ Transform p.momentum into p.velocity
 						===
 
 							+ Fix: wrong velocity sign
@@ -3734,20 +3732,21 @@
 									+ If s is permeable:
 										+ Update endpoints' air, momenta
 											+ Watch out for overdraining
-								+ For all springs s:
-									+ If s is impermeable:
-										+ Zero out endpoints' momenta against hull
-								+ For all points p:
-									+ Transform p.momentum into p.velocity
-							+ For all springs s:
-								// Hull points=avg
-								+ If s is impermeable:
-									+ For each hull endpoint: add other endpoint's total pressure to its effectiveAir
-							+ For all points p:
-								// Hull points=avg
-								+ If p is hull: divide effective air by p.ConnectedSprings.size()+1
-							+ For all points p:
-								+ Transform p.EffectiveAir into p.Air
+								+ If not last iteration:
+									+ For all points p:
+										+ Transform p.momentum into p.velocity
+						+ For all springs s:
+							+ If s is impermeable:
+								+ Zero out air and water endpoints' momenta against hull
+								+ For each hull endpoint: add other endpoint's total pressure to its effectiveAir
+						+ For all points p:
+							+ If p is hull: divide effective air by p.ConnectedSprings.size()+1
+						+ For all points p:
+							- Transform p.WaterMomentum into p.WaterVelocity
+						+ For all points p:
+							- Transform p.AirMomentum into p.AirVelocity
+						+ For all points p:
+							+ Transform p.EffectiveAir into p.Air
 						===
 						===
 						===
@@ -3758,21 +3757,22 @@
 						+ Remove logs
 						+ Profiling: airAndWaterDiffusion: 1.694 -> 1.1/1.2 -> 0.9/1.0, 3.3-3.4ms -> 3.1-3.3ms
 
-						- Merge zero momenta against hull in single loop, and at end
+						+ Merge zero momenta against hull in single loop, and at end
 							! Air doesn't need water momenta
-							- That means one single zeroing for all points' iterations, test with max # of iters
-								- Test: just view air + water momenta
-
-							- Merge the two zero-momenta with the map step of hull diffusion
-							- Move the last 2x Momenta->Velocities to end
-							- Update schema above
-						- Merge MomentaToVels with point-by-point loops
-							! Air doesn't need water vels
+							+ That means one single zeroing for all points' iterations
+								+ Test: just view air + water momenta
+								+ Shoot: OK
+								+ Flood test: OK
+							+ Run in debug
+							+ Merge the two zero-momenta with the map step of hull diffusion
+							+ Move the last 2x Momenta->Velocities to end
+							+ Update schema above
+						+ Test with max # of iters: check next-to-hull momenta
+						+ Remove logs
+						= Profiling: airAndWaterDiffusion: 1.694 -> 1.1/1.2 -> 0.9/1.0 -> 0.8, 3.3-3.4ms -> 3.1-3.3ms -> 3.0-3.1ms
 
 						- Copy schema above into code
-
 						- Nuke old UpdateAirAndWaterPressure and rename
-
 						- Merge branch: pressure_redesign_by_springs back into pressure_redesign
 
 					- See if makes sense to skip also water step for perm=0 springs
