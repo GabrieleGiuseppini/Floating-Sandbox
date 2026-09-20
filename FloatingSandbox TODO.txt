@@ -3790,8 +3790,8 @@
 							- See if vectorized already
 						- UpdateAirFromEffectiveAir (iff needed, see if only included in 3x mega step)
 							- See if vectorized already
-						- Buffers must be on aligned point count
-						- With unit tests
+						= Buffers must be on aligned point count
+						= With unit tests
 						- -> Android plan
 
 					- Profiling: 0.8-0.9 -> 0.85   3.1-3.3ms -> 3.0-3.1ms

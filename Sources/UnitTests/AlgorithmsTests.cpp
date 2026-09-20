@@ -1402,8 +1402,8 @@ void RunTransformMomentaToVelocitiesTest(Algorithm algorithm)
         }
         else
         {
-            EXPECT_FLOAT_EQ(velocities[i].x, momenta[i].x / masses[i]);
-            EXPECT_FLOAT_EQ(velocities[i].y, momenta[i].y / masses[i]);
+            EXPECT_TRUE(ApproxEquals(velocities[i].x, momenta[i].x / masses[i], 0.001f));
+            EXPECT_TRUE(ApproxEquals(velocities[i].y, momenta[i].y / masses[i], 0.001f));
         }
     }
 }

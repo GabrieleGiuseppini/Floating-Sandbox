@@ -2989,18 +2989,17 @@ inline void TransformMomentaToVelocities_SSEVectorized(
     {
         __m128 const masses = _mm_load_ps(massBuffer + i);
         __m128 const validMask = _mm_cmpneq_ps(masses, Zero);
+        __m128 const massesInv = _mm_and_ps(
+            _mm_rcp_ps(masses),
+            validMask);
 
         __m128 const momentum01 = _mm_load_ps(reinterpret_cast<float const *>(momentumBuffer + i)); // x0,y0,x1,y1
         __m128 const momentum23 = _mm_load_ps(reinterpret_cast<float const *>(momentumBuffer + i + 2)); // x2,y2,x3,y3
         __m128 momentumX = _mm_shuffle_ps(momentum01, momentum23, _MM_SHUFFLE(2, 0, 2, 0)); // x0,x1,x2,x3
         __m128 momentumY = _mm_shuffle_ps(momentum01, momentum23, _MM_SHUFFLE(3, 1, 3, 1)); // y0,y1,y2,y3
 
-        __m128 const velocityX = _mm_and_ps(
-            _mm_div_ps(momentumX, masses),
-            validMask);
-        __m128 const velocityY = _mm_and_ps(
-            _mm_div_ps(momentumY, masses),
-            validMask);
+        __m128 const velocityX = _mm_mul_ps(momentumX, massesInv);
+        __m128 const velocityY = _mm_mul_ps(momentumY, massesInv);
 
         __m128 velocity01 = _mm_unpacklo_ps(velocityX, velocityY); // a[0], b[0], a[1], b[1]
         __m128 velocity02 = _mm_unpackhi_ps(velocityX, velocityY); // a[2], b[2], a[3], b[3]
