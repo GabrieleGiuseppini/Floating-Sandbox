@@ -4626,7 +4626,7 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
     // Air finalization: reset Air to result EffectiveAir
     //
 
-    mPoints.UpdateAirFromEffective();
+    mPoints.UpdateAirFromEffectiveAir();
 
 
 

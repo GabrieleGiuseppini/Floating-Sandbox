@@ -1934,7 +1934,7 @@ public:
     // scaling back pressures to Temperature0.
     // Happens at end of diffusion step, so that afterwards Air buffer
     // is consistent with EffectiveAir buffer.
-    void UpdateAirFromEffective()
+    void UpdateAirFromEffectiveAir()
     {
         float * restrict const airBuffer = mAirBuffer.data();
         float const * restrict const effectiveAirBuffer = mEffectiveAirBuffer.data();
