@@ -163,6 +163,7 @@ public:
         // Physical
         , mStrainStateBuffer(mBufferElementCount, mElementCount, StrainState(0.0f, 0.0f, false))
         , mFactoryRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
+        , mFactoryReciprocalRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mStiffnessCoefficientBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mDampingCoefficientBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -505,6 +506,11 @@ public:
         return mFactoryRestLengthBuffer[springElementIndex];
     }
 
+    float GetFactoryReciprocalRestLength(ElementIndex springElementIndex) const
+    {
+        return mFactoryReciprocalRestLengthBuffer[springElementIndex];
+    }
+
     float GetRestLength(ElementIndex springElementIndex) const noexcept
     {
         return mRestLengthBuffer[springElementIndex];
@@ -698,6 +704,7 @@ private:
 
     Buffer<StrainState> mStrainStateBuffer;
     Buffer<float> mFactoryRestLengthBuffer;
+    Buffer<float> mFactoryReciprocalRestLengthBuffer;
     Buffer<float> mRestLengthBuffer;
     Buffer<float> mStiffnessCoefficientBuffer;
     Buffer<float> mDampingCoefficientBuffer;

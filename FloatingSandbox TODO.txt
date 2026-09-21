@@ -3652,7 +3652,7 @@
 				+ Merged into pressure_redesign
 
 				= UpdateWaterAndAirPressure:
-					= Try: loop by springs:
+					+ Loop by springs:
 						! Old complexity: (P + 2S)*a10 + S*a1 ~= (S=3.5P) 8P*a10 + 3.5P*a1
 						! New complexity: S*a5 + P*a1 + S*a5 + S*a1 ~= S*a10 + P*a1 + S*a1 = 3.5P*a10 + 4.5P*a1
 
@@ -3776,7 +3776,7 @@
 							+ Test ignoring all imperm springs
 							+ Then undo changes
 						- But needs to calc kinetic energy loss
-							- Option 1: redo kinetic energy loss @ zero-hull-momenta loop
+							- Option 1: redo kinetic energy loss @ zero-hull-momenta loop - note that value magnitude is different, find approx scaling factor (they're both momenta)
 
 					- Copy schema above into code
 					- Nuke old UpdateAirAndWaterPressure and rename
@@ -3801,9 +3801,12 @@
 					+ Points.FluidDiffusionAlgorithmVariables
 					+ Profiling: 0.85 -> 0.83   2.9-3.1ms
 
-				- Consider maintaining Springs::FactoryReciprocalRestLength
-					- Populated at cctor implicitly
-					- Then multiply by it
+				+ Consider maintaining Springs::FactoryReciprocalRestLength
+					+ Populated at cctor implicitly
+					+ Then multiply by it
+					+ Profiling: 0.85 ->  0.81-0.82  3.0-3.1ms -> 30.1-3.1ms
+
+				- Try: store enough in FluidVars to make move by-springs step without branching
 
 				- See if these Points buffers make sense, instead of taking material:
 					- mMaterialWaterIntakeBuffer
@@ -3821,6 +3824,9 @@
 						- Nuke all commented-out sanity lines for ephemeral creation functions
 						- ResetEffectiveAir: no need for size arg
 
+				- PropagateHeat:
+					- Try also by springs
+
 				- ApplyStaticPressureForces:
 					- Pre-multiply pressure conversion factors into forceNormalizationFactor
 
@@ -3829,7 +3835,8 @@
 					- Analyze algo and see if can be more aggressive
 
 				- Rebalance thread tasks
-					- Consider moving StaticPressure to other thread
+					- Consider moving StaticPressure to other thread, together with temperature
+						- Need buffer copies
 
 				- Cleanup:
 					- Remove FS_PROFILE

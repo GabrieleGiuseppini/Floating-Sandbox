@@ -3918,7 +3918,7 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                     // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
                     springVariables[s].FlowWeight =
                         springScalarResultantVelocity
-                        / mSprings.GetFactoryRestLength(s);
+                        * mSprings.GetFactoryReciprocalRestLength(s);
 
                     assert(springVariables[s].FlowWeight >= 0.0f);
 
@@ -3941,7 +3941,7 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                     // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
                     springVariables[s].FlowWeight =
                         springScalarResultantVelocity
-                        / mSprings.GetFactoryRestLength(s);
+                        * mSprings.GetFactoryReciprocalRestLength(s);
 
                     assert(springVariables[s].FlowWeight <= 0.0f);
 
@@ -4307,7 +4307,7 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                     // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
                     springVariables[s].FlowWeight =
                         springScalarResultantVelocity
-                        / mSprings.GetFactoryRestLength(s);
+                        * mSprings.GetFactoryReciprocalRestLength(s);
 
                     assert(springVariables[s].FlowWeight >= 0.0f);
 
@@ -4344,7 +4344,7 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                     // scaling for the greater distance traveled along diagonal springs - so we maintain circular shape
                     springVariables[s].FlowWeight =
                         springScalarResultantVelocity
-                        / mSprings.GetFactoryRestLength(s);
+                        * mSprings.GetFactoryReciprocalRestLength(s);
 
                     assert(springVariables[s].FlowWeight <= 0.0f);
 
@@ -4898,7 +4898,7 @@ void Ship::PropagateHeat(
                 mSprings.GetMaterialThermalConductivity(cs.SpringIndex) * simulationParameters.ThermalConductivityAdjustment
                 * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f) // DeltaT, positive if going out
                 * dt
-                / mSprings.GetFactoryRestLength(cs.SpringIndex);
+                * mSprings.GetFactoryReciprocalRestLength(cs.SpringIndex);
 
             // Store flow
             springOutboundHeatFlows[s] = outgoingHeatFlow;
