@@ -761,12 +761,6 @@ private:
         SimulationParameters const & simulationParameters,
         float & waterSplashed);
 
-    void UpdateAirAndWaterPressure_BySprings(
-        float effectiveAirDensity,
-        float effectiveWaterDensity,
-        SimulationParameters const & simulationParameters,
-        float & waterSplashed);
-
     void UpdateSinking(float currentSimulationTime);
 
     // Electrical

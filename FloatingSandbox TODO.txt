@@ -3744,9 +3744,9 @@
 						+ For all points p:
 							+ If p is hull: divide effective air by p.ConnectedSprings.size()+1
 						+ For all points p:
-							- Transform p.WaterMomentum into p.WaterVelocity
+							+ Transform p.WaterMomentum into p.WaterVelocity
 						+ For all points p:
-							- Transform p.AirMomentum into p.AirVelocity
+							+ Transform p.AirMomentum into p.AirVelocity
 						+ For all points p:
 							+ Transform p.EffectiveAir into p.Air
 						===
@@ -3799,11 +3799,9 @@
 						+ Test:
 							+ Sound
 							+ New profiling: 0.81-0.82 -> 0.70-0.73    3.0-3.1ms -> 2.9-3.0ms
-						+ If ok: update schema above
-						
-
-					- Copy schema above into code
-					- Nuke old UpdateAirAndWaterPressure and rename
+						+ If ok: update schema above					
+					+ Copy schema above into code
+					+ Nuke old UpdateAirAndWaterPressure and rename
 					- Merge branch: pressure_redesign_by_springs back into pressure_redesign
 
 				= Points::UpdateAirPressureVelocitiesFromMomenta and UpdateWaterVelocitiesFromMomenta and TransformAirToEffectiveAir and UpdateAirFromEffectiveAir:
@@ -3860,6 +3858,7 @@
 				- Reduce ApplyStaticPressureForces net force complexity
 					! Complexity changed across versions: 0.03/0.04 -> 0.1/0.4
 					- Analyze algo and see if can be more aggressive
+						- Try: if we don't do it already: full round finding best, then pick that one (assuming we currently are greedy?)
 
 				- Rebalance thread tasks
 					- Consider moving StaticPressure to other thread, together with temperature
