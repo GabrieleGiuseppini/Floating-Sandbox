@@ -3672,15 +3672,17 @@
 									+ New buffer at Points, useful for rendering eventually
 									+ Verify zeroing is optimal
 								+ For all springs s:
-									+ Calc s.FlowWeight
-									+ Calc s.FlowVelocity
-									+ Update p1,p2.TotalOutboundWaterFlowWeight (one is always zero)
-									+ Update p1,p2.MaxOutboundWaterFlowWeight (one is always zero)
+									+ If s is permeable:
+										+ Calc s.FlowWeight
+										+ Calc s.FlowVelocity
+										+ Update p1,p2.TotalOutboundWaterFlowWeight (one is always zero)
+										+ Update p1,p2.MaxOutboundWaterFlowWeight (one is always zero)
 								+ For all points p:
 									+ Calc p.WaterQuantityNormalizationFactor
 									+ Calc initial p.WaterMomentum (directly in buffer)
 								+ For all springs s:
-									+ Update endpoints' water, momenta, kineticEnergyLoss
+									+ If s is permeable:
+										+ Update endpoints' water, momenta, kineticEnergyLoss
 								+ For all points p:
 									+ Calc total waterSplashed
 								+ If not last iteration:
@@ -3737,7 +3739,7 @@
 										+ Transform p.momentum into p.velocity
 						+ For all springs s:
 							+ If s is impermeable:
-								+ Zero out air and water endpoints' momenta against hull
+								+ Zero out air and water endpoints' momenta against hull, updating kineticEnergyLoss
 								+ For each hull endpoint: add other endpoint's total pressure to its effectiveAir
 						+ For all points p:
 							+ If p is hull: divide effective air by p.ConnectedSprings.size()+1
@@ -3770,13 +3772,35 @@
 						+ Test with max # of iters: check next-to-hull momenta
 						+ Remove logs
 						+ Profiling: airAndWaterDiffusion: 1.694 -> 1.1/1.2 -> 0.9/1.0 -> 0.8, 3.3-3.4ms -> 3.1-3.3ms -> 3.0-3.1ms
-
-					- See if makes sense to skip also water step for perm=0 springs
+					+ See if makes sense to skip also water step for perm=0 springs
 						+ See how much it changes without any water bounces: OK, can sacrifice
 							+ Test ignoring all imperm springs
 							+ Then undo changes
-						- But needs to calc kinetic energy loss
-							- Option 1: redo kinetic energy loss @ zero-hull-momenta loop - note that value magnitude is different, find approx scaling factor (they're both momenta)
+						+ But needs to calc kinetic energy loss for hull hits
+							+ Option 1: redo kinetic energy loss @ zero-hull-momenta loop - note that value magnitude is different, find approx scaling factor (they're both momenta)
+								! WAS: k = oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) * springOutboundQuantityOfWater
+									! So: vel * w, i.e. momentum
+									! springOutboundQuantityOfWater = springVariables[s].FlowWeight * pointsVariables[pSrc].FlowNormalizationFactor;
+									! FlowWeight: ~= sqrtf(2 * g * total_pressure)
+									! FlowNormalizationFactor != 1
+									X So scaling factor: a * sqrt(water_pressure), a=sqrt(2g)=4.42
+									+ Reality:
+										+ This is 10x calc'd ke loss: oldPointWaterBufferData[pSrc] * oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector)
+											+ ...and that's exactly what we could do if we were to calc @ zero-out momenta
+						+ Impl:
+							+ Take dump of old splash: max=1.22
+							+ Move KE calc'n to zero-hull-momenta loop
+								+ Use fixed 10x factor
+								+ Move division by # of iters for water splashed!
+							+ Test
+							+ Cleanup
+							+ Exclude imperm springs in both loops
+								+ And remove all checks for permeability
+						+ Test:
+							+ Sound
+							+ New profiling: 0.81-0.82 -> 0.70-0.73    3.0-3.1ms -> 2.9-3.0ms
+						+ If ok: update schema above
+						
 
 					- Copy schema above into code
 					- Nuke old UpdateAirAndWaterPressure and rename
@@ -3804,7 +3828,9 @@
 				+ Consider maintaining Springs::FactoryReciprocalRestLength
 					+ Populated at cctor implicitly
 					+ Then multiply by it
-					+ Profiling: 0.85 ->  0.81-0.82  3.0-3.1ms -> 30.1-3.1ms
+					+ Profiling: 0.85 ->  0.81-0.82  3.0-3.1ms -> 3.0-3.1ms
+
+				- Check assembly @ water-water collision to see if reuses those dots
 
 				- Try: store enough in FluidVars to make move by-springs step without branching
 
@@ -3826,6 +3852,7 @@
 
 				- PropagateHeat:
 					- Try also by springs
+						- Could reuse FluidVars?
 
 				- ApplyStaticPressureForces:
 					- Pre-multiply pressure conversion factors into forceNormalizationFactor
@@ -3876,6 +3903,7 @@
 			- Test: 
 				- ShipSize param, set into all shaders
 				- Add both quantities to vertex struct
+				- Add both buffers to RenderUpload
 				- Shader:
 					- Kinetic energy loss: 
 						- Whiteish or texture from mipmapped, given texture coords as new param
@@ -3892,6 +3920,7 @@
 							- weight: length of vel
 
 			- If doesn't go through, nuke Points::WaterDiffusionKineticEnergyLoss and incorporate in Points::<workbuffer for WaterDiffusion algo>
+			- If goes through, remove compiler MOBILE conditional for kinetic energy loss calc'ns
 
 		- Video:
 			- Momenta: semi-transparent

@@ -3799,6 +3799,11 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
     // Water step
     //
 
+#if !FS_IS_PLATFORM_MOBILE()
+    // Prepare kinetic energy loss
+    float * const restrict pointKineticEnergyLoss = mPoints.ResetWaterDiffusionKineticEnergyLossBuffer();
+#endif
+
     // Current density doesn't change the "pascal pressure" deriving from an A or W stored at a point; that value
     // is the current pressure, regardless of density; however, the real *height* of the column that we would need
     // there (a higher density requires less height for the same pressure), and this height we only use for Bernoulli:
@@ -3839,7 +3844,6 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
         // Prepare work buffers
         Springs::FluidDiffusionAlgorithmVariables * const restrict springVariables = mSprings.ResetFluidDiffusionAlgorithmVariablesBuffer();
         Points::FluidDiffusionAlgorithmVariables * const restrict pointsVariables = mPoints.ResetFluidDiffusionAlgorithmVariablesBuffer();
-        float * const restrict pointKineticEnergyLoss = mPoints.ResetWaterDiffusionKineticEnergyLossBuffer();
 
         //
         // Calculate water flows for each spring
@@ -3847,7 +3851,7 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
 
         for (auto const s : mSprings)
         {
-            if (!mSprings.IsDeleted(s))
+            if (!mSprings.IsDeleted(s) && mSprings.GetWaterPermeability(s) != 0.0f)
             {
                 // Flow: from the point of view of A to B
 
@@ -3887,7 +3891,7 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
                 float const dp = (
                     (oldPointWaterBufferData[pA] + oldPointEffectiveAirBufferData[pA] * springDownness * simulationParameters.AirPressureFeedbackOnWater)
                     - (oldPointWaterBufferData[pB] + oldPointEffectiveAirBufferData[pB] * springUpness * simulationParameters.AirPressureFeedbackOnWater)
-                    ) * mSprings.GetWaterPermeability(s); // Enforce no delta-pressure with (dry) wall
+                    );
 
                 // Gravity potential differential (positive implies A -> B flow)
                 float const dy = -deltaH;
@@ -4028,7 +4032,7 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
 
         for (auto const s : mSprings)
         {
-            if (!mSprings.IsDeleted(s))
+            if (!mSprings.IsDeleted(s) && mSprings.GetWaterPermeability(s) != 0.0f)
             {
                 // Determine source and destination of flow
                 ElementIndex pSrc;
@@ -4059,104 +4063,55 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
 
                 assert(springOutboundQuantityOfWater >= 0.0f);
 
-                if (mSprings.GetWaterPermeability(s) != 0.0f)
-                {
-                    //
-                    // Water - and momentum - move from source to destination
-                    //
+                //
+                // Water - and momentum - move from source to destination
+                //
 
-                    // Move water quantity
-                    assert(newPointWaterBufferData[pSrc] >= springOutboundQuantityOfWater);
-                    newPointWaterBufferData[pSrc] -= springOutboundQuantityOfWater;
-                    newPointWaterBufferData[pDst] += springOutboundQuantityOfWater;
+                // Move water quantity
+                assert(newPointWaterBufferData[pSrc] >= springOutboundQuantityOfWater);
+                newPointWaterBufferData[pSrc] -= springOutboundQuantityOfWater;
+                newPointWaterBufferData[pDst] += springOutboundQuantityOfWater;
 
-                    // Add "new momentum" to destination
-                    newPointWaterMomentumBufferData[pDst] +=
-                        springVariables[s].FlowVelocity
-                        * springOutboundQuantityOfWater;
+                // Add "new momentum" to destination
+                newPointWaterMomentumBufferData[pDst] +=
+                    springVariables[s].FlowVelocity
+                    * springOutboundQuantityOfWater;
 
-                    //if (pSrc == mLastQueriedPointIndex)
-                    //{
-                    //    LogMessage("  W Out: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector);
-                    //}
-                    //else if (pDst == mLastQueriedPointIndex)
-                    //{
-                    //    LogMessage("  W In: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector,
-                    //        " mom in=", springVariables[s].FlowVelocity * springOutboundQuantityOfWater, " final mom=", newPointWaterMomentumBufferData[pDst]);
-                    //}
+                //if (pSrc == mLastQueriedPointIndex)
+                //{
+                //    LogMessage("  W Out: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector);
+                //}
+                //else if (pDst == mLastQueriedPointIndex)
+                //{
+                //    LogMessage("  W In: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector,
+                //        " mom in=", springVariables[s].FlowVelocity * springOutboundQuantityOfWater, " final mom=", newPointWaterMomentumBufferData[pDst]);
+                //}
 
 #if !FS_IS_PLATFORM_MOBILE()
-                    if (oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) > 0.0f)
-                    {
-                        if (oldPointWaterVelocityBufferData[pDst].dot(springNormalizedVector) < 0.0f)
-                        {
-                            // Collision
-                            pointKineticEnergyLoss[pSrc] += std::min(
-                                oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) * springOutboundQuantityOfWater,
-                                -oldPointWaterVelocityBufferData[pDst].dot(springNormalizedVector) * springOutboundQuantityOfWater);
-
-                            // TODO: remove
-                            //if (pSrc == mLastQueriedPointIndex)
-                            //{
-                            //    LogMessage("!!!!!! KINETIC THIS : dir=", springNormalizedVector, " oldPointVel=", oldPointWaterVelocityBufferData[pSrc],
-                            //        " dot=", oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector), " w=", oldPointWaterBufferData[pSrc], " sprOub=", springOutboundQuantityOfWater);
-                            //    LogMessage("!!!!!! KINETIC OTHER: dir=", springNormalizedVector, " oldPointVel=", oldPointWaterVelocityBufferData[pDst],
-                            //        " dot=", oldPointWaterVelocityBufferData[pDst].dot(springNormalizedVector), " w=", oldPointWaterBufferData[pDst], " sprOub=", springOutboundQuantityOfWater);
-                            //    LogMessage("!!!!!! KINETIC RES  : ->pointKineticEnergyLoss=", pointKineticEnergyLoss[pSrc]);
-                            //}
-                        }
-                    }
-#endif
-                }
-                else
+                if (oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) > 0.0f)
                 {
-                    // Wall hit
-
-                    //
-                    // New momentum bounces back, assuming perfectly inelastic collision.
-                    // Note that so far we assumed this momentum would go out, so we
-                    // haven't accounted for it in the initialization of the remaining
-                    // momentum.
-                    //
-                    // No changes to destination
-                    //
-
-                    // Add "new momentum" (new velocity gained), after bounce
-                    // (this is effectively 2x as we haven't accounted for this momentum yet)
-                    newPointWaterMomentumBufferData[pSrc] +=
-                        -springVariables[s].FlowVelocity
-                        * springOutboundQuantityOfWater;
-
-                    //if (pSrc == mLastQueriedPointIndex)
-                    //{
-                    //    LogMessage("  W Bounce back in: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector,
-                    //        " mom add=", -springVariables[s].FlowVelocity * springOutboundQuantityOfWater,
-                    //        " final mom=", newPointWaterMomentumBufferData[pSrc]);
-                    //}
-
-#if !FS_IS_PLATFORM_MOBILE()
-                    if (oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) > 0.0f)
+                    if (oldPointWaterVelocityBufferData[pDst].dot(springNormalizedVector) < 0.0f)
                     {
-                        // Collision
-                        pointKineticEnergyLoss[pSrc] +=
-                            oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) * springOutboundQuantityOfWater;
+                        // Collision - update "kinetic energy" loss
+                        pointKineticEnergyLoss[pSrc] += std::min(
+                            oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) * springOutboundQuantityOfWater,
+                            -oldPointWaterVelocityBufferData[pDst].dot(springNormalizedVector) * springOutboundQuantityOfWater
+                        ) * inverseNumberOfWaterIterations; // Scale by # of iters
+
+                        // TODO: remove
+                        //if (pSrc == mLastQueriedPointIndex)
+                        //{
+                        //    LogMessage("!!!!!! KINETIC THIS : dir=", springNormalizedVector, " oldPointVel=", oldPointWaterVelocityBufferData[pSrc],
+                        //        " dot=", oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector), " w=", oldPointWaterBufferData[pSrc], " sprOub=", springOutboundQuantityOfWater);
+                        //    LogMessage("!!!!!! KINETIC OTHER: dir=", springNormalizedVector, " oldPointVel=", oldPointWaterVelocityBufferData[pDst],
+                        //        " dot=", oldPointWaterVelocityBufferData[pDst].dot(springNormalizedVector), " w=", oldPointWaterBufferData[pDst], " sprOub=", springOutboundQuantityOfWater);
+                        //    LogMessage("!!!!!! KINETIC RES  : ->pointKineticEnergyLoss=", pointKineticEnergyLoss[pSrc]);
+                        //}
                     }
-#endif
                 }
+#endif
             }
         }
-
-#if !FS_IS_PLATFORM_MOBILE()
-        //
-        // Update total water splash
-        //
-
-        for (auto const p : mPoints.RawShipPoints())
-        {
-            float const pointFreeness = LinearStep(2.0f, 9.0f, oldPointEffectiveAirBufferData[p]); // 0.0=underwater, 1.0=abovewater
-            waterSplashed += pointKineticEnergyLoss[p] * pointFreeness;
-        }
-#endif
 
         if (iter < simulationParameters.WaterDiffusionNumberOfIterations - 1) // We do the last one later, after zeroing out momenta against hull
         {
@@ -4174,10 +4129,6 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
         //        " WMom=", mPoints.GetWaterMomentum(mLastQueriedPointIndex), " A=", oldPointEffectiveAirBufferData[mLastQueriedPointIndex]);
         //}
     } // Iter loop
-
-#if !FS_IS_PLATFORM_MOBILE()
-    waterSplashed *= inverseNumberOfWaterIterations;
-#endif
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -4580,6 +4531,13 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
 
                     pointWaterMomentumBufferData[mSprings.GetEndpointAIndex(s)] -= springNormalizedVector * std::max(waterMomentumAlongSpring, 0.0f);
                     pointAirMomentumBufferData[mSprings.GetEndpointAIndex(s)] -= springNormalizedVector * std::max(airMomentumAlongSpring, 0.0f);
+
+#if !FS_IS_PLATFORM_MOBILE()
+                    // Update "kinetic energy" loss
+                    //
+                    // Whole momentum is ~10x the magnitude of the KE we've added with water-to-water collisions
+                    pointKineticEnergyLoss[mSprings.GetEndpointAIndex(s)] += std::max(waterMomentumAlongSpring, 0.0f) / 10.0f;
+#endif
                 }
                 else if (!mPoints.GetIsHull(mSprings.GetEndpointBIndex(s)))
                 {
@@ -4602,10 +4560,33 @@ void Ship::UpdateAirAndWaterPressure_BySprings(
 
                     pointWaterMomentumBufferData[mSprings.GetEndpointBIndex(s)] -= springNormalizedVector * std::max(waterMomentumAlongSpring, 0.0f);
                     pointAirMomentumBufferData[mSprings.GetEndpointBIndex(s)] -= springNormalizedVector * std::max(airMomentumAlongSpring, 0.0f);
+
+#if !FS_IS_PLATFORM_MOBILE()
+                    // Update "kinetic energy" loss
+                    //
+                    // Whole momentum is ~10x the magnitude of the KE we've added with water-to-water collisions
+                    pointKineticEnergyLoss[mSprings.GetEndpointBIndex(s)] += std::max(waterMomentumAlongSpring, 0.0f) / 10.0f;
+#endif
                 }
             }
         }
     }
+
+#if !FS_IS_PLATFORM_MOBILE()
+    //
+    // Update total water splash
+    //
+
+    for (auto const p : mPoints.RawShipPoints())
+    {
+        float const pointFreeness = LinearStep(2.0f, 9.0f, oldPointEffectiveAirBufferData[p]); // 0.0=underwater, 1.0=abovewater
+        waterSplashed += pointKineticEnergyLoss[p] * pointFreeness;
+    }
+
+    //// TODOTEST
+    //mSimulationEventHandler.OnCustomProbe("Water Splashed", waterSplashed);
+    //LogMessage(waterSplashed);
+#endif
 
     // Hull pressure averaging
     {

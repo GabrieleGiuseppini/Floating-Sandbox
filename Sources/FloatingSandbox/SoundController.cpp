@@ -2096,7 +2096,7 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     float const waterSplashedWithoutDc = std::max(waterSplashed - mWaterSplashedVolumeRunningAverage.Update(waterSplashed), 0.0f);
 
     // Map to volume
-    float splashVolume = WaterSplashVolume * LinearStep(0.0f, 2.0f, waterSplashedWithoutDc);
+    float splashVolume = WaterSplashVolume * LinearStep(0.0f, 1.5f, waterSplashedWithoutDc);
 
     // Smooth curve: rise quickly and decrease slowly
     float const rate = (splashVolume >= mWaterSplashedLastVolumeValue)
