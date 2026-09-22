@@ -3651,7 +3651,7 @@
 
 				+ Merged into pressure_redesign
 
-				= UpdateWaterAndAirPressure:
+				+ UpdateWaterAndAirPressure:
 					+ Loop by springs:
 						! Old complexity: (P + 2S)*a10 + S*a1 ~= (S=3.5P) 8P*a10 + 3.5P*a1
 						! New complexity: S*a5 + P*a1 + S*a5 + S*a1 ~= S*a10 + P*a1 + S*a1 = 3.5P*a10 + 4.5P*a1
@@ -3802,15 +3802,19 @@
 						+ If ok: update schema above					
 					+ Copy schema above into code
 					+ Nuke old UpdateAirAndWaterPressure and rename
-					- Merge branch: pressure_redesign_by_springs back into pressure_redesign
+					+ Merge branch: pressure_redesign_by_springs back into pressure_redesign
+
+				! New profiling: 0.81-0.82 -> 0.70-0.73    3.0-3.1ms -> 2.9-3.0ms
 
 				= Points::UpdateAirPressureVelocitiesFromMomenta and UpdateWaterVelocitiesFromMomenta and TransformAirToEffectiveAir and UpdateAirFromEffectiveAir:
 					- Check if vectorized; if not => add to Algorithms
 						+ UpdateAirPressureVelocitiesFromMomenta & UpdateWaterVelocitiesFromMomenta
 						- Final point step with 2x Momenta->Velocities and UpdateAirFromEffectiveAir
 						- TransformAirToEffectiveAir
+							- Verify zero-kelvin issue first
 							- See if vectorized already
 						- UpdateAirFromEffectiveAir (iff needed, see if only included in 3x mega step)
+							- Verify zero-kelvin issue first
 							- See if vectorized already
 						= Buffers must be on aligned point count
 						= With unit tests
