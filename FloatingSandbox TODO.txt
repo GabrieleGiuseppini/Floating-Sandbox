@@ -3810,12 +3810,13 @@
 					- Check if vectorized; if not => add to Algorithms
 						+ UpdateAirPressureVelocitiesFromMomenta & UpdateWaterVelocitiesFromMomenta
 						- Final point step with 2x Momenta->Velocities and UpdateAirFromEffectiveAir
-						- TransformAirToEffectiveAir
-							- Verify zero-kelvin issue first
-							- See if vectorized already
+
+						- Verify zero-kelvin issue first
+						= TransformAirToEffectiveAir
+							+ See if vectorized already: YES; rolled loop with packed scalars
 						- UpdateAirFromEffectiveAir (iff needed, see if only included in 3x mega step)
-							- Verify zero-kelvin issue first
-							- See if vectorized already
+							- See if vectorized already							
+							
 						= Buffers must be on aligned point count
 						= With unit tests
 						- -> Android plan
@@ -3832,9 +3833,11 @@
 					+ Then multiply by it
 					+ Profiling: 0.85 ->  0.81-0.82  3.0-3.1ms -> 3.0-3.1ms
 
-				- Check assembly @ water-water collision to see if reuses those dots
+				+ Check assembly @ water-water collision to see if reuses those dots: IT DOES
 
 				- Try: store enough in FluidVars to make move by-springs step without branching
+					- Water
+					- Air
 
 				- See if these Points buffers make sense, instead of taking material:
 					- mMaterialWaterIntakeBuffer

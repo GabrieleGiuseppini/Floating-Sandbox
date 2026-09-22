@@ -2926,7 +2926,9 @@ void Ship::UpdateAirAndWaterPressure(
     // particle's temperature.
     //
     // Air represents pressure of air at Temperature0; the pressure we use in the
-    // diffusion algorithm, however, is the pressure at the particle's temperature.
+    // diffusion algorithm, however, is the pressure at the particle's temperature;
+    // this we call EffectiveAir, and it's also what's used to calculate the total
+    // internal pressure at any moment during the simulation.
     //
     // After this, the Air buffer contains EffectiveAir, and the air diffusion algorithm
     // produces new EffectiveAir. At the end of diffusion, we'll re-populate the Air buffer
