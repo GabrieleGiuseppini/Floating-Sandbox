@@ -3805,13 +3805,49 @@
 					+ Merge branch: pressure_redesign_by_springs back into pressure_redesign
 
 				! New profiling: 0.81-0.82 -> 0.70-0.73    3.0-3.1ms -> 2.9-3.0ms
+				+ Test watertight doors
+
+				= Verify zero-kelvin issue, in Debug
+					! It's certain materials - or is it hull proximity?
+					! It starts a self-feeding feedback loop
+					! Seems to come from natural heating after cooling; heating brings pressure up
+					X Verify hull proximity
+						+ Stop hull averaging
+						X It's not
+					! Definitely due to re-heating; happens faster with more dissipation (i.e. reheating)
+
+					+ Investigation:
+						+ Allow for intake=0
+							+ Set at params
+						+ Calc all (plain) air, before and after, and check if it grows
+						! Air changes a lot
+						! See if Efffective/Air is idempotent: IT IS!
+
+						! Found it: we move effective air across points at different temperatures, hence we're creating or destroying air
+					- Fix:
+						! We use effective air only for flow weight calcn's
+							! Init'd from air at beginning of each iteration, to const RO buffer
+						! We move _air_ based off weights - which are normalized to _air_
+						! We do a final Air->EffectiveAir at end, as a service to rest of simulation
+						- Impl:
+							+ Cleanup all (diagnostic) changes
+							- Do: TODOHERE
+
+				- Surround logs by #define's
+				- It seems we don't need to cap air's springOutboundQuantityOfAir to current newBuffer value
+					- Run again with assert
+				- Make all spring loops on raw springs
+				- Check all temperature changes and make sure we also clamp to "0K", like @ heatblaster
+					- And use SimParams constant for that
+
 
 				= Points::UpdateAirPressureVelocitiesFromMomenta and UpdateWaterVelocitiesFromMomenta and TransformAirToEffectiveAir and UpdateAirFromEffectiveAir:
 					- Check if vectorized; if not => add to Algorithms
 						+ UpdateAirPressureVelocitiesFromMomenta & UpdateWaterVelocitiesFromMomenta
-						- Final point step with 2x Momenta->Velocities and UpdateAirFromEffectiveAir
 
-						- Verify zero-kelvin issue first
+						= Verify zero-kelvin issue first
+
+						- Final point step with 2x Momenta->Velocities and UpdateAirFromEffectiveAir
 						= TransformAirToEffectiveAir
 							+ See if vectorized already: YES; rolled loop with packed scalars
 						- UpdateAirFromEffectiveAir (iff needed, see if only included in 3x mega step)
