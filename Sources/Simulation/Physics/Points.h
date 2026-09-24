@@ -1863,13 +1863,11 @@ public:
         mAirMomentumBuffer.fill(vec2f::zero());
     }
 
-    // Note: sources from EffectiveAir buffer, so it must be "fresh" - i.e.
-    // consistent with current Air buffer
     void UpdateAirVelocitiesFromMomenta()
     {
         Algorithms::TransformMomentaToVelocities(
             mAirMomentumBuffer.data(),
-            mEffectiveAirBuffer.data(),
+            mAirBuffer.data(),
             mAirVelocityBuffer.data(),
             mAlignedShipPointCount);
     }
@@ -1890,38 +1888,20 @@ public:
         mEffectiveAirBuffer.copy_from(sourceBufferData, static_cast<size_t>(mAlignedShipPointCount));
     }
 
-    // Modifies in-place the Air buffer to take into account
-    // the particle's air temperature, effectively making the Air buffer
-    // an EffectiveAir buffer.
-    // Only used during air diffusion step; after that, the Air buffer
-    // reverts to represent air pressure at Temperature0.
-    void TransformAirToEffectiveAir()
+    // Recalculates EffectiveAir based on current Air and Temperature.
+    // Gets in sync at end of diffusion step; after that, it may be read,
+    // though it will likely diverge from Air and Temperature until
+    // the next iteration.
+    void UpdateEffectiveAirFromAir()
     {
-        float * restrict const airBuffer = mAirBuffer.data();
+        float const * restrict const airBuffer = mAirBuffer.data();
         float const * restrict const temperatureBuffer = mTemperatureBuffer.data();
+        float * restrict const effectiveAirBuffer = mEffectiveAirBuffer.data();
 
         // No need to visit ephemerals, as they don't get air
         for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
         {
-            airBuffer[p] *= temperatureBuffer[p] / SimulationParameters::Temperature0;
-        }
-    }
-
-    // Overwrites the Air buffer from the EffectiveAir buffer,
-    // scaling back pressures to Temperature0.
-    // Happens at end of diffusion step, so that afterwards Air buffer
-    // is consistent with EffectiveAir buffer.
-    void UpdateAirFromEffectiveAir()
-    {
-        float * restrict const airBuffer = mAirBuffer.data();
-        float const * restrict const effectiveAirBuffer = mEffectiveAirBuffer.data();
-        float const * restrict const temperatureBuffer = mTemperatureBuffer.data();
-
-        // No need to visit ephemerals, as they don't get air
-        for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
-        {
-            assert(temperatureBuffer[p] != 0.0f); // We don't reach absolute zero
-            airBuffer[p] = effectiveAirBuffer[p] * SimulationParameters::Temperature0 / temperatureBuffer[p];
+            effectiveAirBuffer[p] = airBuffer[p] * temperatureBuffer[p] / SimulationParameters::Temperature0;
         }
     }
 

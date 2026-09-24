@@ -3824,14 +3824,33 @@
 						! See if Efffective/Air is idempotent: IT IS!
 
 						! Found it: we move effective air across points at different temperatures, hence we're creating or destroying air
-					- Fix:
+					= Fix:
 						! We use effective air only for flow weight calcn's
 							! Init'd from air at beginning of each iteration, to const RO buffer
 						! We move _air_ based off weights - which are normalized to _air_
+						! Hull averaging: do it with air, but make sure there's a final Air->EffectiveAir, also for hull's
 						! We do a final Air->EffectiveAir at end, as a service to rest of simulation
-						- Impl:
+						= Impl:
 							+ Cleanup all (diagnostic) changes
-							- Do: TODOHERE
+							+ UpdateAirAndWaterIntake:
+								+ Make sure we read EffectiveAir and move Air
+							+ UpdateAirAndWaterPressure:
+								+ Init: update EffectiveAir from Air
+								+ Water:
+									+ Read EffectiveAir
+								+ Air:
+									+ Read EffectiveAir
+									+ Normalize with Air
+									+ Move Air
+									+ At end of each iter: if not last: update EffectiveAir from Air
+								+ Hull averaging: add other's Water+Air to own Air
+								+ End: final Air->EffectiveAir, also for hull's 
+
+						- Rewrite "old"/"new" as src and dst and _none_ (when both) - we don't write while reading anymore
+						- @ Air step: we use EffectiveAir for rel velocity weighting by mass; should we use Air instead? YES
+						- Check max heatblaster flow
+
+						- Remove final read of total air + water
 
 				- Surround logs by #define's
 				- It seems we don't need to cap air's springOutboundQuantityOfAir to current newBuffer value
