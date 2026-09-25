@@ -3377,13 +3377,14 @@ void Ship::UpdateAirAndWaterPressure(
                 float const pointAAirVelocityAlongSpring = srcPointAirVelocityBufferData[pA].dot(springNormalizedVector);
                 float const pointBAirVelocityAlongSpring = srcPointAirVelocityBufferData[pB].dot(springNormalizedVector);
 
-                // Relative velocity - mass-weighted
-                float const totalMass = srcPointEffectiveAirBufferData[pA] + srcPointEffectiveAirBufferData[pB];
+                // Relative velocity - mass-weighted;
+                // we weight using Air because momenta are with Air
+                float const totalMass = pointAirBufferData[pA] + pointAirBufferData[pB];
                 float const relVelocity = (totalMass != 0.0f)
-                    ? (pointAAirVelocityAlongSpring * srcPointEffectiveAirBufferData[pA] - pointBAirVelocityAlongSpring * srcPointEffectiveAirBufferData[pB]) / totalMass
+                    ? (pointAAirVelocityAlongSpring * pointAirBufferData[pA] - pointBAirVelocityAlongSpring * pointAirBufferData[pB]) / totalMass
                     : 0.0f;
 
-                // Pressure differential
+                // Pressure differential - based off Water + EffectiveAir
                 float const dp = (
                     (srcPointWaterBufferData[pA] + srcPointEffectiveAirBufferData[pA])
                     - (srcPointWaterBufferData[pB] + srcPointEffectiveAirBufferData[pB])
