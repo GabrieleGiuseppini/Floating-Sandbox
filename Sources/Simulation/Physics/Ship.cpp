@@ -2989,23 +2989,21 @@ void Ship::UpdateAirAndWaterPressure(
 #endif
 
         // Prepare water buffer
-        auto oldPointWaterBuffer = mPoints.MakeWaterBufferCopy();
-        float const * const restrict oldPointWaterBufferData = oldPointWaterBuffer->data();
-        float * const restrict newPointWaterBufferData = mPoints.GetWaterBufferAsFloat();
+        float * const restrict pointWaterBufferData = mPoints.GetWaterBufferAsFloat();
 
         // Prepare water velocity buffer
-        vec2f const * const restrict oldPointWaterVelocityBufferData = mPoints.GetWaterVelocityBufferAsVec2();
+        vec2f const * const restrict srcPointWaterVelocityBufferData = mPoints.GetWaterVelocityBufferAsVec2();
 
         // Prepare water momenta
         mPoints.ResetWaterMomenta(); // Start with zero, we'll add as we go
-        vec2f * const restrict newPointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
+        vec2f * const restrict dstPointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
 
         // Prepare work buffers
         Springs::FluidDiffusionAlgorithmVariables * const restrict springVariables = mSprings.ResetFluidDiffusionAlgorithmVariablesBuffer();
         Points::FluidDiffusionAlgorithmVariables * const restrict pointsVariables = mPoints.ResetFluidDiffusionAlgorithmVariablesBuffer();
 
         // Prepare source effective air - we'll read air exclusively from this buffer
-        float const * restrict const oldPointEffectiveAirBufferData = mPoints.GetEffectiveAirBufferAsFloat();
+        float const * restrict const srcPointEffectiveAirBufferData = mPoints.GetEffectiveAirBufferAsFloat();
 
         //
         // Calculate water flows for each spring
@@ -3033,26 +3031,26 @@ void Ship::UpdateAirAndWaterPressure(
 
                 //
                 // Calculate flow according to water momentum (relative vels) + pressure differentials
-                //    - Source pressure: water pressure + air pressure (only when diffusing down)
-                //    - Destination pressure: water pressure + air pressure (only when diffusing up) (Rayleigh–Taylor instability: water is not stopped by air below - actually drawn down)
+                //    - Source pressure: water pressure + effective air pressure (only when diffusing down)
+                //    - Destination pressure: water pressure + effective air pressure (only when diffusing up) (Rayleigh–Taylor instability: water is not stopped by air below - actually drawn down)
                 //
                 // Pressure differentials yield a move velocity according to Bernoulli's principle (1738)
                 //
 
                 // Components of the points' own water velocities along the spring
-                float const pointAWaterVelocityAlongSpring = oldPointWaterVelocityBufferData[pA].dot(springNormalizedVector);
-                float const pointBWaterVelocityAlongSpring = oldPointWaterVelocityBufferData[pB].dot(springNormalizedVector);
+                float const pointAWaterVelocityAlongSpring = srcPointWaterVelocityBufferData[pA].dot(springNormalizedVector);
+                float const pointBWaterVelocityAlongSpring = srcPointWaterVelocityBufferData[pB].dot(springNormalizedVector);
 
                 // Relative velocity - mass-weighted
-                float const totalMass = oldPointWaterBufferData[pA] + oldPointWaterBufferData[pB];
+                float const totalMass = pointWaterBufferData[pA] + pointWaterBufferData[pB];
                 float const relVelocity = (totalMass != 0.0f)
-                    ? (pointAWaterVelocityAlongSpring * oldPointWaterBufferData[pA] - pointBWaterVelocityAlongSpring * oldPointWaterBufferData[pB]) / totalMass
+                    ? (pointAWaterVelocityAlongSpring * pointWaterBufferData[pA] - pointBWaterVelocityAlongSpring * pointWaterBufferData[pB]) / totalMass
                     : 0.0f;
 
-                // Pressure differential
+                // Pressure differential - based off Water + EffectiveAir
                 float const dp = (
-                    (oldPointWaterBufferData[pA] + oldPointEffectiveAirBufferData[pA] * springDownness * simulationParameters.AirPressureFeedbackOnWater)
-                    - (oldPointWaterBufferData[pB] + oldPointEffectiveAirBufferData[pB] * springUpness * simulationParameters.AirPressureFeedbackOnWater)
+                    (pointWaterBufferData[pA] + srcPointEffectiveAirBufferData[pA] * springDownness * simulationParameters.AirPressureFeedbackOnWater)
+                    - (pointWaterBufferData[pB] + srcPointEffectiveAirBufferData[pB] * springUpness * simulationParameters.AirPressureFeedbackOnWater)
                     );
 
                 // Gravity potential differential (positive implies A -> B flow)
@@ -3125,8 +3123,8 @@ void Ship::UpdateAirAndWaterPressure(
                     || pB == mLastQueriedPointIndex)
                 {
                     LogMessage("  W ", pA, "->", pB, ": flowWeight=", springVariables[s].FlowWeight,
-                        " dp=", dp, " pA=", oldPointWaterBufferData[pA] + oldPointEffectiveAirBufferData[pA] * springDownness,
-                        " pB=", oldPointWaterBufferData[pB] + oldPointEffectiveAirBufferData[pB] * springUpness,
+                        " dp=", dp, " pA=", pointWaterBufferData[pA] + srcPointEffectiveAirBufferData[pA] * springDownness,
+                        " pB=", pointWaterBufferData[pB] + srcPointEffectiveAirBufferData[pB] * springUpness,
                         " springDir=", springNormalizedVector, " upness=", springUpness, " downness=", springDownness);
                     LogMessage("  bVel=", bernoulliVelocityAlongSpring, " wVelA=", pointAWaterVelocityAlongSpring, " wVelB=", pointBWaterVelocityAlongSpring, " rVel=", relVelocity,
                         " ->  springScalarResultantVelocity=", springScalarResultantVelocity, " flowVel=", springVariables[s].FlowVelocity,
@@ -3158,7 +3156,7 @@ void Ship::UpdateAirAndWaterPressure(
                 // to do a full outbound flow weight if it agrees with our limits
                 float const maxOutboundFlowWeight = std::min(
                     pointsVariables[p].MaxOutboundFlowWeight,
-                    oldPointWaterBufferData[p] * mPoints.GetMaterialWaterDiffusionSpeed(p) * effectiveWaterDiffusionSpeedAdjustment);
+                    pointWaterBufferData[p] * mPoints.GetMaterialWaterDiffusionSpeed(p) * effectiveWaterDiffusionSpeedAdjustment);
                 assert(maxOutboundFlowWeight >= 0.0f);
                 assert(maxOutboundFlowWeight <= pointsVariables[p].TotalOutboundFlowWeight);
                 pointsVariables[p].FlowNormalizationFactor = std::min(
@@ -3169,7 +3167,7 @@ void Ship::UpdateAirAndWaterPressure(
 #ifdef LOG_AIR_AND_WATER_DIFFUSION
                 if (p == mLastQueriedPointIndex)
                 {
-                    LogMessage("W: normFactor=", pointsVariables[p].FlowNormalizationFactor, " (oldWater=", oldPointWaterBufferData[p], " max=", maxOutboundFlowWeight,
+                    LogMessage("W: normFactor=", pointsVariables[p].FlowNormalizationFactor, " (water=", pointWaterBufferData[p], " max=", maxOutboundFlowWeight,
                         " mat=", mPoints.GetMaterialWaterDiffusionSpeed(p), " effDiffSpeed=", effectiveWaterDiffusionSpeedAdjustment,
                         " itersFactor=", inverseNumberOfWaterIterations, " tot=", pointsVariables[p].TotalOutboundFlowWeight, ")");
                 }
@@ -3180,16 +3178,16 @@ void Ship::UpdateAirAndWaterPressure(
             // Add to this point's water momentum the momentum that stays
             //
 
-            assert(newPointWaterMomentumBufferData[p] == vec2f::zero());
+            assert(dstPointWaterMomentumBufferData[p] == vec2f::zero());
 
             float const pointTotalWaterOut = pointsVariables[p].TotalOutboundFlowWeight * pointsVariables[p].FlowNormalizationFactor;
-            float const pointRemainingWater = std::max(oldPointWaterBufferData[p] - pointTotalWaterOut, 0.0f);
-            newPointWaterMomentumBufferData[p] = oldPointWaterVelocityBufferData[p] * pointRemainingWater;
+            float const pointRemainingWater = std::max(pointWaterBufferData[p] - pointTotalWaterOut, 0.0f);
+            dstPointWaterMomentumBufferData[p] = srcPointWaterVelocityBufferData[p] * pointRemainingWater;
 
 #ifdef LOG_AIR_AND_WATER_DIFFUSION
             if (p == mLastQueriedPointIndex)
             {
-                LogMessage("  W Init: remaining=", pointRemainingWater, " add mom=", oldPointWaterVelocityBufferData[p] * pointRemainingWater, " final mom=", newPointWaterMomentumBufferData[p]);
+                LogMessage("  W Init: remaining=", pointRemainingWater, " add mom=", srcPointWaterVelocityBufferData[p] * pointRemainingWater, " final mom=", dstPointWaterMomentumBufferData[p]);
             }
 #endif
         }
@@ -3236,12 +3234,12 @@ void Ship::UpdateAirAndWaterPressure(
                 //
 
                 // Move water quantity
-                assert(newPointWaterBufferData[pSrc] >= springOutboundQuantityOfWater);
-                newPointWaterBufferData[pSrc] -= springOutboundQuantityOfWater;
-                newPointWaterBufferData[pDst] += springOutboundQuantityOfWater;
+                assert(pointWaterBufferData[pSrc] >= springOutboundQuantityOfWater);
+                pointWaterBufferData[pSrc] -= springOutboundQuantityOfWater;
+                pointWaterBufferData[pDst] += springOutboundQuantityOfWater;
 
                 // Add "new momentum" to destination
-                newPointWaterMomentumBufferData[pDst] +=
+                dstPointWaterMomentumBufferData[pDst] +=
                     springVariables[s].FlowVelocity
                     * springOutboundQuantityOfWater;
 
@@ -3253,19 +3251,19 @@ void Ship::UpdateAirAndWaterPressure(
                 else if (pDst == mLastQueriedPointIndex)
                 {
                     LogMessage("  W In: springOutboundQuantityOfWater=", springOutboundQuantityOfWater, " dir=", springNormalizedVector,
-                        " mom in=", springVariables[s].FlowVelocity * springOutboundQuantityOfWater, " final mom=", newPointWaterMomentumBufferData[pDst]);
+                        " mom in=", springVariables[s].FlowVelocity * springOutboundQuantityOfWater, " final mom=", dstPointWaterMomentumBufferData[pDst]);
                 }
 #endif
 
 #if !FS_IS_PLATFORM_MOBILE()
-                if (oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) > 0.0f)
+                if (srcPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) > 0.0f)
                 {
-                    if (oldPointWaterVelocityBufferData[pDst].dot(springNormalizedVector) < 0.0f)
+                    if (srcPointWaterVelocityBufferData[pDst].dot(springNormalizedVector) < 0.0f)
                     {
                         // Collision - update "kinetic energy" loss
                         pointKineticEnergyLoss[pSrc] += std::min(
-                            oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) * springOutboundQuantityOfWater,
-                            -oldPointWaterVelocityBufferData[pDst].dot(springNormalizedVector) * springOutboundQuantityOfWater
+                            srcPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) * springOutboundQuantityOfWater,
+                            -srcPointWaterVelocityBufferData[pDst].dot(springNormalizedVector) * springOutboundQuantityOfWater
                         ) * inverseNumberOfWaterIterations; // Scale by # of iters
 
                         // TODO: remove
@@ -3296,8 +3294,7 @@ void Ship::UpdateAirAndWaterPressure(
         if (mLastQueriedPointIndex != NoneElementIndex)
         {
             LogMessage("================");
-            LogMessage("End W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", mPoints.GetWaterVelocity(mLastQueriedPointIndex),
-                " WMom=", mPoints.GetWaterMomentum(mLastQueriedPointIndex), " A=", oldPointEffectiveAirBufferData[mLastQueriedPointIndex]);
+            LogMessage("End W=", mPoints.GetWater(mLastQueriedPointIndex), " WVel=", mPoints.GetWaterVelocity(mLastQueriedPointIndex), " WMom=", mPoints.GetWaterMomentum(mLastQueriedPointIndex));
         }
 #endif
     } // Iter loop
@@ -3307,9 +3304,6 @@ void Ship::UpdateAirAndWaterPressure(
     //
     // Air step
     //
-
-    // Source water buffer
-    float const * const restrict oldPointWaterBufferData = mPoints.GetWaterBufferAsFloat();
 
     // See comment above on having to adjust W and A when we need their physical height
     float const airColumnHeightDensityFactor = SimulationParameters::AirMass / effectiveAirDensity;
@@ -3326,31 +3320,34 @@ void Ship::UpdateAirAndWaterPressure(
 
     for (int iter = 0; iter < NumberOfAirIterations; ++iter)
     {
-        // Prepare source effective air - we'll read air exclusively from this buffer
-        float const * restrict const oldPointEffectiveAirBufferData = mPoints.GetEffectiveAirBufferAsFloat();
-
-        // Prepare new air buffer
-        float * const restrict newPointAirBufferData = mPoints.GetAirBufferAsFloat();
-
 #ifdef LOG_AIR_AND_WATER_DIFFUSION
         if (mLastQueriedPointIndex != NoneElementIndex)
         {
             LogMessage("================");
-            LogMessage("Start EA=", oldPointEffectiveAirBufferData[mLastQueriedPointIndex], " A=", mPoints.GetAir(mLastQueriedPointIndex), " AVel=", mPoints.GetAirVelocity(mLastQueriedPointIndex),
+            LogMessage("Start EA=", mPoints.GetEffectiveAir(mLastQueriedPointIndex), " A=", mPoints.GetAir(mLastQueriedPointIndex), " AVel=", mPoints.GetAirVelocity(mLastQueriedPointIndex),
                 " W=", mPoints.GetWater(mLastQueriedPointIndex));
         }
 #endif
 
+        // Prepare source effective air - we'll read air exclusively from this buffer
+        float const * restrict const srcPointEffectiveAirBufferData = mPoints.GetEffectiveAirBufferAsFloat();
+
+        // Prepare new air buffer
+        float * const restrict pointAirBufferData = mPoints.GetAirBufferAsFloat();
+
         // Prepare air velocity buffer
-        vec2f const * const restrict oldPointAirVelocityBufferData = mPoints.GetAirVelocityBufferAsVec2();
+        vec2f const * const restrict srcPointAirVelocityBufferData = mPoints.GetAirVelocityBufferAsVec2();
 
         // Prepare air momenta
         mPoints.ResetAirMomenta(); // Start with zero, we'll add as we go
-        vec2f * const restrict newPointAirMomentumBufferData = mPoints.GetAirMomentumBufferAsVec2f();
+        vec2f * const restrict dstPointAirMomentumBufferData = mPoints.GetAirMomentumBufferAsVec2f();
 
         // Prepare work buffers
         Springs::FluidDiffusionAlgorithmVariables * const restrict springVariables = mSprings.ResetFluidDiffusionAlgorithmVariablesBuffer();
         Points::FluidDiffusionAlgorithmVariables * const restrict pointsVariables = mPoints.ResetFluidDiffusionAlgorithmVariablesBuffer();
+
+        // Source source water buffer
+        float const * const restrict srcPointWaterBufferData = mPoints.GetWaterBufferAsFloat();
 
         //
         // Calculate air flows for each free-flowing spring
@@ -3377,19 +3374,19 @@ void Ship::UpdateAirAndWaterPressure(
                 //
 
                 // Components of the points' own air velocities along the spring
-                float const pointAAirVelocityAlongSpring = oldPointAirVelocityBufferData[pA].dot(springNormalizedVector);
-                float const pointBAirVelocityAlongSpring = oldPointAirVelocityBufferData[pB].dot(springNormalizedVector);
+                float const pointAAirVelocityAlongSpring = srcPointAirVelocityBufferData[pA].dot(springNormalizedVector);
+                float const pointBAirVelocityAlongSpring = srcPointAirVelocityBufferData[pB].dot(springNormalizedVector);
 
                 // Relative velocity - mass-weighted
-                float const totalMass = oldPointEffectiveAirBufferData[pA] + oldPointEffectiveAirBufferData[pB];
+                float const totalMass = srcPointEffectiveAirBufferData[pA] + srcPointEffectiveAirBufferData[pB];
                 float const relVelocity = (totalMass != 0.0f)
-                    ? (pointAAirVelocityAlongSpring * oldPointEffectiveAirBufferData[pA] - pointBAirVelocityAlongSpring * oldPointEffectiveAirBufferData[pB]) / totalMass
+                    ? (pointAAirVelocityAlongSpring * srcPointEffectiveAirBufferData[pA] - pointBAirVelocityAlongSpring * srcPointEffectiveAirBufferData[pB]) / totalMass
                     : 0.0f;
 
                 // Pressure differential
                 float const dp = (
-                    (oldPointWaterBufferData[pA] + oldPointEffectiveAirBufferData[pA])
-                    - (oldPointWaterBufferData[pB] + oldPointEffectiveAirBufferData[pB])
+                    (srcPointWaterBufferData[pA] + srcPointEffectiveAirBufferData[pA])
+                    - (srcPointWaterBufferData[pB] + srcPointEffectiveAirBufferData[pB])
                     );
 
                 // Note: to be a real Bernoulli, the square root argument would need to be multiplied by (g * rho_water / rho_air)
@@ -3421,7 +3418,7 @@ void Ship::UpdateAirAndWaterPressure(
                     //
 
                     // Indicator of "water above": 0 @ water[above] = 0.0, 1 @ water[above] >= 1.0
-                    float const omega = std::min(oldPointWaterBufferData[pB], 1.0f);
+                    float const omega = std::min(srcPointWaterBufferData[pB], 1.0f);
 
                     // Velocity along spring (only exists when going "up", and it's projected onto vertical)
                     upwardVelocity = std::max(
@@ -3458,7 +3455,7 @@ void Ship::UpdateAirAndWaterPressure(
                     //
 
                     // Indicator of "water above": 0 @ water[above] = 0.0, 1 @ water[above] >= 1.0
-                    float const omega = std::min(oldPointWaterBufferData[pA], 1.0f);
+                    float const omega = std::min(srcPointWaterBufferData[pA], 1.0f);
 
                     // Velocity along spring (only exists when going "up", and it's projected onto vertical)
                     upwardVelocity = std::max(
@@ -3489,8 +3486,8 @@ void Ship::UpdateAirAndWaterPressure(
                     || pB == mLastQueriedPointIndex)
                 {
                     LogMessage("  A ", pA, "->", pB, ": flowWeight=", springVariables[s].FlowWeight,
-                        " dp=", dp, " pA=", oldPointWaterBufferData[pA] + oldPointEffectiveAirBufferData[pA],
-                        " pB=", oldPointWaterBufferData[pB] + oldPointEffectiveAirBufferData[pB],
+                        " dp=", dp, " pA=", srcPointWaterBufferData[pA] + srcPointEffectiveAirBufferData[pA],
+                        " pB=", srcPointWaterBufferData[pB] + srcPointEffectiveAirBufferData[pB],
                         " springDir=", springNormalizedVector);
                     LogMessage("  bVel=", bernoulliVelocityAlongSpring, " aVelA=", pointAAirVelocityAlongSpring, " aVelB=", pointBAirVelocityAlongSpring, " rVel=", relVelocity,
                         " upwardVel=", upwardVelocity,
@@ -3524,7 +3521,7 @@ void Ship::UpdateAirAndWaterPressure(
                     // to do a full outbound flow weight if it agrees with our limits
                     float const maxOutboundFlowWeight = std::min(
                         pointsVariables[p].MaxOutboundFlowWeight,
-                        newPointAirBufferData[p] * effectiveAirDiffusionSpeedAdjustment);
+                        pointAirBufferData[p] * effectiveAirDiffusionSpeedAdjustment);
                     assert(maxOutboundFlowWeight >= 0.0f);
                     assert(maxOutboundFlowWeight <= pointsVariables[p].TotalOutboundFlowWeight);
                     pointsVariables[p].FlowNormalizationFactor = std::min(
@@ -3535,7 +3532,7 @@ void Ship::UpdateAirAndWaterPressure(
 #ifdef LOG_AIR_AND_WATER_DIFFUSION
                     if (p == mLastQueriedPointIndex)
                     {
-                        LogMessage("A: normFactor=", pointsVariables[p].FlowNormalizationFactor, " (oldAir=", newPointAirBufferData[p], " max=", maxOutboundFlowWeight,
+                        LogMessage("A: normFactor=", pointsVariables[p].FlowNormalizationFactor, " (air=", pointAirBufferData[p], " max=", maxOutboundFlowWeight,
                             " effDiffSpeed=", effectiveAirDiffusionSpeedAdjustment,
                             " itersFactor=", inverseNumberOfAirIterations, " tot=", pointsVariables[p].TotalOutboundFlowWeight, ")");
                     }
@@ -3549,16 +3546,16 @@ void Ship::UpdateAirAndWaterPressure(
                 // its outbound flow weight won't include any flow towards hull
                 //
 
-                assert(newPointAirMomentumBufferData[p] == vec2f::zero());
+                assert(dstPointAirMomentumBufferData[p] == vec2f::zero());
 
                 float const pointTotalAirOut = pointsVariables[p].TotalOutboundFlowWeight * pointsVariables[p].FlowNormalizationFactor;
-                float const pointRemainingAir = std::max(newPointAirBufferData[p] - pointTotalAirOut, 0.0f);
-                newPointAirMomentumBufferData[p] = oldPointAirVelocityBufferData[p] * pointRemainingAir;
+                float const pointRemainingAir = std::max(pointAirBufferData[p] - pointTotalAirOut, 0.0f);
+                dstPointAirMomentumBufferData[p] = srcPointAirVelocityBufferData[p] * pointRemainingAir;
 
 #ifdef LOG_AIR_AND_WATER_DIFFUSION
                 if (p == mLastQueriedPointIndex)
                 {
-                    LogMessage("  A Init: remaining=", pointRemainingAir, " add mom=", oldPointAirVelocityBufferData[p] * pointRemainingAir, " final mom=", newPointAirMomentumBufferData[p]);
+                    LogMessage("  A Init: remaining=", pointRemainingAir, " add mom=", srcPointAirVelocityBufferData[p] * pointRemainingAir, " final mom=", dstPointAirMomentumBufferData[p]);
                 }
 #endif
             }
@@ -3595,24 +3592,24 @@ void Ship::UpdateAirAndWaterPressure(
                 // Calculate quantity of air directed from src to dst (>= 0.0),
                 // being careful not to overdrain the point
                 // TODOTEST
-                assert(outboundFlowWeight * pointsVariables[pSrc].FlowNormalizationFactor <= newPointAirBufferData[pSrc]);
+                assert(outboundFlowWeight * pointsVariables[pSrc].FlowNormalizationFactor <= pointAirBufferData[pSrc]);
                 float const springOutboundQuantityOfAir = std::min(
                     outboundFlowWeight * pointsVariables[pSrc].FlowNormalizationFactor,
-                    newPointAirBufferData[pSrc]);
+                    pointAirBufferData[pSrc]);
 
                 assert(springOutboundQuantityOfAir >= 0.0f);
-                assert(springOutboundQuantityOfAir <= newPointAirBufferData[pSrc]);
+                assert(springOutboundQuantityOfAir <= pointAirBufferData[pSrc]);
 
                 // Move air quantity
-                assert(newPointAirBufferData[pSrc] >= 0.0f);
-                newPointAirBufferData[pSrc] -= springOutboundQuantityOfAir;
-                assert(newPointAirBufferData[pSrc] >= 0.0f);
-                assert(newPointAirBufferData[pDst] >= 0.0f);
-                newPointAirBufferData[pDst] += springOutboundQuantityOfAir;
-                assert(newPointAirBufferData[pDst] >= 0.0f);
+                assert(pointAirBufferData[pSrc] >= 0.0f);
+                pointAirBufferData[pSrc] -= springOutboundQuantityOfAir;
+                assert(pointAirBufferData[pSrc] >= 0.0f);
+                assert(pointAirBufferData[pDst] >= 0.0f);
+                pointAirBufferData[pDst] += springOutboundQuantityOfAir;
+                assert(pointAirBufferData[pDst] >= 0.0f);
 
                 // Add "new momentum" to destination
-                newPointAirMomentumBufferData[pDst] +=
+                dstPointAirMomentumBufferData[pDst] +=
                     springVariables[s].FlowVelocity
                     * springOutboundQuantityOfAir;
 
@@ -3624,7 +3621,7 @@ void Ship::UpdateAirAndWaterPressure(
                 else if (pDst == mLastQueriedPointIndex)
                 {
                     LogMessage("  A In: springOutboundQuantityOfAir=", springOutboundQuantityOfAir, " dir=", " dir=", (pSrc == mSprings.GetEndpointAIndex(s)) ? mSprings.GetCachedVectorialNormalizedVector(s) : -mSprings.GetCachedVectorialNormalizedVector(s),
-                        " mom in=", springVariables[s].FlowVelocity * springOutboundQuantityOfAir, " final mom=", newPointAirMomentumBufferData[pDst]);
+                        " mom in=", springVariables[s].FlowVelocity * springOutboundQuantityOfAir, " final mom=", dstPointAirMomentumBufferData[pDst]);
                 }
 #endif
             }
@@ -3649,8 +3646,8 @@ void Ship::UpdateAirAndWaterPressure(
         if (mLastQueriedPointIndex != NoneElementIndex)
         {
             LogMessage("================");
-            LogMessage("End EA=", mPoints.GetEffectiveAir(mLastQueriedPointIndex), " A=", mPoints.GetAir(mLastQueriedPointIndex), " AVel=", mPoints.GetAirVelocity(mLastQueriedPointIndex),
-                       " W=", mPoints.GetWater(mLastQueriedPointIndex));
+            LogMessage("End EA=", mPoints.GetEffectiveAir(mLastQueriedPointIndex), " A=", mPoints.GetAir(mLastQueriedPointIndex),
+                       " AVel=", mPoints.GetAirVelocity(mLastQueriedPointIndex), " AMom=", mPoints.GetAirMomentum(mLastQueriedPointIndex));
         }
 #endif
 

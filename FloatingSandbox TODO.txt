@@ -3857,9 +3857,9 @@
 							+ Should we actually cap air, i.e. after effectiveAirToAir conversion?
 								+ Also multiply intake by diff speed, to avoid build-ups
 
-						- Rewrite "old"/"new" as src and dst and _none_ (when both) - we don't write while reading anymore
-							- Also stop copying buffers
-								- Water uses a single Water buffer
+						+ Rewrite "old"/"new" as src and dst and _none_ (when both) - we don't write while reading anymore
+							+ Also stop copying buffers
+								+ Water uses a single Water buffer
 
 						- Hull averaging: goal is to match effectivePressure of neighbors, so need to rewrite it:
 							- Air->EffectiveAir
@@ -3869,6 +3869,9 @@
 							- We use rel velocity as addition to dp, which instead is based off EffectiveAir; given that
 							  momenta are with air, we should indeed use Air
 
+						- Scorecard
+						- Re-test NPCs/sudden air flow
+
 						- Remove final read of total air + water
 						- Remove logs
 
@@ -3877,9 +3880,6 @@
 				- It seems we don't need to cap air's springOutboundQuantityOfAir to current newBuffer value
 					- Run again with assert
 				- Make all spring loops on raw springs
-
-
-				- Re-test NPCs/sudden air flow
 
 				- Check all temperature changes and make sure we also clamp to "0K", like @ heatblaster
 					- And use SimParams constant for that
