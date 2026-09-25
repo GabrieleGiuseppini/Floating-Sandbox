@@ -2312,7 +2312,7 @@ void Points::Query(ElementIndex pointElementIndex) const
 {
     LogMessage("PointIndex: ", pointElementIndex, (nullptr != mMaterialsBuffer[pointElementIndex].Structural) ? (" (" + mMaterialsBuffer[pointElementIndex].Structural->Name) + ")" : "");
     LogMessage("P=", mPositionBuffer[pointElementIndex].toString(), " V=", mVelocityBuffer[pointElementIndex].toString());
-    LogMessage("M=", mMassBuffer[pointElementIndex], " EA=", mEffectiveAirBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex],
+    LogMessage("M=", mMassBuffer[pointElementIndex], " EA=", mEffectiveAirBuffer[pointElementIndex], " A=", mAirBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex],
                " Wk=", IsEphemeral(pointElementIndex) ? 1.0f : mWeaknessBuffer[pointElementIndex], " Rust=", IsEphemeral(pointElementIndex) ? 0.0f : mDecayBuffer[pointElementIndex].Decay.Rust);
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex], " ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }

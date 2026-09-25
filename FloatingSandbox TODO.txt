@@ -3830,7 +3830,7 @@
 						! We move _air_ based off weights - which are normalized to _air_
 						! Hull averaging: do it with air, but make sure there's a final Air->EffectiveAir, also for hull's
 						! We do a final Air->EffectiveAir at end, as a service to rest of simulation
-						= Impl:
+						+ Impl:
 							+ Cleanup all (diagnostic) changes
 							+ UpdateAirAndWaterIntake:
 								+ Make sure we read EffectiveAir and move Air
@@ -3845,17 +3845,42 @@
 									+ At end of each iter: if not last: update EffectiveAir from Air
 								+ Hull averaging: add other's Water+Air to own Air
 								+ End: final Air->EffectiveAir, also for hull's 
+						+ Read water+air only from non-hull
+							+ Re-check now creation
+
+						+ Re-add assert for later (quantity does not overdrain point)
+
+						+ See why when freezing close to leaking, air at ingress becomes huge
+							! We cap effective air, but then transform to air, which is very cold and thus it's a lot of air
+							+ But then back to effective air should be the cap again
+								+ Reenable log messages (*) to see what makes frontier point's EA jump so much, delta's seem to be reasonable
+							+ Should we actually cap air, i.e. after effectiveAirToAir conversion?
+								+ Also multiply intake by diff speed, to avoid build-ups
 
 						- Rewrite "old"/"new" as src and dst and _none_ (when both) - we don't write while reading anymore
-						- @ Air step: we use EffectiveAir for rel velocity weighting by mass; should we use Air instead? YES
-						- Check max heatblaster flow
+							- Also stop copying buffers
+								- Water uses a single Water buffer
+
+						- Hull averaging: goal is to match effectivePressure of neighbors, so need to rewrite it:
+							- Air->EffectiveAir
+							- Read from EffectiveAir and set both Air and EffectiveAir
+						
+						- @ Air step: we use EffectiveAir for rel velocity weighting by mass; should we use Air instead?
+							- We use rel velocity as addition to dp, which instead is based off EffectiveAir; given that
+							  momenta are with air, we should indeed use Air
 
 						- Remove final read of total air + water
+						- Remove logs
 
-				- Surround logs by #define's
+				- Check max heatblaster flow
+				+ Surround logs by #define's
 				- It seems we don't need to cap air's springOutboundQuantityOfAir to current newBuffer value
 					- Run again with assert
 				- Make all spring loops on raw springs
+
+
+				- Re-test NPCs/sudden air flow
+
 				- Check all temperature changes and make sure we also clamp to "0K", like @ heatblaster
 					- And use SimParams constant for that
 
@@ -3913,6 +3938,9 @@
 				- PropagateHeat:
 					- Try also by springs
 						- Could reuse FluidVars?
+
+				- UpdateAirAndWaterInflows:
+					- Precalc water/air intake adjustments/caps
 
 				- ApplyStaticPressureForces:
 					- Pre-multiply pressure conversion factors into forceNormalizationFactor
