@@ -24,8 +24,6 @@
 #include <queue>
 #include <set>
 
-#define LOG_AIR_AND_WATER_DIFFUSION 1
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Low-frequency updates scheduling
@@ -851,7 +849,7 @@ void Ship::Update(
                    " updateForStress=", updateForStressTotal.count() / profilingFrameCounter / 1000.0f,
                    " decayPoints=", decayPointsTotal.count() / profilingFrameCounter / 1000.0f,
                    " worldForces=", worldForcesTotal.count() / profilingFrameCounter / 1000.0f,
-                   " airAndWaterInflow = ", airAndWaterInflowTotal.count() / profilingFrameCounter / 1000.0f,
+                   " airAndWaterInflow=", airAndWaterInflowTotal.count() / profilingFrameCounter / 1000.0f,
                    " parallel1=", parallel1Total.count() / profilingFrameCounter / 1000.0f,
                    " (airAndWaterDiffusion=", airAndWaterDiffusionTotal.count() / profilingFrameCounter / 1000.0f,
                    " staticPressure=", staticPressureTotal.count() / profilingFrameCounter / 1000.0f,
@@ -3829,7 +3827,7 @@ void Ship::UpdateAirAndWaterPressure(
 
 
 
-
+    //// TODOTEST
     ////
     //// Pressure readings
     ////
@@ -3869,20 +3867,20 @@ void Ship::UpdateAirAndWaterPressure(
     //mSimulationEventHandler.OnPressureReadings(readings);
 
 
-    // TODOTEST
-    // Read total air and water
-    float totalAirPost = 0.0f;
-    float totalWaterPost = 0.0f;
-    for (auto pointIndex : mPoints.RawShipPoints())
-    {
-        if (!mPoints.IsDamaged(pointIndex) && !mPoints.GetIsHull(pointIndex))
-        {
-            totalAirPost += mPoints.GetAir(pointIndex);
-            totalWaterPost += mPoints.GetWater(pointIndex);
-        }
-    }
-    mSimulationEventHandler.OnCustomProbe("Total Air Inside", totalAirPost);
-    mSimulationEventHandler.OnCustomProbe("Total Water Inside", totalWaterPost);
+    //// TODOTEST
+    //// Read total air and water
+    //float totalAirPost = 0.0f;
+    //float totalWaterPost = 0.0f;
+    //for (auto pointIndex : mPoints.RawShipPoints())
+    //{
+    //    if (!mPoints.IsDamaged(pointIndex) && !mPoints.GetIsHull(pointIndex))
+    //    {
+    //        totalAirPost += mPoints.GetAir(pointIndex);
+    //        totalWaterPost += mPoints.GetWater(pointIndex);
+    //    }
+    //}
+    //mSimulationEventHandler.OnCustomProbe("Total Air Inside", totalAirPost);
+    //mSimulationEventHandler.OnCustomProbe("Total Water Inside", totalWaterPost);
 }
 
 void Ship::UpdateSinking(float /*currentSimulationTime*/)

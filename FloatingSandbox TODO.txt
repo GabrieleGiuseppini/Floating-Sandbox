@@ -3807,7 +3807,7 @@
 				! New profiling: 0.81-0.82 -> 0.70-0.73    3.0-3.1ms -> 2.9-3.0ms
 				+ Test watertight doors
 
-				= Verify zero-kelvin issue, in Debug
+				+ Verify zero-kelvin issue, in Debug
 					! It's certain materials - or is it hull proximity?
 					! It starts a self-feeding feedback loop
 					! Seems to come from natural heating after cooling; heating brings pressure up
@@ -3824,7 +3824,7 @@
 						! See if Efffective/Air is idempotent: IT IS!
 
 						! Found it: we move effective air across points at different temperatures, hence we're creating or destroying air
-					= Fix:
+					+ Fix:
 						! We use effective air only for flow weight calcn's
 							! Init'd from air at beginning of each iteration, to const RO buffer
 						! We move _air_ based off weights - which are normalized to _air_
@@ -3865,15 +3865,21 @@
 							+ Air->EffectiveAir
 							+ Read from EffectiveAir and set both Air and EffectiveAir
 						
-						- @ Air step: we use EffectiveAir for rel velocity weighting by mass; should we use Air instead?
-							- We use rel velocity as addition to dp, which instead is based off EffectiveAir; given that
+						+ @ Air step: we use EffectiveAir for rel velocity weighting by mass; should we use Air instead?
+							+ We use rel velocity as addition to dp, which instead is based off EffectiveAir; given that
 							  momenta are with air, we should indeed use Air
 
-						- Scorecard
-						- Re-test NPCs/sudden air flow
+						+ Scorecard
+							+ Shoot
+							+ NPCs/sudden air flow
+							+ FloodTest
+							+ default_ship
 
-						- Remove final read of total air + water
-						- Remove logs
+						+ Remove final read of total air + water
+						+ Remove logs
+						+ Remove PressureReadings
+
+				+ New profiling: 0.70-0.73 -> 0.70-0.75   2.9-3.0ms -> 2.9-3.1ms
 
 				- Check max heatblaster flow
 				+ Surround logs by #define's
@@ -3957,15 +3963,6 @@
 				- Cleanup:
 					- Remove FS_PROFILE
 
-			- Check: heating and cooling hole doesn't make water flow in anymore
-				- so apparently rapidly cooling water makes it straight up vanish?
-				  heating it doesnt affect it but cooling it makes it flow upwards momentarily, then it drops and vanishes
-				  afterwards it refuses to flood
-				- !!!! The cooling makes air momenta explode
-					- Zero Kelvin!
-					- See first what's going on
-					- If problem is just with numbers: see real curve of pressure with low temp
-				
 			- Calibration for # of water iters
 				- -> Android plan
 
