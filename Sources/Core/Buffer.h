@@ -181,6 +181,19 @@ public:
 
     /*
      * Fills the buffer with a value.
+     */
+    inline void fill(TElement value, size_t size)
+    {
+        assert(size <= mSize);
+        TElement * restrict const ptr = mBuffer.get();
+        for (size_t i = 0; i < size; ++i)
+            ptr[i] = value;
+
+        mCurrentPopulatedSize = size;
+    }
+
+    /*
+     * Fills the buffer with a value.
      * This overload is when the caller has the buffer size at compile time;
      * it's faster than the other overload.
      */

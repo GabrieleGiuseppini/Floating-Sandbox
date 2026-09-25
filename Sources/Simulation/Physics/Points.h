@@ -1754,14 +1754,6 @@ public:
         return mWaterBuffer[pointElementIndex] > threshold;
     }
 
-    std::shared_ptr<Buffer<float>> MakeWaterBufferCopy()
-    {
-        auto waterBufferCopy = mFloatBufferAllocator.Allocate();
-        waterBufferCopy->copy_from(mWaterBuffer);
-
-        return waterBufferCopy;
-    }
-
     vec2f const & GetWaterVelocity(ElementIndex pointElementIndex) const
     {
         return mWaterVelocityBuffer[pointElementIndex];
@@ -1777,14 +1769,6 @@ public:
     vec2f * GetWaterVelocityBufferAsVec2()
     {
         return mWaterVelocityBuffer.data();
-    }
-
-    std::shared_ptr<Buffer<vec2f>> MakeWaterVelocityBufferCopy()
-    {
-        auto copy = mVec2fBufferAllocator.Allocate();
-        copy->copy_from(mWaterVelocityBuffer);
-
-        return copy;
     }
 
     vec2f const & GetWaterMomentum(ElementIndex pointElementIndex) const
@@ -1880,12 +1864,6 @@ public:
     float * GetEffectiveAirBufferAsFloat()
     {
         return mEffectiveAirBuffer.data();
-    }
-
-    void ResetEffectiveAir(float const * restrict sourceBufferData)
-    {
-        // No need to copy ephemerals, as they don't get air
-        mEffectiveAirBuffer.copy_from(sourceBufferData, static_cast<size_t>(mAlignedShipPointCount));
     }
 
     // Recalculates EffectiveAir based on current Air and Temperature.

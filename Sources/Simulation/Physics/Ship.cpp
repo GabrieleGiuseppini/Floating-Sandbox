@@ -3661,7 +3661,7 @@ void Ship::UpdateAirAndWaterPressure(
     //
 
     auto tmpBuffer = mPoints.AllocateWorkBufferFloat();
-    tmpBuffer->fill(0.0f); // TODO: buffer at this moment is over-large (contains also ephemerals)
+    tmpBuffer->fill(0.0f, mPoints.GetAlignedShipPointCount());
     float * const restrict newPointHullEffectiveAirBufferData = tmpBuffer.get()->data();
 
     {

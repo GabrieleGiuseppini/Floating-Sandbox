@@ -3921,22 +3921,34 @@
 
 				+ Stop zeroing out spring variables
 
-				+ New profiling: 0.68-0.70 -> 0.65-0.67   2.7-2.8ms -> .7-2.8ms
+				+ New profiling: 0.68-0.70 -> 0.65-0.67   2.7-2.8ms -> 2.7-2.8ms
 
-				- Try: store enough in (Spring) FluidVars to make move by-springs step without branching
-					- Water
-					- Air
+				X Try: store enough in (Spring) FluidVars to make move by-springs step without branching
+					X Water
+					X Air
 
-				- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
-					- Use aligned point count
-					- Watchout: when we make copies of buffers we use mFloatBufferAllocator
-						- TODO: not anymore? We've cleaned that up, but double-check
-					- If we do:
-						- Add asserts at setters and getters
-						- Check all callers of setters and getters
-						- Watch for mass augmentation/update
-						- Nuke all commented-out sanity lines for ephemeral creation functions
-						- ResetEffectiveAir: no need for size arg
+				X Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
+					+ Use aligned point count
+					+ Watchout: when we make copies of buffers we use mFloatBufferAllocator
+						+ TODO: not anymore? We've cleaned that up, but double-check
+					X If we do:
+						+ Add asserts at setters and getters
+						+ Check all callers of setters and getters
+						+ Watch for mass augmentation/update
+						+ Nuke all commented-out sanity lines for ephemeral creation functions
+						X ResetEffectiveAir: no need for size arg
+					X TOO CONVOLUTED: WE ACCESS WATER ALMOST EVERYWHERE
+
+				+ At hull averaging: init with aligned point count
+
+				- Normalization factor calc'n takes more time with more water - by a lot!
+					- Try with whole mid-loop vectorized, branchless
+						- Water+Air could be same if Air also used GetMaterialWaterDiffusionSpeed
+						- _mm_unpackhi_ps, _mm_unpacklo_ps
+					- If goes through: rename material's WaterDiffusionSpeed to FluidDiffusionSpeed
+						- json
+						- Material
+						- Points' buffer
 
 				- PropagateHeat:
 					- Try also by springs
@@ -3944,6 +3956,8 @@
 
 				- UpdateAirAndWaterInflows:
 					- Precalc water/air intake adjustments/caps
+					- Precalc constants
+					- Profile: 0.04 (when chopped up) -> 
 
 				- ApplyStaticPressureForces:
 					- Pre-multiply pressure conversion factors into forceNormalizationFactor
@@ -3956,6 +3970,7 @@
 				- Rebalance thread tasks
 					- Consider moving StaticPressure to main or other thread, together with temperature
 						- Need buffer copies
+						- Watch out for event publishing from thread
 
 				- Cleanup:
 					- Remove FS_PROFILE
