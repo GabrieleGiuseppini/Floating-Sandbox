@@ -3153,10 +3153,9 @@ void Ship::UpdateAirAndWaterPressure(
                 // We're willing to do no more than a _speed_ fraction of current water, but we're also willing
                 // to do a full outbound flow weight if it agrees with our limits
                 float const maxOutboundFlowWeight = std::min(
-                    pointsVariables[p].MaxOutboundFlowWeight,
-                    pointWaterBufferData[p] * mPoints.GetMaterialWaterDiffusionSpeed(p) * effectiveWaterDiffusionSpeedAdjustment);
+                    pointsVariables[p].MaxOutboundFlowWeight * mPoints.GetMaterialWaterDiffusionSpeed(p) * effectiveWaterDiffusionSpeedAdjustment,
+                    pointWaterBufferData[p]);
                 assert(maxOutboundFlowWeight >= 0.0f);
-                assert(maxOutboundFlowWeight <= pointsVariables[p].TotalOutboundFlowWeight);
                 pointsVariables[p].FlowNormalizationFactor = std::min(
                     maxOutboundFlowWeight / pointsVariables[p].TotalOutboundFlowWeight,
                     1.0f)
@@ -3220,10 +3219,11 @@ void Ship::UpdateAirAndWaterPressure(
                     springNormalizedVector = -mSprings.GetCachedVectorialNormalizedVector(s);
                 }
 
-                // Calculate quantity of water directed from src to dst (>= 0.0)
-                float const springOutboundQuantityOfWater =
-                    outboundFlowWeight
-                    * pointsVariables[pSrc].FlowNormalizationFactor;
+                // Calculate quantity of water directed from src to dst (>= 0.0),
+                // being careful not to overdrain the point
+                float const springOutboundQuantityOfWater = std::min(
+                    outboundFlowWeight * pointsVariables[pSrc].FlowNormalizationFactor,
+                    pointWaterBufferData[pSrc]);
 
                 assert(springOutboundQuantityOfWater >= 0.0f);
                 assert(springOutboundQuantityOfWater <= pointWaterBufferData[pSrc]);
@@ -3520,10 +3520,9 @@ void Ship::UpdateAirAndWaterPressure(
                     // We're willing to do no more than a _speed_ fraction of current water, but we're also willing
                     // to do a full outbound flow weight if it agrees with our limits
                     float const maxOutboundFlowWeight = std::min(
-                        pointsVariables[p].MaxOutboundFlowWeight,
-                        pointAirBufferData[p] * effectiveAirDiffusionSpeedAdjustment);
+                        pointsVariables[p].MaxOutboundFlowWeight * effectiveAirDiffusionSpeedAdjustment,
+                        pointAirBufferData[p]);
                     assert(maxOutboundFlowWeight >= 0.0f);
-                    assert(maxOutboundFlowWeight <= pointsVariables[p].TotalOutboundFlowWeight);
                     pointsVariables[p].FlowNormalizationFactor = std::min(
                         maxOutboundFlowWeight / pointsVariables[p].TotalOutboundFlowWeight,
                         1.0f)
@@ -3589,10 +3588,11 @@ void Ship::UpdateAirAndWaterPressure(
                     outboundFlowWeight = -springVariables[s].FlowWeight;
                 }
 
-                // Calculate quantity of air directed from src to dst (>= 0.0)
-                float const springOutboundQuantityOfAir =
-                    outboundFlowWeight
-                    * pointsVariables[pSrc].FlowNormalizationFactor;
+                // Calculate quantity of air directed from src to dst (>= 0.0),
+                // being careful not to overdrain the point
+                float const springOutboundQuantityOfAir = std::min(
+                    outboundFlowWeight * pointsVariables[pSrc].FlowNormalizationFactor,
+                    pointAirBufferData[pSrc]);
 
                 assert(springOutboundQuantityOfAir >= 0.0f);
                 assert(springOutboundQuantityOfAir <= pointAirBufferData[pSrc]);

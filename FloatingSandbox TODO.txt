@@ -3908,6 +3908,12 @@
 
 				+ Check assembly @ water-water collision to see if reuses those dots: IT DOES
 
+				+ Fix: with air diffusion=2, we get the calc'n of air norm factor wrong; need to cap TODO
+					+ See if also water
+					+ Re-instate max
+
+				+ New profiling: 0.70-0.75 -> 0.69-0.71    2.9-3.1ms -> 2.8-2.9ms
+
 				- Try: store enough in (Spring) FluidVars to make move by-springs step without branching
 					- Water
 					- Air
