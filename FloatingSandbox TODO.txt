@@ -3861,9 +3861,9 @@
 							+ Also stop copying buffers
 								+ Water uses a single Water buffer
 
-						- Hull averaging: goal is to match effectivePressure of neighbors, so need to rewrite it:
-							- Air->EffectiveAir
-							- Read from EffectiveAir and set both Air and EffectiveAir
+						+ Hull averaging: goal is to match effectivePressure of neighbors, so need to rewrite it:
+							+ Air->EffectiveAir
+							+ Read from EffectiveAir and set both Air and EffectiveAir
 						
 						- @ Air step: we use EffectiveAir for rel velocity weighting by mass; should we use Air instead?
 							- We use rel velocity as addition to dp, which instead is based off EffectiveAir; given that

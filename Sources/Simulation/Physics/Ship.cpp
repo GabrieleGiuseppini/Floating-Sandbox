@@ -3654,10 +3654,19 @@ void Ship::UpdateAirAndWaterPressure(
     } // Iter loop
 
     //
+    // Air finalization: recalculate EffectiveAir from current Air, for rest of simulation
+    //
+    // We'll fill-in hull point shortly
+    //
+
+    mPoints.UpdateEffectiveAirFromAir();
+
+    //
     // Finalizations, merged together to use single loops
     //
     // - Transfer the internal (i.e. non-hull) pressure to hull walls,
-    //   so we may correctly apply surface forces.
+    //   so we may correctly apply surface forces. Goal is to match internal
+    //   pressure, so we match EffectiveAir.
     //       We write to the air buffer, rather than to the water buffer, as a for a hull point
     //       water is always 0, hence internal pressure == air pressure only
     // - Zero out air and water momenta against hull
@@ -3665,12 +3674,12 @@ void Ship::UpdateAirAndWaterPressure(
 
     auto tmpBuffer = mPoints.AllocateWorkBufferFloat();
     tmpBuffer->fill(0.0f); // TODO: buffer at this moment is over-large (contains also ephemerals)
+    float * const restrict newPointHullEffectiveAirBufferData = tmpBuffer.get()->data();
 
     {
         float const * const restrict pointSrcWaterBufferData = mPoints.GetWaterBufferAsFloat();
-        float const * const restrict pointSrcAirBufferData = mPoints.GetAirBufferAsFloat();
+        float const * const restrict pointSrcEffectiveAirBufferData = mPoints.GetEffectiveAirBufferAsFloat();
 
-        float * const restrict pointDstHullAirBufferData = tmpBuffer.get()->data();
         vec2f * const restrict pointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
         vec2f * const restrict pointAirMomentumBufferData = mPoints.GetAirMomentumBufferAsVec2f();
 
@@ -3684,17 +3693,17 @@ void Ship::UpdateAirAndWaterPressure(
                 assert(mPoints.GetIsHull(pA) || mPoints.GetIsHull(pB));
 
                 //
-                // For each hull endpoint: add other endpoint's total Water+Air pressure to its Air
+                // For each hull endpoint: add other endpoint's total Water+EffectiveAir pressure to its Air
                 //
 
                 if (mPoints.GetIsHull(pA))
                 {
-                    pointDstHullAirBufferData[pA] += pointSrcAirBufferData[pB] + pointSrcWaterBufferData[pB];
+                    newPointHullEffectiveAirBufferData[pA] += pointSrcEffectiveAirBufferData[pB] + pointSrcWaterBufferData[pB];
                 }
 
                 if (mPoints.GetIsHull(pB))
                 {
-                    pointDstHullAirBufferData[pB] += pointSrcAirBufferData[pA] + pointSrcWaterBufferData[pA];
+                    newPointHullEffectiveAirBufferData[pB] += pointSrcEffectiveAirBufferData[pA] + pointSrcWaterBufferData[pA];
                 }
 
                 //
@@ -3767,15 +3776,22 @@ void Ship::UpdateAirAndWaterPressure(
 
     // Hull pressure averaging
     {
-        float const * const restrict pointSrcAirBufferData = tmpBuffer.get()->data();
+        float const * const restrict pointSrcTemperatureBufferData = mPoints.GetTemperatureBufferAsFloat();
         float * const restrict pointDstAirBufferData = mPoints.GetAirBufferAsFloat();
+        float * const restrict pointDstEffectiveAirBufferData = mPoints.GetEffectiveAirBufferAsFloat();
 
         for (auto const p : mPoints.RawShipPoints())
         {
             if (mPoints.GetIsHull(p))
             {
-                // Add own Air, then average
-                pointDstAirBufferData[p] = (pointDstAirBufferData[p] + pointSrcAirBufferData[p]) / static_cast<float>(mPoints.GetConnectedSprings(p).ConnectedSprings.size() + 1);
+                // Add own Effective Air, then average
+                float const hullEffectiveAir = (pointDstEffectiveAirBufferData[p] + newPointHullEffectiveAirBufferData[p]) / static_cast<float>(mPoints.GetConnectedSprings(p).ConnectedSprings.size() + 1);
+
+                // Store both Air and EffectiveAir, as we won't transform between the two anymore
+                assert(pointSrcTemperatureBufferData[p] > 0.0f);
+                float const effectiveAirToAir = SimulationParameters::Temperature0 / pointSrcTemperatureBufferData[p];
+                pointDstAirBufferData[p] = hullEffectiveAir * effectiveAirToAir;
+                pointDstEffectiveAirBufferData[p] = hullEffectiveAir;
             }
         }
     }
@@ -3791,12 +3807,6 @@ void Ship::UpdateAirAndWaterPressure(
 
     // Uses EffectiveAir
     mPoints.UpdateAirVelocitiesFromMomenta();
-
-    //
-    // Air finalization: recalculate EffectiveAir for current Air, for rest of simulation
-    //
-
-    mPoints.UpdateEffectiveAirFromAir();
 
 #if !FS_IS_PLATFORM_MOBILE()
     //
