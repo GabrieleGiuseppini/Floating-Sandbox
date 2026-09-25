@@ -3944,11 +3944,12 @@
 				- Normalization factor calc'n takes more time with more water - by a lot!
 					- Try with whole mid-loop vectorized, branchless
 						- Water+Air could be same if Air also used GetMaterialWaterDiffusionSpeed
-						- _mm_unpackhi_ps, _mm_unpacklo_ps
+						- _mm_unpackhi_ps, _mm_unpacklo_ps for points variables
 					- If goes through: rename material's WaterDiffusionSpeed to FluidDiffusionSpeed
 						- json
 						- Material
 						- Points' buffer
+					- If goes through: consider splitting Points' Fluid variables into three single buffers
 
 				- PropagateHeat:
 					- Try also by springs
@@ -3968,7 +3969,7 @@
 						- Try: if we don't do it already: full round finding best, then pick that one (assuming we currently are greedy?)
 
 				- Rebalance thread tasks
-					- Consider moving StaticPressure to main or other thread, together with temperature
+					- Consider moving StaticPressure to main or other thread, together with temperature (the latter depending on whether we manage to cap diffusion algo with much water)						
 						- Need buffer copies
 						- Watch out for event publishing from thread
 
@@ -4078,10 +4079,9 @@
 		  like i said this version of rusting is better, but i feel the values need to be tweaked because it still kinda behaves like it used to...
 
 		  as lusitania was saying maybe a slider to control base rust
-		- See if could just be solved by slowing "general" rusting - which is a tad too fast imho
+		- See if could just be solved by just slowing "general" rusting - which is a tad too fast imho
 
-	- Water-soluble cables
-	- Electrical material for explosions when powered
+	- Water-soluble cables	
 	- New NPCs from TimCan (cameo)
 		- Cameo category?
 
@@ -4090,22 +4090,25 @@
 	- New ephemeral particle like splashes but for air flying out of submerged parts venting air
 
 	- New electrical elements: 
+		- Electrical material for explosions when powered
+			- TODO
 		- Pressure switch
-			- Acts with delta pressure - TODO: towards interior and towards exterior types?
+			- Acts with total pressure at point 
+				- Two kinds: interior pressure and exterior pressure
 				- Total pressures
 		- Depth switch
 		- Pumps rearc:
-			- First off: do we really need to deal with pumps at IntakeWaterAndAir? Only if we need to count them
 			- Kinds:
 				- WaterPump in/out
-				- AirPump in/out x with_tank_without_tank
+				- AirPump in/out
+					- Assume infinite air tank, also underwater
 			- Ship::UpdateAirAndWaterInflow:
 				- LeakingComposite maintains one pump power, but gets PumpFluidKindType from material
 				- We then switch on PumpFluidKindType
 
 	- When focusing on ship after ship moved in PAUSE, we focus on old position
 
-	- Pixelation:
+	- Pixelation/style:
 		- "Vanilla" mode vs "Voxel" mode
 
 	- Fix foam with angley waves: is it because it becomes too wide?
