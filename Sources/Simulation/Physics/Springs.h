@@ -145,7 +145,7 @@ public:
         World & parentWorld,
         SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters)
-        : ElementContainer(elementCount)
+        : ElementContainer(elementCount) // Container's size is the (unaligned) number of springs
         , mPerfectSquareCount(perfectSquareCount)
         //////////////////////////////////
         // Buffers

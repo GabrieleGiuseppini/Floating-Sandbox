@@ -908,7 +908,7 @@ public:
     Points(Points && other) = default;
 
     /*
-     * Returns an iterator for the (unaligned) ship (i.e. non-ephemeral) points only.
+     * Returns an iterator for the (unaligned) ship (i.e. non-ephemeral and non-filler) points only.
      */
     inline auto RawShipPoints() const
     {
@@ -1894,6 +1894,8 @@ public:
     // the next iteration.
     void UpdateEffectiveAirFromAir()
     {
+        // Vectorized with MSVC
+
         float const * restrict const airBuffer = mAirBuffer.data();
         float const * restrict const temperatureBuffer = mTemperatureBuffer.data();
         float * restrict const effectiveAirBuffer = mEffectiveAirBuffer.data();
