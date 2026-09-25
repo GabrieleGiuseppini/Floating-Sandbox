@@ -3912,16 +3912,16 @@
 					+ See if also water
 					+ Re-instate max
 
-				+ New profiling: 0.70-0.75 -> 0.69-0.71    2.9-3.1ms -> 2.8-2.9ms
+				+ New profiling: 0.70-0.75 -> 0.68-0.70    2.9-3.1ms -> 2.7-2.8ms
+
+				X See if these Points buffers make sense, instead of taking material:
+					+ mMaterialWaterIntakeBuffer
+					+ mMaterialWaterRestitutionBuffer
+					+ mMaterialWaterDiffusionSpeedBuffer
 
 				- Try: store enough in (Spring) FluidVars to make move by-springs step without branching
 					- Water
 					- Air
-
-				- See if these Points buffers make sense, instead of taking material:
-					- mMaterialWaterIntakeBuffer
-					- mMaterialWaterRestitutionBuffer
-					- mMaterialWaterDiffusionSpeedBuffer
 
 				- Can make Points::Buffers (water and air pressure) NOT for ephemeral (just for ship points)?
 					- Use aligned point count
@@ -4080,6 +4080,9 @@
 			- Kinds:
 				- WaterPump in/out
 				- AirPump in/out x with_tank_without_tank
+			- Ship::UpdateAirAndWaterInflow:
+				- LeakingComposite maintains one pump power, but gets PumpFluidKindType from material
+				- We then switch on PumpFluidKindType
 
 	- When focusing on ship after ship moved in PAUSE, we focus on old position
 
