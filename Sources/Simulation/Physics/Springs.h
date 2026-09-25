@@ -619,14 +619,8 @@ public:
     // Work buffers
     //
 
-    FluidDiffusionAlgorithmVariables * ResetFluidDiffusionAlgorithmVariablesBuffer()
+    FluidDiffusionAlgorithmVariables * GetFluidDiffusionAlgorithmVariablesBuffer()
     {
-        // Dirty...yeah
-        std::memset(
-            mFluidDiffusionAlgorithmVariablesBuffer.data(),
-            0,
-            mFluidDiffusionAlgorithmVariablesBuffer.GetSize() * sizeof(FluidDiffusionAlgorithmVariables));
-
         return mFluidDiffusionAlgorithmVariablesBuffer.data();
     }
 

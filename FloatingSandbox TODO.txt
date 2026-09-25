@@ -3919,6 +3919,10 @@
 					+ mMaterialWaterRestitutionBuffer
 					+ mMaterialWaterDiffusionSpeedBuffer
 
+				+ Stop zeroing out spring variables
+
+				+ New profiling: 0.68-0.70 -> 0.65-0.67   2.7-2.8ms -> .7-2.8ms
+
 				- Try: store enough in (Spring) FluidVars to make move by-springs step without branching
 					- Water
 					- Air

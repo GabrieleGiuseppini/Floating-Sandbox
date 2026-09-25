@@ -2997,7 +2997,7 @@ void Ship::UpdateAirAndWaterPressure(
         vec2f * const restrict dstPointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
 
         // Prepare work buffers
-        Springs::FluidDiffusionAlgorithmVariables * const restrict springVariables = mSprings.ResetFluidDiffusionAlgorithmVariablesBuffer();
+        Springs::FluidDiffusionAlgorithmVariables * const restrict springVariables = mSprings.GetFluidDiffusionAlgorithmVariablesBuffer();
         Points::FluidDiffusionAlgorithmVariables * const restrict pointsVariables = mPoints.ResetFluidDiffusionAlgorithmVariablesBuffer();
 
         // Prepare source effective air - we'll read air exclusively from this buffer
@@ -3342,7 +3342,7 @@ void Ship::UpdateAirAndWaterPressure(
         vec2f * const restrict dstPointAirMomentumBufferData = mPoints.GetAirMomentumBufferAsVec2f();
 
         // Prepare work buffers
-        Springs::FluidDiffusionAlgorithmVariables * const restrict springVariables = mSprings.ResetFluidDiffusionAlgorithmVariablesBuffer();
+        Springs::FluidDiffusionAlgorithmVariables * const restrict springVariables = mSprings.GetFluidDiffusionAlgorithmVariablesBuffer();
         Points::FluidDiffusionAlgorithmVariables * const restrict pointsVariables = mPoints.ResetFluidDiffusionAlgorithmVariablesBuffer();
 
         // Source source water buffer
