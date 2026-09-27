@@ -531,7 +531,7 @@ void Ship::Update(
             float waterSplashedInStep = 0.f;
 
             // - Inputs: P.Position, P.Temperature, P.Water, P.WaterVelocity, P.Air, P.AirVelocity, P.ConnectedSprings
-            // - Outputs: P.Water, P.WaterVelocity, P.WaterMomentum, P.Air, P.AirVelocity, P.AirMomentum, P.WaterDiffusionKineticEnergyLoss
+            // - Outputs: P.Water, P.WaterVelocity, P.WaterMomentum, P.Air, P.EffectiveAir, P.AirVelocity, P.AirMomentum, P.WaterDiffusionKineticEnergyLoss
             UpdateAirAndWaterPressure(
                 effectiveAirDensity,
                 effectiveWaterDensity,
