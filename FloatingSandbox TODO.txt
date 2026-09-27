@@ -3989,18 +3989,25 @@
 
 				+ New profiling: 0.65-0.66    2.7-2.9ms
 
-				= PropagateHeat:
+				+ PropagateHeat:
 					! Profiling pre: 0.14-0.16
 					+ Replace division by GetMaterialHeatCapacityReciprocal with just heat capacity
 					+ Profiling: 0.14-0.15
-					- Try also by springs
-						- Reuse FluidVars, though MaxFlow will be unused
-						- No need to copy temperature buffer
+					+ Try also by springs
+						+ Reuse FluidVars, though MaxFlow will be unused
+						+ No need to copy temperature buffer
+					+ Profiling: 0.15-0.16; Tit: 0.19-0.20
+					X Pejoration, and new would be more complex - aborting
 
-				- UpdateAirAndWaterInflows:
-					- Precalc water/air intake adjustments/caps
-					- Precalc constants
-					- Profile: 0.04 (when chopped up) -> 
+				+ UpdateAirAndWaterInflows:
+					+ Precalc water/air intake adjustments/caps
+					+ Precalc constants
+					+ Profile: 0.04 (when chopped up) -> 0.03-0.04
+
+				- Rebalance thread tasks
+					- Consider moving StaticPressure to main or other thread, together with temperature (the latter depending on whether we manage to cap diffusion algo with much water)						
+						- Need buffer copies
+						- Watch out for event publishing from thread
 
 				- ApplyStaticPressureForces:
 					- Pre-multiply pressure conversion factors into forceNormalizationFactor
@@ -4009,11 +4016,6 @@
 					! Complexity changed across versions: 0.03/0.04 -> 0.1/0.4
 					- Analyze algo and see if can be more aggressive
 						- Try: if we don't do it already: full round finding best, then pick that one (assuming we currently are greedy?)
-
-				- Rebalance thread tasks
-					- Consider moving StaticPressure to main or other thread, together with temperature (the latter depending on whether we manage to cap diffusion algo with much water)						
-						- Need buffer copies
-						- Watch out for event publishing from thread
 
 				- Cleanup:
 					- Remove FS_PROFILE

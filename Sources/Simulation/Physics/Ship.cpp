@@ -2531,10 +2531,28 @@ void Ship::UpdateAirAndWaterInflow(
     // ...converted to a quantity of water via Bernoulli
     float const rainWaterVelocity = std::sqrtf(2.0f * SimulationParameters::GravityMagnitude * rainEquivalentWaterHeight); // Bernoulli velocity
 
+    // Pre-calculated factor for water velocity -> quantity of water conversion
+    float const incomingWaterVelocityStructuralToDeltaWaterStructuralFactor =
+        SimulationParameters::SimulationStepTimeDuration<float> // V*dt=space/volume
+        * simulationParameters.WaterIntakeAdjustment
+        * simulationParameters.WaterDiffusionSpeedAdjustment; // Prevent buildups
+
     // Water pump power multiplier
     float const waterPumpPowerMultiplier =
         simulationParameters.WaterPumpPowerAdjustment
         * (simulationParameters.IsUltraViolentMode ? 20.0f : 1.0f);
+
+    // Assuming that external pressure is an infinite reservoir,
+    // we converge internal pressure to the external,
+    // but we cap it to simulate physical limit to air moved (i.e. Mach 1)
+    //
+    // My calculations tell me that P escaped is P * Mach1 * dt (i.e. 5.36),
+    // but we use 1.0
+
+    float const deltaAirCap =
+        1.0f // Magic
+        * simulationParameters.AirIntakeAdjustment
+        * simulationParameters.AirDiffusionSpeedAdjustment; // Prevent buildups
 
     // Air bubbles
     bool const doGenerateAirBubbles = (simulationParameters.AirBubblesDensity != 0.0f);
@@ -2636,10 +2654,8 @@ void Ship::UpdateAirAndWaterInflow(
 
                     float deltaWater_Structural =
                         incomingWaterVelocity_Structural
-                        * SimulationParameters::SimulationStepTimeDuration<float>
-                        * mPoints.GetMaterialWaterIntake(pointIndex)
-                        * simulationParameters.WaterIntakeAdjustment
-                        * simulationParameters.WaterDiffusionSpeedAdjustment; // Prevent buildups
+                        * incomingWaterVelocityStructuralToDeltaWaterStructuralFactor
+                        * mPoints.GetMaterialWaterIntake(pointIndex);
 
                     //
                     // Update water
@@ -2702,18 +2718,10 @@ void Ship::UpdateAirAndWaterInflow(
                     {
                         // Assuming that external pressure is an infinite reservoir,
                         // we converge internal pressure to the external,
-                        // but we cap it to simulate physical limit to air moved (i.e. Mach 1)
-                        //
-                        // My calculations tell me that P escaped is P * Mach1 * dt (i.e. 5.36),
-                        // but we use 1.0
+                        // but we cap it to simulate physical limit to air moved
 
-                        float const deltaAirCap =
-                            1.0f // Magic
-                            * simulationParameters.AirIntakeAdjustment
-                            * simulationParameters.AirDiffusionSpeedAdjustment; // Prevent buildups
-
-                        // Calculate delta air - in Air terms (i.e. at T0) - ensuring
-                        // we don't overdrain point
+                        // Calculate delta air - in Air terms (i.e. at T0) - capping it
+                        // to phyisical limit, and ensuring we don't overdrain point
                         float const effectiveAirToAir = SimulationParameters::Temperature0 / mPoints.GetTemperature(pointIndex);
                         float const oldAir = mPoints.GetAir(pointIndex);
                         float const deltaAirGained = Clamp(
