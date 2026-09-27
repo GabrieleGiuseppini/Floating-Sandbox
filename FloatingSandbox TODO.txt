@@ -4049,13 +4049,14 @@
 			= Calibration for # of water iters
 				+ Do
 				- Test on old Dell
+					- Register perf here :above:
 				+ -> Android plan
 
 			- Tests:
 				- Success criteria:
 					- Water level stops in bell
 						- At right height
-					- Water level reaching ocean 
+					+ Water level reaching ocean 
 					- Water level obliqueness (was fixed with upness being n.y instead of being step-like)
 					- Water interface ugly flatness
 						- Depends on step size: the steeper and chaotic, the more lively the interface is
@@ -4079,17 +4080,18 @@
 				- Shader:
 					- Kinetic energy loss: 
 						- Whiteish or texture from mipmapped, given texture coords as new param
+							- White-ish
 							- Texture coords math: 
-								- world=ship_texture_coords * ship_size
+								- world = ship_texture_coords * ship_size
 								- tile_vcoords = (world % WIDTH constant) / WIDTH constant
-								- texture_coords = tile_vcoords * new param.size + new_pram.origin
+								- texture_coords = tile_vcoords * new_param.size + new_param.origin
 						- If too fast, do smoothing @ ShipRenderContext
 
 					- Vels: offset for texture and all based on pos
 						- Scale down vel vector length to world
 						- ship_texture_coords = world / ship_size
 						- sample both orig and offseted
-							- weight: length of vel
+							- weight: length of vel * water_depth
 
 			- If doesn't go through, nuke Points::WaterDiffusionKineticEnergyLoss and incorporate in Points::<workbuffer for WaterDiffusion algo>
 			- If goes through, remove compiler MOBILE conditional for kinetic energy loss calc'ns
@@ -4193,6 +4195,11 @@
 	- Pixelation/style:
 		- "Vanilla" mode vs "Voxel" mode
 
+
+
+
+
+
 	- Fix foam with angley waves: is it because it becomes too wide?
 
 	= Fix translation: LocalizationManager::CreateInstance ends up picking uk_UA, which doesn't match ours
@@ -4214,7 +4221,6 @@
 
 	- Marine life: above water and on slope look weird
 		! Obviously - we flatten them horizontally
-
 
 	= Ocean rendering:
 		X Check if the 20ms for upload we see on Dell when ocean high detail is enabled, are due to uploading cloud shadows asynchronously
@@ -4254,7 +4260,6 @@
 	- Test: underwater lateral forces based on waves (derivative @ surface plus damper for depth)
 		- Just test feasibility
 		- If ok, optimize using cached depth?
-
 
 	- New SplashScreenDialog:
 		- Upper part OpenGL, lower part progress bar
