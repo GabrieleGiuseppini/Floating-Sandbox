@@ -730,7 +730,7 @@ bool Ship::ApplyHeatBlasterAt(
             // Increase/lower temperature
             mPoints.SetTemperature(
                 pointIndex,
-                std::max(mPoints.GetTemperature(pointIndex) + deltaT, 0.1f)); // 3rd principle of thermodynamics
+                std::max(mPoints.GetTemperature(pointIndex) + deltaT, SimulationParameters::MinAbsoluteTemperature)); // 3rd principle of thermodynamics
 
             // Remember we've found a point
             atLeastOnePointFound = true;
@@ -2028,7 +2028,7 @@ void Ship::ApplyLightning(
             // Increase/lower temperature
             mPoints.SetTemperature(
                 pointIndex,
-                std::max(mPoints.GetTemperature(pointIndex) + deltaT, 0.1f)); // 3rd principle of thermodynamics
+                mPoints.GetTemperature(pointIndex) + deltaT);
         }
     }
 }

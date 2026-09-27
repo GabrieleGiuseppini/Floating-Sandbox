@@ -464,6 +464,8 @@ struct SimulationParameters
 
     // Heat and combustion
 
+    static float constexpr MinAbsoluteTemperature = 0.1f; // K; for capping temperatures when we can't guarantee asymptotic approach to 0 Kelvin
+
     float AirTemperature; // Kelvin
     static float constexpr MinAirTemperature = 273.15f; // 0C
     static float constexpr MaxAirTemperature = 2073.15f; // 1800C

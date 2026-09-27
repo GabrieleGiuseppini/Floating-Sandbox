@@ -142,7 +142,9 @@ void Ship::InternalUpdateExplosionStateMachine(
 
                 mPoints.SetTemperature(
                     pointIndex,
-                    oldTemperature + std::min(deltaTemperature * scalingFactor, 0.0f));
+                    std::max(
+                        oldTemperature + std::min(deltaTemperature * scalingFactor, 0.0f),
+                        SimulationParameters::MinAbsoluteTemperature));
             }
         }
 

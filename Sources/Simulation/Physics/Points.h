@@ -2020,11 +2020,6 @@ public:
         return temperatureBufferCopy;
     }
 
-    void UpdateTemperatureBuffer(std::shared_ptr<Buffer<float>> newTemperatureBuffer)
-    {
-        mTemperatureBuffer.copy_from(*newTemperatureBuffer);
-    }
-
     float GetMaterialHeatCapacity(ElementIndex pointElementIndex) const
     {
         return mMaterialHeatCapacityBuffer[pointElementIndex];
@@ -2105,9 +2100,9 @@ public:
         ElementIndex pointElementIndex,
         float heat) // J
     {
-        mTemperatureBuffer[pointElementIndex] +=
-            heat
-            * GetMaterialHeatCapacityReciprocal(pointElementIndex);
+        mTemperatureBuffer[pointElementIndex] = std::max(
+            mTemperatureBuffer[pointElementIndex] + heat * GetMaterialHeatCapacityReciprocal(pointElementIndex),
+            SimulationParameters::MinAbsoluteTemperature);
     }
 
     //
