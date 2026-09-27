@@ -4004,13 +4004,20 @@
 					+ Precalc constants
 					+ Profile: 0.04 (when chopped up) -> 0.03-0.04
 
-				- Rebalance thread tasks
-					- Consider moving StaticPressure to main or other thread, together with temperature (the latter depending on whether we manage to cap diffusion algo with much water)						
-						- Need buffer copies
-						- Watch out for event publishing from thread
+				+ Rebalance thread tasks
+					! Pre: parallel1=0.87-0.94   2.7-2.8ms
+					+ Consider moving StaticPressure to main or other thread, together with temperature (the latter depending on whether we manage to cap diffusion algo with much water)						
+						+ Need buffer copies
+						+ Watch out for event publishing from thread					
+					+ Post: parallel1=0.6-0.7    2.4-2.5ms		
+					+ Test
 
-				- ApplyStaticPressureForces:
-					- Pre-multiply pressure conversion factors into forceNormalizationFactor
+				- FIX: heating air does not generate dynamic forces
+					! Heated air generates humongous flows draining point; case of flow (based off effective) >> air, and thus we allow full drain
+					- Should also use adjustments to always allow remaining air
+
+				- FIX: PointsCombustion: after fire started and then combustion point goes up, smoke flies away
+					- Is it because we use CombustionPointAdjust for heat generated?
 
 				- Reduce ApplyStaticPressureForces net force complexity
 					! Complexity changed across versions: 0.03/0.04 -> 0.1/0.4
@@ -4024,6 +4031,7 @@
 				- And use SimParams constant for that
 
 			- Calibration for # of water iters
+				- Test on old Dell
 				- -> Android plan
 
 			- Tests:
@@ -4072,6 +4080,8 @@
 			- Momenta: semi-transparent
 				- Make VectorField rendering use vec4f
 			- That pressure w/watertight doors ship, with NPCs (20 atm)
+				- Change color
+			- FloodTest (w/momenta, and NPCs)
 
 		- Android port plan:
 			- Shader and ShaderSets renames for InternalPressure->AirPressure

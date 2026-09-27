@@ -636,12 +636,16 @@ private:
     void ApplyStaticPressureForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
+        float const * restrict srcWaterBuffer,
+        float const * restrict srcEffectiveAirBuffer,
         SimulationParameters const & simulationParameters);
 
     void ApplyStaticPressureForces(
         Frontiers::Frontier const & frontier,
         float effectiveAirDensity,
         float effectiveWaterDensity,
+        float const * restrict srcWaterBuffer,
+        float const * restrict srcEffectiveAirBuffer,
         SimulationParameters const & simulationParameters);
 
     //
@@ -758,6 +762,7 @@ private:
     void UpdateAirAndWaterPressure(
         float effectiveAirDensity,
         float effectiveWaterDensity,
+        float const * restrict srcPointTemperatureBuffer,
         SimulationParameters const & simulationParameters,
         float & waterSplashed);
 
@@ -774,8 +779,8 @@ private:
     // Heat
 
     void PropagateHeat(
-        float currentSimulationTime,
         float dt,
+        float const * restrict srcWaterBuffer,
 		Storm::Parameters const & stormParameters,
         SimulationParameters const & simulationParameters);
 

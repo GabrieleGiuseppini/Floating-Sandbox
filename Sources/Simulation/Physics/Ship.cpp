@@ -513,7 +513,16 @@ void Ship::Update(
     GameChronometer::duration elapsedAirAndWaterDiffusion;
     GameChronometer::duration elapsedStaticPressure;
     GameChronometer::duration elapsedHeatPropagation;
+
+    startTimestamp1 = GameChronometer::Now();
 #endif
+
+    // Make RO copies of buffers that are read by tasks on different threads
+    // than the tasks that write them.
+    // This implies that the reading tasks are one frame behind.
+    auto temperatubeBufferCopy = mPoints.MakeTemperatureBufferCopy();
+    auto waterBufferCopy = mPoints.MakeWaterBufferCopy();
+    auto effectiveAirBufferCopy = mPoints.MakeEffectiveAirBufferCopy();
 
     assert(parallelTasks.empty());
 
@@ -521,7 +530,7 @@ void Ship::Update(
         [&]()
         {
             //
-            // Diffuse water (Cost: 14)
+            // Diffuse water (Cost: 66)
             //
 
 #ifdef FS_PROFILE_SHIP_UPDATE
@@ -535,6 +544,7 @@ void Ship::Update(
             UpdateAirAndWaterPressure(
                 effectiveAirDensity,
                 effectiveWaterDensity,
+                temperatubeBufferCopy->data(),
                 simulationParameters,
                 waterSplashedInStep);
 
@@ -544,22 +554,28 @@ void Ship::Update(
 #ifdef FS_PROFILE_SHIP_UPDATE
             elapsedAirAndWaterDiffusion = GameChronometer::Now() - startTimestamp2;
 #endif
+        });
 
+    parallelTasks.emplace_back(
+        [&]()
+        {
             //
-            // Apply static pressure forces (Cost: 10)
+            // Apply static pressure forces (Cost: 10, but variable)
             //
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-            startTimestamp2 = GameChronometer::Now();
+            auto startTimestamp2 = GameChronometer::Now();
 #endif
 
             if (simulationParameters.StaticPressureForceAdjustment > 0.0f)
             {
-                // - Inputs: frontiers, P.Position, P.InternalPressure
+                // - Inputs: frontiers, P.Position, P.Water[copy], P.EffectiveAir[copy]
                 // - Outputs: P.DynamicForces
                 ApplyStaticPressureForces(
                     effectiveAirDensity,
                     effectiveWaterDensity,
+                    waterBufferCopy->data(),
+                    effectiveAirBufferCopy->data(),
                     simulationParameters);
             }
 
@@ -568,30 +584,24 @@ void Ship::Update(
 #endif
 
             //
-            // Propagate heat (Cost: 4)
+            // Propagate heat (Cost: 15)
             //
 
 #ifdef FS_PROFILE_SHIP_UPDATE
             startTimestamp2 = GameChronometer::Now();
 #endif
 
-            // - Inputs: P.Position, P.Temperature, P.ConnectedSprings, P.Water
+            // - Inputs: P.Position, P.Temperature, P.ConnectedSprings, P.Water[copy]
             // - Outputs: P.Temperature
             PropagateHeat(
-                currentSimulationTime,
                 SimulationParameters::SimulationStepTimeDuration<float>,
+                waterBufferCopy->data(),
                 stormParameters,
                 simulationParameters);
 
 #ifdef FS_PROFILE_SHIP_UPDATE
             elapsedHeatPropagation = GameChronometer::Now() - startTimestamp2;
 #endif
-        });
-
-    parallelTasks.emplace_back(
-        [&]()
-        {
-            // TODOHERE
         });
 
     threadManager.GetSimulationThreadPool().RunAndClear(parallelTasks);
@@ -1952,6 +1962,8 @@ void Ship::ApplyWorldSurfaceForces(
 void Ship::ApplyStaticPressureForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
+    float const * restrict srcWaterBuffer,
+    float const * restrict srcEffectiveAirBuffer,
     SimulationParameters const & simulationParameters)
 {
     //
@@ -1984,6 +1996,8 @@ void Ship::ApplyStaticPressureForces(
                 frontier,
                 effectiveAirDensity,
                 effectiveWaterDensity,
+                srcWaterBuffer,
+                srcEffectiveAirBuffer,
                 simulationParameters);
         }
     }
@@ -2004,6 +2018,8 @@ void Ship::ApplyStaticPressureForces(
     Frontiers::Frontier const & frontier,
     float effectiveAirDensity,
     float effectiveWaterDensity,
+    float const * restrict srcWaterBuffer,
+    float const * restrict srcEffectiveAirBuffer,
     SimulationParameters const & simulationParameters)
 {
     //
@@ -2157,8 +2173,7 @@ void Ship::ApplyStaticPressureForces(
             // Calculate normalized pressure force: we want the force vector
             // to be zero when internal pressure == external pressure.
             // Note that will be negative when internal>external - outward force!
-            // TODO: pre-multiply pressure conversion factors into forceNormalizationFactor
-            float const internalPressure = Formulae::EquivalentWaterHeightToPressure(mPoints.GetTotalInternalPressureInEquivalentHeightUnits(thisPointIndex));
+            float const internalPressure = Formulae::EquivalentWaterHeightToPressure(srcWaterBuffer[thisPointIndex] + srcEffectiveAirBuffer[thisPointIndex]);
             float const normalizedForceMagnitude = 1.0f - internalPressure * forceNormalizationFactor;
 
             // Calculate static pressure force, and torque on whole body
@@ -2852,6 +2867,7 @@ void Ship::UpdateAirAndWaterInflow(
 void Ship::UpdateAirAndWaterPressure(
     float effectiveAirDensity,
     float effectiveWaterDensity,
+    float const * restrict srcPointTemperatureBuffer,
     SimulationParameters const & simulationParameters,
     float & waterSplashed)
 {
@@ -2954,7 +2970,7 @@ void Ship::UpdateAirAndWaterPressure(
 
     // Convert Air to EffectiveAir, for use in whole Water step and
     // in first iteration of Air step
-    mPoints.UpdateEffectiveAirFromAir();
+    mPoints.UpdateEffectiveAirFromAir(srcPointTemperatureBuffer);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -3221,7 +3237,7 @@ void Ship::UpdateAirAndWaterPressure(
                 ElementIndex pSrc;
                 ElementIndex pDst;
                 float outboundFlowWeight; // >= 0.0
-                vec2f springNormalizedVector; // TODOHERE: only needed for kinetic energy loss
+                vec2f springNormalizedVector; // TODO: only needed for kinetic energy loss
                 if (springVariables[s].FlowWeight >= 0.0f)
                 {
                     // From A to B
@@ -3653,7 +3669,7 @@ void Ship::UpdateAirAndWaterPressure(
         // Recalculate EffectiveAir from new Air
         //
 
-        mPoints.UpdateEffectiveAirFromAir();
+        mPoints.UpdateEffectiveAirFromAir(srcPointTemperatureBuffer);
 
         //
         // For next iteration:
@@ -3792,7 +3808,6 @@ void Ship::UpdateAirAndWaterPressure(
 
     // Hull pressure averaging
     {
-        float const * const restrict pointSrcTemperatureBufferData = mPoints.GetTemperatureBufferAsFloat();
         float * const restrict pointDstAirBufferData = mPoints.GetAirBufferAsFloat();
         float * const restrict pointDstEffectiveAirBufferData = mPoints.GetEffectiveAirBufferAsFloat();
 
@@ -3805,7 +3820,7 @@ void Ship::UpdateAirAndWaterPressure(
 
                 // Store both Air and EffectiveAir, as we won't transform between the two anymore
                 assert(pointSrcTemperatureBufferData[p] > 0.0f);
-                float const effectiveAirToAir = SimulationParameters::Temperature0 / pointSrcTemperatureBufferData[p];
+                float const effectiveAirToAir = SimulationParameters::Temperature0 / srcPointTemperatureBuffer[p];
                 pointDstAirBufferData[p] = hullEffectiveAir * effectiveAirToAir;
                 pointDstEffectiveAirBufferData[p] = hullEffectiveAir;
             }
@@ -4040,8 +4055,8 @@ void Ship::DiffuseLight(
 ///////////////////////////////////////////////////////////////////////////////////
 
 void Ship::PropagateHeat(
-    float /*currentSimulationTime*/,
     float dt,
+    float const * restrict srcWaterBuffer,
     Storm::Parameters const & stormParameters,
     SimulationParameters const & simulationParameters)
 {
@@ -4174,7 +4189,7 @@ void Ship::PropagateHeat(
         float heatLost; // Heat lost in this time quantum (positive when outgoing)
 
         if (mPoints.IsCachedUnderwater(pointIndex)
-            || mPoints.GetWater(pointIndex) > SimulationParameters::SmotheringWaterHighWatermark)
+            || srcWaterBuffer[pointIndex] > SimulationParameters::SmotheringWaterHighWatermark)
         {
             // Dissipation in water
             float const waterTemperature = Formulae::CalculateWaterTemperature(mPoints.GetPosition(pointIndex).y, surfaceWaterTemperature);

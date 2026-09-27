@@ -1743,16 +1743,24 @@ public:
         mWaterBuffer[pointElementIndex] = value;
     }
 
-    float * GetWaterBufferAsFloat()
-    {
-        return mWaterBuffer.data();
-    }
-
     bool IsWet(
         ElementIndex pointElementIndex,
         float threshold) const
     {
         return mWaterBuffer[pointElementIndex] > threshold;
+    }
+
+    float * GetWaterBufferAsFloat()
+    {
+        return mWaterBuffer.data();
+    }
+
+    std::shared_ptr<Buffer<float>> MakeWaterBufferCopy()
+    {
+        auto waterBufferCopy = mFloatBufferAllocator.Allocate();
+        waterBufferCopy->copy_from(mWaterBuffer);
+
+        return waterBufferCopy;
     }
 
     vec2f const & GetWaterVelocity(ElementIndex pointElementIndex) const
@@ -1867,16 +1875,23 @@ public:
         return mEffectiveAirBuffer.data();
     }
 
+    std::shared_ptr<Buffer<float>> MakeEffectiveAirBufferCopy()
+    {
+        auto effectiveAirBufferCopy = mFloatBufferAllocator.Allocate();
+        effectiveAirBufferCopy->copy_from(mEffectiveAirBuffer);
+
+        return effectiveAirBufferCopy;
+    }
+
     // Recalculates EffectiveAir based on current Air and Temperature.
     // Gets in sync at end of diffusion step; after that, it may be read,
     // though it will likely diverge from Air and Temperature until
     // the next iteration.
-    void UpdateEffectiveAirFromAir()
+    void UpdateEffectiveAirFromAir(float const * const restrict temperatureBuffer)
     {
         // Vectorized with MSVC
 
         float const * restrict const airBuffer = mAirBuffer.data();
-        float const * restrict const temperatureBuffer = mTemperatureBuffer.data();
         float * restrict const effectiveAirBuffer = mEffectiveAirBuffer.data();
 
         // No need to visit ephemerals, as they don't get air
