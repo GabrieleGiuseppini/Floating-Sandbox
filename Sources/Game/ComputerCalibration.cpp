@@ -66,6 +66,11 @@ void ComputerCalibrator::TuneGame(
     // performance
     //
 
+    if (score.NormalizedCPUScore < 0.65f)
+    {
+        simulationParameters.WaterDiffusionNumberOfIterations = 1;
+    }
+
     if (score.NormalizedCPUScore < 0.65f
         || score.NormalizedGfxScore < 0.1f)
     {
@@ -98,7 +103,7 @@ void ComputerCalibrator::TuneGame(
         renderContext.SetHeatRenderMode(HeatRenderModeType::None);
     }
 
-    LogMessage("  MaxBurningParticlesPerShip=", simulationParameters.MaxBurningParticlesPerShip, " MaxEphemeralParticles=", simulationParameters.MaxEphemeralParticles);
+    LogMessage("-> WaterDiffusionNumberOfIterations=", simulationParameters.WaterDiffusionNumberOfIterations, " MaxBurningParticlesPerShip=", simulationParameters.MaxBurningParticlesPerShip, " MaxEphemeralParticles=", simulationParameters.MaxEphemeralParticles);
 }
 
 float ComputerCalibrator::RunComputation()

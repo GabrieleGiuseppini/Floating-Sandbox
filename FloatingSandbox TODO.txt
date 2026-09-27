@@ -4046,9 +4046,10 @@
 			+ Send beta
 			+ Bump up version
 
-			- Calibration for # of water iters
+			= Calibration for # of water iters
+				+ Do
 				- Test on old Dell
-				- -> Android plan
+				+ -> Android plan
 
 			- Tests:
 				- Success criteria:
@@ -4124,6 +4125,8 @@
 					- # of water iters
 				- Sounds:
 					- Play Interior Water Sounds (if we decide to have it in Mobile)
+
+			- Calibration for # of water iters
 
 			- New air bubble texture
 
