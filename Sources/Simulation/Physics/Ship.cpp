@@ -3350,6 +3350,11 @@ void Ship::UpdateAirAndWaterPressure(
         0.625f // Empirical
         * simulationParameters.AirDiffusionSpeedAdjustment;
 
+    // We'll never drain a point more than this;
+    // to prevent humongous flows (because of high temperature=>high effective air)
+    // from completely overdraining points
+    float constexpr MaxAirDrainFraction = 0.5f;
+
     // We will scale down transfers by # of iterations, for a smoother experience
     int constexpr NumberOfAirIterations = 1;
     float const inverseNumberOfAirIterations = 1.0f / static_cast<float>(NumberOfAirIterations);
@@ -3554,12 +3559,13 @@ void Ship::UpdateAirAndWaterPressure(
 
                 if (pointsVariables[p].TotalOutboundFlowWeight != 0.0f)
                 {
-                    // We're willing to do no more than a _speed_ fraction of current water, but we're also willing
+                    // We're willing to do no more than a _speed_ fraction of current air, but we're also willing
                     // to do a full outbound flow weight if it agrees with our limits
                     float const maxOutboundFlowWeight = std::min(
                         pointsVariables[p].MaxOutboundFlowWeight * effectiveAirDiffusionSpeedAdjustment,
-                        pointAirBufferData[p]);
+                        pointAirBufferData[p] * MaxAirDrainFraction);
                     assert(maxOutboundFlowWeight >= 0.0f);
+
                     pointsVariables[p].FlowNormalizationFactor = std::min(
                         maxOutboundFlowWeight / pointsVariables[p].TotalOutboundFlowWeight,
                         1.0f)
@@ -3568,7 +3574,7 @@ void Ship::UpdateAirAndWaterPressure(
 #ifdef LOG_AIR_AND_WATER_DIFFUSION
                     if (p == mLastQueriedPointIndex)
                     {
-                        LogMessage("A: normFactor=", pointsVariables[p].FlowNormalizationFactor, " (air=", pointAirBufferData[p], " max=", maxOutboundFlowWeight,
+                        LogMessage("A: normFactor=", pointsVariables[p].FlowNormalizationFactor, " (maxAirDrain=", pointAirBufferData[p] * MaxAirDrainFraction, " max=", maxOutboundFlowWeight,
                             " effDiffSpeed=", effectiveAirDiffusionSpeedAdjustment,
                             " itersFactor=", inverseNumberOfAirIterations, " tot=", pointsVariables[p].TotalOutboundFlowWeight, ")");
                     }
@@ -3576,17 +3582,12 @@ void Ship::UpdateAirAndWaterPressure(
                 }
 
                 //
-                // Extract already all outgoing flow, making sure not to overdrain
-                // the point
-                //
-                // Note that here we have a tiny chance of breaking mass conservation,
-                // as the capping we do here might not end up matching the sum of
-                // quantities flowing into neighbors, for numerical reasons
+                // Extract already all outgoing flow
                 //
 
-                float const pointTotalAirOut = std::min(
-                    pointsVariables[p].TotalOutboundFlowWeight * pointsVariables[p].FlowNormalizationFactor,
-                    pointAirBufferData[p]);
+                assert(pointsVariables[p].TotalOutboundFlowWeight * pointsVariables[p].FlowNormalizationFactor > pointAirBufferData[p]); // Because of MaxAirDrainFraction
+
+                float const pointTotalAirOut = pointsVariables[p].TotalOutboundFlowWeight * pointsVariables[p].FlowNormalizationFactor;
                 pointAirBufferData[p] -= pointTotalAirOut;
                 assert(pointAirBufferData[p] >= 0.0f);
 

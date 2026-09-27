@@ -4012,22 +4012,16 @@
 					+ Post: parallel1=0.6-0.7    2.4-2.5ms		
 					+ Test
 
-				- FIX: heating air does not generate dynamic forces
-					! Heated air generates humongous flows draining point; case of flow (based off effective) >> air, and thus we allow full drain
-					- Should also use adjustments to always allow remaining air
-					- Full scorecard:
-						- Shoot:
-						- FloodTest:
-						- DefaultShip:
-						- NPCs/Doors:
-
+				+ FIX: Heated air generates humongous flows draining point; case of flow (based off effective) >> air, and thus we allow full drain
+					+ Should also use adjustments to always allow remaining air
+					+ Full scorecard:
+						+ Shoot: OK
+						+ FloodTest: OK
+						+ DefaultShip: OK
+						+ NPCs/Doors: OK
+				
 				- FIX: PointsCombustion: after fire started and then combustion point goes up, smoke flies away
 					- Is it because we use CombustionPointAdjust for heat generated?
-
-				- Reduce ApplyStaticPressureForces net force complexity
-					! Complexity changed across versions: 0.03/0.04 -> 0.1/0.4
-					- Analyze algo and see if can be more aggressive
-						- Try: if we don't do it already: full round finding best, then pick that one (assuming we currently are greedy?)
 
 				- Cleanup:
 					- Remove FS_PROFILE
@@ -4053,6 +4047,8 @@
 				- Cloth, ropes: intake, retention (of water and air)
 				- Kinetic energy->Splash sounds
 				- Ingress/Egress Rush sounds
+
+			- Send beta
 
 			- Lower bulkheads @ default Titanic & make air escape, as it now takes forever
 
@@ -4141,6 +4137,14 @@
 		- See if could just be solved by just slowing "general" rusting - which is a tad too fast imho
 
 	- Water-soluble cables	
+
+	- Reduce ApplyStaticPressureForces net force complexity
+		! Complexity changed across versions: 0.03/0.04 -> 0.1/0.4
+		- Analyze algo and see if can be more aggressive
+			- Add another set of logs for algo
+			- Option 1: better combined score for NetForce and NetTorque
+
+
 	- New NPCs from TimCan (cameo)
 		- Cameo category?
 
