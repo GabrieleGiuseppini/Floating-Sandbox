@@ -2010,6 +2010,14 @@ public:
         return temperatureBufferCopy;
     }
 
+    std::shared_ptr<Buffer<float>> MakeTemperatureBufferCopy_AlignedPointsOnly()
+    {
+        auto temperatureBufferCopy = mFloatBufferAllocator.Allocate();
+        temperatureBufferCopy->copy_from(mTemperatureBuffer.data(), mAlignedShipPointCount);
+
+        return temperatureBufferCopy;
+    }
+
     void UpdateTemperatureBuffer(std::shared_ptr<Buffer<float>> newTemperatureBuffer)
     {
         mTemperatureBuffer.copy_from(*newTemperatureBuffer);

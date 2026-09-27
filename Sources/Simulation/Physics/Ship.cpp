@@ -520,7 +520,7 @@ void Ship::Update(
     // Make RO copies of buffers that are read by tasks on different threads
     // than the tasks that write them.
     // This implies that the reading tasks are one frame behind.
-    auto temperatubeBufferCopy = mPoints.MakeTemperatureBufferCopy();
+    auto temperatubeBufferCopy = mPoints.MakeTemperatureBufferCopy_AlignedPointsOnly(); // Only need aligned points
     auto waterBufferCopy = mPoints.MakeWaterBufferCopy();
     auto effectiveAirBufferCopy = mPoints.MakeEffectiveAirBufferCopy();
 
@@ -605,6 +605,11 @@ void Ship::Update(
         });
 
     threadManager.GetSimulationThreadPool().RunAndClear(parallelTasks);
+
+    // Free buffers
+    temperatubeBufferCopy.reset();
+    waterBufferCopy.reset();
+    effectiveAirBufferCopy.reset();
 
     // Publish static pressure stats
     mSimulationEventHandler.OnStaticPressureUpdated(

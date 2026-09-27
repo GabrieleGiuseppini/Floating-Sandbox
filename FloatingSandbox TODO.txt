@@ -4015,6 +4015,11 @@
 				- FIX: heating air does not generate dynamic forces
 					! Heated air generates humongous flows draining point; case of flow (based off effective) >> air, and thus we allow full drain
 					- Should also use adjustments to always allow remaining air
+					- Full scorecard:
+						- Shoot:
+						- FloodTest:
+						- DefaultShip:
+						- NPCs/Doors:
 
 				- FIX: PointsCombustion: after fire started and then combustion point goes up, smoke flies away
 					- Is it because we use CombustionPointAdjust for heat generated?
