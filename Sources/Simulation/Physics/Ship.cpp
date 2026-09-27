@@ -4100,7 +4100,7 @@ void Ship::PropagateHeat(
             // Q = Kp * Tp
             float const pointHeat =
                 pointTemperature
-                / mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
+                * mPoints.GetMaterialHeatCapacity(pointIndex);
 
             normalizationFactor = std::min(
                 pointHeat / totalOutgoingHeat,

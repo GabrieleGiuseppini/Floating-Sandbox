@@ -3987,10 +3987,12 @@
 					+ Cleanup total air reads
 					+ Remove logs
 
-				+ New profiling: 0.65-0.67 -> 0.65-0.66    2.7-2.9ms -> 2.7-2.8ms
+				+ New profiling: 0.65-0.66    2.7-2.9ms
 
-				- PropagateHeat:
-					- Replace division by GetMaterialHeatCapacityReciprocal with just heat capacity
+				= PropagateHeat:
+					! Profiling pre: 0.14-0.16
+					+ Replace division by GetMaterialHeatCapacityReciprocal with just heat capacity
+					+ Profiling: 0.14-0.15
 					- Try also by springs
 						- Reuse FluidVars, though MaxFlow will be unused
 						- No need to copy temperature buffer

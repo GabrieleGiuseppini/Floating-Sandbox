@@ -91,6 +91,7 @@ void Points::Add(
     // Heat dynamics
     mTemperatureBuffer.emplace_back(SimulationParameters::Temperature0);
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer.emplace_back(structuralMaterial.GetHeatCapacity());
     mMaterialHeatCapacityReciprocalBuffer.emplace_back(1.0f / structuralMaterial.GetHeatCapacity());
     mMaterialThermalExpansionCoefficientBuffer.emplace_back(structuralMaterial.ThermalExpansionCoefficient);
     mMaterialIgnitionTemperatureBuffer.emplace_back(structuralMaterial.IgnitionTemperature);
@@ -199,6 +200,7 @@ void Points::CreateEphemeralParticleAirBubble(
 
     mTemperatureBuffer[pointIndex] = temperature;
     assert(airStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = airStructuralMaterial.GetHeatCapacity();;
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / airStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = airStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = airStructuralMaterial.IgnitionTemperature;
@@ -287,6 +289,7 @@ void Points::CreateEphemeralParticleAsh(
 
     mTemperatureBuffer[pointIndex] = depth > 0.0f ? simulationParameters.WaterTemperature : simulationParameters.AirTemperature;
     assert(ashStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = ashStructuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / ashStructuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = ashStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = ashStructuralMaterial.IgnitionTemperature;
@@ -367,6 +370,7 @@ void Points::CreateEphemeralParticleDebris(
 
     mTemperatureBuffer[pointIndex] = mTemperatureBuffer[originalPointIndex];
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / structuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
@@ -454,6 +458,7 @@ void Points::CreateEphemeralParticleSiltCloud(
 
     mTemperatureBuffer[pointIndex] = Formulae::CalculateWaterTemperature(depth, simulationParameters);
     assert(siltCloudStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = siltCloudStructuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / siltCloudStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = siltCloudStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = siltCloudStructuralMaterial.IgnitionTemperature;
@@ -575,6 +580,7 @@ void Points::InternalCreateEphemeralParticleSmoke(
 
     mTemperatureBuffer[pointIndex] = temperature;
     assert(smokeStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = smokeStructuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / smokeStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = smokeStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = smokeStructuralMaterial.IgnitionTemperature;
@@ -660,6 +666,7 @@ void Points::CreateEphemeralParticleSparkle(
 
     mTemperatureBuffer[pointIndex] = SimulationParameters::Temperature0;
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / structuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
@@ -742,6 +749,7 @@ void Points::CreateEphemeralParticleWakeBubble(
 
     mTemperatureBuffer[pointIndex] = simulationParameters.WaterTemperature;
     assert(waterStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = waterStructuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / waterStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = waterStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = waterStructuralMaterial.IgnitionTemperature;
@@ -834,6 +842,7 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
 
     mTemperatureBuffer[pointIndex] = Formulae::CalculateWaterTemperature(depth, simulationParameters);
     assert(waterFoamStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = waterFoamStructuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / waterFoamStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = waterFoamStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = waterFoamStructuralMaterial.IgnitionTemperature;
@@ -933,6 +942,7 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
 
     mTemperatureBuffer[pointIndex] = Formulae::CalculateWaterTemperature(depth, simulationParameters);
     assert(waterSplashStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = waterSplashStructuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / waterSplashStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = waterSplashStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = waterSplashStructuralMaterial.IgnitionTemperature;

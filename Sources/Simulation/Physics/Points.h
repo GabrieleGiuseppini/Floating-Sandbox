@@ -817,6 +817,7 @@ public:
         , mTotalFactoryWetPoints(0)
         // Heat dynamics
         , mTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialHeatCapacityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialHeatCapacityReciprocalBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialThermalExpansionCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialIgnitionTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -1999,6 +2000,11 @@ public:
         mTemperatureBuffer.copy_from(*newTemperatureBuffer);
     }
 
+    float GetMaterialHeatCapacity(ElementIndex pointElementIndex) const
+    {
+        return mMaterialHeatCapacityBuffer[pointElementIndex];
+    }
+
     float GetMaterialHeatCapacityReciprocal(ElementIndex pointElementIndex) const
     {
         return mMaterialHeatCapacityReciprocalBuffer[pointElementIndex];
@@ -2779,6 +2785,7 @@ private:
     //
 
     Buffer<float> mTemperatureBuffer; // Kelvin
+    Buffer<float> mMaterialHeatCapacityBuffer;
     Buffer<float> mMaterialHeatCapacityReciprocalBuffer;
     Buffer<float> mMaterialThermalExpansionCoefficientBuffer;
     Buffer<float> mMaterialIgnitionTemperatureBuffer;
