@@ -3134,7 +3134,7 @@ void Ship::UpdateAirAndWaterPressure(
 
         //
         // Calculate points' normalization factors, and initialize
-        // their momenta
+        // their water quantities and momenta after the total outgoing flows
         //
 
         for (auto const p : mPoints.RawShipPoints())
@@ -3172,19 +3172,31 @@ void Ship::UpdateAirAndWaterPressure(
             }
 
             //
-            // Add to this point's water momentum the momentum that stays
+            // Extract already all outgoing flow, making sure not to overdrain
+            // the point
+            //
+            // Note that here we have a tiny chance of breaking mass conservation,
+            // as the capping we do here might not end up matching the sum of
+            // quantities flowing into neighbors, for numerical reasons
+            //
+
+            float const pointTotalWaterOut = std::min(
+                pointsVariables[p].TotalOutboundFlowWeight * pointsVariables[p].FlowNormalizationFactor,
+                pointWaterBufferData[p]);
+            pointWaterBufferData[p] -= pointTotalWaterOut;
+            assert(pointWaterBufferData[p] >= 0.0f);
+
+            //
+            // Init this point's water momentum as the momentum that stays
             //
 
             assert(dstPointWaterMomentumBufferData[p] == vec2f::zero());
-
-            float const pointTotalWaterOut = pointsVariables[p].TotalOutboundFlowWeight * pointsVariables[p].FlowNormalizationFactor;
-            float const pointRemainingWater = std::max(pointWaterBufferData[p] - pointTotalWaterOut, 0.0f);
-            dstPointWaterMomentumBufferData[p] = srcPointWaterVelocityBufferData[p] * pointRemainingWater;
+            dstPointWaterMomentumBufferData[p] = srcPointWaterVelocityBufferData[p] * pointWaterBufferData[p];
 
 #ifdef LOG_AIR_AND_WATER_DIFFUSION
             if (p == mLastQueriedPointIndex)
             {
-                LogMessage("  W Init: remaining=", pointRemainingWater, " add mom=", srcPointWaterVelocityBufferData[p] * pointRemainingWater, " final mom=", dstPointWaterMomentumBufferData[p]);
+                LogMessage("  W Init: totalOut=", pointTotalWaterOut, " remaining=", pointWaterBufferData[p], " mom=", dstPointWaterMomentumBufferData[p]);
             }
 #endif
         }
@@ -3219,22 +3231,18 @@ void Ship::UpdateAirAndWaterPressure(
                     springNormalizedVector = -mSprings.GetCachedVectorialNormalizedVector(s);
                 }
 
-                // Calculate quantity of water directed from src to dst (>= 0.0),
-                // being careful not to overdrain the point
-                float const springOutboundQuantityOfWater = std::min(
-                    outboundFlowWeight * pointsVariables[pSrc].FlowNormalizationFactor,
-                    pointWaterBufferData[pSrc]);
+                //
+                // Water - and momentum - moves from source to destination (and we've already removed from source)
+                //
+
+                // Calculate quantity of water directed from src to dst (>= 0.0)
+                float const springOutboundQuantityOfWater =
+                    outboundFlowWeight
+                    * pointsVariables[pSrc].FlowNormalizationFactor;
 
                 assert(springOutboundQuantityOfWater >= 0.0f);
-                assert(springOutboundQuantityOfWater <= pointWaterBufferData[pSrc]);
 
-                //
-                // Water - and momentum - move from source to destination
-                //
-
-                // Move water quantity
-                pointWaterBufferData[pSrc] -= springOutboundQuantityOfWater;
-                assert(pointWaterBufferData[pSrc] >= 0.0f);
+                // Add water quantity to destination
                 pointWaterBufferData[pDst] += springOutboundQuantityOfWater;
 
                 // Add "new momentum" to destination
@@ -3499,7 +3507,7 @@ void Ship::UpdateAirAndWaterPressure(
 
         //
         // Calculate points' normalization factors, and initialize
-        // their momenta
+        // their air quantities and momenta after the total outgoing flows
         //
 
         for (auto const p : mPoints.RawShipPoints())
@@ -3539,22 +3547,34 @@ void Ship::UpdateAirAndWaterPressure(
                 }
 
                 //
-                // Add to this point's air momentum the momentum that stays
+                // Extract already all outgoing flow, making sure not to overdrain
+                // the point
+                //
+                // Note that here we have a tiny chance of breaking mass conservation,
+                // as the capping we do here might not end up matching the sum of
+                // quantities flowing into neighbors, for numerical reasons
+                //
+
+                float const pointTotalAirOut = std::min(
+                    pointsVariables[p].TotalOutboundFlowWeight * pointsVariables[p].FlowNormalizationFactor,
+                    pointAirBufferData[p]);
+                pointAirBufferData[p] -= pointTotalAirOut;
+                assert(pointAirBufferData[p] >= 0.0f);
+
+                //
+                // Init this point's air momentum as the momentum that stays
                 //
                 // Note: if this is a non-hull endpoint of an impermeable spring,
                 // its outbound flow weight won't include any flow towards hull
                 //
 
                 assert(dstPointAirMomentumBufferData[p] == vec2f::zero());
-
-                float const pointTotalAirOut = pointsVariables[p].TotalOutboundFlowWeight * pointsVariables[p].FlowNormalizationFactor;
-                float const pointRemainingAir = std::max(pointAirBufferData[p] - pointTotalAirOut, 0.0f);
-                dstPointAirMomentumBufferData[p] = srcPointAirVelocityBufferData[p] * pointRemainingAir;
+                dstPointAirMomentumBufferData[p] = srcPointAirVelocityBufferData[p] * pointAirBufferData[p];
 
 #ifdef LOG_AIR_AND_WATER_DIFFUSION
                 if (p == mLastQueriedPointIndex)
                 {
-                    LogMessage("  A Init: remaining=", pointRemainingAir, " add mom=", srcPointAirVelocityBufferData[p] * pointRemainingAir, " final mom=", dstPointAirMomentumBufferData[p]);
+                    LogMessage("  A Init: totalOut=", pointTotalAirOut, " remaining=", pointAirBufferData[p], " mom=", dstPointAirMomentumBufferData[p]);
                 }
 #endif
             }
@@ -3588,18 +3608,18 @@ void Ship::UpdateAirAndWaterPressure(
                     outboundFlowWeight = -springVariables[s].FlowWeight;
                 }
 
-                // Calculate quantity of air directed from src to dst (>= 0.0),
-                // being careful not to overdrain the point
-                float const springOutboundQuantityOfAir = std::min(
-                    outboundFlowWeight * pointsVariables[pSrc].FlowNormalizationFactor,
-                    pointAirBufferData[pSrc]);
+                //
+                // Air - and momentum - moves from source to destination (and we've already removed from source)
+                //
+
+                // Calculate quantity of air directed from src to dst (>= 0.0)
+                float const springOutboundQuantityOfAir =
+                    outboundFlowWeight
+                    * pointsVariables[pSrc].FlowNormalizationFactor;
 
                 assert(springOutboundQuantityOfAir >= 0.0f);
-                assert(springOutboundQuantityOfAir <= pointAirBufferData[pSrc]);
 
-                // Move air quantity
-                pointAirBufferData[pSrc] -= springOutboundQuantityOfAir;
-                assert(pointAirBufferData[pSrc] >= 0.0f);
+                // Add air quantity to destination
                 pointAirBufferData[pDst] += springOutboundQuantityOfAir;
 
                 // Add "new momentum" to destination

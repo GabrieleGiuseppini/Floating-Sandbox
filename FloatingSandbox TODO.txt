@@ -3941,19 +3941,59 @@
 
 				+ At hull averaging: init with aligned point count
 
-				- Normalization factor calc'n takes more time with more water - by a lot!
-					- Try with whole mid-loop vectorized, branchless
-						- Water+Air could be same if Air also used GetMaterialWaterDiffusionSpeed
-						- _mm_unpackhi_ps, _mm_unpacklo_ps for points variables
-					- If goes through: rename material's WaterDiffusionSpeed to FluidDiffusionSpeed
-						- json
-						- Material
-						- Points' buffer
-					- If goes through: consider splitting Points' Fluid variables into three single buffers
+				X Normalization factor calc'n takes more time with more water - by a lot!
+					! Try with whole mid-loop vectorized, branchless
+						! Water+Air could be same if Air also used GetMaterialWaterDiffusionSpeed
+						! Split points' fluid variables into single buffers
+					+ 1: Split points' fluid variables into single buffers
+						X Decide if standalone change is ok; if so, commit
+							X 0.65-0.67  ->	0.76-0.78     2.7-2.8ms -> 2.8-2.9ms
+					= 2: Vectorize
+						= Write Algorithm
+							+ Unit tests
+							- Later: decide reciprocal vs division, based on profiling
+						+ Use @ diffusion algo X 2
+							+ Water
+							+ Air
+
+					= New profiling: 0.65-0.67 -> 0.63-0.64    2.7-2.8ms -> 2.6-2.8
+						+ Variability: up to 0.92; Titanic: 0.9-1.0 gets up to 1.38-1.40
+						+ Check variability peak before: 0.98; Titanic: 0.9-1.0 gets up to 1.41-1.45
+						- TODOHERE: decide: 
+							! General gain is 0.02ms (20us)
+							! Titanic gains 0.05ms at peak (50us)
+							! Complexity for flow norm factor, which is a critical factor we want to play with
+
+					X If goes through: 
+						- Rename material's WaterDiffusionSpeed to FluidDiffusionSpeed
+							- json
+							- Material
+							- Points' buffer
+						- Cleanup commented-out code
+					+ Remove logging of Air and Water Diffusion (#define)
+
+				+ New profiling: 0.65-0.67     2.7-2.9ms
+
+				+ Water and Air moves: could do outbound on point once @ previous points loop, though we wouldn't know capped deltas
+					! But we cap it first
+					+ @ Water
+					+ @ Air
+					+ Verify mass conservation
+					+ Test hull averaging
+					+ New profiling: 0.65-0.67 -> 0.65-0.66    2.7-2.9ms -> 2.7-2.8ms
+					+ Scorecard:
+						+ Shoot: OK
+						+ Flood test: OK
+					+ Cleanup total air reads
+					+ Remove logs
+
+				+ New profiling: 0.65-0.67 -> 0.65-0.66    2.7-2.9ms -> 2.7-2.8ms
 
 				- PropagateHeat:
+					- Replace division by GetMaterialHeatCapacityReciprocal with just heat capacity
 					- Try also by springs
-						- Could reuse FluidVars?
+						- Reuse FluidVars, though MaxFlow will be unused
+						- No need to copy temperature buffer
 
 				- UpdateAirAndWaterInflows:
 					- Precalc water/air intake adjustments/caps
