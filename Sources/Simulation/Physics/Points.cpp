@@ -1395,6 +1395,7 @@ void Points::UpdateCombustionLowFrequency(
             //
 
             mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Developing_1;
+            mCombustionStateBuffer[pointIndex].TemperatureAtIgnition = GetTemperature(pointIndex);
 
             // Initial development depends on how deep this particle is in its burning zone
             mCombustionStateBuffer[pointIndex].FlameDevelopment =
@@ -1642,8 +1643,7 @@ void Points::UpdateCombustionHighFrequency(
 
             // This point
             mTemperatureBuffer[pointIndex] =
-                mMaterialIgnitionTemperatureBuffer[pointIndex]
-                * simulationParameters.IgnitionTemperatureAdjustment
+                pointCombustionState.TemperatureAtIgnition
                 * 1.1f;
 
             // Neighbors

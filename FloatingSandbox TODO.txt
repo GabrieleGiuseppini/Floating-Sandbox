@@ -4025,12 +4025,11 @@
 
 			+ Check Titanic ms pre- and after-: pre=3.3/3.4 post=3.6/3.8 D=0.3/0.4
 
-			- FIX: PointsCombustion: after fire started and then combustion point goes up, smoke flies away
+			+ FIX: PointsCombustion: after fire started and then combustion point goes up, smoke flies away
 				! It is because we use CombustionPointAdjust for heat generated
-				- Own point only
+				+ Own point only
 					! Heat to neighbors is fixed
-					- TODO: make sure we're consistent though - root problem is that we ignite at X and then adjustment goes up
-						- Store TemperatureAtIgnition in CombustionState
+					+ Store TemperatureAtIgnition in CombustionState
 
 			- Check all temperature changes and make sure we also clamp to "0K", like @ heatblaster
 				- And use SimParams constant for that

@@ -295,6 +295,7 @@ private:
 
         StateType State;
 
+        float TemperatureAtIgnition;
         float FlameDevelopment;
         float MaxFlameDevelopment;
         float NextSmokeEmissionSimulationTimestamp;
@@ -319,6 +320,7 @@ private:
         inline void Reset()
         {
             State = StateType::NotBurning;
+            TemperatureAtIgnition = 0.0f;
             FlameDevelopment = 0.0f;
             MaxFlameDevelopment = 0.0f;
             NextSmokeEmissionSimulationTimestamp = 0.0f;
