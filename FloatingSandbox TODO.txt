@@ -4043,11 +4043,12 @@
 					+ ExplosionStateMachine::extinguishing
 					+ FireExtinguisher - via AddHeat
 
+			+ Send beta
+			+ Bump up version
+
 			- Calibration for # of water iters
 				- Test on old Dell
 				- -> Android plan
-
-			- Send beta
 
 			- Tests:
 				- Success criteria:
