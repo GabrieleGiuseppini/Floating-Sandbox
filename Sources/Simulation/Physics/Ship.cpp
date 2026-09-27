@@ -231,9 +231,6 @@ void Ship::Update(
     ThreadManager & threadManager,
     PerfStats & perfStats)
 {
-    // TODOTEST
-    #define FS_PROFILE_SHIP_UPDATE
-
 #ifdef FS_PROFILE_SHIP_UPDATE
     auto const updateStartTimestamp = GameChronometer::Now();
 #endif
@@ -3301,16 +3298,6 @@ void Ship::UpdateAirAndWaterPressure(
                             srcPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector) * springOutboundQuantityOfWater,
                             -srcPointWaterVelocityBufferData[pDst].dot(springNormalizedVector) * springOutboundQuantityOfWater
                         ) * inverseNumberOfWaterIterations; // Scale by # of iters
-
-                        // TODO: remove
-                        //if (pSrc == mLastQueriedPointIndex)
-                        //{
-                        //    LogMessage("!!!!!! KINETIC THIS : dir=", springNormalizedVector, " oldPointVel=", oldPointWaterVelocityBufferData[pSrc],
-                        //        " dot=", oldPointWaterVelocityBufferData[pSrc].dot(springNormalizedVector), " w=", oldPointWaterBufferData[pSrc], " sprOub=", springOutboundQuantityOfWater);
-                        //    LogMessage("!!!!!! KINETIC OTHER: dir=", springNormalizedVector, " oldPointVel=", oldPointWaterVelocityBufferData[pDst],
-                        //        " dot=", oldPointWaterVelocityBufferData[pDst].dot(springNormalizedVector), " w=", oldPointWaterBufferData[pDst], " sprOub=", springOutboundQuantityOfWater);
-                        //    LogMessage("!!!!!! KINETIC RES  : ->pointKineticEnergyLoss=", pointKineticEnergyLoss[pSrc]);
-                        //}
                     }
                 }
 #endif
