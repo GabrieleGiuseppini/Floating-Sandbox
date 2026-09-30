@@ -4052,22 +4052,21 @@
 					- Register perf here :above:
 				+ -> Android plan
 
-			- Tests:
-				- Success criteria:
-					- Water level stops in bell
-						- At right height
+			+ Tests:
+				+ Success criteria:
+					+ Water level stops in bell
 					+ Water level reaching ocean 
-					- Water level obliqueness (was fixed with upness being n.y instead of being step-like)
-					- Water interface ugly flatness
-						- Depends on step size: the steeper and chaotic, the more lively the interface is
-					- Water in ropes
-				- Flotsam: water intake
-				- Rain: water intake
-				- Cloth, ropes: intake, retention (of water and air)
-				- Kinetic energy->Splash sounds
-				- Ingress/Egress Rush sounds
+					+ Water level obliqueness (was fixed with upness being n.y instead of being step-like)
+					+ Water interface ugly flatness
+						+ Depends on step size: the steeper and chaotic, the more lively the interface is
+					+ Water in ropes
+				+ Flotsam: water intake
+				+ Rain: water intake
+				+ Cloth, ropes: intake, retention (of water and air)
+				+ Kinetic energy->Splash sounds
+				+ Ingress/Egress Rush sounds
 
-			- Lower bulkheads @ default Titanic & make air escape, as it now takes forever
+			
 
 		- Merge into master
 
@@ -4095,7 +4094,9 @@
 
 			- If doesn't go through, nuke Points::WaterDiffusionKineticEnergyLoss and incorporate in Points::<workbuffer for WaterDiffusion algo>
 			- If goes through, remove compiler MOBILE conditional for kinetic energy loss calc'ns
-
+		
+		- Lower bulkheads @ default Titanic & make air escape, as it now takes forever
+		
 		- Video:
 			- Momenta: semi-transparent
 				- Make VectorField rendering use vec4f
