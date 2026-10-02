@@ -697,17 +697,17 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
 
     vSizer->AddSpacer(VerticalSeparatorSize);
 
-    // Internal pressure
+    // Internal air pressure
     {
         {
-            auto label = new wxStaticText(panel, wxID_ANY, _("Internal Pressure"), wxDefaultPosition, wxDefaultSize,
+            auto label = new wxStaticText(panel, wxID_ANY, _("Internal Air Pressure"), wxDefaultPosition, wxDefaultSize,
                 wxALIGN_CENTER);
 
             vSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
         }
 
         {
-            mInternalPressureEditSpinBox = new EditSpinBox<float>(
+            mInternalAirPressureEditSpinBox = new EditSpinBox<float>(
                 panel,
                 NumericEditBoxWidth,
                 0.0f,
@@ -719,11 +719,11 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                     OnDirty();
                 });
 
-            vSizer->Add(mInternalPressureEditSpinBox, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 0);
+            vSizer->Add(mInternalAirPressureEditSpinBox, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 0);
         }
 
         {
-            auto label = new wxStaticText(panel, wxID_ANY, _("Internal pressure that the ship is initially spawned with, in atmospheres"), wxDefaultPosition, wxDefaultSize,
+            auto label = new wxStaticText(panel, wxID_ANY, _("Internal air pressure that the ship is initially spawned with, in atmospheres"), wxDefaultPosition, wxDefaultSize,
                 wxALIGN_CENTER);
 
             label->SetFont(explanationFont);
@@ -1188,7 +1188,7 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
             vec2f(
                 mOffsetXEditSpinBox->GetValue(),
                 mOffsetYEditSpinBox->GetValue()),
-            mInternalPressureEditSpinBox->GetValue());
+            mInternalAirPressureEditSpinBox->GetValue());
     }
 
     if (IsAutoTexturizationSettingsDirty())
@@ -1307,7 +1307,7 @@ void ShipPropertiesEditDialog::ReconciliateUI()
     mOffsetXSlider->SetValue(static_cast<int>(mSessionData->PhysicsData.Offset.x));
     mOffsetYSlider->SetValue(static_cast<int>(mSessionData->PhysicsData.Offset.y));
 
-    mInternalPressureEditSpinBox->SetValue(mSessionData->PhysicsData.InternalPressure);
+    mInternalAirPressureEditSpinBox->SetValue(mSessionData->PhysicsData.InternalAirPressure);
 
     //
     // Auto-Texturization
@@ -1402,7 +1402,7 @@ bool ShipPropertiesEditDialog::IsPhysicsDataDirty() const
 {
     return mOffsetXEditSpinBox->IsModified()
         || mOffsetYEditSpinBox->IsModified()
-        || mInternalPressureEditSpinBox->IsModified();
+        || mInternalAirPressureEditSpinBox->IsModified();
 }
 
 bool ShipPropertiesEditDialog::IsAutoTexturizationSettingsDirty() const

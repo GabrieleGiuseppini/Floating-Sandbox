@@ -1336,6 +1336,14 @@ struct VisibleWorld
     vec2f BottomRight;
 };
 
+struct PressureReading
+{
+    float AirPressure;
+    float WaterPressure;
+    float WorldY;
+};
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Computation
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1798,7 +1806,7 @@ enum class DebugShipRenderModeType
     Springs,
     EdgeSprings,
     Structure,
-    InternalPressure,
+    AirPressure,
     Strength
 };
 
@@ -1867,8 +1875,9 @@ enum class VectorFieldRenderModeType
     PointVelocity,
     PointStaticForce,
     PointDynamicForce,
-    PointWaterVelocity,
-    PointWaterMomentum
+    PointAirMomentum,
+    PointWaterMomentum,
+    PointAirAndWaterMomentum
 };
 
 /*

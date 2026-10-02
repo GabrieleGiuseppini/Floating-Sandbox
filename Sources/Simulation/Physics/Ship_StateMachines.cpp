@@ -142,7 +142,9 @@ void Ship::InternalUpdateExplosionStateMachine(
 
                 mPoints.SetTemperature(
                     pointIndex,
-                    oldTemperature + std::min(deltaTemperature * scalingFactor, 0.0f));
+                    std::max(
+                        oldTemperature + std::min(deltaTemperature * scalingFactor, 0.0f),
+                        SimulationParameters::MinAbsoluteTemperature));
             }
         }
 
@@ -167,7 +169,12 @@ void Ship::InternalUpdateExplosionStateMachine(
             // Update water velocity
             mPoints.SetWaterVelocity(
                 pointIndex,
-                mPoints.GetWaterVelocity(pointIndex) + blastDir * 100.0f * mPoints.GetWater(pointIndex)); // Magic number
+                mPoints.GetWaterVelocity(pointIndex) + blastDir * 1000.0f); // Magic number
+
+            // Update air velocity
+            mPoints.SetAirVelocity(
+                pointIndex,
+                mPoints.GetAirVelocity(pointIndex) + blastDir * 1000.0f); // Magic number
 
             if constexpr (DoDetachNearestPoint)
             {

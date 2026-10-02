@@ -18,7 +18,7 @@ namespace Physics {
 void Points::Add(
     vec2f const & position,
     float water,
-    float internalPressure,
+    float internalAirPressure, // Pa, @ T0
     StructuralMaterial const & structuralMaterial,
     ElectricalMaterial const * electricalMaterial,
     bool isRope,
@@ -66,7 +66,6 @@ void Points::Add(
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
 
-    mInternalPressureBuffer.emplace_back(internalPressure);
     mIsHullBuffer.emplace_back(structuralMaterial.IsHull); // Default is from material
     mMaterialWaterIntakeBuffer.emplace_back(structuralMaterial.WaterIntake);
     mMaterialWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
@@ -75,7 +74,14 @@ void Points::Add(
     mWaterBuffer.emplace_back(water);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
-    mCumulatedIntakenWater.emplace_back(0.0f);
+
+    float const internalAirInEquivalentWaterHeight = Formulae::PressureToEquivalentWaterHeight(internalAirPressure);
+    mAirBuffer.emplace_back(internalAirInEquivalentWaterHeight);
+    mAirVelocityBuffer.emplace_back(vec2f::zero());
+    mAirMomentumBuffer.emplace_back(vec2f::zero());
+    mEffectiveAirBuffer.emplace_back(internalAirInEquivalentWaterHeight); // We start at temperature=Temperature0
+
+    mCumulatedOutflownUnderwaterAirBuffer.emplace_back(0.0f);
     mLeakingCompositeBuffer.emplace_back(LeakingComposite(isStructurallyLeaking));
     if (isStructurallyLeaking)
         SetStructurallyLeaking(pointIndex);
@@ -85,6 +91,7 @@ void Points::Add(
     // Heat dynamics
     mTemperatureBuffer.emplace_back(SimulationParameters::Temperature0);
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer.emplace_back(structuralMaterial.GetHeatCapacity());
     mMaterialHeatCapacityReciprocalBuffer.emplace_back(1.0f / structuralMaterial.GetHeatCapacity());
     mMaterialThermalExpansionCoefficientBuffer.emplace_back(structuralMaterial.ThermalExpansionCoefficient);
     mMaterialIgnitionTemperatureBuffer.emplace_back(structuralMaterial.IgnitionTemperature);
@@ -158,7 +165,7 @@ void Points::CreateEphemeralParticleAirBubble(
     assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
-    mVelocityBuffer[pointIndex] = vec2f::zero();
+    mVelocityBuffer[pointIndex] = vec2f::zero(); // Start with zero velocity
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
@@ -182,7 +189,8 @@ void Points::CreateEphemeralParticleAirBubble(
     mCachedDepthBuffer[pointIndex] = depth;
     mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mEffectiveAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
@@ -192,6 +200,7 @@ void Points::CreateEphemeralParticleAirBubble(
 
     mTemperatureBuffer[pointIndex] = temperature;
     assert(airStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = airStructuralMaterial.GetHeatCapacity();;
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / airStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = airStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = airStructuralMaterial.IgnitionTemperature;
@@ -269,7 +278,8 @@ void Points::CreateEphemeralParticleAsh(
     mCachedDepthBuffer[pointIndex] = depth;
     mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mEffectiveAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = ashStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - ashStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = ashStructuralMaterial.WaterDiffusionSpeed;
@@ -279,6 +289,7 @@ void Points::CreateEphemeralParticleAsh(
 
     mTemperatureBuffer[pointIndex] = depth > 0.0f ? simulationParameters.WaterTemperature : simulationParameters.AirTemperature;
     assert(ashStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = ashStructuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / ashStructuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = ashStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = ashStructuralMaterial.IgnitionTemperature;
@@ -348,7 +359,8 @@ void Points::CreateEphemeralParticleDebris(
     mCachedDepthBuffer[pointIndex] = depth;
     mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mEffectiveAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
@@ -358,6 +370,7 @@ void Points::CreateEphemeralParticleDebris(
 
     mTemperatureBuffer[pointIndex] = mTemperatureBuffer[originalPointIndex];
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / structuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
@@ -434,7 +447,8 @@ void Points::CreateEphemeralParticleSiltCloud(
     mCachedDepthBuffer[pointIndex] = depth;
     mFoobarSensitivityBuffer[pointIndex] = 0.05f; // Don't want 'em to fly away with explosions
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mEffectiveAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = siltCloudStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - siltCloudStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = siltCloudStructuralMaterial.WaterDiffusionSpeed;
@@ -444,6 +458,7 @@ void Points::CreateEphemeralParticleSiltCloud(
 
     mTemperatureBuffer[pointIndex] = Formulae::CalculateWaterTemperature(depth, simulationParameters);
     assert(siltCloudStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = siltCloudStructuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / siltCloudStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = siltCloudStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = siltCloudStructuralMaterial.IgnitionTemperature;
@@ -554,7 +569,8 @@ void Points::InternalCreateEphemeralParticleSmoke(
     mCachedDepthBuffer[pointIndex] = depth;
     mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mEffectiveAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = smokeStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - smokeStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = smokeStructuralMaterial.WaterDiffusionSpeed;
@@ -564,6 +580,7 @@ void Points::InternalCreateEphemeralParticleSmoke(
 
     mTemperatureBuffer[pointIndex] = temperature;
     assert(smokeStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = smokeStructuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / smokeStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = smokeStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = smokeStructuralMaterial.IgnitionTemperature;
@@ -638,7 +655,8 @@ void Points::CreateEphemeralParticleSparkle(
     mCachedDepthBuffer[pointIndex] = depth;
     mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mEffectiveAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
@@ -648,6 +666,7 @@ void Points::CreateEphemeralParticleSparkle(
 
     mTemperatureBuffer[pointIndex] = SimulationParameters::Temperature0;
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / structuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
@@ -719,7 +738,8 @@ void Points::CreateEphemeralParticleWakeBubble(
     mCachedDepthBuffer[pointIndex] = depth;
     mFoobarSensitivityBuffer[pointIndex] = 1.0f;
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mEffectiveAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterStructuralMaterial.WaterDiffusionSpeed;
@@ -729,6 +749,7 @@ void Points::CreateEphemeralParticleWakeBubble(
 
     mTemperatureBuffer[pointIndex] = simulationParameters.WaterTemperature;
     assert(waterStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = waterStructuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / waterStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = waterStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = waterStructuralMaterial.IgnitionTemperature;
@@ -810,7 +831,8 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
     mCachedDepthBuffer[pointIndex] = depth; // Note: might be pointless if we're spawning while calculating new cached depths
     mFoobarSensitivityBuffer[pointIndex] = 0.0f; // Don't want 'em to fly away with explosions
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mEffectiveAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterFoamStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterFoamStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterFoamStructuralMaterial.WaterDiffusionSpeed;
@@ -820,6 +842,7 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
 
     mTemperatureBuffer[pointIndex] = Formulae::CalculateWaterTemperature(depth, simulationParameters);
     assert(waterFoamStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = waterFoamStructuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / waterFoamStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = waterFoamStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = waterFoamStructuralMaterial.IgnitionTemperature;
@@ -908,7 +931,8 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
     mCachedDepthBuffer[pointIndex] = depth; // Note: might be pointless if we're spawning while calculating new cached depths
     mFoobarSensitivityBuffer[pointIndex] = 0.0f; // Don't want 'em to fly away with explosions
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
+    //mEffectiveAirBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterSplashStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterSplashStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterSplashStructuralMaterial.WaterDiffusionSpeed;
@@ -918,6 +942,7 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
 
     mTemperatureBuffer[pointIndex] = Formulae::CalculateWaterTemperature(depth, simulationParameters);
     assert(waterSplashStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityBuffer[pointIndex] = waterSplashStructuralMaterial.GetHeatCapacity();
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / waterSplashStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = waterSplashStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = waterSplashStructuralMaterial.IgnitionTemperature;
@@ -1124,20 +1149,22 @@ void Points::UpdateForSimulationParameters(SimulationParameters const & simulati
         mCurrentKineticFrictionAdjustment = kineticFrictionAdjustment;
     }
 
-    float const cumulatedIntakenWaterThresholdForAirBubbles = SimulationParameters::AirBubblesDensityToCumulatedIntakenWater(simulationParameters.AirBubblesDensity);
-    if (cumulatedIntakenWaterThresholdForAirBubbles != mCurrentCumulatedIntakenWaterThresholdForAirBubbles)
+    float const airBubblesDensity = simulationParameters.AirBubblesDensity;
+    if (airBubblesDensity != mCurrentAirBubblesDensity)
     {
         // Randomize cumulated water intaken for each leaking point
+        float const cumulatedOutflownUnderwaterAirThresholdForAirBubbles = SimulationParameters::AirBubblesDensityToCumulatedOutflownUnderwaterAir(airBubblesDensity);
         for (ElementIndex i : RawShipPoints())
         {
             if (GetLeakingComposite(i).IsCumulativelyLeaking)
             {
-                mCumulatedIntakenWater[i] = RandomizeCumulatedIntakenWater(cumulatedIntakenWaterThresholdForAirBubbles);
+                mCumulatedOutflownUnderwaterAirBuffer[i] = RandomizeCumulatedOutflownUnderwaterAir(cumulatedOutflownUnderwaterAirThresholdForAirBubbles);
             }
         }
 
-        // Remember the new value
-        mCurrentCumulatedIntakenWaterThresholdForAirBubbles = cumulatedIntakenWaterThresholdForAirBubbles;
+        // Remember the new values
+        mCurrentAirBubblesDensity = airBubblesDensity;
+        mCurrentCumulatedOutflownUnderwaterAirThresholdForAirBubbles = cumulatedOutflownUnderwaterAirThresholdForAirBubbles;
     }
 
     float const combustionSpeedAdjustment = simulationParameters.CombustionSpeedAdjustment;
@@ -1368,6 +1395,7 @@ void Points::UpdateCombustionLowFrequency(
             //
 
             mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Developing_1;
+            mCombustionStateBuffer[pointIndex].TemperatureAtIgnition = GetTemperature(pointIndex);
 
             // Initial development depends on how deep this particle is in its burning zone
             mCombustionStateBuffer[pointIndex].FlameDevelopment =
@@ -1615,8 +1643,7 @@ void Points::UpdateCombustionHighFrequency(
 
             // This point
             mTemperatureBuffer[pointIndex] =
-                mMaterialIgnitionTemperatureBuffer[pointIndex]
-                * simulationParameters.IgnitionTemperatureAdjustment
+                pointCombustionState.TemperatureAtIgnition
                 * 1.1f;
 
             // Neighbors
@@ -1946,10 +1973,12 @@ void Points::UpdateEphemeralParticles(
                             if (simulationParameters.DoDisplaceWater
                                 && depth < oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset)
                             {
+                                float constexpr DisplacementMagic = 1.0f; // Changed in 1.22.0 from 3.75, after pressure (and air bubble) redesign
+
                                 mParentWorld.DisplaceOceanSurfaceAt(
                                     GetPosition(pointIndex).x,
                                     // Magnitude is lower with depth and higher with scale
-                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - depth) * state.FinalScale * 3.75f); // Magic number
+                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - depth) * state.FinalScale * DisplacementMagic);
 
                                 mSimulationEventHandler.OnAirBubbleSurfaced(1);
                             }
@@ -2293,7 +2322,7 @@ void Points::Query(ElementIndex pointElementIndex) const
 {
     LogMessage("PointIndex: ", pointElementIndex, (nullptr != mMaterialsBuffer[pointElementIndex].Structural) ? (" (" + mMaterialsBuffer[pointElementIndex].Structural->Name) + ")" : "");
     LogMessage("P=", mPositionBuffer[pointElementIndex].toString(), " V=", mVelocityBuffer[pointElementIndex].toString());
-    LogMessage("M=", mMassBuffer[pointElementIndex], " IPs=", mInternalPressureBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex],
+    LogMessage("M=", mMassBuffer[pointElementIndex], " EA=", mEffectiveAirBuffer[pointElementIndex], " A=", mAirBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex],
                " Wk=", IsEphemeral(pointElementIndex) ? 1.0f : mWeaknessBuffer[pointElementIndex], " Rust=", IsEphemeral(pointElementIndex) ? 0.0f : mDecayBuffer[pointElementIndex].Decay.Rust);
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex], " ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
@@ -2358,11 +2387,11 @@ void Points::UploadAttributes(
             mStressBuffer.data());
     }
 
-    if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::InternalPressure)
+    if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::AirPressure)
     {
         renderContext.UploadShipPointAuxiliaryDataAsync(
             shipId,
-            mInternalPressureBuffer.data());
+            mEffectiveAirBuffer.data());
     }
     else if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::Strength)
     {
@@ -2437,96 +2466,138 @@ void Points::UploadVectors(
     ShipId shipId,
     RenderContext & renderContext) const
 {
+    auto const vectorFieldRenderMode = renderContext.GetVectorFieldRenderMode();
+
+    if (vectorFieldRenderMode == VectorFieldRenderModeType::None)
+        return;
+
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
-    vec4f color;
-    vec2f const * vectorBuffer = nullptr;
-    float lengthAdjustment = 0.0f;
-
-    switch (renderContext.GetVectorFieldRenderMode())
+    if (vectorFieldRenderMode == VectorFieldRenderModeType::PointAirMomentum
+        || vectorFieldRenderMode == VectorFieldRenderModeType::PointWaterMomentum
+        || vectorFieldRenderMode == VectorFieldRenderModeType::PointAirAndWaterMomentum)
     {
-        case VectorFieldRenderModeType::PointStaticForce:
+        shipRenderContext.UploadVectorsStart(mRawShipPointCount + (vectorFieldRenderMode == VectorFieldRenderModeType::PointAirAndWaterMomentum) ? mRawShipPointCount : 0);
+
+        if (vectorFieldRenderMode == VectorFieldRenderModeType::PointAirMomentum
+            || vectorFieldRenderMode == VectorFieldRenderModeType::PointAirAndWaterMomentum)
         {
-            color = vec4f(0.5f, 0.1f, 0.f, 1.0f);
-            vectorBuffer = mStaticForceBuffer.data();
-            lengthAdjustment = 0.00075f;
+            vec3f constexpr Color = vec3f(0.794f, 0.309f, 0.309f);
+            float constexpr LengthAdjustment = 0.8f;
 
-            break;
-        }
-
-        case VectorFieldRenderModeType::PointDynamicForce:
-        {
-            color = vec4f(1.0f, 0.266f, 0.16f, 1.0f);
-            // First buffer implicitly
-            assert(mDynamicForceBuffers.size() >= 1);
-            vectorBuffer = mDynamicForceBuffers[0].data();
-            lengthAdjustment = 0.000001f;
-
-            break;
-        }
-
-        case VectorFieldRenderModeType::PointVelocity:
-        {
-            color = vec4f(0.203f, 0.552f, 0.219f, 1.0f);
-            vectorBuffer = mVelocityBuffer.data();
-            lengthAdjustment = 0.25f;
-
-            break;
-        }
-
-        case VectorFieldRenderModeType::PointWaterMomentum:
-        {
-            color = vec4f(0.054f, 0.066f, 0.443f, 1.0f);
-            vectorBuffer = mWaterMomentumBuffer.data();
-            lengthAdjustment = 0.4f;
-
-            break;
-        }
-
-        case VectorFieldRenderModeType::PointWaterVelocity:
-        {
-            color = vec4f(0.094f, 0.509f, 0.925f, 1.0f);
-            vectorBuffer = mWaterVelocityBuffer.data();
-            lengthAdjustment = 1.0f;
-
-            break;
-        }
-
-        case VectorFieldRenderModeType::None:
-        {
-            return;
-        }
-    }
-
-    shipRenderContext.UploadVectorsStart(mElementCount, color);
-
-    for (auto const p : this->RawShipPoints())
-    {
-        shipRenderContext.UploadVector(
-            GetPosition(p),
-            mPlaneIdFloatBuffer[p],
-            vectorBuffer[p],
-            lengthAdjustment);
-    }
-
-    if (renderContext.GetVectorFieldRenderMode() != VectorFieldRenderModeType::PointDynamicForce)
-    {
-        for (auto const p : this->EphemeralPoints())
-        {
-            if (mEphemeralParticleAttributesBuffer[p].Type != EphemeralType::None)
+            for (auto const p : this->RawShipPoints())
             {
-                auto const pointIndex = EphemeralParticleIndexToPointIndex(p);
-
                 shipRenderContext.UploadVector(
-                    GetPosition(pointIndex),
-                    mPlaneIdFloatBuffer[pointIndex],
-                    vectorBuffer[pointIndex],
-                    lengthAdjustment);
+                    GetPosition(p),
+                    Color,
+                    mPlaneIdFloatBuffer[p],
+                    mAirMomentumBuffer[p],
+                    LengthAdjustment);
             }
         }
-    }
 
-    shipRenderContext.UploadVectorsEnd();
+        if (vectorFieldRenderMode == VectorFieldRenderModeType::PointWaterMomentum
+            || vectorFieldRenderMode == VectorFieldRenderModeType::PointAirAndWaterMomentum)
+        {
+            vec3f constexpr Color = vec3f(0.054f, 0.066f, 0.443f);
+            float constexpr LengthAdjustment = 0.1f;
+
+            for (auto const p : this->RawShipPoints())
+            {
+                shipRenderContext.UploadVector(
+                    GetPosition(p),
+                    Color,
+                    mPlaneIdFloatBuffer[p],
+                    mWaterMomentumBuffer[p],
+                    LengthAdjustment);
+            }
+        }
+
+        shipRenderContext.UploadVectorsEnd();
+    }
+    else
+    {
+        vec3f color;
+        vec2f const * vectorBuffer = nullptr;
+        float lengthAdjustment = 0.0f;
+
+        switch (vectorFieldRenderMode)
+        {
+            case VectorFieldRenderModeType::PointStaticForce:
+            {
+                color = vec3f(0.5f, 0.1f, 0.f);
+                vectorBuffer = mStaticForceBuffer.data();
+                lengthAdjustment = 0.00075f;
+
+                break;
+            }
+
+            case VectorFieldRenderModeType::PointDynamicForce:
+            {
+                color = vec3f(1.0f, 0.266f, 0.16f);
+                // First buffer implicitly
+                assert(mDynamicForceBuffers.size() >= 1);
+                vectorBuffer = mDynamicForceBuffers[0].data();
+                lengthAdjustment = 0.000001f;
+
+                break;
+            }
+
+            case VectorFieldRenderModeType::PointVelocity:
+            {
+                color = vec3f(0.203f, 0.552f, 0.219f);
+                vectorBuffer = mVelocityBuffer.data();
+                lengthAdjustment = 0.25f;
+
+                break;
+            }
+
+            case VectorFieldRenderModeType::PointAirMomentum:
+            case VectorFieldRenderModeType::PointWaterMomentum:
+            case VectorFieldRenderModeType::PointAirAndWaterMomentum:
+            {
+                assert(false); // Taken care of earlier
+                return;
+            }
+
+            case VectorFieldRenderModeType::None:
+            {
+                return;
+            }
+        }
+
+        shipRenderContext.UploadVectorsStart(mElementCount);
+
+        for (auto const p : this->RawShipPoints())
+        {
+            shipRenderContext.UploadVector(
+                GetPosition(p),
+                color,
+                mPlaneIdFloatBuffer[p],
+                vectorBuffer[p],
+                lengthAdjustment);
+        }
+
+        if (renderContext.GetVectorFieldRenderMode() != VectorFieldRenderModeType::PointDynamicForce)
+        {
+            for (auto const p : this->EphemeralPoints())
+            {
+                if (mEphemeralParticleAttributesBuffer[p].Type != EphemeralType::None)
+                {
+                    auto const pointIndex = EphemeralParticleIndexToPointIndex(p);
+
+                    shipRenderContext.UploadVector(
+                        GetPosition(pointIndex),
+                        color,
+                        mPlaneIdFloatBuffer[pointIndex],
+                        vectorBuffer[pointIndex],
+                        lengthAdjustment);
+                }
+            }
+        }
+
+        shipRenderContext.UploadVectorsEnd();
+    }
 }
 
 void Points::UploadEphemeralParticles(
@@ -2554,9 +2625,9 @@ void Points::UploadEphemeralParticles(
 
                     // Calculate scale based on lifetime
                     float const scaleMax = state.FinalScale;
-                    float const scaleMin = state.FinalScale / 5.0f;
+                    float const scaleMin = state.FinalScale / 4.0f;
                     float const scale =
-                        scaleMin + (scaleMax - scaleMin) * LinearStep(0.0f, 4.0f, state.SimulationLifetime);
+                        scaleMin + (scaleMax - scaleMin) * LinearStep(0.0f, 6.0f, state.SimulationLifetime);
 
                     shipRenderContext.UploadAirBubble(
                         mPlaneIdFloatBuffer[pointIndex],

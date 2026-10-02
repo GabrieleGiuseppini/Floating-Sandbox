@@ -79,15 +79,19 @@ private:
     SliderControl<unsigned int> * mMaxBurningParticlesPerShipSlider;
     BitmapToggleButton * mUltraViolentToggleButton;
 
-    // Water
+    // Water and Pressure
     SliderControl<float> * mWaterDensityAdjustmentSlider;
     SliderControl<float> * mWaterFrictionDragSlider;
     SliderControl<float> * mWaterPressureDragSlider;
     SliderControl<float> * mWaterImpactForceAdjustmentSlider;
-    SliderControl<float> * mWaterIntakeSlider;
-    SliderControl<float> * mWaterCrazynessSlider;
-    SliderControl<float> * mWaterDiffusionSpeedSlider;
     SliderControl<float> * mWaterTemperatureSlider;
+    //
+    SliderControl<float> * mWaterIntakeSlider;
+    SliderControl<float> * mAirIntakeSlider;
+    SliderControl<float> * mWaterDiffusionSpeedSlider;
+    SliderControl<float> * mAirDiffusionSpeedSlider;
+    SliderControl<float> * mAirPressureFeedbackOnWaterSlider;
+    //
     SliderControl<float> * mRotAcceler8rSlider;
     SliderControl<float> * mRustAcceler8rSlider;
     SliderControl<float> * mRustWeaknessAdjustmentSlider;
@@ -175,11 +179,12 @@ private:
     SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
 
     // Other Tools
-    SliderControl<float> * mFloodRadiusSlider;
-    SliderControl<float> * mFloodQuantitySlider;
+    SliderControl<float> * mFloodToolRadiusSlider;
+    SliderControl<float> * mFloodToolFlowSlider;
+    SliderControl<float> * mInjectAirToolRadiusSlider;
+    SliderControl<float> * mInjectAirToolFlowSlider;
     SliderControl<float> * mHeatBlasterRadiusSlider;
     SliderControl<float> * mHeatBlasterHeatFlowSlider;
-    SliderControl<float> * mInjectPressureQuantitySlider;
     SliderControl<float> * mRepairRadiusSlider;
     SliderControl<float> * mRepairSpeedAdjustmentSlider;
     SliderControl<float> * mScrubRustRadiusSlider;
@@ -236,6 +241,7 @@ private:
     wxCheckBox * mPlayStressSoundsCheckBox;
     wxCheckBox * mPlayWindSoundCheckBox;
     wxCheckBox * mPlayAirBubbleSurfaceSoundCheckBox;
+    wxCheckBox * mPlayInteriorWaterSoundsCheckBox;
     SliderControl<float> * mStrengthRandomizationDensityAdjustmentSlider;
     SliderControl<float> * mStrengthRandomizationExtentSlider;
     SliderControl<float> * mSpringStiffnessSlider;
@@ -252,6 +258,7 @@ private:
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesForCutsCheckBox;
     SliderControl<float> * mNumMechanicalIterationsAdjustmentSlider;
+    SliderControl<size_t> * mWaterDiffusionNumberOfIterationsSlider;
     SliderControl<size_t> * mSimulationParallelismSlider;
 
     // Settings Management
@@ -287,7 +294,7 @@ private:
     void DoClose();
 
     void PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel, GameAssetManager const & gameAssetManager);
-    void PopulateWaterPanel(wxPanel * panel);
+    void PopulateWaterAndPressurePanel(wxPanel * panel);
     void PopulateOceanPanel(wxPanel * panel);
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateAirAndSkyPanel(wxPanel * panel);

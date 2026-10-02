@@ -153,15 +153,15 @@ SettingsDialog::SettingsDialog(
     }
 
     //
-    // Water
+    // Water and Pressure
     //
 
     {
         wxPanel * panel = new wxPanel(notebook);
 
-        PopulateWaterPanel(panel);
+        PopulateWaterAndPressurePanel(panel);
 
-        notebook->AddPage(panel, _("Water"));
+        notebook->AddPage(panel, _("Water and Pressure"));
     }
 
     //
@@ -1051,7 +1051,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
     panel->SetSizer(gridSizer);
 }
 
-void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
+void SettingsDialog::PopulateWaterAndPressurePanel(wxPanel * panel)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
@@ -1211,17 +1211,17 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
         gridSizer->Add(
             waterBoxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 7),
+            wxGBSpan(1, 9),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     //
-    // Water Ingress
+    // Pressure
     //
 
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Water Ingress"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Pressure"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
@@ -1233,7 +1233,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Speed Adjust"),
+                    _("Water Intake"),
                     _("Adjusts the speed with which sea water enters or leaves a physical body."),
                     [this](float value)
                     {
@@ -1253,6 +1253,33 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Air Intake
+            {
+                mAirIntakeSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Air Intake"),
+                    _("Adjusts the speed with which air enters or leaves a physical body."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirIntakeAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinAirIntakeAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxAirIntakeAdjustment()));
+
+                sizer->Add(
+                    mAirIntakeSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             // Water Diffusion Speed
             {
                 mWaterDiffusionSpeedSlider = new SliderControl<float>(
@@ -1260,7 +1287,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Diffusion Speed"),
+                    _("Water Diffusion Speed"),
                     _("Adjusts the speed with which water propagates within a physical body."),
                     [this](float value)
                     {
@@ -1273,33 +1300,59 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
 
                 sizer->Add(
                     mWaterDiffusionSpeedSlider,
-                    wxGBPosition(0, 1),
+                    wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            // Water Crazyness
+            // Air Diffusion Speed
             {
-                mWaterCrazynessSlider = new SliderControl<float>(
+                mAirDiffusionSpeedSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Fluid Crazyness"),
-                    _("Adjusts how \"splashy\" water flows inside a physical body."),
+                    _("Air Diffusion Speed"),
+                    _("Adjusts the speed with which air propagates within a physical body."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::WaterCrazyness, value);
+                        this->mLiveSettings.SetValue(GameSettings::AirDiffusionSpeedAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinWaterCrazyness(),
-                        mGameControllerSettingsOptions.GetMaxWaterCrazyness()));
+                        mGameControllerSettingsOptions.GetMinAirDiffusionSpeedAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxAirDiffusionSpeedAdjustment()));
 
                 sizer->Add(
-                    mWaterCrazynessSlider,
-                    wxGBPosition(0, 2),
+                    mAirDiffusionSpeedSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Air Pressure Feedback on Water
+            {
+                mAirPressureFeedbackOnWaterSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Air Pressure Feedback"),
+                    _("Adjusts the degree to which air exerts pressure against water. Set to zero to disable completely \"air pocket\" effects."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirPressureFeedbackOnWater, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinAirPressureFeedbackOnWater(),
+                        mGameControllerSettingsOptions.GetMaxAirPressureFeedbackOnWater()));
+
+                sizer->Add(
+                    mAirPressureFeedbackOnWaterSlider,
+                    wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -1317,7 +1370,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -1452,7 +1505,7 @@ void SettingsDialog::PopulateWaterPanel(wxPanel * panel)
 
         gridSizer->Add(
             decayBoxSizer,
-            wxGBPosition(1, 3),
+            wxGBPosition(1, 5),
             wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -2464,8 +2517,9 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                         this->mLiveSettings.SetValue(GameSettings::AirBubblesDensity, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<LinearSliderCore>(
+                    std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions.GetMinAirBubblesDensity(),
+                        1.0f,
                         mGameControllerSettingsOptions.GetMaxAirBubblesDensity()));
 
                 airSizer->Add(
@@ -4096,35 +4150,35 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            // Flood Radius
+            // Flood Tool Radius
             {
-                mFloodRadiusSlider = new SliderControl<float>(
+                mFloodToolRadiusSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Radius"),
-                    _("How wide an area is flooded or drained by the flood tool (m)."),
+                    _("How wide an area is flooded with or drained by the flood tool (m)."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::FloodRadius, value);
+                        this->mLiveSettings.SetValue(GameSettings::FloodToolRadius, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinFloodRadius(),
-                        mGameControllerSettingsOptions.GetMaxFloodRadius()));
+                        mGameControllerSettingsOptions.GetMinFloodToolRadius(),
+                        mGameControllerSettingsOptions.GetMaxFloodToolRadius()));
 
                 sizer->Add(
-                    mFloodRadiusSlider,
+                    mFloodToolRadiusSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            // Flood Quantity
+            // Flood Tool Flow
             {
-                mFloodQuantitySlider = new SliderControl<float>(
+                mFloodToolFlowSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
@@ -4133,15 +4187,16 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     _("How much water is injected or drained by the flood tool (m3)."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::FloodQuantity, value);
+                        this->mLiveSettings.SetValue(GameSettings::FloodToolFlow, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinFloodQuantity(),
-                        mGameControllerSettingsOptions.GetMaxFloodQuantity()));
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinFloodToolFlow(),
+                        10.0f,
+                        mGameControllerSettingsOptions.GetMaxFloodToolFlow()));
 
                 sizer->Add(
-                    mFloodQuantitySlider,
+                    mFloodToolFlowSlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -4160,6 +4215,148 @@ void SettingsDialog::PopulateOtherToolsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
+    // Inject Air Tool
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Inject Air Tool"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Icons
+            {
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "air_tank_cursor_up"
+                    },
+                    gameAssetManager);
+
+                sizer->Add(
+                    iconVSizer,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
+            }
+
+            // Inject Air Tool Radius
+            {
+                mInjectAirToolRadiusSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Radius"),
+                    _("How wide an area is injected with or drained by the inject air tool (m)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::InjectAirToolRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinInjectAirToolRadius(),
+                        mGameControllerSettingsOptions.GetMaxInjectAirToolRadius()));
+
+                sizer->Add(
+                    mInjectAirToolRadiusSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Inject Air Tool Flow
+            {
+                mInjectAirToolFlowSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Flow"),
+                    _("How much air is injected or drained by the inject air tool (m3)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::InjectAirToolFlow, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinInjectAirToolFlow(),
+                        10.0f,
+                        mGameControllerSettingsOptions.GetMaxInjectAirToolFlow()));
+
+                sizer->Add(
+                    mInjectAirToolFlowSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            WxHelpers::MakeAllExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 2),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
+    // Options
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Options"));
+
+        // Apply Physics Tools to Ships
+        {
+            mDoApplyPhysicsToolsToShipsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect Ships"));
+            mDoApplyPhysicsToolsToShipsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on Ships."));
+            mDoApplyPhysicsToolsToShipsCheckBox->Bind(
+                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                [this](wxCommandEvent & event)
+                {
+                    mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToShips, event.IsChecked());
+                    OnLiveSettingsChanged();
+                });
+
+            boxSizer->Add(mDoApplyPhysicsToolsToShipsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+        }
+
+        // Apply Physics Tools to NPCs
+        {
+            mDoApplyPhysicsToolsToNpcsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect NPCs"));
+            mDoApplyPhysicsToolsToNpcsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on NPCs."));
+            mDoApplyPhysicsToolsToNpcsCheckBox->Bind(
+                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                [this](wxCommandEvent & event)
+                {
+                    mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs, event.IsChecked());
+                    OnLiveSettingsChanged();
+                });
+
+            boxSizer->Add(mDoApplyPhysicsToolsToNpcsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 4),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -4256,18 +4453,18 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 2),
+            wxGBPosition(1, 0),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     //
-    // Inject Pressure Tool
+    // WindMaker Tool
     //
 
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Inject Pressure Tool"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("WindMaker Tool"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
@@ -4277,7 +4474,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                 auto * iconVSizer = MakeToolVerticalStripIcons(
                     boxSizer->GetStaticBox(),
                     {
-                        "air_tank_cursor_up"
+                        "wind_cursor_up"
                     },
                     gameAssetManager);
 
@@ -4289,27 +4486,26 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            // Inject Pressure Quantity
+            // Wind speed
             {
-                mInjectPressureQuantitySlider = new SliderControl<float>(
+                mWindMakerWindSpeedSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Flow"),
-                    _("Adjusts the number of atmospheres that are injected or drained by the inject pressure tool (atm)."),
+                    _("Wind Speed"),
+                    _("Wind speed conjured by the WindMaker tool (Km/h)."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::InjectPressureQuantity, value);
+                        this->mLiveSettings.SetValue(GameSettings::WindMakerToolWindSpeed, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions.GetMinInjectPressureQuantity(),
-                        1.0f,
-                        mGameControllerSettingsOptions.GetMaxInjectPressureQuantity()));
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinWindMakerToolWindSpeed(),
+                        mGameControllerSettingsOptions.GetMaxWindMakerToolWindSpeed()));
 
                 sizer->Add(
-                    mInjectPressureQuantitySlider,
+                    mWindMakerWindSpeedSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -4327,7 +4523,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 4),
+            wxGBPosition(1, 2),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -4423,7 +4619,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 0),
+            wxGBPosition(1, 3),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -4494,122 +4690,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 2),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL,
-            CellBorderOuter);
-    }
-
-    //
-    // WindMaker Tool
-    //
-
-    {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("WindMaker Tool"));
-
-        {
-            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
-
-            // Icons
-            {
-                auto * iconVSizer = MakeToolVerticalStripIcons(
-                    boxSizer->GetStaticBox(),
-                    {
-                        "wind_cursor_up"
-                    },
-                    gameAssetManager);
-
-                sizer->Add(
-                    iconVSizer,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
-                    CellBorderInner);
-            }
-
-            // Wind speed
-            {
-                mWindMakerWindSpeedSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Wind Speed"),
-                    _("Wind speed conjured by the WindMaker tool (Km/h)."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::WindMakerToolWindSpeed, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinWindMakerToolWindSpeed(),
-                        mGameControllerSettingsOptions.GetMaxWindMakerToolWindSpeed()));
-
-                sizer->Add(
-                    mWindMakerWindSpeedSlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            WxHelpers::MakeAllExpandable(sizer);
-
-            boxSizer->Add(
-                sizer,
-                1,
-                wxEXPAND | wxALL,
-                StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            boxSizer,
-            wxGBPosition(1, 3),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL,
-            CellBorderOuter);
-    }
-
-    //
-    // Options
-    //
-
-    {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Options"));
-
-        // Apply Physics Tools to Ships
-        {
-            mDoApplyPhysicsToolsToShipsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect Ships"));
-            mDoApplyPhysicsToolsToShipsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on Ships."));
-            mDoApplyPhysicsToolsToShipsCheckBox->Bind(
-                wxEVT_COMMAND_CHECKBOX_CLICKED,
-                [this](wxCommandEvent & event)
-                {
-                    mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToShips, event.IsChecked());
-                    OnLiveSettingsChanged();
-                });
-
-            boxSizer->Add(mDoApplyPhysicsToolsToShipsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
-        }
-
-        // Apply Physics Tools to NPCs
-        {
-            mDoApplyPhysicsToolsToNpcsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect NPCs"));
-            mDoApplyPhysicsToolsToNpcsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on NPCs."));
-            mDoApplyPhysicsToolsToNpcsCheckBox->Bind(
-                wxEVT_COMMAND_CHECKBOX_CLICKED,
-                [this](wxCommandEvent & event)
-                {
-                    mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs, event.IsChecked());
-                    OnLiveSettingsChanged();
-                });
-
-            boxSizer->Add(mDoApplyPhysicsToolsToNpcsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
-        }
-
-        gridSizer->Add(
-            boxSizer,
-            wxGBPosition(1, 4),
+            wxGBPosition(1, 5),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -5749,6 +5830,20 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     checkboxesSizer->Add(mPlayAirBubbleSurfaceSoundCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
                 }
 
+                {
+                    mPlayInteriorWaterSoundsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Play Interior Water Sounds"));
+                    mPlayInteriorWaterSoundsCheckBox->SetToolTip(_("Enables or disables the splashing and rushing sounds when water enters and moves inside the ship."));
+                    mPlayInteriorWaterSoundsCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue(GameSettings::PlayInteriorWaterSounds, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
+
+                    checkboxesSizer->Add(mPlayInteriorWaterSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+                }
+
                 sizer->Add(
                     checkboxesSizer,
                     wxGBPosition(0, 2),
@@ -5941,7 +6036,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             _("Draw Only Springs"),
             _("Draw Only Edge Springs"),
             _("Draw Structure"),
-            _("Draw Internal Pressure"),
+            _("Draw Air Pressure"),
             _("Draw Strength")
         };
 
@@ -5978,7 +6073,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                 }
                 else if (6 == selectedDebugShipRenderMode)
                 {
-                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::InternalPressure);
+                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::AirPressure);
                 }
                 else
                 {
@@ -6114,8 +6209,9 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             _("Velocities"),
             _("Static Forces"),
             _("Dynamic Forces"),
-            _("Water Velocities"),
-            _("Water Momenta")
+            _("Air Momenta"),
+            _("Water Momenta"),
+            _("Air and Water Momenta")
         };
 
         mVectorFieldRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1, -1),
@@ -6154,14 +6250,20 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
                     case 4:
                     {
-                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterVelocity);
+                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointAirMomentum);
+                        break;
+                    }
+
+                    case 5:
+                    {
+                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterMomentum);
                         break;
                     }
 
                     default:
                     {
-                        assert(5 == selectedVectorFieldRenderMode);
-                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterMomentum);
+                        assert(6 == selectedVectorFieldRenderMode);
+                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointAirAndWaterMomentum);
                         break;
                     }
                 }
@@ -6212,7 +6314,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 3),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorderInner);
     }
@@ -6255,6 +6357,33 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Water Diffusion Iterations
+            {
+                mWaterDiffusionNumberOfIterationsSlider = new SliderControl<size_t>(
+                    performanceBoxSizer->GetStaticBox(),
+                    SliderControl<size_t>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Diffusion Quality"),
+                    _("Higher values improve the quality of the simulation of water diffusion inside the ship, at the expense of longer computation times."),
+                    [this](size_t value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterDiffusionNumberOfIterations, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<size_t>>(
+                        mGameControllerSettingsOptions.GetMinWaterDiffusionNumberOfIterations(),
+                        mGameControllerSettingsOptions.GetMaxWaterDiffusionNumberOfIterations()),
+                    mWarningIcon.get());
+
+                performanceSizer->Add(
+                    mWaterDiffusionNumberOfIterationsSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             // Simulation Parallelism
             {
                 mSimulationParallelismSlider = new SliderControl<size_t>(
@@ -6275,7 +6404,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
                 performanceSizer->Add(
                     mSimulationParallelismSlider,
-                    wxGBPosition(0, 1),
+                    wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -6292,8 +6421,8 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
         gridSizer->Add(
             performanceBoxSizer,
-            wxGBPosition(1, 5),
-            wxGBSpan(1, 2),
+            wxGBPosition(1, 4),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -6838,17 +6967,21 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mUltraViolentToggleButton->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
 
     //
-    // Water
+    // Water and Pressure
     //
 
     mWaterDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDensityAdjustment));
     mWaterFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterFrictionDragAdjustment));
     mWaterPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPressureDragAdjustment));
     mWaterImpactForceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterImpactForceAdjustment));
-    mWaterIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
-    mWaterCrazynessSlider->SetValue(settings.GetValue<float>(GameSettings::WaterCrazyness));
-    mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
     mWaterTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::WaterTemperature));
+    //
+    mWaterIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
+    mAirIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::AirIntakeAdjustment));
+    mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
+    mAirDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::AirDiffusionSpeedAdjustment));
+    mAirPressureFeedbackOnWaterSlider->SetValue(settings.GetValue<float>(GameSettings::AirPressureFeedbackOnWater));
+    //
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
     mRustAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RustAcceler8r));
     mRustWeaknessAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RustWeaknessAdjustment));
@@ -6964,11 +7097,12 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     // Other Tools
     //
 
-    mFloodRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodRadius));
-    mFloodQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::FloodQuantity));
+    mFloodToolRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodToolRadius));
+    mFloodToolFlowSlider->SetValue(settings.GetValue<float>(GameSettings::FloodToolFlow));
+    mInjectAirToolRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::InjectAirToolRadius));
+    mInjectAirToolFlowSlider->SetValue(settings.GetValue<float>(GameSettings::InjectAirToolFlow));
     mHeatBlasterRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterRadius));
     mHeatBlasterHeatFlowSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterHeatFlow));
-    mInjectPressureQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::InjectPressureQuantity));
     mRepairRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::RepairRadius));
     mRepairSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RepairSpeedAdjustment));
     mScrubRustRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::ScrubRustToolRadius));
@@ -7173,6 +7307,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mPlayStressSoundsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayStressSounds));
     mPlayWindSoundCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayWindSound));
     mPlayAirBubbleSurfaceSoundCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayAirBubbleSurfaceSound));
+    mPlayInteriorWaterSoundsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayInteriorWaterSounds));
 
     mStrengthRandomizationDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipStrengthRandomizationDensityAdjustment));
     mStrengthRandomizationExtentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipStrengthRandomizationExtent));
@@ -7217,7 +7352,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
 
-        case DebugShipRenderModeType::InternalPressure:
+        case DebugShipRenderModeType::AirPressure:
         {
             mDebugShipRenderModeRadioBox->SetSelection(6);
             break;
@@ -7264,7 +7399,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
 
-        case VectorFieldRenderModeType::PointWaterVelocity:
+        case VectorFieldRenderModeType::PointAirMomentum:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(4);
             break;
@@ -7275,12 +7410,19 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             mVectorFieldRenderModeRadioBox->SetSelection(5);
             break;
         }
+
+        case VectorFieldRenderModeType::PointAirAndWaterMomentum:
+        {
+            mVectorFieldRenderModeRadioBox->SetSelection(6);
+            break;
+        }
     }
 
     mGenerateDebrisCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateDebris));
     mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
 
     mNumMechanicalIterationsAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
+    mWaterDiffusionNumberOfIterationsSlider->SetValue(settings.GetValue<size_t>(GameSettings::WaterDiffusionNumberOfIterations));
     mSimulationParallelismSlider->SetValue(settings.GetValue<size_t>(GameSettings::SimulationParallelism));
 
 #if PARALLELISM_EXPERIMENTS

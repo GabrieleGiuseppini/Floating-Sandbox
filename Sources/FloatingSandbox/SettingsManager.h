@@ -38,9 +38,16 @@ enum class GameSettings : size_t
     WaterFrictionDragAdjustment,
     WaterPressureDragAdjustment,
     WaterImpactForceAdjustment,
+
+    // Pressure
     WaterIntakeAdjustment,
+    AirIntakeAdjustment,
     WaterDiffusionSpeedAdjustment,
-    WaterCrazyness,
+    AirDiffusionSpeedAdjustment,
+    AirPressureFeedbackOnWater,
+    WaterDiffusionNumberOfIterations,
+
+    // ?
     DoDisplaceWater,
     WaterDisplacementWaveHeightAdjustment,
     WaterFoamSensitivityAdjustment,
@@ -126,9 +133,10 @@ enum class GameSettings : size_t
     BombBlastForceAdjustment,
     BombBlastHeat,
     AntiMatterBombImplosionStrength,
-    FloodRadius,
-    FloodQuantity,
-    InjectPressureQuantity,
+    FloodToolRadius,
+    FloodToolFlow,
+    InjectAirToolRadius,
+    InjectAirToolFlow,
     BlastToolRadius,
     BlastToolForceAdjustment,
     ScrubRustToolRadius,
@@ -205,8 +213,9 @@ enum class GameSettings : size_t
     PlayStressSounds,
     PlayWindSound,
     PlayAirBubbleSurfaceSound,
+    PlayInteriorWaterSounds,
 
-    _Last = PlayAirBubbleSurfaceSound
+    _Last = PlayInteriorWaterSounds
 };
 
 class SettingsManager final : public BaseSettingsManager<GameSettings>

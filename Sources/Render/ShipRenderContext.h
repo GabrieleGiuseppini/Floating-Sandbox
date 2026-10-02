@@ -1183,12 +1183,11 @@ public:
     // Vectors
     //
 
-    void UploadVectorsStart(
-        size_t maxCount,
-        vec4f const & color);
+    void UploadVectorsStart(size_t maxCount);
 
     void UploadVector(
         vec2f const & position,
+        vec3f const & color,
         float planeId,
         vec2f const & vector,
         float lengthAdjustment)
@@ -1210,18 +1209,18 @@ public:
 
         // Stem
         vec2f stemEndpoint = position + vector * effectiveVectorLength;
-        mVectorArrowVertexBuffer.emplace_back(position, planeId);
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId);
+        mVectorArrowVertexBuffer.emplace_back(position, planeId, color);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId, color);
 
         // Left
         vec2f leftDir = vec2f(-vector.dot(XMatrixLeft), -vector.dot(YMatrixLeft)).normalise();
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId);
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + leftDir * 0.3f, planeId);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId, color);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + leftDir * 0.3f, planeId, color);
 
         // Right
         vec2f rightDir = vec2f(-vector.dot(XMatrixRight), -vector.dot(YMatrixRight)).normalise();
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId);
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + rightDir * 0.3f, planeId);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId, color);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + rightDir * 0.3f, planeId, color);
     }
 
     void UploadVectorsEnd();
@@ -1798,6 +1797,23 @@ private:
         {}
     };
 
+    struct VectorArrowVertex
+    {
+        vec2f vertexPosition;
+        float planeId;
+        vec3f color;
+
+        VectorArrowVertex(
+            vec2f _vertexPosition,
+            float _planeId,
+            vec3f _color)
+            : vertexPosition(_vertexPosition)
+            , planeId(_planeId)
+            , color(_color)
+        {
+        }
+    };
+
     struct CenterVertex
     {
         vec2f vertexPosition;
@@ -1913,11 +1929,9 @@ private:
     GameOpenGLVBO mHighlightVBO;
     size_t mHighlightVBOAllocatedVertexSize;
 
-    std::vector<vec3f> mVectorArrowVertexBuffer;
+    std::vector<VectorArrowVertex> mVectorArrowVertexBuffer;
     GameOpenGLVBO mVectorArrowVBO;
     size_t mVectorArrowVBOAllocatedVertexSize;
-    vec4f mVectorArrowColor;
-    bool mIsVectorArrowColorDirty;
 
     std::vector<CenterVertex> mCenterVertexBuffer;
     bool mIsCenterVertexBufferDirty;

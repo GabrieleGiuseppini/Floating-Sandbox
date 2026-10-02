@@ -31,7 +31,9 @@ float constexpr SawedVolume = 80.0f;
 std::chrono::milliseconds constexpr SawedInertiaDuration = 200ms;
 float constexpr LaserCutVolume = 100.0f;
 std::chrono::milliseconds constexpr LaserCutInertiaDuration = 200ms;
-float constexpr WaveSplashTriggerSize = 0.5f;
+float constexpr WaterRushAboveVolume = 70.0f;
+float constexpr WaterRushBelowVolume = 100.0f;
+float constexpr WaterSplashVolume = 85.0f;
 float constexpr LaserRayVolume = 50.0f;
 float constexpr WindMaxVolume = 70.0f;
 
@@ -47,12 +49,15 @@ SoundController::SoundController(
     , mPlayStressSounds(true)
     , mPlayWindSound(true)
     , mPlayAirBubbleSurfaceSound(true)
+    , mPlayInteriorWaterSounds(true)
     , mLastWindSpeedAbsoluteMagnitude(0.0f)
     , mWindVolumeRunningAverage()
-    , mLastWaterSplashed(0.0f)
-    , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
     , mLastWaterDisplacedMagnitude(0.0f)
     , mLastWaterDisplacedMagnitudeDerivative(0.0f)
+    , mWaterRushAboveRunningAverage()
+    , mWaterRushBelowRunningAverage()
+    , mWaterSplashedVolumeRunningAverage()
+    , mWaterSplashedLastVolumeValue(0.0f)
     // One-shot sounds
     , mMSUOneShotMultipleChoiceSounds()
     , mMOneShotMultipleChoiceSounds()
@@ -86,7 +91,8 @@ SoundController::SoundController(
     , mBlastToolSlow2Sound()
     , mBlastToolFastSound()
     , mWindMakerWindSound()
-    , mWaterRushSound()
+    , mWaterRushAboveSound()
+    , mWaterRushBelowSound()
     , mWaterSplashSound()
     , mAirBubblesSurfacingSound(0.23f, 0.12f)
     , mWindSound()
@@ -351,11 +357,19 @@ SoundController::SoundController(
         {
             mBlastToolFastSound.Initialize(std::move(soundFile));
         }
-        else if (soundType == SoundType::WaterRush)
+        else if (soundType == SoundType::WaterRushAbove)
         {
-            mWaterRushSound.Initialize(
+            mWaterRushAboveSound.Initialize(
                 std::move(soundFile),
-                100.0f,
+                WaterRushAboveVolume,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
+        }
+        else if (soundType == SoundType::WaterRushBelow)
+        {
+            mWaterRushBelowSound.Initialize(
+                std::move(soundFile),
+                WaterRushBelowVolume,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
@@ -363,7 +377,7 @@ SoundController::SoundController(
         {
             mWaterSplashSound.Initialize(
                 std::move(soundFile),
-                100.0f,
+                WaterSplashVolume,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
@@ -550,8 +564,7 @@ SoundController::SoundController(
             mDslUOneShotMultipleChoiceSounds[std::make_tuple(soundType, durationType, isUnderwater)]
                 .Choices.emplace_back(std::move(soundFile));
         }
-        else if (soundType == SoundType::Wave
-                || soundType == SoundType::WindGust
+        else if (soundType == SoundType::WindGust
                 || soundType == SoundType::WindGustShort
                 || soundType == SoundType::Thunder
                 || soundType == SoundType::Lightning
@@ -1075,7 +1088,8 @@ void SoundController::SetPaused(bool isPaused)
 
     // All these sounds are started by a simulation update step, so it's fine
     // to not remember a "paused" state for sounds that may not have started yet
-    mWaterRushSound.SetPaused(isPaused);
+    mWaterRushAboveSound.SetPaused(isPaused);
+    mWaterRushBelowSound.SetPaused(isPaused);
     mWaterSplashSound.SetPaused(isPaused);
     mAirBubblesSurfacingSound.SetPaused(isPaused);
     mWindSound.SetPaused(isPaused);
@@ -1109,7 +1123,8 @@ void SoundController::SetMasterEffectsVolume(float volume)
     mSawedWoodSound.SetMasterVolume(mMasterEffectsVolume);
     mLaserCutSound.SetMasterVolume(mMasterEffectsVolume);
     mWindMakerWindSound.SetMasterVolume(mMasterEffectsVolume);
-    mWaterRushSound.SetMasterVolume(mMasterEffectsVolume);
+    mWaterRushAboveSound.SetMasterVolume(mMasterEffectsVolume);
+    mWaterRushBelowSound.SetMasterVolume(mMasterEffectsVolume);
     mWaterSplashSound.SetMasterVolume(mMasterEffectsVolume);
     mAirBubblesSurfacingSound.SetMasterVolume(mMasterEffectsVolume);
     mWindSound.SetMasterVolume(mMasterEffectsVolume);
@@ -1141,7 +1156,8 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
     mSawedWoodSound.SetMuted(mMasterEffectsMuted);
     mLaserCutSound.SetMuted(mMasterEffectsMuted);
     mWindMakerWindSound.SetMuted(mMasterEffectsMuted);
-    mWaterRushSound.SetMuted(mMasterEffectsMuted);
+    mWaterRushAboveSound.SetMuted(mMasterEffectsMuted);
+    mWaterRushBelowSound.SetMuted(mMasterEffectsMuted);
     mWaterSplashSound.SetMuted(mMasterEffectsMuted);
     mAirBubblesSurfacingSound.SetMuted(mMasterEffectsMuted);
     mWindSound.SetMuted(mMasterEffectsMuted);
@@ -1302,6 +1318,18 @@ void SoundController::SetPlayAirBubbleSurfaceSound(bool playAirBubbleSurfaceSoun
     else
     {
         mAirBubblesSurfacingSound.SetMuted(false);
+    }
+}
+
+void SoundController::SetPlayInteriorWaterSounds(bool playInteriorWaterSounds)
+{
+    mPlayInteriorWaterSounds = playInteriorWaterSounds;
+
+    if (!mPlayInteriorWaterSounds)
+    {
+        mWaterRushAboveSound.Stop();
+        mWaterRushBelowSound.Stop();
+        mWaterSplashSound.Stop();
     }
 }
 
@@ -1749,7 +1777,8 @@ void SoundController::Reset()
     mLaserRayAmplifiedSound.Reset();
     mWindMakerWindSound.Reset();
 
-    mWaterRushSound.Reset();
+    mWaterRushAboveSound.Reset();
+    mWaterRushBelowSound.Reset();
     mWaterSplashSound.Reset();
     mAirBubblesSurfacingSound.Reset();
     mWindSound.Reset();
@@ -1767,10 +1796,12 @@ void SoundController::Reset()
 
     mLastWindSpeedAbsoluteMagnitude = 0.0f;
     mWindVolumeRunningAverage.Reset();
-    mLastWaterSplashed = 0.0f;
-    mCurrentWaterSplashedTrigger = WaveSplashTriggerSize;
     mLastWaterDisplacedMagnitude = 0.0f;
     mLastWaterDisplacedMagnitudeDerivative = 0.0f;
+    mWaterRushAboveRunningAverage.Reset();
+    mWaterRushBelowRunningAverage.Reset();
+    mWaterSplashedVolumeRunningAverage.Reset();
+    mWaterSplashedLastVolumeValue = 0.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -2038,59 +2069,47 @@ void SoundController::OnLampImploded(
         true);
 }
 
-void SoundController::OnWaterTaken(float waterTaken)
+void SoundController::OnPressureIntake(
+    float waterTakenAbove,
+    float waterTakenBelow,
+    float /*airTaken*/)
 {
     // 40 * (-1 / 2.4^(0.5 * x) + 1)
-    float rushVolume = 40.f * (-1.f / std::pow(2.4f, std::min(90.0f, 0.5f * std::abs(waterTaken))) + 1.f);
+    float rushVolumeAbove = 40.f * (-1.f / std::pow(2.4f, std::min(90.0f, 0.5f * std::abs(waterTakenAbove))) + 1.f);
+    float rushVolumeBelow = 40.f * (-1.f / std::pow(2.4f, std::min(90.0f, 0.5f * std::abs(waterTakenBelow))) + 1.f);
 
-    // Starts automatically if volume greater than zero
-    mWaterRushSound.SetVolume(rushVolume);
+    if (mPlayInteriorWaterSounds)
+    {
+        // Starts automatically if volume greater than zero
+        mWaterRushAboveSound.SetVolume(mWaterRushAboveRunningAverage.Update(rushVolumeAbove));
+        mWaterRushBelowSound.SetVolume(mWaterRushBelowRunningAverage.Update(rushVolumeBelow));
+    }
 }
 
 void SoundController::OnWaterSplashed(float waterSplashed)
 {
     //
-    // Trigger waves
-    //
-
-    // We only want to trigger a wave when the quantity of water splashed is growing...
-    if (waterSplashed > mLastWaterSplashed)
-    {
-        //...but only by discrete leaps
-        if (waterSplashed > mCurrentWaterSplashedTrigger)
-        {
-            // 9 * (1 - 1.8^(-0.08 * x))
-            float const waveVolume = 9.0f * (1.0f - std::pow(1.8f, -0.08f * std::min(1800.0f, std::abs(waterSplashed))));
-
-            PlayOneShotMultipleChoiceSound(
-                SoundType::Wave,
-                SoundGroupType::Effects,
-                waveVolume,
-                true);
-
-            // Raise next trigger
-            mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
-        }
-    }
-    else
-    {
-        // Lower trigger
-        mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
-    }
-
-    mLastWaterSplashed = waterSplashed;
-
-    //
     // Adjust continuous splash sound
     //
 
-    // 12 * (1 - 1.3^(-0.01*x))
-    float splashVolume = 12.f * (1.0f - std::pow(1.3f, -0.01f * std::abs(waterSplashed)));
-    if (splashVolume < 1.0f)
-        splashVolume = 0.0f;
+    // Remove DC
+    float const waterSplashedWithoutDc = std::max(waterSplashed - mWaterSplashedVolumeRunningAverage.Update(waterSplashed), 0.0f);
 
-    // Starts automatically if volume greater than zero
-    mWaterSplashSound.SetVolume(splashVolume);
+    // Map to volume
+    float splashVolume = WaterSplashVolume * LinearStep(0.0f, 3.0f, waterSplashedWithoutDc);
+
+    // Smooth curve: rise quickly and decrease slowly
+    float const rate = (splashVolume >= mWaterSplashedLastVolumeValue)
+        ? 0.15f
+        : 0.015f;
+    mWaterSplashedLastVolumeValue += rate * (splashVolume - mWaterSplashedLastVolumeValue);
+    splashVolume = mWaterSplashedLastVolumeValue;
+
+    if (mPlayInteriorWaterSounds)
+    {
+        // Starts automatically if volume greater than zero
+        mWaterSplashSound.SetVolume(splashVolume);
+    }
 }
 
 void SoundController::OnWaterDisplaced(float waterDisplacedMagnitude)
@@ -2142,11 +2161,11 @@ void SoundController::OnWaterDisplaced(float waterDisplacedMagnitude)
 
 void SoundController::OnAirBubbleSurfaced(unsigned int size)
 {
-    // 2.2 * x - 0.04 * x ^ 2
+    // 1.2 * x - 0.023 * x ^ 2
     float const sf = static_cast<float>(std::min(size, 25u));
-    float const volume = 2.2f * sf - 0.04f * sf * sf;
+    float const volume = 1.2f * sf - 0.023f * sf * sf;
 
-    mAirBubblesSurfacingSound.Pulse(volume);
+    mAirBubblesSurfacingSound.Pulse(volume * 0.8f);
 }
 
 void SoundController::OnWaterReaction(

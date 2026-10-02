@@ -92,14 +92,25 @@ struct IGameControllerSettingsOptions
     virtual float GetMinWaterImpactForceAdjustment() const = 0;
     virtual float GetMaxWaterImpactForceAdjustment() const = 0;
 
+    // Pressure
+
     virtual float GetMinWaterIntakeAdjustment() const = 0;
     virtual float GetMaxWaterIntakeAdjustment() const = 0;
+
+    virtual float GetMinAirIntakeAdjustment() const = 0;
+    virtual float GetMaxAirIntakeAdjustment() const = 0;
 
     virtual float GetMinWaterDiffusionSpeedAdjustment() const = 0;
     virtual float GetMaxWaterDiffusionSpeedAdjustment() const = 0;
 
-    virtual float GetMinWaterCrazyness() const = 0;
-    virtual float GetMaxWaterCrazyness() const = 0;
+    virtual float GetMinAirDiffusionSpeedAdjustment() const = 0;
+    virtual float GetMaxAirDiffusionSpeedAdjustment() const = 0;
+
+    virtual float GetMinAirPressureFeedbackOnWater() const = 0;
+    virtual float GetMaxAirPressureFeedbackOnWater() const = 0;
+
+    virtual size_t GetMinWaterDiffusionNumberOfIterations() const = 0;
+    virtual size_t GetMaxWaterDiffusionNumberOfIterations() const = 0;
 
     // Ocean Floor
 
@@ -321,14 +332,17 @@ struct IGameControllerSettingsOptions
     virtual float GetMinAntiMatterBombImplosionStrength() const = 0;
     virtual float GetMaxAntiMatterBombImplosionStrength() const = 0;
 
-    virtual float GetMinFloodRadius() const = 0;
-    virtual float GetMaxFloodRadius() const = 0;
+    virtual float GetMinFloodToolRadius() const = 0;
+    virtual float GetMaxFloodToolRadius() const = 0;
 
-    virtual float GetMinFloodQuantity() const = 0;
-    virtual float GetMaxFloodQuantity() const = 0;
+    virtual float GetMinFloodToolFlow() const = 0;
+    virtual float GetMaxFloodToolFlow() const = 0;
 
-    virtual float GetMinInjectPressureQuantity() const = 0;
-    virtual float GetMaxInjectPressureQuantity() const = 0;
+    virtual float GetMinInjectAirToolRadius() const = 0;
+    virtual float GetMaxInjectAirToolRadius() const = 0;
+
+    virtual float GetMinInjectAirToolFlow() const = 0;
+    virtual float GetMaxInjectAirToolFlow() const = 0;
 
     virtual float GetMinBlastToolRadius() const = 0;
     virtual float GetMaxBlastToolRadius() const = 0;

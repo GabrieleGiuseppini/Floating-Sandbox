@@ -7,6 +7,8 @@
 
 #include <Simulation/OceanFloorHeightMap.h>
 
+#include <Core/Version.h>
+
 #include <cctype>
 #include <sstream>
 
@@ -28,6 +30,15 @@ std::string MangleSettingName(std::string && settingName);
         [&gameControllerSettings](auto const & v) { gameControllerSettings.Set##name(v); }, \
         [&gameControllerSettings](auto const & v) { gameControllerSettings.Set##name ## Immediate(v); });
 
+#define ADD_GC_SETTING_WITH_POST_DESERIALIZATION_HOOK(type, name, functor) \
+    factory.AddSetting<type>(                           \
+        GameSettings::name,                             \
+        MangleSettingName(#name),                       \
+        [&gameControllerSettings]() -> type { return gameControllerSettings.Get##name(); }, \
+        [&gameControllerSettings](auto const & v) { gameControllerSettings.Set##name(v); }, \
+        [&gameControllerSettings](auto const & v) { gameControllerSettings.Set##name(v); }, \
+        std::move(functor));
+
 #define ADD_SC_SETTING(type, name)                      \
     factory.AddSetting<type>(                           \
         GameSettings::name,                             \
@@ -35,6 +46,17 @@ std::string MangleSettingName(std::string && settingName);
         [&soundController]() -> type { return soundController.Get##name(); },	\
         [&soundController](auto const & v) { soundController.Set##name(v); },	\
         [&soundController](auto const & v) { soundController.Set##name(v); });
+
+// Air Bubbles Density: semantics has changed in 1.22, thus any old value we override with default (1.0)
+float AirBubblesDensityPostDeserializationHook(float deserializedValue, SettingsDeserializationContext const & context)
+{
+    if (context.GetSettingsVersion() < Version(1, 22, 0, 0))
+    {
+        return 1.0f;
+    }
+
+    return deserializedValue;
+}
 
 BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::MakeSettingsFactory(
     IGameControllerSettings & gameControllerSettings,
@@ -68,9 +90,16 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, WaterFrictionDragAdjustment);
     ADD_GC_SETTING(float, WaterPressureDragAdjustment);
     ADD_GC_SETTING(float, WaterImpactForceAdjustment);
+
+    // Pressure
     ADD_GC_SETTING(float, WaterIntakeAdjustment);
+    ADD_GC_SETTING(float, AirIntakeAdjustment);
     ADD_GC_SETTING(float, WaterDiffusionSpeedAdjustment);
-    ADD_GC_SETTING(float, WaterCrazyness);
+    ADD_GC_SETTING(float, AirDiffusionSpeedAdjustment);
+    ADD_GC_SETTING(float, AirPressureFeedbackOnWater);
+    ADD_GC_SETTING(size_t, WaterDiffusionNumberOfIterations);
+
+    // ?
     ADD_GC_SETTING(bool, DoDisplaceWater);
     ADD_GC_SETTING(float, WaterDisplacementWaveHeightAdjustment);
     ADD_GC_SETTING(float, WaterFoamSensitivityAdjustment);
@@ -156,9 +185,10 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, BombBlastForceAdjustment);
     ADD_GC_SETTING(float, BombBlastHeat);
     ADD_GC_SETTING(float, AntiMatterBombImplosionStrength);
-    ADD_GC_SETTING(float, FloodRadius);
-    ADD_GC_SETTING(float, FloodQuantity);
-    ADD_GC_SETTING(float, InjectPressureQuantity);
+    ADD_GC_SETTING(float, FloodToolRadius);
+    ADD_GC_SETTING(float, FloodToolFlow);
+    ADD_GC_SETTING(float, InjectAirToolRadius);
+    ADD_GC_SETTING(float, InjectAirToolFlow);
     ADD_GC_SETTING(float, BlastToolRadius);
     ADD_GC_SETTING(float, BlastToolForceAdjustment);
     ADD_GC_SETTING(float, ScrubRustToolRadius);
@@ -172,7 +202,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, CombustionSmokeEmissionDensityAdjustment);
     ADD_GC_SETTING(float, CombustionSmokeParticleLifetimeAdjustment);
     ADD_GC_SETTING(bool, DoGenerateSparklesForCuts);
-    ADD_GC_SETTING(float, AirBubblesDensity);
+    ADD_GC_SETTING_WITH_POST_DESERIALIZATION_HOOK(float, AirBubblesDensity, AirBubblesDensityPostDeserializationHook);
     ADD_GC_SETTING(bool, DoGenerateEngineWakeParticles);
     ADD_GC_SETTING(float, SiltDustCloudSensitivity);
     ADD_GC_SETTING(float, SiltDustCloudUnderwaterLifetime);
@@ -235,6 +265,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_SC_SETTING(bool, PlayStressSounds);
     ADD_SC_SETTING(bool, PlayWindSound);
     ADD_SC_SETTING(bool, PlayAirBubbleSurfaceSound);
+    ADD_SC_SETTING(bool, PlayInteriorWaterSounds);
 
     return factory;
 }

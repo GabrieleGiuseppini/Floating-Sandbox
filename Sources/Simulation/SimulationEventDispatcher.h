@@ -178,11 +178,14 @@ public:
         }
     }
 
-    void OnWaterTaken(float waterTaken) override
+    void OnPressureIntake(
+        float waterTakenAbove,
+        float waterTakenBelow,
+        float airTaken) override
     {
         for (auto sink : mGenericShipSinks)
         {
-            sink->OnWaterTaken(waterTaken);
+            sink->OnPressureIntake(waterTakenAbove, waterTakenBelow, airTaken);
         }
     }
 
@@ -228,7 +231,8 @@ public:
         vec2f const & velocity,
         float temperature,
         float depth,
-        float pressure) override
+        float externalPressure,
+        float internalPressure) override
     {
         for (auto sink : mGenericShipSinks)
         {
@@ -236,7 +240,8 @@ public:
                 velocity,
                 temperature,
                 depth,
-                pressure);
+                externalPressure,
+                internalPressure);
         }
     }
 
@@ -442,6 +447,12 @@ public:
                 complexity);
         }
     }
+
+    void OnPressureReadings(std::vector<PressureReading> const & pressureReadings) override
+    {
+        mPressureReadings = pressureReadings;
+    }
+
 
     //
     // Atmosphere
@@ -970,6 +981,16 @@ public:
 
         mLastNpcCountsUpdated.reset();
         mLastHumanNpcCountsUpdated.reset();
+
+        if (!mPressureReadings.empty())
+        {
+            for (auto * sink : mSimulationStatisticsSinks)
+            {
+                sink->OnPressureReadings(mPressureReadings);
+            }
+
+            mPressureReadings.clear();
+        }
     }
 
     void RegisterStructuralShipEventHandler(IStructuralShipEventHandler * sink)
@@ -1036,6 +1057,7 @@ private:
     unordered_tuple_map<std::tuple<bool>, unsigned int> mWatertightDoorClosedEvents;
     std::optional<size_t> mLastNpcCountsUpdated;
     std::optional<std::tuple<size_t, size_t>> mLastHumanNpcCountsUpdated;
+    std::vector<PressureReading> mPressureReadings;
 
     // The registered sinks
 

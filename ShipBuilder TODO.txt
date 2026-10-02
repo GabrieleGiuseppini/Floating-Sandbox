@@ -1,4 +1,4 @@
-- Material palette takes forever to open (*), + crashes	
++ Material palette takes forever to open (*), + crashes	
 	! problem is large number of GDI objects (running out of mem), plus Freeze/Thaw: wx visits the entire graph
 	! Fix gist:
 		! User-drawn panel
@@ -140,6 +140,225 @@
 			- OnDelete 
 			- OnEdit
 			- OnAddNew
+=======
+
+- Custom materials:
+	! Gist:
+		! SB: materials created and their pointers just used in structural layer
+		! Deser: returns custom materials just for lifetime; structural layer populated with pointers to those
+		! MaterialDatabase is basically "Standard" materials database
+		! Placement: sub_ordinal ignored and made up by palette logic
+			! After all custom materials' sub_ordinals might become stale when we change ordinals in default materials
+
+		! SB's material palette:
+			- At any given moment, the palette shows default + user's custom materials + ship's custom materials
+				- Guaranteed all to be distinct among themselves
+				- These three are also the life pod of all materials
+				- At each change of last two, palette is re-created - TODO: really? Can do something in-place?
+			- Only contains pointers, without owning them
+				- Come from MaterialDatabase (new SB class, aggregate of three - default, user, ship) (*)
+			- Layout:
+				- First off: scour user and ship custom materials and organize in map: <base ptr> -> [<custom 1 ptr>, ... in comparison order for determinism)
+				- After completing a palette "group", visit map above, user first and then ship
+			- Can add custom, remove custom, or edit custom materials
+				- Custom ones and control to add appear for each base material, last in the series (after LastInGroup)
+					- Their palette coordinates - with the exclusion of ordinal - dictate where
+					- Ordinal is basically made up with logic here, laying out both custom sets
+				- Edit, Remove are small buttons on custom ones (which also helps distinguish them from "standard" materials)
+				- A custom material is cloned from the base material, and contains StructuralMaterial::VariantOverridesType overrides
+				- Removal: if material is in use, pops up dialog
+				- If it's from ship only (i.e. not from custom set), there's button to import into user's (CustomMaterialPalette)
+					- No need to remove it from ship's afterwards, we can live with dupes among the two custom sets
+			- Ranges on customizable physical properties are very narrow and don't allow crazy values
+			- User custom materials:
+				- Always loaded/saved at startup/shutdown
+				- Backup mechanism to avoid loss, with clear involvement of user if has to fallback
+			- Modifications happen on user or ship custom materials
+				- Changes to materials (user's or ship's own) done by user in ShipBuilder must be undoable via Undo
+					- Undo action: whole structural layer
+						- Edit could have resulted in a merge, hence a change in material pointers
+				- Changing a material currently in the ship (from user's or ship's own) should mark the ship as dirty
+					- Marks corresponding layer as dirty
+			- Can also merge another user custom material set into it, or import from ship
+				- Checks for dupes
+				- Then shows user list with checkboxes to choose which ones, and which shows which are dupe's and won't be imported
+			
+		! SB can simply store StructuralMaterial* from user and/or ship custom materials when it populates StructuralLayer 
+
+		! Undo
+			! For palette changes and for palette + ship changes, 
+
+	====
+
+	- Worflows:
+		- Adding new custom material
+			- User clicks on + button
+			- When committed:
+				- Check if already exists
+					- If so: message and nop
+					- Else:
+						- Add to user's
+						- Re-draw palette
+		- Editing existing user or ship custom material
+			- User clicks on edit button
+			- When committed:
+				- Check if already exists
+					- If so: 
+						- Message
+						- "merge"
+							- Via MaterialDatabase
+						- Re-draw palette
+					- Else:
+						- Edit properties in/via MaterialDatabase
+						- Re-draw palette
+				- If old was in-use by ship:
+					- Setup undo - store whole structural layer
+					- Mark ship as dirty
+		- Deleting User custom materials
+			- User checks boxes, and then "Delete Selected"
+			- TODOHERE: check for in-use by ship; answer is none-in-use_or_at-least-one-in-use
+			- TODOHERE: Undo & Dirty
+		- Loading ship
+			- With custom materials:
+				- Replace ship's custom materials in palette with remainders after mergning ship's custom materials with default + user's custom
+				- Re-draw palette
+			- Without custom materials:
+				- Nuke ship's custom materials in palette
+				- Re-draw palette
+		- Importing custom materials from ship into user's
+			- User checks boxes, and then "Import Selected"
+			- TODOHERE
+		- Importing custom materials from a json or from a ship
+			- User chooses from list
+			- When committed:
+				- TODOHERE
+
+	- Arch:
+		- MaterialDatabase<TLayer>: aggregation of three sets (Default, User, Ship)
+			- Only place where all material uq_ptr's live
+				- Model doesn't have Ship's
+			- Takes care of ser/deser of user custom materials
+				- parent color_key and VariantOverridesType
+					- Materialization from json takes DefaultMaterialDatabase and produces variants
+			- Takes care of distincting
+			- Unit tests for ops
+		- MVC:
+			- MaterialPalettesController: single controller for all layer types
+				- Owned by MainFrame
+				- Owns 3 MaterialDatabase<TLayer> and 3 MaterialPalette<TLayer>
+					- Supersedes and replaces CompositeMaterialPalette
+			- Model is the 3 MaterialDatabase<TLayer>
+			- View is the 3 MaterialPalette<TLayer>
+				- The API MaterialPalette<TLayer> exposes to the outside for managing material changes (e.g. removal, addition, replace, etc.)
+				  is ad-hoc; for example, when loading a ship, the API takes bew ship's; on the other hand, if one material changes, the API
+				  takes the pointer of that one
+			- MaterialPalettesController implements 3 IMaterialPaletteController<TLayer> for callbacks from view (business ops)
+		
+	- Impl:
+		=== Simulation ===
+
+		- Simulation::MaterialDatabase becomes "DefaultMaterialDatabase"
+
+		- Structural, Electrical, Rope Material:
+			- opt<struct StructuralMaterial::VariantOverridesType> VariantOverrides
+				- Contains:
+					- Structural:
+						- RenderColor
+						- Name
+						- Strength, Mass
+						- TODOHERE
+					- Electrical:
+						- Name
+						- TODOHERE
+					- Rope:
+						- RenderColor
+						- Name
+						- Strength, Mass
+						- TODOHERE
+					- json Ser/Deser
+					- Comparison, Equality, and hash
+					- Equality with Material - iff needed
+				- Only populated for variants; values of material are already from variants though, so this is only for Serialization (see below)
+				- VariantOverrides.has_value() <=> it's a custom material
+			- static uq_ptr<StructuralMaterial> MaterialDB::MakeStructuralMaterialVariant(color_key const & parentColorKey, VariantOverridesType const &)
+				- Clones all, then overrides, and then stores VariantOverridesType
+					- ColorKey is the same from the base (parent)
+						- .shp2 Ser/Deser will store additional (local) Index deambiguitor, see below
+						- TODOHERE: do these dupe ColorKey's pose a problem?
+							! ShipFactory doesn't use ColorKey's at all (anymore)
+				- Also copies palette coordinates, but overrides sub_ordinal as zero as it's not used
+			- Unit tests:
+				- Comparison, Equality
+				- MakeStructuralMaterialVariant
+
+
+		- Ship De/Serialize:
+			- First off, verify current behavior with unrecognized tags
+				- Worst case we bump file format version (hopefully it's already done!)
+			- New structural, electrical, rope layer set of tags:
+				- CustomMaterialPalette: custom materials used in Buffer
+					- (Implicitly) pruned @ Serialize to only contain used ones
+					- Stores (parent) color_key and content of VariantOverridesType
+					- Assigned local indices for new Buffer to address (see below)
+				- Buffer: color_key + local index in MaterialPalette
+					- TODO: index=-1 for standard materials? Do we waste all this space?
+			- Deserialize() returns CustomMaterialsPod (3x vector<uq_ptr<TMaterial>> for each TMaterial) in ShipDefinition, just for lifetime extension
+				- Might group all layers' vectors in a single CustomMaterialsPod, for convenience
+				- Will be stored by Ship, given by ShipFactory
+			- If no custom materials are present, ships should be loadable by older FS versions; only if custom materials are present, the load should fail with "newer version" error
+				- So file format version should be conditional on presence of custom materials
+			- Legacy deserializer: empty pod
+
+			- Unit tests:
+				- Keep tests for loading old version
+				- Adjust/Make tests for new version
+
+		- ShipFactory:
+			- Passes (via std::move) CustomMaterialsPod for custom materials to Ship ("shipSpecificCustomMaterials", and const private member), just for extending their lifetime
+
+		=== ShipBuilder ===
+
+		- MaterialDatabase<TLayer>
+			- Members:
+				- MaterialColorMap<TLayer> const & from DefaultMaterialDatabase
+				- vec<uq> from user
+				- vec<uq> from ship
+			- cctor:
+				- Palette<TLayer> const & from DefaultMaterialDatabase
+				- vec<uq> from user
+				- vec<uq> from ship - if needed @ cctor
+
+		- MaterialPalette<TLayer>
+			! Ons only its own tiles
+			- cctor:
+				- Palette<TLayer> const & from DefaultMaterialDatabase
+				- vec<uq> from user
+				- vec<uw> from ship - if needed @ cctor
+				- IMaterialPaletteController<TLayer> &
+			- For each "tile", needs to know whether it's default, user's custom, or ship's custom
+			- Exposes API for controller to operate on it, e.g. by replacing subsets (e.g. ship) or deleting materials
+
+		- MaterialPalettesController
+			- Replaces CompositeMaterialPalette
+			- cctor: 
+				- Controller [for reaching ship model, e.g. for replacing materials]
+				- UndoStack
+				- DefaultMaterialDatabase [to boot 3 MaterialDatabase<T>'s]
+				- Whatever needed for loading user's custom materials (e.g. directory or filename)
+			- OnShipLoaded(CustomMaterialsPod &&)
+				- // Replace ship custom materials on both model & view
+				- MaterialDatabase<TLayer X 3>::TODOShipCustomMaterials(pod member)
+					- TODO: merges
+				- MaterialPalette<TLayer X 3>::TODOShipCustomMaterials(pod member)
+					- Full relayout of ship portion for all rows
+
+
+
+		- Model and maybe ModelController:
+			- ReplaceMaterials(map: TMaterial * -> TMaterial *|null (for removal))
+				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
+
+
 
 
 - Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
@@ -160,81 +379,6 @@
 		- In MainFrame, when we restart after reloading the ship, we change all Undo actions' OriginalDirtyState to reflect cumulative effect of applying undo
 		  actions *backward* (last, last-1, ..., first)
 
-
-- Custom materials:
-	! Gist:
-		! SB: materials created and their pointers just used in structural layer
-		! Deser: returns custom materials just for lifetime; structural layer populated with pointers to those
-		! MaterialDatabase is basically "Standard" materials database
-		! Placement: sub_ordinal ignored and made up by palette logic
-			! After all custom materials' sub_ordinals might become stale when we change ordinals in default materials
-
-	- Before all:
-		- See Longhorn's "The electrical panel fails to render a bit above 200 elements and the ship in question will no longer save, freezing in the "Checking ship..." dialogue." (* above)
-
-	- Now, TODOHERE: update plan with following last-minute findings:
-		- Rename: "CustomMaterialPalette" to something more..."user"
-		- Should changes to materials (CustomMaterialPalette or ship's own) done by user in ShipBuilder be undoable via Undo?
-		- Changing a material currently in the ship (from CustomMaterialPalette or ship's own) should mark the ship as dirty
-			- Do we need new flag @ Model, or can we get away with just dirtying ship as a whole, if such a thing exists?
-	- Structural material:
-		- opt<struct StructuralMaterial::VariantOverridesType> VariantOverrides
-			- Contains:
-				- RenderColor
-				- Name
-				- Strength, Mass
-				- Possibly BuoyancyVolumeFill
-				- json Ser/Deser
-				- Equality and hash
-			- Only populated for variants; values of material are already from variants though, so this is only for Serialization (see below)
-		- IsLastInGroup: only set for last (or only) of a series of render color options (remember that json is deserialized, we lose the color array)
-			- Not for variants
-			- TODO: really needed? Only real alternative is knowing # of alternatives - OR palette coords
-				- Or we just need a way to identify a whole group coming from one single json material; this is the one that gets variant-ed anyway
-					- ~"Group lead ordinal"
-		- static uq_ptr<StructuralMaterial> MaterialDB::MakeStructuralMaterialVariant(color_key const & parentColorKey, VariantOverridesType const &)
-			- Clones all, then overrides, and then stores VariantOverridesType
-				- ColorKey is the same from the base (parent)
-					- .shp2 Ser/Deser will store additional (local) Index deambiguitor, see below
-					- TODOHERE: do these dupe ColorKey's pose a problem?
-			- Also copies palette coordinates, but overrides sub_ordinal as zero as it's not used
-	- SB's material palette:
-		- At any given moment, the palette shows default + CustomMaterialPalette (i.e. user's) + ship's original custom (but only distinct's among the last two)
-			- At each change of last two, palette is re-created
-		- Can add custom, remove custom, or edit custom materials
-			- Custom ones and control to add appear for each base material, last in the series (after LastInGroup)
-				- Their palette coordinates - with the exclusion of ordinal - dictate where
-				- Ordinal is basically made up with logic here, laying out both custom sets
-			- Edit, Remove are small buttons on custom ones (which also helps distinguish them from "standard" materials)
-			- A custom material is cloned from the base material, and contains StructuralMaterial::VariantOverridesType overrides
-			- Removal: if material is in use, pops up dialog
-			- If it's from ship only (i.e. not from custom set), there's button to import into user's (CustomMaterialPalette)
-				- No need to remove it from ship's afterwards, we can live with dupes among the two custom sets
-		- Ranges on customizable physical properties are very narrow and don't allow crazy values
-		- Modifications happen on CustomMaterialPalette
-			- CustomMaterialPalette contains business logic
-				- And ser/deser: parent color_key and VariantOverridesType
-					- Materialization from json takes materials DB and produces variants
-			- Always loaded/saved at startup/shutdown
-			- Can also merge another custom palette into it, via an ad-hoc ribbon button, or import from ship
-				- Checks for dupes
-				- Then shows user list with checkboxes to choose which ones, and which shows which are dupe's and won't be imported
-			- TODO: backup mechanism to avoid loss, with clear involvement of user if has to fallback
-	- SB can simply store StructuralMaterial* from CustomMaterialPalette when it populates StructuralLayer 
-	- De/Serialize:
-		- New structural layer set of tags:
-			- CustomMaterialPalette: custom materials used in Buffer
-				- (Implicitly) pruned @ Serialize to only contain used ones
-				- Stores (parent) color_key and content of VariantOverridesType
-				- Assigned local indices for new Buffer to address (see below)
-			- Buffer: color_key + local index in MaterialPalette
-				- TODO: index=-1 for standard materials? Do we waste all this space?
-		- Deserialize() returns CustomStructuralMaterials (vector<uq_ptr<StructuralMaterial>>) in ShipDefinition, just for lifetime extension
-		- If no custom materials are present, ships should be loadable by older FS versions; only if custom materials are present, the load should fail with "newer version" error
-			- So file format version should be conditional on presence of custom materials
-	- ShipFactory:
-		- Passes vector<uq_ptr<StructuralMaterial>> for custom materials to Ship ("shipSpecificStructuralMaterials", and const private member), just for extending their lifetime
-		
 
 ================================================================================================================================================================================
 

@@ -440,16 +440,30 @@ class Setting final : public BaseSetting
 {
 public:
 
+    using PostDeserializationFunctor = std::function<TValue(TValue const &, SettingsDeserializationContext const &)>;
+
     explicit Setting(std::string name)
-        : BaseSetting(std::move(name))
-        , mValue()
+        : Setting(
+            std::move(name),
+            PostDeserializationFunctor())
     {}
 
     Setting(
         std::string name,
-        TValue const & value)
+        PostDeserializationFunctor postDeserializationFunctor)
+        : BaseSetting(std::move(name))
+        , mValue()
+        , mPostDeserializationFunctor(std::move(postDeserializationFunctor))
+    {
+    }
+
+    Setting(
+        std::string name,
+        TValue const & value,
+        PostDeserializationFunctor postDeserializationFunctor)
         : BaseSetting(std::move(name))
         , mValue(value)
+        , mPostDeserializationFunctor(std::move(postDeserializationFunctor))
     {}
 
     TValue const & GetValue() const
@@ -486,7 +500,7 @@ public:
 
     virtual std::unique_ptr<BaseSetting> Clone() const override
     {
-        return std::make_unique<Setting<TValue>>(GetName(), mValue);
+        return std::make_unique<Setting<TValue>>(GetName(), mValue, mPostDeserializationFunctor);
     }
 
     virtual void Serialize(SettingsSerializationContext & context) const override
@@ -497,12 +511,21 @@ public:
     virtual void Deserialize(SettingsDeserializationContext const & context) override
     {
         if (SettingSerializer::Deserialize<TValue>(context, GetName(), mValue))
+        {
+            if (mPostDeserializationFunctor)
+            {
+                mValue = mPostDeserializationFunctor(mValue, context);
+            }
+
             this->MarkAsDirty();
+        }
     }
 
 private:
 
     TValue mValue;
+
+    PostDeserializationFunctor const mPostDeserializationFunctor;
 };
 
 /*
@@ -1096,6 +1119,23 @@ protected:
             (void)settingId;
 
             mSettings.emplace_back(new Setting<TValue>(std::move(name)));
+            mEnforcers.emplace_back(new SettingEnforcer<TValue>(std::move(getter), std::move(setter), std::move(setterImmediate)));
+        }
+
+        template<typename TValue>
+        void AddSetting(
+            TEnum settingId,
+            std::string && name,
+            typename SettingEnforcer<TValue>::Getter && getter,
+            typename SettingEnforcer<TValue>::Setter && setter,
+            typename SettingEnforcer<TValue>::Setter && setterImmediate,
+            typename Setting<TValue>::PostDeserializationFunctor && postDeserializationFunctor)
+        {
+            assert(mSettings.size() == static_cast<size_t>(settingId));
+            assert(mEnforcers.size() == static_cast<size_t>(settingId));
+            (void)settingId;
+
+            mSettings.emplace_back(new Setting<TValue>(std::move(name), std::move(postDeserializationFunctor)));
             mEnforcers.emplace_back(new SettingEnforcer<TValue>(std::move(getter), std::move(setter), std::move(setterImmediate)));
         }
 

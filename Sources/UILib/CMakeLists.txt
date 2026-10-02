@@ -24,6 +24,8 @@ set  (UI_LIB_SOURCES
 	LocalizationManager.h
 	LoggingDialog.cpp
 	LoggingDialog.h
+	PressureCrossCutReadingsProbeControl.cpp
+	PressureCrossCutReadingsProbeControl.h
 	ScalarTimeSeriesProbeControl.cpp
 	ScalarTimeSeriesProbeControl.h
 	ShipDescriptionDialog.cpp

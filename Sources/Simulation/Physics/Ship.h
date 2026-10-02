@@ -252,20 +252,21 @@ public:
 
     void RemoveAllPins();
 
-    std::optional<ToolApplicationLocus> InjectBubblesAt(
-        vec2f const & targetPos,
-        float currentSimulationTime,
-        SimulationParameters const & simulationParameters);
-
-    std::optional<ToolApplicationLocus> InjectPressureAt(
-        vec2f const & targetPos,
-        float pressureQuantityMultiplier,
-        SimulationParameters const & simulationParameters);
-
     bool FloodAt(
         vec2f const & targetPos,
         float radius,
-        float flowSign,
+        float flowMultiplier,
+        SimulationParameters const & simulationParameters);
+
+    std::optional<ToolApplicationLocus> InjectAirAt(
+        vec2f const & targetPos,
+        float radius,
+        float flowMultiplier,
+        SimulationParameters const & simulationParameters);
+
+    std::optional<ToolApplicationLocus> InjectBubblesAt(
+        vec2f const & targetPos,
+        float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
     bool ToggleAntiMatterBombAt(
@@ -635,12 +636,16 @@ private:
     void ApplyStaticPressureForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
+        float const * restrict srcWaterBuffer,
+        float const * restrict srcEffectiveAirBuffer,
         SimulationParameters const & simulationParameters);
 
     void ApplyStaticPressureForces(
         Frontiers::Frontier const & frontier,
         float effectiveAirDensity,
         float effectiveWaterDensity,
+        float const * restrict srcWaterBuffer,
+        float const * restrict srcEffectiveAirBuffer,
         SimulationParameters const & simulationParameters);
 
     //
@@ -745,19 +750,19 @@ private:
 
     void TrimForWorldBounds(SimulationParameters const & simulationParameters);
 
-    // Pressure and water
+    // Pressure, air and water
 
-    void UpdatePressureAndWaterInflow(
+    void UpdateAirAndWaterInflow(
         float effectiveAirDensity,
         float effectiveWaterDensity,
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
-        SimulationParameters const & simulationParameters,
-        float & waterTakenInStep);
+        SimulationParameters const & simulationParameters);
 
-    void EqualizeInternalPressure(SimulationParameters const & simulationParameters);
-
-    void UpdateWaterVelocities(
+    void UpdateAirAndWaterPressure(
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
+        float const * restrict srcPointTemperatureBuffer,
         SimulationParameters const & simulationParameters,
         float & waterSplashed);
 
@@ -774,8 +779,8 @@ private:
     // Heat
 
     void PropagateHeat(
-        float currentSimulationTime,
         float dt,
+        float const * restrict srcWaterBuffer,
 		Storm::Parameters const & stormParameters,
         SimulationParameters const & simulationParameters);
 
@@ -1122,7 +1127,7 @@ private:
     bool mIsSinking;
 
     // Water splashes
-    RunningAverage<30> mWaterSplashedRunningAverage;
+    float mLastWaterSplashed;
 
     // Remembers whether we've populated the light buffer at the previous step;
     // used to zero out buffer when luminiscence is disabled
@@ -1131,9 +1136,6 @@ private:
     // Normally at 1.0, set to 0.0 during repair to turn off updates that hinder the
     // repair process
     float mRepairGracePeriodMultiplier;
-
-    // Index of last-queried point - used as an aid to debugging
-    ElementIndex mutable mLastQueriedPointIndex;
 
     // Counter of created bubble ephemeral particles
     std::uint64_t mAirBubblesCreatedCount;
@@ -1293,6 +1295,9 @@ private:
     //
     // Debug
     //
+
+    // Index of last-queried point - used as an aid to debugging
+    ElementIndex mutable mLastQueriedPointIndex;
 
     std::vector<std::tuple<vec2f, vec2f>> mDebugVectors;
 

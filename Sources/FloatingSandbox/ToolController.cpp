@@ -119,14 +119,14 @@ ToolController::ToolController(
             gameAssetManager));
 
     mAllTools.emplace_back(
-        std::make_unique<InjectPressureTool>(
+        std::make_unique<InjectAirTool>(
             *this,
             gameController,
             soundController,
             gameAssetManager));
 
     mAllTools.emplace_back(
-        std::make_unique<FloodHoseTool>(
+        std::make_unique<FloodTool>(
             *this,
             gameController,
             soundController,

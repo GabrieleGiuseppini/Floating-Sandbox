@@ -18,6 +18,7 @@
 #include <Core/FixedSizeVector.h>
 
 #include <cassert>
+#include <cstring>
 #include <functional>
 #include <limits>
 
@@ -52,6 +53,25 @@ public:
             , PointBIndex(pointBIndex)
         {}
     };
+
+#pragma pack(push, 1)
+
+    /*
+     * Work variables for the air and water diffusion algorithm.
+     */
+    struct FluidDiffusionAlgorithmVariables
+    {
+        float FlowWeight;
+        vec2f FlowVelocity;
+
+        FluidDiffusionAlgorithmVariables()
+            : FlowWeight(0.0f)
+            , FlowVelocity(vec2f::zero())
+        {
+        }
+    };
+
+#pragma pack(pop)
 
 private:
 
@@ -125,7 +145,7 @@ public:
         World & parentWorld,
         SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters)
-        : ElementContainer(elementCount)
+        : ElementContainer(elementCount) // Container's size is the (unaligned) number of springs
         , mPerfectSquareCount(perfectSquareCount)
         //////////////////////////////////
         // Buffers
@@ -143,6 +163,7 @@ public:
         // Physical
         , mStrainStateBuffer(mBufferElementCount, mElementCount, StrainState(0.0f, 0.0f, false))
         , mFactoryRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
+        , mFactoryReciprocalRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mStiffnessCoefficientBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mDampingCoefficientBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -155,6 +176,8 @@ public:
         , mWaterPermeabilityBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Heat
         , mMaterialThermalConductivityBuffer(mBufferElementCount, mElementCount, 0.0f)
+        // Work buffers
+        , mFluidDiffusionAlgorithmVariablesBuffer(mBufferElementCount)
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -483,6 +506,11 @@ public:
         return mFactoryRestLengthBuffer[springElementIndex];
     }
 
+    float GetFactoryReciprocalRestLength(ElementIndex springElementIndex) const
+    {
+        return mFactoryReciprocalRestLengthBuffer[springElementIndex];
+    }
+
     float GetRestLength(ElementIndex springElementIndex) const noexcept
     {
         return mRestLengthBuffer[springElementIndex];
@@ -588,6 +616,15 @@ public:
     }
 
     //
+    // Work buffers
+    //
+
+    FluidDiffusionAlgorithmVariables * GetFluidDiffusionAlgorithmVariablesBuffer()
+    {
+        return mFluidDiffusionAlgorithmVariablesBuffer.data();
+    }
+
+    //
     // Temporary buffer
     //
 
@@ -661,6 +698,7 @@ private:
 
     Buffer<StrainState> mStrainStateBuffer;
     Buffer<float> mFactoryRestLengthBuffer;
+    Buffer<float> mFactoryReciprocalRestLengthBuffer;
     Buffer<float> mRestLengthBuffer;
     Buffer<float> mStiffnessCoefficientBuffer;
     Buffer<float> mDampingCoefficientBuffer;
@@ -685,6 +723,12 @@ private:
     //
 
     Buffer<float> mMaterialThermalConductivityBuffer;
+
+    //
+    // Work buffers
+    //
+
+    Buffer<FluidDiffusionAlgorithmVariables> mFluidDiffusionAlgorithmVariablesBuffer;
 
     //////////////////////////////////////////////////////////
     // Container

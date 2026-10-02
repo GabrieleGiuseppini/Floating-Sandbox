@@ -11,6 +11,7 @@
 #include <Core/GameTypes.h>
 
 #include <optional>
+#include <vector>
 
 /*
  * These interfaces define the methods that game event handlers must implement.
@@ -107,7 +108,10 @@ struct IGenericShipEventHandler
         // Default-implemented
     }
 
-    virtual void OnWaterTaken(float /*waterTaken*/)
+    virtual void OnPressureIntake(
+        float /*waterTakenAbove*/,
+        float /*waterTakenBelow*/,
+        float /*airTaken*/)
     {
         // Default-implemented
     }
@@ -145,7 +149,8 @@ struct IGenericShipEventHandler
         vec2f const & /*velocity*/,
         float /*temperature*/,
         float /*depth*/,
-        float /*pressure*/)
+        float /*externalPressure*/, // Pa
+        float /*internalPressure*/) // Pa
     {
         // Default-implemented
     }
@@ -293,6 +298,11 @@ struct ISimulationStatisticsEventHandler
     virtual void OnStaticPressureUpdated(
         float /*netForce*/,
         float /*complexity*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnPressureReadings(std::vector<PressureReading> const & /*pressureReadings*/)
     {
         // Default-implemented
     }

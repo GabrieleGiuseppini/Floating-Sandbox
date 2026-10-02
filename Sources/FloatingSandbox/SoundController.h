@@ -118,6 +118,13 @@ public:
 
     void SetPlayAirBubbleSurfaceSound(bool playAirBubbleSurfaceSound);
 
+    bool GetPlayInteriorWaterSounds() const
+    {
+        return mPlayInteriorWaterSounds;
+    }
+
+    void SetPlayInteriorWaterSounds(bool playInteriorWaterSounds);
+
     void PlayDrawSound(bool isUnderwater);
     void StopDrawSound();
 
@@ -289,7 +296,10 @@ public:
         bool isPinned,
         bool isUnderwater) override;
 
-    void OnWaterTaken(float waterTaken) override;
+    void OnPressureIntake(
+        float waterTakenAbove,
+        float waterTakenBelow,
+        float airTaken) override;
 
     void OnWaterSplashed(float waterSplashed) override;
 
@@ -539,17 +549,23 @@ private:
     bool mPlayStressSounds;
     bool mPlayWindSound;
     bool mPlayAirBubbleSurfaceSound;
+    bool mPlayInteriorWaterSounds;
 
+    // Wind state
     float mLastWindSpeedAbsoluteMagnitude;
     RunningAverage<70> mWindVolumeRunningAverage;
-
-    // Water splash state
-    float mLastWaterSplashed;
-    float mCurrentWaterSplashedTrigger;
 
     // Water displacement state
     float mLastWaterDisplacedMagnitude;
     float mLastWaterDisplacedMagnitudeDerivative;
+
+    // Water rush state
+    RunningAverage<60> mWaterRushAboveRunningAverage;
+    RunningAverage<60> mWaterRushBelowRunningAverage;
+
+    // Water splash state
+    RunningAverage<100> mWaterSplashedVolumeRunningAverage; // To remove DC
+    float mWaterSplashedLastVolumeValue;
 
     //
     // One-Shot sounds
@@ -564,6 +580,8 @@ private:
                 return 45;
             case SoundType::Stress:
                 return 30;
+            case SoundType::Impact:
+                return 20;
             case SoundType::TerrainAdjust:
             case SoundType::ThanosSnap:
             case SoundType::Scrub:
@@ -585,10 +603,9 @@ private:
         switch (soundType)
         {
             case SoundType::WaterDisplacementWave:
-            case SoundType::Wave:
-                return std::chrono::milliseconds(100);
             case SoundType::Break:
             case SoundType::Destroy:
+            case SoundType::Impact:
             case SoundType::LightFlicker:
             case SoundType::RepairSpring:
             case SoundType::RepairTriangle:
@@ -659,7 +676,8 @@ private:
     OneShotSingleChoiceSound mBlastToolFastSound;
     ContinuousSingleChoiceSound mWindMakerWindSound;
 
-    ContinuousSingleChoiceSound mWaterRushSound;
+    ContinuousSingleChoiceSound mWaterRushAboveSound;
+    ContinuousSingleChoiceSound mWaterRushBelowSound;
     ContinuousSingleChoiceSound mWaterSplashSound;
     ContinuousPulsedSound mAirBubblesSurfacingSound;
     ContinuousSingleChoiceSound mWindSound;

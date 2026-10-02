@@ -784,8 +784,8 @@ size_t ShipDefinitionFormatDeSerializer::AppendPhysicsData(
 
     {
         sectionBodySize += AppendPhysicsDataEntry(
-            PhysicsDataTagType::InternalPressure,
-            physicsData.InternalPressure,
+            PhysicsDataTagType::InternalAirPressure,
+            physicsData.InternalAirPressure,
             buffer);
     }
 
@@ -1706,9 +1706,9 @@ ShipPhysicsData ShipDefinitionFormatDeSerializer::ReadPhysicsData(DeSerializatio
                 break;
             }
 
-            case static_cast<uint32_t>(PhysicsDataTagType::InternalPressure) :
+            case static_cast<uint32_t>(PhysicsDataTagType::InternalAirPressure) :
             {
-                buffer.ReadAt<float>(offset, physicsData.InternalPressure);
+                buffer.ReadAt<float>(offset, physicsData.InternalAirPressure);
 
                 break;
             }

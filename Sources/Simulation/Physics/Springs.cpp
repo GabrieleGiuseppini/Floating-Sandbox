@@ -48,7 +48,9 @@ void Springs::Add(
     // Tension is average
     float const tension = (points.GetStructuralMaterial(pointAIndex).SpringTension + points.GetStructuralMaterial(pointBIndex).SpringTension) / 2.0f;
     float const springRestLength = (points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length() * tension;
+    assert(springRestLength > 0.0f);
     mFactoryRestLengthBuffer.emplace_back(springRestLength);
+    mFactoryReciprocalRestLengthBuffer.emplace_back(1.0f / springRestLength);
     mRestLengthBuffer.emplace_back(springRestLength);
 
     // Dynamics coefficients recalculated later, but stiffness grows slowly and shrinks fast, hence we want to start high

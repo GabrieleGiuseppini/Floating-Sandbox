@@ -114,7 +114,7 @@ TEST(SettingsTests, Setting_DefaultConstructor)
 
 TEST(SettingsTests, Setting_ConstructorValue)
 {
-    Setting<float> fSetting("", 5.0f);
+    Setting<float> fSetting("", 5.0f, [](float const & v, SettingsDeserializationContext const &) { return v; });
 
     EXPECT_EQ(5.0f, fSetting.GetValue());
     EXPECT_FALSE(fSetting.IsDirty());

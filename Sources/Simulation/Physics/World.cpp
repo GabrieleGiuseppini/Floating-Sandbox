@@ -942,17 +942,41 @@ void World::RemoveAllPins()
     }
 }
 
-std::optional<ToolApplicationLocus> World::InjectPressureAt(
+bool World::FloodAt(
     vec2f const & targetPos,
-    float pressureQuantityMultiplier,
+    float radius,
+    float flowMultiplier,
+    SimulationParameters const & simulationParameters)
+{
+    // Flood all ships
+    bool anyHasFlooded = false;
+    for (auto & ship : mAllShips)
+    {
+        bool hasFlooded = ship->FloodAt(
+            targetPos,
+            radius,
+            flowMultiplier,
+            simulationParameters);
+
+        anyHasFlooded |= hasFlooded;
+    }
+
+    return anyHasFlooded;
+}
+
+std::optional<ToolApplicationLocus> World::InjectAirAt(
+    vec2f const & targetPos,
+    float radius,
+    float flowMultiplier,
     SimulationParameters const & simulationParameters)
 {
     // Stop at first ship that successfully injects pressure
     for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        auto const applicationLocus = (*it)->InjectPressureAt(
+        auto const applicationLocus = (*it)->InjectAirAt(
             targetPos,
-            pressureQuantityMultiplier,
+            radius,
+            flowMultiplier,
             simulationParameters);
 
         if (applicationLocus.has_value())
@@ -985,28 +1009,6 @@ std::optional<ToolApplicationLocus> World::InjectPressureAt(
     }
 
     return std::nullopt;
-}
-
-bool World::FloodAt(
-    vec2f const & targetPos,
-    float radius,
-    float flowSign,
-    SimulationParameters const & simulationParameters)
-{
-    // Flood all ships
-    bool anyHasFlooded = false;
-    for (auto & ship : mAllShips)
-    {
-        bool hasFlooded = ship->FloodAt(
-            targetPos,
-            radius,
-            flowSign,
-            simulationParameters);
-
-        anyHasFlooded |= hasFlooded;
-    }
-
-    return anyHasFlooded;
 }
 
 void World::ToggleAntiMatterBombAt(

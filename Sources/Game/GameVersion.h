@@ -7,20 +7,15 @@
 
 #include <Core/Version.h>
 
-#include <cassert>
-#include <regex>
-#include <sstream>
-#include <stdexcept>
 #include <string>
-#include <utility>
 
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
 
 #define APPLICATION_VERSION_MAJOR               1
-#define APPLICATION_VERSION_MINOR               21
-#define APPLICATION_VERSION_PATCH               1
-#define APPLICATION_VERSION_BUILD               3
+#define APPLICATION_VERSION_MINOR               22
+#define APPLICATION_VERSION_PATCH               0
+#define APPLICATION_VERSION_BUILD               5
 
 #define APPLICATION_VERSION_LONG_STR    STRINGIZE(APPLICATION_VERSION_MAJOR)        \
                                         "." STRINGIZE(APPLICATION_VERSION_MINOR)    \

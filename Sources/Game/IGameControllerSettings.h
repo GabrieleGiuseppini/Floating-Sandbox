@@ -100,14 +100,25 @@ struct IGameControllerSettings
     virtual float GetWaterImpactForceAdjustment() const = 0;
     virtual void SetWaterImpactForceAdjustment(float value) = 0;
 
+    // Pressure
+
     virtual float GetWaterIntakeAdjustment() const = 0;
     virtual void SetWaterIntakeAdjustment(float value) = 0;
+
+    virtual float GetAirIntakeAdjustment() const = 0;
+    virtual void SetAirIntakeAdjustment(float value) = 0;
 
     virtual float GetWaterDiffusionSpeedAdjustment() const = 0;
     virtual void SetWaterDiffusionSpeedAdjustment(float value) = 0;
 
-    virtual float GetWaterCrazyness() const = 0;
-    virtual void SetWaterCrazyness(float value) = 0;
+    virtual float GetAirDiffusionSpeedAdjustment() const = 0;
+    virtual void SetAirDiffusionSpeedAdjustment(float value) = 0;
+
+    virtual float GetAirPressureFeedbackOnWater() const = 0;
+    virtual void SetAirPressureFeedbackOnWater(float value) = 0;
+
+    virtual size_t GetWaterDiffusionNumberOfIterations() const = 0;
+    virtual void SetWaterDiffusionNumberOfIterations(size_t value) = 0;
 
     // Ocean Floor
 
@@ -358,14 +369,17 @@ struct IGameControllerSettings
     virtual float GetAntiMatterBombImplosionStrength() const = 0;
     virtual void SetAntiMatterBombImplosionStrength(float value) = 0;
 
-    virtual float GetFloodRadius() const = 0;
-    virtual void SetFloodRadius(float value) = 0;
+    virtual float GetFloodToolRadius() const = 0;
+    virtual void SetFloodToolRadius(float value) = 0;
 
-    virtual float GetFloodQuantity() const = 0;
-    virtual void SetFloodQuantity(float value) = 0;
+    virtual float GetFloodToolFlow() const = 0;
+    virtual void SetFloodToolFlow(float value) = 0;
 
-    virtual float GetInjectPressureQuantity() const = 0;
-    virtual void SetInjectPressureQuantity(float value) = 0;
+    virtual float GetInjectAirToolRadius() const = 0;
+    virtual void SetInjectAirToolRadius(float value) = 0;
+
+    virtual float GetInjectAirToolFlow() const = 0;
+    virtual void SetInjectAirToolFlow(float value) = 0;
 
     virtual float GetBlastToolRadius() const = 0;
     virtual void SetBlastToolRadius(float value) = 0;

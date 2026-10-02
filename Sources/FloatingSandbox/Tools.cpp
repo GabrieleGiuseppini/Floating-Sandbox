@@ -370,16 +370,16 @@ PinTool::PinTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
-// InjectPressure
+// InjectAir
 ////////////////////////////////////////////////////////////////////////
 
-InjectPressureTool::InjectPressureTool(
+InjectAirTool::InjectAirTool(
     IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
-        ToolType::InjectPressure,
+        ToolType::InjectAir,
         toolManager,
         gameController,
         soundController)
@@ -390,16 +390,16 @@ InjectPressureTool::InjectPressureTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
-// FloodHose
+// Flood
 ////////////////////////////////////////////////////////////////////////
 
-FloodHoseTool::FloodHoseTool(
+FloodTool::FloodTool(
     IToolManager & toolManager,
     IGameController & gameController,
     SoundController & soundController,
     GameAssetManager const & gameAssetManager)
     : Tool(
-        ToolType::FloodHose,
+        ToolType::Flood,
         toolManager,
         gameController,
         soundController)

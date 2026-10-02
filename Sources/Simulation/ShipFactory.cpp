@@ -1902,9 +1902,7 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
 
     std::set<ElectricalElementInstanceIndex> allElectricalElementInstanceIndices;
 
-    float const internalPressure =
-        physicsData.InternalPressure // Default internal pressure is 1atm
-        * SimulationParameters::AirPressureAtSeaLevel; // The ship's (initial) internal pressure is just relative to a constant 1 atm
+    float const internalAirPressure = Formulae::AtmospheresToPascal(physicsData.InternalAirPressure);
 
     ElementIndex electricalElementCounter = 0;
     for (size_t p = 0; p < pointInfos2.size(); ++p)
@@ -1947,7 +1945,7 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
         points.Add(
             pointInfo.Position,
             pointInfo.Water,
-            internalPressure,
+            internalAirPressure,
             pointInfo.StructuralMtl,
             pointInfo.ElectricalMtl,
             pointInfo.IsRope,

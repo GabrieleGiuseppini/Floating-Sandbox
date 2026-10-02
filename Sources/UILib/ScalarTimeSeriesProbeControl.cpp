@@ -16,9 +16,12 @@
 
 static constexpr int Height = 80;
 
-ScalarTimeSeriesProbeControl::ScalarTimeSeriesProbeControl(
+template<typename...TElement>
+ScalarTimeSeriesProbeControl<TElement...>::ScalarTimeSeriesProbeControl(
     wxWindow * parent,
-    int width)
+    int width,
+    PenTuple pens,
+    ScalarTimeSeriesProbeControlOptions flags)
     : wxPanel(
         parent,
         wxID_ANY,
@@ -27,8 +30,11 @@ ScalarTimeSeriesProbeControl::ScalarTimeSeriesProbeControl(
         wxBORDER_SIMPLE)
     , mWidth(width)
     , mBufferedDCBitmap()
-    , mTimeSeriesPen(wxColor("BLACK"), 2, wxPENSTYLE_SOLID)
+    , mTimeSeriesPens(pens)
+    , mLabelColors(MakeDarkerColors(pens))
+    , mZeroLinePens(MakeZeroLinePens(pens))
     , mGridPen(wxColor(0xa0, 0xa0, 0xa0), 1, wxPENSTYLE_SOLID)
+    , mFlags(flags)
 {
     SetMinSize(wxSize(width, Height));
     SetMaxSize(wxSize(width, Height));
@@ -49,48 +55,53 @@ ScalarTimeSeriesProbeControl::ScalarTimeSeriesProbeControl(
     Reset();
 }
 
-void ScalarTimeSeriesProbeControl::RegisterSample(float value)
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::RegisterSample(ValueTuple values)
 {
-    mMaxValue = std::max(mMaxValue, value);
-    mMinValue = std::min(mMinValue, value);
+    mMaxValues = Max(mMaxValues, values);
+    mMinValues = Min(mMinValues, values);
 
     mSamples.emplace(
-        [](float) {},
-        value);
+        [](ValueTuple) {},
+        values);
 }
 
-void ScalarTimeSeriesProbeControl::UpdateSimulation()
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::UpdateSimulation()
 {
     Refresh();
 }
 
-void ScalarTimeSeriesProbeControl::Reset()
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::Reset()
 {
     mSamples.clear();
 
-    mMaxValue = std::numeric_limits<float>::lowest();
-    mMinValue = std::numeric_limits<float>::max();
+    mMaxValues = InitTuple(std::numeric_limits<float>::lowest());
+    mMinValues = InitTuple(std::numeric_limits<float>::max());
 
     mGridValueSize = 0.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void ScalarTimeSeriesProbeControl::OnMouseClick(wxMouseEvent & /*event*/)
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::OnMouseClick(wxMouseEvent & /*event*/)
 {
     // Reset extent
-    mMaxValue = std::numeric_limits<float>::lowest();
-    mMinValue = std::numeric_limits<float>::max();
-    for (auto it : mSamples)
+    mMaxValues = InitTuple(std::numeric_limits<float>::lowest());
+    mMinValues = InitTuple(std::numeric_limits<float>::max());
+    for (auto const & sample : mSamples)
     {
-        mMaxValue = std::max(mMaxValue, it);
-        mMinValue = std::min(mMinValue, it);
+        mMaxValues = Max(mMaxValues, sample);
+        mMinValues = Min(mMinValues, sample);
     }
 
     Refresh();
 }
 
-void ScalarTimeSeriesProbeControl::OnPaint(wxPaintEvent & /*event*/)
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::OnPaint(wxPaintEvent & /*event*/)
 {
     if (!mBufferedDCBitmap || mBufferedDCBitmap->GetSize() != this->GetSize())
     {
@@ -102,115 +113,154 @@ void ScalarTimeSeriesProbeControl::OnPaint(wxPaintEvent & /*event*/)
     Render(bufDc);
 }
 
-void ScalarTimeSeriesProbeControl::OnEraseBackground(wxPaintEvent & /*event*/)
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::OnEraseBackground(wxPaintEvent & /*event*/)
 {
     // Do nothing, eat event
 }
 
-int ScalarTimeSeriesProbeControl::MapValueToY(float value) const
-{
-    if (mMaxValue == mMinValue)
-        return Height / 2;
-
-    float y = static_cast<float>(Height - 4) * (value - mMinValue) / (mMaxValue - mMinValue);
-    return Height - 3 - static_cast<int>(round(y));
-}
-
-void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
+template<typename...TElement>
+void ScalarTimeSeriesProbeControl<TElement...>::Render(wxDC & dc)
 {
     dc.Clear();
 
     if (!mSamples.empty())
     {
-        //
-        // Check if need to resize grid
-        //
-
-        // Calculate new grid step
-        float numberOfGridLines = 6.0f;
-        float const currentValueExtent = mMaxValue - mMinValue;
-        if (currentValueExtent > 0.0f)
+        if constexpr (sizeof...(TElement) == 1)
         {
-            if (mGridValueSize == 0.0f)
-                mGridValueSize = currentValueExtent / 6.0f;
+            //
+            // Check if need to resize grid
+            //
 
-            // Number of grid lines we would have with the current extent
-            numberOfGridLines = currentValueExtent / mGridValueSize;
-            if (numberOfGridLines > 20.0f)
+            // Calculate new grid step
+            float numberOfGridLines = 6.0f;
+            float const currentValueExtent = std::get<0>(mMaxValues) - std::get<0>(mMinValues);
+            if (currentValueExtent > 0.0f)
             {
-                // Recalc
-                mGridValueSize = currentValueExtent / 6.0f;
-                numberOfGridLines = 6.0f;
+                if (mGridValueSize == 0.0f)
+                    mGridValueSize = currentValueExtent / 6.0f;
+
+                // Number of grid lines we would have with the current extent
+                numberOfGridLines = currentValueExtent / mGridValueSize;
+                if (numberOfGridLines > 20.0f)
+                {
+                    // Recalc
+                    mGridValueSize = currentValueExtent / 6.0f;
+                    numberOfGridLines = 6.0f;
+                }
+            }
+
+            static const int xGridStepSize = mWidth / 6;
+            int yGridStepSize = std::min(mWidth, Height) / static_cast<int>(ceil(numberOfGridLines));
+
+            //
+            // Draw grid
+            //
+
+            dc.SetPen(mGridPen);
+
+            for (int y = yGridStepSize; y < Height - 1; y += yGridStepSize)
+            {
+                dc.DrawLine(0, y, mWidth - 1, y);
+            }
+
+            for (int x = xGridStepSize; x < mWidth - 1; x += xGridStepSize)
+            {
+                dc.DrawLine(x, 0, x, Height - 1);
             }
         }
 
-        static const int xGridStepSize = mWidth / 6;
-        int yGridStepSize = std::min(mWidth, Height) / static_cast<int>(ceil(numberOfGridLines));
-
-
         //
-        // Draw grid
+        // Draw charts
         //
 
-        dc.SetPen(mGridPen);
-
-        for (int y = yGridStepSize; y < Height - 1; y += yGridStepSize)
-        {
-            dc.DrawLine(0, y, mWidth - 1, y);
-        }
-
-        for (int x = xGridStepSize; x < mWidth - 1; x += xGridStepSize)
-        {
-            dc.DrawLine(x, 0, x, Height - 1);
-        }
-
-
-        //
-        // Draw chart
-        //
-
-        dc.SetPen(mTimeSeriesPen);
-
-        auto it = mSamples.cbegin();
-        int lastX = mWidth - 2;
-        int lastY = MapValueToY(*it);
-        ++it;
-
-        if (it == mSamples.cend())
-        {
-            // Draw just a point
-            dc.DrawPoint(lastX, lastY);
-        }
-        else
-        {
-            // Draw lines
-            do
-            {
-                int newX = lastX - 1;
-                if (newX == 0)
-                    break;
-
-                int newY = MapValueToY(*it);
-
-                dc.DrawLine(newX, newY, lastX, lastY);
-
-                lastX = newX;
-                lastY = newY;
-
-                ++it;
-            }
-            while (it != mSamples.cend());
-        }
-
-
-        //
-        // Draw label
-        //
-
-        std::stringstream ss;
-        ss << std::fixed << std::setprecision(3) << *mSamples.cbegin() << " (" << mMaxValue << ")";
-
-        wxString labelText(ss.str());
-        dc.DrawText(labelText, 0, 1);
+        DrawCharts(dc, std::make_index_sequence<sizeof...(TElement)>{});
     }
 }
+
+template<typename...TElement>
+template<size_t IElement>
+void ScalarTimeSeriesProbeControl<TElement...>::DrawChart(wxDC& dc)
+{
+    // Chart
+
+    dc.SetPen(std::get<IElement>(mTimeSeriesPens));
+
+    auto it = mSamples.cbegin();
+    int lastX = mWidth - 2;
+    int lastY = MapValueToY<IElement>(*it);
+    ++it;
+
+    if (it == mSamples.cend())
+    {
+        // Draw just a point
+        dc.DrawPoint(lastX, lastY);
+    }
+    else
+    {
+        // Draw lines
+        do
+        {
+            int newX = lastX - 1;
+            if (newX == 0)
+                break;
+
+            int newY = MapValueToY<IElement>(*it);
+
+            dc.DrawLine(newX, newY, lastX, lastY);
+
+            lastX = newX;
+            lastY = newY;
+
+            ++it;
+        } while (it != mSamples.cend());
+    }
+
+    // Zero line
+
+    if ((mFlags & ScalarTimeSeriesProbeControlOptions::ZeroLine) != ScalarTimeSeriesProbeControlOptions::None)
+    {
+        dc.SetPen(std::get<IElement>(mZeroLinePens));
+
+        int zeroY = MapValueToY<IElement>(0.0f);
+        dc.DrawLine(1, zeroY, mWidth - 1, zeroY);
+    }
+
+    //
+    // Draw label
+    //
+
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(2);
+
+    float const currentValue = std::get<IElement>(*mSamples.cbegin());
+    if (currentValue >= 0.0f)
+        ss << ' ';
+    ss << currentValue << " (" << std::get<IElement>(mMaxValues) << ")";
+
+    wxString labelText(ss.str());
+    dc.SetTextForeground(std::get<IElement>(mLabelColors));
+    dc.DrawText(labelText, 0, 1 + 9 * static_cast<int>(IElement));
+}
+
+template<typename...TElement>
+template<size_t IElement>
+int ScalarTimeSeriesProbeControl<TElement...>::MapValueToY(ValueTuple const & t) const
+{
+    return MapValueToY<IElement>(std::get<IElement>(t));
+}
+
+template<typename...TElement>
+template<size_t IElement>
+int ScalarTimeSeriesProbeControl<TElement...>::MapValueToY(float value) const
+{
+    if (std::get<IElement>(mMaxValues) == std::get<IElement>(mMinValues))
+        return Height / 2;
+
+    float y = static_cast<float>(Height - 4) * (value - std::get<IElement>(mMinValues)) / (std::get<IElement>(mMaxValues) - std::get<IElement>(mMinValues));
+    return Height - 3 - static_cast<int>(round(y));
+}
+
+// Force specializations
+template class ScalarTimeSeriesProbeControl<float>;
+template class ScalarTimeSeriesProbeControl<float, float>;

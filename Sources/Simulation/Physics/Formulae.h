@@ -42,17 +42,8 @@ public:
             * simulationParameters.WaterDensityAdjustment;
     }
 
-    // Calculates the ideal pressure at the bottom of 1 cubic meter of water at this temperature,
-    // in the void
-    static float CalculateVolumetricWaterPressure(
-        float waterTemperature,
-        SimulationParameters const & simulationParameters)
-    {
-        return CalculateWaterDensity(waterTemperature, simulationParameters)
-            * SimulationParameters::GravityMagnitude;
-    }
-
-    // Calculates the pressure exherted by the 1m2 column of air at the given y
+    // Calculates the pressure exherted by the 1m2 column of air at the given y, in Pa.
+    // Ignores ocean surface
     static float CalculateAirColumnPressureAt(
         float y,
         float airDensity,
@@ -61,14 +52,38 @@ public:
         // While the real barometric formula is exponential, here we simplify it as linear:
         //      - Pressure is zero at y = MaxWorldHeight+10%
         //      - Pressure is AirPressureAtSeaLevel at y = 0
+
         float const seaLevelPressure =
             SimulationParameters::AirPressureAtSeaLevel
             * (airDensity / SimulationParameters::AirMass); // Adjust for density, assuming linear relationship
+
         return seaLevelPressure
             * (SimulationParameters::HalfMaxWorldHeight * 1.1f - y) / (SimulationParameters::HalfMaxWorldHeight * 1.1f);
     }
 
-    // Calculates the pressure exherted by a 1m2 column of water of the given height
+    // Calculates the pressure exherted by the 1m2 column of air at the given y, in equivalent
+    // water height units.
+    // Stops at the ocean surface.
+    static float CalculateAirColumnPressureInEquivalentWaterHeightAt(
+        float y,
+        float oceanSurfaceY,
+        float airDensity,
+        SimulationParameters const & /*simulationParameters*/)
+    {
+        // While the real barometric formula is exponential, here we simplify it as linear:
+        //      - Pressure is zero at y = MaxWorldHeight+10%
+        //      - Pressure is AirPressureAtSeaLevel at y = 0
+
+        float const seaLevelPressure =
+            SimulationParameters::AirPressureAtSeaLevel
+            * (airDensity / SimulationParameters::AirMass) // Adjust for density, assuming linear relationship
+            / (SimulationParameters::WaterMass * SimulationParameters::GravityMagnitude); // Convert to equivalent watr height units
+
+        return seaLevelPressure
+            * (SimulationParameters::HalfMaxWorldHeight * 1.1f - std::max(y, oceanSurfaceY)) / (SimulationParameters::HalfMaxWorldHeight * 1.1f);
+    }
+
+    // Calculates the pressure exherted by a 1m2 column of water of the given height, in Pa
     static float CalculateWaterColumnPressure(
         float height,
         float waterDensity,
@@ -78,8 +93,23 @@ public:
             * SimulationParameters::GravityMagnitude;
     }
 
+    // Calculates the pressure exherted by the ocean water at the given y, in equivalent
+    // water height units.
+    // Zero if above water.
+    static float CalculateOceanWaterPressureInEquivalentWaterHeightAt(
+        float y,
+        float oceanSurfaceY,
+        float waterDensity,
+        SimulationParameters const & /*simulationParameters*/)
+    {
+        float const oceanWaterHeight = std::max(oceanSurfaceY - y, 0.0f);
+
+        return waterDensity * oceanWaterHeight // Volume
+            / SimulationParameters::WaterMass;
+    }
+
     // Calculates the total (air above + water) pressure at the given y, in N/m2 (Pa)
-    static float CalculateTotalPressureAt(
+    static float CalculateTotalExternalPressureAt(
         float y,
         float oceanSurfaceY,
         float airDensity,
@@ -97,6 +127,27 @@ public:
             simulationParameters);
 
         return airPressure + waterPressure;
+    }
+
+    // Calculates the equivalent height of a 1m2-wide column of water at reference density
+    // which gives the specified pressure in Pa
+    static float PressureToEquivalentWaterHeight(float pressure)
+    {
+        // Pressure in Pa of a H-high column of water in a 1m2-wide tube: Pa = h * g * water_rho
+        return pressure / (SimulationParameters::WaterMass * SimulationParameters::GravityMagnitude);
+    }
+
+    // Calculates the pascal pressure exercised by the specified height of a 1m2-wide column
+    // of water at reference density
+    static float EquivalentWaterHeightToPressure(float height)
+    {
+        // Pressure in Pa of a H-high column of water in a 1m2-wide tube: Pa = h * g * water_rho
+        return height * (SimulationParameters::WaterMass * SimulationParameters::GravityMagnitude);
+    }
+
+    static float AtmospheresToPascal(float atmospheres) noexcept
+    {
+        return atmospheres * SimulationParameters::AirPressureAtSeaLevel;
     }
 
     // Converts a scalar wind speed into the scalar force it would have on a 1m2 surface

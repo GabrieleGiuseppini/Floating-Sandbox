@@ -105,8 +105,6 @@ ShipRenderContext::ShipRenderContext(
     , mVectorArrowVertexBuffer()
     , mVectorArrowVBO()
     , mVectorArrowVBOAllocatedVertexSize(0u)
-    , mVectorArrowColor(0.0f, 0.0f, 0.0f, 1.0f)
-    , mIsVectorArrowColorDirty(true)
     //
     , mCenterVertexBuffer()
     , mIsCenterVertexBufferDirty(true)
@@ -694,8 +692,11 @@ ShipRenderContext::ShipRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
+        static_assert(sizeof(VectorArrowVertex) == (2 + 1 + 3) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow1), 3, GL_FLOAT, GL_FALSE, sizeof(VectorArrowVertex), (void*)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow2), 3, GL_FLOAT, GL_FALSE, sizeof(VectorArrowVertex), (void*)((3) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -1129,25 +1130,15 @@ void ShipRenderContext::UploadJetEngineFlamesEnd()
     // Nop
 }
 
-void ShipRenderContext::UploadVectorsStart(
-    size_t maxCount,
-    vec4f const & color)
+void ShipRenderContext::UploadVectorsStart(size_t maxCount)
 {
     mVectorArrowVertexBuffer.reserve(maxCount * 3 * 2);
-
-    if (color != mVectorArrowColor)
-    {
-        mVectorArrowColor = color;
-
-        mIsVectorArrowColorDirty = true;
-    }
 }
 
 void ShipRenderContext::UploadVectorsEnd()
 {
     // Nop
 }
-
 
 void ShipRenderContext::UploadCentersStart(size_t count)
 {
@@ -1567,15 +1558,15 @@ void ShipRenderContext::RenderDraw(
         //
 
         if ((renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::AirPressure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
             && !mTriangleElementBuffer.empty())
         {
-            if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure)
+            if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::AirPressure)
             {
-                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesInternalPressure>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesAirPressure>();
             }
             else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
             {
@@ -1649,7 +1640,7 @@ void ShipRenderContext::RenderDraw(
         //   structural springs -, or
         // - DebugRenderMode is structure, in which case we use colors - so to draw 1D chains -, or
         // - DebugRenderMode is none, in which case we use texture - so to draw 1D chains and edge springs
-        // - DebugRenderMode is internalPressure|strength, in which case we use the special rendering
+        // - DebugRenderMode is airPressure|strength, in which case we use the special rendering
         //
         // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be here.
         //
@@ -1658,13 +1649,13 @@ void ShipRenderContext::RenderDraw(
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::EdgeSprings
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::AirPressure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
             && !mSpringElementBuffer.empty())
         {
-            if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure)
+            if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::AirPressure)
             {
-                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsInternalPressure>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsAirPressure>();
             }
             else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
             {
@@ -2439,25 +2430,12 @@ void ShipRenderContext::RenderPrepareVectorArrows(RenderParameters const & /*ren
 {
     if (!mVectorArrowVertexBuffer.empty())
     {
-        //
-        // Color
-        //
-
-        if (mIsVectorArrowColorDirty)
-        {
-            mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipVectors>();
-
-            mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipVectors, GameShaderSets::ProgramParameterKind::MatteColor>(mVectorArrowColor);
-
-            mIsVectorArrowColorDirty = false;
-        }
-
         glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
 
         if (mVectorArrowVertexBuffer.size() > mVectorArrowVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
-            glBufferData(GL_ARRAY_BUFFER, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mVectorArrowVertexBuffer.size() * sizeof(VectorArrowVertex), mVectorArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);
             CheckOpenGLError();
 
             mVectorArrowVBOAllocatedVertexSize = mVectorArrowVertexBuffer.size();
@@ -2465,7 +2443,7 @@ void ShipRenderContext::RenderPrepareVectorArrows(RenderParameters const & /*ren
         else
         {
             // No size change, just upload VBO buffer
-            glBufferSubData(GL_ARRAY_BUFFER, 0, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mVectorArrowVertexBuffer.size() * sizeof(VectorArrowVertex), mVectorArrowVertexBuffer.data());
             CheckOpenGLError();
         }
 
@@ -2742,8 +2720,8 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         mShipSpringsProgram,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsInternalPressure>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipSpringsInternalPressure, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsAirPressure>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipSpringsAirPressure, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsStrength>();
@@ -2769,8 +2747,8 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         mShipTrianglesProgram,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesInternalPressure>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipTrianglesInternalPressure, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesAirPressure>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipTrianglesAirPressure, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesStrength>();
@@ -3033,16 +3011,16 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
             effectiveAmbientLightIntensityParamValue);
     }
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsInternalPressure>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipSpringsInternalPressure, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsAirPressure>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipSpringsAirPressure, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsStrength>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipSpringsStrength, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesInternalPressure>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipTrianglesInternalPressure, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesAirPressure>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipTrianglesAirPressure, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesStrength>();
@@ -3196,30 +3174,27 @@ void ShipRenderContext::ApplyWaterLevelOfDetailChanges(RenderParameters const & 
     // Set parameter in all affected programs
     //
 
-    // Transform: 0->1 == 2.0->0.01
-    float const waterLevelThreshold = 2.0f + renderParameters.ShipWaterLevelOfDetail * (-2.0f + 0.01f);
-
     if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
     {
         mShaderManager.ActivateProgram(mShipPointsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelThreshold>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelOfDetail>(
             mShipPointsProgram,
-            waterLevelThreshold);
+            renderParameters.ShipWaterLevelOfDetail);
 
         mShaderManager.ActivateProgram(mShipRopesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelThreshold>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelOfDetail>(
             mShipRopesProgram,
-            waterLevelThreshold);
+            renderParameters.ShipWaterLevelOfDetail);
 
         mShaderManager.ActivateProgram(mShipSpringsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelThreshold>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelOfDetail>(
             mShipSpringsProgram,
-            waterLevelThreshold);
+            renderParameters.ShipWaterLevelOfDetail);
 
         mShaderManager.ActivateProgram(mShipTrianglesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelThreshold>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelOfDetail>(
             mShipTrianglesProgram,
-            waterLevelThreshold);
+            renderParameters.ShipWaterLevelOfDetail);
     }
 }
 

@@ -784,12 +784,12 @@ void Npcs::UpdateHuman(
 				if (humanState.BombProximityPanicLevel < 0.6f
 					&& humanState.OnFirePanicLevel < 0.6f) // Just make check subordinate to other panics, don't want to flip headlessly
 				{
-					vec2f const & waterMeshVelocity = mParticles.GetMeshWaterVelocity(primaryParticleState.ParticleIndex);
-					if (std::fabsf(waterMeshVelocity.x) > 0.1f)
+					vec2f const & waterMeshMomentum = mParticles.GetMeshWaterMomentum(primaryParticleState.ParticleIndex);
+					if (std::fabsf(waterMeshMomentum.x) > 0.1f)
 					{
-						// Water velocity passes test
+						// Water momentum passes test
 
-						if (waterMeshVelocity.x * humanState.CurrentFaceDirectionX <= 0.0f
+						if (waterMeshMomentum.x * humanState.CurrentFaceDirectionX <= 0.0f
 							&& humanState.IncomingWaterProximityPanicLevel < 0.6f)
 						{
 							// Time to flip

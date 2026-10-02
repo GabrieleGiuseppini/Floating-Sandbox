@@ -198,17 +198,31 @@ struct SimulationParameters
     static float constexpr MinWaterImpactForceAdjustment = 0.0f;
     static float constexpr MaxWaterImpactForceAdjustment = 10.0f;
 
+    // Pressure
+
     float WaterIntakeAdjustment;
-    static float constexpr MinWaterIntakeAdjustment = 0.001f;
+    static float constexpr MinWaterIntakeAdjustment = 0.0f;
     static float constexpr MaxWaterIntakeAdjustment = 10.0f;
+
+    float AirIntakeAdjustment;
+    static float constexpr MinAirIntakeAdjustment = 0.0f;
+    static float constexpr MaxAirIntakeAdjustment = 10.0f;
 
     float WaterDiffusionSpeedAdjustment;
     static float constexpr MinWaterDiffusionSpeedAdjustment = 0.001f;
     static float constexpr MaxWaterDiffusionSpeedAdjustment = 2.0f;
 
-    float WaterCrazyness;
-    static float constexpr MinWaterCrazyness = 0.0f;
-    static float constexpr MaxWaterCrazyness = 2.0f;
+    float AirDiffusionSpeedAdjustment;
+    static float constexpr MinAirDiffusionSpeedAdjustment = 0.001f;
+    static float constexpr MaxAirDiffusionSpeedAdjustment = 2.0f;
+
+    float AirPressureFeedbackOnWater;
+    static float constexpr MinAirPressureFeedbackOnWater = 0.0f;
+    static float constexpr MaxAirPressureFeedbackOnWater = 1.0f;
+
+    size_t WaterDiffusionNumberOfIterations;
+    static size_t constexpr MinWaterDiffusionNumberOfIterations = 1;
+    static size_t constexpr MaxWaterDiffusionNumberOfIterations = 4;
 
     //
     // Ocean
@@ -323,11 +337,14 @@ struct SimulationParameters
 
     float AirBubblesDensity;
     static float constexpr MinAirBubblesDensity = 0.0f;
-    static float constexpr MaxAirBubblesDensity = 128.0f;
+    static float constexpr MaxAirBubblesDensity = 10.0f;
 
-    static float constexpr AirBubblesDensityToCumulatedIntakenWater(float airBubblesDensity)
+    static float constexpr AirBubblesDensityToCumulatedOutflownUnderwaterAir(float airBubblesDensity)
     {
-        return 128.0f - airBubblesDensity;
+        float constexpr ThresholdAtDensity1 = 5.0f;
+        return (airBubblesDensity == 0.0f)
+            ? std::numeric_limits<float>::max()
+            : ThresholdAtDensity1 / airBubblesDensity;
     }
 
     bool DoGenerateEngineWakeParticles;
@@ -446,6 +463,8 @@ struct SimulationParameters
     static float constexpr UnderwaterCurrentTimeVelocityZero = 2.0f * Pi<float> / 11.0f; // Period: 11s
 
     // Heat and combustion
+
+    static float constexpr MinAbsoluteTemperature = 0.1f; // K; for capping temperatures when we can't guarantee asymptotic approach to 0 Kelvin
 
     float AirTemperature; // Kelvin
     static float constexpr MinAirTemperature = 273.15f; // 0C
@@ -740,17 +759,21 @@ struct SimulationParameters
 
     static float constexpr BombMass = 5000.0f; // Quite some fat bomb!
 
-    float InjectPressureQuantity; // atm
-    static float constexpr MinInjectPressureQuantity = 0.1f;
-    static float constexpr MaxInjectPressureQuantity = 1000.0f;
+    float FloodToolRadius; // m
+    static float constexpr MinFloodToolRadius = 0.1f;
+    static float constexpr MaxFloodToolRadius = 10.0f;
 
-    float FloodRadius;
-    static float constexpr MinFloodRadius = 0.1f;
-    static float constexpr MaxFloodRadius = 10.0f;
+    float FloodToolFlow; // In height-equivalent units / sec
+    static float constexpr MinFloodToolFlow = 1.0f;
+    static float constexpr MaxFloodToolFlow = 20.0f;
 
-    float FloodQuantity;
-    static float constexpr MinFloodQuantity = 0.1f;
-    static float constexpr MaxFloodQuantity = 100.0f;
+    float InjectAirToolRadius; // m
+    static float constexpr MinInjectAirToolRadius = 0.1f;
+    static float constexpr MaxInjectAirToolRadius = 20.0f;
+
+    float InjectAirToolFlow; // In height-equivalent units / sec
+    static float constexpr MinInjectAirToolFlow = 1.0f;
+    static float constexpr MaxInjectAirToolFlow = 50.0f;
 
     float FireExtinguisherRadius;
 

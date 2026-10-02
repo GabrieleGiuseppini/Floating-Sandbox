@@ -18,10 +18,6 @@ ProbePanel::ProbePanel(wxWindow* parent)
         parent,
         wxBORDER_SIMPLE | wxCLIP_CHILDREN)
 {
-#ifdef __WXMSW__
-    SetDoubleBuffered(true);
-#endif
-
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
 
@@ -29,17 +25,23 @@ ProbePanel::ProbePanel(wxWindow* parent)
     // Create probes
     //
 
+    wxPen const defaultPen = wxPen(wxColor("BLACK"), 2, wxPENSTYLE_SOLID);
+
     mProbesSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    mFrameRateProbe = AddScalarTimeSeriesProbe<ScalarTimeSeriesProbeControl>(_("Frame Rate"), 200);
-    mCurrentUpdateDurationProbe = AddScalarTimeSeriesProbe<ScalarTimeSeriesProbeControl>(_("Update Time"), 200);
+    mFrameRateProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Frame Rate"), 150, std::make_tuple(defaultPen));
+    mCurrentUpdateDurationProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Update Time"), 150, std::make_tuple(defaultPen));
 
-    mWaterTakenProbe = AddScalarTimeSeriesProbe<ScalarTimeSeriesProbeControl>(_("Water Inflow"), 120);
+    mPressureIntakeProbe = AddProbe<ScalarTimeSeriesProbeControl<float, float>>(
+        _("Pressure Inflow"),
+        150,
+        std::make_tuple(wxPen(wxColor("BLUE"), 2, wxPENSTYLE_SOLID), wxPen(wxColor("PLUM"), 2, wxPENSTYLE_SOLID)),
+        ScalarTimeSeriesProbeControlOptions::ZeroLine);
 
-    mWindSpeedProbe = AddScalarTimeSeriesProbe<ScalarTimeSeriesProbeControl>(_("Wind Speed"), 200);
+    mWindSpeedProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Wind Speed"), 120, std::make_tuple(defaultPen));
 
-    mStaticPressureNetForceProbe = AddScalarTimeSeriesProbe<ScalarTimeSeriesProbeControl>(_("Static Pressure Net Force"), 120);
-    mStaticPressureComplexityProbe = AddScalarTimeSeriesProbe<ScalarTimeSeriesProbeControl>(_("Static Pressure Complexity"), 120);
+    mStaticPressureNetForceProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Static Pressure Net Force"), 120, std::make_tuple(defaultPen));
+    mStaticPressureComplexityProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Static Pressure Complexity"), 120, std::make_tuple(defaultPen));
 
     //
     // Finalize
@@ -62,10 +64,15 @@ void ProbePanel::UpdateSimulation()
     {
         mFrameRateProbe->UpdateSimulation();
         mCurrentUpdateDurationProbe->UpdateSimulation();
-        mWaterTakenProbe->UpdateSimulation();
+        mPressureIntakeProbe->UpdateSimulation();
         mWindSpeedProbe->UpdateSimulation();
         mStaticPressureNetForceProbe->UpdateSimulation();
         mStaticPressureComplexityProbe->UpdateSimulation();
+
+        if (mPressureCrossCutReadingsProbe)
+        {
+            mPressureCrossCutReadingsProbe->UpdateSimulation();
+        }
 
         for (auto const & p : mCustomProbes)
         {
@@ -74,22 +81,23 @@ void ProbePanel::UpdateSimulation()
     }
 }
 
-template<typename TProbeControl>
-std::unique_ptr<TProbeControl> ProbePanel::AddScalarTimeSeriesProbe(
+template<typename TProbeControl, typename ... TExtraArgs>
+std::unique_ptr<TProbeControl> ProbePanel::AddProbe(
     wxString const & name,
-    int sampleCount)
+    int sampleCount,
+    TExtraArgs&&...extraArgs)
 {
     wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
 
     sizer->AddSpacer(TopPadding);
 
-    auto probe = std::make_unique<TProbeControl>(this, sampleCount);
+    auto probe = std::make_unique<TProbeControl>(this, sampleCount, std::forward<TExtraArgs>(extraArgs)...);
     sizer->Add(probe.get(), 1, wxALIGN_CENTRE, 0);
 
     wxStaticText * label = new wxStaticText(this, wxID_ANY, name, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
     sizer->Add(label, 0, wxALIGN_CENTRE, 0);
 
-    mProbesSizer->Add(sizer, 1, wxLEFT | wxRIGHT, ProbePadding);
+    mProbesSizer->Add(sizer, 1, wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL, ProbePadding);
 
     return probe;
 }
@@ -100,10 +108,15 @@ void ProbePanel::OnGameReset()
 {
     mFrameRateProbe->Reset();
     mCurrentUpdateDurationProbe->Reset();
-    mWaterTakenProbe->Reset();
+    mPressureIntakeProbe->Reset();
     mWindSpeedProbe->Reset();
     mStaticPressureNetForceProbe->Reset();
     mStaticPressureComplexityProbe->Reset();
+
+    if (mPressureCrossCutReadingsProbe)
+    {
+        mPressureCrossCutReadingsProbe->Reset();
+    }
 
     for (auto const & p : mCustomProbes)
     {
@@ -111,9 +124,12 @@ void ProbePanel::OnGameReset()
     }
 }
 
-void ProbePanel::OnWaterTaken(float waterTaken)
+void ProbePanel::OnPressureIntake(
+    float waterTakenAbove,
+    float waterTakenBelow,
+    float airTaken)
 {
-    mWaterTakenProbe->RegisterSample(waterTaken);
+    mPressureIntakeProbe->RegisterSample({ waterTakenAbove + waterTakenBelow, airTaken });
 }
 
 void ProbePanel::OnWindSpeedUpdated(
@@ -134,8 +150,9 @@ void ProbePanel::OnCustomProbe(
     auto & probe = mCustomProbes[name];
     if (!probe)
     {
-        probe = AddScalarTimeSeriesProbe<ScalarTimeSeriesProbeControl>(name, 100);
+        probe = AddProbe<ScalarTimeSeriesProbeControl<float>>(name, 100, std::make_tuple(wxPen(wxColor("BLACK"), 2, wxPENSTYLE_SOLID)));
         mProbesSizer->Layout();
+        SetSizerAndFit(mProbesSizer);
     }
 
     probe->RegisterSample(value);
@@ -159,4 +176,16 @@ void ProbePanel::OnStaticPressureUpdated(
 {
     mStaticPressureNetForceProbe->RegisterSample(netForce);
     mStaticPressureComplexityProbe->RegisterSample(complexity);
+}
+
+void ProbePanel::OnPressureReadings(std::vector<PressureReading> const & pressureReadings)
+{
+    if (!mPressureCrossCutReadingsProbe)
+    {
+        mPressureCrossCutReadingsProbe = AddProbe<PressureCrossCutReadingsProbeControl>(_("Pressure Profile"), 450);
+        mProbesSizer->Layout();
+        SetSizerAndFit(mProbesSizer);
+    }
+
+    mPressureCrossCutReadingsProbe->RegisterReadings(pressureReadings);
 }
