@@ -2024,12 +2024,12 @@
 		+ Send beta
 		+ Bump up version
 
-		= Calibration for # of water iters
+		+ Calibration for # of water iters
 			+ Do
-			- Test on old Dell
-				- Register perf here :above:
-				- Pre:
-				- Post: 
+			+ Test on old Dell
+				+ Register perf here :above:
+				+ Pre: 26-27-28FPS, 15.4-15.8 UPD, 19-20 RND
+				+ Post: 24-25FPS 15.9-16.7 UPD, 22-23 RND
 			+ -> Android plan
 
 		+ Tests:
@@ -2149,6 +2149,11 @@
 		- Option 2: See if could just be solved by just slowing "general" rusting - which is a tad too fast imho
 
 	- Water-soluble cables	
+
+
+	- Purge ships
+		- Make pack
+
 
 	- Reduce ApplyStaticPressureForces net force complexity
 		! Complexity changed across versions: 0.03/0.04 -> 0.1/0.4
@@ -4165,6 +4170,10 @@
 =================================================
 Current perf:
 =================================================
+
+1.22.0 (pressure redesign_
+- Old Dell: Default ship: Post: 24-25FPS 15.9-16.7 UPD, 22-23 RND
+
 
 1.19.3.x (right after double world size and OceanFloor gfx slice removal)
 - New Dell: Default ship: UPD=2.3, UPL=0.06, RND=4.2/4.3 - ZOOMOUT: 0.08, 5.6/5.8
