@@ -1977,7 +1977,7 @@
 
 
 
-	- Water-Air Pressure Simulation rearc:
+	= Water-Air Pressure Simulation rearc:
 		! Gist:
 			! Physics facts:
 				! The total pressure at any point in a tank containing both water and air is the sum of the air pressure acting on the water surface and the 
@@ -4050,6 +4050,8 @@
 				+ Do
 				- Test on old Dell
 					- Register perf here :above:
+					- Pre:
+					- Post: 
 				+ -> Android plan
 
 			+ Tests:
@@ -4069,31 +4071,6 @@
 			
 
 		- Merge into master
-
-		- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
-		- Consider rendering kinetic energy loss! Makes for foam
-			- Test: 
-				- ShipSize param, set into all shaders
-				- Add both quantities to vertex struct
-				- Add both buffers to RenderUpload
-				- Shader:
-					- Kinetic energy loss: 
-						- Whiteish or texture from mipmapped, given texture coords as new param
-							- White-ish
-							- Texture coords math: 
-								- world = ship_texture_coords * ship_size
-								- tile_vcoords = (world % WIDTH constant) / WIDTH constant
-								- texture_coords = tile_vcoords * new_param.size + new_param.origin
-						- If too fast, do smoothing @ ShipRenderContext
-
-					- Vels: offset for texture and all based on pos
-						- Scale down vel vector length to world
-						- ship_texture_coords = world / ship_size
-						- sample both orig and offseted
-							- weight: length of vel * water_depth
-
-			- If doesn't go through, nuke Points::WaterDiffusionKineticEnergyLoss and incorporate in Points::<workbuffer for WaterDiffusion algo>
-			- If goes through, remove compiler MOBILE conditional for kinetic energy loss calc'ns
 		
 		- Lower bulkheads @ default Titanic & make air escape, as it now takes forever
 		
@@ -4148,17 +4125,50 @@
 				- Default Titanic
 				- All others
 
+		- Update this plan
+
 	- Bandit's rusting:
-		- I was wondering if you might be asble to adjust the rusting values so the stuff from damage rusts first because it spreads from rust right now but it doesent seem to destroy itself from rust first because once it is covered in rust, it just rusts like it did before instead of more dynamically from damage. 
+		- I was wondering if you might be asble to adjust the rusting values so the stuff from damage rusts first because it spreads from rust right now but it doesent seem to destroy itself from rust 
+		  first because once it is covered in rust, it just rusts like it did before instead of more dynamically from damage. 
 		  because if you look these were taken a minute apart from each other once it fully was covered and well it kinda does what it used to...
 		  not another overhaul, but maybe tweaking the values so it rusts and destroys itself from damage points faster than just base deterioration.
 		  it also seems like it rusts the exact same on the above water too, so a ss america cant happen because somehow the entire thing seems to rust at the same rate.
 		  like i said this version of rusting is better, but i feel the values need to be tweaked because it still kinda behaves like it used to...
 
 		  as lusitania was saying maybe a slider to control base rust
-		- See if could just be solved by just slowing "general" rusting - which is a tad too fast imho
+		- Option 1: neighbors' rusting asymptotes to higher value, and we take min
+		- Option 2: See if could just be solved by just slowing "general" rusting - which is a tad too fast imho
 
 	- Water-soluble cables	
+
+	- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
+	- Consider rendering kinetic energy loss! Makes for foam
+		- Test: 
+			- ShipSize param, set into all shaders
+			- Add both quantities to vertex struct
+			- Add both buffers to RenderUpload
+			- Shader:
+				- Kinetic energy loss: 
+					- Whiteish or texture from mipmapped, given texture coords as new param
+						- Option 1: White-ish
+						- Option 2: Texture coords math: 
+							- world = ship_texture_coords * ship_size
+							- tile_vcoords = (world % WIDTH constant) / WIDTH constant
+							- texture_coords = tile_vcoords * new_param.size + new_param.origin
+					- If changes too quickly, do smoothing @ ShipRenderContext
+
+				- Vels: offset for texture and all based on pos
+					- Scale down vel vector length to world, via local constant
+					- ship_texture_coords_offset = world / ship_size
+					- Sample both orig and offseted, and blend them
+						- Weight of blending:
+							- Option 1: water_depth
+							- Optiver 2: length of vel * water_depth
+					- If changes too quickly, do smoothing @ ShipRenderContext
+
+		- If doesn't go through, nuke Points::WaterDiffusionKineticEnergyLoss and incorporate in Points::<workbuffer for WaterDiffusion algo>
+		- If goes through, remove compiler MOBILE conditional for kinetic energy loss calc'ns
+			- And add to AndroidPlan ->
 
 	- Reduce ApplyStaticPressureForces net force complexity
 		! Complexity changed across versions: 0.03/0.04 -> 0.1/0.4
@@ -4196,7 +4206,11 @@
 	- Pixelation/style:
 		- "Vanilla" mode vs "Voxel" mode
 
-
+	- Optimizations:
+		- 1: Split positions, velocities, and [static and/or dynamic] forces into x & y; run spring relaxation (& ocean floor collisions) and lights on it; reassemble
+		- 2: Allocations/page faults: 
+			a) _mm_prefetch: at beginning of springs & integr loops, prefetch nex
+			b) Alloc large pages: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc
 
 
 
