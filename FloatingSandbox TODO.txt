@@ -4127,25 +4127,12 @@
 
 		- Update this plan
 
-	- Bandit's rusting:
-		- I was wondering if you might be asble to adjust the rusting values so the stuff from damage rusts first because it spreads from rust right now but it doesent seem to destroy itself from rust 
-		  first because once it is covered in rust, it just rusts like it did before instead of more dynamically from damage. 
-		  because if you look these were taken a minute apart from each other once it fully was covered and well it kinda does what it used to...
-		  not another overhaul, but maybe tweaking the values so it rusts and destroys itself from damage points faster than just base deterioration.
-		  it also seems like it rusts the exact same on the above water too, so a ss america cant happen because somehow the entire thing seems to rust at the same rate.
-		  like i said this version of rusting is better, but i feel the values need to be tweaked because it still kinda behaves like it used to...
-
-		  as lusitania was saying maybe a slider to control base rust
-		- Option 1: neighbors' rusting asymptotes to higher value, and we take min
-		- Option 2: See if could just be solved by just slowing "general" rusting - which is a tad too fast imho
-
-	- Water-soluble cables	
-
 	- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
 	- Consider rendering kinetic energy loss! Makes for foam
 		- Test: 
+			+ Get RND perf before: 3.8-3.9ms
 			- ShipSize param, set into all shaders
-			- Add both quantities to vertex struct
+			- Add both quantities to vertex attributes - Vertex struct for kinetic, standalone (new attrib) for water vel
 			- Add both buffers to RenderUpload
 			- Shader:
 				- Kinetic energy loss: 
@@ -4169,6 +4156,21 @@
 		- If doesn't go through, nuke Points::WaterDiffusionKineticEnergyLoss and incorporate in Points::<workbuffer for WaterDiffusion algo>
 		- If goes through, remove compiler MOBILE conditional for kinetic energy loss calc'ns
 			- And add to AndroidPlan ->
+
+	- Bandit's rusting:
+		- I was wondering if you might be asble to adjust the rusting values so the stuff from damage rusts first because it spreads from rust right now but it doesent seem to destroy itself from rust 
+		  first because once it is covered in rust, it just rusts like it did before instead of more dynamically from damage. 
+		  because if you look these were taken a minute apart from each other once it fully was covered and well it kinda does what it used to...
+		  not another overhaul, but maybe tweaking the values so it rusts and destroys itself from damage points faster than just base deterioration.
+		  it also seems like it rusts the exact same on the above water too, so a ss america cant happen because somehow the entire thing seems to rust at the same rate.
+		  like i said this version of rusting is better, but i feel the values need to be tweaked because it still kinda behaves like it used to...
+
+		  as lusitania was saying maybe a slider to control base rust
+		- Option 1: neighbors' rusting asymptotes to higher value, and we take min
+		- Option 2: See if could just be solved by just slowing "general" rusting - which is a tad too fast imho
+
+	- Water-soluble cables	
+
 
 	- Reduce ApplyStaticPressureForces net force complexity
 		! Complexity changed across versions: 0.03/0.04 -> 0.1/0.4
