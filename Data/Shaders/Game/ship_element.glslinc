@@ -19,9 +19,13 @@ in vec4 inShipPointColor;
 // Outputs
 out float vertexWorldY;
 out vec4 vertexAttributes1; // Light, Water, Temperature, Rot
-out vec2 vertexAttributes2; // Rust, AlgaeGrowth
-out vec2 vertexWaterMomentum;
+out vec2 vertexAttributes2; // Rust, AlgaeGrowth, WaterMomenta
 out vec2 vertexTextureCoords;
+#if HEAT_RENDER_MODE != 1
+#ifndef  WITH_MATTE_COLOR
+out vec2 vertexTextureCoordsWaterOffset;
+#endif
+#endif
 #ifdef WITH_MATTE_COLOR
 out vec4 vertexCol;
 #endif
@@ -31,6 +35,10 @@ out float vertexStress;
 
 // Params
 uniform mat4 paramOrthoMatrix;
+uniform float paramShipHighQualityRendering;
+#if HEAT_RENDER_MODE != 1
+uniform vec2 paramShipWorldSize;
+#endif
 uniform float paramWaterLevelOfDetail;
 
 void main()
@@ -45,10 +53,34 @@ void main()
         // y = 0.4*x^0.39794
     vertexAttributes1.y = pow(vertexAttributes1.y, 0.25) * paramWaterLevelOfDetail;
 
-    vertexAttributes2 = inShipPointAttributeGroup2.xy;
-    vertexWaterMomentum = inShipPointAttributeGroup2.zw;
-
+    vertexAttributes2 = inShipPointAttributeGroup2.xy;    
     vertexTextureCoords = inShipPointTextureCoordinates;
+
+#if HEAT_RENDER_MODE != 1
+#ifndef  WITH_MATTE_COLOR
+    //
+    // Shift texture coords via water momenta
+    //
+
+    if (paramShipHighQualityRendering != 0.0) // Fine to branch - all pixels will follow the same branching
+    {
+        #define MAX_WATER_MOMENTUM_SCALE 5.0
+        #define WATER_MOMENTUM_MAX_WORLD_OFFSET 0.15
+        float waterMomentumLength = length(inShipPointAttributeGroup2.zw);
+        vec2 waterMomentumDir = (waterMomentumLength > 0.0) ? -inShipPointAttributeGroup2.zw / waterMomentumLength : vec2(0.);
+        float waterMomentumNormalizedLength = min(waterMomentumLength / MAX_WATER_MOMENTUM_SCALE, 1.0);
+        float waterMomentumWorldLength = waterMomentumNormalizedLength * WATER_MOMENTUM_MAX_WORLD_OFFSET;
+        vertexTextureCoordsWaterOffset = 
+            waterMomentumDir 
+            * waterMomentumWorldLength / paramShipWorldSize;
+    }
+    else
+    {
+        vertexTextureCoordsWaterOffset = vec2(0.);
+    }
+#endif
+#endif
+
 
 #ifdef WITH_MATTE_COLOR
     vertexCol = inShipPointColor;
@@ -77,8 +109,12 @@ void main()
 in float vertexWorldY;
 in vec4 vertexAttributes1; // Light, Water, Temperature, Rot
 in vec2 vertexAttributes2; // Rust, AlgaeGrowth
-in vec2 vertexWaterMomentum;
 in vec2 vertexTextureCoords;
+#if HEAT_RENDER_MODE != 1
+#ifndef  WITH_MATTE_COLOR
+in vec2 vertexTextureCoordsWaterOffset;
+#endif
+#endif
 #ifdef  WITH_MATTE_COLOR
 in vec4 vertexCol;
 #endif
@@ -92,7 +128,6 @@ uniform float paramEffectiveAmbientLightIntensity;
 uniform vec3 paramEffectiveMoonlightColor;
 uniform float paramOceanDepthDarkeningRate;
 uniform float paramShipDepthDarkeningSensitivity;
-uniform vec2 paramShipWorldSize;
 uniform vec3 paramWaterColor;
 uniform float paramWaterContrast;
 #endif
@@ -133,17 +168,9 @@ void main()
         // Shift texture coords via water momenta
         //
 
-        #define MAX_WATER_MOMENTUM_SCALE 5.0
-        #define WATER_MOMENTUM_MAX_WORLD_OFFSET 0.15
-        float waterMomentumLength = length(vertexWaterMomentum);
-        vec2 waterMomentumDir = (waterMomentumLength > 0.0) ? -vertexWaterMomentum / waterMomentumLength : vec2(0.);
-        float waterMomentumNormalizedLength = min(waterMomentumLength / MAX_WATER_MOMENTUM_SCALE, 1.0);
-        float waterMomentumWorldLength = waterMomentumNormalizedLength * WATER_MOMENTUM_MAX_WORLD_OFFSET;
         effectiveTextureCoords = 
-            vertexTextureCoords 
-            + waterMomentumDir 
-                * waterMomentumWorldLength / paramShipWorldSize 
-                * vertexWater; // No offset with no water
+            vertexTextureCoords
+            + vertexTextureCoordsWaterOffset * vertexWater; // No offset with no water
     }
 
 #endif

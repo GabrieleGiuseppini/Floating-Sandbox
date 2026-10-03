@@ -2154,13 +2154,19 @@
 				+ Test MATTE_COLOR
 				+ Test heat X N
 
-			- See RND perf impact 
-				- If high: try at vertex shader
+			X See RND perf impact 
+				X If high: try at vertex shader
 
 			+ Nuke kinetic energy rendering?
 				+ Go back to populating group 2
 
 		+ Nuke Points::WaterDiffusionKineticEnergyLoss and replace it with a work buffer
+
+		- Try with normalizing vector at vertex shader, for less sharp angles
+			- Calc whole vertexTextureCoordsWaterOffset, replaces momenta
+				+ Also move paramShipWorldSize to vertex shader
+
+		- Send beta and get feedback
 
 	- Bandit's rusting:
 		- I was wondering if you might be asble to adjust the rusting values so the stuff from damage rusts first because it spreads from rust right now but it doesent seem to destroy itself from rust 
