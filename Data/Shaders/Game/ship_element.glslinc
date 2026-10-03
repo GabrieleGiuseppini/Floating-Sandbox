@@ -136,7 +136,7 @@ void main()
         #define MAX_WATER_MOMENTUM_SCALE 5.0
         #define WATER_MOMENTUM_MAX_WORLD_OFFSET 0.15
         float waterMomentumLength = length(vertexWaterMomentum);
-        vec2 waterMomentumDir = (waterMomentumLength > 0.0) ? vertexWaterMomentum / waterMomentumLength : vec2(0.);
+        vec2 waterMomentumDir = (waterMomentumLength > 0.0) ? -vertexWaterMomentum / waterMomentumLength : vec2(0.);
         float waterMomentumNormalizedLength = min(waterMomentumLength / MAX_WATER_MOMENTUM_SCALE, 1.0);
         float waterMomentumWorldLength = waterMomentumNormalizedLength * WATER_MOMENTUM_MAX_WORLD_OFFSET;
         effectiveTextureCoords = 
