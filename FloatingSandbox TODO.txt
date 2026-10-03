@@ -2123,7 +2123,7 @@
 						- texture_coords = tile_vcoords * new_param.size + new_param.origin
 				- If changes too quickly, do smoothing @ ShipRenderContext
 
-			= Vels: offset for texture and all based on pos
+			+ Vels: offset for texture and all based on pos
 				+ Scale down vel vector length to world, via local constant
 				+ ship_texture_coords_offset = world / ship_size
 				+ Sample both orig and offseted, and blend them
@@ -2131,26 +2131,36 @@
 						+ Option 1: water_depth
 						X Optiver 2: length of vel * water_depth
 
-				= Things to try:
+				+ Things to try:
 					X Water velocities instead of momenta
 						X If through: do renames
 					+ To remove static bias underwater, diff each val with previous val, and only publish diff
 						+ Do with prev
 						+ Do with convergence
-					- Do not sample twice but just once, offseted
-						- Also use offset for rust, etc.
+					+ Do not sample twice but just once, offseted
+						+ Also use offset for rust, etc.
 
-			- Make conditional on high-quality
-				- Code
-				- Shader
+			+ Make conditional on high-quality
+				+ Code
+					+ Use inline templated helper
+					+ Clear buffer when flipping to High-quality, at ShipRenderContext::ApplyShipQualityRenderModeChanges
+				+ Shader
+					+ Calc water
+					+ offset = 0
+					+ if not matte and is high-quality and heat!=1:
+						+ calc offset
+					+ use offset everywhere
+				+ Test flipping
+				+ Test MATTE_COLOR
+				+ Test heat X N
+
+			- See RND perf impact 
+				- If high: try at vertex shader
 
 			+ Nuke kinetic energy rendering?
 				+ Go back to populating group 2
 
-		- If doesn't go through, nuke Points::WaterDiffusionKineticEnergyLoss and incorporate in Points::<workbuffer for WaterDiffusion algo>
-			- Though we clear it out?
-		- If goes through, remove compiler MOBILE conditional for kinetic energy loss calc'ns
-			- And add to AndroidPlan ->
+		+ Nuke Points::WaterDiffusionKineticEnergyLoss and replace it with a work buffer
 
 	- Bandit's rusting:
 		- I was wondering if you might be asble to adjust the rusting values so the stuff from damage rusts first because it spreads from rust right now but it doesent seem to destroy itself from rust 

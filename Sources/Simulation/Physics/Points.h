@@ -812,7 +812,6 @@ public:
         , mAirMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mEffectiveAirBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mCumulatedOutflownUnderwaterAirBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mWaterDiffusionKineticEnergyLossBuffer(mAlignedShipPointCount, 0, 0.0f)
         , mFluidDiffusionAlgorithmVariablesBuffer(mAlignedShipPointCount)
         , mLeakingCompositeBuffer(mBufferElementCount, shipPointCount, LeakingComposite(false))
         , mFactoryIsStructurallyLeakingBuffer(mBufferElementCount, shipPointCount, false)
@@ -879,7 +878,8 @@ public:
         , mCurrentAirBubblesDensity(simulationParameters.AirBubblesDensity)
         , mCurrentCumulatedOutflownUnderwaterAirThresholdForAirBubbles(SimulationParameters::AirBubblesDensityToCumulatedOutflownUnderwaterAir(simulationParameters.AirBubblesDensity))
         , mCurrentCombustionSpeedAdjustment(simulationParameters.CombustionSpeedAdjustment)
-        , mFloatBufferAllocator(mBufferElementCount)
+        , mAllPointsFloatBufferAllocator(mBufferElementCount)
+        , mAlignedPointsFloatBufferAllocator(mAlignedShipPointCount)
         , mVec2fBufferAllocator(mBufferElementCount)
         , mCombustionIgnitionCandidates(mRawShipPointCount)
         , mCombustionExplosionCandidates(mRawShipPointCount)
@@ -1759,7 +1759,7 @@ public:
 
     std::shared_ptr<Buffer<float>> MakeWaterBufferCopy()
     {
-        auto waterBufferCopy = mFloatBufferAllocator.Allocate();
+        auto waterBufferCopy = mAllPointsFloatBufferAllocator.Allocate();
         waterBufferCopy->copy_from(mWaterBuffer);
 
         return waterBufferCopy;
@@ -1879,7 +1879,7 @@ public:
 
     std::shared_ptr<Buffer<float>> MakeEffectiveAirBufferCopy()
     {
-        auto effectiveAirBufferCopy = mFloatBufferAllocator.Allocate();
+        auto effectiveAirBufferCopy = mAllPointsFloatBufferAllocator.Allocate();
         effectiveAirBufferCopy->copy_from(mEffectiveAirBuffer);
 
         return effectiveAirBufferCopy;
@@ -1916,22 +1916,6 @@ public:
     void SetCumulatedOutflownUnderwaterAir(ElementIndex pointElementIndex, float value)
     {
         mCumulatedOutflownUnderwaterAirBuffer[pointElementIndex] = value;
-    }
-
-    float const * GetWaterDiffusionKineticEnergyLossBuffer() const
-    {
-        return mWaterDiffusionKineticEnergyLossBuffer.data();
-    }
-
-    float * GetWaterDiffusionKineticEnergyLossBuffer()
-    {
-        return mWaterDiffusionKineticEnergyLossBuffer.data();
-    }
-
-    float * ResetWaterDiffusionKineticEnergyLossBuffer()
-    {
-        mWaterDiffusionKineticEnergyLossBuffer.fill(0.0f);
-        return mWaterDiffusionKineticEnergyLossBuffer.data();
     }
 
     FluidDiffusionAlgorithmVariables * ResetFluidDiffusionAlgorithmVariablesBuffer()
@@ -2006,7 +1990,7 @@ public:
 
     std::shared_ptr<Buffer<float>> MakeTemperatureBufferCopy()
     {
-        auto temperatureBufferCopy = mFloatBufferAllocator.Allocate();
+        auto temperatureBufferCopy = mAllPointsFloatBufferAllocator.Allocate();
         temperatureBufferCopy->copy_from(mTemperatureBuffer);
 
         return temperatureBufferCopy;
@@ -2014,7 +1998,7 @@ public:
 
     std::shared_ptr<Buffer<float>> MakeTemperatureBufferCopy_AlignedPointsOnly()
     {
-        auto temperatureBufferCopy = mFloatBufferAllocator.Allocate();
+        auto temperatureBufferCopy = mAlignedPointsFloatBufferAllocator.Allocate();
         temperatureBufferCopy->copy_from(mTemperatureBuffer.data(), mAlignedShipPointCount);
 
         return temperatureBufferCopy;
@@ -2517,9 +2501,14 @@ public:
     // Temporary buffer
     //
 
-    std::shared_ptr<Buffer<float>> AllocateWorkBufferFloat()
+    std::shared_ptr<Buffer<float>> AllocateWorkBufferFloat_AllPoints()
     {
-        return mFloatBufferAllocator.Allocate();
+        return mAllPointsFloatBufferAllocator.Allocate();
+    }
+
+    std::shared_ptr<Buffer<float>> AllocateWorkBufferFloat_AlignedPoints()
+    {
+        return mAlignedPointsFloatBufferAllocator.Allocate();
     }
 
     std::shared_ptr<Buffer<vec2f>> AllocateWorkBufferVec2f()
@@ -2786,10 +2775,6 @@ private:
     // utilized for air bubbles
     Buffer<float> mCumulatedOutflownUnderwaterAirBuffer;
 
-    // Kinetic energy lost (actually, momentum) during
-    // water diffusion algorithm
-    Buffer<float> mWaterDiffusionKineticEnergyLossBuffer;
-
     // Work buffer for water and air diffusion algorithms
     Buffer<FluidDiffusionAlgorithmVariables> mFluidDiffusionAlgorithmVariablesBuffer;
 
@@ -2926,7 +2911,8 @@ private:
     float mCurrentCombustionSpeedAdjustment;
 
     // Allocators for work buffers
-    BufferAllocator<float> mFloatBufferAllocator;
+    BufferAllocator<float> mAllPointsFloatBufferAllocator;
+    BufferAllocator<float> mAlignedPointsFloatBufferAllocator;
     BufferAllocator<vec2f> mVec2fBufferAllocator;
 
     // The list of candidates for burning and exploding during combustion,

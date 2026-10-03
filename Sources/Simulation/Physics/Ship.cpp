@@ -517,7 +517,7 @@ void Ship::Update(
     // Make RO copies of buffers that are read by tasks on different threads
     // than the tasks that write them.
     // This implies that the reading tasks are one frame behind.
-    auto temperatubeBufferCopy = mPoints.MakeTemperatureBufferCopy_AlignedPointsOnly(); // Only need aligned points
+    auto temperatureBufferCopy = mPoints.MakeTemperatureBufferCopy_AlignedPointsOnly(); // Only need aligned points
     auto waterBufferCopy = mPoints.MakeWaterBufferCopy();
     auto effectiveAirBufferCopy = mPoints.MakeEffectiveAirBufferCopy();
 
@@ -541,7 +541,7 @@ void Ship::Update(
             UpdateAirAndWaterPressure(
                 effectiveAirDensity,
                 effectiveWaterDensity,
-                temperatubeBufferCopy->data(),
+                temperatureBufferCopy->data(),
                 simulationParameters,
                 waterSplashedInStep);
 
@@ -604,7 +604,7 @@ void Ship::Update(
     threadManager.GetSimulationThreadPool().RunAndClear(parallelTasks);
 
     // Free buffers
-    temperatubeBufferCopy.reset();
+    temperatureBufferCopy.reset();
     waterBufferCopy.reset();
     effectiveAirBufferCopy.reset();
 
@@ -1232,7 +1232,7 @@ void Ship::ApplyWorldForces(
     Geometry::ShipAABBSet & externalAabbSet) // output
 {
     // New buffer to which new cached depths will be written to
-    std::shared_ptr<Buffer<float>> newCachedPointDepths = mPoints.AllocateWorkBufferFloat();
+    std::shared_ptr<Buffer<float>> newCachedPointDepths = mPoints.AllocateWorkBufferFloat_AllPoints();
 
     //
     // Particle forces
@@ -2982,7 +2982,9 @@ void Ship::UpdateAirAndWaterPressure(
 
 #if !FS_IS_PLATFORM_MOBILE()
     // Prepare kinetic energy loss
-    float * const restrict pointKineticEnergyLoss = mPoints.ResetWaterDiffusionKineticEnergyLossBuffer();
+    auto pointKineticEnergyLossBuffer = mPoints.AllocateWorkBufferFloat_AlignedPoints();
+    pointKineticEnergyLossBuffer->fill(0.0f);
+    float * const restrict pointKineticEnergyLoss = pointKineticEnergyLossBuffer->data();
 #endif
 
     // Current density doesn't change the "pascal pressure" deriving from an A or W stored at a point; that value
@@ -3697,8 +3699,8 @@ void Ship::UpdateAirAndWaterPressure(
     // - Zero out air and water momenta against hull
     //
 
-    auto tmpBuffer = mPoints.AllocateWorkBufferFloat();
-    tmpBuffer->fill(0.0f, mPoints.GetAlignedShipPointCount());
+    auto tmpBuffer = mPoints.AllocateWorkBufferFloat_AlignedPoints();
+    tmpBuffer->fill(0.0f);
     float * const restrict newPointHullEffectiveAirBufferData = tmpBuffer.get()->data();
 
     {
