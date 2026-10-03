@@ -329,7 +329,7 @@ ShipRenderContext::ShipRenderContext(
         glBindVertexArray(0);
     }
 
-    // Initialize ship enhancements world scaling
+    // Initialize ship enhancements world scaling: translation from ship texture coords into enhancements texture soords
     auto const & shipEnhancementsWorldSize = mGlobalRenderContext.GetShipEnchancementsWorldDimensions();
     mShaderManager.SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::ShipEnhancementsTextureSpaceMagnificationFactor>(
         vec2f(
@@ -901,6 +901,33 @@ void ShipRenderContext::UploadPointTextureCoordinates(vec2f const * textureCoord
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+template<bool IsHighQualityRendering>
+inline void PopulateAttributeGroup(
+    float const * const restrict pSrc1,
+    float const * const restrict pSrc2,
+    float const * const restrict pSrc3,
+    vec3f const * const restrict pSrc4,
+    vec2f const * const restrict pSrc5,
+    vec2f * const restrict pPreviousWaterMomentum,
+    ShipRenderContext::PointAttributeGroupVertex * const restrict pDst,
+    size_t const shipPointCount)
+{
+    for (size_t i = 0; i < shipPointCount; ++i)
+    {
+        pDst[i].light = pSrc1[i];
+        pDst[i].water = pSrc2[i];
+        pDst[i].temperature = pSrc3[i];
+        pDst[i].rot = pSrc4[i].x;
+        pDst[i].rust = pSrc4[i].y;
+        pDst[i].algaeGrowth = pSrc4[i].z;
+        if constexpr (IsHighQualityRendering)
+        {
+            pDst[i].waterMomentum = pSrc5[i] - pPreviousWaterMomentum[i];
+            pPreviousWaterMomentum[i] += pDst[i].waterMomentum * 0.01f;
+        } // Else ignore, won't be used anyway
+    }
+}
+
 void ShipRenderContext::UploadPointMutableAttributes(
     vec2f const * position,
     float const * light,
@@ -919,9 +946,6 @@ void ShipRenderContext::UploadPointMutableAttributes(
     glBufferSubData(GL_ARRAY_BUFFER, 0, mShipPointCount * sizeof(vec2f), position);
     CheckOpenGLError();
 
-    // TODOTEST
-    (void)isHighQualityRendering;
-
     // AttributeGroup, interleaving
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroupVBO);
@@ -933,16 +957,14 @@ void ShipRenderContext::UploadPointMutableAttributes(
         vec2f * const restrict pPreviousWaterMomentum = mPreviousWaterMomentumBuffer.data();
         PointAttributeGroupVertex * const restrict pDst = reinterpret_cast<PointAttributeGroupVertex *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
         CheckOpenGLError();
-        for (size_t i = 0; i < mShipPointCount; ++i)
+
+        if (isHighQualityRendering)
         {
-            pDst[i].light = pSrc1[i];
-            pDst[i].water = pSrc2[i];
-            pDst[i].temperature = pSrc3[i];
-            pDst[i].rot = pSrc4[i].x;
-            pDst[i].rust = pSrc4[i].y;
-            pDst[i].algaeGrowth = pSrc4[i].z;
-            pDst[i].waterMomentum = pSrc5[i] - pPreviousWaterMomentum[i];
-            pPreviousWaterMomentum[i] += pDst[i].waterMomentum * 0.01f;
+            PopulateAttributeGroup<true>(pSrc1, pSrc2, pSrc3, pSrc4, pSrc5, pPreviousWaterMomentum, pDst, mShipPointCount);
+        }
+        else
+        {
+            PopulateAttributeGroup<false>(pSrc1, pSrc2, pSrc3, pSrc4, pSrc5, pPreviousWaterMomentum, pDst, mShipPointCount);
         }
 
         glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -2591,6 +2613,9 @@ void ShipRenderContext::ApplyShipQualityRenderModeChanges(RenderParameters const
     if (renderParameters.IsShipHighQualityRendering)
     {
         mShaderManager.SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::ShipHighQualityRendering>(1.0f);
+
+        // Prepare water momentum buffer
+        mPreviousWaterMomentumBuffer.fill(vec2f::zero());
     }
     else
     {
