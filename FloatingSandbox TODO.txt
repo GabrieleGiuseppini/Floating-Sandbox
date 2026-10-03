@@ -2132,9 +2132,11 @@
 						X Optiver 2: length of vel * water_depth
 
 				- Things to try:
+					X Water velocities instead of momenta
+						X If through: do renames
+					- To remove static bias underwater, diff each val with previous val, and only publish diff
 					- Do not sample twice but just once, offseted
 						- Also use offset for rust, etc.
-					- To remove static bias underwater, diff each val with previous val, and only publish diff
 
 			- Make conditional on high-quality
 
