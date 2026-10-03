@@ -15,6 +15,7 @@
 #include <OpenGLCore/ShaderManager.h>
 
 #include <Core/BoundedVector.h>
+#include <Core/Buffer.h>
 #include <Core/GameTypes.h>
 #include <Core/ImageData.h>
 #include <Core/SysSpecifics.h>
@@ -99,7 +100,8 @@ public:
         float const * temperature,
         vec3f const * rot,
         vec2f const * waterMomentum,
-        std::optional<float const *> planeId);
+        std::optional<float const *> planeId,
+        bool isHighQualityRendering);
 
     // Invoked on render thread
     void UploadPointColors(vec4f const * color);
@@ -1873,6 +1875,9 @@ private:
     GameOpenGLVBO mPointStressVBO;
     GameOpenGLVBO mPointAuxiliaryDataVBO;
     GameOpenGLVBO mPointFrontierColorVBO;
+
+    // For smoothing water momentum dynamics
+    Buffer<vec2f> mPreviousWaterMomentumBuffer;
 
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;

@@ -1281,6 +1281,8 @@ public:
     {
         assert(shipId >= 0 && shipId < mInnerContext->ships.size());
 
+        bool const isHighQualityRendering = mRenderParameters.IsShipHighQualityRendering;
+
         // Run upload asynchronously
         mRenderThread.QueueTask(
             [=]()
@@ -1292,7 +1294,8 @@ public:
                     temperature,
                     rot,
                     waterMomentum,
-                    planeId);
+                    planeId,
+                    isHighQualityRendering);
             });
     }
 

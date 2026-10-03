@@ -47,6 +47,8 @@ ShipRenderContext::ShipRenderContext(
     , mPointAuxiliaryDataVBO()
     , mPointFrontierColorVBO()
     //
+    , mPreviousWaterMomentumBuffer(mShipPointCount, vec2f::zero())
+    //
     , mStressedSpringElementBuffer()
     , mStressedSpringElementVBO()
     , mStressedSpringElementVBOAllocatedElementSize(0u)
@@ -906,7 +908,8 @@ void ShipRenderContext::UploadPointMutableAttributes(
     float const * temperature,
     vec3f const * rot,
     vec2f const * waterMomentum,
-    std::optional<float const *> planeId)
+    std::optional<float const *> planeId,
+    bool isHighQualityRendering)
 {
     // Uploaded at each cycle
     // We've been invoked on the render thread
@@ -916,6 +919,9 @@ void ShipRenderContext::UploadPointMutableAttributes(
     glBufferSubData(GL_ARRAY_BUFFER, 0, mShipPointCount * sizeof(vec2f), position);
     CheckOpenGLError();
 
+    // TODOTEST
+    (void)isHighQualityRendering;
+
     // AttributeGroup, interleaving
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroupVBO);
@@ -924,6 +930,7 @@ void ShipRenderContext::UploadPointMutableAttributes(
         float const * const restrict pSrc3 = temperature;
         vec3f const * const restrict pSrc4 = rot;
         vec2f const * const restrict pSrc5 = waterMomentum;
+        vec2f * const restrict pPreviousWaterMomentum = mPreviousWaterMomentumBuffer.data();
         PointAttributeGroupVertex * const restrict pDst = reinterpret_cast<PointAttributeGroupVertex *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
         CheckOpenGLError();
         for (size_t i = 0; i < mShipPointCount; ++i)
@@ -934,7 +941,8 @@ void ShipRenderContext::UploadPointMutableAttributes(
             pDst[i].rot = pSrc4[i].x;
             pDst[i].rust = pSrc4[i].y;
             pDst[i].algaeGrowth = pSrc4[i].z;
-            pDst[i].waterMomentum = pSrc5[i];
+            pDst[i].waterMomentum = pSrc5[i] - pPreviousWaterMomentum[i];
+            pPreviousWaterMomentum[i] += pDst[i].waterMomentum * 0.01f;
         }
 
         glUnmapBuffer(GL_ARRAY_BUFFER);
