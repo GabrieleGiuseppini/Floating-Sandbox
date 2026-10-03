@@ -277,6 +277,7 @@
 					- (Implicitly) pruned @ Serialize to only contain used ones
 					- Stores (parent) color_key and content of VariantOverridesType
 					- Assigned local indices for new Buffer to address (see below)
+					- Come up with a way to be able to add more overrides in the future, so that older version and newer versions digest both
 				- Buffer: color_key + local index in MaterialPalette
 					- TODO: index=-1 for standard materials? Do we waste all this space?
 			- Deserialize() returns CustomMaterialsPod (3x vector<uq_ptr<TMaterial>> for each TMaterial) in ShipDefinition, just for lifetime extension
