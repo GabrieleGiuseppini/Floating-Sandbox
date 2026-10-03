@@ -98,7 +98,10 @@ public:
         float const * water,
         float const * temperature,
         vec3f const * rot,
-        std::optional<float const *> planeId);
+        vec2f const * waterMomentum,
+        float const * waterKineticEnergyLoss,
+        std::optional<float const *> planeId,
+        bool isHighQualityRendering);
 
     // Invoked on render thread
     void UploadPointColors(vec4f const * color);
@@ -1490,6 +1493,7 @@ private:
     ShaderManager<GameShaderSets::ShaderSet> & mShaderManager;
     GlobalRenderContext & mGlobalRenderContext;
     bool const mIsMultisamplingSupported;
+    vec2f const mShipWorldSize;
 
 private:
 
@@ -1864,7 +1868,8 @@ private:
 
     GameOpenGLVBO mPointPositionVBO;
     GameOpenGLVBO mPointTextureCoordinatesVBO;
-    GameOpenGLVBO mPointAttributeGroupVBO; // Light, water, temperature, rot, rust, algae growth
+    GameOpenGLVBO mPointAttributeGroupVBO; // Light, Water, Temperature, Rot, Rust, AlgaeGrowth
+    GameOpenGLVBO mPointWaterAttributeGroupVBO; // WaterMomentum, WaterKineticEnergyLoss
     GameOpenGLVBO mPointColorVBO;
     GameOpenGLVBO mPointPlaneIdVBO;
     GameOpenGLVBO mPointStressVBO;

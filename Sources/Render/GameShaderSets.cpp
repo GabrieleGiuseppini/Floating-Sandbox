@@ -493,6 +493,8 @@ ProgramParameterKind StrToProgramParameterKind(std::string const & str)
         return ProgramParameterKind::ShipHighQualityRendering;
     else if (str == "ShipParticleRenderMode")
         return ProgramParameterKind::ShipParticleRenderMode;
+    else if (str == "ShipWorldSize")
+        return ProgramParameterKind::ShipWorldSize;
     else if (str == "SimulationTime")
         return ProgramParameterKind::SimulationTime;
     else if (str == "StarTransparency")
@@ -622,6 +624,8 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
             return "ShipHighQualityRendering";
         case ProgramParameterKind::ShipParticleRenderMode:
             return "ShipParticleRenderMode";
+        case ProgramParameterKind::ShipWorldSize:
+            return "ShipWorldSize";
         case ProgramParameterKind::SimulationTime:
             return "SimulationTime";
         case ProgramParameterKind::StarTransparency:
@@ -763,6 +767,8 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
         return VertexAttributeKind::ShipPointAttributeGroup1;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointAttributeGroup2"))
         return VertexAttributeKind::ShipPointAttributeGroup2;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointWaterAttributeGroup"))
+        return VertexAttributeKind::ShipPointWaterAttributeGroup;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
         return VertexAttributeKind::ShipPointColor;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointPlaneId"))

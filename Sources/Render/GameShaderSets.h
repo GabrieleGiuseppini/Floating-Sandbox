@@ -157,6 +157,7 @@ enum class ProgramParameterKind : std::uint8_t
     ShipEnhancementsTextureSpaceMagnificationFactor,
     ShipHighQualityRendering,
     ShipParticleRenderMode,
+    ShipWorldSize,
     SimulationTime,
     StarTransparency,
     StressColorMap,
@@ -266,11 +267,12 @@ enum class VertexAttributeKind : std::uint32_t
     ShipPointTextureCoordinates = 1,
     ShipPointAttributeGroup1 = 2,   // Light, Water, Temperature, Rot
     ShipPointAttributeGroup2 = 3,   // Rust, AlgaeGrowth
-    ShipPointColor = 4,
-    ShipPointPlaneId = 5,
-    ShipPointStress = 6,
-    ShipPointAuxiliaryData = 7,
-    ShipPointFrontierColor = 8,
+    ShipPointWaterAttributeGroup = 4, // WaterMomentum, WaterKineticEnergyLoss
+    ShipPointColor = 5,
+    ShipPointPlaneId = 6,
+    ShipPointStress = 7,
+    ShipPointAuxiliaryData = 8,
+    ShipPointFrontierColor = 9,
 
     NpcAttributeGroup1 = 0,
     NpcAttributeGroup2 = 1,

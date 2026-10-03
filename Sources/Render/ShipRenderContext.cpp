@@ -30,6 +30,7 @@ ShipRenderContext::ShipRenderContext(
     : mShaderManager(shaderManager)
     , mGlobalRenderContext(globalRenderContext)
     , mIsMultisamplingSupported(isMultisamplingSupported)
+    , mShipWorldSize(vec2f(shipWorldSize.width, shipWorldSize.height))
     //
     , mShipId(shipId)
     , mShipCount(shipCount)
@@ -172,8 +173,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[24];
-    glGenBuffers(24, vbos);
+    GLuint vbos[25];
+    glGenBuffers(25, vbos);
     CheckOpenGLError();
 
     mPointPositionVBO = vbos[0];
@@ -188,58 +189,62 @@ ShipRenderContext::ShipRenderContext(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroupVBO);
     glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(PointAttributeGroupVertex), nullptr, GL_STREAM_DRAW);
 
-    mPointColorVBO = vbos[3];
+    mPointWaterAttributeGroupVBO = vbos[3];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterAttributeGroupVBO);
+    glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(vec3f), nullptr, GL_STREAM_DRAW);
+
+    mPointColorVBO = vbos[4];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
     glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(vec4f), nullptr, GL_STATIC_DRAW);
 
-    mPointPlaneIdVBO = vbos[4];
+    mPointPlaneIdVBO = vbos[5];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
     glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
-    mPointStressVBO = vbos[5];
+    mPointStressVBO = vbos[6];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointStressVBO);
     glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
-    mPointAuxiliaryDataVBO = vbos[6];
+    mPointAuxiliaryDataVBO = vbos[7];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAuxiliaryDataVBO);
     glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
-    mPointFrontierColorVBO = vbos[7];
+    mPointFrontierColorVBO = vbos[8];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
     glBufferData(GL_ARRAY_BUFFER, shipPointCount * sizeof(ColorWithProgress), nullptr, GL_STATIC_DRAW);
 
-    mStressedSpringElementVBO = vbos[8];
+    mStressedSpringElementVBO = vbos[9];
     mStressedSpringElementBuffer.reserve(1024); // Arbitrary
 
-    mFrontierEdgeElementVBO = vbos[9];
+    mFrontierEdgeElementVBO = vbos[10];
 
-    mDebrisVBO = vbos[10];
+    mDebrisVBO = vbos[11];
     mDebrisVertexBuffer.reserve(1024); // Arbitrary
 
-    mNpcPositionVBO = vbos[11];
-    mNpcAttributesVertexVBO = vbos[12];
-    mNpcQuadRoleVertexVBO = vbos[13];
+    mNpcPositionVBO = vbos[12];
+    mNpcAttributesVertexVBO = vbos[13];
+    mNpcQuadRoleVertexVBO = vbos[14];
 
-    mElectricSparkVBO = vbos[14];
+    mElectricSparkVBO = vbos[15];
 
-    mFlameVBO = vbos[15];
+    mFlameVBO = vbos[16];
 
-    mJetEngineFlameVBO = vbos[16];
+    mJetEngineFlameVBO = vbos[17];
 
-    mExplosionVBO = vbos[17];
+    mExplosionVBO = vbos[18];
 
-    mSparkleVBO = vbos[18];
+    mSparkleVBO = vbos[19];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
-    mGenericMipMappedTextureVBO = vbos[19];
+    mGenericMipMappedTextureVBO = vbos[20];
 
-    mHighlightVBO = vbos[20];
+    mHighlightVBO = vbos[21];
 
-    mVectorArrowVBO = vbos[21];
+    mVectorArrowVBO = vbos[22];
 
-    mCenterVBO = vbos[22];
+    mCenterVBO = vbos[23];
 
-    mPointToPointArrowVBO = vbos[23];
+    mPointToPointArrowVBO = vbos[24];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -285,6 +290,11 @@ ShipRenderContext::ShipRenderContext(
         glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAttributeGroup1), 4, GL_FLOAT, GL_FALSE, sizeof(PointAttributeGroupVertex), (void*)(0));
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAttributeGroup2));
         glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAttributeGroup2), 2, GL_FLOAT, GL_FALSE, sizeof(PointAttributeGroupVertex), (void*)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterAttributeGroupVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointWaterAttributeGroup));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointWaterAttributeGroup), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
@@ -903,7 +913,10 @@ void ShipRenderContext::UploadPointMutableAttributes(
     float const * water,
     float const * temperature,
     vec3f const * rot,
-    std::optional<float const *> planeId)
+    vec2f const * waterMomentum,
+    float const * waterKineticEnergyLoss,
+    std::optional<float const *> planeId,
+    bool isHighQualityRendering)
 {
     // Uploaded at each cycle
     // We've been invoked on the render thread
@@ -914,21 +927,42 @@ void ShipRenderContext::UploadPointMutableAttributes(
     CheckOpenGLError();
 
     // AttributeGroup, interleaving
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroupVBO);
-    float const * const restrict pSrc1 = light;
-    float const * const restrict pSrc2 = water;
-    float const * const restrict pSrc3 = temperature;
-    vec3f const * const restrict pSrc4 = rot;
-    PointAttributeGroupVertex * const restrict pDst = reinterpret_cast<PointAttributeGroupVertex *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-    CheckOpenGLError();
-    for (size_t i = 0; i < mShipPointCount; ++i)
     {
-        pDst[i].light = pSrc1[i];
-        pDst[i].water = pSrc2[i];
-        pDst[i].temperature = pSrc3[i];
-        pDst[i].rot = pSrc4[i].x;
-        pDst[i].rust = pSrc4[i].y;
-        pDst[i].algaeGrowth = pSrc4[i].z;
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroupVBO);
+        float const * const restrict pSrc1 = light;
+        float const * const restrict pSrc2 = water;
+        float const * const restrict pSrc3 = temperature;
+        vec3f const * const restrict pSrc4 = rot;
+        PointAttributeGroupVertex * const restrict pDst = reinterpret_cast<PointAttributeGroupVertex *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+        CheckOpenGLError();
+        for (size_t i = 0; i < mShipPointCount; ++i)
+        {
+            pDst[i].light = pSrc1[i];
+            pDst[i].water = pSrc2[i];
+            pDst[i].temperature = pSrc3[i];
+            pDst[i].rot = pSrc4[i].x;
+            pDst[i].rust = pSrc4[i].y;
+            pDst[i].algaeGrowth = pSrc4[i].z;
+        }
+
+        glUnmapBuffer(GL_ARRAY_BUFFER);
+        CheckOpenGLError();
+    }
+
+    // WaterAttributeGroup, interleaving
+    if (isHighQualityRendering)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterAttributeGroupVBO);
+        vec2f const * const restrict pSrc1 = waterMomentum;
+        float const * const restrict pSrc2 = waterKineticEnergyLoss;
+        vec3f * const restrict pDst = reinterpret_cast<vec3f *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+        CheckOpenGLError();
+        for (size_t i = 0; i < mShipPointCount; ++i)
+        {
+            pDst[i].x = pSrc1[i].x;
+            pDst[i].y = pSrc1[i].y;
+            pDst[i].z = pSrc2[i];
+        }
     }
 
     glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -1501,6 +1535,14 @@ void ShipRenderContext::RenderDraw(
     RenderStatistics & renderStats)
 {
     // We've been invoked on the render thread
+
+
+    //
+    // Set one-time parameters
+    //
+
+    mShaderManager.SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::ShipWorldSize>(mShipWorldSize);
+
 
     //
     // Set gross noise in the noise texture unit, as all our shaders require that one

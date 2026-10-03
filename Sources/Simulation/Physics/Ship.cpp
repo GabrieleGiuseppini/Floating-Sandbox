@@ -3840,7 +3840,8 @@ void Ship::UpdateAirAndWaterPressure(
     for (auto const p : mPoints.RawShipPoints())
     {
         float const pointFreeness = LinearStep(2.0f, 9.0f, mPoints.GetAir(p)); // 0.0=underwater, 1.0=abovewater
-        waterSplashed += pointKineticEnergyLoss[p] * pointFreeness;
+        pointKineticEnergyLoss[p] *= pointFreeness;
+        waterSplashed += pointKineticEnergyLoss[p];
     }
 #endif
 

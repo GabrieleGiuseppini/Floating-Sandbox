@@ -2106,33 +2106,43 @@
 		- changelist
 			- Pressure redesign
 
-	- Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
-	- Consider rendering kinetic energy loss! Makes for foam
-		- Test: 
-			+ Get RND perf before: 3.8-3.9ms
-			- ShipSize param, set into all shaders
-			- Add both quantities to vertex attributes - Vertex struct for kinetic, standalone (new attrib) for water vel
-			- Add both buffers to RenderUpload
-			- Shader:
-				- Kinetic energy loss: 
-					- Whiteish or texture from mipmapped, given texture coords as new param
-						- Option 1: White-ish
-						- Option 2: Texture coords math: 
-							- world = ship_texture_coords * ship_size
-							- tile_vcoords = (world % WIDTH constant) / WIDTH constant
-							- texture_coords = tile_vcoords * new_param.size + new_param.origin
-					- If changes too quickly, do smoothing @ ShipRenderContext
+	= Consider rendering water velocities! Should make for nice effects! You can see it by drawing vectors
+	= Consider rendering kinetic energy loss! Makes for foam
+		+ Get RND perf before: 3.8-3.9ms
+		+ ShipSize param, set into all shaders
+		+ Add both quantities to vertex attributes
+		+ Add both buffers to RenderUpload
+		= Shader:
+			= Kinetic energy loss: 
+				+ Ship::Diffusion: incorporate freeness in buffer values!
+				= Whiteish or texture from mipmapped, given texture coords as new param
+					= Option 1: White-ish
+					- Option 2: Texture coords math: 
+						- world = ship_texture_coords * ship_size
+						- tile_vcoords = (world % WIDTH constant) / WIDTH constant
+						- texture_coords = tile_vcoords * new_param.size + new_param.origin
+				- If changes too quickly, do smoothing @ ShipRenderContext
 
-				- Vels: offset for texture and all based on pos
-					- Scale down vel vector length to world, via local constant
-					- ship_texture_coords_offset = world / ship_size
-					- Sample both orig and offseted, and blend them
-						- Weight of blending:
-							- Option 1: water_depth
-							- Optiver 2: length of vel * water_depth
-					- If changes too quickly, do smoothing @ ShipRenderContext
+			= Vels: offset for texture and all based on pos
+				+ Scale down vel vector length to world, via local constant
+				+ ship_texture_coords_offset = world / ship_size
+				+ Sample both orig and offseted, and blend them
+					+ Weight of blending:
+						+ Option 1: water_depth
+						X Optiver 2: length of vel * water_depth
+
+				- Things to try:
+					- Do not sample twice but just once, offseted
+						- Also use offset for rust, etc.
+					- To remove static bias underwater, diff each val with previous val, and only publish diff
+
+			- Make conditional on high-quality
+
+			- Nuke kinetic energy rendering?
+				- Go back to populating group 2
 
 		- If doesn't go through, nuke Points::WaterDiffusionKineticEnergyLoss and incorporate in Points::<workbuffer for WaterDiffusion algo>
+			- Though we clear it out?
 		- If goes through, remove compiler MOBILE conditional for kinetic energy loss calc'ns
 			- And add to AndroidPlan ->
 

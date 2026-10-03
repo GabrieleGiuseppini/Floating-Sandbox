@@ -2378,6 +2378,8 @@ void Points::UploadAttributes(
         mWaterBuffer.data(),
         mTemperatureBuffer.data(),
         reinterpret_cast<vec3f const *>(mDecayBuffer.data()),
+        mWaterMomentumBuffer.data(),
+        mWaterDiffusionKineticEnergyLossBuffer.data(),
         planeIdBuffer);
 
     if (renderContext.GetStressRenderMode() != StressRenderModeType::None)
