@@ -7,8 +7,7 @@
 in vec2 inShipPointPosition;
 in vec2 inShipPointTextureCoordinates;
 in vec4 inShipPointAttributeGroup1; // Light, Water, Temperature, Rot
-in vec2 inShipPointAttributeGroup2; // Rust, AlgaeGrowth
-in vec3 inShipPointWaterAttributeGroup; // WaterMomentum, WaterKineticEnergyLoss
+in vec4 inShipPointAttributeGroup2; // Rust, AlgaeGrowth, WaterMomentum
 in float inShipPointPlaneId;
 #if STRESS_RENDER_MODE != 0
 in float inShipPointStress; // Stress
@@ -22,7 +21,6 @@ out float vertexWorldY;
 out vec4 vertexAttributes1; // Light, Water, Temperature, Rot
 out vec2 vertexAttributes2; // Rust, AlgaeGrowth
 out vec2 vertexWaterMomentum;
-out float vertexWaterKineticEnergyLoss;
 out vec2 vertexTextureCoords;
 #ifdef WITH_MATTE_COLOR
 out vec4 vertexCol;
@@ -47,9 +45,8 @@ void main()
         // y = 0.4*x^0.39794
     vertexAttributes1.y = pow(vertexAttributes1.y, 0.25) * paramWaterLevelOfDetail;
 
-    vertexAttributes2 = inShipPointAttributeGroup2;
-    vertexWaterMomentum = inShipPointWaterAttributeGroup.xy;
-    vertexWaterKineticEnergyLoss = inShipPointWaterAttributeGroup.z;
+    vertexAttributes2 = inShipPointAttributeGroup2.xy;
+    vertexWaterMomentum = inShipPointAttributeGroup2.zw;
 
     vertexTextureCoords = inShipPointTextureCoordinates;
 
@@ -81,7 +78,6 @@ in float vertexWorldY;
 in vec4 vertexAttributes1; // Light, Water, Temperature, Rot
 in vec2 vertexAttributes2; // Rust, AlgaeGrowth
 in vec2 vertexWaterMomentum;
-in float vertexWaterKineticEnergyLoss;
 in vec2 vertexTextureCoords;
 #ifdef  WITH_MATTE_COLOR
 in vec4 vertexCol;
@@ -185,12 +181,7 @@ void main()
     fragColour = mix(algaeGrowthSample, fragColour, sqrt(vertexAttributes2.y));
 
     // Apply point water
-    // TODOTEST
-    //float TODO = vertexWaterKineticEnergyLoss;
-    float TODO = max(vertexWaterKineticEnergyLoss / 0.5, 0.0);
-    vec3 waterColor = mix(paramWaterColor, vec3(1.), min(TODO, 1.));
-    fragColour = mix(fragColour, waterColor, vertexWater * paramWaterContrast);
-    //fragColour = mix(fragColour, paramWaterColor, vertexWater * paramWaterContrast);
+    fragColour = mix(fragColour, paramWaterColor, vertexWater * paramWaterContrast);
 
     // Complement missing ambient light with point's light
     float effectiveAmbientLightIntensity = mix(vertexAttributes1.x, 1.0, paramEffectiveAmbientLightIntensity);

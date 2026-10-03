@@ -767,8 +767,6 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
         return VertexAttributeKind::ShipPointAttributeGroup1;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointAttributeGroup2"))
         return VertexAttributeKind::ShipPointAttributeGroup2;
-    else if (Utils::CaseInsensitiveEquals(str, "ShipPointWaterAttributeGroup"))
-        return VertexAttributeKind::ShipPointWaterAttributeGroup;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
         return VertexAttributeKind::ShipPointColor;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointPlaneId"))

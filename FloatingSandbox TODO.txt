@@ -2113,10 +2113,10 @@
 		+ Add both quantities to vertex attributes
 		+ Add both buffers to RenderUpload
 		= Shader:
-			= Kinetic energy loss: 
+			X Kinetic energy loss: 
 				+ Ship::Diffusion: incorporate freeness in buffer values!
-				= Whiteish or texture from mipmapped, given texture coords as new param
-					= Option 1: White-ish
+				X Whiteish or texture from mipmapped, given texture coords as new param
+					X Option 1: White-ish
 					- Option 2: Texture coords math: 
 						- world = ship_texture_coords * ship_size
 						- tile_vcoords = (world % WIDTH constant) / WIDTH constant
@@ -2138,8 +2138,8 @@
 
 			- Make conditional on high-quality
 
-			- Nuke kinetic energy rendering?
-				- Go back to populating group 2
+			+ Nuke kinetic energy rendering?
+				+ Go back to populating group 2
 
 		- If doesn't go through, nuke Points::WaterDiffusionKineticEnergyLoss and incorporate in Points::<workbuffer for WaterDiffusion algo>
 			- Though we clear it out?

@@ -266,8 +266,7 @@ enum class VertexAttributeKind : std::uint32_t
     ShipPointPosition = 0,
     ShipPointTextureCoordinates = 1,
     ShipPointAttributeGroup1 = 2,   // Light, Water, Temperature, Rot
-    ShipPointAttributeGroup2 = 3,   // Rust, AlgaeGrowth
-    ShipPointWaterAttributeGroup = 4, // WaterMomentum, WaterKineticEnergyLoss
+    ShipPointAttributeGroup2 = 3,   // Rust, AlgaeGrowth, WaterMomentum (vec2)
     ShipPointColor = 5,
     ShipPointPlaneId = 6,
     ShipPointStress = 7,

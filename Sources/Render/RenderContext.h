@@ -1277,12 +1277,9 @@ public:
         float const * temperature,
         vec3f const * rot,
         vec2f const * waterMomentum,
-        float const * waterKineticEnergyLoss,
         std::optional<float const *> planeId)
     {
         assert(shipId >= 0 && shipId < mInnerContext->ships.size());
-
-        bool const isHighQualityRendering = mRenderParameters.IsShipHighQualityRendering;
 
         // Run upload asynchronously
         mRenderThread.QueueTask(
@@ -1295,9 +1292,7 @@ public:
                     temperature,
                     rot,
                     waterMomentum,
-                    waterKineticEnergyLoss,
-                    planeId,
-                    isHighQualityRendering);
+                    planeId);
             });
     }
 

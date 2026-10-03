@@ -99,9 +99,7 @@ public:
         float const * temperature,
         vec3f const * rot,
         vec2f const * waterMomentum,
-        float const * waterKineticEnergyLoss,
-        std::optional<float const *> planeId,
-        bool isHighQualityRendering);
+        std::optional<float const *> planeId);
 
     // Invoked on render thread
     void UploadPointColors(vec4f const * color);
@@ -1548,6 +1546,7 @@ private:
         float rot;
         float rust;
         float algaeGrowth;
+        vec2f waterMomentum;
     };
 
     struct DebrisVertex
@@ -1868,8 +1867,7 @@ private:
 
     GameOpenGLVBO mPointPositionVBO;
     GameOpenGLVBO mPointTextureCoordinatesVBO;
-    GameOpenGLVBO mPointAttributeGroupVBO; // Light, Water, Temperature, Rot, Rust, AlgaeGrowth
-    GameOpenGLVBO mPointWaterAttributeGroupVBO; // WaterMomentum, WaterKineticEnergyLoss
+    GameOpenGLVBO mPointAttributeGroupVBO; // Light, Water, Temperature, Rot, Rust, AlgaeGrowth, WaterMomentum (vec2)
     GameOpenGLVBO mPointColorVBO;
     GameOpenGLVBO mPointPlaneIdVBO;
     GameOpenGLVBO mPointStressVBO;
