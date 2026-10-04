@@ -1190,7 +1190,7 @@ public:
 
     void UploadVector(
         vec2f const & position,
-        vec3f const & color,
+        vec4f const & color,
         float planeId,
         vec2f const & vector,
         float lengthAdjustment)
@@ -1806,12 +1806,12 @@ private:
     {
         vec2f vertexPosition;
         float planeId;
-        vec3f color;
+        vec4f color;
 
         VectorArrowVertex(
             vec2f _vertexPosition,
             float _planeId,
-            vec3f _color)
+            vec4f _color)
             : vertexPosition(_vertexPosition)
             , planeId(_planeId)
             , color(_color)

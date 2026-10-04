@@ -1098,7 +1098,7 @@ void Ship::RenderUpload(RenderContext & renderContext)
     {
         shipRenderContext.UploadVectorsStart(mDebugVectors.size());
 
-        vec3f constexpr Color = vec3f(0.8f, 0.0f, 0.0f);
+        vec4f constexpr Color = vec4f(0.8f, 0.0f, 0.0f, 1.0f);
         for (auto const & [p, v] : mDebugVectors)
         {
             shipRenderContext.UploadVector(

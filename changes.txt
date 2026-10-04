@@ -1,4 +1,9 @@
-1.21.1
+1.22.0
+- Completely redesigned the Internal Pressure system
+	- While previous versions only had water inside the ship, now there's also _air_, which counterbalances water pressure and forms "air pockets"
+	- NPCs are now also affected by moving air
+	- Redesigned bubbles, Flood and Inject Air tools, and sounds from water flowing and splashing inside the ship
+	- Ships now take longer to sink, as air trapped inside needs to find escape routes to let more water flow in!
 - Rewritten the ShipBuilder's material palette UI to support a humongous number of materials
 
 1.21.0

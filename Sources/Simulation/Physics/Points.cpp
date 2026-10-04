@@ -2478,12 +2478,14 @@ void Points::UploadVectors(
         || vectorFieldRenderMode == VectorFieldRenderModeType::PointWaterMomentum
         || vectorFieldRenderMode == VectorFieldRenderModeType::PointAirAndWaterMomentum)
     {
+        float constexpr Transparency = 0.3f;
+
         shipRenderContext.UploadVectorsStart(mRawShipPointCount + (vectorFieldRenderMode == VectorFieldRenderModeType::PointAirAndWaterMomentum) ? mRawShipPointCount : 0);
 
         if (vectorFieldRenderMode == VectorFieldRenderModeType::PointAirMomentum
             || vectorFieldRenderMode == VectorFieldRenderModeType::PointAirAndWaterMomentum)
         {
-            vec3f constexpr Color = vec3f(0.794f, 0.309f, 0.309f);
+            vec4f constexpr Color = vec4f(0.794f, 0.309f, 0.309f, Transparency);
             float constexpr LengthAdjustment = 0.8f;
 
             for (auto const p : this->RawShipPoints())
@@ -2500,7 +2502,7 @@ void Points::UploadVectors(
         if (vectorFieldRenderMode == VectorFieldRenderModeType::PointWaterMomentum
             || vectorFieldRenderMode == VectorFieldRenderModeType::PointAirAndWaterMomentum)
         {
-            vec3f constexpr Color = vec3f(0.054f, 0.066f, 0.443f);
+            vec4f constexpr Color = vec4f(0.054f, 0.066f, 0.443f, Transparency);
             float constexpr LengthAdjustment = 0.1f;
 
             for (auto const p : this->RawShipPoints())
@@ -2518,7 +2520,7 @@ void Points::UploadVectors(
     }
     else
     {
-        vec3f color;
+        vec4f color;
         vec2f const * vectorBuffer = nullptr;
         float lengthAdjustment = 0.0f;
 
@@ -2526,7 +2528,7 @@ void Points::UploadVectors(
         {
             case VectorFieldRenderModeType::PointStaticForce:
             {
-                color = vec3f(0.5f, 0.1f, 0.f);
+                color = vec4f(0.5f, 0.1f, 0.f, 1.0f);
                 vectorBuffer = mStaticForceBuffer.data();
                 lengthAdjustment = 0.00075f;
 
@@ -2535,7 +2537,7 @@ void Points::UploadVectors(
 
             case VectorFieldRenderModeType::PointDynamicForce:
             {
-                color = vec3f(1.0f, 0.266f, 0.16f);
+                color = vec4f(1.0f, 0.266f, 0.16f, 1.0f);
                 // First buffer implicitly
                 assert(mDynamicForceBuffers.size() >= 1);
                 vectorBuffer = mDynamicForceBuffers[0].data();
@@ -2546,7 +2548,7 @@ void Points::UploadVectors(
 
             case VectorFieldRenderModeType::PointVelocity:
             {
-                color = vec3f(0.203f, 0.552f, 0.219f);
+                color = vec4f(0.203f, 0.552f, 0.219f, 1.0f);
                 vectorBuffer = mVelocityBuffer.data();
                 lengthAdjustment = 0.25f;
 

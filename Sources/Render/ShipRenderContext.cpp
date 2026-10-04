@@ -696,11 +696,11 @@ ShipRenderContext::ShipRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
-        static_assert(sizeof(VectorArrowVertex) == (2 + 1 + 3) * sizeof(float));
+        static_assert(sizeof(VectorArrowVertex) == (2 + 1 + 4) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow1));
         glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow1), 3, GL_FLOAT, GL_FALSE, sizeof(VectorArrowVertex), (void*)(0));
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow2), 3, GL_FLOAT, GL_FALSE, sizeof(VectorArrowVertex), (void*)((3) * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow2), 4, GL_FLOAT, GL_FALSE, sizeof(VectorArrowVertex), (void*)((3) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);

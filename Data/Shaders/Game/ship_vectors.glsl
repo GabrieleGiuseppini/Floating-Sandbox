@@ -5,10 +5,10 @@
 
 // Inputs
 in vec3 inVectorArrow1; // Position, PlaneId
-in vec3 inVectorArrow2; // Color
+in vec4 inVectorArrow2; // Color
 
 // Outputs
-out vec3 vertexColor;
+out vec4 vertexColor;
 
 // Params
 uniform mat4 paramOrthoMatrix;
@@ -24,9 +24,9 @@ void main()
 #define in varying
 
 // Inputs
-in vec3 vertexColor;
+in vec4 vertexColor;
 
 void main()
 {
-    gl_FragColor = vec4(vertexColor, 1.0);
+    gl_FragColor = vertexColor;
 } 
