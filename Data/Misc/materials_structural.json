@@ -4404,6 +4404,89 @@
         {
             "buoyancy_volume_fill": 0.3,
             "color_key": [
+                "#021824",
+                "#862624",
+                "#DDE771",
+                "#489324",
+                "#02829A",
+                "#1D4A85",
+                "#8818A4",
+                "#AA6724",
+                "#132935"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 393.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 180
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Water-Soluble Rope",
+            "palette_coordinates": {
+                "category": "Ropes",
+                "sub_category": "Water-Soluble Ropes",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Cable",
+            "specific_heat": 1400.0,
+            "stiffness": 1.84,
+            "strength": 0.075,
+            "thermal_conductivity": 0.04,
+            "water_diffusion_speed": 0.03,
+            "water_intake": 0.05,
+            "water_retention": 0.5,
+            "water_solubility": 0.6,
+            "wind_receptivity": 0.2
+        },
+        {
+            "buoyancy_volume_fill": 0.3,
+            "color_key": [
+                "#223834",
+                "#A64634",
+                "#FDFF81",
+                "#68B334",
+                "#22A2AA",
+                "#3D6A95",
+                "#A838B4",
+                "#CA8734",
+                "#334945"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 393.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 180
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Water-Soluble Tense Rope",
+            "palette_coordinates": {
+                "category": "Ropes",
+                "sub_category": "Water-Soluble Tense Ropes",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Cable",
+            "specific_heat": 1400.0,
+            "spring_tension": 0.98,
+            "stiffness": 1.84,
+            "strength": 0.075,
+            "thermal_conductivity": 0.04,
+            "water_diffusion_speed": 0.03,
+            "water_intake": 0.05,
+            "water_retention": 0.5,
+            "water_solubility": 0.6,
+            "wind_receptivity": 0.2
+        },
+        {
+            "buoyancy_volume_fill": 0.3,
+            "color_key": [
                 "#3b3a39",
                 "#540a06",
                 "#5c5939",
@@ -4884,7 +4967,9 @@
                             "Ropes",
                             "Tense Ropes",
                             "Strong Ropes",
-                            "Tense Strong Ropes"
+                            "Tense Strong Ropes",
+                            "Water-Soluble Ropes",
+                            "Water-Soluble Tense Ropes"
                         ]
                     }
                 ]

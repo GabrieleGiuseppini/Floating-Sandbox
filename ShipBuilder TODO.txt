@@ -244,6 +244,9 @@
 						- Name
 						- Strength, Mass
 						- TODOHERE
+						- Advanced:
+							- Water solubility
+							- TODOHERE
 					- Electrical:
 						- Name
 						- TODOHERE
@@ -252,6 +255,9 @@
 						- Name
 						- Strength, Mass
 						- TODOHERE
+						- Advanced:
+							- Water solubility
+							- TODOHERE
 					- json Ser/Deser
 					- Comparison, Equality, and hash
 					- Equality with Material - iff needed

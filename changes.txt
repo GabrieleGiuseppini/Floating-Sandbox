@@ -5,6 +5,7 @@
 	- Redesigned bubbles, Flood and Inject Air tools, and sounds from water flowing and splashing inside the ship
 	- Ships now take longer to sink, as air trapped inside needs to find escape routes to let more water flow in!
 - Rewritten the ShipBuilder's material palette UI to support a humongous number of materials
+- Added new Water-soluble Rope material
 
 1.21.0
 - ...the Rust'N'Gust update!
