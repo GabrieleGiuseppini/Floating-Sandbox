@@ -2154,7 +2154,7 @@
 			+ If goes thru: nuke alpha/beta coeffs for neighbors
 			+ Remove query tool and strength upload changes
 
-	- Water-soluble cables	
+	+ Water-soluble cables	
 
 
 	- Purge ships
