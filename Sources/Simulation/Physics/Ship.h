@@ -1277,8 +1277,7 @@ private:
     float mDecayRustExposedWetAlpha;
     float mDecayRustDamageDryAlpha;
     float mDecayRustDamageWetAlpha;
-    float mDecayRustNeighborsDryAlpha;
-    float mDecayRustNeighborsWetAlpha;
+    float mDecayRustNeighborsConvergenceRate;
 
     float mCurrentAlgaeGrowthAcceler8r; // Last seen, to detect changes
     float mDecayAlgaeGrowthAlpha;

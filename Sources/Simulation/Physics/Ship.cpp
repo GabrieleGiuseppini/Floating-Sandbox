@@ -3574,9 +3574,8 @@ void Ship::UpdateAirAndWaterPressure(
                 // Extract already all outgoing flow
                 //
 
-                assert(pointsVariables[p].TotalOutboundFlowWeight * pointsVariables[p].FlowNormalizationFactor > pointAirBufferData[p]); // Because of MaxAirDrainFraction
-
                 float const pointTotalAirOut = pointsVariables[p].TotalOutboundFlowWeight * pointsVariables[p].FlowNormalizationFactor;
+                assert(pointTotalAirOut <= pointAirBufferData[p]); // Because of MaxAirDrainFraction
                 pointAirBufferData[p] -= pointTotalAirOut;
                 assert(pointAirBufferData[p] >= 0.0f);
 
@@ -3814,7 +3813,6 @@ void Ship::UpdateAirAndWaterPressure(
                 float const hullEffectiveAir = (pointDstEffectiveAirBufferData[p] + newPointHullEffectiveAirBufferData[p]) / static_cast<float>(mPoints.GetConnectedSprings(p).ConnectedSprings.size() + 1);
 
                 // Store both Air and EffectiveAir, as we won't transform between the two anymore
-                assert(pointSrcTemperatureBufferData[p] > 0.0f);
                 float const effectiveAirToAir = SimulationParameters::Temperature0 / srcPointTemperatureBuffer[p];
                 pointDstAirBufferData[p] = hullEffectiveAir * effectiveAirToAir;
                 pointDstEffectiveAirBufferData[p] = hullEffectiveAir;
@@ -4292,16 +4290,17 @@ void Ship::DecayPoints(
         if (simulationParameters.RustAcceler8r != 0.0f)
         {
             float constexpr NsExposed = 30.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
-            mDecayRustExposedDryAlpha = std::max(powf(0.85f, simulationParameters.RustAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
-            mDecayRustExposedWetAlpha = std::max(powf(0.75f, simulationParameters.RustAcceler8r / NsExposed), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            mDecayRustExposedDryAlpha = powf(0.85f, simulationParameters.RustAcceler8r / NsExposed);
+            mDecayRustExposedWetAlpha = powf(0.75f, simulationParameters.RustAcceler8r / NsExposed);
 
             float constexpr NsDamage = 4.25f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
-            mDecayRustDamageDryAlpha = std::max(powf(0.50f, simulationParameters.RustAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
-            mDecayRustDamageWetAlpha = std::max(powf(0.0009765625f, simulationParameters.RustAcceler8r / NsDamage), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            mDecayRustDamageDryAlpha = powf(0.50f, simulationParameters.RustAcceler8r / NsDamage);
+            mDecayRustDamageWetAlpha = powf(0.0009765625f, simulationParameters.RustAcceler8r / NsDamage);
 
-            float constexpr NsNeighbors = 1.5f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
-            mDecayRustNeighborsDryAlpha = std::max(powf(0.25f, simulationParameters.RustAcceler8r / NsNeighbors), 0.5f); // At least 0.5 to ensure sum of beta's < 1
-            mDecayRustNeighborsWetAlpha = std::max(powf(0.01f, simulationParameters.RustAcceler8r / NsNeighbors), 0.5f); // At least 0.5 to ensure sum of beta's < 1
+            // 0.0	    ->  0.0
+            // 1.0	    ->  0.01
+            // 500.0	->  0.15
+            mDecayRustNeighborsConvergenceRate = 0.01f * powf(simulationParameters.RustAcceler8r, 0.4357556f);
         }
         else
         {
@@ -4309,8 +4308,7 @@ void Ship::DecayPoints(
             mDecayRustExposedWetAlpha = 1.0f;
             mDecayRustDamageDryAlpha = 1.0f;
             mDecayRustDamageWetAlpha = 1.0f;
-            mDecayRustNeighborsDryAlpha = 1.0f;
-            mDecayRustNeighborsWetAlpha = 1.0f;
+            mDecayRustNeighborsConvergenceRate = 0.0f;
         }
 
         mCurrentRustAcceler8r = simulationParameters.RustAcceler8r;
@@ -4320,8 +4318,6 @@ void Ship::DecayPoints(
     float const a_rust_exposed_wet = mDecayRustExposedWetAlpha;
     float const a_rust_damage_dry = mDecayRustDamageDryAlpha;
     float const a_rust_damage_wet = mDecayRustDamageWetAlpha;
-    float const a_rust_neighbors_dry = mDecayRustNeighborsDryAlpha;
-    float const a_rust_neighbors_wet = mDecayRustNeighborsWetAlpha;
 
     // Adj = 0 => 0.0
     // Adj = 1 => Base
@@ -4398,41 +4394,57 @@ void Ship::DecayPoints(
         // Rust
         //
 
-        // 1) Base rust:
-        //  - Not damaged, more so if wet
-        //  - Damaged, more so if wet
+        float const currentRust = mPoints.GetRust(p);
 
-        float const betaRustBase =
-            (1.0f - Mix(a_rust_damage_dry, a_rust_damage_wet, isWet)) * isDamaged
-            + (1.0f - Mix(a_rust_exposed_dry, a_rust_exposed_wet, isWet)) * (1.0f - isDamaged);
+        // 1) Damage rust:
+        // - When damaged, more so if wet
 
-        // 2) Rust by neighbors, imprinting pattern via random personality seed
+        float const betaRustDamaged =
+            (1.0f - Mix(a_rust_damage_dry, a_rust_damage_wet, isWet))
+            * isDamaged
+            * structuralMaterial.RustReceptivity;
+        assert(betaRustDamaged >= 0.0f && betaRustDamaged <= 1.0f);
+        float const rustDamaged = currentRust * (1.0f - betaRustDamaged);
 
-        float avgNeighborsRust = 0.0f;
-        auto const nCs = mPoints.GetConnectedSprings(p).ConnectedSprings.size();
-        if (nCs > 0)
+        // 2) Exposure rust:
+        //  - More so if wet
+
+        float const betaRustExposed =
+            (1.0f - Mix(a_rust_exposed_dry, a_rust_exposed_wet, isWet))
+            * structuralMaterial.RustReceptivity;
+        assert(betaRustExposed >= 0.0f && betaRustExposed <= 1.0f);
+        // Cap rust - lower if wet
+        float const minRustExposed = 0.5f * (1.0f - isWet * 0.5f);
+        float const rustExposed = std::max(currentRust * (1.0f - betaRustExposed), minRustExposed);
+
+        // 3) Rust by neighbors:
+        //  - Imprinting pattern via random personality seed
+
+        float minNeighborsRust = mPoints.GetRust(p);
+        for (auto const & cs : mPoints.GetConnectedSprings(p).ConnectedSprings)
         {
-            for (auto const & cs : mPoints.GetConnectedSprings(p).ConnectedSprings)
-            {
-                avgNeighborsRust += 1.0f - mPoints.GetRust(cs.OtherEndpointIndex);
-            }
-
-            avgNeighborsRust /= static_cast<float>(nCs);
+            minNeighborsRust = std::min(minNeighborsRust, mPoints.GetRust(cs.OtherEndpointIndex));
         }
 
-        float const betaRustNeighbors =
-            (1.0f - Mix(a_rust_neighbors_dry, a_rust_neighbors_wet, isWet)) // Rusts faster when wet
-            * avgNeighborsRust
-            * (1.0f - 0.982f * mPoints.GetRandomNormalizedUniformPersonalitySeed(p)); // Allow zero's to rust
+        // Converge to min rust
+        float const convergenceFactor = std::min(
+            mDecayRustNeighborsConvergenceRate * structuralMaterial.RustReceptivity * (1.0f - 0.982f * mPoints.GetRandomNormalizedUniformPersonalitySeed(p)), // Allow zero's to rust
+            1.0f);
+        assert(convergenceFactor >= 0.0f && convergenceFactor <= 1.0f);
+        float const rustNeighbors =
+            currentRust
+            + (minNeighborsRust - currentRust) * convergenceFactor;
 
-        // Combine
+        // Rust: min of all rusts
+        // Weakness: from implied beta across all rusts
 
-        float const betaRust = (betaRustBase + betaRustNeighbors) * structuralMaterial.RustReceptivity;
-        assert(betaRust >= 0.0f && betaRust <= 1.0f);
+        float const finalRust = std::min(std::min(rustDamaged, rustExposed), rustNeighbors);
+        mPoints.SetRust(p, finalRust);
 
-        // Rust
-        mPoints.SetRust(p, mPoints.GetRust(p) * (1.0f - betaRust));
-        alphaWeakness = std::min(alphaWeakness, 1.0f - betaRust * rustWeaknessFactor);
+        float const impliedBetaRust = (currentRust > 0.0f)
+            ? 1.0f - finalRust / currentRust
+            : 1.0f;
+        alphaWeakness = std::min(alphaWeakness, 1.0f - impliedBetaRust * rustWeaknessFactor);
 
         //
         // Algae growth

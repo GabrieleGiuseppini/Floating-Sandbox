@@ -2122,9 +2122,8 @@
 
 		+ Send beta and get feedback
 
-
-	- Bandit's rusting:
-		- I was wondering if you might be asble to adjust the rusting values so the stuff from damage rusts first because it spreads from rust right now but it doesent seem to destroy itself from rust 
+	+ Bandit's rusting:
+		! I was wondering if you might be asble to adjust the rusting values so the stuff from damage rusts first because it spreads from rust right now but it doesent seem to destroy itself from rust 
 		  first because once it is covered in rust, it just rusts like it did before instead of more dynamically from damage. 
 		  because if you look these were taken a minute apart from each other once it fully was covered and well it kinda does what it used to...
 		  not another overhaul, but maybe tweaking the values so it rusts and destroys itself from damage points faster than just base deterioration.
@@ -2132,8 +2131,28 @@
 		  like i said this version of rusting is better, but i feel the values need to be tweaked because it still kinda behaves like it used to...
 
 		  as lusitania was saying maybe a slider to control base rust
-		- Option 1: Ambient rusting asymptotes to higher value, and we take min
-		- Option 2: See if could just be solved by just slowing "general" rusting - which is a tad too fast imho
+		+ Option 1: Ambient rusting asymptotes to higher value, and we take min
+			+ Neighbors act on rust directly
+			+ Fix:
+				+ Wet must lower exposure rust limit: limit = L - isWet * L/3 = L * (1-isWet*0.3)
+				+ Avg neighbors reaches a limit and thus damage spread stops; need to go down more
+					+ Slowly converge to _min_ of neighbors, including self
+						+ Conv rate depends on:
+							+ Acceler8r factor
+								+ want: conv factor
+									! Accel=0 => 0
+									! Accel=1 => 0.01
+									! Accel=500 => 0.15
+							+ Material receptivity
+							+ Personality seed
+				+ Alpha weakness: from implied beta from final rust
+					+ Add temporary query tool + strength upload
+					+ Test with weakness at
+						+ 0
+						+ max
+			+ Run in Debug
+			+ If goes thru: nuke alpha/beta coeffs for neighbors
+			+ Remove query tool and strength upload changes
 
 	- Water-soluble cables	
 
