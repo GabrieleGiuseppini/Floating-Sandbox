@@ -342,6 +342,9 @@
 			- ReplaceMaterials(map: TMaterial * -> TMaterial *|null (for removal))
 				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
 
+- Traslate (aka move)
+	- Structural, Electrical, Ropes
+	+ External
 
 
 
