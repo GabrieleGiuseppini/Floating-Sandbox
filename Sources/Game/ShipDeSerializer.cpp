@@ -24,20 +24,20 @@ bool ShipDeSerializer::IsShipDefinitionFile(std::filesystem::path const & shipFi
 
 ShipDefinition ShipDeSerializer::LoadShip(
     std::filesystem::path const & shipFilePath,
-    MaterialDatabase const & materialDatabase)
+    DefaultMaterialDatabase const & defaultMaterialDatabase)
 {
     if (IsShipDefinitionFile(shipFilePath))
     {
         auto inputStream = FileBinaryReadStream(shipFilePath);
-        return ShipDefinitionFormatDeSerializer::Load(inputStream, materialDatabase);
+        return ShipDefinitionFormatDeSerializer::Load(inputStream, defaultMaterialDatabase);
     }
     else if (IsImageDefinitionFile(shipFilePath))
     {
-        return ShipLegacyFormatDeSerializer::LoadShipFromImageDefinition(shipFilePath, materialDatabase);
+        return ShipLegacyFormatDeSerializer::LoadShipFromImageDefinition(shipFilePath, defaultMaterialDatabase);
     }
     else if (IsLegacyShpShipDefinitionFile(shipFilePath))
     {
-        return ShipLegacyFormatDeSerializer::LoadShipFromLegacyShpShipDefinition(shipFilePath, materialDatabase);
+        return ShipLegacyFormatDeSerializer::LoadShipFromLegacyShpShipDefinition(shipFilePath, defaultMaterialDatabase);
     }
     else
     {

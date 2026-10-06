@@ -15,8 +15,8 @@
 #include "ShipLoadSpecifications.h"
 #include "ViewManager.h"
 
+#include <Simulation/DefaultMaterialDatabase.h>
 #include <Simulation/FishSpeciesDatabase.h>
-#include <Simulation/MaterialDatabase.h>
 #include <Simulation/NpcDatabase.h>
 #include <Simulation/Physics/Physics.h>
 #include <Simulation/ShipMetadata.h>
@@ -75,9 +75,9 @@ public:
 
 public:
 
-    MaterialDatabase const & GetMaterialDatabase() const
+    DefaultMaterialDatabase const & GetDefaultMaterialDatabase() const
     {
-        return mMaterialDatabase;
+        return mDefaultMaterialDatabase;
     }
 
     ShipTexturizer const & GetShipTexturizer() const
@@ -1218,7 +1218,7 @@ private:
         std::unique_ptr<PerfStats> perfStats,
         FishSpeciesDatabase && fishSpeciesDatabase,
         NpcDatabase && npcDatabase,
-        MaterialDatabase && materialDatabase,
+        DefaultMaterialDatabase && defaultMaterialDatabase,
         ThreadManager & threadManager,
         GameAssetManager const & gameAssetManager,
         ProgressCallback const & progressCallback);
@@ -1291,7 +1291,7 @@ private:
 
     FishSpeciesDatabase mFishSpeciesDatabase;
     NpcDatabase mNpcDatabase;
-    MaterialDatabase mMaterialDatabase;
+    DefaultMaterialDatabase mDefaultMaterialDatabase;
 
     //
     // Ship factory

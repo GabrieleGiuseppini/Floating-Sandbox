@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-class MaterialDatabase
+class DefaultMaterialDatabase
 {
 public:
 
@@ -110,15 +110,15 @@ private:
 public:
 
     // Only movable
-    MaterialDatabase(MaterialDatabase const & other) = delete;
-    MaterialDatabase(MaterialDatabase && other) = default;
-    MaterialDatabase & operator=(MaterialDatabase const & other) = delete;
-    MaterialDatabase & operator=(MaterialDatabase && other) = default;
+    DefaultMaterialDatabase(DefaultMaterialDatabase const & other) = delete;
+    DefaultMaterialDatabase(DefaultMaterialDatabase && other) = default;
+    DefaultMaterialDatabase & operator=(DefaultMaterialDatabase const & other) = delete;
+    DefaultMaterialDatabase & operator=(DefaultMaterialDatabase && other) = default;
 
-    static MaterialDatabase Load(IAssetManager const & assetManager);
+    static DefaultMaterialDatabase Load(IAssetManager const & assetManager);
 
     // For unit tests
-    static MaterialDatabase Make(
+    static DefaultMaterialDatabase Make(
         std::vector<StructuralMaterial const *> const & structuralMaterials,
         std::vector<ElectricalMaterial const *> const & electricalMaterials);
 
@@ -257,7 +257,7 @@ private:
 
 private:
 
-    MaterialDatabase(
+    DefaultMaterialDatabase(
         MaterialColorMap<StructuralMaterial> structuralMaterialColorMap,
         MaterialNameMap<StructuralMaterial> structuralMaterialNameMap,
         UniqueStructuralMaterialsArray uniqueStructuralMaterials,

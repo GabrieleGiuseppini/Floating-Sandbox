@@ -4,6 +4,8 @@
 #
 
 set  (SIMULATION_SOURCES
+	DefaultMaterialDatabase.cpp
+	DefaultMaterialDatabase.h
 	ElectricalPanel.h
 	EventRecorder.h
 	FishSpeciesDatabase.cpp
@@ -14,8 +16,6 @@ set  (SIMULATION_SOURCES
 	Layers.h
 	Materials.cpp
 	Materials.h
-	MaterialDatabase.cpp
-	MaterialDatabase.h
 	NpcDatabase.cpp
 	NpcDatabase.h
 	OceanFloorHeightMap.cpp

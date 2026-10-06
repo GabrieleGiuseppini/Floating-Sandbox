@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "MaterialDatabase.h"
+#include "DefaultMaterialDatabase.h"
 #include "Materials.h"
 
 #include <Render/GameTextureDatabases.h>
@@ -89,7 +89,7 @@ public:
 
     static NpcDatabase Load(
         IAssetManager const & assetManager,
-        MaterialDatabase const & materialDatabase,
+        DefaultMaterialDatabase const & defaultMaterialDatabase,
         TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas);
 
     // Humans
@@ -306,7 +306,7 @@ private:
 
     static FurnitureSubKind ParseFurnitureSubKind(
         picojson::object const & subKindObject,
-        MaterialDatabase const & materialDatabase,
+        DefaultMaterialDatabase const & defaultMaterialDatabase,
         TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas);
 
     static ParticleAttributesType MakeParticleAttributes(

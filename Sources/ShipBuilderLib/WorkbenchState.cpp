@@ -15,41 +15,41 @@
 namespace ShipBuilder {
 
 WorkbenchState::WorkbenchState(
-    MaterialDatabase const & materialDatabase,
+    DefaultMaterialDatabase const & defaultMaterialDatabase,
     IUserInterface & userInterface)
     : mClipboardManager(userInterface)
     ////////////////////////
     , mNewShipSize(0, 0) // Set later
 {
     // Default structural foreground material: first structural material
-    assert(!materialDatabase.GetStructuralMaterialPalette().Categories.empty()
-        && !materialDatabase.GetStructuralMaterialPalette().Categories[0].SubCategories.empty()
-        && !materialDatabase.GetStructuralMaterialPalette().Categories[0].SubCategories[0].Materials.empty());
-    mStructuralForegroundMaterial = &(materialDatabase.GetStructuralMaterialPalette().Categories[0].SubCategories[0].Materials[0].get());
+    assert(!defaultMaterialDatabase.GetStructuralMaterialPalette().Categories.empty()
+        && !defaultMaterialDatabase.GetStructuralMaterialPalette().Categories[0].SubCategories.empty()
+        && !defaultMaterialDatabase.GetStructuralMaterialPalette().Categories[0].SubCategories[0].Materials.empty());
+    mStructuralForegroundMaterial = &(defaultMaterialDatabase.GetStructuralMaterialPalette().Categories[0].SubCategories[0].Materials[0].get());
 
     // Default structural background material: none
     mStructuralBackgroundMaterial = nullptr;
 
     // Default electrical foreground material: first electrical material
-    assert(!materialDatabase.GetElectricalMaterialPalette().Categories.empty()
-        && !materialDatabase.GetElectricalMaterialPalette().Categories[0].SubCategories.empty()
-        && !materialDatabase.GetElectricalMaterialPalette().Categories[0].SubCategories[0].Materials.empty());
-    mElectricalForegroundMaterial = &(materialDatabase.GetElectricalMaterialPalette().Categories[0].SubCategories[0].Materials[0].get());
+    assert(!defaultMaterialDatabase.GetElectricalMaterialPalette().Categories.empty()
+        && !defaultMaterialDatabase.GetElectricalMaterialPalette().Categories[0].SubCategories.empty()
+        && !defaultMaterialDatabase.GetElectricalMaterialPalette().Categories[0].SubCategories[0].Materials.empty());
+    mElectricalForegroundMaterial = &(defaultMaterialDatabase.GetElectricalMaterialPalette().Categories[0].SubCategories[0].Materials[0].get());
 
     // Default electrical background material: none
     mElectricalBackgroundMaterial = nullptr;
 
     // Default ropes foreground material: first ropes material
-    assert(materialDatabase.GetRopeMaterialPalette().Categories.size() > 0
-        && !materialDatabase.GetRopeMaterialPalette().Categories[0].SubCategories.empty()
-        && !materialDatabase.GetRopeMaterialPalette().Categories[0].SubCategories[0].Materials.empty());
-    mRopesForegroundMaterial = &(materialDatabase.GetRopeMaterialPalette().Categories[0].SubCategories[0].Materials[0].get());
+    assert(defaultMaterialDatabase.GetRopeMaterialPalette().Categories.size() > 0
+        && !defaultMaterialDatabase.GetRopeMaterialPalette().Categories[0].SubCategories.empty()
+        && !defaultMaterialDatabase.GetRopeMaterialPalette().Categories[0].SubCategories[0].Materials.empty());
+    mRopesForegroundMaterial = &(defaultMaterialDatabase.GetRopeMaterialPalette().Categories[0].SubCategories[0].Materials[0].get());
 
     // Default ropes background material: second ropes material
-    assert(materialDatabase.GetRopeMaterialPalette().Categories.size() > 1
-        && !materialDatabase.GetRopeMaterialPalette().Categories[1].SubCategories.empty()
-        && !materialDatabase.GetRopeMaterialPalette().Categories[0].SubCategories[0].Materials.empty());
-    mRopesBackgroundMaterial = &(materialDatabase.GetRopeMaterialPalette().Categories[1].SubCategories[0].Materials[0].get());
+    assert(defaultMaterialDatabase.GetRopeMaterialPalette().Categories.size() > 1
+        && !defaultMaterialDatabase.GetRopeMaterialPalette().Categories[1].SubCategories.empty()
+        && !defaultMaterialDatabase.GetRopeMaterialPalette().Categories[0].SubCategories[0].Materials.empty());
+    mRopesBackgroundMaterial = &(defaultMaterialDatabase.GetRopeMaterialPalette().Categories[1].SubCategories[0].Materials[0].get());
 
     //
     // Default tool settings

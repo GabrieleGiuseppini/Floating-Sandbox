@@ -3,13 +3,13 @@
 * Created:              2018-12-07
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "MaterialDatabase.h"
+#include "DefaultMaterialDatabase.h"
 
 #include <Core/Log.h>
 
 #include <algorithm>
 
-MaterialDatabase MaterialDatabase::Load(IAssetManager const & assetManager)
+DefaultMaterialDatabase DefaultMaterialDatabase::Load(IAssetManager const & assetManager)
 {
     //
     // Structural
@@ -24,7 +24,7 @@ MaterialDatabase MaterialDatabase::Load(IAssetManager const & assetManager)
         uniqueStructuralMaterials[i].second = nullptr;
 
     // Load file
-    picojson::value const structuralMaterialsRoot = assetManager.LoadStructuralMaterialDatabase();
+    picojson::value const structuralMaterialsRoot = assetManager.LoadDefaultStructuralMaterialDatabase();
 
     if (!structuralMaterialsRoot.is<picojson::object>())
     {
@@ -223,7 +223,7 @@ MaterialDatabase MaterialDatabase::Load(IAssetManager const & assetManager)
     MaterialColorMap<ElectricalMaterial> electricalMaterialColorMap;
     std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> instancedElectricalMaterialMap;
 
-    picojson::value const electricalMaterialsRoot = assetManager.LoadElectricalMaterialDatabase();
+    picojson::value const electricalMaterialsRoot = assetManager.LoadDefaultElectricalMaterialDatabase();
 
     if (!electricalMaterialsRoot.is<picojson::object>())
     {
@@ -345,7 +345,7 @@ MaterialDatabase MaterialDatabase::Load(IAssetManager const & assetManager)
     // Wrap it up
     //
 
-    return MaterialDatabase(
+    return DefaultMaterialDatabase(
         std::move(structuralMaterialColorMap),
         std::move(structuralMaterialNameMap),
         uniqueStructuralMaterials,
@@ -357,7 +357,7 @@ MaterialDatabase MaterialDatabase::Load(IAssetManager const & assetManager)
         std::move(electricalMaterialPalette));
 }
 
-MaterialDatabase MaterialDatabase::Make(
+DefaultMaterialDatabase DefaultMaterialDatabase::Make(
     std::vector<StructuralMaterial const *> const & structuralMaterials,
     std::vector<ElectricalMaterial const *> const & electricalMaterials)
 {
@@ -413,7 +413,7 @@ MaterialDatabase MaterialDatabase::Make(
 
     Palette<ElectricalMaterial> electricalMaterialPalette;
 
-    return MaterialDatabase(
+    return DefaultMaterialDatabase(
         std::move(structuralMaterialColorMap),
         std::move(structuralMaterialNameMap),
         uniqueStructuralMaterials,
@@ -428,7 +428,7 @@ MaterialDatabase MaterialDatabase::Make(
 ///////////////////////////////////////////////////////////////////////
 
 template<typename TMaterial>
-MaterialDatabase::Palette<TMaterial> MaterialDatabase::Palette<TMaterial>::Parse(
+DefaultMaterialDatabase::Palette<TMaterial> DefaultMaterialDatabase::Palette<TMaterial>::Parse(
     picojson::object const & palettesRoot,
     std::string const & paletteName)
 {
@@ -465,7 +465,7 @@ MaterialDatabase::Palette<TMaterial> MaterialDatabase::Palette<TMaterial>::Parse
 }
 
 template<typename TMaterial>
-bool MaterialDatabase::Palette<TMaterial>::HasCategory(std::string const & categoryName)
+bool DefaultMaterialDatabase::Palette<TMaterial>::HasCategory(std::string const & categoryName)
 {
     auto const categoryIt = std::find_if(
         Categories.cbegin(),
@@ -479,7 +479,7 @@ bool MaterialDatabase::Palette<TMaterial>::HasCategory(std::string const & categ
 }
 
 template<typename TMaterial>
-void MaterialDatabase::Palette<TMaterial>::InsertMaterial(
+void DefaultMaterialDatabase::Palette<TMaterial>::InsertMaterial(
     TMaterial const & material,
     MaterialPaletteCoordinatesType const & paletteCoordinates)
 {
@@ -545,7 +545,7 @@ void MaterialDatabase::Palette<TMaterial>::InsertMaterial(
 }
 
 template<typename TMaterial>
-void MaterialDatabase::Palette<TMaterial>::CheckComplete()
+void DefaultMaterialDatabase::Palette<TMaterial>::CheckComplete()
 {
     for (auto const & category : Categories)
     {

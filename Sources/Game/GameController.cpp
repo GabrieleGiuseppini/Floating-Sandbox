@@ -27,7 +27,7 @@ std::unique_ptr<GameController> GameController::Create(
     ProgressCallback const & progressCallback)
 {
     // Load material database
-    MaterialDatabase materialDatabase = MaterialDatabase::Load(gameAssetManager);
+    DefaultMaterialDatabase defaultMaterialDatabase = DefaultMaterialDatabase::Load(gameAssetManager);
 
     // Load fish species database
     FishSpeciesDatabase fishSpeciesDatabase = FishSpeciesDatabase::Load(gameAssetManager);
@@ -38,7 +38,7 @@ std::unique_ptr<GameController> GameController::Create(
     // Load NPC database
     NpcDatabase npcDatabase = NpcDatabase::Load(
         gameAssetManager,
-        materialDatabase,
+        defaultMaterialDatabase,
         npcTextureAtlas);
 
     // Create perf stats
@@ -64,7 +64,7 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(perfStats),
             std::move(fishSpeciesDatabase),
             std::move(npcDatabase),
-            std::move(materialDatabase),
+            std::move(defaultMaterialDatabase),
             threadManager,
             gameAssetManager,
             progressCallback));
@@ -75,7 +75,7 @@ GameController::GameController(
     std::unique_ptr<PerfStats> perfStats,
     FishSpeciesDatabase && fishSpeciesDatabase,
     NpcDatabase && npcDatabase,
-    MaterialDatabase && materialDatabase,
+    DefaultMaterialDatabase && defaultMaterialDatabase,
     ThreadManager & threadManager,
     GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
@@ -87,10 +87,10 @@ GameController::GameController(
     , mWorld()
     , mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
     , mNpcDatabase(std::move(npcDatabase))
-    , mMaterialDatabase(std::move(materialDatabase))
+    , mDefaultMaterialDatabase(std::move(defaultMaterialDatabase))
     // Ship factory
     , mShipStrengthRandomizer()
-    , mShipTexturizer(mMaterialDatabase, gameAssetManager)
+    , mShipTexturizer(mDefaultMaterialDatabase, gameAssetManager)
     // State
     , mSimulationParameters()
     , mIsFrozen(false)
@@ -344,7 +344,7 @@ ShipMetadata GameController::AddShip(
     IAssetManager const & assetManager)
 {
     // Load ship definition
-    auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mMaterialDatabase);
+    auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mDefaultMaterialDatabase);
 
     // Pre-validate ship's textures, if any
     if (shipDefinition.Layers.ExteriorTextureLayer)
@@ -366,7 +366,7 @@ ShipMetadata GameController::AddShip(
         *mWorld,
         std::move(shipDefinition),
         loadSpecs.LoadOptions,
-        mMaterialDatabase,
+        mDefaultMaterialDatabase,
         mShipTexturizer,
         mShipStrengthRandomizer,
         mSimulationEventDispatcher,
@@ -2141,7 +2141,7 @@ ShipMetadata GameController::InternalResetAndLoadShip(
     assert(!!mWorld);
 
     // Load ship definition
-    auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mMaterialDatabase);
+    auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mDefaultMaterialDatabase);
 
     // Pre-validate ship's textures, if any
     if (shipDefinition.Layers.ExteriorTextureLayer)
@@ -2168,7 +2168,7 @@ ShipMetadata GameController::InternalResetAndLoadShip(
         *newWorld,
         std::move(shipDefinition),
         loadSpecs.LoadOptions,
-        mMaterialDatabase,
+        mDefaultMaterialDatabase,
         mShipTexturizer,
         mShipStrengthRandomizer,
         mSimulationEventDispatcher,

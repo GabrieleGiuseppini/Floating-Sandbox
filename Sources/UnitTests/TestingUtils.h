@@ -55,8 +55,8 @@ public:
     std::vector<AssetDescriptor> EnumerateFonts(std::string const & fontSetName) const override;
     std::unique_ptr<BinaryReadStream> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const override;
 
-    picojson::value LoadStructuralMaterialDatabase() const override;
-    picojson::value LoadElectricalMaterialDatabase() const override;
+    picojson::value LoadDefaultStructuralMaterialDatabase() const override;
+    picojson::value LoadDefaultElectricalMaterialDatabase() const override;
     picojson::value LoadFishSpeciesDatabase() const override;
     picojson::value LoadNpcDatabase() const override;
 

@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "DefaultMaterialDatabase.h"
 #include "Layers.h"
-#include "MaterialDatabase.h"
 #include "Physics/Physics.h"
 #include "ShipAutoTexturizationSettings.h"
 
@@ -28,7 +28,7 @@ public:
 public:
 
     ShipTexturizer(
-        MaterialDatabase const & materialDatabase,
+        DefaultMaterialDatabase const & defaultMaterialDatabase,
         IAssetManager const & assetManager);
 
     static int CalculateHighDefinitionTextureMagnificationFactor(
@@ -113,7 +113,7 @@ private:
 private:
 
     static std::unordered_map<std::string, std::string> MakeMaterialTextureNameToTextureRelativePathMap(
-        MaterialDatabase const & materialDatabase,
+        DefaultMaterialDatabase const & defaultMaterialDatabase,
         IAssetManager const & assetManager);
 
     static float MaterialTextureMagnificationToPixelConversionFactor(float magnification);

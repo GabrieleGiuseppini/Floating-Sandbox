@@ -12,7 +12,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
     std::function<void(fsStructuralMaterialSelectedEvent const & event)> onStructuralLayerMaterialSelected,
     std::function<void(fsElectricalMaterialSelectedEvent const & event)> onElectricalLayerMaterialSelected,
     std::function<void(fsStructuralMaterialSelectedEvent const & event)> onRopeLayerMaterialSelected,
-    MaterialDatabase const & materialDatabase,
+    DefaultMaterialDatabase const & defaultMaterialDatabase,
     ShipTexturizer const & shipTexturizer,
     ISoundController * soundController,
     GameAssetManager const & gameAssetManager,
@@ -24,7 +24,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
 {
     mStructuralMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Structural>>(
         parent,
-        materialDatabase.GetStructuralMaterialPalette(),
+        defaultMaterialDatabase.GetStructuralMaterialPalette(),
         shipTexturizer,
         soundController,
         gameAssetManager,
@@ -39,7 +39,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
 
     mElectricalMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Electrical>>(
         parent,
-        materialDatabase.GetElectricalMaterialPalette(),
+        defaultMaterialDatabase.GetElectricalMaterialPalette(),
         shipTexturizer,
         soundController,
         gameAssetManager,
@@ -54,7 +54,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
 
     mRopesMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Ropes>>(
         parent,
-        materialDatabase.GetRopeMaterialPalette(),
+        defaultMaterialDatabase.GetRopeMaterialPalette(),
         shipTexturizer,
         soundController,
         gameAssetManager,

@@ -5,10 +5,10 @@
 ***************************************************************************************/
 #pragma once
 
+#include "../DefaultMaterialDatabase.h"
+#include "../Materials.h"
 #include "../SimulationEventDispatcher.h"
 #include "../SimulationParameters.h"
-#include "../MaterialDatabase.h"
-#include "../Materials.h"
 
 #include <Render/RenderContext.h>
 
@@ -762,7 +762,7 @@ public:
         ElementCount shipPointCount,
         ElementCount maxEphemeralParticleCount,
         World & parentWorld,
-        MaterialDatabase const & materialDatabase,
+        DefaultMaterialDatabase const & defaultMaterialDatabase,
         SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters)
         : ElementContainer(make_aligned_float_element_count(shipPointCount) + maxEphemeralParticleCount)
@@ -866,7 +866,7 @@ public:
         // Container
         //////////////////////////////////
         , mParentWorld(parentWorld)
-        , mMaterialDatabase(materialDatabase)
+        , mDefaultMaterialDatabase(defaultMaterialDatabase)
         , mSimulationEventHandler(simulationEventDispatcher)
         , mShipPhysicsHandler(nullptr)
         , mCurrentNumMechanicalDynamicsIterations(simulationParameters.NumMechanicalDynamicsIterations<float>())
@@ -2893,7 +2893,7 @@ private:
     //////////////////////////////////////////////////////////
 
     World & mParentWorld;
-    MaterialDatabase const & mMaterialDatabase;
+    DefaultMaterialDatabase const & mDefaultMaterialDatabase;
     SimulationEventDispatcher & mSimulationEventHandler;
     IShipPhysicsHandler * mShipPhysicsHandler;
 

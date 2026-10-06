@@ -1,7 +1,7 @@
 #include <Game/GameAssetManager.h>
 
+#include <Simulation/DefaultMaterialDatabase.h>
 #include <Simulation/Layers.h>
-#include <Simulation/MaterialDatabase.h>
 #include <Simulation/ShipTexturizer.h>
 
 #include <Core/ImageData.h>

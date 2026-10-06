@@ -129,7 +129,7 @@
 
 		! SB's material palette:
 			- At any given moment, the palette shows default + user's custom materials + ship's custom materials
-				- Guaranteed all to be distinct among themselves
+				- Custom's are guaranteed all to be distinct among themselves
 				- These three are also the life pod of all materials
 				- At each change of last two, palette is re-created - TODO: really? Can do something in-place?
 			- Only contains pointers, without owning them
@@ -153,7 +153,7 @@
 			- Modifications happen on user or ship custom materials
 				- Changes to materials (user's or ship's own) done by user in ShipBuilder must be undoable via Undo
 					- Undo action: whole structural layer
-						- Edit could have resulted in a merge, hence a change in material pointers
+						- Edit could have resulted in a merge among custom's, hence a change in material pointers
 				- Changing a material currently in the ship (from user's or ship's own) should mark the ship as dirty
 					- Marks corresponding layer as dirty
 			- Can also merge another user custom material set into it, or import from ship
@@ -171,7 +171,7 @@
 		- Adding new custom material
 			- User clicks on + button
 			- When committed:
-				- Check if already exists
+				- Check if already exists among custom's
 					- If so: message and nop
 					- Else:
 						- Add to user's
@@ -179,7 +179,7 @@
 		- Editing existing user or ship custom material
 			- User clicks on edit button
 			- When committed:
-				- Check if already exists
+				- Check if already exists among custom's
 					- If so: 
 						- Message
 						- "merge"
@@ -197,7 +197,7 @@
 			- TODOHERE: Undo & Dirty
 		- Loading ship
 			- With custom materials:
-				- Replace ship's custom materials in palette with remainders after mergning ship's custom materials with default + user's custom
+				- Replace ship's custom materials in palette with remainders after merging ship's custom materials with user's custom
 				- Re-draw palette
 			- Without custom materials:
 				- Nuke ship's custom materials in palette
@@ -231,15 +231,20 @@
 				  takes the pointer of that one
 			- MaterialPalettesController implements 3 IMaterialPaletteController<TLayer> for callbacks from view (business ops)
 		
-	- Impl:
+	= Impl:
+		+ Make custom_materials branch
+
 		=== Simulation ===
 
-		- Simulation::MaterialDatabase becomes "DefaultMaterialDatabase"
+		+ Simulation::MaterialDatabase becomes "DefaultMaterialDatabase"
+			+ File
+			+ Class
+			+ json
 
-		- Structural, Electrical, Rope Material:
-			- opt<struct StructuralMaterial::VariantOverridesType> VariantOverrides
+		- Structural, Electrical Material:
+			- opt<struct VariantOverridesType>
 				- Contains:
-					- Structural:
+					- Structural, Rope:
 						- RenderColor
 						- Name
 						- Strength, Mass
@@ -250,34 +255,27 @@
 					- Electrical:
 						- Name
 						- TODOHERE
-					- Rope:
-						- RenderColor
-						- Name
-						- Strength, Mass
-						- TODOHERE
-						- Advanced:
-							- Water solubility
-							- TODOHERE
 					- json Ser/Deser
 					- Comparison, Equality, and hash
-					- Equality with Material - iff needed
 				- Only populated for variants; values of material are already from variants though, so this is only for Serialization (see below)
 				- VariantOverrides.has_value() <=> it's a custom material
-			- static uq_ptr<StructuralMaterial> MaterialDB::MakeStructuralMaterialVariant(color_key const & parentColorKey, VariantOverridesType const &)
-				- Clones all, then overrides, and then stores VariantOverridesType
+			- static uq_ptr<Structural|ElectricalMaterial> TMaterial::MakeCustomMaterial(VariantOverridesType const &)
+				- Clones all, then overrides, and then stores VariantOverridesType (asserts ! there already)
 					- ColorKey is the same from the base (parent)
 						- .shp2 Ser/Deser will store additional (local) Index deambiguitor, see below
 						- TODOHERE: do these dupe ColorKey's pose a problem?
 							! ShipFactory doesn't use ColorKey's at all (anymore)
 				- Also copies palette coordinates, but overrides sub_ordinal as zero as it's not used
+
+			- CustomMaterialsPod defined @ Material.cc/h
+
 			- Unit tests:
 				- Comparison, Equality
-				- MakeStructuralMaterialVariant
-
+				- MakeMaterialVariant
 
 		- Ship De/Serialize:
 			- First off, verify current behavior with unrecognized tags
-				- Worst case we bump file format version (hopefully it's already done!)
+				- Worst case we bump file format version (hopefully exists, and check is already done!)
 			- New structural, electrical, rope layer set of tags:
 				- CustomMaterialPalette: custom materials used in Buffer
 					- (Implicitly) pruned @ Serialize to only contain used ones
@@ -336,6 +334,8 @@
 				- MaterialPalette<TLayer X 3>::TODOShipCustomMaterials(pod member)
 					- Full relayout of ship portion for all rows
 
+		- MaterialEditDialog: all 3 variants in same dialog
+			- 3 panels inside; @ open<TLayerType> shows/hides panels
 
 
 		- Model and maybe ModelController:

@@ -109,13 +109,13 @@ std::unique_ptr<BinaryReadStream> TestAssetManager::LoadFont(std::string const &
     return nullptr;
 }
 
-picojson::value TestAssetManager::LoadStructuralMaterialDatabase() const
+picojson::value TestAssetManager::LoadDefaultStructuralMaterialDatabase() const
 {
     assert(false); // Not needed by tests, so far
     return picojson::value();
 }
 
-picojson::value TestAssetManager::LoadElectricalMaterialDatabase() const
+picojson::value TestAssetManager::LoadDefaultElectricalMaterialDatabase() const
 {
     assert(false); // Not needed by tests, so far
     return picojson::value();

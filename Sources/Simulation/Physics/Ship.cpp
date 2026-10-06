@@ -74,7 +74,7 @@ Ship::Ship(
     ShipId id,
     FloatSize const & worldSize,
     World & parentWorld,
-    MaterialDatabase const & materialDatabase,
+    DefaultMaterialDatabase const & defaultMaterialDatabase,
     SimulationEventDispatcher & simulationEventDispatcher,
     Points && points,
     Springs && springs,
@@ -85,7 +85,7 @@ Ship::Ship(
     : mId(id)
     , mWorldSize(worldSize)
     , mParentWorld(parentWorld)
-    , mMaterialDatabase(materialDatabase)
+    , mDefaultMaterialDatabase(defaultMaterialDatabase)
     , mSimulationEventHandler(simulationEventDispatcher)
     , mEventRecorder(nullptr)
     , mPoints(std::move(points))
@@ -4901,7 +4901,7 @@ void Ship::InternalSpawnSiltCloud(
     // Calculate max lifetime
     //
 
-    auto const & siltCloudMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SiltCloud);
+    auto const & siltCloudMaterial = mDefaultMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SiltCloud);
     float maxLifetime;
     float buoyancyVolumeFill;
     if (siltImpactDepth > 0.0f)
@@ -5710,7 +5710,7 @@ void Ship::HandleElectricalElementDestroy(
         {
             InternalSpawnDebris(
                 pointElementIndex,
-                mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Glass),
+                mDefaultMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Glass),
                 currentSimulationTime,
                 simulationParameters);
 

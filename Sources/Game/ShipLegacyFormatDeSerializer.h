@@ -7,8 +7,8 @@
 
 #include <EnhancedShipPreviewData.h>
 
+#include <Simulation/DefaultMaterialDatabase.h>
 #include <Simulation/ElectricalPanel.h>
-#include <Simulation/MaterialDatabase.h>
 #include <Simulation/ShipDefinition.h>
 
 #include <Core/ImageData.h>
@@ -26,11 +26,11 @@ public:
 
     static ShipDefinition LoadShipFromImageDefinition(
         std::filesystem::path const & shipFilePath,
-        MaterialDatabase const & materialDatabase);
+        DefaultMaterialDatabase const & defaultMaterialDatabase);
 
     static ShipDefinition LoadShipFromLegacyShpShipDefinition(
         std::filesystem::path const & shipFilePath,
-        MaterialDatabase const & materialDatabase);
+        DefaultMaterialDatabase const & defaultMaterialDatabase);
 
     static EnhancedShipPreviewData LoadShipPreviewDataFromImageDefinition(std::filesystem::path const & imageDefinitionFilePath);
 
@@ -84,7 +84,7 @@ private:
         ShipMetadata const & metadata,
         ShipPhysicsData const & physicsData,
         std::optional<ShipAutoTexturizationSettings> const & autoTexturizationSettings,
-        MaterialDatabase const & materialDatabase);
+        DefaultMaterialDatabase const & defaultMaterialDatabase);
 
     static ShipDefinition LoadFromDefinitionImages(
         RgbImageData && structuralLayerImage,
@@ -95,5 +95,5 @@ private:
         ShipMetadata const & metadata,
         ShipPhysicsData const & physicsData,
         std::optional<ShipAutoTexturizationSettings> const & autoTexturizationSettings,
-        MaterialDatabase const & materialDatabase);
+        DefaultMaterialDatabase const & defaultMaterialDatabase);
 };

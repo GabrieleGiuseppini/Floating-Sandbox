@@ -42,12 +42,12 @@ namespace /*anonymous*/ {
 }
 
 ShipTexturizer::ShipTexturizer(
-    MaterialDatabase const & materialDatabase,
+    DefaultMaterialDatabase const & defaultMaterialDatabase,
     IAssetManager const & assetManager)
     : mSharedSettings() // Default settings
     , mDoForceSharedSettingsOntoShipSettings(false)
     , mMaterialTextureNameToTextureRelativePathMap(
-        MakeMaterialTextureNameToTextureRelativePathMap(materialDatabase, assetManager))
+        MakeMaterialTextureNameToTextureRelativePathMap(defaultMaterialDatabase, assetManager))
     , mMaterialTextureCache()
 {
 }
@@ -601,7 +601,7 @@ void ShipTexturizer::RenderShipInto(
 ///////////////////////////////////////////////////////////////////////////////////
 
 std::unordered_map<std::string, std::string> ShipTexturizer::MakeMaterialTextureNameToTextureRelativePathMap(
-    MaterialDatabase const & materialDatabase,
+    DefaultMaterialDatabase const & defaultMaterialDatabase,
     IAssetManager const & assetManager)
 {
     std::unordered_map<std::string, std::string> materialTextureNameToTextureRelativePath;
@@ -614,7 +614,7 @@ std::unordered_map<std::string, std::string> ShipTexturizer::MakeMaterialTexture
     }
 
     // Add entries for all materials
-    for (auto const & category : materialDatabase.GetStructuralMaterialPalette().Categories)
+    for (auto const & category : defaultMaterialDatabase.GetStructuralMaterialPalette().Categories)
     {
         for (auto const & subCategory : category.SubCategories)
         {

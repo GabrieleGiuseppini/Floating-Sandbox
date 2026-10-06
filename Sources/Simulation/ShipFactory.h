@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "DefaultMaterialDatabase.h"
 #include "ElectricalPanel.h"
-#include "MaterialDatabase.h"
 #include "Physics/Physics.h"
 #include "ShipDefinition.h"
 #include "ShipFactoryTypes.h"
@@ -37,7 +37,7 @@ public:
         Physics::World & parentWorld,
         ShipDefinition && shipDefinition,
         ShipLoadOptions const & shipLoadOptions,
-        MaterialDatabase const & materialDatabase,
+        DefaultMaterialDatabase const & defaultMaterialDatabase,
         ShipTexturizer const & shipTexturizer,
         ShipStrengthRandomizer const & shipStrengthRandomizer,
         SimulationEventDispatcher & simulationEventDispatcher,
@@ -156,7 +156,7 @@ private:
     static std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> CreatePoints(
         std::vector<ShipFactoryPoint> const & pointInfos2,
         Physics::World & parentWorld,
-        MaterialDatabase const & materialDatabase,
+        DefaultMaterialDatabase const & defaultMaterialDatabase,
         SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters,
         ShipPhysicsData const & physicsData);

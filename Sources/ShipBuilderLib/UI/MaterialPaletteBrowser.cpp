@@ -25,7 +25,7 @@ ImageSize constexpr PaletteButtonSize(80, 60);
 template<LayerType TLayer>
 MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
     wxWindow * parent,
-    MaterialDatabase::Palette<TMaterial> const & materialPalette,
+    DefaultMaterialDatabase::Palette<TMaterial> const & materialPalette,
     ShipTexturizer const & shipTexturizer,
     ISoundController * soundController,
     GameAssetManager const & gameAssetManager,
@@ -369,7 +369,7 @@ void MaterialPaletteBrowser<TLayer>::Close()
 template<LayerType TLayer>
 MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPanel(
     wxWindow * parent,
-    typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
+    typename DefaultMaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
     ShipTexturizer const & shipTexturizer,
     GameAssetManager const & gameAssetManager)
 {
@@ -384,7 +384,7 @@ MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPan
 
     categoryPanel->StartBuild();
 
-    std::optional<typename MaterialDatabase::Palette<TMaterial>::Category::SubCategory::Group> currentGroup;
+    std::optional<typename DefaultMaterialDatabase::Palette<TMaterial>::Category::SubCategory::Group> currentGroup;
     for (size_t iSubCategory = 0; iSubCategory < materialCategory.SubCategories.size(); ++iSubCategory) // Rows
     {
         auto const & subCategory = materialCategory.SubCategories[iSubCategory];

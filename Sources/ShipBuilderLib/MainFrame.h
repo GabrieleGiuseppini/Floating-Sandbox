@@ -33,7 +33,7 @@
 #include <Game/GameAssetManager.h>
 #include <Game/ISoundController.h>
 
-#include <Simulation/MaterialDatabase.h>
+#include <Simulation/DefaultMaterialDatabase.h>
 #include <Simulation/ShipTexturizer.h>
 
 #include <Core/GameTypes.h>
@@ -80,7 +80,7 @@ public:
         wxIcon const & icon,
         GameAssetManager const & gameAssetManager,
         LocalizationManager const & localizationManager,
-        MaterialDatabase const & materialDatabase,
+        DefaultMaterialDatabase const & defaultMaterialDatabase,
         ShipTexturizer const & shipTexturizer,
         ISoundController * soundController,
         std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor,
@@ -403,7 +403,7 @@ private:
 
     GameAssetManager const & mGameAssetManager;
     LocalizationManager const & mLocalizationManager;
-    MaterialDatabase const & mMaterialDatabase;
+    DefaultMaterialDatabase const & mDefaultMaterialDatabase;
     ShipTexturizer const & mShipTexturizer;
     ISoundController * const mSoundController;
 

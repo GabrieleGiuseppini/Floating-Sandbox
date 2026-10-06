@@ -31,7 +31,7 @@ uint8_t constexpr CurrentFileFormatVersion = 1;
 
 ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     BinaryReadStream & shipDefinitionInputStream,
-    MaterialDatabase const & materialDatabase)
+    DefaultMaterialDatabase const & defaultMaterialDatabase)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
 
@@ -99,7 +99,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     ReadStructuralLayer(
                         buffer,
                         *shipAttributes,
-                        materialDatabase.GetStructuralMaterialColorMap(),
+                        defaultMaterialDatabase.GetStructuralMaterialColorMap(),
                         structuralLayer);
 
                     break;
@@ -117,7 +117,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     ReadElectricalLayer(
                         buffer,
                         *shipAttributes,
-                        materialDatabase.GetElectricalMaterialColorMap(),
+                        defaultMaterialDatabase.GetElectricalMaterialColorMap(),
                         electricalLayer);
 
                     break;
@@ -135,7 +135,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     ReadRopesLayer(
                         buffer,
                         *shipAttributes,
-                        materialDatabase.GetStructuralMaterialColorMap(),
+                        defaultMaterialDatabase.GetStructuralMaterialColorMap(),
                         ropesLayer);
 
                     break;
@@ -1804,7 +1804,7 @@ ShipAutoTexturizationSettings ShipDefinitionFormatDeSerializer::ReadAutoTexturiz
 void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
-    MaterialDatabase::MaterialColorMap<StructuralMaterial> const & materialColorMap,
+    DefaultMaterialDatabase::MaterialColorMap<StructuralMaterial> const & materialColorMap,
     std::unique_ptr<StructuralLayerData> & structuralLayer)
 {
     size_t readOffset = 0;
@@ -1894,7 +1894,7 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
 void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
-    MaterialDatabase::MaterialColorMap<ElectricalMaterial> const & materialColorMap,
+    DefaultMaterialDatabase::MaterialColorMap<ElectricalMaterial> const & materialColorMap,
     std::unique_ptr<ElectricalLayerData> & electricalLayer)
 {
     size_t readOffset = 0;
@@ -2056,7 +2056,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
 void ShipDefinitionFormatDeSerializer::ReadRopesLayer(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
-    MaterialDatabase::MaterialColorMap<StructuralMaterial> const & materialColorMap,
+    DefaultMaterialDatabase::MaterialColorMap<StructuralMaterial> const & materialColorMap,
     std::unique_ptr<RopesLayerData> & ropesLayer)
 {
     size_t readOffset = 0;

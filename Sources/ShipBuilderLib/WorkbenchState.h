@@ -9,8 +9,8 @@
 #include "IUserInterface.h"
 #include "ShipBuilderTypes.h"
 
+#include <Simulation/DefaultMaterialDatabase.h>
 #include <Simulation/Materials.h>
-#include <Simulation/MaterialDatabase.h>
 
 #include <Core/Colors.h>
 #include <Core/GameTypes.h>
@@ -36,7 +36,7 @@ class WorkbenchState
 public:
 
     WorkbenchState(
-        MaterialDatabase const & materialDatabase,
+        DefaultMaterialDatabase const & defaultMaterialDatabase,
         IUserInterface & userInterface);
 
     ~WorkbenchState();

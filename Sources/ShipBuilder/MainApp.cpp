@@ -15,7 +15,7 @@
 #include <Game/GameAssetManager.h>
 #include <Game/GameVersion.h>
 
-#include <Simulation/MaterialDatabase.h>
+#include <Simulation/DefaultMaterialDatabase.h>
 #include <Simulation/ShipTexturizer.h>
 
 #include <Core/BuildInfo.h>

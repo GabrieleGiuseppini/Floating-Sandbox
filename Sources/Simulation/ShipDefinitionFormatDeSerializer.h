@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "DefaultMaterialDatabase.h"
 #include "ElectricalPanel.h"
-#include "MaterialDatabase.h"
 #include "ShipDefinition.h"
 #include "ShipPreviewData.h"
 
@@ -34,7 +34,7 @@ public:
 
     static ShipDefinition Load(
         BinaryReadStream & shipDefinitionInputStream,
-        MaterialDatabase const & materialDatabase);
+        DefaultMaterialDatabase const & defaultMaterialDatabase);
 
     static ShipPreviewData LoadPreviewData(BinaryReadStream & shipDefinitionInputStream);
 
@@ -337,19 +337,19 @@ private:
     static void ReadStructuralLayer(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
-        MaterialDatabase::MaterialColorMap<StructuralMaterial> const & materialColorMap,
+        DefaultMaterialDatabase::MaterialColorMap<StructuralMaterial> const & materialColorMap,
         std::unique_ptr<StructuralLayerData> & structuralLayer);
 
     static void ReadElectricalLayer(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
-        MaterialDatabase::MaterialColorMap<ElectricalMaterial> const & materialColorMap,
+        DefaultMaterialDatabase::MaterialColorMap<ElectricalMaterial> const & materialColorMap,
         std::unique_ptr<ElectricalLayerData> & electricalLayer);
 
     static void ReadRopesLayer(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
-        MaterialDatabase::MaterialColorMap<StructuralMaterial> const & materialColorMap,
+        DefaultMaterialDatabase::MaterialColorMap<StructuralMaterial> const & materialColorMap,
         std::unique_ptr<RopesLayerData> & ropesLayer);
 
 private:

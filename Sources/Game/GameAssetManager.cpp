@@ -179,14 +179,14 @@ std::unique_ptr<BinaryReadStream> GameAssetManager::LoadFont(std::string const &
     return std::make_unique<FileBinaryReadStream>(mDataRoot / "Fonts" / fontSetName / fontRelativePath);
 }
 
-picojson::value GameAssetManager::LoadStructuralMaterialDatabase() const
+picojson::value GameAssetManager::LoadDefaultStructuralMaterialDatabase() const
 {
-    return LoadJson(mDataRoot / "Misc" / "materials_structural.json");
+    return LoadJson(mDataRoot / "Misc" / "default_materials_structural.json");
 }
 
-picojson::value GameAssetManager::LoadElectricalMaterialDatabase() const
+picojson::value GameAssetManager::LoadDefaultElectricalMaterialDatabase() const
 {
-    return LoadJson(mDataRoot / "Misc" / "materials_electrical.json");
+    return LoadJson(mDataRoot / "Misc" / "default_materials_electrical.json");
 }
 
 picojson::value GameAssetManager::LoadFishSpeciesDatabase() const

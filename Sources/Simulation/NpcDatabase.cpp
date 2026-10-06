@@ -25,7 +25,7 @@ static char LegSKeyName[] = "leg_s";
 
 NpcDatabase NpcDatabase::Load(
     IAssetManager const & assetManager,
-    MaterialDatabase const & materialDatabase,
+    DefaultMaterialDatabase const & defaultMaterialDatabase,
     TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas)
 {
     picojson::value const root = assetManager.LoadNpcDatabase();
@@ -48,10 +48,10 @@ NpcDatabase NpcDatabase::Load(
 
         auto const humansGlobalObject = Utils::GetMandatoryJsonObject(humansObject, "global");
 
-        StructuralMaterial const & headMaterial = materialDatabase.GetStructuralMaterial(
+        StructuralMaterial const & headMaterial = defaultMaterialDatabase.GetStructuralMaterial(
             Utils::GetMandatoryJsonMember<std::string>(humansGlobalObject, "head_material"));
 
-        StructuralMaterial const & feetMaterial = materialDatabase.GetStructuralMaterial(
+        StructuralMaterial const & feetMaterial = defaultMaterialDatabase.GetStructuralMaterial(
             Utils::GetMandatoryJsonMember<std::string>(humansGlobalObject, "feet_material"));
 
         ParticleAttributesType globalHeadParticleAttributes = MakeParticleAttributes(humansGlobalObject, "head_particle_attributes_overrides", MakeDefaultParticleAttributes(headMaterial));
@@ -101,7 +101,7 @@ NpcDatabase NpcDatabase::Load(
 
             FurnitureSubKind subKind = ParseFurnitureSubKind(
                 furnitureSubKindArrayElement.get<picojson::object>(),
-                materialDatabase,
+                defaultMaterialDatabase,
                 npcTextureAtlas);
 
             furnitureSubKinds.try_emplace(nextSubKindId, std::move(subKind));
@@ -392,14 +392,14 @@ ImageSize NpcDatabase::GetFrameSize(
 
 NpcDatabase::FurnitureSubKind NpcDatabase::ParseFurnitureSubKind(
     picojson::object const & subKindObject,
-    MaterialDatabase const & materialDatabase,
+    DefaultMaterialDatabase const & defaultMaterialDatabase,
     TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas)
 {
     std::string const name = Utils::GetMandatoryJsonMember<std::string>(subKindObject, "name");
     NpcFurnitureRoleType const role = StrToNpcFurnitureRoleType(Utils::GetMandatoryJsonMember<std::string>(subKindObject, "role"));
     rgbColor const renderColor = Utils::Hex2RgbColor(Utils::GetMandatoryJsonMember<std::string>(subKindObject, "render_color"));
 
-    StructuralMaterial const & material = materialDatabase.GetStructuralMaterial(
+    StructuralMaterial const & material = defaultMaterialDatabase.GetStructuralMaterial(
         Utils::GetMandatoryJsonMember<std::string>(subKindObject, "material"));
 
     std::string const & frameFilenameStem = Utils::GetMandatoryJsonMember<std::string>(subKindObject, "texture_filename_stem");

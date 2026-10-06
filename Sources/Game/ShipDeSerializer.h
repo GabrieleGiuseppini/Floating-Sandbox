@@ -7,8 +7,8 @@
 
 #include "EnhancedShipPreviewData.h"
 
+#include <Simulation/DefaultMaterialDatabase.h>
 #include <Simulation/Layers.h>
-#include <Simulation/MaterialDatabase.h>
 #include <Simulation/ShipDefinition.h>
 
 #include <Core/ImageData.h>
@@ -50,7 +50,7 @@ public:
 
     static ShipDefinition LoadShip(
         std::filesystem::path const & shipFilePath,
-        MaterialDatabase const & materialDatabase);
+        DefaultMaterialDatabase const & defaultMaterialDatabase);
 
     static EnhancedShipPreviewData LoadShipPreviewData(std::filesystem::path const & shipFilePath);
 

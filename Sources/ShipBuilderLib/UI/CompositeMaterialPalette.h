@@ -10,8 +10,8 @@
 #include <Game/GameAssetManager.h>
 #include <Game/ISoundController.h>
 
+#include <Simulation/DefaultMaterialDatabase.h>
 #include <Simulation/Layers.h>
-#include <Simulation/MaterialDatabase.h>
 #include <Simulation/ShipTexturizer.h>
 
 #include <Core/GameTypes.h>
@@ -33,7 +33,7 @@ public:
         std::function<void(fsStructuralMaterialSelectedEvent const & event)> onStructuralLayerMaterialSelected,
         std::function<void(fsElectricalMaterialSelectedEvent const & event)> onElectricalLayerMaterialSelected,
         std::function<void(fsStructuralMaterialSelectedEvent const & event)> onRopeLayerMaterialSelected,
-        MaterialDatabase const & materialDatabase,
+        DefaultMaterialDatabase const & defaultMaterialDatabase,
         ShipTexturizer const & shipTexturizer,
         ISoundController * soundController,
         GameAssetManager const & gameAssetManager,

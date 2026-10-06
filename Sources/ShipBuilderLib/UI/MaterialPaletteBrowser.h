@@ -12,9 +12,9 @@
 #include <Game/GameAssetManager.h>
 #include <Game/ISoundController.h>
 
+#include <Simulation/DefaultMaterialDatabase.h>
 #include <Simulation/Layers.h>
 #include <Simulation/Materials.h>
-#include <Simulation/MaterialDatabase.h>
 #include <Simulation/ShipTexturizer.h>
 
 #include <Core/GameTypes.h>
@@ -110,7 +110,7 @@ public:
 
     MaterialPaletteBrowser(
         wxWindow * parent,
-        MaterialDatabase::Palette<TMaterial> const & materialPalette,
+        DefaultMaterialDatabase::Palette<TMaterial> const & materialPalette,
         ShipTexturizer const & shipTexturizer,
         ISoundController * soundController,
         GameAssetManager const & gameAssetManager,
@@ -132,7 +132,7 @@ private:
 
     MaterialPalettePanel<TLayer> * CreateCategoryPanel(
         wxWindow * parent,
-        typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
+        typename DefaultMaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
         ShipTexturizer const & shipTexturizer,
         GameAssetManager const & gameAssetManager);
 
@@ -150,7 +150,7 @@ private:
 
 private:
 
-    MaterialDatabase::Palette<TMaterial> const & mMaterialPalette;
+    DefaultMaterialDatabase::Palette<TMaterial> const & mMaterialPalette;
     ISoundController * const mSoundController;
 
     wxSizer * mRootHSizer;

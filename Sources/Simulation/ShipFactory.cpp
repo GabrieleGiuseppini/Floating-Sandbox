@@ -31,7 +31,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
     World & parentWorld,
     ShipDefinition && shipDefinition,
     ShipLoadOptions const & shipLoadOptions,
-    MaterialDatabase const & materialDatabase,
+    DefaultMaterialDatabase const & defaultMaterialDatabase,
     ShipTexturizer const & shipTexturizer,
     ShipStrengthRandomizer const & shipStrengthRandomizer,
     SimulationEventDispatcher & simulationEventDispatcher,
@@ -153,7 +153,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
                 float water = 0.0f;
                 if (structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Water))
                 {
-                    structuralMaterial = &(materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air));
+                    structuralMaterial = &(defaultMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air));
                     water = 1.0f;
                 }
 
@@ -332,7 +332,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
     auto [points, allElectricalElementInstanceIndices] = CreatePoints(
         pointInfos2,
         parentWorld,
-        materialDatabase,
+        defaultMaterialDatabase,
         simulationEventDispatcher,
         simulationParameters,
         shipDefinition.PhysicsData);
@@ -455,7 +455,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         shipId,
         shipSize.ToFloat<FloatSize>(),
         parentWorld,
-        materialDatabase,
+        defaultMaterialDatabase,
         simulationEventDispatcher,
         std::move(points),
         std::move(springs),
@@ -1870,7 +1870,7 @@ std::vector<ElementIndex> ShipFactory::PropagateFrontier(
 std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactory::CreatePoints(
     std::vector<ShipFactoryPoint> const & pointInfos2,
     World & parentWorld,
-    MaterialDatabase const & materialDatabase,
+    DefaultMaterialDatabase const & defaultMaterialDatabase,
     SimulationEventDispatcher & simulationEventDispatcher,
     SimulationParameters const & simulationParameters,
     ShipPhysicsData const & physicsData)
@@ -1896,7 +1896,7 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
         static_cast<ElementIndex>(pointInfos2.size()),
         simulationParameters.MaxEphemeralParticles, // Here we freeze it
         parentWorld,
-        materialDatabase,
+        defaultMaterialDatabase,
         simulationEventDispatcher,
         simulationParameters);
 

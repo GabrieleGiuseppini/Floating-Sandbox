@@ -16,7 +16,7 @@
 
 ShipDefinition ShipLegacyFormatDeSerializer::LoadShipFromImageDefinition(
     std::filesystem::path const & shipFilePath,
-    MaterialDatabase const & materialDatabase)
+    DefaultMaterialDatabase const & defaultMaterialDatabase)
 {
     return LoadFromDefinitionImageFilePaths(
         shipFilePath,
@@ -27,12 +27,12 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadShipFromImageDefinition(
         ShipMetadata(shipFilePath.stem().string()),
         ShipPhysicsData(),
         std::nullopt, // AutoTexturizationSettings
-        materialDatabase);
+        defaultMaterialDatabase);
 }
 
 ShipDefinition ShipLegacyFormatDeSerializer::LoadShipFromLegacyShpShipDefinition(
     std::filesystem::path const & shipFilePath,
-    MaterialDatabase const & materialDatabase)
+    DefaultMaterialDatabase const & defaultMaterialDatabase)
 {
     JsonDefinition jsonDefinition = LoadLegacyShpShipDefinitionJson(shipFilePath);
 
@@ -45,7 +45,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadShipFromLegacyShpShipDefinition
         jsonDefinition.Metadata,
         jsonDefinition.PhysicsData,
         jsonDefinition.AutoTexturizationSettings,
-        materialDatabase);
+        defaultMaterialDatabase);
 }
 
 EnhancedShipPreviewData ShipLegacyFormatDeSerializer::LoadShipPreviewDataFromImageDefinition(std::filesystem::path const & imageDefinitionFilePath)
@@ -302,7 +302,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
     ShipMetadata const & metadata,
     ShipPhysicsData const & physicsData,
     std::optional<ShipAutoTexturizationSettings> const & autoTexturizationSettings,
-    MaterialDatabase const & materialDatabase)
+    DefaultMaterialDatabase const & defaultMaterialDatabase)
 {
     //
     // Load images
@@ -365,7 +365,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
         metadata,
         physicsData,
         autoTexturizationSettings,
-        materialDatabase);
+        defaultMaterialDatabase);
 }
 
 ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
@@ -377,7 +377,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
     ShipMetadata const & metadata,
     ShipPhysicsData const & physicsData,
     std::optional<ShipAutoTexturizationSettings> const & autoTexturizationSettings,
-    MaterialDatabase const & materialDatabase)
+    DefaultMaterialDatabase const & defaultMaterialDatabase)
 {
     ShipSpaceSize const shipSize(
         structuralLayerImage.Size.width,
@@ -421,7 +421,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
 
             // Lookup structural material
             MaterialColorKey const colorKey = structuralLayerImage[imageCoords];
-            StructuralMaterial const * structuralMaterial = materialDatabase.FindStructuralMaterial(colorKey);
+            StructuralMaterial const * structuralMaterial = defaultMaterialDatabase.FindStructuralMaterial(colorKey);
             if (nullptr != structuralMaterial)
             {
                 ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
@@ -433,7 +433,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                 // Check if it's also a legacy electrical element
                 //
 
-                ElectricalMaterial const * const electricalMaterial = materialDatabase.FindElectricalMaterial(colorKey);
+                ElectricalMaterial const * const electricalMaterial = defaultMaterialDatabase.FindElectricalMaterial(colorKey);
                 if (nullptr != electricalMaterial)
                 {
                     // Cannot have instanced elements in legacy mode
@@ -453,7 +453,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                 //
 
                 if (structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope)
-                    && !materialDatabase.IsUniqueStructuralMaterialColorKey(StructuralMaterial::MaterialUniqueType::Rope, colorKey))
+                    && !defaultMaterialDatabase.IsUniqueStructuralMaterialColorKey(StructuralMaterial::MaterialUniqueType::Rope, colorKey))
                 {
                     // Check if it's the first or the second endpoint for the rope
                     auto searchIt = ropeFirstEndpointCoordsByColorKey.find(colorKey);
@@ -523,7 +523,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
             throw GameException("The size of the image used for the ropes layer must match the size of the image used for the structural layer");
         }
 
-        StructuralMaterial const & standardRopeMaterial = materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope);
+        StructuralMaterial const & standardRopeMaterial = defaultMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope);
 
         ropeFirstEndpointCoordsByColorKey.clear();
 
@@ -643,7 +643,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                     ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
                     // Get material (matching instanced elements on r and g only)
-                    ElectricalMaterial const * const electricalMaterial = materialDatabase.FindElectricalMaterialLegacy(colorKey);
+                    ElectricalMaterial const * const electricalMaterial = defaultMaterialDatabase.FindElectricalMaterialLegacy(colorKey);
                     if (electricalMaterial == nullptr)
                     {
                         throw GameException(
@@ -673,7 +673,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                     ElectricalElementInstanceIndex instanceIndex;
                     if (electricalMaterial->IsInstanced)
                     {
-                        instanceIndex = MaterialDatabase::ExtractElectricalElementInstanceIndex(colorKey);
+                        instanceIndex = DefaultMaterialDatabase::ExtractElectricalElementInstanceIndex(colorKey);
 
                         // Make sure instance ID is not dupe
                         auto const searchIt = seenInstanceIndicesToImageCoords.find(instanceIndex);

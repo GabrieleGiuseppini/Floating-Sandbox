@@ -1266,7 +1266,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                 GetIcon(),
                 mGameAssetManager,
                 mLocalizationManager,
-                mGameController->GetMaterialDatabase(),
+                mGameController->GetDefaultMaterialDatabase(),
                 mGameController->GetShipTexturizer(),
                 mSoundController.get(),
                 [this](std::optional<std::filesystem::path> shipFilePath)

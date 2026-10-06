@@ -61,8 +61,8 @@ public:
 	virtual std::unique_ptr<BinaryReadStream> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const = 0;
 
 	// Misc databases
-	virtual picojson::value LoadStructuralMaterialDatabase() const = 0;
-	virtual picojson::value LoadElectricalMaterialDatabase() const = 0;
+	virtual picojson::value LoadDefaultStructuralMaterialDatabase() const = 0;
+	virtual picojson::value LoadDefaultElectricalMaterialDatabase() const = 0;
 	virtual picojson::value LoadFishSpeciesDatabase() const = 0;
 	virtual picojson::value LoadNpcDatabase() const = 0;
 };

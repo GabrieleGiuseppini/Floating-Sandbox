@@ -156,7 +156,7 @@ void Points::CreateEphemeralParticleAirBubble(
     // Store attributes
     //
 
-    StructuralMaterial const & airStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
+    StructuralMaterial const & airStructuralMaterial = mDefaultMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
 
     // We want to limit the buoyancy applied to air - using 1.0 makes an air particle boost up too quickly;
     // after all, bubbles encounter a lot of drag...
@@ -249,7 +249,7 @@ void Points::CreateEphemeralParticleAsh(
     // Store attributes
     //
 
-    StructuralMaterial const & ashStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Ash);
+    StructuralMaterial const & ashStructuralMaterial = mDefaultMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Ash);
 
     assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&ashStructuralMaterial, nullptr);
@@ -418,7 +418,7 @@ void Points::CreateEphemeralParticleSiltCloud(
     // Store attributes
     //
 
-    StructuralMaterial const & siltCloudStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SiltCloud);
+    StructuralMaterial const & siltCloudStructuralMaterial = mDefaultMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SiltCloud);
 
     assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&siltCloudStructuralMaterial, nullptr);
@@ -539,8 +539,8 @@ void Points::InternalCreateEphemeralParticleSmoke(
     //
 
     StructuralMaterial const & smokeStructuralMaterial = (smokeKind == EphemeralState::SmokeState::SmokeKindType::CombustionSmoke)
-        ? mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SmokeHeavy)
-        : mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SmokeLight);
+        ? mDefaultMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SmokeHeavy)
+        : mDefaultMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::SmokeLight);
 
     assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&smokeStructuralMaterial, nullptr);
@@ -709,7 +709,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     // Store attributes
     //
 
-    StructuralMaterial const & waterStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Water);
+    StructuralMaterial const & waterStructuralMaterial = mDefaultMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Water);
 
     assert(mIsDamagedBuffer[pointIndex] == 0.0f); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&waterStructuralMaterial, nullptr);
@@ -800,7 +800,7 @@ ElementIndex Points::CreateEphemeralParticleWaterFoam(
     //
 
     // We begin with water material, but then we tweak it to ensure it always stays afloat, on the surface
-    StructuralMaterial const & waterFoamStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Water);
+    StructuralMaterial const & waterFoamStructuralMaterial = mDefaultMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Water);
     float const mass = waterFoamStructuralMaterial.GetMass();
     float const buoyancyVolumeFill = 1.0f; // Must float
 
@@ -900,7 +900,7 @@ ElementIndex Points::CreateEphemeralParticleWaterSplash(
     //
 
     // We begin with water material, but then we tweak it to ensure it always stays afloat, on the surface
-    StructuralMaterial const & waterSplashStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Water);
+    StructuralMaterial const & waterSplashStructuralMaterial = mDefaultMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Water);
     float const mass = waterSplashStructuralMaterial.GetMass() * 0.2f;
     float const buoyancyVolumeFill = 1.0f; // Must float
 
@@ -3049,7 +3049,7 @@ void Points::CalculateCombustionDecayParameters(
     //
 
     // We are fine with tungsten taking a lot of time
-    //assert(mMaterialDatabase.GetLargestStructuralMass() == 2400.0f); // Sentinel to recalc below in case mass changes
+    //assert(mDefaultMaterialDatabase.GetLargestStructuralMass() == 2400.0f); // Sentinel to recalc below in case mass changes
 
     float constexpr m1 = 0.6f;
     float constexpr t1 = 12.0f;

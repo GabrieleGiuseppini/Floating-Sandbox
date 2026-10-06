@@ -1105,13 +1105,13 @@ TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
     // Deserialize whole
     //
 
-    MaterialDatabase const materialDatabase = MaterialDatabase::Make(structuralMaterials, electricalMaterials);
+    DefaultMaterialDatabase const defaultMaterialDatabase = DefaultMaterialDatabase::Make(structuralMaterials, electricalMaterials);
 
     auto inputStream1 = outputStream.MakeReadStreamCopy();
 
     ShipDefinition const sd = ShipDefinitionFormatDeSerializer::Load(
         inputStream1,
-        materialDatabase);
+        defaultMaterialDatabase);
 
     // Layers
 

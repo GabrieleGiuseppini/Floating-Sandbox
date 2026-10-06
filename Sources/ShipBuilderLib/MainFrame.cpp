@@ -57,7 +57,7 @@ MainFrame::MainFrame(
     wxIcon const & icon,
     GameAssetManager const & gameAssetManager,
     LocalizationManager const & localizationManager,
-    MaterialDatabase const & materialDatabase,
+    DefaultMaterialDatabase const & defaultMaterialDatabase,
     ShipTexturizer const & shipTexturizer,
     ISoundController * soundController,
     std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor,
@@ -69,7 +69,7 @@ MainFrame::MainFrame(
     , mController()
     , mGameAssetManager(gameAssetManager)
     , mLocalizationManager(localizationManager)
-    , mMaterialDatabase(materialDatabase)
+    , mDefaultMaterialDatabase(defaultMaterialDatabase)
     , mShipTexturizer(shipTexturizer)
     , mSoundController(soundController)
     , mWorkCanvasHScrollBar(nullptr)
@@ -79,7 +79,7 @@ MainFrame::MainFrame(
     , mIsMouseCapturedByWorkCanvas(false)
     , mIsShiftKeyDown(false)
     // State
-    , mWorkbenchState(materialDatabase, *this)
+    , mWorkbenchState(defaultMaterialDatabase, *this)
     , mUndoStack()
 {
     progressCallback(0.0f, ProgressMessageType::LoadingShipBuilder);
@@ -346,7 +346,7 @@ MainFrame::MainFrame(
                 assert(mController);
                 mController->SetRopeMaterial(event.GetMaterial(), event.GetMaterialPlane());
             },
-            mMaterialDatabase,
+            mDefaultMaterialDatabase,
             mShipTexturizer,
             mSoundController,
             mGameAssetManager,
@@ -5832,7 +5832,7 @@ std::optional<ShipDefinition> MainFrame::DoLoadShipDefinitionAndCheckPassword(st
     std::optional<ShipDefinition> shipDefinition;
     try
     {
-        shipDefinition.emplace(ShipDeSerializer::LoadShip(shipFilePath, mMaterialDatabase));
+        shipDefinition.emplace(ShipDeSerializer::LoadShip(shipFilePath, mDefaultMaterialDatabase));
     }
     catch (UserGameException const & exc)
     {

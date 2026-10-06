@@ -9,8 +9,8 @@
 
 #include "ShipElectricSparks.h"
 
+#include "../DefaultMaterialDatabase.h"
 #include "../EventRecorder.h"
-#include "../MaterialDatabase.h"
 #include "../ShipDefinition.h"
 #include "../ShipOverlays.h"
 #include "../SimulationEventDispatcher.h"
@@ -45,7 +45,7 @@ public:
         ShipId id,
         FloatSize const & worldSize,
         World & parentWorld,
-        MaterialDatabase const & materialDatabase,
+        DefaultMaterialDatabase const & defaultMaterialDatabase,
         SimulationEventDispatcher & simulationEventDispatcher,
         Points && points,
         Springs && springs,
@@ -1072,7 +1072,7 @@ private:
     ShipId const mId;
     FloatSize const mWorldSize;
     World & mParentWorld;
-    MaterialDatabase const & mMaterialDatabase;
+    DefaultMaterialDatabase const & mDefaultMaterialDatabase;
     SimulationEventDispatcher & mSimulationEventHandler;
     EventRecorder * mEventRecorder;
 
