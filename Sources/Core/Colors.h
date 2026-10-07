@@ -105,6 +105,8 @@ public:
 
     std::string toString() const;
 
+    size_t hash() const;
+
 private:
 
     static inline constexpr float _toFloat(uint8_t val) noexcept
@@ -125,6 +127,20 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, rgbCo
     os << c.toString();
     return os;
 }
+
+namespace std
+{
+    template <>
+    struct hash<rgbColor>
+    {
+        std::size_t operator()(rgbColor const & c) const
+        {
+            return c.hash();
+        }
+    };
+}
+
+
 
 #pragma pack(push, 1)
 
@@ -287,6 +303,8 @@ public:
 
     std::string toString() const;
 
+    size_t hash() const;
+
 private:
 
     static inline constexpr float _toFloat(uint8_t val) noexcept
@@ -308,6 +326,20 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, rgbaC
     os << c.toString();
     return os;
 }
+
+namespace std
+{
+    template <>
+    struct hash<rgbaColor>
+    {
+        std::size_t operator()(rgbaColor const & c) const
+        {
+            return c.hash();
+        }
+    };
+}
+
+
 
 struct rgbaColorAccumulation
 {

@@ -85,6 +85,5 @@ public:
     ShipMetadata & operator=(ShipMetadata && other) = default;
 
     picojson::value Serialize() const;
-
     static ShipMetadata Deserialize(picojson::value const & root);
 };

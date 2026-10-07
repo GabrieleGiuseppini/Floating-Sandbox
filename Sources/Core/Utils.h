@@ -422,9 +422,29 @@ namespace Utils
             Hex2Byte(str.substr(4, 2)));
     }
 
+    inline rgbaColor Hex2RgbaColor(std::string str)
+    {
+        if (str[0] == '#')
+            str = str.substr(1);
+
+        if (str.length() != 8)
+            throw GameException("Error: badly formed hex color value \"" + str + "\"");
+
+        return rgbaColor(
+            Hex2Byte(str.substr(0, 2)),
+            Hex2Byte(str.substr(2, 2)),
+            Hex2Byte(str.substr(4, 2)),
+            Hex2Byte(str.substr(6, 2)));
+    }
+
     inline std::string RgbColor2Hex(rgbColor const & rgbColor)
     {
         return std::string("#") + Byte2Hex(rgbColor.r) + Byte2Hex(rgbColor.g) + Byte2Hex(rgbColor.b);
+    }
+
+    inline std::string RgbaColor2Hex(rgbaColor const & rgbaColor)
+    {
+        return std::string("#") + Byte2Hex(rgbaColor.r) + Byte2Hex(rgbaColor.g) + Byte2Hex(rgbaColor.b) + Byte2Hex(rgbaColor.a);
     }
 
     template<typename TValue>
@@ -521,4 +541,11 @@ namespace Utils
     ////////////////////////////////////////////////////////
 
     std::string ChangelistToHtml(std::istream & inputStream);
+
+    template <class T>
+    inline void HashCombine(std::size_t & s, const T & v)
+    {
+        std::hash<T> h;
+        s ^= h(v) + 0x9e3779b9 + (s << 6) + (s >> 2);
+    }
 };

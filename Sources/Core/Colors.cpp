@@ -6,6 +6,7 @@
 #include "Colors.h"
 
 #include "GameExceptions.h"
+#include "Utils.h"
 
 #include <iomanip>
 #include <sstream>
@@ -60,6 +61,15 @@ std::string rgbColor::toString() const
     return ss.str();
 }
 
+size_t rgbColor::hash() const
+{
+    std::size_t h = 0;
+    Utils::HashCombine(h, r);
+    Utils::HashCombine(h, g);
+    Utils::HashCombine(h, b);
+    return h;
+}
+
 rgbaColor rgbaColor::fromString(std::string const & str)
 {
     unsigned int components[4];
@@ -110,4 +120,14 @@ std::string rgbaColor::toString() const
         << std::setw(2) << static_cast<unsigned int>(a);
 
     return ss.str();
+}
+
+size_t rgbaColor::hash() const
+{
+    std::size_t h = 0;
+    Utils::HashCombine(h, r);
+    Utils::HashCombine(h, g);
+    Utils::HashCombine(h, b);
+    Utils::HashCombine(h, a);
+    return h;
 }

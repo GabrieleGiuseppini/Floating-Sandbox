@@ -32,7 +32,7 @@ set (UNIT_TEST_SOURCES
 	FinalizerTests.cpp
 	FixedSizeVectorTests.cpp
 	FloatingPointTests.cpp
-	FontSetTests.cpp	
+	FontSetTests.cpp
 	GameGeometryTests.cpp
 	GameMathTests.cpp
 	GameTypesTests.cpp
@@ -43,6 +43,7 @@ set (UNIT_TEST_SOURCES
 	LayerTests.cpp
 	LayoutHelperTests.cpp
 	main.cpp
+	MaterialsTests.cpp
 	Matrix2Tests.cpp
 	MultiProviderVertexBufferTests.cpp
 	ParameterSmootherTests.cpp
@@ -90,7 +91,7 @@ target_link_libraries (UnitTests
 	Render
 	Simulation
 	ShipBuilderLib
-	UILib	
+	UILib
 	gmock
 	gtest
 	${ADDITIONAL_LIBRARIES})

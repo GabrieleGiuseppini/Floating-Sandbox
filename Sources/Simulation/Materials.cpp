@@ -5,8 +5,6 @@
  ***************************************************************************************/
 #include "Materials.h"
 
-#include <Core/Utils.h>
-
 #include <sstream>
 
 namespace /* anonymous */ {
@@ -23,6 +21,51 @@ namespace /* anonymous */ {
 
 }
 
+picojson::value StructuralMaterial::VariantOverridesType::Serialize() const
+{
+    picojson::object root;
+
+    root.emplace("name", picojson::value(Name));
+    root.emplace("render_color", picojson::value(Utils::RgbaColor2Hex(RenderColor)));
+    root.emplace("strength", picojson::value(static_cast<double>(Strength)));
+    root.emplace("density", picojson::value(static_cast<double>(Density)));
+    root.emplace("ignition_temperature", picojson::value(static_cast<double>(IgnitionTemperature)));
+    root.emplace("melting_temperature", picojson::value(static_cast<double>(MeltingTemperature)));
+    root.emplace("rot_receptivity", picojson::value(static_cast<double>(RotReceptivity)));
+    root.emplace("rust_receptivity", picojson::value(static_cast<double>(RustReceptivity)));
+    root.emplace("water_solubility", picojson::value(static_cast<double>(WaterSolubility)));
+
+    return picojson::value(root);
+}
+
+StructuralMaterial::VariantOverridesType StructuralMaterial::VariantOverridesType::Deserialize(picojson::object const & overridesJson)
+{
+    std::string const name = Utils::GetMandatoryJsonMember<std::string>(overridesJson, "name");
+    rgbaColor const renderColor = Utils::Hex2RgbaColor(Utils::GetMandatoryJsonMember<std::string>(overridesJson, "render_color"));
+    float const strength = Utils::GetMandatoryJsonMember<float>(overridesJson, "strength");
+    float const density = Utils::GetMandatoryJsonMember<float>(overridesJson, "density");
+    if (density == 0.0f)
+    {
+        throw GameException(std::string("Material \"") + name + "\" has \"density\" equal to 0.0, while it must be greater than 0.0");
+    }
+    float const ignitionTemperature = Utils::GetMandatoryJsonMember<float>(overridesJson, "ignition_temperature");
+    float const meltingTemperature = Utils::GetMandatoryJsonMember<float>(overridesJson, "melting_temperature");
+    float const rotReceptivity = Utils::GetMandatoryJsonMember<float>(overridesJson, "rot_receptivity");
+    float const rustReceptivity = Utils::GetMandatoryJsonMember<float>(overridesJson, "rust_receptivity");
+    float const waterSolubility = Utils::GetMandatoryJsonMember<float>(overridesJson, "water_solubility");
+
+    return VariantOverridesType(
+        name,
+        renderColor,
+        strength,
+        density,
+        ignitionTemperature,
+        meltingTemperature,
+        rotReceptivity,
+        rustReceptivity,
+        waterSolubility);
+}
+
 StructuralMaterial StructuralMaterial::Create(
     MaterialColorKey const & colorKey,
     unsigned int ordinal,
@@ -37,7 +80,15 @@ StructuralMaterial StructuralMaterial::Create(
 
         picojson::object massJson = Utils::GetMandatoryJsonObject(structuralMaterialJson, "mass");
         float const nominalMass = Utils::GetMandatoryJsonMember<float>(massJson, "nominal_mass");
+        if (nominalMass == 0.0f)
+        {
+            throw GameException(std::string("Material \"") + name + "\" has \"nominal_mass\" equal to 0.0, while it must be greater than 0.0");
+        }
         float const density = Utils::GetMandatoryJsonMember<float>(massJson, "density");
+        if (density == 0.0f)
+        {
+            throw GameException(std::string("Material \"") + name + "\" has \"density\" equal to 0.0, while it must be greater than 0.0");
+        }
         float const buoyancyVolumeFill = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "buoyancy_volume_fill", 1.0f);
         float const stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
         float const strainThresholdFraction = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "strain_threshold_fraction", 0.5f);
@@ -169,6 +220,8 @@ StructuralMaterial StructuralMaterial::Create(
             windReceptivity,
             waterReactivityThreshold,
             isLegacyElectrical,
+            // Overrides
+            std::nullopt,
             // Palette
             paletteCoordinates);
     }

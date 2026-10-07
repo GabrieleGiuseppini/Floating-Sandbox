@@ -130,15 +130,21 @@
 		! SB's material palette:
 			- At any given moment, the palette shows default + user's custom materials + ship's custom materials
 				- Custom's are guaranteed all to be distinct among themselves
+					- On dupe, folded into user's
 				- These three are also the life pod of all materials
-				- At each change of last two, palette is re-created - TODO: really? Can do something in-place?
 			- Only contains pointers, without owning them
 				- Come from MaterialDatabase (new SB class, aggregate of three - default, user, ship) (*)
 			- Layout:
 				- First off: scour user and ship custom materials and organize in map: <base ptr> -> [<custom 1 ptr>, ... in comparison order for determinism)
 				- After completing a palette "group", visit map above, user first and then ship
+
+				- Layout:
+					! Facts:
+						! Category: pages
+						! Group: groups of rows (e.g. Iron)
+						! Sub-categories: rows
 			- Can add custom, remove custom, or edit custom materials
-				- Custom ones and control to add appear for each base material, last in the series (after LastInGroup)
+				- Custom ones and control to add appear for each base material, last in the series
 					- Their palette coordinates - with the exclusion of ordinal - dictate where
 					- Ordinal is basically made up with logic here, laying out both custom sets
 				- Edit, Remove are small buttons on custom ones (which also helps distinguish them from "standard" materials)
@@ -171,12 +177,17 @@
 		- Adding new custom material
 			- User clicks on + button
 			- When committed:
-				- Check if already exists among custom's
+				- TODOHERE: distinct checks, user vs ship, and ask user if want to go ahead
+
+				- Check if already exists among user's+ship's
 					- If so: message and nop
 					- Else:
 						- Add to user's
 						- Re-draw palette
-		- Editing existing user or ship custom material
+		- Editing existing user custom material
+			- TODOHERE
+		- Editing existing ship custom material
+			- TODOHERE
 			- User clicks on edit button
 			- When committed:
 				- Check if already exists among custom's
@@ -191,10 +202,13 @@
 				- If old was in-use by ship:
 					- Setup undo - store whole structural layer
 					- Mark ship as dirty
-		- Deleting User custom materials
+		- Deleting user custom materials
 			- User checks boxes, and then "Delete Selected"
 			- TODOHERE: check for in-use by ship; answer is none-in-use_or_at-least-one-in-use
 			- TODOHERE: Undo & Dirty
+		- Deleting ship custom materials
+			- TODOHERE
+
 		- Loading ship
 			- With custom materials:
 				- Replace ship's custom materials in palette with remainders after merging ship's custom materials with user's custom
@@ -242,23 +256,26 @@
 			+ json
 
 		- Structural, Electrical Material:
-			- opt<struct VariantOverridesType>
-				- Contains:
-					- Structural, Rope:
+			= opt<struct VariantOverridesType>
+				= Contains:
+					+ Structural, Rope:
 						- RenderColor
 						- Name
-						- Strength, Mass
-						- TODOHERE
+						- Density						
+						- Strength
+						- IgnitionTemperature
+						- MeltingTemperature
 						- Advanced:
+							- RotReceptivity
+							- RustReceptivity
 							- Water solubility
-							- TODOHERE
 					- Electrical:
 						- Name
 						- TODOHERE
 					- json Ser/Deser
 					- Comparison, Equality, and hash
-				- Only populated for variants; values of material are already from variants though, so this is only for Serialization (see below)
-				- VariantOverrides.has_value() <=> it's a custom material
+				+ Only populated for variants; values of material are already from variants though, so this is only for Serialization (see below)
+				+ VariantOverrides.has_value() <=> it's a custom material
 			- static uq_ptr<Structural|ElectricalMaterial> TMaterial::MakeCustomMaterial(VariantOverridesType const &)
 				- Clones all, then overrides, and then stores VariantOverridesType (asserts ! there already)
 					- ColorKey is the same from the base (parent)
@@ -270,7 +287,8 @@
 			- CustomMaterialsPod defined @ Material.cc/h
 
 			- Unit tests:
-				- Comparison, Equality
+				- Comparison, Equality, hash
+				- Ser/Deser
 				- MakeMaterialVariant
 
 		- Ship De/Serialize:
@@ -336,6 +354,8 @@
 
 		- MaterialEditDialog: all 3 variants in same dialog
 			- 3 panels inside; @ open<TLayerType> shows/hides panels
+			- Structural:
+				- Shows "mass" but changes _density_ based off base's _nominal_mass_
 
 
 		- Model and maybe ModelController:

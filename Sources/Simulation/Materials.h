@@ -8,12 +8,14 @@
 #include <Core/Colors.h>
 #include <Core/GameExceptions.h>
 #include <Core/GameTypes.h>
+#include <Core/Utils.h>
 #include <Core/Vectors.h>
 
 #include <picojson.h>
 
 #include <optional>
 #include <string>
+#include <utility>
 
 struct MaterialPaletteCoordinatesType
 {
@@ -65,6 +67,97 @@ public:
         Rubber,
         RubberBand,
         Wood,
+    };
+
+    struct VariantOverridesType
+    {
+        std::string Name;
+        rgbaColor RenderColor;
+        float Strength;
+        float Density;
+        float IgnitionTemperature;
+        float MeltingTemperature;
+        float RotReceptivity;
+        float RustReceptivity;
+        float WaterSolubility;
+
+        VariantOverridesType(
+            std::string const & name,
+            rgbaColor const & renderColor,
+            float strength,
+            float density,
+            float ignitionTemperature,
+            float meltingTemperature,
+            float rotReceptivity,
+            float rustReceptivity,
+            float waterSolubility)
+            : Name(name)
+            , RenderColor(renderColor)
+            , Strength(strength)
+            , Density(density)
+            , IgnitionTemperature(ignitionTemperature)
+            , MeltingTemperature(meltingTemperature)
+            , RotReceptivity(rotReceptivity)
+            , RustReceptivity(rustReceptivity)
+            , WaterSolubility(waterSolubility)
+        { }
+
+        VariantOverridesType(VariantOverridesType const & other) = default;
+
+        bool operator==(VariantOverridesType const & other) const
+        {
+            return
+                Name == other.Name
+                && RenderColor == other.RenderColor
+                && Strength == other.Strength
+                && Density == other.Density
+                && IgnitionTemperature == other.IgnitionTemperature
+                && MeltingTemperature == other.MeltingTemperature
+                && RotReceptivity == other.RotReceptivity
+                && RustReceptivity == other.RustReceptivity
+                && WaterSolubility == other.WaterSolubility;
+        }
+
+        bool operator<(VariantOverridesType const & other) const
+        {
+            return std::tie(
+                Name,
+                RenderColor,
+                Strength,
+                Density,
+                IgnitionTemperature,
+                MeltingTemperature,
+                RotReceptivity,
+                RustReceptivity,
+                WaterSolubility) < std::tie(
+                    other.Name,
+                    other.RenderColor,
+                    other.Strength,
+                    other.Density,
+                    other.IgnitionTemperature,
+                    other.MeltingTemperature,
+                    other.RotReceptivity,
+                    other.RustReceptivity,
+                    other.WaterSolubility);
+        }
+
+        size_t CalculateHash() const
+        {
+            std::size_t h = 0;
+            Utils::HashCombine(h, Name);
+            Utils::HashCombine(h, RenderColor);
+            Utils::HashCombine(h, Strength);
+            Utils::HashCombine(h, Density);
+            Utils::HashCombine(h, IgnitionTemperature);
+            Utils::HashCombine(h, MeltingTemperature);
+            Utils::HashCombine(h, RotReceptivity);
+            Utils::HashCombine(h, RustReceptivity);
+            Utils::HashCombine(h, WaterSolubility);
+            return h;
+        }
+
+        picojson::value Serialize() const;
+        static VariantOverridesType Deserialize(picojson::object const & overridesJson);
     };
 
 public:
@@ -119,6 +212,13 @@ public:
     float WaterReactivity; // When > 0, material explodes with this quantity of water threshold
     bool IsLegacyElectrical;
 
+    // Overrides
+    //
+    // If set, this is a custom material; and viceversa.
+    // The material itself already has these properties; this
+    // member is for convenience
+    std::optional<VariantOverridesType> VariantOverrides;
+
     // Palette
     std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
 
@@ -129,6 +229,8 @@ public:
         unsigned int ordinal,
         rgbColor const & baseRenderColor,
         picojson::object const & structuralMaterialJson);
+
+    StructuralMaterial(StructuralMaterial const & other) = default;
 
     static MaterialCombustionType StrToMaterialCombustionType(std::string const & str);
     static MaterialUniqueType StrToMaterialUniqueType(std::string const & str);
@@ -200,6 +302,8 @@ public:
         float windReceptivity,
         float waterReactivity,
         bool isLegacyElectrical,
+        // Overrides
+        std::optional<VariantOverridesType> variantOverrides,
         // Palette
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
         : ColorKey(colorKey)
@@ -241,6 +345,7 @@ public:
         , WindReceptivity(windReceptivity)
         , WaterReactivity(waterReactivity)
         , IsLegacyElectrical(isLegacyElectrical)
+        , VariantOverrides(variantOverrides)
         , PaletteCoordinates(paletteCoordinates)
     {}
 
@@ -288,9 +393,22 @@ public:
         , WindReceptivity(1.0f)
         , WaterReactivity(0.0f)
         , IsLegacyElectrical(false)
+        , VariantOverrides(std::nullopt)
         , PaletteCoordinates(std::nullopt)
     {}
 };
+
+namespace std
+{
+    template <>
+    struct hash<StructuralMaterial::VariantOverridesType>
+    {
+        std::size_t operator()(StructuralMaterial::VariantOverridesType const & c) const
+        {
+            return c.CalculateHash();
+        }
+    };
+}
 
 struct ElectricalMaterial
 {
