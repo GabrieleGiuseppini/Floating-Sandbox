@@ -222,6 +222,7 @@ public:
 
     // Palette
     std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
+    unsigned int PaletteSubCategoryBaseMaterialOrdinal; // Zero if not in palette
 
 public:
 
@@ -306,7 +307,8 @@ public:
         // Overrides
         std::optional<VariantOverridesType> variantOverrides,
         // Palette
-        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
+        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates,
+        unsigned int paletteSubCategoryBaseMaterialOrdinal)
         : ColorKey(colorKey)
         , Name(name)
         , RenderColor(renderColor)
@@ -348,6 +350,7 @@ public:
         , IsLegacyElectrical(isLegacyElectrical)
         , VariantOverrides(variantOverrides)
         , PaletteCoordinates(paletteCoordinates)
+        , PaletteSubCategoryBaseMaterialOrdinal(paletteSubCategoryBaseMaterialOrdinal)
     {}
 
     // For tests
@@ -396,6 +399,7 @@ public:
         , IsLegacyElectrical(false)
         , VariantOverrides(std::nullopt)
         , PaletteCoordinates(std::nullopt)
+        , PaletteSubCategoryBaseMaterialOrdinal(0u)
     {}
 
     std::unique_ptr<StructuralMaterial> MakeCustomMaterial(VariantOverridesType const & overrides) const;
@@ -633,6 +637,7 @@ public:
 
     // Palette
     std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
+    unsigned int PaletteSubCategoryBaseMaterialOrdinal; // Zero if not in palette
 
 public:
 
@@ -685,7 +690,8 @@ public:
         float waterPumpNominalForce,
         float timerDurationSeconds,
         std::optional<VariantOverridesType> variantOverrides,
-        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
+        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates,
+        unsigned int paletteSubCategoryBaseMaterialOrdinal)
         : ColorKey(colorKey)
         , Name(name)
         , RenderColor(renderColor)
@@ -718,6 +724,7 @@ public:
         , TimerDurationSeconds(timerDurationSeconds)
         , VariantOverrides(variantOverrides)
         , PaletteCoordinates(paletteCoordinates)
+        , PaletteSubCategoryBaseMaterialOrdinal(paletteSubCategoryBaseMaterialOrdinal)
     {
     }
 
@@ -759,6 +766,7 @@ public:
         , TimerDurationSeconds(0.0f)
         , VariantOverrides(std::nullopt)
         , PaletteCoordinates(std::nullopt)
+        , PaletteSubCategoryBaseMaterialOrdinal(0)
     {
     }
 

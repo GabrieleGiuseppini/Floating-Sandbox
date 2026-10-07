@@ -166,6 +166,7 @@ StructuralMaterial StructuralMaterial::Create(
         // Palette coordinates
 
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
+        unsigned int paletteSubCategoryBaseMaterialOrdinal = 0u;
         auto const & paletteCoordinatesJson = Utils::GetOptionalJsonObject(structuralMaterialJson, "palette_coordinates");
         if (!isExemptFromPalette)
         {
@@ -175,6 +176,7 @@ StructuralMaterial StructuralMaterial::Create(
             }
 
             paletteCoordinates = DeserializePaletteCoordinates(*paletteCoordinatesJson);
+            paletteSubCategoryBaseMaterialOrdinal = paletteCoordinates->SubCategoryOrdinal; // This is the lead of the streak in the row
             paletteCoordinates->SubCategoryOrdinal += ordinal;
         }
 
@@ -223,7 +225,8 @@ StructuralMaterial StructuralMaterial::Create(
             // Overrides
             std::nullopt,
             // Palette
-            paletteCoordinates);
+            paletteCoordinates,
+            paletteSubCategoryBaseMaterialOrdinal);
     }
     catch (GameException const & ex)
     {
@@ -505,10 +508,12 @@ ElectricalMaterial ElectricalMaterial::Create(
 
         // Palette coordinates
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
+        unsigned int paletteSubCategoryBaseMaterialOrdinal = 0u;
         auto const & paletteCoordinatesJson = Utils::GetOptionalJsonObject(electricalMaterialJson, "palette_coordinates");
         if (paletteCoordinatesJson.has_value())
         {
             paletteCoordinates = DeserializePaletteCoordinates(*paletteCoordinatesJson);
+            paletteSubCategoryBaseMaterialOrdinal = paletteCoordinates->SubCategoryOrdinal; // This is the lead of the streak in the row
             paletteCoordinates->SubCategoryOrdinal += ordinal;
         }
 
@@ -543,7 +548,8 @@ ElectricalMaterial ElectricalMaterial::Create(
             waterPumpNominalForce,
             timerDurationSeconds,
             std::nullopt,
-            paletteCoordinates);
+            paletteCoordinates,
+            paletteSubCategoryBaseMaterialOrdinal);
     }
     catch (GameException const & ex)
     {

@@ -233,6 +233,7 @@ TEST(MaterialTests, Structural_MakeCustomMaterial)
 {
     auto baseMaterial = MakeTestStructuralMaterial("test1", rgbColor(1, 2, 3));
     baseMaterial.PaletteCoordinates = MaterialPaletteCoordinatesType({ "Category1", "SubCategory1", 12u });
+    baseMaterial.PaletteSubCategoryBaseMaterialOrdinal = 5;
 
     auto const overrides = StructuralMaterial::VariantOverridesType(
         "test1-variant",
@@ -259,6 +260,7 @@ TEST(MaterialTests, Structural_MakeCustomMaterial)
 
     ASSERT_TRUE(customMaterial->PaletteCoordinates.has_value());
     EXPECT_EQ(customMaterial->PaletteCoordinates->SubCategoryOrdinal, 0u);
+    EXPECT_EQ(customMaterial->PaletteSubCategoryBaseMaterialOrdinal, 5u);
 }
 
 //////////////////////////////////////////////////////
@@ -452,6 +454,7 @@ TEST(MaterialTests, Electrical_MakeCustomMaterial)
 {
     auto baseMaterial = MakeTestElectricalMaterial("test1", rgbColor(1, 2, 3));
     baseMaterial.PaletteCoordinates = MaterialPaletteCoordinatesType({ "Category1", "SubCategory1", 12u });
+    baseMaterial.PaletteSubCategoryBaseMaterialOrdinal = 5;
 
     auto const overrides = ElectricalMaterial::VariantOverridesType(
         "test1-variant",
@@ -473,4 +476,5 @@ TEST(MaterialTests, Electrical_MakeCustomMaterial)
     EXPECT_EQ(customMaterial->TimerDurationSeconds, overrides.TimerDurationSeconds);
     ASSERT_TRUE(customMaterial->PaletteCoordinates.has_value());
     EXPECT_EQ(customMaterial->PaletteCoordinates->SubCategoryOrdinal, 0u);
+    EXPECT_EQ(customMaterial->PaletteSubCategoryBaseMaterialOrdinal, 5u);
 }
