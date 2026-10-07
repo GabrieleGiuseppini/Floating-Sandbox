@@ -319,7 +319,48 @@ std::unique_ptr<StructuralMaterial> StructuralMaterial::MakeCustomMaterial(Struc
     customStructuralMaterial.WaterSolubility = overrides.WaterSolubility;
     customStructuralMaterial.VariantOverrides = overrides;
 
+    // Override palette coordinates
+    assert(customStructuralMaterial.PaletteCoordinates.has_value());
+    customStructuralMaterial.PaletteCoordinates->SubCategoryOrdinal = 0; // Unused, so keep it clean
+
     return std::make_unique<StructuralMaterial>(customStructuralMaterial);
+}
+
+/////////////////////////////////////////////////////////////
+
+picojson::value ElectricalMaterial::VariantOverridesType::Serialize() const
+{
+    picojson::object root;
+
+    root.emplace("name", picojson::value(Name));
+    root.emplace("heat_generated", picojson::value(static_cast<double>(HeatGenerated)));
+    root.emplace("luminiscence", picojson::value(static_cast<double>(Luminiscence)));
+    root.emplace("light_spread", picojson::value(static_cast<double>(LightSpread)));
+    root.emplace("engine_power", picojson::value(static_cast<double>(EnginePower)));
+    root.emplace("water_pump_nominal_force", picojson::value(static_cast<double>(WaterPumpNominalForce)));
+    root.emplace("timer_duration_seconds", picojson::value(static_cast<double>(TimerDurationSeconds)));
+
+    return picojson::value(root);
+}
+
+ElectricalMaterial::VariantOverridesType ElectricalMaterial::VariantOverridesType::Deserialize(picojson::object const & overridesJson)
+{
+    std::string const name = Utils::GetMandatoryJsonMember<std::string>(overridesJson, "name");
+    float const heatGenerated = Utils::GetMandatoryJsonMember<float>(overridesJson, "heat_generated");
+    float const luminiscence = Utils::GetMandatoryJsonMember<float>(overridesJson, "luminiscence");
+    float const lightSpread = Utils::GetMandatoryJsonMember<float>(overridesJson, "light_spread");
+    float const enginePower = Utils::GetMandatoryJsonMember<float>(overridesJson, "engine_power");
+    float const waterPumpNominalForce = Utils::GetMandatoryJsonMember<float>(overridesJson, "water_pump_nominal_force");
+    float const timerDurationSeconds = Utils::GetMandatoryJsonMember<float>(overridesJson, "timer_duration_seconds");
+
+    return VariantOverridesType(
+        name,
+        heatGenerated,
+        luminiscence,
+        lightSpread,
+        enginePower,
+        waterPumpNominalForce,
+        timerDurationSeconds);
 }
 
 ElectricalMaterial ElectricalMaterial::Create(
@@ -501,6 +542,7 @@ ElectricalMaterial ElectricalMaterial::Create(
             thermalSwitchTransitionTemperature,
             waterPumpNominalForce,
             timerDurationSeconds,
+            std::nullopt,
             paletteCoordinates);
     }
     catch (GameException const & ex)
@@ -797,4 +839,28 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
     }
 
     return ss.str();
+}
+
+std::unique_ptr<ElectricalMaterial> ElectricalMaterial::MakeCustomMaterial(ElectricalMaterial::VariantOverridesType const & overrides) const
+{
+    // We don't create custom materials off custom materials
+    assert(!VariantOverrides.has_value());
+
+    // Clone self
+    ElectricalMaterial customElectricalMaterial(*this);
+
+    // Override
+    customElectricalMaterial.Name = overrides.Name;
+    customElectricalMaterial.HeatGenerated = overrides.HeatGenerated;
+    customElectricalMaterial.Luminiscence = overrides.Luminiscence;
+    customElectricalMaterial.LightSpread = overrides.LightSpread;
+    customElectricalMaterial.EnginePower = overrides.EnginePower;
+    customElectricalMaterial.WaterPumpNominalForce = overrides.WaterPumpNominalForce;
+    customElectricalMaterial.TimerDurationSeconds = overrides.TimerDurationSeconds;
+
+    // Override palette coordinates
+    assert(customElectricalMaterial.PaletteCoordinates.has_value());
+    customElectricalMaterial.PaletteCoordinates->SubCategoryOrdinal = 0; // Unused, so keep it clean
+
+    return std::make_unique<ElectricalMaterial>(customElectricalMaterial);
 }

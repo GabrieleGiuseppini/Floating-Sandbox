@@ -487,6 +487,84 @@ public:
         White
     };
 
+    struct VariantOverridesType
+    {
+        std::string Name;
+        float HeatGenerated;
+        float Luminiscence;
+        float LightSpread;
+        float EnginePower;
+        float WaterPumpNominalForce;
+        float TimerDurationSeconds;
+
+        VariantOverridesType(
+            std::string const & name,
+            float heatGenerated,
+            float luminiscence,
+            float lightSpread,
+            float enginePower,
+            float waterPumpNominalForce,
+            float timerDurationSeconds)
+            : Name(name)
+            , HeatGenerated(heatGenerated)
+            , Luminiscence(luminiscence)
+            , LightSpread(lightSpread)
+            , EnginePower(enginePower)
+            , WaterPumpNominalForce(waterPumpNominalForce)
+            , TimerDurationSeconds(timerDurationSeconds)
+        {
+        }
+
+        VariantOverridesType(VariantOverridesType const & other) = default;
+
+        bool operator==(VariantOverridesType const & other) const
+        {
+            return
+                Name == other.Name
+                && HeatGenerated == other.HeatGenerated
+                && Luminiscence == other.Luminiscence
+                && LightSpread == other.LightSpread
+                && EnginePower == other.EnginePower
+                && WaterPumpNominalForce == other.WaterPumpNominalForce
+                && TimerDurationSeconds == other.TimerDurationSeconds;
+        }
+
+        bool operator<(VariantOverridesType const & other) const
+        {
+            return std::tie(
+                Name,
+                HeatGenerated,
+                Luminiscence,
+                LightSpread,
+                EnginePower,
+                WaterPumpNominalForce,
+                TimerDurationSeconds) < std::tie(
+                    other.Name,
+                    other.HeatGenerated,
+                    other.Luminiscence,
+                    other.LightSpread,
+                    other.EnginePower,
+                    other.WaterPumpNominalForce,
+                    other.TimerDurationSeconds);
+        }
+
+        size_t CalculateHash() const
+        {
+            std::size_t h = 0;
+            Utils::HashCombine(h, Name);
+            Utils::HashCombine(h, HeatGenerated);
+            Utils::HashCombine(h, Luminiscence);
+            Utils::HashCombine(h, LightSpread);
+            Utils::HashCombine(h, EnginePower);
+            Utils::HashCombine(h, WaterPumpNominalForce);
+            Utils::HashCombine(h, TimerDurationSeconds);
+            return h;
+        }
+
+        picojson::value Serialize() const;
+        static VariantOverridesType Deserialize(picojson::object const & overridesJson);
+    };
+
 public:
 
     MaterialColorKey ColorKey;
@@ -546,6 +624,13 @@ public:
     // Timer
     float TimerDurationSeconds;
 
+    // Overrides
+    //
+    // If set, this is a custom material; and viceversa.
+    // The material itself already has these properties; this
+    // member is for convenience
+    std::optional<VariantOverridesType> VariantOverrides;
+
     // Palette
     std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
 
@@ -599,6 +684,7 @@ public:
         float thermalSwitchTransitionTemperature,
         float waterPumpNominalForce,
         float timerDurationSeconds,
+        std::optional<VariantOverridesType> variantOverrides,
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
         : ColorKey(colorKey)
         , Name(name)
@@ -630,6 +716,7 @@ public:
         , ThermalSwitchTransitionTemperature(thermalSwitchTransitionTemperature)
         , WaterPumpNominalForce(waterPumpNominalForce)
         , TimerDurationSeconds(timerDurationSeconds)
+        , VariantOverrides(variantOverrides)
         , PaletteCoordinates(paletteCoordinates)
     {
     }
@@ -670,9 +757,24 @@ public:
         , ThermalSwitchTransitionTemperature(1000.0f)
         , WaterPumpNominalForce(0.0f)
         , TimerDurationSeconds(0.0f)
+        , VariantOverrides(std::nullopt)
         , PaletteCoordinates(std::nullopt)
     {
     }
 
     std::string MakeInstancedElementLabel(ElectricalElementInstanceIndex instanceIndex) const;
+
+    std::unique_ptr<ElectricalMaterial> MakeCustomMaterial(VariantOverridesType const & overrides) const;
 };
+
+namespace std
+{
+    template <>
+    struct hash<ElectricalMaterial::VariantOverridesType>
+    {
+        std::size_t operator()(ElectricalMaterial::VariantOverridesType const & c) const
+        {
+            return c.CalculateHash();
+        }
+    };
+}
