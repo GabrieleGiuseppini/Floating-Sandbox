@@ -13,6 +13,7 @@
 
 #include <picojson.h>
 
+#include <memory>
 #include <optional>
 #include <string>
 #include <utility>
@@ -396,6 +397,8 @@ public:
         , VariantOverrides(std::nullopt)
         , PaletteCoordinates(std::nullopt)
     {}
+
+    std::unique_ptr<StructuralMaterial> MakeCustomMaterial(VariantOverridesType const & overrides) const;
 };
 
 namespace std

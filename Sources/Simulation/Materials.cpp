@@ -299,6 +299,29 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
         throw GameException("Unrecognized MaterialSoundType \"" + str + "\"");
 }
 
+std::unique_ptr<StructuralMaterial> StructuralMaterial::MakeCustomMaterial(StructuralMaterial::VariantOverridesType const & overrides) const
+{
+    // We don't create custom materials off custom materials
+    assert(!VariantOverrides.has_value());
+
+    // Clone self
+    StructuralMaterial customStructuralMaterial(*this);
+
+    // Override
+    customStructuralMaterial.Name = overrides.Name;
+    customStructuralMaterial.RenderColor = overrides.RenderColor;
+    customStructuralMaterial.Strength = overrides.Strength;
+    customStructuralMaterial.Density = overrides.Density;
+    customStructuralMaterial.IgnitionTemperature = overrides.IgnitionTemperature;
+    customStructuralMaterial.MeltingTemperature = overrides.MeltingTemperature;
+    customStructuralMaterial.RotReceptivity = overrides.RotReceptivity;
+    customStructuralMaterial.RustReceptivity = overrides.RustReceptivity;
+    customStructuralMaterial.WaterSolubility = overrides.WaterSolubility;
+    customStructuralMaterial.VariantOverrides = overrides;
+
+    return std::make_unique<StructuralMaterial>(customStructuralMaterial);
+}
+
 ElectricalMaterial ElectricalMaterial::Create(
     MaterialColorKey const & colorKey,
     unsigned int ordinal,
