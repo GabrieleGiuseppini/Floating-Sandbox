@@ -11,6 +11,7 @@
 #include <ShipBuilderLib/MainFrame.h>
 
 #include <UILib/LocalizationManager.h>
+#include <UILib/SharedUIResources.h>
 
 #include <Game/GameAssetManager.h>
 #include <Game/GameVersion.h>
@@ -62,7 +63,7 @@ private:
     ShipBuilder::MainFrame * mMainFrame;
     std::unique_ptr<GameAssetManager> mGameAssetManager;
     std::unique_ptr<LocalizationManager> mLocalizationManager;
-    std::unique_ptr<MaterialDatabase> mMaterialDatabase;
+    std::unique_ptr<DefaultMaterialDatabase> mDefaultMaterialDatabase;
     std::unique_ptr<ShipTexturizer> mShipTexturizer;
 };
 
@@ -123,13 +124,16 @@ bool MainApp::OnInit()
         // Language (system default)
         mLocalizationManager = LocalizationManager::CreateInstance(std::nullopt, *mGameAssetManager);
 
+        // Shared UI resources
+        SharedUIResources::Initialize(*mGameAssetManager);
+
         //
         // Initialize helpers
         //
 
-        mMaterialDatabase = std::make_unique<MaterialDatabase>(std::move(MaterialDatabase::Load(*mGameAssetManager)));
+        mDefaultMaterialDatabase = std::make_unique<DefaultMaterialDatabase>(std::move(DefaultMaterialDatabase::Load(*mGameAssetManager)));
         mShipTexturizer = std::make_unique<ShipTexturizer>(
-            *mMaterialDatabase,
+            *mDefaultMaterialDatabase,
             *mGameAssetManager);
 
         //
@@ -141,7 +145,7 @@ bool MainApp::OnInit()
             wxICON(BBB_SHIP_ICON),
             *mGameAssetManager,
             *mLocalizationManager,
-            *mMaterialDatabase,
+            *mDefaultMaterialDatabase,
             *mShipTexturizer,
             nullptr,
             {},

@@ -153,10 +153,9 @@ private:
         KindType const Kind;
 
         // Iff Kind==CreateNewButton|Material
-        TMaterial const * Material;
+        TMaterial const * Material; // CreateNewButton:parent material|Material:material itself
         // Iff Kind==Material
         int MaterialSampleBitmapIndex;
-        int MaterialSampleBitmapYTopOffset; // Relative to cell
         wxString Name1;
         int Name1Width;
         int Name1YTopOffset; // Relative to cell
@@ -179,7 +178,6 @@ private:
             , Kind(kind)
             , Material(material)
             , MaterialSampleBitmapIndex(-1)
-            , MaterialSampleBitmapYTopOffset(0)
             , Name1Width(0)
             , Name1YTopOffset(0)
             , Name2Width(0)
@@ -223,9 +221,9 @@ private:
     // Render style
     //
 
-    wxBrush mBackgroundBrush;
     wxBrush mSeparatorBrush;
     wxPen mSelectionPen;
+    wxPen mCreateNewFrameBorderPen;
     wxFont mNameFont;
     wxFont mDataFont;
     wxColor mTextForegroundColor;

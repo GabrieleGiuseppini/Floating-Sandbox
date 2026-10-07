@@ -132,7 +132,7 @@ private:
 
     MaterialPalettePanel<TLayer> * CreateCategoryPanel(
         wxWindow * parent,
-        typename DefaultMaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
+        typename DefaultMaterialDatabase::Palette<TMaterial>::Category const & defaultMaterialCategory,
         ShipTexturizer const & shipTexturizer,
         GameAssetManager const & gameAssetManager);
 

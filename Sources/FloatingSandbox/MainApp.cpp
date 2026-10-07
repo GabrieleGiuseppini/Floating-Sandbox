@@ -14,6 +14,7 @@
 #include "UnhandledExceptionHandler.h"
 
 #include <UILib/LocalizationManager.h>
+#include <UILib/SharedUIResources.h>
 #include <UILib/StandardSystemPaths.h>
 
 #include <Game/GameAssetManager.h>
@@ -294,6 +295,9 @@ bool MainApp::OnInit()
         // Language
         auto const preferredLanguage = UIPreferencesManager::LoadPreferredLanguage();
         mLocalizationManager = LocalizationManager::CreateInstance(preferredLanguage, *mGameAssetManager);
+
+        // Shared UI resources
+        SharedUIResources::Initialize(*mGameAssetManager);
 
         //
         // See if we've been given a ship file path to start with

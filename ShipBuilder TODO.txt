@@ -342,15 +342,42 @@
 				- parent color_key and VariantOverridesType
 					- Materialization from json uses MaterialColorMap<TLayer> and produces variants
 
-		- MaterialPalette<TLayer>
+		- IMaterialPaletteController<TLayer>: for UI to talk back to controller
+			- TODO: selected
+			- TODO: workflows above
+
+		- MaterialPaletteBrowser<TLayer>
 			! Owns only its own tiles
 			- Replace events with calls into IMaterialPaletteController
 			- cctor:
 				- Palette<TLayer> const & from DefaultMaterialDatabase
 				- vec<uq> from user
-				- vec<uw> from ship - if needed @ cctor
+				- vec<uq> from ship - if needed @ cctor
 				- IMaterialPaletteController<TLayer> &
-			- For each "tile", needs to know whether it's default, user's custom, or ship's custom
+			- Each "tile" has metadata:
+				+ TMaterial * // iff needed for add/edit workflow
+				- MaterialCustomType // Material only; CustomTypeKind: None, User, Ship
+					- Used for drawing checkbox overlay and edit button overlay
+					- Used for drawing ship icon overlay
+				- IsChecked // Material only
+					- Invariant: iff CustomType!=None
+			- Layout:
+				- For each row:
+					+ Defaults:
+						+ For each cell:
+							+ If next is different BaseMaterialOrdinal, or no next exists:
+								+ Add new button
+					- TODO: custom materials
+				- TODO: structure layout so we may re-layout custom's at will
+
+			- FIX:
+				- Icon
+				- Whole cell rect must match others - for selection rect
+					- But also needs to be normalized @ EndBuild, so that all cols have the same
+
+			- MaterialPalettePanel:
+				- Each stride of same-base materials ends with a horiz separator - iff not last
+
 			- Exposes API for controller to operate on it, e.g. by replacing subsets (e.g. ship) or deleting materials
 
 		- MaterialPalettesController

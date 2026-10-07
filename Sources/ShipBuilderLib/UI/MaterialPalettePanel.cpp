@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "MaterialPalettePanel.h"
 
+#include <UILib/SharedUIResources.h>
 #include <UILib/WxHelpers.h>
 
 #include <Core/Log.h>
@@ -62,14 +63,16 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     , mNextCellId(0)
 {
     SetBackgroundColour(wxColour("WHITE"));
-    mBackgroundBrush = wxBrush(wxColour("WHITE"), wxBRUSHSTYLE_SOLID);
 
     //
     // Build style
     //
 
+    wxColor const baseColor1 = wxColor(0x00, 0x78, 0xd4);
+
     mSeparatorBrush = wxBrush(wxColor(0xa0, 0xa0, 0xa0), wxBRUSHSTYLE_SOLID);
-    mSelectionPen = wxPen(wxColor(0x00, 0x78, 0xd4), SelectionFrameThickness, wxPENSTYLE_SOLID);
+    mSelectionPen = wxPen(baseColor1, SelectionFrameThickness, wxPENSTYLE_SOLID);
+    mCreateNewFrameBorderPen = wxPen(baseColor1, 1, wxPENSTYLE_SHORT_DASH);
 
     // Make name font
     mNameFont = GetFont();
@@ -142,7 +145,6 @@ void MaterialPalettePanel<TLayer>::Add(
         cellSize);
 
     cell.MaterialSampleBitmapIndex = materialSampleBitmapIndex;
-    cell.MaterialSampleBitmapYTopOffset = currentTopYOffset;
 
     currentTopYOffset +=
         MaterialSampleSize.height
@@ -260,8 +262,34 @@ void MaterialPalettePanel<TLayer>::AddSeparator()
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::AddCreateNewButton(TMaterial const * parentMaterial)
 {
-    // TODO
-    (void)parentMaterial;
+    //
+    // Prepare row
+    //
+
+    assert(!mRows.empty()); // Expect to be added after some materials, hence a row exists
+    assert(mRows.back().Kind != Row::KindType::Separator); // Expect to be added after some materials, hence we're not on a separator
+
+    Row & row = mRows.back();
+
+    //
+    // Create cell
+    //
+
+    // Store cell
+
+    wxSize const cellSize = wxSize(
+        CellInnerMargin + MaterialSampleSize.width + CellInnerMargin,
+        0); // Recalculated later
+
+    Cell & cell = row.Cells.emplace_back(
+        MakeNextCellId(),
+        Cell::KindType::CreateNewButton,
+        parentMaterial,
+        cellSize);
+
+    // Store final height
+
+    cell.Rect.SetHeight(CellInnerMargin + MaterialSampleSize.height);
 }
 
 template<LayerType TLayer>
@@ -499,7 +527,7 @@ void MaterialPalettePanel<TLayer>::RenderPanel(wxRect const & region)
 
     // Clear
     dc.SetPen(*wxTRANSPARENT_PEN);
-    dc.SetBrush(mBackgroundBrush);
+    dc.SetBrush(SharedUIResources::GetInstance().GetWhiteSolidBackgroundBrush());
     dc.DrawRectangle(region);
 
     // Setup
@@ -548,7 +576,7 @@ void MaterialPalettePanel<TLayer>::RenderCell(Cell const & cell)
 
     // Clear
     dc.SetPen(*wxTRANSPARENT_PEN);
-    dc.SetBrush(mBackgroundBrush);
+    dc.SetBrush(SharedUIResources::GetInstance().GetWhiteSolidBackgroundBrush());
     dc.DrawRectangle(cell.Rect);
 
     // Render cell
@@ -567,7 +595,24 @@ void MaterialPalettePanel<TLayer>::RenderCell(
     {
         case Cell::KindType::CreateNewButton:
         {
-            // TODO
+            // Add new button
+
+            // Frame
+            dc.SetPen(mCreateNewFrameBorderPen);
+            dc.SetBrush(*wxTRANSPARENT_BRUSH);
+            dc.DrawRoundedRectangle(
+                leftX,
+                cell.Rect.GetY() + CellInnerMargin,
+                MaterialSampleSize.width,
+                MaterialSampleSize.height,
+                5.0);
+
+            // Plus
+            auto const & bitmap = SharedUIResources::GetInstance().GetAddNewMaterialPlusIcon();
+            dc.DrawBitmap(
+                bitmap,
+                centerX - bitmap.GetWidth() / 2,
+                cell.Rect.GetY() + CellInnerMargin + MaterialSampleSize.height / 2 - bitmap.GetHeight() / 2);
 
             break;
         }
@@ -581,7 +626,7 @@ void MaterialPalettePanel<TLayer>::RenderCell(
                 cell.MaterialSampleBitmapIndex,
                 dc,
                 leftX,
-                cell.Rect.GetY() + cell.MaterialSampleBitmapYTopOffset,
+                cell.Rect.GetY() + CellInnerMargin,
                 wxIMAGELIST_DRAW_NORMAL,
                 true);
 
@@ -606,10 +651,21 @@ void MaterialPalettePanel<TLayer>::RenderCell(
                 dc.DrawText(cell.Data, dataX, cell.Rect.GetY() + cell.DataYTopOffset);
             }
 
+            // Edit button
+
+            // TODO
+
+            // Checkbox
+
+            // TODO
+
+            // Ship icon overlay
+
+            // TODO
+
             break;
         }
     }
-
 
     // Selection
 

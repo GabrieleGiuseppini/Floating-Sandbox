@@ -28,6 +28,8 @@ set  (UI_LIB_SOURCES
 	PressureCrossCutReadingsProbeControl.h
 	ScalarTimeSeriesProbeControl.cpp
 	ScalarTimeSeriesProbeControl.h
+	SharedUIResources.cpp
+	SharedUIResources.h
 	ShipDescriptionDialog.cpp
 	ShipDescriptionDialog.h
 	ShipLoadDialog.cpp

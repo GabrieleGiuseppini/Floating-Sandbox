@@ -369,7 +369,7 @@ void MaterialPaletteBrowser<TLayer>::Close()
 template<LayerType TLayer>
 MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPanel(
     wxWindow * parent,
-    typename DefaultMaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
+    typename DefaultMaterialDatabase::Palette<TMaterial>::Category const & defaultMaterialCategory,
     ShipTexturizer const & shipTexturizer,
     GameAssetManager const & gameAssetManager)
 {
@@ -385,9 +385,9 @@ MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPan
     categoryPanel->StartBuild();
 
     std::optional<typename DefaultMaterialDatabase::Palette<TMaterial>::Category::SubCategory::Group> currentGroup;
-    for (size_t iSubCategory = 0; iSubCategory < materialCategory.SubCategories.size(); ++iSubCategory) // Rows
+    for (size_t iSubCategory = 0; iSubCategory < defaultMaterialCategory.SubCategories.size(); ++iSubCategory) // Rows
     {
-        auto const & subCategory = materialCategory.SubCategories[iSubCategory];
+        auto const & subCategory = defaultMaterialCategory.SubCategories[iSubCategory];
 
         // Check if a group change
         if (currentGroup.has_value() && subCategory.ParentGroup.UniqueId != currentGroup->UniqueId)
@@ -399,11 +399,27 @@ MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPan
         currentGroup = subCategory.ParentGroup;
 
         // Materials
+        TMaterial const * currentBaseMaterial = nullptr;
         for (size_t iMaterial = 0; iMaterial < subCategory.Materials.size(); ++iMaterial) // Cols
         {
-            TMaterial const * material = (&subCategory.Materials[iMaterial].get());
+            TMaterial const * material = &(subCategory.Materials[iMaterial].get());
+
+            // Check if first of new stretch
+            TMaterial const * newBaseMaterial = &(subCategory.Materials[material->PaletteSubCategoryBaseMaterialOrdinal].get());
+            if (newBaseMaterial != currentBaseMaterial && currentBaseMaterial != nullptr)
+            {
+                categoryPanel->AddCreateNewButton(currentBaseMaterial);
+            }
+
             categoryPanel->Add(material, iMaterial == 0);
+
+            // Advance
+            currentBaseMaterial = newBaseMaterial;
         }
+
+        // Add last button
+        assert(currentBaseMaterial != nullptr); // We've had at least one materia;
+        categoryPanel->AddCreateNewButton(currentBaseMaterial);
     }
 
     categoryPanel->EndBuild();
