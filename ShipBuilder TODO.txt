@@ -257,7 +257,7 @@
 			+ Class
 			+ json
 
-		= Structural, Electrical Material:
+		+ Structural, Electrical Material:
 			+ opt<struct VariantOverridesType>
 				+ Contains:
 					+ Structural, Rope:
@@ -299,13 +299,13 @@
 				+ MakeMaterialVariant
 					+ PaletteSubCategoryBaseMaterialOrdinal
 
-		- CustomMaterialsPod defined @ Material.cc/h
+		+ CustomMaterialsPod defined @ own .cc/.h
 
 		- Ship De/Serialize:
 			- First off, verify current behavior with unrecognized tags
 				- Worst case we bump file format version (hopefully exists, and check is already done!)
 			- New structural, electrical, rope layer set of tags:
-				- CustomMaterialPalette: custom materials used in Buffer
+				- CustomMaterialPalette: custom materials used in Buffer plus those specified in ShipDefinition (just to be clean)
 					- (Implicitly) pruned @ Serialize to only contain used ones
 					- Stores (parent) color_key and content of VariantOverridesType
 					- Assigned local indices for new Buffer to address (see below)
@@ -313,18 +313,18 @@
 				- Buffer: color_key + local index in MaterialPalette
 					- TODO: index=-1 for standard materials? Do we waste all this space?
 			- Deserialize() returns CustomMaterialsPod (3x vector<uq_ptr<TMaterial>> for each TMaterial) in ShipDefinition, just for lifetime extension
-				- Might group all layers' vectors in a single CustomMaterialsPod, for convenience
-				- Will be stored by Ship, given by ShipFactory
+				+ Might group all layers' vectors in a single CustomMaterialsPod, for convenience
+				+ Will be stored by Ship, given by ShipFactory
 			- If no custom materials are present, ships should be loadable by older FS versions; only if custom materials are present, the load should fail with "newer version" error
 				- So file format version should be conditional on presence of custom materials
-			- Legacy deserializer: empty pod
+			+ Legacy deserializer: empty pod
 
 			- Unit tests:
 				- Keep tests for loading old version
 				- Adjust/Make tests for new version
 
-		- ShipFactory:
-			- Passes (via std::move) CustomMaterialsPod for custom materials to Ship ("shipSpecificCustomMaterials", and const private member), just for extending their lifetime
+		+ ShipFactory:
+			+ Passes (via std::move) CustomMaterialsPod for custom materials to Ship ("shipSpecificCustomMaterials", and const private member), just for extending their lifetime
 
 		=== ShipBuilder ===
 
@@ -334,9 +334,13 @@
 				- vec<uq> from user
 				- vec<uq> from ship
 			- cctor:
-				- Palette<TLayer> const & from DefaultMaterialDatabase
+				- MaterialColorMap<TLayer> const & from DefaultMaterialDatabase
 				- vec<uq> from user
 				- vec<uq> from ship - if needed @ cctor
+
+			- Ser/Deset for user custom materials
+				- parent color_key and VariantOverridesType
+					- Materialization from json uses MaterialColorMap<TLayer> and produces variants
 
 		- MaterialPalette<TLayer>
 			! Owns only its own tiles

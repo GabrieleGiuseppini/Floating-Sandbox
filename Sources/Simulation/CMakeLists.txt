@@ -4,6 +4,7 @@
 #
 
 set  (SIMULATION_SOURCES
+	CustomMaterialsPod.h
 	DefaultMaterialDatabase.cpp
 	DefaultMaterialDatabase.h
 	ElectricalPanel.h

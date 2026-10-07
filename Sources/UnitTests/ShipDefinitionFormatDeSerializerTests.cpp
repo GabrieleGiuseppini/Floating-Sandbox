@@ -1093,7 +1093,8 @@ TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
         std::move(layers),
         ShipMetadata("TestShipName"),
         ShipPhysicsData(vec2f(242.0f, -242.0f), 2420.0f),
-        ShipAutoTexturizationSettings(ShipAutoTexturizationModeType::MaterialTextures, 10.0f, 0.5f));
+        ShipAutoTexturizationSettings(ShipAutoTexturizationModeType::MaterialTextures, 10.0f, 0.5f),
+        CustomMaterialsPod());
 
     MemoryBinaryWriteStream outputStream;
     ShipDefinitionFormatDeSerializer::Save(

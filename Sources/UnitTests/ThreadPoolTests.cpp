@@ -1,6 +1,7 @@
 #include <Core/ThreadPool.h>
 
 #include <algorithm>
+#include <atomic>
 #include <functional>
 #include <vector>
 
@@ -31,11 +32,12 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(ThreadPoolTests_OneRuns, One_Runs)
 {
-    std::vector<bool> results(GetParam(), false);
+    std::vector<std::atomic<bool>> results(GetParam());
 
     std::vector<ThreadPool::Task> tasks;
     for (size_t t = 0; t < GetParam(); ++t)
     {
+        results[t] = false;
         tasks.emplace_back(
             [&results, idx=t]()
             {
@@ -80,11 +82,12 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(ThreadPoolTests_FourRuns, Four_Runs)
 {
-    std::vector<bool> results(GetParam(), false);
+    std::vector<std::atomic<bool>> results(GetParam());
 
     std::vector<ThreadPool::Task> tasks;
     for (size_t t = 0; t < GetParam(); ++t)
     {
+        results[t] = false;
         tasks.emplace_back(
             [&results, idx = t]()
             {

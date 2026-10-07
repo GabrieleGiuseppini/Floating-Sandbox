@@ -81,11 +81,13 @@ Ship::Ship(
     Triangles && triangles,
     ElectricalElements && electricalElements,
     Frontiers && frontiers,
-    RgbaImageData && interiorTextureImage)
+    RgbaImageData && interiorTextureImage,
+    CustomMaterialsPod && customMaterials)
     : mId(id)
     , mWorldSize(worldSize)
     , mParentWorld(parentWorld)
     , mDefaultMaterialDatabase(defaultMaterialDatabase)
+    , mCustomMaterials(std::move(customMaterials))
     , mSimulationEventHandler(simulationEventDispatcher)
     , mEventRecorder(nullptr)
     , mPoints(std::move(points))

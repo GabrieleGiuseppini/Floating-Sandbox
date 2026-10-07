@@ -9,6 +9,7 @@
 
 #include "ShipElectricSparks.h"
 
+#include "../CustomMaterialsPod.h"
 #include "../DefaultMaterialDatabase.h"
 #include "../EventRecorder.h"
 #include "../ShipDefinition.h"
@@ -52,7 +53,8 @@ public:
         Triangles && triangles,
         ElectricalElements && electricalElements,
         Frontiers && frontiers,
-        RgbaImageData && interiorTextureImage);
+        RgbaImageData && interiorTextureImage,
+        CustomMaterialsPod && customMaterials);
 
     void Announce();
 
@@ -1073,6 +1075,7 @@ private:
     FloatSize const mWorldSize;
     World & mParentWorld;
     DefaultMaterialDatabase const & mDefaultMaterialDatabase;
+    CustomMaterialsPod const mCustomMaterials; // Just to maintain lifetime of custom materials
     SimulationEventDispatcher & mSimulationEventHandler;
     EventRecorder * mEventRecorder;
 

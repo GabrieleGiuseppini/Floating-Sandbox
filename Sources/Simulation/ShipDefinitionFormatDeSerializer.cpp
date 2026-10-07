@@ -209,7 +209,8 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
             nullptr), // TODO: InteriorLayer
         *shipMetadata,
         shipPhysicsData,
-        shipAutoTexturizationSettings);
+        shipAutoTexturizationSettings,
+        CustomMaterialsPod()); // TODO
 }
 
 ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(BinaryReadStream & shipDefinitionInputStream)

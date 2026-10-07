@@ -45,7 +45,8 @@ ShipDefinition Model::MakeShipDefinition() const
             CloneInteriorTextureLayer()),
         GetShipMetadata(),
         GetShipPhysicsData(),
-        GetShipAutoTexturizationSettings());
+        GetShipAutoTexturizationSettings(),
+        CustomMaterialsPod()); // Ship will carry own custom materials, those will be serialized
 }
 
 void Model::SetStructuralLayer(StructuralLayerData && structuralLayer)

@@ -462,7 +462,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         std::move(triangles),
         std::move(electricalElements),
         std::move(frontiers),
-        std::move(interiorTextureImage));
+        std::move(interiorTextureImage),
+        std::move(shipDefinition.CustomMaterials));
 
     LogMessage("ShipFactory: Create() took ",
         std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::Now() - totalStartTime).count(), "us");

@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "CustomMaterialsPod.h"
 #include "Layers.h"
 #include "ShipAutoTexturizationSettings.h"
 #include "ShipMetadata.h"
@@ -18,15 +19,18 @@ struct ShipDefinition
     ShipMetadata Metadata;
     ShipPhysicsData PhysicsData;
     std::optional<ShipAutoTexturizationSettings> const AutoTexturizationSettings;
+    CustomMaterialsPod CustomMaterials; // To maintain lifetime of ship's custom materials
 
     ShipDefinition(
         ShipLayers && layers,
         ShipMetadata const & metadata,
         ShipPhysicsData const & physicsData,
-        std::optional<ShipAutoTexturizationSettings> const & autoTexturizationSettings)
+        std::optional<ShipAutoTexturizationSettings> const & autoTexturizationSettings,
+        CustomMaterialsPod && customMaterials)
         : Layers(std::move(layers))
         , Metadata(metadata)
         , PhysicsData(physicsData)
         , AutoTexturizationSettings(autoTexturizationSettings)
+        , CustomMaterials(std::move(customMaterials))
     {}
 };

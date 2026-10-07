@@ -731,5 +731,6 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
             nullptr),
         metadata,
         physicsData,
-        autoTexturizationSettings);
+        autoTexturizationSettings,
+        CustomMaterialsPod()); // No custom materials for legacy!
 }
