@@ -390,7 +390,7 @@ std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
     float searchRadius)
 {
     //
-    // Find closest point - of any type - within the search radius
+    // Find closest non-ephemeral point within the search radius
     //
 
     float const squareSearchRadius = searchRadius * searchRadius;
@@ -398,7 +398,7 @@ std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
     float bestSquareDistance = std::numeric_limits<float>::max();
     ElementIndex bestPoint = NoneElementIndex;
 
-    for (auto p : mPoints)
+    for (auto const p : mPoints.RawShipPoints())
     {
         float const squareDistance = (mPoints.GetPosition(p) - pickPosition).squareLength();
         if (squareDistance < squareSearchRadius
