@@ -452,8 +452,17 @@ DefaultMaterialDatabase::Palette<TMaterial> DefaultMaterialDatabase::Palette<TMa
 
             for (auto const & subCategoryJson : Utils::GetMandatoryJsonArray(groupObj, "sub_categories"))
             {
+                auto const subCategoryName = Utils::GetJsonValueAs<std::string>(subCategoryJson, "sub_category");
+
+                assert(
+                    std::find_if(
+                        category.SubCategories.cbegin(),
+                        category.SubCategories.cend(),
+                        [&subCategoryName](auto const & sc) { return sc.Name == subCategoryName; })
+                    == category.SubCategories.cend());
+
                 category.SubCategories.emplace_back(
-                    Utils::GetJsonValueAs<std::string>(subCategoryJson, "sub_category"),
+                    subCategoryName,
                     parentGroup);
             }
         }

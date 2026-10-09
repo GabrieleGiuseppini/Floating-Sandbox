@@ -91,11 +91,13 @@ public:
         ShipTexturizer const & shipTexturizer,
         GameAssetManager const & gameAssetManager);
 
-    void StartBuild();
-    void Add(TMaterial const * material, bool startNewRow);
-    void AddSeparator();
-    void AddCreateNewButton(TMaterial const * parentMaterial);
-    void EndBuild();
+    void StartDefaultMaterialsLayout();
+    void StartNewSubcategoryRow(std::string const & subCategory);
+    void StartNewMaterialStride(unsigned int subCategoryBaseMaterialOrdinal);
+    void AddDefaultMaterial(TMaterial const * material);
+    void AddCreateNewCustomMaterialButton(TMaterial const * parentMaterial);
+    void AddSeparatorRow();
+    void EndDefaultMaterialsLayout();
 
     void SetSelected(TMaterial const * material);
 
@@ -157,10 +159,18 @@ private:
 
         KindType const Kind;
 
+        enum class CustomKindType
+        {
+            None,
+            User,
+            Ship
+        };
+
         // Iff Kind==CreateNewButton|Material
         TMaterial const * Material; // CreateNewButton:parent material|Material:material itself
         // Iff Kind==Material
-        int MaterialSampleBitmapIndex;
+        CustomKindType const CustomKind;
+        int const MaterialSampleBitmapIndex;
         wxString Name1;
         int Name1Width;
         int Name1YTopOffset; // Relative to cell
@@ -170,50 +180,139 @@ private:
         wxString Data;
         int DataWidth;
         int DataYTopOffset; // Relative to cell
+        bool IsChecked; // Iff CustomKind!=None
 
         // Layout
-        wxRect Rect; // Origin set at Layout, Size set at cctor
+        wxRect Rect; // Origin.x set at Layout, Origin.y set at cctor, Size set at cctor
+
+        static Cell MakeCreateNewButtonCell(
+            CellIdType id,
+            TMaterial const * parentMaterial,
+            int originY,
+            wxSize size)
+        {
+            return Cell(
+                id,
+                KindType::CreateNewButton,
+                parentMaterial,
+                CustomKindType::None,
+                -1,
+                originY,
+                size);
+        }
+
+        static Cell MakeMaterialCell(
+            CellIdType id,
+            TMaterial const * material,
+            CustomKindType customKind,
+            int materialSampleBitmapIndex,
+            int originY,
+            wxSize size)
+        {
+            return Cell(
+                id,
+                KindType::Material,
+                material,
+                customKind,
+                materialSampleBitmapIndex,
+                originY,
+                size);
+        }
+
+    private:
 
         Cell(
             CellIdType id,
             KindType kind,
             TMaterial const * material,
+            CustomKindType customKind,
+            int materialSampleBitmapIndex,
+            int originY,
             wxSize size)
             : Id(id)
             , Kind(kind)
             , Material(material)
-            , MaterialSampleBitmapIndex(-1)
+            , CustomKind(customKind)
+            , IsChecked(false)
+            , MaterialSampleBitmapIndex(materialSampleBitmapIndex)
             , Name1Width(0)
             , Name1YTopOffset(0)
             , Name2Width(0)
             , Name2YTopOffset(0)
             , DataWidth(0)
             , DataYTopOffset(0)
-            , Rect(wxPoint(0, 0), size)
-        {
-        }
+            , Rect(wxPoint(0, originY), size)
+        { }
+    };
+
+    struct MaterialStride
+    {
+        // Made of N1 default materials, 1 AddNewButton, N2 user custom materials, N3 ship custom materials
+        std::vector<Cell> Cells;
+        size_t iUserCustomStartIndex; // Index in list of cells where user custom materials start
+        size_t iShipCustomStartIndex; // Index in list of cells where ship custom materials start
+
+        unsigned int const SubCategoryBaseMaterialOrdinal; // Ordinal in default materials's subcategory elements of the base from which this stride starts
+
+        MaterialStride(unsigned int subCategoryBaseMaterialOrdinal)
+            : Cells()
+            , iUserCustomStartIndex(0)
+            , iShipCustomStartIndex(0)
+            , SubCategoryBaseMaterialOrdinal(subCategoryBaseMaterialOrdinal)
+        { }
     };
 
     struct Row
     {
         enum class KindType
         {
-            Cells,
+            SubCategory,
             Separator
         };
 
-        KindType Kind;
+        KindType const Kind;
 
-        // Iff Kind==Cells
-        std::vector<Cell> Cells;
+        // Iff Kind==Subcategory
+        std::string const SubCategory;
+        std::vector<MaterialStride> Strides;
 
         // Layout
-        wxRect Rect; // Origin set at Layout, Size set at Layout
+        wxRect Rect; // Origin set at cctor, Height set at cctor, Width set at Layout
 
-        Row(KindType kind)
+        static Row MakeSubCategoryRow(
+            std::string const & subCategory,
+            wxPoint origin,
+            int height)
+        {
+            return Row(
+                KindType::SubCategory,
+                subCategory,
+                origin,
+                height);
+        }
+
+        static Row MakeSeparatorRow(
+            wxPoint origin,
+            int height)
+        {
+            return Row(
+                KindType::Separator,
+                std::string(),
+                origin,
+                height);
+        }
+
+    private:
+
+        Row(
+            KindType kind,
+            std::string const & subCategory,
+            wxPoint origin,
+            int height)
             : Kind(kind)
-            , Cells()
-            , Rect(wxPoint(0, 0), wxSize(0, 0))
+            , SubCategory(subCategory)
+            , Strides()
+            , Rect(origin, wxSize(0, height))
         { }
     };
 
@@ -226,7 +325,6 @@ private:
     // Render style
     //
 
-    wxBrush mSeparatorBrush;
     wxPen mSelectionPen;
     wxPen mCreateNewFrameBorderPen;
     wxFont mNameFont;

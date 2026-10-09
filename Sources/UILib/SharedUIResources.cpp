@@ -14,4 +14,5 @@ void SharedUIResources::Initialize(GameAssetManager const & gameAssetManager)
 	sInstance = new SharedUIResources();
 	sInstance->mAddNewMaterialPlusIcon = WxHelpers::LoadBitmap("add_new_material_plus_icon", gameAssetManager);
 	sInstance->mWhiteSolidBackgroundBrush = wxBrush(wxColour("WHITE"), wxBRUSHSTYLE_SOLID);
+	sInstance->mSeparatorBrush = wxBrush(wxColor(0xa0, 0xa0, 0xa0), wxBRUSHSTYLE_SOLID);
 }

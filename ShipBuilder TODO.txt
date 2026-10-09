@@ -244,12 +244,13 @@
 				- Owned by MainFrame
 				- Owns 3 MaterialDatabase<TLayer> and 3 MaterialPalette<TLayer>
 					- Supersedes and replaces CompositeMaterialPalette
+			- MaterialPalettesController implements 3 IMaterialPaletteController<TLayer> for callbacks from view(business ops)
 			- Model is the 3 MaterialDatabase<TLayer>
 			- View is the 3 MaterialPalette<TLayer>
 				- The API MaterialPalette<TLayer> exposes to the outside for managing material changes (e.g. removal, addition, replace, etc.)
-				  is ad-hoc; for example, when loading a ship, the API takes bew ship's; on the other hand, if one material changes, the API
+				  is ad-hoc; for example, when loading a ship, the API takes new ship's; on the other hand, if one material changes, the API
 				  takes the pointer of that one
-			- MaterialPalettesController implements 3 IMaterialPaletteController<TLayer> for callbacks from view (business ops)
+				- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
 		
 	= Impl:
 		+ Make custom_materials branch
@@ -352,68 +353,90 @@
 			- OnEditCustomXYZMaterial(XYZMaterial * material)
 			- TODO: other workflows above
 
-		- MaterialPalettePanel<TLayer>: HEAVY REDESIGN
+		= MaterialPalettePanel<TLayer>: HEAVY REDESIGN
 			+ cctor:
 				+ IMaterialPaletteController<TLayer> (for workflows)
 
-			- Hierarchy: 
-				- SubCategoryRow: type=MaterialStrides|Separator
-					- Meta:
-						- SubCategory (str)
-							- @ DB upload: verify unique
-					- MaterialStride: made of N1 default materials, 1 AddNewButton, N2 user custom materials, N3 ship custom materials
-						- All kept in single vector<Cell>, but maintaining counters: startUser, startShip
-						- Meta:
-							- SubCategoryBaseMaterialOrdinal
-						- Cell: type=Material|AddNewButton
-							- Meta:
+			= Hierarchy: 
+				= SubCategoryRow: type=SubCategory|Separator
+					+ Meta:
+						+ SubCategory (str)
+							+ @ default DB deser: verify unique
+					= MaterialStride: made of N1 default materials, 1 AddNewButton, N2 user custom materials, N3 ship custom materials
+						+ All kept in single vector<Cell>, but maintaining counters: startUser, startShip
+						+ Meta:
+							+ SubCategoryBaseMaterialOrdinal
+						= Cell: type=Material|AddNewButton
+							= Meta:
 								- [SubCategoryOrdinal?]
-								- Material TMaterial*
-								- MaterialCustomType // Material only; CustomTypeKind: None, User, Ship
+								+ Material TMaterial*
+								= CustomKind // Material only; CustomTypeKind: None, User, Ship
 									- Used for drawing checkbox overlay and edit button overlay
 									- Used for drawing ship icon overlay
-								- IsChecked // Material only
-									- Invariant: iff CustomType!=None
-
-			- Layout info at each cell (and any other kinds that need it) contained in pseudo-polymorphic struct
+								+ IsChecked // Material only
+									+ Invariant: iff CustomType!=None
 
 			! Lookups:
 				- <CustomMaterial *, User|Ship>:
 					- Find SubCategoryRow such that type=MaterialGroups and SubCategory=CustomMaterial->SubCategory
 					- Find MaterialStride such that SubCategoryBaseMaterialOrdinal=CustomMaterial->PaletteSubCategoryBaseMaterialOrdinal
 					- In stride's User|Ship vector, find cell such that type=Material and Material*=CustomMaterial*
-			- API for layout:
-				- Initial:
-					- StartDefaultMaterialsLayout()
-						- nop
-					- TODO - naming as "...DefaultMaterial..."
-						- Includes adding buttons, separator, etc.
-					- EndDefaultMaterialsLayout()
-						- Calc panel width
-						- Assign cell coords
-						- Draw
+			= API for layout:
+				+ Initial:
+					+ StartDefaultMaterialsLayout()
+						+ Cleanup all
+					+ ...all methods...
+						+ Includes adding buttons, separator, etc.
+					+ EndDefaultMaterialsLayout()
+						+ Calc panel width
+						+ Make buffer bitmap on size
+						+ Assign cell coords
+						+ Render cells onto buffer
+
+				- Extract layout in helper on LayoutSession
+					- Call from EndDefaultMaterialsLayout() with full LayoutSession
+
 				- UpdateCustomMaterial(TMaterial *, User|Ship)
-					- TODO: just small update, then own re-layout (should be nil?)
+					- Update material sample in ImageList (wxImageList::Replace)
+					- Render own cell
+					- Refresh(false)
 				- All subsequent ones (custom):
 					- StartCustomMaterialsLayout() -> LayoutSession
 					- All atomic ops, taking LayoutSession and returning LayoutSession - naming as "...CustomMaterial..."
 						- Op does op on cell
 						- Then calcs LayoutSession
 						- Ops (all take lookup args as args)
-							- Add user custom
-							- Add ship custom
-							- Remove user custom
-							- Remove ship custom
+							- Add user/ship custom
+								- Add material sample to ImageList
+								- Add to stride, at end
+									- Update LayoutSession accordingly
+							- Remove user/ship custom
+								- Nuke material sample from ImageList (wxImageList::Remove)
+									- Update all image list indices
+								- Remove from stride
+									- Update LayoutSession accordingly
+								- Zero out currently-selected if it was this one
 
 					- EndCustomMaterialsLayout(LayoutSession)
 						- (Re-)Calc panel width
+						- Rescale buffer bitmap on size
+							- Create new bitmap with new size
+							- Create two MemoryDc's and Blit old->new
+							- Replace old bitmap with new
 						- Assign cell coords
-						- Draw
+						- Render cells onto buffer
+						----
+						- Refresh(false)
 				
-			- All cells have exact same width - constant
-			- All cells in a row have the same height - constant
-			- There's a H separator between MaterialStride's
+			+ All cells have exact same width - constant
+			= All cells in a row have the same height - constant
+				- Fix font height
+			- FIX:
+				- Need more room for text, do 3 lines OR smaller font
+			+ There's a H separator between MaterialStride's
+			- FindCellFor: can speedup with lookups
 			- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
+
 
 		= MaterialPaletteBrowser<TLayer> : IMaterialPalette
 			! Owns only its own tiles

@@ -382,7 +382,7 @@ MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPan
         shipTexturizer,
         gameAssetManager);
 
-    categoryPanel->StartBuild();
+    categoryPanel->StartDefaultMaterialsLayout();
 
     std::optional<typename DefaultMaterialDatabase::Palette<TMaterial>::Category::SubCategory::Group> currentGroup;
     for (size_t iSubCategory = 0; iSubCategory < defaultMaterialCategory.SubCategories.size(); ++iSubCategory) // Rows
@@ -392,37 +392,52 @@ MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPan
         // Check if a group change
         if (currentGroup.has_value() && subCategory.ParentGroup.UniqueId != currentGroup->UniqueId)
         {
-            categoryPanel->AddSeparator();
+            categoryPanel->AddSeparatorRow();
         }
 
         // Remember this group
         currentGroup = subCategory.ParentGroup;
 
+        //
+        // Populate row
+        //
+
+        categoryPanel->StartNewSubcategoryRow(subCategory.Name);
+
         // Materials
+        unsigned int currentBaseMaterialOrdinal = std::numeric_limits<unsigned int>::max();
         TMaterial const * currentBaseMaterial = nullptr;
         for (size_t iMaterial = 0; iMaterial < subCategory.Materials.size(); ++iMaterial) // Cols
         {
             TMaterial const * material = &(subCategory.Materials[iMaterial].get());
 
-            // Check if first of new stretch
-            TMaterial const * newBaseMaterial = &(subCategory.Materials[material->PaletteSubCategoryBaseMaterialOrdinal].get());
-            if (newBaseMaterial != currentBaseMaterial && currentBaseMaterial != nullptr)
+            // Check if first of new stride
+            if (material->PaletteSubCategoryBaseMaterialOrdinal != currentBaseMaterialOrdinal)
             {
-                categoryPanel->AddCreateNewButton(currentBaseMaterial);
+                // First of new stride
+
+                // Check if we've finished a stride
+                if (iMaterial > 0)
+                {
+                    assert(currentBaseMaterial != nullptr);
+                    categoryPanel->AddCreateNewCustomMaterialButton(currentBaseMaterial);
+                }
+
+                // Start new stride
+                currentBaseMaterialOrdinal = material->PaletteSubCategoryBaseMaterialOrdinal;
+                currentBaseMaterial = &(subCategory.Materials[currentBaseMaterialOrdinal].get());
+                categoryPanel->StartNewMaterialStride(currentBaseMaterialOrdinal);
             }
 
-            categoryPanel->Add(material, iMaterial == 0);
-
-            // Advance
-            currentBaseMaterial = newBaseMaterial;
+            categoryPanel->AddDefaultMaterial(material);
         }
 
         // Add last button
-        assert(currentBaseMaterial != nullptr); // We've had at least one materia;
-        categoryPanel->AddCreateNewButton(currentBaseMaterial);
+        assert(currentBaseMaterial != nullptr); // We've had at least one material
+        categoryPanel->AddCreateNewCustomMaterialButton(currentBaseMaterial);
     }
 
-    categoryPanel->EndBuild();
+    categoryPanel->EndDefaultMaterialsLayout();
 
     return categoryPanel;
 }

@@ -23,20 +23,31 @@ namespace ShipBuilder {
 // Margin around the interior of the panel
 int constexpr InternalWindowMargin = 4;
 
-int constexpr CellHMargin = 0;
-int constexpr CellVMargin = 0;
-int constexpr CellInnerMargin = 8;
+// Spacing around cells
+int constexpr CellHSpacing = 0;
+int constexpr CellVSpacing = 0;
 
+// Cell
+int constexpr CellInnerMargin = 8;
 ImageSize constexpr MaterialSampleSize(80, 60);
 
 int constexpr SelectionFrameThickness = 1;
 static_assert(SelectionFrameThickness < CellInnerMargin); // To fit selection frame inside cell
 
-int constexpr SeparatorThickness = 1;
-
 int constexpr MaterialSampleToNameGapHeight = 2;
+int constexpr NameTextHeight = 9;
 int constexpr NameToNameGapHeight = 0;
 int constexpr NameToDataGapHeight = 2;
+int constexpr DataTextHeight = 8;
+
+ImageSize constexpr MaterialCellSize(
+    CellInnerMargin + MaterialSampleSize.width + CellInnerMargin,
+    CellInnerMargin + MaterialSampleSize.height + MaterialSampleToNameGapHeight + NameTextHeight + NameToNameGapHeight + NameTextHeight + NameToDataGapHeight + DataTextHeight + CellInnerMargin);
+
+int constexpr SeparatorThickness = 1;
+int constexpr SeparatorRowHeight = 1 + SeparatorThickness + 1;
+
+int constexpr StrideHSpacing = 8;
 
 ////////////////////////////////////////////////////////////////
 
@@ -72,7 +83,6 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
 
     wxColor const baseColor1 = wxColor(0x00, 0x78, 0xd4);
 
-    mSeparatorBrush = wxBrush(wxColor(0xa0, 0xa0, 0xa0), wxBRUSHSTYLE_SOLID);
     mSelectionPen = wxPen(baseColor1, SelectionFrameThickness, wxPENSTYLE_SOLID);
     mCreateNewFrameBorderPen = wxPen(baseColor1, 1, wxPENSTYLE_SHORT_DASH);
 
@@ -99,64 +109,74 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
 }
 
 template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::StartBuild()
+void MaterialPalettePanel<TLayer>::StartDefaultMaterialsLayout()
 {
     mRenderBuffer.reset();
     mRows.clear();
     mMaterialSampleBitmaps.RemoveAll();
+    mCurrentSelectedCellId = NoneCellId;
+    mNextCellId = 0;
 }
 
 template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::Add(
-    TMaterial const * material,
-    bool startNewRow)
+void MaterialPalettePanel<TLayer>::StartNewSubcategoryRow(std::string const & subCategory)
 {
-    //
-    // Prepare row
-    //
+    wxPoint const rowOrigin(
+        InternalWindowMargin,
+        mRows.empty() ? InternalWindowMargin : mRows.back().Rect.y + mRows.back().Rect.height + CellVSpacing);
 
-    if (startNewRow || mRows.empty() || mRows.back().Kind == Row::KindType::Separator)
-    {
-        mRows.emplace_back(Row::KindType::Cells);
-    }
+    mRows.emplace_back(Row::MakeSubCategoryRow(subCategory, rowOrigin, MaterialCellSize.height));
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::StartNewMaterialStride(unsigned int subCategoryBaseMaterialOrdinal)
+{
+    assert(!mRows.empty());
+    assert(mRows.back().Kind == Row::KindType::SubCategory);
+
+    mRows.back().Strides.emplace_back(subCategoryBaseMaterialOrdinal);
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::AddDefaultMaterial(TMaterial const * material)
+{
+    assert(!mRows.empty());
+    assert(mRows.back().Kind == Row::KindType::SubCategory);
+    assert(!mRows.back().Strides.empty());
 
     Row & row = mRows.back();
+    MaterialStride & stride = row.Strides.back();
+    assert(material->PaletteSubCategoryBaseMaterialOrdinal == stride.SubCategoryBaseMaterialOrdinal);
 
     //
-    // Create cell
+    // Store cell
     //
-
-    int currentTopYOffset = CellInnerMargin;
-
-    // Sample bitmap
 
     int const materialSampleBitmapIndex = mMaterialSampleBitmaps.Add(MakeMaterialSample(material));
 
-    // Store cell
-
-    int const innerCellWidth = MaterialSampleSize.width;
-
-    wxSize const cellSize = wxSize(
-        CellInnerMargin + innerCellWidth + CellInnerMargin,
-        0); // Recalculated later
-
-    Cell & cell = row.Cells.emplace_back(
-        MakeNextCellId(),
-        Cell::KindType::Material,
-        material,
-        cellSize);
-
-    cell.MaterialSampleBitmapIndex = materialSampleBitmapIndex;
-
-    currentTopYOffset +=
-        MaterialSampleSize.height
-        + MaterialSampleToNameGapHeight;
+    Cell & cell = stride.Cells.emplace_back(
+        Cell::MakeMaterialCell(
+            MakeNextCellId(),
+            material,
+            Cell::CustomKindType::None,
+            materialSampleBitmapIndex,
+            row.Rect.GetTop(),
+            wxSize(
+                MaterialCellSize.width,
+                MaterialCellSize.height)));
+    stride.iShipCustomStartIndex++;
+    stride.iUserCustomStartIndex++;
 
     //
-    // Text
+    // Layout text
     //
     // Assumption: text is normalized (wrt whitespaces, etc.)
     //
+
+    int currentTopYOffset =
+        CellInnerMargin
+        + MaterialSampleSize.height
+        + MaterialSampleToNameGapHeight;
 
     auto const previousFont = GetFont();
 
@@ -165,25 +185,25 @@ void MaterialPalettePanel<TLayer>::Add(
     SetFont(mNameFont);
 
     auto nameSizeWidth = GetTextExtent(material->Name).GetWidth();
-    if (nameSizeWidth > innerCellWidth)
+    if (nameSizeWidth > MaterialSampleSize.width)
     {
         int lastSpaceIndex = -1;
         while (true)
         {
             auto const nextSpace = material->Name.find(' ', lastSpaceIndex + 1);
             if (nextSpace == std::string::npos
-                || GetTextExtent(material->Name.substr(0, nextSpace)).GetWidth() > innerCellWidth)
+                || GetTextExtent(material->Name.substr(0, nextSpace)).GetWidth() > MaterialSampleSize.width)
             {
                 // Use up to last space
                 if (lastSpaceIndex > 0)
                 {
                     cell.Name1 = material->Name.substr(0, lastSpaceIndex);
-                    cell.Name2 = TruncateAsNeeded(material->Name.substr(lastSpaceIndex + 1), innerCellWidth);
+                    cell.Name2 = TruncateAsNeeded(material->Name.substr(lastSpaceIndex + 1), MaterialSampleSize.width);
                 }
                 else
                 {
                     // Single string, too long though
-                    cell.Name1 = TruncateAsNeeded(material->Name, innerCellWidth);
+                    cell.Name1 = TruncateAsNeeded(material->Name, MaterialSampleSize.width);
                     cell.Name2 = "";
                 }
 
@@ -207,7 +227,7 @@ void MaterialPalettePanel<TLayer>::Add(
     cell.Name1Width = name1Size.GetWidth();
     cell.Name1YTopOffset = currentTopYOffset;
 
-    currentTopYOffset += name1Size.GetHeight();
+    currentTopYOffset += NameTextHeight;
 
     if (!cell.Name2.IsEmpty())
     {
@@ -217,7 +237,7 @@ void MaterialPalettePanel<TLayer>::Add(
         cell.Name2Width = name2Size.GetWidth();
         cell.Name2YTopOffset = currentTopYOffset;
 
-        currentTopYOffset += name2Size.GetHeight();
+        currentTopYOffset += NameTextHeight;
     }
 
     // Data
@@ -241,69 +261,64 @@ void MaterialPalettePanel<TLayer>::Add(
         cell.DataWidth = dataSize.GetWidth();
         cell.DataYTopOffset = currentTopYOffset;
 
-        currentTopYOffset += dataSize.GetHeight();
+        currentTopYOffset += DataTextHeight;
     }
 
     currentTopYOffset += CellInnerMargin;
 
-    //
-    // Store final height
-    //
-
-    cell.Rect.SetHeight(currentTopYOffset);
+    assert(currentTopYOffset <= MaterialCellSize.height);
 }
 
 template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::AddSeparator()
+void MaterialPalettePanel<TLayer>::AddCreateNewCustomMaterialButton(TMaterial const * parentMaterial)
+{
+    assert(!mRows.empty());
+    assert(mRows.back().Kind == Row::KindType::SubCategory);
+    assert(!mRows.back().Strides.empty());
+
+    Row & row = mRows.back();
+    MaterialStride & stride = row.Strides.back();
+    assert(parentMaterial->PaletteSubCategoryBaseMaterialOrdinal == stride.SubCategoryBaseMaterialOrdinal);
+
+    //
+    // Store cell
+    //
+
+    stride.Cells.emplace_back(
+        Cell::MakeCreateNewButtonCell(
+            MakeNextCellId(),
+            parentMaterial,
+            row.Rect.GetTop(),
+            wxSize(
+                MaterialCellSize.width,
+                MaterialCellSize.height)));
+    stride.iShipCustomStartIndex++;
+    stride.iUserCustomStartIndex++;
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::AddSeparatorRow()
 {
     assert(!mRows.empty()); // Ugly otherwise
 
-    mRows.emplace_back(Row::KindType::Separator);
+    wxPoint const rowOrigin(
+        InternalWindowMargin,
+        mRows.empty() ? InternalWindowMargin : mRows.back().Rect.y + mRows.back().Rect.height + CellVSpacing);
+
+    mRows.emplace_back(Row::MakeSeparatorRow(rowOrigin, SeparatorRowHeight));
 }
 
 template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::AddCreateNewButton(TMaterial const * parentMaterial)
-{
-    //
-    // Prepare row
-    //
-
-    assert(!mRows.empty()); // Expect to be added after some materials, hence a row exists
-    assert(mRows.back().Kind != Row::KindType::Separator); // Expect to be added after some materials, hence we're not on a separator
-
-    Row & row = mRows.back();
-
-    //
-    // Create cell
-    //
-
-    // Store cell
-
-    wxSize const cellSize = wxSize(
-        CellInnerMargin + MaterialSampleSize.width + CellInnerMargin,
-        0); // Recalculated later
-
-    Cell & cell = row.Cells.emplace_back(
-        MakeNextCellId(),
-        Cell::KindType::CreateNewButton,
-        parentMaterial,
-        cellSize);
-
-    // Store final height
-
-    cell.Rect.SetHeight(CellInnerMargin + MaterialSampleSize.height);
-}
-
-template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::EndBuild()
+void MaterialPalettePanel<TLayer>::EndDefaultMaterialsLayout()
 {
     assert(!mRows.empty());
 
     //
-    // Layout and calculate size
+    // Layout:
+    //  - Calculate cells' x's
+    //  - Calculate max width
+    //  - Set row widths
     //
-
-    int currentY = InternalWindowMargin;
 
     int maxRowWidth = 0;
 
@@ -311,75 +326,60 @@ void MaterialPalettePanel<TLayer>::EndBuild()
     {
         Row & row = mRows[iRow];
 
-        int currentX = InternalWindowMargin;
-
-        if (iRow > 0)
+        if (row.Kind == Row::KindType::SubCategory)
         {
-            currentY += CellVMargin;
-        }
+            // Layout cells
 
-        row.Rect.SetPosition(wxPoint(currentX, currentY));
+            int currentX = InternalWindowMargin;
 
-        int rowHeight = 0;
-        switch (row.Kind)
-        {
-            case Row::KindType::Cells:
+            for (size_t iStride = 0; iStride < row.Strides.size(); ++iStride)
             {
-                for (size_t iCell = 0; iCell < row.Cells.size(); ++iCell)
+                MaterialStride & stride = row.Strides[iStride];
+
+                if (iStride > 0)
                 {
-                    Cell & cell = row.Cells[iCell];
+                    currentX += StrideHSpacing;
+                }
+
+                for (size_t iCell = 0; iCell < stride.Cells.size(); ++iCell)
+                {
+                    Cell & cell = stride.Cells[iCell];
 
                     if (iCell > 0)
                     {
-                        currentX += CellHMargin;
+                        currentX += CellHSpacing;
                     }
 
-                    cell.Rect.SetPosition(wxPoint(currentX, currentY));
+                    cell.Rect.x = currentX;
 
-                    currentX += cell.Rect.GetWidth();
-
-                    rowHeight = std::max(rowHeight, cell.Rect.GetHeight());
+                    currentX += cell.Rect.width;
                 }
-
-                break;
             }
 
-            case Row::KindType::Separator:
-            {
-                // We'll calculate width later
+            currentX += InternalWindowMargin;
 
-                rowHeight = SeparatorThickness;
+            // Set row width
+            row.Rect.width = currentX;
 
-                break;
-            }
+            // Maintain max row width
+            maxRowWidth = std::max(maxRowWidth, currentX);
         }
-
-        currentX += InternalWindowMargin;
-
-        // Set row size
-        row.Rect.SetSize(wxSize(currentX, rowHeight));
-
-        // Maintain max row width
-        maxRowWidth = std::max(maxRowWidth, row.Rect.GetWidth());
-
-        currentY += rowHeight;
     }
 
-    currentY += InternalWindowMargin;
-
     // Calculate total panel size
-    wxSize const size(maxRowWidth, currentY);
+    wxSize const panelSize(maxRowWidth, mRows.back().Rect.y + mRows.back().Rect.height);
 
     // Set panel size
-    SetSize(size);
-    SetMinSize(size);
+    SetSize(panelSize);
+    SetMinSize(panelSize);
 
     // Finalize separators' layouts
     for (auto & row : mRows)
     {
         if (row.Kind == Row::KindType::Separator)
         {
-            row.Rect.SetSize(wxSize(size.GetWidth() - 2 * InternalWindowMargin, SeparatorThickness));
+            // For separators, the rect is the actual separator rectangle
+            row.Rect.width = panelSize.GetWidth() - 2 * InternalWindowMargin;
         }
     }
 
@@ -388,13 +388,13 @@ void MaterialPalettePanel<TLayer>::EndBuild()
     //
 
     assert(!mRenderBuffer);
-    mRenderBuffer = std::make_unique<wxBitmap>(size);
+    mRenderBuffer = std::make_unique<wxBitmap>(panelSize);
 
     //
     // Render panel
     //
 
-    RenderPanel(size);
+    RenderPanel(panelSize);
 }
 
 template<LayerType TLayer>
@@ -546,11 +546,14 @@ void MaterialPalettePanel<TLayer>::RenderPanel(wxRect const & region)
 
             switch (row.Kind)
             {
-                case Row::KindType::Cells:
+                case Row::KindType::SubCategory:
                 {
-                    for (Cell const & cell : row.Cells)
+                    for (MaterialStride const & stride : row.Strides)
                     {
-                        RenderCell(cell, dc);
+                        for (Cell const & cell : stride.Cells)
+                        {
+                            RenderCell(cell, dc);
+                        }
                     }
 
                     break;
@@ -558,9 +561,17 @@ void MaterialPalettePanel<TLayer>::RenderPanel(wxRect const & region)
 
                 case Row::KindType::Separator:
                 {
+                    int const centerY = row.Rect.y + row.Rect.height / 2;
+
+                    wxRect const separatorRect = wxRect(
+                        row.Rect.x,
+                        centerY - SeparatorRowHeight / 2,
+                        row.Rect.width,
+                        SeparatorThickness);
+
                     dc.SetPen(*wxTRANSPARENT_PEN);
-                    dc.SetBrush(mSeparatorBrush);
-                    dc.DrawRectangle(row.Rect);
+                    dc.SetBrush(SharedUIResources::GetInstance().GetSeparatorBrush());
+                    dc.DrawRectangle(separatorRect);
 
                     break;
                 }
@@ -713,13 +724,16 @@ typename MaterialPalettePanel<TLayer>::Cell * MaterialPalettePanel<TLayer>::Find
 {
     for (auto & row : mRows)
     {
-        if (row.Kind == Row::KindType::Cells)
+        if (row.Kind == Row::KindType::SubCategory)
         {
-            for (auto & cell : row.Cells)
+            for (auto & stride : row.Strides)
             {
-                if (cell.Id == id)
+                for (auto & cell : stride.Cells)
                 {
-                    return &cell;
+                    if (cell.Id == id)
+                    {
+                        return &cell;
+                    }
                 }
             }
         }
@@ -735,13 +749,16 @@ typename MaterialPalettePanel<TLayer>::Cell * MaterialPalettePanel<TLayer>::Find
     {
         if (row.Rect.Contains(position))
         {
-            if (row.Kind == Row::KindType::Cells)
+            if (row.Kind == Row::KindType::SubCategory)
             {
-                for (auto & cell : row.Cells)
+                for (auto & stride : row.Strides)
                 {
-                    if (cell.Rect.Contains(position))
+                    for (auto & cell : stride.Cells)
                     {
-                        return &cell;
+                        if (cell.Rect.Contains(position))
+                        {
+                            return &cell;
+                        }
                     }
                 }
             }
@@ -761,13 +778,16 @@ typename MaterialPalettePanel<TLayer>::Cell * MaterialPalettePanel<TLayer>::Find
 
     for (auto & row : mRows)
     {
-        if (row.Kind == Row::KindType::Cells)
+        if (row.Kind == Row::KindType::SubCategory)
         {
-            for (auto & cell : row.Cells)
+            for (auto & stride : row.Strides)
             {
-                if (cell.Kind == Cell::KindType::Material && cell.Material == material)
+                for (auto & cell : stride.Cells)
                 {
-                    return &cell;
+                    if (cell.Kind == Cell::KindType::Material && cell.Material == material)
+                    {
+                        return &cell;
+                    }
                 }
             }
         }

@@ -34,10 +34,16 @@ public:
         return mWhiteSolidBackgroundBrush;
     }
 
+    wxBrush const & GetSeparatorBrush() const
+    {
+        return mSeparatorBrush;
+    }
+
 private:
 
     static SharedUIResources *sInstance;
 
     wxBitmap mAddNewMaterialPlusIcon;
     wxBrush mWhiteSolidBackgroundBrush;
+    wxBrush mSeparatorBrush;
 };
