@@ -9,6 +9,7 @@
 
 #include <Game/GameAssetManager.h>
 
+#include <Simulation/Layers.h>
 #include <Simulation/Materials.h>
 #include <Simulation/ShipTexturizer.h>
 

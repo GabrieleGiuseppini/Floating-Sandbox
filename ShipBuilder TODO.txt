@@ -347,7 +347,7 @@
 					- Materialization from json uses MaterialColorMap<TLayer> and produces variants
 
 		- IMaterialPaletteController<TLayer>: for UI to talk back to controller
-			- TODO: selected
+			- OnMaterialSelected: selected
 			- TODO: workflows above
 
 		- MaterialPalettePanel<TLayer>: HEAVY REDESIGN
@@ -360,7 +360,7 @@
 						- SubCategory (str)
 							- @ DB upload: verify unique
 					- MaterialStride: made of N1 default materials, 1 AddNewButton, N2 user custom materials, N3 ship custom materials
-						- TODO: nice to keep them separate for easy identification of full segments, but also need them in one vector for hit test
+						- All kept in single vector<Cell>, but maintaining counters: startUser, startShip
 						- Meta:
 							- SubCategoryBaseMaterialOrdinal
 						- Cell: type=Material|AddNewButton
@@ -390,19 +390,18 @@
 						- Calc panel width
 						- Assign cell coords
 						- Draw
+				- UpdateCustomMaterial(TMaterial *, User|Ship)
+					- TODO: just small update, then own re-layout (should be nil?)
 				- All subsequent ones (custom):
 					- StartCustomMaterialsLayout() -> LayoutSession
 					- All atomic ops, taking LayoutSession and returning LayoutSession - naming as "...CustomMaterial..."
 						- Op does op on cell
 						- Then calcs LayoutSession
-
 						- Ops (all take lookup args as args)
-						- Add user custom
-						- Add ship custom
-						- Remove user custom
-						- Remove ship custom
-						- Update user custom
-						- Update ship custom
+							- Add user custom
+							- Add ship custom
+							- Remove user custom
+							- Remove ship custom
 
 					- EndCustomMaterialsLayout(LayoutSession)
 						- (Re-)Calc panel width
@@ -414,14 +413,14 @@
 			- There's a H separator between MaterialStride's
 			- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
 
-		- MaterialPaletteBrowser<TLayer>
+		- MaterialPaletteBrowser<TLayer> : IMaterialPalette
 			! Owns only its own tiles
-			- Replace events with calls into IMaterialPaletteController
+			+ Replace selected events with calls into IMaterialPaletteController
 			- cctor:
 				- Palette<TLayer> const & from DefaultMaterialDatabase
 				- vec<uq> from user // TODO: or later, added
 				- vec<uq> from ship - if needed @ cctor // TODO: or later, added
-				- IMaterialPaletteController<TLayer> &
+				- IMaterialPalettesController &
 
 			- Initial layout:
 				- Kinda as now, using InitialLayout APIs
@@ -429,9 +428,10 @@
 	
 
 		- MaterialPalettesController
-			- Replaces CompositeMaterialPalette
-				- Replace event-based args in inline callbacks with vals
-			- Implements 3x IMaterialPaletteController<TLayer>
+			+ Replaces CompositeMaterialPalette
+			+ Replace event-based args in inline callbacks with vals
+				+ mOnXXXLayerMaterialSelected callbacks: take same args as interface
+			+ Implements IMaterialPaletteController
 			- cctor: 
 				- Controller [for reaching ship model, e.g. for replacing materials]
 				- UndoStack

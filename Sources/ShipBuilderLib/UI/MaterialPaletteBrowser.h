@@ -7,6 +7,7 @@
 
 #include "../ShipBuilderTypes.h"
 
+#include "IMaterialPalettesController.h"
 #include "MaterialPalettePanel.h"
 
 #include <Game/GameAssetManager.h>
@@ -33,62 +34,6 @@
 
 namespace ShipBuilder {
 
-/*
- * Event fired when a structural|electrical|ropes material has been selected.
- */
-template<typename TMaterial>
-class _fsMaterialSelectedEvent : public wxEvent
-{
-public:
-
-    _fsMaterialSelectedEvent(
-        wxEventType eventType,
-        int winid,
-        TMaterial const * material,
-        MaterialPlaneType materialPlane)
-        : wxEvent(winid, eventType)
-        , mMaterial(material)
-        , mMaterialPlane(materialPlane)
-    {
-        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
-    }
-
-    _fsMaterialSelectedEvent(_fsMaterialSelectedEvent const & other)
-        : wxEvent(other)
-        , mMaterial(other.mMaterial)
-        , mMaterialPlane(other.mMaterialPlane)
-    {
-        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
-    }
-
-    virtual wxEvent * Clone() const override
-    {
-        return new _fsMaterialSelectedEvent(*this);
-    }
-
-    TMaterial const * GetMaterial() const
-    {
-        return mMaterial;
-    }
-
-    MaterialPlaneType GetMaterialPlane() const
-    {
-        return mMaterialPlane;
-    }
-
-private:
-
-    TMaterial const * const mMaterial;
-    MaterialPlaneType const mMaterialPlane;
-};
-
-using fsStructuralMaterialSelectedEvent = _fsMaterialSelectedEvent<StructuralMaterial>;
-using fsElectricalMaterialSelectedEvent = _fsMaterialSelectedEvent<ElectricalMaterial>;
-
-wxDECLARE_EVENT(fsEVT_STRUCTURAL_MATERIAL_SELECTED, fsStructuralMaterialSelectedEvent);
-wxDECLARE_EVENT(fsEVT_ELECTRICAL_MATERIAL_SELECTED, fsElectricalMaterialSelectedEvent);
-
-//////////////////////////////////////////////////////////////////////////////////////////
 
 struct IMaterialPalette
 {
@@ -110,6 +55,7 @@ public:
 
     MaterialPaletteBrowser(
         wxWindow * parent,
+        IMaterialPalettesController & materialPalettesController,
         DefaultMaterialDatabase::Palette<TMaterial> const & materialPalette,
         ShipTexturizer const & shipTexturizer,
         ISoundController * soundController,
@@ -150,6 +96,7 @@ private:
 
 private:
 
+    IMaterialPalettesController & mMaterialPalettesController;
     DefaultMaterialDatabase::Palette<TMaterial> const & mMaterialPalette;
     ISoundController * const mSoundController;
 

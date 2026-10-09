@@ -3,15 +3,15 @@
  * Created:             2022-06-10
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#include "CompositeMaterialPalette.h"
+#include "MaterialPalettesController.h"
 
 namespace ShipBuilder {
 
-CompositeMaterialPalette::CompositeMaterialPalette(
+MaterialPalettesController::MaterialPalettesController(
     wxWindow * parent,
-    std::function<void(fsStructuralMaterialSelectedEvent const & event)> onStructuralLayerMaterialSelected,
-    std::function<void(fsElectricalMaterialSelectedEvent const & event)> onElectricalLayerMaterialSelected,
-    std::function<void(fsStructuralMaterialSelectedEvent const & event)> onRopeLayerMaterialSelected,
+    std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> onStructuralLayerMaterialSelected,
+    std::function<void(ElectricalMaterial const * material, MaterialPlaneType plane)> onElectricalLayerMaterialSelected,
+    std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> onRopeLayerMaterialSelected,
     DefaultMaterialDatabase const & defaultMaterialDatabase,
     ShipTexturizer const & shipTexturizer,
     ISoundController * soundController,
@@ -24,53 +24,35 @@ CompositeMaterialPalette::CompositeMaterialPalette(
 {
     mStructuralMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Structural>>(
         parent,
+        *this,
         defaultMaterialDatabase.GetStructuralMaterialPalette(),
         shipTexturizer,
         soundController,
         gameAssetManager,
         progressCallback.MakeSubCallback(0.0f, 0.33f));
 
-    mStructuralMaterialPaletteBrowser->Bind(
-        fsEVT_STRUCTURAL_MATERIAL_SELECTED,
-        [this](fsStructuralMaterialSelectedEvent & event)
-        {
-            mOnStructuralLayerMaterialSelected(event);
-        });
-
     mElectricalMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Electrical>>(
         parent,
+        *this,
         defaultMaterialDatabase.GetElectricalMaterialPalette(),
         shipTexturizer,
         soundController,
         gameAssetManager,
         progressCallback.MakeSubCallback(0.33f, 0.33f));
 
-    mElectricalMaterialPaletteBrowser->Bind(
-        fsEVT_ELECTRICAL_MATERIAL_SELECTED,
-        [this](fsElectricalMaterialSelectedEvent & event)
-        {
-            mOnElectricalLayerMaterialSelected(event);
-        });
-
     mRopesMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Ropes>>(
         parent,
+        *this,
         defaultMaterialDatabase.GetRopeMaterialPalette(),
         shipTexturizer,
         soundController,
         gameAssetManager,
         progressCallback.MakeSubCallback(0.66f, 0.33f));
 
-    mRopesMaterialPaletteBrowser->Bind(
-        fsEVT_STRUCTURAL_MATERIAL_SELECTED,
-        [this](fsStructuralMaterialSelectedEvent & event)
-        {
-            mOnRopeLayerMaterialSelected(event);
-        });
-
     progressCallback(1.0f, ProgressMessageType::LoadingMaterialPalette);
 }
 
-bool CompositeMaterialPalette::IsOpen() const
+bool MaterialPalettesController::IsOpen() const
 {
     if (mLastOpenedPalette == nullptr)
     {
@@ -80,6 +62,27 @@ bool CompositeMaterialPalette::IsOpen() const
     {
         return mLastOpenedPalette->IsOpen();
     }
+}
+
+void MaterialPalettesController::OnStructuralMaterialSelected(
+    StructuralMaterial const * material,
+    MaterialPlaneType plane)
+{
+    mOnStructuralLayerMaterialSelected(material, plane);
+}
+
+void MaterialPalettesController::OnElectricalMaterialSelected(
+    ElectricalMaterial const * material,
+    MaterialPlaneType plane)
+{
+    mOnElectricalLayerMaterialSelected(material, plane);
+}
+
+void MaterialPalettesController::OnRopesMaterialSelected(
+    StructuralMaterial const * material,
+    MaterialPlaneType plane)
+{
+    mOnRopeLayerMaterialSelected(material, plane);
 }
 
 }

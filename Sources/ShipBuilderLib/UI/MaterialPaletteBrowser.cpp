@@ -15,9 +15,6 @@
 
 namespace ShipBuilder {
 
-wxDEFINE_EVENT(fsEVT_STRUCTURAL_MATERIAL_SELECTED, fsStructuralMaterialSelectedEvent);
-wxDEFINE_EVENT(fsEVT_ELECTRICAL_MATERIAL_SELECTED, fsElectricalMaterialSelectedEvent);
-
 int constexpr MinCategoryPanelsContainerHeight = 400; // Min height of the scrollable panel that contains the swaths; without a min height, a palette that only has a few categories would be too short
 ImageSize constexpr CategoryButtonSize(80, 60);
 ImageSize constexpr PaletteButtonSize(80, 60);
@@ -25,12 +22,14 @@ ImageSize constexpr PaletteButtonSize(80, 60);
 template<LayerType TLayer>
 MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
     wxWindow * parent,
+    IMaterialPalettesController & materialPalettesController,
     DefaultMaterialDatabase::Palette<TMaterial> const & materialPalette,
     ShipTexturizer const & shipTexturizer,
     ISoundController * soundController,
     GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
     : wxPopupTransientWindow(parent, wxPU_CONTAINS_CONTROLS | wxBORDER_SIMPLE)
+    , mMaterialPalettesController(materialPalettesController)
     , mMaterialPalette(materialPalette)
     , mSoundController(soundController)
     , mCurrentPlane()
@@ -961,28 +960,20 @@ void MaterialPaletteBrowser<TLayer>::OnMaterialClicked(TMaterial const * materia
 {
     assert(mCurrentPlane.has_value());
 
-    // Fire event
-    if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+    // Notify
+    if constexpr (TLayer == LayerType::Structural)
     {
-        auto event = fsStructuralMaterialSelectedEvent(
-            fsEVT_STRUCTURAL_MATERIAL_SELECTED,
-            this->GetId(),
-            material,
-            *mCurrentPlane);
-
-        ProcessWindowEvent(event);
+        mMaterialPalettesController.OnStructuralMaterialSelected(material, *mCurrentPlane);
+    }
+    else if constexpr (TLayer == LayerType::Electrical)
+    {
+        mMaterialPalettesController.OnElectricalMaterialSelected(material, *mCurrentPlane);
     }
     else
     {
-        assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+        static_assert(TLayer == LayerType::Ropes);
 
-        auto event = fsElectricalMaterialSelectedEvent(
-            fsEVT_ELECTRICAL_MATERIAL_SELECTED,
-            this->GetId(),
-            material,
-            *mCurrentPlane);
-
-        ProcessWindowEvent(event);
+        mMaterialPalettesController.OnRopesMaterialSelected(material, *mCurrentPlane);
     }
 
     // Close ourselves

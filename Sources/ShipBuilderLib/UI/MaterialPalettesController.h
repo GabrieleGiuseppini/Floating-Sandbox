@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "IMaterialPalettesController.h"
 #include "MaterialPaletteBrowser.h"
 
 #include <Game/GameAssetManager.h>
@@ -24,15 +25,17 @@
 
 namespace ShipBuilder {
 
-class CompositeMaterialPalette final : public IMaterialPalette
+class MaterialPalettesController final :
+    public IMaterialPalette,
+    public IMaterialPalettesController
 {
 public:
 
-    CompositeMaterialPalette(
+    MaterialPalettesController(
         wxWindow * parent,
-        std::function<void(fsStructuralMaterialSelectedEvent const & event)> onStructuralLayerMaterialSelected,
-        std::function<void(fsElectricalMaterialSelectedEvent const & event)> onElectricalLayerMaterialSelected,
-        std::function<void(fsStructuralMaterialSelectedEvent const & event)> onRopeLayerMaterialSelected,
+        std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> onStructuralLayerMaterialSelected,
+        std::function<void(ElectricalMaterial const * material, MaterialPlaneType plane)> onElectricalLayerMaterialSelected,
+        std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> onRopeLayerMaterialSelected,
         DefaultMaterialDatabase const & defaultMaterialDatabase,
         ShipTexturizer const & shipTexturizer,
         ISoundController * soundController,
@@ -78,11 +81,19 @@ public:
 
     bool IsOpen() const override;
 
+    //
+    // IMaterialPalettesController
+    //
+
+    void OnStructuralMaterialSelected(StructuralMaterial const * material, MaterialPlaneType plane) override;
+    void OnElectricalMaterialSelected(ElectricalMaterial const * material, MaterialPlaneType plane) override;
+    void OnRopesMaterialSelected(StructuralMaterial const * material, MaterialPlaneType plane) override;
+
 private:
 
-    std::function<void(fsStructuralMaterialSelectedEvent const & event)> const mOnStructuralLayerMaterialSelected;
-    std::function<void(fsElectricalMaterialSelectedEvent const & event)> const mOnElectricalLayerMaterialSelected;
-    std::function<void(fsStructuralMaterialSelectedEvent const & event)> const mOnRopeLayerMaterialSelected;
+    std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> const mOnStructuralLayerMaterialSelected;
+    std::function<void(ElectricalMaterial const * material, MaterialPlaneType plane)> const mOnElectricalLayerMaterialSelected;
+    std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> const mOnRopeLayerMaterialSelected;
 
     std::unique_ptr<MaterialPaletteBrowser<LayerType::Structural>> mStructuralMaterialPaletteBrowser;
     std::unique_ptr<MaterialPaletteBrowser<LayerType::Electrical>> mElectricalMaterialPaletteBrowser;

@@ -47,16 +47,17 @@ set (UI_SOURCES
 	UI/AskPasswordDialog.h
 	UI/BaseResizeDialog.cpp
 	UI/BaseResizeDialog.h
-	UI/CompositeMaterialPalette.cpp
-	UI/CompositeMaterialPalette.h
 	UI/ElectricalPanelEditDialog.cpp
 	UI/ElectricalPanelEditDialog.h
 	UI/ElectricalPanelLayoutControl.cpp
 	UI/ElectricalPanelLayoutControl.h
+	UI/IMaterialPalettesController.h
 	UI/MaterialPaletteBrowser.cpp
 	UI/MaterialPaletteBrowser.h
 	UI/MaterialPalettePanel.cpp
 	UI/MaterialPalettePanel.h
+	UI/MaterialPalettesController.cpp
+	UI/MaterialPalettesController.h
 	UI/ModelValidationDialog.cpp
 	UI/ModelValidationDialog.h
 	UI/NewPasswordDialog.cpp

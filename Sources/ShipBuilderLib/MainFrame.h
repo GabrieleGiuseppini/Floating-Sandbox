@@ -12,8 +12,8 @@
 #include "UndoStack.h"
 #include "WorkbenchState.h"
 
-#include "UI/CompositeMaterialPalette.h"
 #include "UI/ElectricalPanelEditDialog.h"
+#include "UI/MaterialPalettesController.h"
 #include "UI/ModelValidationDialog.h"
 #include "UI/PreferencesDialog.h"
 #include "UI/ResizeCanvasDialog.h"
@@ -481,7 +481,7 @@ private:
     wxScrollBar * mWorkCanvasVScrollBar;
 
     // Misc UI elements
-    std::unique_ptr<CompositeMaterialPalette> mCompositeMaterialPalette;
+    std::unique_ptr<MaterialPalettesController> mMaterialPalettesController;
     StatusBar * mStatusBar;
 
     //
