@@ -378,6 +378,7 @@ MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPan
 
     MaterialPalettePanel<TLayer> * categoryPanel = new MaterialPalettePanel<TLayer>(
         parent,
+        mMaterialPalettesController,
         shipTexturizer,
         gameAssetManager);
 

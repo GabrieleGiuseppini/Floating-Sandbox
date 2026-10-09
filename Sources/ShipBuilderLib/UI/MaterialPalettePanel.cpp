@@ -50,9 +50,11 @@ wxDEFINE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_CLICKED, fsElectricalMaterialPa
 template<LayerType TLayer>
 MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     wxWindow * parent,
+    IMaterialPalettesController & materialPalettesController,
     ShipTexturizer const & shipTexturizer,
     GameAssetManager const & gameAssetManager)
     : wxPanel(parent)
+    , mMaterialPalettesController(materialPalettesController)
     , mShipTexturizer(shipTexturizer)
     , mGameAssetManager(gameAssetManager)
     , mRenderBuffer() // Start empty

@@ -7,6 +7,8 @@
 
 #include "../ShipBuilderTypes.h"
 
+#include "IMaterialPalettesController.h"
+
 #include <Game/GameAssetManager.h>
 
 #include <Simulation/Layers.h>
@@ -85,6 +87,7 @@ public:
 
     MaterialPalettePanel(
         wxWindow * parent,
+        IMaterialPalettesController & materialPalettesController,
         ShipTexturizer const & shipTexturizer,
         GameAssetManager const & gameAssetManager);
 
@@ -132,6 +135,7 @@ private:
 
 private:
 
+    IMaterialPalettesController & mMaterialPalettesController;
     ShipTexturizer const & mShipTexturizer;
     GameAssetManager const & mGameAssetManager;
 

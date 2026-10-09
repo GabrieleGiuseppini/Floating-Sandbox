@@ -346,13 +346,15 @@
 				- parent color_key and VariantOverridesType
 					- Materialization from json uses MaterialColorMap<TLayer> and produces variants
 
-		- IMaterialPaletteController<TLayer>: for UI to talk back to controller
-			- OnMaterialSelected: selected
-			- TODO: workflows above
+		= IMaterialPaletteController<TLayer>: for UI to talk back to controller
+			+ OnMaterialSelected
+			- OnNewCustomXYZMaterial(XYZMaterial * baseMaterial)
+			- OnEditCustomXYZMaterial(XYZMaterial * material)
+			- TODO: other workflows above
 
 		- MaterialPalettePanel<TLayer>: HEAVY REDESIGN
-			- cctor:
-				- IMaterialPaletteController<TLayer> (for workflows)
+			+ cctor:
+				+ IMaterialPaletteController<TLayer> (for workflows)
 
 			- Hierarchy: 
 				- SubCategoryRow: type=MaterialStrides|Separator
@@ -413,21 +415,21 @@
 			- There's a H separator between MaterialStride's
 			- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
 
-		- MaterialPaletteBrowser<TLayer> : IMaterialPalette
+		= MaterialPaletteBrowser<TLayer> : IMaterialPalette
 			! Owns only its own tiles
 			+ Replace selected events with calls into IMaterialPaletteController
 			- cctor:
 				- Palette<TLayer> const & from DefaultMaterialDatabase
 				- vec<uq> from user // TODO: or later, added
 				- vec<uq> from ship - if needed @ cctor // TODO: or later, added
-				- IMaterialPalettesController &
+				+ IMaterialPalettesController &
 
 			- Initial layout:
 				- Kinda as now, using InitialLayout APIs
 
 	
 
-		- MaterialPalettesController
+		= MaterialPalettesController
 			+ Replaces CompositeMaterialPalette
 			+ Replace event-based args in inline callbacks with vals
 				+ mOnXXXLayerMaterialSelected callbacks: take same args as interface
