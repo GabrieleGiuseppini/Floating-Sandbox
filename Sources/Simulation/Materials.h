@@ -402,6 +402,8 @@ public:
         , PaletteSubCategoryBaseMaterialOrdinal(0u)
     {}
 
+    VariantOverridesType MakeStartingVariantOverrides() const;
+
     std::unique_ptr<StructuralMaterial> MakeCustomMaterial(VariantOverridesType const & overrides) const;
 };
 
@@ -771,6 +773,8 @@ public:
     }
 
     std::string MakeInstancedElementLabel(ElectricalElementInstanceIndex instanceIndex) const;
+
+    VariantOverridesType MakeStartingVariantOverrides() const;
 
     std::unique_ptr<ElectricalMaterial> MakeCustomMaterial(VariantOverridesType const & overrides) const;
 };

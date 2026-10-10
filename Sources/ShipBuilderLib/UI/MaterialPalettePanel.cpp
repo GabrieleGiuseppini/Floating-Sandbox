@@ -465,13 +465,29 @@ template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
 {
     auto const * cell = FindCellAt(event.GetPosition());
-    if (cell != nullptr && cell->Kind == Cell::KindType::Material)
+    if (cell != nullptr)
     {
         switch (cell->Kind)
         {
             case Cell::KindType::CreateNewButton:
             {
-                // TODO
+                assert(cell->Material != nullptr);
+
+                // Notify
+                if constexpr (TLayer == LayerType::Structural)
+                {
+                    mMaterialPalettesController.OnNewCustomStructuralMaterial(cell->Material);
+                }
+                else if constexpr (TLayer == LayerType::Electrical)
+                {
+                    mMaterialPalettesController.OnNewCustomElectricalMaterial(cell->Material);
+                }
+                else
+                {
+                    static_assert(TLayer == LayerType::Ropes);
+                    mMaterialPalettesController.OnNewCustomRopesMaterial(cell->Material);
+                }
+
                 break;
             }
 
@@ -480,7 +496,7 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
                 assert(cell->Material != nullptr);
 
                 // Fire clicked event
-                if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+                if constexpr (TLayer == LayerType::Structural || TLayer == LayerType::Ropes)
                 {
                     auto eventToFire = fsStructuralMaterialPaletteEvent(
                         fsEVT_STRUCTURAL_MATERIAL_PALETTE_CLICKED,
@@ -491,7 +507,7 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
                 }
                 else
                 {
-                    assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+                    assert(TLayer == LayerType::Electrical);
 
                     auto eventToFire = fsElectricalMaterialPaletteEvent(
                         fsEVT_ELECTRICAL_MATERIAL_PALETTE_CLICKED,

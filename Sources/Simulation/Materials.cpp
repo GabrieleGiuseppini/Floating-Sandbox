@@ -302,6 +302,20 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
         throw GameException("Unrecognized MaterialSoundType \"" + str + "\"");
 }
 
+StructuralMaterial::VariantOverridesType StructuralMaterial::MakeStartingVariantOverrides() const
+{
+    return VariantOverridesType(
+        Name,
+        RenderColor,
+        Strength,
+        Density,
+        IgnitionTemperature,
+        MeltingTemperature,
+        RotReceptivity,
+        RustReceptivity,
+        WaterSolubility);
+}
+
 std::unique_ptr<StructuralMaterial> StructuralMaterial::MakeCustomMaterial(StructuralMaterial::VariantOverridesType const & overrides) const
 {
     // We don't create custom materials off custom materials
@@ -845,6 +859,18 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
     }
 
     return ss.str();
+}
+
+ElectricalMaterial::VariantOverridesType ElectricalMaterial::MakeStartingVariantOverrides() const
+{
+    return VariantOverridesType(
+        Name,
+        HeatGenerated,
+        Luminiscence,
+        LightSpread,
+        EnginePower,
+        WaterPumpNominalForce,
+        TimerDurationSeconds);
 }
 
 std::unique_ptr<ElectricalMaterial> ElectricalMaterial::MakeCustomMaterial(ElectricalMaterial::VariantOverridesType const & overrides) const

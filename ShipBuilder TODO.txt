@@ -471,8 +471,8 @@
 				- MaterialPalette<TLayer X 3>::TODOShipCustomMaterials(pod member)
 					- Full relayout of ship portion for all rows
 
-		- MaterialEditDialog: 
-			- Hook NewButton->IMaterialPalettesController
+		= MaterialEditDialog: 
+			+ Hook NewButton->IMaterialPalettesController
 			- Option 1:
 				- One single class templated on TMaterial (thus, Structural and Electrical)
 				- Single panel, laid out according to TMaterial
