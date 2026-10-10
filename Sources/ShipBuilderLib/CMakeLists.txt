@@ -47,13 +47,13 @@ set (UI_SOURCES
 	UI/AskPasswordDialog.h
 	UI/BaseResizeDialog.cpp
 	UI/BaseResizeDialog.h
+	UI/ElectricalMaterialEditDialog.cpp
+	UI/ElectricalMaterialEditDialog.h
 	UI/ElectricalPanelEditDialog.cpp
 	UI/ElectricalPanelEditDialog.h
 	UI/ElectricalPanelLayoutControl.cpp
 	UI/ElectricalPanelLayoutControl.h
 	UI/IMaterialPalettesController.h
-	UI/MaterialEditDialog.cpp
-	UI/MaterialEditDialog.h
 	UI/MaterialPaletteBrowser.cpp
 	UI/MaterialPaletteBrowser.h
 	UI/MaterialPalettePanel.cpp
@@ -85,6 +85,8 @@ set (UI_SOURCES
 	UI/ShipTextureResizeVisualizationControl.h
 	UI/StatusBar.cpp
 	UI/StatusBar.h
+	UI/StructuralMaterialEditDialog.cpp
+	UI/StructuralMaterialEditDialog.h
 	UI/WaterlineAnalysisOutcomeVisualizationControl.cpp
 	UI/WaterlineAnalysisOutcomeVisualizationControl.h
 	UI/WaterlineAnalyzerDialog.cpp

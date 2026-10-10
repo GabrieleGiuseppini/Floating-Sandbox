@@ -6,7 +6,6 @@
 #pragma once
 
 #include "IMaterialPalettesController.h"
-#include "MaterialEditDialog.h"
 #include "MaterialPaletteBrowser.h"
 
 #include <Game/GameAssetManager.h>
@@ -108,9 +107,6 @@ private:
     std::unique_ptr<MaterialPaletteBrowser<LayerType::Structural>> mStructuralMaterialPaletteBrowser;
     std::unique_ptr<MaterialPaletteBrowser<LayerType::Electrical>> mElectricalMaterialPaletteBrowser;
     std::unique_ptr<MaterialPaletteBrowser<LayerType::Ropes>> mRopesMaterialPaletteBrowser;
-
-    std::unique_ptr<MaterialEditDialog<StructuralMaterial>> mStructuralMaterialEditDialog;
-    std::unique_ptr<MaterialEditDialog<ElectricalMaterial>> mElectricalMaterialEditDialog;
 
     IMaterialPalette const * mLastOpenedPalette;
 };

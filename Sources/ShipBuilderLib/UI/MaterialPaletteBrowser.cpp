@@ -28,7 +28,13 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
     ISoundController * soundController,
     GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
-    : wxPopupTransientWindow(parent, wxPU_CONTAINS_CONTROLS | wxBORDER_SIMPLE)
+    : wxFrame(
+        parent,
+        wxID_ANY,
+        wxString(),
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxFRAME_FLOAT_ON_PARENT | wxBORDER_SIMPLE)
     , mMaterialPalettesController(materialPalettesController)
     , mMaterialPalette(materialPalette)
     , mSoundController(soundController)
@@ -326,7 +332,28 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
             0);
     }
 
-    SetSizerAndFit(mRootHSizer);
+    SetSizer(mRootHSizer);
+
+    //
+    // Connect events
+    //
+
+    Bind(
+        wxEVT_KILL_FOCUS,
+        [this](wxFocusEvent &)
+        {
+            if (!mStickAroundOnFocusLoss)
+            {
+                Hide();
+            }
+        });
+
+    //
+    // Create children
+    //
+
+    mStructuralMaterialEditDialog = std::make_unique<StructuralMaterialEditDialog>(this);
+    mElectricalMaterialEditDialog = std::make_unique<ElectricalMaterialEditDialog>(this);
 }
 
 template<LayerType TLayer>
@@ -340,7 +367,11 @@ void MaterialPaletteBrowser<TLayer>::Open(
 
     // Position and dimension
     SetPosition(referenceArea.GetLeftTop());
-    SetMaxSize(referenceArea.GetSize());
+    wxSize const size = wxSize(
+        referenceArea.GetSize().GetWidth() * 2 / 3,
+        referenceArea.GetSize().GetHeight());
+    SetSizeHints(size, size);
+    SetSize(size);
 
     // Clear material properties
     PopulateMaterialProperties(nullptr);
@@ -350,19 +381,64 @@ void MaterialPaletteBrowser<TLayer>::Open(
 
     // Take care of appearing vertical scrollbar in the category list
     mCategoryListPanelSizer->SetSizeHints(mCategoryListPanel);
-    Layout(); // Given that the category list has resized, re-layout from the root
 
-    // Resize ourselves now to take into account category list resize
-    mRootHSizer->SetSizeHints(this);
+    // Re-layout for (possibly) new size
+    Layout();
+
+    // From now open, close on focus loss
+    mStickAroundOnFocusLoss = false;
 
     // Open
-    Popup();
+    Show();
+    SetFocus();
 }
 
 template<LayerType TLayer>
 void MaterialPaletteBrowser<TLayer>::Close()
 {
-    Dismiss();
+    Hide();
+}
+
+template<LayerType TLayer>
+std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType> MaterialPaletteBrowser<TLayer>::RunNewCustomMaterial(typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial)
+{
+    assert(IsOpen());
+
+    // Do not close ourselves when we'll lose the focus
+    mStickAroundOnFocusLoss = true;
+
+    std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType> result;
+    if constexpr (TLayer == LayerType::Structural || TLayer == LayerType::Ropes)
+    {
+        result = mStructuralMaterialEditDialog->RunForNew(overrides, baseMaterial);
+    }
+    else
+    {
+        static_assert(TLayer == LayerType::Electrical);
+
+        result = mElectricalMaterialEditDialog->RunForNew(overrides, baseMaterial);
+    }
+
+    // Go back to closing ourselves whenever we lose focus from now on
+    mStickAroundOnFocusLoss = false;
+    SetFocus();
+
+    return result;
+}
+
+template<LayerType TLayer>
+std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType> MaterialPaletteBrowser<TLayer>::RunEditCustomMaterial(typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial)
+{
+    if constexpr (TLayer == LayerType::Structural || TLayer == LayerType::Ropes)
+    {
+        return mStructuralMaterialEditDialog->RunForEdit(overrides, baseMaterial);
+    }
+    else
+    {
+        static_assert(TLayer == LayerType::Electrical);
+
+        return mElectricalMaterialEditDialog->RunForEdit(overrides, baseMaterial);
+    }
 }
 
 template<LayerType TLayer>
@@ -952,9 +1028,8 @@ void MaterialPaletteBrowser<TLayer>::SetMaterialSelected(TMaterial const * mater
         mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth, MinCategoryPanelsContainerHeight));
     }
 
-    // Resize whole popup now that category panel has changed its size
+    // Resize whole window now that category panel has changed its size
     Layout(); // Will make visibility changes in the container effective
-    mRootHSizer->SetSizeHints(this); // this->Fit() and this->SetSizeHints
 
     if (mCategoryPanelsContainer->HasScrollbar(wxVERTICAL))
     {
@@ -965,9 +1040,8 @@ void MaterialPaletteBrowser<TLayer>::SetMaterialSelected(TMaterial const * mater
             mCategoryPanelsContainer->SetMinSize(wxSize(selectedCategoryPanel->GetSize().x + scrollbarWidth, MinCategoryPanelsContainerHeight));
         }
 
-        // Resize whole popup now that category panel has changed its size
+        // Resize whole window now that category panel has changed its size
         Layout();
-        mRootHSizer->SetSizeHints(this); // this->Fit() and this->SetSizeHints
     }
 }
 
@@ -993,7 +1067,7 @@ void MaterialPaletteBrowser<TLayer>::OnMaterialClicked(TMaterial const * materia
     }
 
     // Close ourselves
-    Dismiss();
+    Hide();
 }
 
 template<LayerType TLayer>

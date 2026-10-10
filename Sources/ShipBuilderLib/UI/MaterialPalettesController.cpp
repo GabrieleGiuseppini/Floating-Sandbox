@@ -54,9 +54,6 @@ MaterialPalettesController::MaterialPalettesController(
         progressCallback.MakeSubCallback(0.66f, 0.33f));
 
     progressCallback(1.0f, ProgressMessageType::LoadingMaterialPalette);
-
-    mStructuralMaterialEditDialog = std::make_unique<MaterialEditDialog<StructuralMaterial>>(parent);
-    mElectricalMaterialEditDialog = std::make_unique<MaterialEditDialog<ElectricalMaterial>>(parent);
 }
 
 bool MaterialPalettesController::IsOpen() const
@@ -115,19 +112,23 @@ void MaterialPalettesController::OnNewCustomMaterial(typename LayerTypeTraits<TL
     using TVariantOverridesType = typename LayerTypeTraits<TLayerType>::material_type::VariantOverridesType;
 
     // Make new override
-    TVariantOverridesType variantOverrides = baseMaterial->MakeStartingVariantOverrides();
+    TVariantOverridesType overrides = baseMaterial->MakeStartingVariantOverrides();
 
     // Run dialog
     std::optional<TVariantOverridesType> result;
-    if constexpr (TLayerType == LayerType::Structural || TLayerType == LayerType::Ropes)
+    if constexpr (TLayerType == LayerType::Structural)
     {
-        result = mStructuralMaterialEditDialog->RunForNew(variantOverrides, baseMaterial);
+        result = mStructuralMaterialPaletteBrowser->RunNewCustomMaterial(overrides, baseMaterial);
+    }
+    else if constexpr (TLayerType == LayerType::Electrical)
+    {
+        result = mElectricalMaterialPaletteBrowser->RunNewCustomMaterial(overrides, baseMaterial);
     }
     else
     {
-        static_assert(TLayerType == LayerType::Electrical);
+        static_assert(TLayerType == LayerType::Ropes);
 
-        result = mElectricalMaterialEditDialog->RunForNew(variantOverrides, baseMaterial);
+        result = mRopesMaterialPaletteBrowser->RunNewCustomMaterial(overrides, baseMaterial);
     }
 
     if (result.has_value())

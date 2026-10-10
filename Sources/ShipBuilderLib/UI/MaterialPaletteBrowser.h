@@ -8,7 +8,9 @@
 #include "../ShipBuilderTypes.h"
 
 #include "IMaterialPalettesController.h"
+#include "ElectricalMaterialEditDialog.h"
 #include "MaterialPalettePanel.h"
+#include "StructuralMaterialEditDialog.h"
 
 #include <Game/GameAssetManager.h>
 #include <Game/ISoundController.h>
@@ -22,18 +24,18 @@
 #include <Core/ProgressCallback.h>
 
 #include <wx/wx.h>
-#include <wx/popupwin.h>
+#include <wx/frame.h>
 #include <wx/propgrid/propgrid.h>
 #include <wx/scrolwin.h>
 #include <wx/sizer.h>
 #include <wx/tglbtn.h>
 
 #include <array>
+#include <memory>
 #include <optional>
 #include <vector>
 
 namespace ShipBuilder {
-
 
 struct IMaterialPalette
 {
@@ -46,7 +48,7 @@ public:
 
 template<LayerType TLayer>
 class MaterialPaletteBrowser final :
-    public wxPopupTransientWindow,
+    public wxFrame,
     public IMaterialPalette
 {
 public:
@@ -73,6 +75,9 @@ public:
     {
         return IsShown();
     }
+
+    std::optional<typename TMaterial::VariantOverridesType> RunNewCustomMaterial(typename TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial);
+    std::optional<typename TMaterial::VariantOverridesType> RunEditCustomMaterial(typename TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial);
 
 private:
 
@@ -137,6 +142,15 @@ private:
     //
 
     std::optional<MaterialPlaneType> mCurrentPlane;
+
+    bool mStickAroundOnFocusLoss;
+
+    //
+    // Children
+    //
+
+    std::unique_ptr<StructuralMaterialEditDialog> mStructuralMaterialEditDialog;
+    std::unique_ptr<ElectricalMaterialEditDialog> mElectricalMaterialEditDialog;
 };
 
 }

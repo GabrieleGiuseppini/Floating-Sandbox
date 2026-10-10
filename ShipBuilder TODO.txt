@@ -349,8 +349,15 @@
 
 		= IMaterialPaletteController<TLayer>: for UI to talk back to controller
 			+ OnMaterialSelected
-			- OnNewCustomXYZMaterial(XYZMaterial * baseMaterial)
+			= OnNewCustomXYZMaterial(XYZMaterial * baseMaterial)
+				+ Create overrides
+				+ Run dialog
+				- TODOHERE
 			- OnEditCustomXYZMaterial(XYZMaterial * material)
+				- Get overrides
+				- Run dialog
+				- Remember starting point and does nothing if no real edits
+				- TODOHERE
 			- TODO: other workflows above
 
 		= MaterialPalettePanel<TLayer>: HEAVY REDESIGN
@@ -451,6 +458,17 @@
 			+ Initial layout:
 				+ Kinda as now, using InitialLayout APIs
 
+			- Make it dockable
+				- When docked:
+					- Fixed pos and size (based off referenceRect)
+					- Losing focus (still) closes it
+				- When undocked:
+					- Gains close button, move bar, and resizing controls
+						- Requires Layout()
+					- MainFrame trying to open palette (controller): checks first if already open 
+					- MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
+					- Losing focus never closes it
+
 	
 
 		= MaterialPalettesController
@@ -473,14 +491,28 @@
 
 		= MaterialEditDialog: 
 			+ Hook NewButton->IMaterialPalettesController
-			- Option 1:
-				- One single class templated on TMaterial (thus, Structural and Electrical)
-				- Single panel, laid out according to TMaterial
-				- void Open(TMaterial::override)
-					- TODOHERE
-				- When for edit, MaterialPalettesControllerremembers starting point and does nothing if no edits
+			= Option 1:
+				+ Two dialogs, two classes
+				+ FIX: Edit opening makes palette close - because it's wxTransientPopupWindow, closes at focus lost
+					- Option 1: Browser is wxTransientPopupWindow
+						- Yes close on click outside
+						- No close on focus lost
+					+ Option 2: Browser is wxFrame
+						+ wxFRAME_FLOAT_ON_PARENT
+						+ OnFocus handler detects losing focus and closes
+						+ When about to open dialog, remembers to disable focus check
+							+ Change: Controller asks Browser to run dialog
+							+ Clear flag at Open()
+						+ Do we still need MainFrame checking IsOpen()? YES: it's for mouse entering WorkCanvas
 
-				- MaterialPalettesController instantiates and owns two instances (Structural and Electrical)
+				- Contains overrides, and ctrl event handlers populate that overrides instance
+				- Structural:
+					- Run() also needs nominal
+						- Material: GetMass overload with nominal
+					- Notebook
+				- Electrical:
+				
+				+ MaterialPalettesController instantiates and owns two MaterialEditDialog instances (Structural and Electrical)
 
 			- Option 2:
 				- All 3 variants in same dialog
