@@ -26,7 +26,7 @@ MaterialEditDialog<TMaterial>::MaterialEditDialog(wxWindow * parent)
         wxString(),
         wxDefaultPosition,
         wxSize(400, 200),
-        wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED);
+        wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP);
 
     SetBackgroundColour(GetDefaultAttributes().colBg);
 
