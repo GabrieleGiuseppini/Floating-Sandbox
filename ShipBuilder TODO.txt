@@ -507,16 +507,26 @@
 
 				= Contains overrides, and ctrl event handlers populate that overrides instance
 				= Structural:
-					- Run() also needs nominal
-						- Material: GetMass overload with nominal
+					+ Run() also needs nominal
 					= Notebook
 						= Basic:
-							= ColorPicker: button + picker
-								- See to disable button hover effect
-									- Opt 1: MouseEnter evt
-									- Opt 2: Replace button with wxPanel and mouse down binding
-							- Sliders: TODO
+							+ ColorPicker: button + picker
+							+ Name
+							= Sliders: Mass, Strength
+								= SimulationProperties: new "MaterialLimits" section with constants
+									- TODOHERE: OR: limits between 0.1 and 10 of value, for all?
+									+ Mass: 0.0813
+									+ Strength: 0.02-7.5
+									- Ignition: 353-1e06
+									-
+									-
+									-
+									-
+
+									- Enforce at default load time
+
 						- Advanced:
+							- 5
 				- Electrical:
 					- Rethink: may be one base dialog class (templated) with helpers; commonalities:
 						- Ok/Cancel button and their setup

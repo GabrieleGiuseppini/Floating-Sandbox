@@ -286,7 +286,7 @@ SettingsDialog::SettingsDialog(
     }
 #endif
 
-    dialogVSizer->Add(notebook, 0);
+    dialogVSizer->Add(notebook, 1, wxEXPAND);
     dialogVSizer->Fit(notebook); // Workaround for multi-line bug
 
     dialogVSizer->AddSpacer(20);

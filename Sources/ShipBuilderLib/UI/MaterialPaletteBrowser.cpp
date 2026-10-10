@@ -955,7 +955,7 @@ void MaterialPaletteBrowser<TLayer>::PopulateMaterialProperties(TMaterial const 
             // Fill-in second grid with dummy properties
             for (; grid1PropertyCount < 4; ++grid1PropertyCount)
             {
-                AddStringProperty(mElectricalMaterialPropertyGrids[1], std::string("Dummy") + std::to_string(grid1PropertyCount), _(""));
+                AddStringProperty(mElectricalMaterialPropertyGrids[1], std::string("Dummy") + std::to_string(grid1PropertyCount), "");
             }
 
             mElectricalMaterialPropertyGrids[1]->FitColumns();

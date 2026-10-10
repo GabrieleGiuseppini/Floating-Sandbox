@@ -204,7 +204,7 @@ void MaterialPalettePanel<TLayer>::AddDefaultMaterial(TMaterial const * material
                 {
                     // Single string, too long though
                     cell.Name1 = TruncateAsNeeded(material->Name, MaterialSampleSize.width);
-                    cell.Name2 = "";
+                    cell.Name2 = wxEmptyString;
                 }
 
                 break;
@@ -220,7 +220,7 @@ void MaterialPalettePanel<TLayer>::AddDefaultMaterial(TMaterial const * material
     {
         // Fits all
         cell.Name1 = material->Name;
-        cell.Name2 = "";
+        cell.Name2 = wxEmptyString;
     }
 
     auto const name1Size = GetTextExtent(cell.Name1);

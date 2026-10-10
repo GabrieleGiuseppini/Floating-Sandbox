@@ -123,7 +123,7 @@ PreferencesDialog::PreferencesDialog(
 
         notebook->AddPage(musicPanel, _("Global Sound and Music"));
 
-        dialogVSizer->Add(notebook, 0);
+        dialogVSizer->Add(notebook, 1, wxEXPAND);
         dialogVSizer->Fit(notebook);
     }
 

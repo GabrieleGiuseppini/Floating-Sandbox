@@ -5,6 +5,11 @@
  ***************************************************************************************/
 #include "StructuralMaterialEditDialog.h"
 
+#include <Simulation/SimulationParameters.h>
+
+#include <Core/ExponentialSliderCore.h>
+#include <Core/LinearSliderCore.h>
+
 #include <wx/colordlg.h>
 #include <wx/notebook.h>
 #include <wx/sizer.h>
@@ -16,6 +21,9 @@ int constexpr DialogWidth = 300;
 
 int constexpr MarginSize = 4;
 int constexpr ColorPickerSideSize = 200;
+int constexpr SliderWidth = 72; // Min
+
+int constexpr VMarginAroundButtons = 10;
 
 StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
 {
@@ -51,15 +59,16 @@ StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
 
         wxBoxSizer * panelVSizer = new wxBoxSizer(wxVERTICAL);
 
-        //panelVSizer->AddSpacer(MarginSize);
+        panelVSizer->AddSpacer(MarginSize);
 
         // Render color
         {
-            mRenderColorButton = new wxButton(panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(ColorPickerSideSize, ColorPickerSideSize));
+            mRenderColorButton = new wxPanel(panel,wxID_ANY, wxDefaultPosition,
+                wxSize(ColorPickerSideSize, ColorPickerSideSize), wxBORDER_SIMPLE);
 
             mRenderColorButton->Bind(
-                wxEVT_BUTTON,
-                [this](wxCommandEvent &)
+                wxEVT_LEFT_DOWN,
+                [this](wxMouseEvent &)
                 {
                     assert(mOverridesUnderEdit.has_value());
 
@@ -75,6 +84,7 @@ StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
                         mOverridesUnderEdit->RenderColor = rgbaColor(color.Red(), color.Green(), color.Blue(), mOverridesUnderEdit->RenderColor.a);
                         mRenderColorButton->SetForegroundColour(color);
                         mRenderColorButton->SetBackgroundColour(color);
+                        mRenderColorButton->Refresh();
                     }
                 });
 
@@ -91,6 +101,8 @@ StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
             mNameTextCtrl = new wxTextCtrl(panel, wxID_ANY, wxEmptyString, wxDefaultPosition,
                 wxSize(DialogWidth - 2 * MarginSize, -1), wxTE_CENTRE);
 
+            // No events: we'll take the name when user is done
+
             auto font = panel->GetFont();
             font.SetPointSize(font.GetPointSize() + 2);
             mNameTextCtrl->SetFont(font);
@@ -103,6 +115,62 @@ StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
                 wxALIGN_CENTER_HORIZONTAL);
         }
 
+        panelVSizer->AddSpacer(MarginSize);
+
+        // Mass, Strength sliders
+        {
+            wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+            hSizer->AddStretchSpacer();
+
+            mMassSlider = new SliderControl<float>(
+                panel,
+                SliderControl<float>::DirectionType::Vertical,
+                SliderWidth,
+                -1,
+                _("Mass"),
+                wxEmptyString,
+                [this](float value)
+                {
+                    assert(mOverridesUnderEdit.has_value());
+                    mOverridesUnderEdit->Density = value / mBaseNominalMass;
+                },
+                std::make_unique<ExponentialSliderCore>(
+                    SimulationParameters::MaterialLimits::MinMass,
+                    1000.0f,
+                    SimulationParameters::MaterialLimits::MaxMass));
+
+            hSizer->Add(mMassSlider, 0, wxEXPAND);
+
+            hSizer->AddStretchSpacer();
+
+            mStrengthSlider = new SliderControl<float>(
+                panel,
+                SliderControl<float>::DirectionType::Vertical,
+                SliderWidth,
+                -1,
+                _("Strength"),
+                wxEmptyString,
+                [this](float value)
+                {
+                    assert(mOverridesUnderEdit.has_value());
+                    mOverridesUnderEdit->Strength = value;
+                },
+                std::make_unique<LinearSliderCore>(
+                    SimulationParameters::MaterialLimits::MinStrength,
+                    SimulationParameters::MaterialLimits::MaxStrength));
+
+            hSizer->Add(mStrengthSlider, 0, wxEXPAND);
+
+            hSizer->AddStretchSpacer();
+
+            panelVSizer->Add(
+                hSizer,
+                1,
+                wxEXPAND);
+        }
+
+        panelVSizer->AddSpacer(MarginSize);
 
         panel->SetSizerAndFit(panelVSizer);
 
@@ -123,12 +191,12 @@ StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
 
     dialogVSizer->Add(
         notebook,
-        0,
+        1,
         wxEXPAND);
 
     dialogVSizer->Fit(notebook); // Workaround for multi-line bug
 
-    dialogVSizer->AddSpacer(20);
+    dialogVSizer->AddSpacer(VMarginAroundButtons);
 
     //
     // Buttons
@@ -152,7 +220,7 @@ StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
         dialogVSizer->Add(buttonsSizer, 0, wxEXPAND, 0);
     }
 
-    dialogVSizer->AddSpacer(20);
+    dialogVSizer->AddSpacer(VMarginAroundButtons);
 
     //
     // Finalize dialog
@@ -193,7 +261,11 @@ std::optional<StructuralMaterial::VariantOverridesType> StructuralMaterialEditDi
     wxColor const renderColor = wxColor(mOverridesUnderEdit->RenderColor.r, mOverridesUnderEdit->RenderColor.g, mOverridesUnderEdit->RenderColor.b);
     mRenderColorButton->SetForegroundColour(renderColor);
     mRenderColorButton->SetBackgroundColour(renderColor);
+    mRenderColorButton->Refresh();
     mNameTextCtrl->ChangeValue(mOverridesUnderEdit->Name);
+    mMassSlider->SetValue(mBaseNominalMass * mOverridesUnderEdit->Density);
+    mStrengthSlider->SetValue(mOverridesUnderEdit->Strength);
+
     // TODO: others
 
     //

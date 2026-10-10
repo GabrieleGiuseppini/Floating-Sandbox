@@ -43,8 +43,10 @@ private:
     wxPanel * mMainPanel;
 
     // Basic
-    wxButton * mRenderColorButton;
+    wxPanel * mRenderColorButton;
     wxTextCtrl * mNameTextCtrl;
+    SliderControl<float> * mMassSlider;
+    SliderControl<float> * mStrengthSlider;
 
     // Buttons
     wxButton * mOkButton;
