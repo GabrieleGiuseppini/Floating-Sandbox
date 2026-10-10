@@ -126,6 +126,7 @@ void MaterialPalettesController::OnNewCustomMaterial(typename LayerTypeTraits<TL
     else
     {
         static_assert(TLayerType == LayerType::Electrical);
+
         result = mElectricalMaterialEditDialog->RunForNew(variantOverrides, baseMaterial);
     }
 
