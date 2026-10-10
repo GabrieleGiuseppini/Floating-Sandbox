@@ -513,17 +513,21 @@
 							+ ColorPicker: button + picker
 							+ Name
 							= Sliders: Mass, Strength
-								= SimulationProperties: new "MaterialLimits" section with constants
-									- TODOHERE: OR: limits between 0.1 and 10 of value, for all?
-									+ Mass: 0.0813
-									+ Strength: 0.02-7.5
-									- Ignition: 353-1e06
-									-
-									-
-									-
-									-
-
+								= Option 1: static, global limits
+									= SimulationProperties: new "MaterialLimits" section with constants
+										+ Mass: 0.0813
+										+ Strength: 0.02-7.5
+										- Ignition: 353-1e06
+										- ...
 									- Enforce at default load time
+
+								- Option 2: limits between 0.1 and 10 of value, except fo truly capped ones
+									- Caps still required at SimulationProperties, or not? They're always 1.0
+										- Enforce at default load time
+									- Run():
+										- Sync values and reset slider limits
+											- Slider limits values based off base material's value, conveniently via MakeStartingOverrides()
+										- SliderControl: substitution of slider core								
 
 						- Advanced:
 							- 5
