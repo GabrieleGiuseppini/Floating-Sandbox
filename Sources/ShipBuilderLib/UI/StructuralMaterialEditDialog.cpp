@@ -5,8 +5,6 @@
  ***************************************************************************************/
 #include "StructuralMaterialEditDialog.h"
 
-#include <Simulation/SimulationParameters.h>
-
 #include <Core/ExponentialSliderCore.h>
 #include <Core/LinearSliderCore.h>
 
@@ -17,34 +15,10 @@
 
 namespace ShipBuilder {
 
-int constexpr DialogHeight = 600;
-int constexpr DialogWidth = 300;
-
-int constexpr MarginSize = 4;
 int constexpr ColorPickerSideSize = 200;
-int constexpr SliderWidth = 72; // Min
 
-int constexpr VMarginAroundButtons = 10;
-int constexpr MarginAroundCells = 8;
-
-StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
+void StructuralMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
 {
-    Create(
-        parent,
-        wxID_ANY,
-        wxString(),
-        wxDefaultPosition,
-        wxSize(-1, DialogHeight),
-        wxCAPTION | wxCLOSE_BOX | wxBORDER_STATIC | wxSTAY_ON_TOP);
-
-    //
-    // Layout
-    //
-
-    mMainPanel = new wxPanel(this);
-
-    wxBoxSizer * dialogVSizer = new wxBoxSizer(wxVERTICAL);
-
     wxNotebook * notebook = new wxNotebook(
         mMainPanel,
         wxID_ANY,
@@ -322,56 +296,6 @@ StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
         wxEXPAND);
 
     dialogVSizer->Fit(notebook); // Workaround for multi-line bug
-
-    dialogVSizer->AddSpacer(VMarginAroundButtons);
-
-    //
-    // Buttons
-    //
-
-    {
-        wxBoxSizer * buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
-
-        buttonsSizer->AddStretchSpacer(1);
-
-        mOkButton = new wxButton(mMainPanel, wxID_OK, _("OK"));
-        buttonsSizer->Add(mOkButton, 0, 0, 0);
-
-        buttonsSizer->AddStretchSpacer(1);
-
-        mCancelButton = new wxButton(mMainPanel, wxID_CANCEL, _("Cancel"));
-        buttonsSizer->Add(mCancelButton, 0, 0, 0);
-
-        buttonsSizer->AddStretchSpacer(1);
-
-        dialogVSizer->Add(buttonsSizer, 0, wxEXPAND, 0);
-    }
-
-    dialogVSizer->AddSpacer(VMarginAroundButtons);
-
-    //
-    // Finalize dialog
-    //
-
-    mMainPanel->SetSizerAndFit(dialogVSizer);
-
-    Centre(wxCENTER_ON_SCREEN | wxBOTH);
-}
-
-std::optional<StructuralMaterial::VariantOverridesType> StructuralMaterialEditDialog::RunForNew(
-    StructuralMaterial::VariantOverridesType & overrides,
-    StructuralMaterial const * baseMaterial)
-{
-    SetTitle(_T("Create New Material"));
-    return Run(overrides, baseMaterial);
-}
-
-std::optional<StructuralMaterial::VariantOverridesType> StructuralMaterialEditDialog::RunForEdit(
-    StructuralMaterial::VariantOverridesType & overrides,
-    StructuralMaterial const * baseMaterial)
-{
-    SetTitle(_T("Edit Material"));
-    return Run(overrides, baseMaterial);
 }
 
 std::optional<StructuralMaterial::VariantOverridesType> StructuralMaterialEditDialog::Run(

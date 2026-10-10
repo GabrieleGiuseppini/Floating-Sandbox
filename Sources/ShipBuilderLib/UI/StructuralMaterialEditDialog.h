@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "BaseMaterialEditDialog.h"
+
 #include <Simulation/Materials.h>
 
 #include <UILib/SliderControl.h>
@@ -18,18 +20,21 @@
 
 namespace ShipBuilder {
 
-class StructuralMaterialEditDialog : public wxDialog
+class StructuralMaterialEditDialog final : public BaseMaterialEditDialog<StructuralMaterial>
 {
 public:
 
-    StructuralMaterialEditDialog(wxWindow * parent);
-
-    std::optional<StructuralMaterial::VariantOverridesType> RunForNew(StructuralMaterial::VariantOverridesType & overrides, StructuralMaterial const * baseMaterial);
-    std::optional<StructuralMaterial::VariantOverridesType> RunForEdit(StructuralMaterial::VariantOverridesType & overrides, StructuralMaterial const * baseMaterial);
+    StructuralMaterialEditDialog(wxWindow * parent)
+        : BaseMaterialEditDialog<StructuralMaterial>(parent)
+    {
+        LayoutBase();
+    }
 
 private:
 
-    std::optional<StructuralMaterial::VariantOverridesType> Run(StructuralMaterial::VariantOverridesType & overrides, StructuralMaterial const * baseMaterial);
+    void LayoutControls(wxBoxSizer * dialogVSizer) override;
+
+    std::optional<StructuralMaterial::VariantOverridesType> Run(StructuralMaterial::VariantOverridesType & overrides, StructuralMaterial const * baseMaterial) override;
 
     static wxColor GetOverridesRenderColor(StructuralMaterial::VariantOverridesType const & overrides);
 
@@ -38,9 +43,6 @@ private:
     //
     // UI
     //
-
-    // Main panel
-    wxPanel * mMainPanel;
 
     // Basic
     wxPanel * mRenderColorButton;
@@ -55,15 +57,10 @@ private:
     SliderControl<float> * mRustReceptivitySlider;
     SliderControl<float> * mWaterSolubilitySlider;
 
-    // Buttons
-    wxButton * mOkButton;
-    wxButton * mCancelButton;
-
     //
     // State
     //
 
-    std::optional<StructuralMaterial::VariantOverridesType> mOverridesUnderEdit;
     float mBaseNominalMass;
 };
 

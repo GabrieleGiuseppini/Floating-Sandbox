@@ -45,6 +45,8 @@ set (SHIPBUILDER_LIB_SOURCES
 set (UI_SOURCES
 	UI/AskPasswordDialog.cpp
 	UI/AskPasswordDialog.h
+	UI/BaseMaterialEditDialog.cpp
+	UI/BaseMaterialEditDialog.h
 	UI/BaseResizeDialog.cpp
 	UI/BaseResizeDialog.h
 	UI/ElectricalMaterialEditDialog.cpp
