@@ -49,7 +49,7 @@ public:
         wxString const & label,
         wxString const & toolTipLabel,
         std::function<void(TValue)> onValueChanged,
-        std::unique_ptr<ISliderCore<TValue>> sliderCore)
+        std::unique_ptr<ISliderCore<TValue>> && sliderCore)
         : SliderControl(
             parent,
             direction,
@@ -71,7 +71,7 @@ public:
         wxString const & label,
         wxString const & toolTipLabel,
         std::function<void(TValue)> onValueChanged,
-        std::unique_ptr<ISliderCore<TValue>> sliderCore,
+        std::unique_ptr<ISliderCore<TValue>> && sliderCore,
         wxBitmap const * warningIcon)
         : wxPanel(
             parent,
@@ -80,7 +80,7 @@ public:
             wxSize(width, height),
             wxBORDER_NONE)
         , mOnValueChanged(std::move(onValueChanged))
-        , mSliderCore(std::move(sliderCore))
+        , mSliderCore()
     {
         // Set font
         SetFont(parent->GetFont());
@@ -89,9 +89,6 @@ public:
         if (!toolTipLabel.IsEmpty())
             SetToolTip(toolTipLabel);
 
-        // Calculate parameters
-        int const n = mSliderCore->GetNumberOfTicks();
-        int const wxMaxValue = std::max(n - 1, 1); // So we always give max > min to wxWidgets; but then we disable ourselves if n <= 1
 
         wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -105,13 +102,11 @@ public:
                 wxNewId(),
                 0, // Start value
                 0, // Min value
-                wxMaxValue, // Max value, included
+                1, // Will be set later
                 wxDefaultPosition,
                 wxSize(-1, height),
                 (direction == DirectionType::Vertical ? (wxSL_VERTICAL | wxSL_LEFT | wxSL_INVERSE) : (wxSL_HORIZONTAL)) | wxSL_AUTOTICKS,
                 wxDefaultValidator);
-
-            mSlider->SetTickFreq(height >= n * 4 ? 1 : std::max(4, static_cast<int>(std::ceil(static_cast<float>(n) / static_cast<float>(height)))));
 
             mSlider->Bind(wxEVT_SLIDER, (wxObjectEventFunction)&SliderControl::OnSliderScroll, this);
 
@@ -178,18 +173,13 @@ public:
 
             // Text control
             {
-                mTextCtrlValidator = TextValidatorFactory::CreateInstance<TValue>(
-                    mSliderCore->GetMinValue(),
-                    mSliderCore->GetMaxValue());
-
                 mTextCtrl = new wxTextCtrl(
                     this,
                     wxID_ANY,
                     wxEmptyString,
                     wxDefaultPosition,
                     wxSize(width, -1),
-                    wxTE_CENTRE | wxTE_PROCESS_ENTER,
-                    *mTextCtrlValidator);
+                    wxTE_CENTRE | wxTE_PROCESS_ENTER);
 
                 mTextCtrl->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
@@ -211,9 +201,6 @@ public:
                     wxSize(-1, 22),
                     wxSP_VERTICAL | wxSP_ARROW_KEYS);
 
-                mSpinButton->SetRange(0, wxMaxValue);
-                mSpinButton->SetValue(mSlider->GetValue());
-
                 mSpinButton->Bind(wxEVT_SPIN, &SliderControl::OnSpinButton, this);
 
                 hSizer->Add(mSpinButton, 0, wxALIGN_CENTRE_VERTICAL);
@@ -225,12 +212,12 @@ public:
         this->SetSizerAndFit(vSizer);
 
         //
-        // Disable self if no degrees of freedom
+        // Set limits
         //
 
-        if (n <= 1)
+        if (sliderCore)
         {
-            this->Enable(false);
+            SetSliderCore(std::move(sliderCore));
         }
     }
 
@@ -248,7 +235,51 @@ public:
         mSpinButton->SetValue(tickValue);
     }
 
+    void SetValueAndLimits(
+        TValue value,
+        std::unique_ptr<ISliderCore<TValue>> && sliderCore)
+    {
+        SetSliderCore(std::move(sliderCore));
+        SetValue(value);
+    }
+
 private:
+
+    void SetSliderCore(std::unique_ptr<ISliderCore<TValue>> sliderCore)
+    {
+        // TODO: assert we have controls
+
+        mSliderCore = std::move(sliderCore);
+
+        // Calculate parameters
+        int const n = mSliderCore->GetNumberOfTicks();
+        int const wxMaxValue = std::max(n - 1, 1); // So we always give max > min to wxWidgets; but then we disable ourselves if n <= 1
+
+        // Configure slider
+        assert(mSlider);
+        mSlider->SetMax(wxMaxValue); // Max value, included
+        int const sliderHeight = mSlider->GetSize().GetHeight();
+        mSlider->SetTickFreq(sliderHeight >= n * 4 ? 1 : std::max(4, static_cast<int>(std::ceil(static_cast<float>(n) / static_cast<float>(sliderHeight)))));
+
+        // Configure text control
+        auto validator = TextValidatorFactory::CreateInstance<TValue>(
+            mSliderCore->GetMinValue(),
+            mSliderCore->GetMaxValue());
+        mTextCtrl->SetValidator(*validator);
+
+        // Configure spin button
+        mSpinButton->SetRange(0, wxMaxValue);
+
+        //
+        // Disable self if no degrees of freedom
+        //
+
+        if (n <= 1)
+        {
+            this->Enable(false);
+        }
+    }
+
 
     void OnSliderScroll(wxScrollEvent & /*event*/)
     {
@@ -317,9 +348,8 @@ private:
 
     wxSlider * mSlider;
     wxTextCtrl * mTextCtrl;
-    std::unique_ptr<wxValidator> mTextCtrlValidator;
     wxSpinButton * mSpinButton;
 
     std::function<void(TValue)> const mOnValueChanged;
-    std::unique_ptr<ISliderCore<TValue>> const mSliderCore;
+    std::unique_ptr<ISliderCore<TValue>> mSliderCore;
 };

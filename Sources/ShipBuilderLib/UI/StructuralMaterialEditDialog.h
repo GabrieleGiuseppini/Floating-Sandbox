@@ -48,6 +48,13 @@ private:
     SliderControl<float> * mMassSlider;
     SliderControl<float> * mStrengthSlider;
 
+    // Advanced
+    SliderControl<float> * mIgnitionTemperatureSlider;
+    SliderControl<float> * mMeltingTemperatureSlider;
+    SliderControl<float> * mRotReceptivitySlider;
+    SliderControl<float> * mRustReceptivitySlider;
+    SliderControl<float> * mWaterSolubilitySlider;
+
     // Buttons
     wxButton * mOkButton;
     wxButton * mCancelButton;

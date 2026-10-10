@@ -11,6 +11,7 @@
 #include <Core/LinearSliderCore.h>
 
 #include <wx/colordlg.h>
+#include <wx/gbsizer.h>
 #include <wx/notebook.h>
 #include <wx/sizer.h>
 
@@ -24,6 +25,7 @@ int constexpr ColorPickerSideSize = 200;
 int constexpr SliderWidth = 72; // Min
 
 int constexpr VMarginAroundButtons = 10;
+int constexpr MarginAroundCells = 8;
 
 StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
 {
@@ -128,17 +130,14 @@ StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
                 SliderControl<float>::DirectionType::Vertical,
                 SliderWidth,
                 -1,
-                _("Mass"),
+                _("Mass (Kg)"),
                 wxEmptyString,
                 [this](float value)
                 {
                     assert(mOverridesUnderEdit.has_value());
                     mOverridesUnderEdit->Density = value / mBaseNominalMass;
                 },
-                std::make_unique<ExponentialSliderCore>(
-                    SimulationParameters::MaterialLimits::MinMass,
-                    1000.0f,
-                    SimulationParameters::MaterialLimits::MaxMass));
+                nullptr);
 
             hSizer->Add(mMassSlider, 0, wxEXPAND);
 
@@ -156,9 +155,7 @@ StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
                     assert(mOverridesUnderEdit.has_value());
                     mOverridesUnderEdit->Strength = value;
                 },
-                std::make_unique<LinearSliderCore>(
-                    SimulationParameters::MaterialLimits::MinStrength,
-                    SimulationParameters::MaterialLimits::MaxStrength));
+                nullptr);
 
             hSizer->Add(mStrengthSlider, 0, wxEXPAND);
 
@@ -184,7 +181,137 @@ StructuralMaterialEditDialog::StructuralMaterialEditDialog(wxWindow * parent)
     {
         wxPanel * panel = new wxPanel(notebook);
 
-        //PopulateMechanicsAndThermodynamicsPanel(panel, gameAssetManager);
+        wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+        // Ignition temperature
+        {
+            mIgnitionTemperatureSlider = new SliderControl<float>(
+                panel,
+                SliderControl<float>::DirectionType::Vertical,
+                SliderWidth,
+                -1,
+                _("Ignition Temperature (K)"),
+                wxEmptyString,
+                [this](float value)
+                {
+                    assert(mOverridesUnderEdit.has_value());
+                    mOverridesUnderEdit->IgnitionTemperature = value;
+                },
+                nullptr);
+
+            gridSizer->Add(
+                mIgnitionTemperatureSlider,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 3),
+                wxEXPAND | wxALL,
+                MarginAroundCells);
+        }
+
+        // Melting temperature
+        {
+            mMeltingTemperatureSlider = new SliderControl<float>(
+                panel,
+                SliderControl<float>::DirectionType::Vertical,
+                SliderWidth,
+                -1,
+                _("Melting Temperature (K)"),
+                wxEmptyString,
+                [this](float value)
+                {
+                    assert(mOverridesUnderEdit.has_value());
+                    mOverridesUnderEdit->MeltingTemperature = value;
+                },
+                nullptr);
+
+            gridSizer->Add(
+                mMeltingTemperatureSlider,
+                wxGBPosition(0, 3),
+                wxGBSpan(1, 3),
+                wxEXPAND | wxALL,
+                MarginAroundCells);
+        }
+
+        // Rot receptivity
+        {
+            mRotReceptivitySlider = new SliderControl<float>(
+                panel,
+                SliderControl<float>::DirectionType::Vertical,
+                SliderWidth,
+                -1,
+                _("Rot Sensitivity"),
+                wxEmptyString,
+                [this](float value)
+                {
+                    assert(mOverridesUnderEdit.has_value());
+                    mOverridesUnderEdit->RotReceptivity = value;
+                },
+                std::make_unique<LinearSliderCore>(
+                    0.0f,
+                    1.0f));
+
+            gridSizer->Add(
+                mRotReceptivitySlider,
+                wxGBPosition(1, 0),
+                wxGBSpan(1, 2),
+                wxEXPAND | wxALL,
+                MarginAroundCells);
+        }
+
+        // Rust receptivity
+        {
+            mRustReceptivitySlider = new SliderControl<float>(
+                panel,
+                SliderControl<float>::DirectionType::Vertical,
+                SliderWidth,
+                -1,
+                _("Rust Sensitivity"),
+                wxEmptyString,
+                [this](float value)
+                {
+                    assert(mOverridesUnderEdit.has_value());
+                    mOverridesUnderEdit->RustReceptivity = value;
+                },
+                std::make_unique<LinearSliderCore>(
+                    0.0f,
+                    1.0f));
+
+            gridSizer->Add(
+                mRustReceptivitySlider,
+                wxGBPosition(1, 2),
+                wxGBSpan(1, 2),
+                wxEXPAND | wxALL,
+                MarginAroundCells);
+        }
+
+        // Water solubility
+        {
+            mWaterSolubilitySlider = new SliderControl<float>(
+                panel,
+                SliderControl<float>::DirectionType::Vertical,
+                SliderWidth,
+                -1,
+                _("Water Solubility"),
+                wxEmptyString,
+                [this](float value)
+                {
+                    assert(mOverridesUnderEdit.has_value());
+                    mOverridesUnderEdit->WaterSolubility = value;
+                },
+                std::make_unique<LinearSliderCore>(
+                    0.0f,
+                    1.0f));
+
+            gridSizer->Add(
+                mWaterSolubilitySlider,
+                wxGBPosition(1, 4),
+                wxGBSpan(1, 2),
+                wxEXPAND | wxALL,
+                MarginAroundCells);
+        }
+
+        WxHelpers::MakeAllExpandable(gridSizer);
+
+        panel->SetSizerAndFit(gridSizer);
 
         notebook->AddPage(panel, _("Advanced"));
     }
@@ -257,16 +384,47 @@ std::optional<StructuralMaterial::VariantOverridesType> StructuralMaterialEditDi
 
     mOverridesUnderEdit = overrides;
     mBaseNominalMass = baseMaterial->NominalMass;
+    auto baseOverrideValues = baseMaterial->MakeStartingVariantOverrides();
 
     wxColor const renderColor = wxColor(mOverridesUnderEdit->RenderColor.r, mOverridesUnderEdit->RenderColor.g, mOverridesUnderEdit->RenderColor.b);
     mRenderColorButton->SetForegroundColour(renderColor);
     mRenderColorButton->SetBackgroundColour(renderColor);
     mRenderColorButton->Refresh();
-    mNameTextCtrl->ChangeValue(mOverridesUnderEdit->Name);
-    mMassSlider->SetValue(mBaseNominalMass * mOverridesUnderEdit->Density);
-    mStrengthSlider->SetValue(mOverridesUnderEdit->Strength);
 
-    // TODO: others
+    mNameTextCtrl->ChangeValue(mOverridesUnderEdit->Name);
+
+    float const baseMass = mBaseNominalMass * baseOverrideValues.Density;
+    mMassSlider->SetValueAndLimits(
+        mBaseNominalMass * mOverridesUnderEdit->Density,
+        std::make_unique<ExponentialSliderCore>(
+            baseMass * 0.1f,
+            baseMass,
+            baseMass * 10.0f));
+
+    mStrengthSlider->SetValueAndLimits(
+        mOverridesUnderEdit->Strength,
+        std::make_unique<ExponentialSliderCore>(
+            baseOverrideValues.Strength * 0.1f,
+            baseOverrideValues.Strength,
+            baseOverrideValues.Strength * 10.0f));
+
+    mIgnitionTemperatureSlider->SetValueAndLimits(
+        mOverridesUnderEdit->IgnitionTemperature,
+        std::make_unique<ExponentialSliderCore>(
+            baseOverrideValues.IgnitionTemperature * 0.1f,
+            baseOverrideValues.IgnitionTemperature,
+            baseOverrideValues.IgnitionTemperature * 10.0f));
+
+    mMeltingTemperatureSlider->SetValueAndLimits(
+        mOverridesUnderEdit->MeltingTemperature,
+        std::make_unique<ExponentialSliderCore>(
+            baseOverrideValues.MeltingTemperature * 0.1f,
+            baseOverrideValues.MeltingTemperature,
+            baseOverrideValues.MeltingTemperature * 10.0f));
+
+    mRotReceptivitySlider->SetValue(mOverridesUnderEdit->RotReceptivity);
+    mRustReceptivitySlider->SetValue(mOverridesUnderEdit->RustReceptivity);
+    mWaterSolubilitySlider->SetValue(mOverridesUnderEdit->WaterSolubility);
 
     //
     // Run

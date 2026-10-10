@@ -48,12 +48,27 @@ StructuralMaterial::VariantOverridesType StructuralMaterial::VariantOverridesTyp
     {
         throw GameException(std::string("Material \"") + name + "\" has \"density\" equal to 0.0, while it must be greater than 0.0");
     }
+
     float const ignitionTemperature = Utils::GetMandatoryJsonMember<float>(overridesJson, "ignition_temperature");
     float const meltingTemperature = Utils::GetMandatoryJsonMember<float>(overridesJson, "melting_temperature");
-    float const rotReceptivity = Utils::GetMandatoryJsonMember<float>(overridesJson, "rot_receptivity");
-    float const rustReceptivity = Utils::GetMandatoryJsonMember<float>(overridesJson, "rust_receptivity");
-    float const waterSolubility = Utils::GetMandatoryJsonMember<float>(overridesJson, "water_solubility");
 
+    float const rotReceptivity = Utils::GetMandatoryJsonMember<float>(overridesJson, "rot_receptivity");
+    if (rotReceptivity > 1.0f)
+    {
+        throw GameException(std::string("Material \"") + name + "\" has \"rot_receptivity\" outside of the valid [0.0, 1.0] range");
+    }
+
+    float const rustReceptivity = Utils::GetMandatoryJsonMember<float>(overridesJson, "rust_receptivity");
+    if (rustReceptivity > 1.0f)
+    {
+        throw GameException(std::string("Material \"") + name + "\" has \"rust_receptivity\" outside of the valid [0.0, 1.0] range");
+    }
+
+    float const waterSolubility = Utils::GetMandatoryJsonMember<float>(overridesJson, "water_solubility");
+    if (waterSolubility > 1.0f)
+    {
+        throw GameException(std::string("Material \"") + name + "\" has \"water_solubility\" outside of the valid [0.0, 1.0] range");
+    }
     return VariantOverridesType(
         name,
         renderColor,

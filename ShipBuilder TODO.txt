@@ -505,15 +505,15 @@
 							+ Clear flag at Open()
 						+ Do we still need MainFrame checking IsOpen()? YES: it's for mouse entering WorkCanvas
 
-				= Contains overrides, and ctrl event handlers populate that overrides instance
-				= Structural:
+				+ Contains overrides, and ctrl event handlers populate that overrides instance
+				+ Structural:
 					+ Run() also needs nominal
-					= Notebook
-						= Basic:
+					+ Notebook
+						+ Basic:
 							+ ColorPicker: button + picker
 							+ Name
-							= Sliders: Mass, Strength
-								= Option 1: static, global limits
+							+ Sliders: Mass, Strength
+								X Option 1: static, global limits
 									= SimulationProperties: new "MaterialLimits" section with constants
 										+ Mass: 0.0813
 										+ Strength: 0.02-7.5
@@ -521,16 +521,18 @@
 										- ...
 									- Enforce at default load time
 
-								- Option 2: limits between 0.1 and 10 of value, except fo truly capped ones
-									- Caps still required at SimulationProperties, or not? They're always 1.0
-										- Enforce at default load time
-									- Run():
-										- Sync values and reset slider limits
-											- Slider limits values based off base material's value, conveniently via MakeStartingOverrides()
-										- SliderControl: substitution of slider core								
+								+ Option 2: limits between 0.1 and 10 of value, except fo truly capped ones
+									X Caps still required at SimulationProperties, or not? They're always 1.0
+										+ Enforce at default load time
+									+ Run():
+										+ Sync values and reset slider limits
+											+ Slider limits values based off base material's value, conveniently via MakeStartingOverrides()
+										+ SliderControl: substitution of slider core								
+						+ Advanced:
+							+ 5
 
-						- Advanced:
-							- 5
+				- Golden Ratio
+
 				- Electrical:
 					- Rethink: may be one base dialog class (templated) with helpers; commonalities:
 						- Ok/Cancel button and their setup
