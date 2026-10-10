@@ -29,7 +29,7 @@ int constexpr CellVSpacing = 0;
 
 // Cell
 int constexpr CellInnerMargin = 8;
-ImageSize constexpr MaterialSampleSize(80, 60);
+ImageSize constexpr MaterialSampleSize(60, 45);
 
 int constexpr SelectionFrameThickness = 1;
 static_assert(SelectionFrameThickness < CellInnerMargin); // To fit selection frame inside cell
