@@ -72,7 +72,7 @@ NewShipNameDialog::NewShipNameDialog(
                 wxEVT_TEXT_ENTER,
                 [this](wxCommandEvent &)
                 {
-                    mShipNameTextCtrl->Navigate();
+                    this->EndModal(wxID_OK);
                 });
 
             auto font = GetFont();

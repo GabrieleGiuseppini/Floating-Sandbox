@@ -7,7 +7,12 @@
 
 #include <Simulation/Materials.h>
 
+#include <UILib/SliderControl.h>
+
+#include <wx/button.h>
 #include <wx/dialog.h>
+#include <wx/panel.h>
+#include <wx/textctrl.h>
 
 #include <optional>
 
@@ -26,7 +31,31 @@ private:
 
     std::optional<StructuralMaterial::VariantOverridesType> Run(StructuralMaterial::VariantOverridesType & overrides, StructuralMaterial const * baseMaterial);
 
+    static wxColor GetOverridesRenderColor(StructuralMaterial::VariantOverridesType const & overrides);
+
 private:
+
+    //
+    // UI
+    //
+
+    // Main panel
+    wxPanel * mMainPanel;
+
+    // Basic
+    wxButton * mRenderColorButton;
+    wxTextCtrl * mNameTextCtrl;
+
+    // Buttons
+    wxButton * mOkButton;
+    wxButton * mCancelButton;
+
+    //
+    // State
+    //
+
+    std::optional<StructuralMaterial::VariantOverridesType> mOverridesUnderEdit;
+    float mBaseNominalMass;
 };
 
 }

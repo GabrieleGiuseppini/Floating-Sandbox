@@ -505,12 +505,29 @@
 							+ Clear flag at Open()
 						+ Do we still need MainFrame checking IsOpen()? YES: it's for mouse entering WorkCanvas
 
-				- Contains overrides, and ctrl event handlers populate that overrides instance
-				- Structural:
+				= Contains overrides, and ctrl event handlers populate that overrides instance
+				= Structural:
 					- Run() also needs nominal
 						- Material: GetMass overload with nominal
-					- Notebook
+					= Notebook
+						= Basic:
+							= ColorPicker: button + picker
+								- See to disable button hover effect
+									- Opt 1: MouseEnter evt
+									- Opt 2: Replace button with wxPanel and mouse down binding
+							- Sliders: TODO
+						- Advanced:
 				- Electrical:
+					- Rethink: may be one base dialog class (templated) with helpers; commonalities:
+						- Ok/Cancel button and their setup
+						- Run logic
+							- virtual SyncToControls -- which also does overridesUnderEdit init'n
+
+					- N panels, one per-type; selects right one at Run()
+					- TODO
+
+
+				- Normalize name
 				
 				+ MaterialPalettesController instantiates and owns two MaterialEditDialog instances (Structural and Electrical)
 

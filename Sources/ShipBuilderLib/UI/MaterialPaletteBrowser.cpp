@@ -348,6 +348,18 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
             }
         });
 
+    Bind(
+        wxEVT_CLOSE_WINDOW,
+        [this](wxCloseEvent & event)
+        {
+            if (event.CanVeto())
+            {
+                // User pressed ALT+F4...
+                // ...do not allow close()
+                event.Veto();
+            }
+        });
+
     //
     // Create children
     //
