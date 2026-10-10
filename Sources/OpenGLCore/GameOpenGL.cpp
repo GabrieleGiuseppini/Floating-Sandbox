@@ -25,7 +25,7 @@ int GameOpenGL::MaxSupportedOpenGLVersionMinor = 0;
 bool GameOpenGL::PreventSteepTriangles = false;
 bool GameOpenGL::AvoidGlFinish = false;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(__EMSCRIPTEN__)
 
 static void APIENTRY OpenGLDebugCallback(
     GLenum source, GLenum type, GLuint /*id*/, GLenum severity,
@@ -166,7 +166,7 @@ void GameOpenGL::InitOpenGL()
     // Initialize debugging
     //
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(__EMSCRIPTEN__)
 
     if (glDebugMessageCallback != nullptr)
     {

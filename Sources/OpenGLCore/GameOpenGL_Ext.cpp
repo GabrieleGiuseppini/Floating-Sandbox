@@ -8,6 +8,14 @@
 #include <Core/GameExceptions.h>
 #include <Core/Log.h>
 
+#ifdef __EMSCRIPTEN__
+
+void InitOpenGLExt()
+{
+}
+
+#else
+
 template <typename TFunc>
 void LoadAndVerify(char const * functionName, TFunc * & pFunc, GLADloadproc load)
 {
@@ -269,3 +277,5 @@ void InitOpenGLExt()
             + " the error is: " + ex.what());
     }
 }
+
+#endif

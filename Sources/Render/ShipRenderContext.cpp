@@ -901,7 +901,7 @@ void ShipRenderContext::UploadPointTextureCoordinates(vec2f const * textureCoord
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-template<bool IsHighQualityRendering>
+template<bool IsHighQualityRendering, typename TDst>
 inline void PopulateAttributeGroup(
     float const * const restrict pSrc1,
     float const * const restrict pSrc2,
@@ -909,7 +909,7 @@ inline void PopulateAttributeGroup(
     vec3f const * const restrict pSrc4,
     vec2f const * const restrict pSrc5,
     vec2f * const restrict pPreviousWaterMomentum,
-    ShipRenderContext::PointAttributeGroupVertex * const restrict pDst,
+    TDst * const restrict pDst,
     size_t const shipPointCount)
 {
     for (size_t i = 0; i < shipPointCount; ++i)

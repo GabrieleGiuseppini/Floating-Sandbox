@@ -49,6 +49,9 @@
 #define FS_IS_ARCHITECTURE_X86_32() 1
 #undef FS_IS_REGISTER_WIDTH_32
 #define FS_IS_REGISTER_WIDTH_32() 1
+#elif defined(__EMSCRIPTEN__)
+#undef FS_IS_REGISTER_WIDTH_32
+#define FS_IS_REGISTER_WIDTH_32() 1
 #endif
 
 //
