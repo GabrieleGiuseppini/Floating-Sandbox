@@ -401,12 +401,14 @@
 					- Render own cell
 					- Refresh(false)
 				- All subsequent ones (custom):
+					- LayoutSession: wraps map<rowIndex, leftmost strideIndex>
 					- StartCustomMaterialsLayout() -> LayoutSession
 					- All atomic ops, taking LayoutSession and returning LayoutSession - naming as "...CustomMaterial..."
 						- Op does op on cell
 						- Then calcs LayoutSession
 						- Ops (all take lookup args as args)
-							- Add user/ship custom
+							- RemoveAll[User|Ship]
+							- Add user/ship custom [vector]
 								- Add material sample to ImageList
 								- Add to stride, at end
 									- Update LayoutSession accordingly
@@ -429,8 +431,7 @@
 						- Refresh(false)
 				
 			+ All cells have exact same width - constant
-			= All cells in a row have the same height - constant
-				- Fix font height
+			+ All cells in a row have the same height - constant
 			- FIX:
 				- Need more room for text, do 3 lines OR smaller font
 			+ There's a H separator between MaterialStride's
@@ -447,8 +448,8 @@
 				- vec<uq> from ship - if needed @ cctor // TODO: or later, added
 				+ IMaterialPalettesController &
 
-			- Initial layout:
-				- Kinda as now, using InitialLayout APIs
+			+ Initial layout:
+				+ Kinda as now, using InitialLayout APIs
 
 	
 
@@ -470,10 +471,22 @@
 				- MaterialPalette<TLayer X 3>::TODOShipCustomMaterials(pod member)
 					- Full relayout of ship portion for all rows
 
-		- MaterialEditDialog: all 3 variants in same dialog
-			- 3 panels inside; @ open<TLayerType> shows/hides panels
-			- Structural/Rope:
-				- Shows "mass" but changes _density_ based off base's _nominal_mass_
+		- MaterialEditDialog: 
+			- Hook NewButton->IMaterialPalettesController
+			- Option 1:
+				- One single class templated on TMaterial (thus, Structural and Electrical)
+				- Single panel, laid out according to TMaterial
+				- void Open(TMaterial::override)
+					- TODOHERE
+				- When for edit, MaterialPalettesControllerremembers starting point and does nothing if no edits
+
+				- MaterialPalettesController instantiates and owns two instances (Structural and Electrical)
+
+			- Option 2:
+				- All 3 variants in same dialog
+				- 3 panels inside; @ open<TLayerType> shows/hides panels
+				- Structural/Rope:
+					- Shows "mass" but changes _density_ based off base's _nominal_mass_
 
 
 		- Model and maybe ModelController:

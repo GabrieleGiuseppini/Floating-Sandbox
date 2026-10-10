@@ -36,7 +36,7 @@ static_assert(SelectionFrameThickness < CellInnerMargin); // To fit selection fr
 
 int constexpr MaterialSampleToNameGapHeight = 2;
 int constexpr NameTextHeight = 9;
-int constexpr NameToNameGapHeight = 0;
+int constexpr NameToNameGapHeight = 1;
 int constexpr NameToDataGapHeight = 2;
 int constexpr DataTextHeight = 8;
 
@@ -88,11 +88,11 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
 
     // Make name font
     mNameFont = GetFont();
-    mNameFont.SetPointSize(mNameFont.GetPointSize());
+    mNameFont.SetPointSize(NameTextHeight - 2);
 
     // Make data font
     mDataFont = GetFont();
-    mDataFont.SetPointSize(mDataFont.GetPointSize() - 1);
+    mDataFont.SetPointSize(DataTextHeight - 2);
 
     mTextForegroundColor = wxColour("BLACK");
 
