@@ -6,6 +6,7 @@
 #include "ElectricalMaterialEditDialog.h"
 
 #include <Core/ExponentialSliderCore.h>
+#include <Core/LinearSliderCore.h>
 
 namespace ShipBuilder {
 
@@ -39,22 +40,18 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
     // Others panel
     {
         wxPanel * othersPanel = new wxPanel(mMainPanel);
-        wxBoxSizer * hPanelSizer = new wxBoxSizer(wxHORIZONTAL);
-
-        hPanelSizer->AddStretchSpacer();
+        wxGridSizer * gPanelSizer = new wxGridSizer(1);
 
         // Heat generated
         {
             mOthersHeatGeneratedSlider = MakeHeatGeneratedSliderControl(othersPanel);
 
-            hPanelSizer->Add(mOthersHeatGeneratedSlider, 0, wxEXPAND);
+            gPanelSizer->Add(mOthersHeatGeneratedSlider, 0, wxEXPAND);
         }
-
-        hPanelSizer->AddStretchSpacer(1);
 
         // Finalize panel
 
-        othersPanel->SetSizer(hPanelSizer);
+        othersPanel->SetSizer(gPanelSizer);
 
         mHSizer->Add(
             othersPanel,
@@ -67,18 +64,14 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
     // Lamp panel
     {
         wxPanel * lampPanel = new wxPanel(mMainPanel);
-        wxBoxSizer * hPanelSizer = new wxBoxSizer(wxHORIZONTAL);
-
-        hPanelSizer->AddStretchSpacer();
+        wxGridSizer * gPanelSizer = new wxGridSizer(3);
 
         // Heat generated
         {
             mLampHeatGeneratedSlider = MakeHeatGeneratedSliderControl(lampPanel);
 
-            hPanelSizer->Add(mLampHeatGeneratedSlider, 0, wxEXPAND);
+            gPanelSizer->Add(mLampHeatGeneratedSlider, 0, wxEXPAND);
         }
-
-        hPanelSizer->AddStretchSpacer(1);
 
         // Luminiscence
         {
@@ -96,10 +89,8 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
                 },
                 nullptr);
 
-            hPanelSizer->Add(mLuminiscenceSlider, 0, wxEXPAND);
+            gPanelSizer->Add(mLuminiscenceSlider, 0, wxEXPAND);
         }
-
-        hPanelSizer->AddStretchSpacer(1);
 
         // Light spread
         {
@@ -117,24 +108,143 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
                 },
                 nullptr);
 
-            hPanelSizer->Add(mLightSpreadSlider, 0, wxEXPAND);
+            gPanelSizer->Add(mLightSpreadSlider, 0, wxEXPAND);
         }
-
-        hPanelSizer->AddStretchSpacer(1);
 
         // Finalize panel
 
-        lampPanel->SetSizer(hPanelSizer);
+        lampPanel->SetSizer(gPanelSizer);
 
         mHSizer->Add(
             lampPanel,
             1,
             wxEXPAND);
 
-        // TODOTEST
-        //mHSizer->Hide(lampPanel);
-
         mSpecializedPanels[SpecializedPanelKind::Lamp] = lampPanel;
+    }
+
+    // Engine panel
+    {
+        wxPanel * enginePanel = new wxPanel(mMainPanel);
+        wxGridSizer * gPanelSizer = new wxGridSizer(2);
+
+        // Heat generated
+        {
+            mEngineHeatGeneratedSlider = MakeHeatGeneratedSliderControl(enginePanel);
+
+            gPanelSizer->Add(mEngineHeatGeneratedSlider, 0, wxEXPAND);
+        }
+
+        // Engine power
+        {
+            mEnginePowerSlider = new SliderControl<float>(
+                enginePanel,
+                SliderControl<float>::DirectionType::Vertical,
+                SliderWidth,
+                -1,
+                _("Engine Power (HP)"),
+                wxEmptyString,
+                [this](float value)
+                {
+                    assert(mOverridesUnderEdit.has_value());
+                    mOverridesUnderEdit->EnginePower = value;
+                },
+                nullptr);
+
+            gPanelSizer->Add(mEnginePowerSlider, 0, wxEXPAND);
+        }
+
+        // Finalize panel
+
+        enginePanel->SetSizer(gPanelSizer);
+
+        mHSizer->Add(
+            enginePanel,
+            1,
+            wxEXPAND);
+
+        mSpecializedPanels[SpecializedPanelKind::Engine] = enginePanel;
+    }
+
+    // Water pump
+    {
+        wxPanel * waterPumpPanel = new wxPanel(mMainPanel);
+        wxGridSizer * gPanelSizer = new wxGridSizer(2);
+
+        // Heat generated
+        {
+            mWaterPumpHeatGeneratedSlider = MakeHeatGeneratedSliderControl(waterPumpPanel);
+
+            gPanelSizer->Add(mWaterPumpHeatGeneratedSlider, 0, wxEXPAND);
+        }
+
+        // Nominal force
+        {
+            mWaterPumpNominalForceSlider = new SliderControl<float>(
+                waterPumpPanel,
+                SliderControl<float>::DirectionType::Vertical,
+                SliderWidth,
+                -1,
+                _("Pump Power"),
+                wxEmptyString,
+                [this](float value)
+                {
+                    assert(mOverridesUnderEdit.has_value());
+                    mOverridesUnderEdit->WaterPumpNominalForce = value;
+                },
+                nullptr);
+
+            gPanelSizer->Add(mWaterPumpNominalForceSlider, 0, wxEXPAND);
+        }
+
+        // Finalize panel
+
+        waterPumpPanel->SetSizer(gPanelSizer);
+
+        mHSizer->Add(
+            waterPumpPanel,
+            1,
+            wxEXPAND);
+
+        mSpecializedPanels[SpecializedPanelKind::WaterPump] = waterPumpPanel;
+    }
+
+    // Timer switch
+    {
+        wxPanel * timerSwitchPanel = new wxPanel(mMainPanel);
+        wxGridSizer * gPanelSizer = new wxGridSizer(1);
+
+        // Duration
+        {
+            mTimerDurationSecondsSlider = new SliderControl<float>(
+                timerSwitchPanel,
+                SliderControl<float>::DirectionType::Vertical,
+                SliderWidth,
+                -1,
+                _("Delay (s)"),
+                wxEmptyString,
+                [this](float value)
+                {
+                    assert(mOverridesUnderEdit.has_value());
+                    mOverridesUnderEdit->TimerDurationSeconds = value;
+                },
+                std::make_unique<LinearSliderCore>(
+                    0.1f,
+                    20.0f));
+
+            gPanelSizer->Add(mTimerDurationSecondsSlider, 0, wxEXPAND);
+        }
+
+        // Finalize panel
+
+        timerSwitchPanel->SetSizer(gPanelSizer);
+
+        mHSizer->Add(
+            timerSwitchPanel,
+            1,
+            wxEXPAND);
+
+        mSpecializedPanels[SpecializedPanelKind::TimerSwitch] = timerSwitchPanel;
     }
 
     dialogVSizer->Add(
@@ -174,7 +284,19 @@ std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDi
     {
         case ElectricalMaterial::ElectricalElementType::Engine:
         {
-            // TODO
+            mEngineHeatGeneratedSlider->SetValueAndLimits(
+                mOverridesUnderEdit->HeatGenerated,
+                std::move(heatGeneratedSliderCore));
+
+            mEnginePowerSlider->SetValueAndLimits(
+                mOverridesUnderEdit->EnginePower,
+                std::make_unique<ExponentialSliderCore>(
+                    baseOverrideValues.EnginePower * 0.1f,
+                    baseOverrideValues.EnginePower,
+                    baseOverrideValues.EnginePower * 10.0f));
+
+            mHSizer->Show(mSpecializedPanels[SpecializedPanelKind::Engine]);
+
             break;
         }
 
@@ -205,13 +327,28 @@ std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDi
 
         case ElectricalMaterial::ElectricalElementType::TimerSwitch:
         {
-            // TODO
+            mTimerDurationSecondsSlider->SetValue(mOverridesUnderEdit->TimerDurationSeconds);
+
+            mHSizer->Show(mSpecializedPanels[SpecializedPanelKind::TimerSwitch]);
+
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::WaterPump:
         {
-            // TODO
+            mWaterPumpHeatGeneratedSlider->SetValueAndLimits(
+                mOverridesUnderEdit->HeatGenerated,
+                std::move(heatGeneratedSliderCore));
+
+            mWaterPumpNominalForceSlider->SetValueAndLimits(
+                mOverridesUnderEdit->WaterPumpNominalForce,
+                std::make_unique<ExponentialSliderCore>(
+                    baseOverrideValues.WaterPumpNominalForce * 0.1f,
+                    baseOverrideValues.WaterPumpNominalForce,
+                    baseOverrideValues.WaterPumpNominalForce * 10.0f));
+
+            mHSizer->Show(mSpecializedPanels[SpecializedPanelKind::WaterPump]);
+
             break;
         }
 

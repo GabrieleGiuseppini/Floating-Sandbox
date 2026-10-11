@@ -531,14 +531,11 @@
 						+ Advanced:
 							+ 5
 
-				- Electrical:
-					- Test 1:
-						- HSizer: left panel fixed with heat; right panel wisseling
-						- Formalize where panels start in HSizer
-
-					- N panels, one per-type; selects right one at Run()
-					- TODO
-
+				= Electrical:
+					+ N panels, one per-type; selects right one at Run()
+					- FIX:
+						- WaterPumpNominalForce may be negative
+						- Only electrical elements of certain types (the overridable ones) should have a button at all
 					- See if mSpecializedPanels still needed
 
 

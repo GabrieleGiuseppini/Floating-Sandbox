@@ -66,6 +66,17 @@ private:
     SliderControl<float> * mLampHeatGeneratedSlider;
     SliderControl<float> * mLuminiscenceSlider;
     SliderControl<float> * mLightSpreadSlider;
+
+    // Engine
+    SliderControl<float> * mEngineHeatGeneratedSlider;
+    SliderControl<float> * mEnginePowerSlider;
+
+    // WaterPump
+    SliderControl<float> * mWaterPumpHeatGeneratedSlider;
+    SliderControl<float> * mWaterPumpNominalForceSlider;
+
+    // TimerSwitch
+    SliderControl<float> * mTimerDurationSecondsSlider;
 };
 
 }
