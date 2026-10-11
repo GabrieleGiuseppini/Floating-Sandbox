@@ -138,11 +138,15 @@ private:
         }
     };
 
-    void LayoutAndRender(LayoutSession const & layoutSession);
+    void LayoutAndRender(
+        LayoutSession const & layoutSession,
+        bool doRenderSeparators);
 
     std::unique_ptr<wxMemoryDC> MakeDc();
 
-    void RenderPanel(wxRect const & region);
+    void RenderPanel(
+        LayoutSession const & layoutSession,
+        bool doRenderSeparators);
 
     struct Cell;
     void RenderCell(Cell const & cell);

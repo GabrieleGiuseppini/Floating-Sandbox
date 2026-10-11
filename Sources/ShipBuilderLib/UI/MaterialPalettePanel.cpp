@@ -326,7 +326,7 @@ void MaterialPalettePanel<TLayer>::EndDefaultMaterialsLayout()
     }
 
     // Layout
-    LayoutAndRender(layoutSession);
+    LayoutAndRender(layoutSession, true);
 }
 
 template<LayerType TLayer>
@@ -463,7 +463,9 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftUp(wxMouseEvent & event)
 }
 
 template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::LayoutAndRender(LayoutSession const & layoutSession)
+void MaterialPalettePanel<TLayer>::LayoutAndRender(
+    LayoutSession const & layoutSession,
+    bool doRenderSeparators)
 {
     //
     // Layout:
@@ -557,21 +559,13 @@ void MaterialPalettePanel<TLayer>::LayoutAndRender(LayoutSession const & layoutS
         }
     }
 
-    // Calculate total panel size
-    wxSize const panelSize(maxRowWidth, mRows.back().Rect.y + mRows.back().Rect.height);
-
-    // Set panel size
-    // TODOHERE: enlarge tricks
-    SetSize(panelSize);
-    SetMinSize(panelSize);
-
     // Finalize separators' layouts
     for (auto & row : mRows)
     {
         if (row.Kind == Row::KindType::Separator)
         {
             // For separators, the rect is the actual separator rectangle
-            row.Rect.width = panelSize.GetWidth() - 2 * InternalWindowMargin;
+            row.Rect.width = maxRowWidth - 2 * InternalWindowMargin;
         }
     }
 
@@ -579,14 +573,30 @@ void MaterialPalettePanel<TLayer>::LayoutAndRender(LayoutSession const & layoutS
     // Create buffer
     //
 
+    // Calculate total panel size
+    wxSize const panelSize(maxRowWidth, mRows.back().Rect.y + mRows.back().Rect.height);
+
+    // TODOHERE: enlarge tricks
+
+    // Set panel size
+    SetSize(panelSize);
+    SetMinSize(panelSize);
+
     assert(!mRenderBuffer);
     mRenderBuffer = std::make_unique<wxBitmap>(panelSize);
+    // TODOTEST
+    {
+        auto dc = MakeDc();
+        dc->SetPen(*wxTRANSPARENT_PEN);
+        dc->SetBrush(SharedUIResources::GetInstance().GetWhiteSolidBackgroundBrush());
+        dc->DrawRectangle(wxRect(0, 0, panelSize.GetWidth(), panelSize.GetHeight()));
+    }
 
     //
     // Render panel
     //
 
-    RenderPanel(panelSize);
+    RenderPanel(layoutSession, doRenderSeparators);
 }
 
 template<LayerType TLayer>
@@ -596,61 +606,88 @@ std::unique_ptr<wxMemoryDC> MaterialPalettePanel<TLayer>::MakeDc()
 }
 
 template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::RenderPanel(wxRect const & region)
+void MaterialPalettePanel<TLayer>::RenderPanel(
+    LayoutSession const & layoutSession,
+    bool doRenderSeparators)
 {
     // Create DC for rendering into buffer
     auto dc_ptr = MakeDc();
     auto & dc = *dc_ptr;
 
-    // Clear
-    dc.SetPen(*wxTRANSPARENT_PEN);
-    dc.SetBrush(SharedUIResources::GetInstance().GetWhiteSolidBackgroundBrush());
-    dc.DrawRectangle(region);
-
     // Setup
     dc.SetTextForeground(mTextForegroundColor);
 
-    // Visit all rows intersecting region
-    for (Row const & row : mRows)
+    // Visit all rows
+    for (size_t iRow = 0; iRow < mRows.size(); ++iRow)
     {
-        if (region.Intersects(row.Rect))
+        Row const & row = mRows[iRow];
+
+        if (layoutSession.DirtyBoundaries.count(iRow) == 1)
+        {
+            assert(row.Kind == Row::KindType::SubCategory);
+
+            //
+            // Need to render (part of) this row
+            //
+
+            auto [startStrideIndex, startCellIndex] = layoutSession.DirtyBoundaries.at(iRow);
+
+            //
+            // Clear
+            //
+
+            Cell const & startCell = row.Strides[startStrideIndex].Cells[startCellIndex];
+
+            wxRect const clearRect(
+                startCell.Rect.x,
+                row.Rect.y,
+                row.Rect.width - startCell.Rect.x,
+                row.Rect.height);
+
+            dc.SetPen(*wxTRANSPARENT_PEN);
+            dc.SetBrush(SharedUIResources::GetInstance().GetWhiteSolidBackgroundBrush());
+            dc.DrawRectangle(clearRect);
+
+            //
+            // Render cells
+            //
+
+            for (size_t iStride = startStrideIndex; iStride < row.Strides.size(); ++iStride)
+            {
+                MaterialStride const & stride = row.Strides[iStride];
+
+                for (size_t iCell = startCellIndex; iCell < stride.Cells.size(); ++iCell)
+                {
+                    RenderCell(stride.Cells[iCell], dc);
+                }
+
+                startCellIndex = 0;
+            }
+        }
+        else if (row.Kind == Row::KindType::Separator && doRenderSeparators)
         {
             //
-            // Draw row
+            // Clear
             //
 
-            switch (row.Kind)
-            {
-                case Row::KindType::SubCategory:
-                {
-                    for (MaterialStride const & stride : row.Strides)
-                    {
-                        for (Cell const & cell : stride.Cells)
-                        {
-                            RenderCell(cell, dc);
-                        }
-                    }
+            dc.SetPen(*wxTRANSPARENT_PEN);
+            dc.SetBrush(SharedUIResources::GetInstance().GetWhiteSolidBackgroundBrush());
+            dc.DrawRectangle(row.Rect);
 
-                    break;
-                }
+            //
+            // Render separator
+            //
 
-                case Row::KindType::Separator:
-                {
-                    int const centerY = row.Rect.y + row.Rect.height / 2;
+            int const centerY = row.Rect.y + row.Rect.height / 2;
 
-                    wxRect const separatorRect = wxRect(
-                        row.Rect.x,
-                        centerY - SeparatorRowHeight / 2,
-                        row.Rect.width,
-                        SeparatorThickness);
+            wxRect const separatorRect = wxRect(
+                row.Rect.x,
+                centerY - SeparatorRowHeight / 2,
+                row.Rect.width,
+                SeparatorThickness);
 
-                    dc.SetPen(*wxTRANSPARENT_PEN);
-                    dc.SetBrush(SharedUIResources::GetInstance().GetSeparatorBrush());
-                    dc.DrawRectangle(separatorRect);
-
-                    break;
-                }
-            }
+            dc.SetBrush(SharedUIResources::GetInstance().GetSeparatorBrush());
+            dc.DrawRectangle(separatorRect);
         }
     }
 }
