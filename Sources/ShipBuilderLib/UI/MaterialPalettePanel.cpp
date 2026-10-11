@@ -315,90 +315,18 @@ void MaterialPalettePanel<TLayer>::AddSeparatorRow()
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::EndDefaultMaterialsLayout()
 {
-    assert(!mRows.empty());
-
-    //
-    // Layout:
-    //  - Calculate cells' x's
-    //  - Calculate max width
-    //  - Set row widths
-    //
-
-    int maxRowWidth = 0;
-
+    // Make a whole-dirty session
+    LayoutSession layoutSession;
     for (size_t iRow = 0; iRow < mRows.size(); ++iRow)
     {
-        Row & row = mRows[iRow];
-
-        if (row.Kind == Row::KindType::SubCategory)
+        if (mRows[iRow].Kind == Row::KindType::SubCategory)
         {
-            // Layout cells
-
-            int currentX = InternalWindowMargin;
-
-            for (size_t iStride = 0; iStride < row.Strides.size(); ++iStride)
-            {
-                MaterialStride & stride = row.Strides[iStride];
-
-                if (iStride > 0)
-                {
-                    currentX += StrideHSpacing;
-                }
-
-                for (size_t iCell = 0; iCell < stride.Cells.size(); ++iCell)
-                {
-                    Cell & cell = stride.Cells[iCell];
-
-                    if (iCell > 0)
-                    {
-                        currentX += CellHSpacing;
-                    }
-
-                    cell.Rect.x = currentX;
-
-                    currentX += cell.Rect.width;
-                }
-            }
-
-            currentX += InternalWindowMargin;
-
-            // Set row width
-            row.Rect.width = currentX;
-
-            // Maintain max row width
-            maxRowWidth = std::max(maxRowWidth, currentX);
+            layoutSession.RecordDirtyBorder(iRow, 0, 0);
         }
     }
 
-    // Calculate total panel size
-    wxSize const panelSize(maxRowWidth, mRows.back().Rect.y + mRows.back().Rect.height);
-
-    // Set panel size
-    SetSize(panelSize);
-    SetMinSize(panelSize);
-
-    // Finalize separators' layouts
-    for (auto & row : mRows)
-    {
-        if (row.Kind == Row::KindType::Separator)
-        {
-            // For separators, the rect is the actual separator rectangle
-            row.Rect.width = panelSize.GetWidth() - 2 * InternalWindowMargin;
-        }
-    }
-
-    //
-    // Create buffer
-    //
-
-    assert(!mRenderBuffer);
-    mRenderBuffer = std::make_unique<wxBitmap>(panelSize);
-
-    //
-    // Render panel
-    //
-
-    RenderPanel(panelSize);
+    // Layout
+    LayoutAndRender(layoutSession);
 }
 
 template<LayerType TLayer>
@@ -532,6 +460,133 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftUp(wxMouseEvent & event)
 {
     // TODOHERE: button feedback if any, otherwise nuke
     (void)event;
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::LayoutAndRender(LayoutSession const & layoutSession)
+{
+    //
+    // Layout:
+    //  - Calculate cells' x's
+    //  - Calculate max width
+    //  - Set row widths
+    //
+
+    int maxRowWidth = 0;
+
+    for (size_t iRow = 0; iRow < mRows.size(); ++iRow)
+    {
+        Row & row = mRows[iRow];
+
+        if (layoutSession.DirtyBoundaries.count(iRow) == 1)
+        {
+            //
+            // Need to layout (part of) this row
+            //
+
+            assert(row.Kind == Row::KindType::SubCategory);
+
+            auto [startStrideIndex, startCellIndex] = layoutSession.DirtyBoundaries.at(iRow);
+
+            // Figure out where to start: points to end of previous cell
+            int currentX;
+            if (startCellIndex > 0)
+            {
+                auto const & prevCell = row.Strides[startStrideIndex].Cells[startCellIndex - 1];
+                currentX = prevCell.Rect.x + prevCell.Rect.width;
+            }
+            else
+            {
+                // Cell is first of a stride
+                if (startStrideIndex == 0)
+                {
+                    currentX = InternalWindowMargin;
+                }
+                else
+                {
+                    auto const & prevCell = row.Strides[startStrideIndex - 1].Cells.back();
+                    currentX = prevCell.Rect.x + prevCell.Rect.width;
+                }
+            }
+
+            for (size_t iStride = startStrideIndex; iStride < row.Strides.size(); ++iStride)
+            {
+                MaterialStride & stride = row.Strides[iStride];
+
+                if (iStride > 0 && startCellIndex == 0)
+                {
+                    currentX += StrideHSpacing;
+                }
+
+                for (size_t iCell = startCellIndex; iCell < stride.Cells.size(); ++iCell)
+                {
+                    Cell & cell = stride.Cells[iCell];
+
+                    if (iCell > 0)
+                    {
+                        currentX += CellHSpacing;
+                    }
+
+                    cell.Rect.x = currentX;
+
+                    currentX += cell.Rect.width;
+                }
+
+                startCellIndex = 0;
+            }
+
+            currentX += InternalWindowMargin;
+
+            // Set row width
+            row.Rect.width = currentX;
+
+            // Maintain max row width
+            maxRowWidth = std::max(maxRowWidth, currentX);
+        }
+        else
+        {
+            //
+            // Row stays, takes its width
+            //
+
+            if (row.Kind == Row::KindType::SubCategory)
+            {
+                // Maintain max row width
+                maxRowWidth = std::max(maxRowWidth, row.Rect.width);
+            }
+        }
+    }
+
+    // Calculate total panel size
+    wxSize const panelSize(maxRowWidth, mRows.back().Rect.y + mRows.back().Rect.height);
+
+    // Set panel size
+    // TODOHERE: enlarge tricks
+    SetSize(panelSize);
+    SetMinSize(panelSize);
+
+    // Finalize separators' layouts
+    for (auto & row : mRows)
+    {
+        if (row.Kind == Row::KindType::Separator)
+        {
+            // For separators, the rect is the actual separator rectangle
+            row.Rect.width = panelSize.GetWidth() - 2 * InternalWindowMargin;
+        }
+    }
+
+    //
+    // Create buffer
+    //
+
+    assert(!mRenderBuffer);
+    mRenderBuffer = std::make_unique<wxBitmap>(panelSize);
+
+    //
+    // Render panel
+    //
+
+    RenderPanel(panelSize);
 }
 
 template<LayerType TLayer>

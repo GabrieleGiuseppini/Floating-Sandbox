@@ -425,9 +425,10 @@
 					+ Is map<rowIndex, <leftmost strideIndex, leftmost cellIndex>>
 						+ Use tuple, has less-than
 					+ Comment: kind=Strides only
+					+ Make it a struct with helper for recording
 
-				- Extract layout to helper on LayoutSession
-					- Call from EndDefaultMaterialsLayout() with full LayoutSession
+				+ Extract layout to helper on LayoutSession
+					+ Call from EndDefaultMaterialsLayout() with full LayoutSession
 
 				- UpdateCustomMaterial(TMaterial *, User|Ship)
 					- Update material sample in ImageList (wxImageList::Replace)

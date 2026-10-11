@@ -19,6 +19,7 @@
 #include <wx/dcmemory.h>
 #include <wx/imaglist.h>
 
+#include <any>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -112,10 +113,34 @@ private:
     void OnMouseLeftDown(wxMouseEvent & event);
     void OnMouseLeftUp(wxMouseEvent & event);
 
-    std::unique_ptr<wxMemoryDC> MakeDc();
+    struct LayoutSession
+    {
+        // Row index (Subcategory only) => <Leftmost Stride Index, Leftmost Cell Index in that stride>
+        std::map<size_t, std::tuple<size_t, size_t>> DirtyBoundaries;
 
-    // Row index (Subcategory only) => <Leftmost Stride Index, Leftmost Cell Index in that stride>
-    using LayoutSession = std::map<size_t, std::tuple<size_t, size_t>>;
+        void RecordDirtyBorder(
+            size_t rowIndex,
+            size_t strideIndex,
+            size_t cellIndex)
+        {
+            auto [it, isInserted] = DirtyBoundaries.try_emplace(rowIndex, std::make_tuple(strideIndex, cellIndex));
+            if (!isInserted)
+            {
+                if (std::get<0>(it->second) > strideIndex)
+                {
+                    it->second = std::make_tuple(strideIndex, cellIndex);
+                }
+                else if (std::get<0>(it->second) == strideIndex)
+                {
+                    std::get<1>(it->second) = std::min(std::get<1>(it->second), cellIndex);
+                }
+            }
+        }
+    };
+
+    void LayoutAndRender(LayoutSession const & layoutSession);
+
+    std::unique_ptr<wxMemoryDC> MakeDc();
 
     void RenderPanel(wxRect const & region);
 

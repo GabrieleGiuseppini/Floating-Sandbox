@@ -459,6 +459,7 @@ template<LayerType TLayer>
 void MaterialPaletteBrowser<TLayer>::AddUserCustomMaterials(std::vector<TMaterial const *> const & customMaterials)
 {
     // TODO: start orchestration; call into palette for each; close orchestration
+    (void)customMaterials;
 }
 
 template<LayerType TLayer>
