@@ -456,6 +456,12 @@ std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverrid
 }
 
 template<LayerType TLayer>
+void MaterialPaletteBrowser<TLayer>::AddUserCustomMaterials(std::vector<TMaterial const *> const & customMaterials)
+{
+    // TODO: start orchestration; call into palette for each; close orchestration
+}
+
+template<LayerType TLayer>
 MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPanel(
     wxWindow * parent,
     typename DefaultMaterialDatabase::Palette<TMaterial>::Category const & defaultMaterialCategory,

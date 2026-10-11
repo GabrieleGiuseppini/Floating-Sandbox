@@ -79,6 +79,12 @@ public:
     std::optional<typename TMaterial::VariantOverridesType> RunNewCustomMaterial(typename TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial);
     std::optional<typename TMaterial::VariantOverridesType> RunEditCustomMaterial(typename TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial);
 
+    //
+    // Operations
+    //
+
+    void AddUserCustomMaterials(std::vector<TMaterial const *> const & customMaterials);
+
 private:
 
     MaterialPalettePanel<TLayer> * CreateCategoryPanel(

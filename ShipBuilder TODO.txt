@@ -173,14 +173,14 @@
 
 	====
 
-	- Worflows:
-		- Adding new custom material
-			- User clicks on "+" button
-			- When committed:
-				- Add to user's
-					- Save DB
+	= Worflows:
+		= Adding new custom material
+			+ User clicks on "+" button
+			= When committed:
+				+ Add to user's
+					+ Save DB
 				- Update palette
-				- Populate Undo with material
+				- Populate Undo with material (?)
 		- Editing existing user custom material
 			- User clicks on "edit" button
 			- When committed:
@@ -418,7 +418,7 @@
 						+ Assign cell coords
 						+ Render cells onto buffer
 
-				- Extract layout in helper on LayoutSession
+				- Extract layout to helper on LayoutSession
 					- Call from EndDefaultMaterialsLayout() with full LayoutSession
 
 				- UpdateCustomMaterial(TMaterial *, User|Ship)
@@ -432,12 +432,11 @@
 						- Op does op on cell
 						- Then calcs LayoutSession
 						- Ops (all take lookup args as args)
-							- RemoveAll[User|Ship]
-							- Add user/ship custom [vector]
+							- Add user/ship custom (one)
 								- Add material sample to ImageList
 								- Add to stride, at end
 									- Update LayoutSession accordingly
-							- Remove user/ship custom
+							- Remove user/ship custom (one)
 								- Nuke material sample from ImageList (wxImageList::Remove)
 									- Update all image list indices
 								- Remove from stride
@@ -466,14 +465,19 @@
 		= MaterialPaletteBrowser<TLayer> : IMaterialPalette
 			! Owns only its own tiles
 			+ Replace selected events with calls into IMaterialPaletteController
-			- cctor:
-				- Palette<TLayer> const & from DefaultMaterialDatabase
-				- vec<uq> from user // TODO: or later, added
-				- vec<uq> from ship - if needed @ cctor // TODO: or later, added
+			+ cctor:
+				+ Palette<TLayer> const & from DefaultMaterialDatabase
 				+ IMaterialPalettesController &
 
 			+ Initial layout:
 				+ Kinda as now, using InitialLayout APIs
+
+			- Ops (all forwarded to panel, with layout guards):
+				! Browser provides larger ops, as it's browser who orchestrates layout
+				- Add user custom [vector]
+				- Update user/ship custom [one]
+				- Replace all ship custom [vector]
+				- TODO: others
 
 			- Make it dockable
 				- When docked:

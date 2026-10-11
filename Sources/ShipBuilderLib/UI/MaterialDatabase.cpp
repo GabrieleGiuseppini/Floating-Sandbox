@@ -28,8 +28,22 @@ MaterialDatabase<TLayer>::MaterialDatabase(MaterialColorMap<TMaterial> const & d
 }
 
 template<LayerType TLayer>
+typename MaterialDatabase<TLayer>::TMaterial const * MaterialDatabase<TLayer>::AddUserCustomMaterial(std::unique_ptr<TMaterial> && customMaterial)
+{
+    mUserCustomMaterials.emplace_back(std::move(customMaterial));
+
+    SaveDefaultUserDatabase();
+
+    return mUserCustomMaterials.back().get();
+}
+
+//////////////////////////////////////////////////
+
+template<LayerType TLayer>
 typename MaterialDatabase<TLayer>::Pod MaterialDatabase<TLayer>::LoadDefaultUserDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap)
 {
+    // TODO: backup mechanism
+
     return LoadUserDatabase(GetDefaultUserDatabaseFilePath(), defaultMaterialColorMap);
 }
 
@@ -45,6 +59,8 @@ void MaterialDatabase<TLayer>::SaveDefaultUserDatabase() const
         {
             return uq_ptr.get();
         });
+
+    // TODO: backup mechanism
 
     SaveUserMaterials(
         materials,

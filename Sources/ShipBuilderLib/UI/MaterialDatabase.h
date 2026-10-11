@@ -23,6 +23,8 @@ public:
 
 	MaterialDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap);
 
+	TMaterial const * AddUserCustomMaterial(std::unique_ptr<TMaterial> && customMaterial);
+
 private:
 
 	using Pod = typename std::vector<std::unique_ptr<typename TMaterial>>;
