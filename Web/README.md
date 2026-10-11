@@ -58,3 +58,9 @@ No special headers are needed because the build is single-threaded.
 - Scalar math only; the SSE paths are not enabled for WebAssembly SIMD.
 - All 80 MB of game data is downloaded before start-up; it needs lazy loading.
 - The final link uses `-O0` for the JavaScript glue because Emscripten's npm-based optimizer was not available when this was built.
+
+## Menus, tools, ships and sound
+
+The page has a menu bar (File, Tools, Controls, View, Sound, Help). Tools work with the mouse like the desktop game: left button uses the current tool, right or middle drag pans, the wheel zooms, Shift modifies tools.
+
+The build step generates `ships.json` plus a `Ships/` folder from the game's `Ships` directory (File > Load Ship...), and converts `Data/Sounds` and `Data/Music` to small Opus files with `sounds.json` (needs `ffmpeg` on the build machine). Sounds and music are fetched on demand, not bundled in `index.data`. Audio starts after the first click or key press, as browsers require.

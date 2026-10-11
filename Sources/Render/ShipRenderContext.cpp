@@ -1373,12 +1373,12 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
 
     if (!mDebrisVertexBuffer.empty())
     {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mDebrisVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mDebrisVBO);
 
         if (mDebrisVertexBuffer.size() > mDebrisVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, mDebrisVertexBuffer.size() * sizeof(DebrisVertex), mDebrisVertexBuffer.data(), GL_STREAM_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mDebrisVertexBuffer.size() * sizeof(DebrisVertex), mDebrisVertexBuffer.data(), GL_STREAM_DRAW);
             CheckOpenGLError();
 
             mDebrisVBOAllocatedVertexSize = mDebrisVertexBuffer.size();
@@ -1386,11 +1386,11 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
         else
         {
             // No size change, just upload VBO buffer
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mDebrisVertexBuffer.size() * sizeof(DebrisVertex), mDebrisVertexBuffer.data());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mDebrisVertexBuffer.size() * sizeof(DebrisVertex), mDebrisVertexBuffer.data());
             CheckOpenGLError();
         }
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     //

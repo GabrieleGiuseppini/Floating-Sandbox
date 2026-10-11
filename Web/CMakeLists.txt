@@ -82,3 +82,16 @@ target_link_options(FloatingSandboxWebApp PRIVATE
     "SHELL:--exclude-file \"*/Languages/*\""
     "SHELL:--exclude-file \"*/Help/*\""
     "SHELL:--exclude-file \"*/Themes/*\"")
+
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_FOUND AND EXISTS ${FS_DATA_ROOT}/../Ships)
+    add_custom_command(TARGET FloatingSandboxWebApp POST_BUILD
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/make_ship_manifest.py ${FS_DATA_ROOT}/../Ships $<TARGET_FILE_DIR:FloatingSandboxWebApp>
+        COMMENT "Generating ship manifest")
+endif()
+
+if(Python3_FOUND AND EXISTS ${FS_DATA_ROOT}/Sounds AND EXISTS ${FS_DATA_ROOT}/Music)
+    add_custom_command(TARGET FloatingSandboxWebApp POST_BUILD
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/make_sound_manifest.py ${FS_DATA_ROOT}/Sounds ${FS_DATA_ROOT}/Music $<TARGET_FILE_DIR:FloatingSandboxWebApp>
+        COMMENT "Converting sounds and music")
+endif()
