@@ -34,6 +34,8 @@ private:
 
     std::optional<ElectricalMaterial::VariantOverridesType> Run(ElectricalMaterial::VariantOverridesType & overrides, ElectricalMaterial const * baseMaterial) override;
 
+    SliderControl<float> * MakeHeatGeneratedSliderControl(wxPanel * parent);
+
 private:
 
     //

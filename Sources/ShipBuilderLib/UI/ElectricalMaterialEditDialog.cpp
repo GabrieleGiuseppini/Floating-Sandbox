@@ -45,19 +45,7 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
 
         // Heat generated
         {
-            mOthersHeatGeneratedSlider = new SliderControl<float>(
-                othersPanel,
-                SliderControl<float>::DirectionType::Vertical,
-                SliderWidth,
-                -1,
-                _("Heat Generated (KJ/s)"),
-                wxEmptyString,
-                [this](float value)
-                {
-                    assert(mOverridesUnderEdit.has_value());
-                    mOverridesUnderEdit->HeatGenerated = value;
-                },
-                nullptr);
+            mOthersHeatGeneratedSlider = MakeHeatGeneratedSliderControl(othersPanel);
 
             hPanelSizer->Add(mOthersHeatGeneratedSlider, 0, wxEXPAND);
         }
@@ -83,22 +71,9 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
 
         hPanelSizer->AddStretchSpacer();
 
-        // TODO: in helper func
         // Heat generated
         {
-            mLampHeatGeneratedSlider = new SliderControl<float>(
-                lampPanel,
-                SliderControl<float>::DirectionType::Vertical,
-                SliderWidth,
-                -1,
-                _("Heat Generated (KJ/s)"),
-                wxEmptyString,
-                [this](float value)
-                {
-                    assert(mOverridesUnderEdit.has_value());
-                    mOverridesUnderEdit->HeatGenerated = value;
-                },
-                nullptr);
+            mLampHeatGeneratedSlider = MakeHeatGeneratedSliderControl(lampPanel);
 
             hPanelSizer->Add(mLampHeatGeneratedSlider, 0, wxEXPAND);
         }
@@ -263,6 +238,23 @@ std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDi
     //
 
     return BaseRun();
+}
+
+SliderControl<float> * ElectricalMaterialEditDialog::MakeHeatGeneratedSliderControl(wxPanel * parent)
+{
+    return new SliderControl<float>(
+        parent,
+        SliderControl<float>::DirectionType::Vertical,
+        SliderWidth,
+        -1,
+        _("Heat Generated (KJ/s)"),
+        wxEmptyString,
+        [this](float value)
+        {
+            assert(mOverridesUnderEdit.has_value());
+            mOverridesUnderEdit->HeatGenerated = value;
+        },
+        nullptr);
 }
 
 }
