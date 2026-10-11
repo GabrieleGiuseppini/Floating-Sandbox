@@ -28,6 +28,45 @@ SessionId SessionId::New()
     return SessionId((++currentValue));
 }
 
+std::string LayerTypeToStr_snake(LayerType layerType)
+{
+    switch (layerType)
+    {
+        case LayerType::Electrical:
+        {
+            static std::string name = "electrical";
+            return name;
+        }
+
+        case LayerType::ExteriorTexture:
+        {
+            static std::string name = "exterior_texture";
+            return name;
+        }
+
+        case LayerType::InteriorTexture:
+        {
+            static std::string name = "interior_texture";
+            return name;
+        }
+
+        case LayerType::Ropes:
+        {
+            static std::string name = "ropes";
+            return name;
+        }
+
+        case LayerType::Structural:
+        {
+            static std::string name = "structural";
+            return name;
+        }
+    }
+
+    assert(false);
+    return std::string();
+}
+
 std::string NpcKindTypeToStr(NpcKindType npcKind)
 {
     switch (npcKind)

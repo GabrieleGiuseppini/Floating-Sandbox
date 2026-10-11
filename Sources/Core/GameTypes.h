@@ -1378,6 +1378,8 @@ enum class LayerType : std::uint32_t
     InteriorTexture = 4
 };
 
+std::string LayerTypeToStr_snake(LayerType layerType);
+
 /*
  * The different material layers.
  */

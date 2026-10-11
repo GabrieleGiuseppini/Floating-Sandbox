@@ -358,6 +358,8 @@
 
 			- See if after all VariantOverrides' less-than is needed
 
+			- Backup mechanism
+
 			- Unit tests
 
 		= IMaterialPaletteController<TLayer>: for UI to talk back to controller

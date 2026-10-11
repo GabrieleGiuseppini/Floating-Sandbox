@@ -28,8 +28,12 @@ private:
 	using Pod = typename std::vector<std::unique_ptr<typename TMaterial>>;
 
 	static Pod LoadDefaultUserDatabase();
+	void SaveDefaultUserDatabase() const;
 
 	static Pod LoadUserDatabase(std::filesystem::path const & databaseFilepath);
+	static void SaveUserMaterials(
+		std::vector<TMaterial const *> const & materials,
+		std::filesystem::path const & databaseFilepath);
 
 	static std::filesystem::path GetDefaultUserDatabaseFilePath();
 
