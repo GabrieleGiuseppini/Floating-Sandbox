@@ -129,30 +129,27 @@
 
 		! SB's material palette:
 			- At any given moment, the palette shows default + user's custom materials + ship's custom materials
-				- Custom's are guaranteed all to be distinct among themselves
-					- On dupe, folded into user's
 				- These three are also the life pod of all materials
-			- Only contains pointers, without owning them
-				- Come from MaterialDatabase (new SB class, aggregate of three - default, user, ship) (*)
+				- Only contains pointers, without owning them
+					- Come from MaterialDatabase (new SB class, aggregate of three - default, user, ship) (*)
 			- Layout:
-				- First off: scour user and ship custom materials and organize in map: <base ptr> -> [<custom 1 ptr>, ... in comparison order for determinism)
-				- After completing a palette "group", visit map above, user first and then ship
-
-				- Layout:
-					! Facts:
-						! Category: pages
-						! Group: groups of rows (e.g. Iron)
-						! Sub-categories: rows
-						! PaletteKey: Category, SubCategory, SubCategoryOrdinal
-					! All materials - including custom - get PaletteSubCategoryBaseMaterialOrdinal
+				! Facts:
+					! Category: pages
+					! Group: groups of rows (e.g. Iron)
+					! Sub-categories: rows
+					! PaletteKey: Category, SubCategory, SubCategoryOrdinal
+					! All materials - including custom - have PaletteSubCategoryBaseMaterialOrdinal
 			- Can add custom, remove custom, or edit custom materials
 				- Custom ones and control to add appear for each base material, last in the series
 					- Their palette coordinates - with the exclusion of ordinal - dictate where
 					- Ordinal is basically made up with logic here, laying out both custom sets
 				- Edit, Remove are small buttons on custom ones (which also helps distinguish them from "standard" materials)
 				- A custom material is cloned from the base material, and contains StructuralMaterial::VariantOverridesType overrides
-				- Removal: if material is in use, pops up dialog
+				- Removal: 
+					- Only user's
+					- If material is in use, pops up dialog
 				- If it's from ship only (i.e. not from custom set), there's button to import into user's (CustomMaterialPalette)
+					- Only distinct are imported; feedback to user with # of "imported ~new"
 					- No need to remove it from ship's afterwards, we can live with dupes among the two custom sets
 			- Ranges on customizable physical properties are very narrow and don't allow crazy values
 			- User custom materials:
@@ -160,8 +157,10 @@
 				- Backup mechanism to avoid loss, with clear involvement of user if has to fallback
 			- Modifications happen on user or ship custom materials
 				- Changes to materials (user's or ship's own) done by user in ShipBuilder must be undoable via Undo
-					- Undo action: whole structural layer
-						- Edit could have resulted in a merge among custom's, hence a change in material pointers
+					- Undo action: only material
+				- Deletes to materials (user's) done by user in ShipBuilder must be undoable via Undo
+					- Undo action: whole structural layer (iff modified)
+						- Deletion could have resulted in a removal of particles
 				- Changing a material currently in the ship (from user's or ship's own) should mark the ship as dirty
 					- Marks corresponding layer as dirty
 			- Can also merge another user custom material set into it, or import from ship
@@ -178,57 +177,69 @@
 
 	- Worflows:
 		- Adding new custom material
-			- User clicks on + button
+			- User clicks on "+" button
 			- When committed:
-				- TODOHERE: distinct checks, user vs ship, and ask user if want to go ahead
-
-				- Check if already exists among user's+ship's
-					- If so: message and nop
-					- Else:
-						- Add to user's
-						- Re-draw palette
+				- Add to user's
+					- Save DB
+				- Update palette
+				- Populate Undo with material
 		- Editing existing user custom material
-			- TODOHERE
-		- Editing existing ship custom material
-			- TODOHERE
-			- User clicks on edit button
+			- User clicks on "edit" button
 			- When committed:
-				- Check if already exists among custom's
-					- If so: 
-						- Message
-						- "merge"
-							- Via MaterialDatabase
-						- Re-draw palette
-					- Else:
-						- Edit properties in/via MaterialDatabase
-						- Re-draw palette
-				- If old was in-use by ship:
-					- Setup undo - store whole structural layer
-					- Mark ship as dirty
+				- Save DB
+				- Update palette
+				- Populate Undo with material
+		- Editing existing ship custom material
+			- User clicks on "edit" button
+			- When committed:
+				- Update palette
+				- Populate Undo with material
+				- Force ship re-analysis and re-visualization
+				- Mark ship as dirty
+					
 		- Deleting user custom materials
 			- User checks boxes, and then "Delete Selected"
-			- TODOHERE: check for in-use by ship; answer is none-in-use_or_at-least-one-in-use
-			- TODOHERE: Undo & Dirty
-		- Deleting ship custom materials
-			- TODOHERE
-
+			- Check for in-use by ship; answer is none-in-use_or_at-least-one-in-use
+			- If at-least-one-in-use:
+				- Ask user if remove from ship or not
+				- If abort => abort
+			- If at-least-one-in-use:
+				- Remove from ship
+				- Force ship re-analysis and re-visualization
+				- Mark ship as dirty
+				- Do Undo with material + ship
+			- Else:
+				- Do Undo with just material
+			- Remove from DB // Delayed, as to-be-deleted pointer must be addressable
+			- Update palette
 		- Loading ship
 			- With custom materials:
-				- Replace ship's custom materials in palette with remainders after merging ship's custom materials with user's custom
+				- Replace ship's custom materials in palette
 				- Re-draw palette
 			- Without custom materials:
 				- Nuke ship's custom materials in palette
 				- Re-draw palette
 		- Importing custom materials from ship into user's
+			- TODOHERE: checkboxes are also used for deleting
+				- Could fix by allowing ship's to be deleted; see how workflow would look like
 			- User checks boxes, and then "Import Selected"
-			- TODOHERE
-		- Importing custom materials from a json or from a ship
-			- User chooses from list
+			- Only distinct are imported; feedback to user with # of "imported ~new"
+					! No need to remove it from ship's afterwards, we can live with dupes among the two custom sets
+			- Add to DB
+				- Save DB
+			- Update palette
+			- Populate Undo with materials 
+		- Importing custom materials from a json or from a ship into user's
+			- User chooses from list, filtered by distincting with user's
+				- If none available, popup message
 			- When committed:
-				- TODOHERE
+				- Add to DB
+					- Save DB
+				- Update palette
+				- Populate Undo with materials 
 		- Export custom user and/or ship materials to ad-hoc json
 			- User checks boxes, and then "Export Selected"
-			- TODOHERE
+			- File SaveAs dialog => save
 			
 
 	- Arch:
