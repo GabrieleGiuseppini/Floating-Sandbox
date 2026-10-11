@@ -533,16 +533,19 @@
 
 				= Electrical:
 					+ N panels, one per-type; selects right one at Run()
-					- FIX:
-						+ WaterPumpNominalForce may be negative
-						- Only electrical elements of certain types (the overridable ones, or those that emit heat) should have a button at all
-							- Where do we concentrate that knowledge?
-								- ElectricalElementEditDialog static helper w/base material argument
-							- Add ThermalSwitch, overrides and all
-					- See if mSpecializedPanels still needed
+					+ Add ThermalSwitch, overrides and all
 
+					- FIX: Only electrical elements of certain types (the overridable ones, or those that emit heat) should have a button at all
+						- ElectricalElementEditDialog static private helper w/base material argument and returns PanelKind
+						- ElectricalElementEditDialog static public helper w/base material argument and uses private
+							- Use at layout when deciding to add CreateNewButton
+						- Run(): populate all values/limits, use private helper to show panel
 
-				- Normalize name
+					- Final cleanups
+
+				- Try: hover on button: different feedback
+
+				- Normalize name (@ Utils, with unit tests)
 				
 				+ MaterialPalettesController instantiates and owns two MaterialEditDialog instances (Structural and Electrical)
 

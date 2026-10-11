@@ -502,6 +502,7 @@ public:
         float EnginePower;
         float WaterPumpNominalForce;
         float TimerDurationSeconds;
+        float ThermalSwitchTransitionTemperature;
 
         VariantOverridesType(
             std::string const & name,
@@ -510,7 +511,8 @@ public:
             float lightSpread,
             float enginePower,
             float waterPumpNominalForce,
-            float timerDurationSeconds)
+            float timerDurationSeconds,
+            float thermalSwitchTransitionTemperature)
             : Name(name)
             , HeatGenerated(heatGenerated)
             , Luminiscence(luminiscence)
@@ -518,6 +520,7 @@ public:
             , EnginePower(enginePower)
             , WaterPumpNominalForce(waterPumpNominalForce)
             , TimerDurationSeconds(timerDurationSeconds)
+            , ThermalSwitchTransitionTemperature(thermalSwitchTransitionTemperature)
         {
         }
 
@@ -532,7 +535,8 @@ public:
                 && LightSpread == other.LightSpread
                 && EnginePower == other.EnginePower
                 && WaterPumpNominalForce == other.WaterPumpNominalForce
-                && TimerDurationSeconds == other.TimerDurationSeconds;
+                && TimerDurationSeconds == other.TimerDurationSeconds
+                && ThermalSwitchTransitionTemperature == other.ThermalSwitchTransitionTemperature;
         }
 
         bool operator<(VariantOverridesType const & other) const
@@ -544,14 +548,16 @@ public:
                 LightSpread,
                 EnginePower,
                 WaterPumpNominalForce,
-                TimerDurationSeconds) < std::tie(
+                TimerDurationSeconds,
+                ThermalSwitchTransitionTemperature) < std::tie(
                     other.Name,
                     other.HeatGenerated,
                     other.Luminiscence,
                     other.LightSpread,
                     other.EnginePower,
                     other.WaterPumpNominalForce,
-                    other.TimerDurationSeconds);
+                    other.TimerDurationSeconds,
+                    other.ThermalSwitchTransitionTemperature);
         }
 
         size_t CalculateHash() const
@@ -564,6 +570,7 @@ public:
             Utils::HashCombine(h, EnginePower);
             Utils::HashCombine(h, WaterPumpNominalForce);
             Utils::HashCombine(h, TimerDurationSeconds);
+            Utils::HashCombine(h, ThermalSwitchTransitionTemperature);
             return h;
         }
 

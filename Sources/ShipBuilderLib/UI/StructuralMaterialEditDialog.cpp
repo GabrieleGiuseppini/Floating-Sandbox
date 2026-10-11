@@ -74,16 +74,7 @@ void StructuralMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
 
         // Name
         {
-            mNameTextCtrl = new wxTextCtrl(panel, wxID_ANY, wxEmptyString, wxDefaultPosition,
-                wxSize(DialogWidth - 2 * MarginSize, -1), wxTE_CENTRE);
-
-            // No events: we'll take the name when user is done
-
-            auto font = panel->GetFont();
-            font.SetPointSize(font.GetPointSize() + 2);
-            mNameTextCtrl->SetFont(font);
-
-            mNameTextCtrl->SetMaxLength(64);
+            MakeNameTextCtrl(panel);
 
             panelVSizer->Add(
                 mNameTextCtrl,

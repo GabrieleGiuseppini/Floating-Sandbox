@@ -5,11 +5,10 @@
  ***************************************************************************************/
 #include "ElectricalMaterialEditDialog.h"
 
+#include <Simulation/SimulationParameters.h>
+
 #include <Core/ExponentialSliderCore.h>
 #include <Core/LinearSliderCore.h>
-
-// TODO
-#include <Core/Log.h>
 
 namespace ShipBuilder {
 
@@ -19,16 +18,7 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
 
     // Name
     {
-        mNameTextCtrl = new wxTextCtrl(mMainPanel, wxID_ANY, wxEmptyString, wxDefaultPosition,
-            wxSize(DialogWidth - 2 * MarginSize, -1), wxTE_CENTRE);
-
-        // No events: we'll take the name when user is done
-
-        auto font = mMainPanel->GetFont();
-        font.SetPointSize(font.GetPointSize() + 2);
-        mNameTextCtrl->SetFont(font);
-
-        mNameTextCtrl->SetMaxLength(64);
+        MakeNameTextCtrl(mMainPanel);
 
         dialogVSizer->Add(
             mNameTextCtrl,
@@ -252,6 +242,45 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
         mSpecializedPanels[SpecializedPanelKind::TimerSwitch] = timerSwitchPanel;
     }
 
+    // Thermal switch
+    {
+        wxPanel * thermalSwitchPanel = new wxPanel(mMainPanel);
+        wxGridSizer * gPanelSizer = new wxGridSizer(1);
+
+        // Transition temperature
+        {
+            mThermalSwitchTransitionTemperatureSlider = new SliderControl<float>(
+                thermalSwitchPanel,
+                SliderControl<float>::DirectionType::Vertical,
+                SliderWidth,
+                -1,
+                _("Temperature Threshold (K)"),
+                wxEmptyString,
+                [this](float value)
+                {
+                    assert(mOverridesUnderEdit.has_value());
+                    mOverridesUnderEdit->ThermalSwitchTransitionTemperature = value;
+                },
+                std::make_unique<ExponentialSliderCore>(
+                    0.1f,
+                    SimulationParameters::Temperature0,
+                    100000.0f));
+
+            gPanelSizer->Add(mThermalSwitchTransitionTemperatureSlider, 0, wxEXPAND);
+        }
+
+        // Finalize panel
+
+        thermalSwitchPanel->SetSizer(gPanelSizer);
+
+        mHSizer->Add(
+            thermalSwitchPanel,
+            1,
+            wxEXPAND);
+
+        mSpecializedPanels[SpecializedPanelKind::ThermalSwitch] = thermalSwitchPanel;
+    }
+
     dialogVSizer->Add(
         mHSizer,
         1,
@@ -331,6 +360,15 @@ std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDi
             break;
         }
 
+        case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
+        {
+            mThermalSwitchTransitionTemperatureSlider->SetValue(mOverridesUnderEdit->ThermalSwitchTransitionTemperature);
+
+            mHSizer->Show(mSpecializedPanels[SpecializedPanelKind::ThermalSwitch]);
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::TimerSwitch:
         {
             mTimerDurationSecondsSlider->SetValue(mOverridesUnderEdit->TimerDurationSeconds);
@@ -374,7 +412,6 @@ std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDi
 
     // TODO: which needed, if any?
     mHSizer->Layout();
-    mMainPanel->Layout();
 
     //
     // Run

@@ -114,6 +114,21 @@ std::optional<typename TMaterial::VariantOverridesType> BaseMaterialEditDialog<T
     }
 }
 
+template<typename TMaterial>
+void BaseMaterialEditDialog<TMaterial>::MakeNameTextCtrl(wxPanel * parent)
+{
+    mNameTextCtrl = new wxTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition,
+        wxSize(DialogWidth - 2 * MarginSize, -1), wxTE_CENTRE);
+
+    // No events: we'll take the name when user is done
+
+    auto font = parent->GetFont();
+    font.SetPointSize(font.GetPointSize() + 2);
+    mNameTextCtrl->SetFont(font);
+
+    mNameTextCtrl->SetMaxLength(64);
+}
+
 //
 // Explicit specializations for all materials
 //

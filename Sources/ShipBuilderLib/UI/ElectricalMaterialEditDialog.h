@@ -53,8 +53,9 @@ private:
         Engine = 2,
         WaterPump = 3,
         TimerSwitch = 4,
+        ThermalSwitch = 5,
 
-        _Last = TimerSwitch
+        _Last = ThermalSwitch
     };
 
     std::array<wxPanel *, SpecializedPanelKind::_Last + 1> mSpecializedPanels;
@@ -77,6 +78,9 @@ private:
 
     // TimerSwitch
     SliderControl<float> * mTimerDurationSecondsSlider;
+
+    // ThermalSwitch
+    SliderControl<float> * mThermalSwitchTransitionTemperatureSlider;
 
     //
     // State

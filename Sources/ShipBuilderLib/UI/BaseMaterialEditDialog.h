@@ -5,9 +5,9 @@
  ***************************************************************************************/
 #pragma once
 
-
 #include <wx/button.h>
 #include <wx/dialog.h>
+#include <wx/panel.h>
 #include <wx/sizer.h>
 #include <wx/textctrl.h>
 
@@ -45,6 +45,8 @@ protected:
     virtual std::optional<typename TMaterial::VariantOverridesType> Run(typename TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial) = 0;
 
     std::optional<typename TMaterial::VariantOverridesType> BaseRun();
+
+    void MakeNameTextCtrl(wxPanel * parent);
 
 protected:
 

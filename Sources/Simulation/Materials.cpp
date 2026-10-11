@@ -371,6 +371,7 @@ picojson::value ElectricalMaterial::VariantOverridesType::Serialize() const
     root.emplace("engine_power", picojson::value(static_cast<double>(EnginePower)));
     root.emplace("water_pump_nominal_force", picojson::value(static_cast<double>(WaterPumpNominalForce)));
     root.emplace("timer_duration_seconds", picojson::value(static_cast<double>(TimerDurationSeconds)));
+    root.emplace("thermal_switch_transition_temperature", picojson::value(static_cast<double>(ThermalSwitchTransitionTemperature)));
 
     return picojson::value(root);
 }
@@ -384,6 +385,7 @@ ElectricalMaterial::VariantOverridesType ElectricalMaterial::VariantOverridesTyp
     float const enginePower = Utils::GetMandatoryJsonMember<float>(overridesJson, "engine_power");
     float const waterPumpNominalForce = Utils::GetMandatoryJsonMember<float>(overridesJson, "water_pump_nominal_force");
     float const timerDurationSeconds = Utils::GetMandatoryJsonMember<float>(overridesJson, "timer_duration_seconds");
+    float const thermalSwitchTransitionTemperature = Utils::GetMandatoryJsonMember<float>(overridesJson, "thermal_switch_transition_temperature");
 
     return VariantOverridesType(
         name,
@@ -392,7 +394,8 @@ ElectricalMaterial::VariantOverridesType ElectricalMaterial::VariantOverridesTyp
         lightSpread,
         enginePower,
         waterPumpNominalForce,
-        timerDurationSeconds);
+        timerDurationSeconds,
+        thermalSwitchTransitionTemperature);
 }
 
 ElectricalMaterial ElectricalMaterial::Create(
@@ -885,7 +888,8 @@ ElectricalMaterial::VariantOverridesType ElectricalMaterial::MakeStartingVariant
         LightSpread,
         EnginePower,
         WaterPumpNominalForce,
-        TimerDurationSeconds);
+        TimerDurationSeconds,
+        ThermalSwitchTransitionTemperature);
 }
 
 std::unique_ptr<ElectricalMaterial> ElectricalMaterial::MakeCustomMaterial(ElectricalMaterial::VariantOverridesType const & overrides) const
@@ -904,6 +908,7 @@ std::unique_ptr<ElectricalMaterial> ElectricalMaterial::MakeCustomMaterial(Elect
     customElectricalMaterial.EnginePower = overrides.EnginePower;
     customElectricalMaterial.WaterPumpNominalForce = overrides.WaterPumpNominalForce;
     customElectricalMaterial.TimerDurationSeconds = overrides.TimerDurationSeconds;
+    customElectricalMaterial.ThermalSwitchTransitionTemperature = overrides.ThermalSwitchTransitionTemperature;
 
     // Override palette coordinates
     assert(customElectricalMaterial.PaletteCoordinates.has_value());
