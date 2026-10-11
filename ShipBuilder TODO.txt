@@ -340,21 +340,24 @@
 
 		=== ShipBuilder ===
 
-		- MaterialDatabase<TLayer>
-			- Members:
-				- MaterialColorMap<TLayer> const & from DefaultMaterialDatabase // for color_hey lookups
-				- vec<uq> from user
-				- vec<uq> from ship
-			- cctor:
-				- MaterialColorMap<TLayer> const & from DefaultMaterialDatabase
-				- vec<uq> from user
-				- vec<uq> from ship - if needed @ cctor
+		= MaterialDatabase<TLayer>
+			+ Members:
+				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase // for color_hey lookups
+				+ vec<uq> from user
+				+ vec<uq> from ship
+			+ cctor:
+				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase
+				+ Loads users's
+			- Ops:
+				- AddUser: TODO
+				- RemoveUser: TODO
+				- ReplaceShip: TODO
 
 				- Loads user's
 
-			- Ser/Deset for user custom materials
-				- parent color_key and VariantOverridesType
-					- Materialization from json uses MaterialColorMap<TLayer> and produces variants
+			+ Ser/Deset for user custom materials
+				+ parent color_key and VariantOverridesType
+					+ Materialization from json uses MaterialColorMap<TLayer> and produces variants
 
 			- See if after all VariantOverrides' less-than is needed
 

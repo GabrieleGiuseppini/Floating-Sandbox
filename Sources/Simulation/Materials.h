@@ -162,7 +162,7 @@ public:
         }
 
         picojson::value Serialize() const;
-        static VariantOverridesType Deserialize(picojson::object const & overridesJson);
+        static VariantOverridesType Deserialize(picojson::value const & overridesJsonValue);
     };
 
 public:
@@ -579,7 +579,7 @@ public:
         }
 
         picojson::value Serialize() const;
-        static VariantOverridesType Deserialize(picojson::object const & overridesJson);
+        static VariantOverridesType Deserialize(picojson::value const & overridesJsonValue);
     };
 
 public:

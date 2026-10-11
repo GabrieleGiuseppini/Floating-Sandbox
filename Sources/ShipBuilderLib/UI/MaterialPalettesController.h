@@ -6,6 +6,7 @@
 #pragma once
 
 #include "IMaterialPalettesController.h"
+#include "MaterialDatabase.h"
 #include "MaterialPaletteBrowser.h"
 
 #include <Game/GameAssetManager.h>
@@ -50,32 +51,32 @@ public:
     {
         if constexpr (TLayer == LayerType::Structural)
         {
-            mStructuralMaterialPaletteBrowser->Open(
+            mStructuralLayerMaterialPaletteBrowser->Open(
                 referenceArea,
                 materialPlane,
                 initialMaterial);
 
-            mLastOpenedPalette = mStructuralMaterialPaletteBrowser.get();
+            mLastOpenedPalette = mStructuralLayerMaterialPaletteBrowser.get();
         }
         else if constexpr (TLayer == LayerType::Electrical)
         {
-            mElectricalMaterialPaletteBrowser->Open(
+            mElectricalLayerMaterialPaletteBrowser->Open(
                 referenceArea,
                 materialPlane,
                 initialMaterial);
 
-            mLastOpenedPalette = mElectricalMaterialPaletteBrowser.get();
+            mLastOpenedPalette = mElectricalLayerMaterialPaletteBrowser.get();
         }
         else
         {
             assert(TLayer == LayerType::Ropes);
 
-            mRopesMaterialPaletteBrowser->Open(
+            mRopesLayerMaterialPaletteBrowser->Open(
                 referenceArea,
                 materialPlane,
                 initialMaterial);
 
-            mLastOpenedPalette = mRopesMaterialPaletteBrowser.get();
+            mLastOpenedPalette = mRopesLayerMaterialPaletteBrowser.get();
         }
     }
 
@@ -104,9 +105,15 @@ private:
     std::function<void(ElectricalMaterial const * material, MaterialPlaneType plane)> const mOnElectricalLayerMaterialSelected;
     std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> const mOnRopeLayerMaterialSelected;
 
-    std::unique_ptr<MaterialPaletteBrowser<LayerType::Structural>> mStructuralMaterialPaletteBrowser;
-    std::unique_ptr<MaterialPaletteBrowser<LayerType::Electrical>> mElectricalMaterialPaletteBrowser;
-    std::unique_ptr<MaterialPaletteBrowser<LayerType::Ropes>> mRopesMaterialPaletteBrowser;
+    // Model
+    std::unique_ptr<MaterialDatabase<LayerType::Structural>> mStructuralLayerMaterialDatabase;
+    std::unique_ptr<MaterialDatabase<LayerType::Electrical>> mElectricalLayerMaterialDatabase;
+    std::unique_ptr<MaterialDatabase<LayerType::Ropes>> mRopesLayerMaterialDatabase;
+
+    // View
+    std::unique_ptr<MaterialPaletteBrowser<LayerType::Structural>> mStructuralLayerMaterialPaletteBrowser;
+    std::unique_ptr<MaterialPaletteBrowser<LayerType::Electrical>> mElectricalLayerMaterialPaletteBrowser;
+    std::unique_ptr<MaterialPaletteBrowser<LayerType::Ropes>> mRopesLayerMaterialPaletteBrowser;
 
     IMaterialPalette const * mLastOpenedPalette;
 };

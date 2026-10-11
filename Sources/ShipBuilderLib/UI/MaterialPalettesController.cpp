@@ -22,7 +22,15 @@ MaterialPalettesController::MaterialPalettesController(
     , mOnRopeLayerMaterialSelected(std::move(onRopeLayerMaterialSelected))
     , mLastOpenedPalette(nullptr)
 {
-    mStructuralMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Structural>>(
+    // Model
+
+    mStructuralLayerMaterialDatabase = std::make_unique<MaterialDatabase<LayerType::Structural>>(defaultMaterialDatabase.GetStructuralMaterialColorMap());
+    mElectricalLayerMaterialDatabase = std::make_unique<MaterialDatabase<LayerType::Electrical>>(defaultMaterialDatabase.GetElectricalMaterialColorMap());
+    mRopesLayerMaterialDatabase = std::make_unique<MaterialDatabase<LayerType::Ropes>>(defaultMaterialDatabase.GetStructuralMaterialColorMap());
+
+    // View
+
+    mStructuralLayerMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Structural>>(
         parent,
         *this,
         defaultMaterialDatabase.GetStructuralMaterialPalette(),
@@ -33,7 +41,7 @@ MaterialPalettesController::MaterialPalettesController(
 
     progressCallback(0.33f, ProgressMessageType::LoadingMaterialPalette);
 
-    mElectricalMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Electrical>>(
+    mElectricalLayerMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Electrical>>(
         parent,
         *this,
         defaultMaterialDatabase.GetElectricalMaterialPalette(),
@@ -44,7 +52,7 @@ MaterialPalettesController::MaterialPalettesController(
 
     progressCallback(0.66f, ProgressMessageType::LoadingMaterialPalette);
 
-    mRopesMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Ropes>>(
+    mRopesLayerMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Ropes>>(
         parent,
         *this,
         defaultMaterialDatabase.GetRopeMaterialPalette(),
@@ -118,17 +126,17 @@ void MaterialPalettesController::OnNewCustomMaterial(typename LayerTypeTraits<TL
     std::optional<TVariantOverridesType> result;
     if constexpr (TLayerType == LayerType::Structural)
     {
-        result = mStructuralMaterialPaletteBrowser->RunNewCustomMaterial(overrides, baseMaterial);
+        result = mStructuralLayerMaterialPaletteBrowser->RunNewCustomMaterial(overrides, baseMaterial);
     }
     else if constexpr (TLayerType == LayerType::Electrical)
     {
-        result = mElectricalMaterialPaletteBrowser->RunNewCustomMaterial(overrides, baseMaterial);
+        result = mElectricalLayerMaterialPaletteBrowser->RunNewCustomMaterial(overrides, baseMaterial);
     }
     else
     {
         static_assert(TLayerType == LayerType::Ropes);
 
-        result = mRopesMaterialPaletteBrowser->RunNewCustomMaterial(overrides, baseMaterial);
+        result = mRopesLayerMaterialPaletteBrowser->RunNewCustomMaterial(overrides, baseMaterial);
     }
 
     if (result.has_value())

@@ -38,33 +38,35 @@ picojson::value StructuralMaterial::VariantOverridesType::Serialize() const
     return picojson::value(root);
 }
 
-StructuralMaterial::VariantOverridesType StructuralMaterial::VariantOverridesType::Deserialize(picojson::object const & overridesJson)
+StructuralMaterial::VariantOverridesType StructuralMaterial::VariantOverridesType::Deserialize(picojson::value const & overridesJsonValue)
 {
-    std::string const name = Utils::GetMandatoryJsonMember<std::string>(overridesJson, "name");
-    rgbaColor const renderColor = Utils::Hex2RgbaColor(Utils::GetMandatoryJsonMember<std::string>(overridesJson, "render_color"));
-    float const strength = Utils::GetMandatoryJsonMember<float>(overridesJson, "strength");
-    float const density = Utils::GetMandatoryJsonMember<float>(overridesJson, "density");
+    picojson::object const & overridesJsonObject = Utils::GetJsonValueAsObject(overridesJsonValue, "StructuralMaterial::VariantOverridesType");
+
+    std::string const name = Utils::GetMandatoryJsonMember<std::string>(overridesJsonObject, "name");
+    rgbaColor const renderColor = Utils::Hex2RgbaColor(Utils::GetMandatoryJsonMember<std::string>(overridesJsonObject, "render_color"));
+    float const strength = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "strength");
+    float const density = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "density");
     if (density == 0.0f)
     {
         throw GameException(std::string("Material \"") + name + "\" has \"density\" equal to 0.0, while it must be greater than 0.0");
     }
 
-    float const ignitionTemperature = Utils::GetMandatoryJsonMember<float>(overridesJson, "ignition_temperature");
-    float const meltingTemperature = Utils::GetMandatoryJsonMember<float>(overridesJson, "melting_temperature");
+    float const ignitionTemperature = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "ignition_temperature");
+    float const meltingTemperature = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "melting_temperature");
 
-    float const rotReceptivity = Utils::GetMandatoryJsonMember<float>(overridesJson, "rot_receptivity");
+    float const rotReceptivity = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "rot_receptivity");
     if (rotReceptivity > 1.0f)
     {
         throw GameException(std::string("Material \"") + name + "\" has \"rot_receptivity\" outside of the valid [0.0, 1.0] range");
     }
 
-    float const rustReceptivity = Utils::GetMandatoryJsonMember<float>(overridesJson, "rust_receptivity");
+    float const rustReceptivity = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "rust_receptivity");
     if (rustReceptivity > 1.0f)
     {
         throw GameException(std::string("Material \"") + name + "\" has \"rust_receptivity\" outside of the valid [0.0, 1.0] range");
     }
 
-    float const waterSolubility = Utils::GetMandatoryJsonMember<float>(overridesJson, "water_solubility");
+    float const waterSolubility = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "water_solubility");
     if (waterSolubility > 1.0f)
     {
         throw GameException(std::string("Material \"") + name + "\" has \"water_solubility\" outside of the valid [0.0, 1.0] range");
@@ -376,16 +378,18 @@ picojson::value ElectricalMaterial::VariantOverridesType::Serialize() const
     return picojson::value(root);
 }
 
-ElectricalMaterial::VariantOverridesType ElectricalMaterial::VariantOverridesType::Deserialize(picojson::object const & overridesJson)
+ElectricalMaterial::VariantOverridesType ElectricalMaterial::VariantOverridesType::Deserialize(picojson::value const & overridesJsonValue)
 {
-    std::string const name = Utils::GetMandatoryJsonMember<std::string>(overridesJson, "name");
-    float const heatGenerated = Utils::GetMandatoryJsonMember<float>(overridesJson, "heat_generated");
-    float const luminiscence = Utils::GetMandatoryJsonMember<float>(overridesJson, "luminiscence");
-    float const lightSpread = Utils::GetMandatoryJsonMember<float>(overridesJson, "light_spread");
-    float const enginePower = Utils::GetMandatoryJsonMember<float>(overridesJson, "engine_power");
-    float const waterPumpNominalForce = Utils::GetMandatoryJsonMember<float>(overridesJson, "water_pump_nominal_force");
-    float const timerDurationSeconds = Utils::GetMandatoryJsonMember<float>(overridesJson, "timer_duration_seconds");
-    float const thermalSwitchTransitionTemperature = Utils::GetMandatoryJsonMember<float>(overridesJson, "thermal_switch_transition_temperature");
+    picojson::object const & overridesJsonObject = Utils::GetJsonValueAsObject(overridesJsonValue, "ElectricalMaterial::VariantOverridesType");
+
+    std::string const name = Utils::GetMandatoryJsonMember<std::string>(overridesJsonObject, "name");
+    float const heatGenerated = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "heat_generated");
+    float const luminiscence = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "luminiscence");
+    float const lightSpread = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "light_spread");
+    float const enginePower = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "engine_power");
+    float const waterPumpNominalForce = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "water_pump_nominal_force");
+    float const timerDurationSeconds = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "timer_duration_seconds");
+    float const thermalSwitchTransitionTemperature = Utils::GetMandatoryJsonMember<float>(overridesJsonObject, "thermal_switch_transition_temperature");
 
     return VariantOverridesType(
         name,

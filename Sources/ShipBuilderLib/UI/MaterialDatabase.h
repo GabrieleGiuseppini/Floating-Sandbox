@@ -27,10 +27,12 @@ private:
 
 	using Pod = typename std::vector<std::unique_ptr<typename TMaterial>>;
 
-	static Pod LoadDefaultUserDatabase();
+	static Pod LoadDefaultUserDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap);
 	void SaveDefaultUserDatabase() const;
 
-	static Pod LoadUserDatabase(std::filesystem::path const & databaseFilepath);
+	static Pod LoadUserDatabase(
+		std::filesystem::path const & databaseFilepath,
+		MaterialColorMap<TMaterial> const & defaultMaterialColorMap);
 	static void SaveUserMaterials(
 		std::vector<TMaterial const *> const & materials,
 		std::filesystem::path const & databaseFilepath);
@@ -41,6 +43,7 @@ private:
 
 	MaterialColorMap<TMaterial> const & mDefaultMaterialColorMap; // For color_key lookups
 	Pod mUserCustomMaterials;
+	Pod mShipCustomMaterials;
 };
 
 }

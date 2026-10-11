@@ -22,14 +22,15 @@ namespace ShipBuilder {
 template<LayerType TLayer>
 MaterialDatabase<TLayer>::MaterialDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap)
     : mDefaultMaterialColorMap(defaultMaterialColorMap)
-    , mUserCustomMaterials(LoadDefaultUserDatabase())
+    , mUserCustomMaterials(LoadDefaultUserDatabase(defaultMaterialColorMap))
+    , mShipCustomMaterials()
 {
 }
 
 template<LayerType TLayer>
-typename MaterialDatabase<TLayer>::Pod MaterialDatabase<TLayer>::LoadDefaultUserDatabase()
+typename MaterialDatabase<TLayer>::Pod MaterialDatabase<TLayer>::LoadDefaultUserDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap)
 {
-    return LoadUserDatabase(GetDefaultUserDatabaseFilePath());
+    return LoadUserDatabase(GetDefaultUserDatabaseFilePath(), defaultMaterialColorMap);
 }
 
 template<LayerType TLayer>
@@ -51,7 +52,9 @@ void MaterialDatabase<TLayer>::SaveDefaultUserDatabase() const
 }
 
 template<LayerType TLayer>
-typename MaterialDatabase<TLayer>::Pod MaterialDatabase<TLayer>::LoadUserDatabase(std::filesystem::path const & databaseFilepath)
+typename MaterialDatabase<TLayer>::Pod MaterialDatabase<TLayer>::LoadUserDatabase(
+    std::filesystem::path const & databaseFilepath,
+    MaterialColorMap<TMaterial> const & defaultMaterialColorMap)
 {
     if (!std::filesystem::exists(databaseFilepath))
     {
@@ -68,9 +71,28 @@ typename MaterialDatabase<TLayer>::Pod MaterialDatabase<TLayer>::LoadUserDatabas
 
     picojson::object const & rootJsonObject = rootJsonValue.get<picojson::object>();
 
-    // TODOHERE
-    (void)rootJsonObject;
-    return Pod();
+    // De-serialize materials
+
+    Pod pod;
+
+    picojson::array const & materialsJsonArray = Utils::GetMandatoryJsonArray(rootJsonObject, "custom_materials");
+    for (auto const & materialJsonValue : materialsJsonArray)
+    {
+        picojson::object const & materialJsonObject = Utils::GetJsonValueAsObject(materialJsonValue, "custom_materials");
+
+        rgbColor const baseColorKey = Utils::Hex2RgbColor(Utils::GetMandatoryJsonMember<std::string>(materialJsonObject, "base_color_key"));
+        typename TMaterial::VariantOverridesType const variantOverrides = TMaterial::VariantOverridesType::Deserialize(Utils::GetMandatoryJsonValue(materialJsonObject, "variant_overrides"));
+
+        // Lookup material
+        auto const srchIt = defaultMaterialColorMap.find(baseColorKey);
+        if (srchIt != defaultMaterialColorMap.cend())
+        {
+            TMaterial const & baseMaterial = srchIt->second;
+            pod.emplace_back(baseMaterial.MakeCustomMaterial(variantOverrides));
+        }
+    }
+
+    return pod;
 }
 
 template<LayerType TLayer>
@@ -86,8 +108,21 @@ void MaterialDatabase<TLayer>::SaveUserMaterials(
     // Add timestamp
     rootJsonObject["_saved_at"] = picojson::value(Utils::MakeNowDateAndTimeString());
 
-    // TODOHERE
-    (void)materials;
+    // Materials
+
+    picojson::array materialsJsonArray;
+    for (TMaterial const * material : materials)
+    {
+        assert(material->VariantOverrides.has_value()); // Or else wouldn't be a custom material
+
+        picojson::object materialJsonObject;
+        materialJsonObject["base_color_key"] = picojson::value(Utils::RgbColor2Hex(material->ColorKey));
+        materialJsonObject["variant_overrides"] = material->VariantOverrides->Serialize();
+
+        materialsJsonArray.push_back(picojson::value(materialJsonObject));
+    }
+
+    rootJsonObject["custom_materials"] = picojson::value(materialsJsonArray);
 
     GameAssetManager::SaveJson(
         picojson::value(rootJsonObject),

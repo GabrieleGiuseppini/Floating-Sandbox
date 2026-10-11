@@ -220,11 +220,7 @@ TEST(MaterialTests, Structural_VariantOverrides_SerializeDeserialize)
         0.2f);
 
     auto const jsonValue = overrides.Serialize();
-
-    EXPECT_TRUE(jsonValue.is<picojson::object>());
-    auto const jsonObject = Utils::GetJsonValueAsObject(jsonValue, "test");
-
-    auto const overrides2 = StructuralMaterial::VariantOverridesType::Deserialize(jsonObject);
+    auto const overrides2 = StructuralMaterial::VariantOverridesType::Deserialize(jsonValue);
 
     EXPECT_EQ(overrides, overrides2);
 }
@@ -453,11 +449,7 @@ TEST(MaterialTests, Electrical_VariantOverrides_SerializeDeserialize)
         450.0f);
 
     auto const jsonValue = overrides.Serialize();
-
-    EXPECT_TRUE(jsonValue.is<picojson::object>());
-    auto const jsonObject = Utils::GetJsonValueAsObject(jsonValue, "test");
-
-    auto const overrides2 = ElectricalMaterial::VariantOverridesType::Deserialize(jsonObject);
+    auto const overrides2 = ElectricalMaterial::VariantOverridesType::Deserialize(jsonValue);
 
     EXPECT_EQ(overrides, overrides2);
 }
