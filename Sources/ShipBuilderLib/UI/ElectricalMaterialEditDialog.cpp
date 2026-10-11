@@ -10,6 +10,8 @@
 #include <Core/ExponentialSliderCore.h>
 #include <Core/LinearSliderCore.h>
 
+#include <cassert>
+
 namespace ShipBuilder {
 
 void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
@@ -30,28 +32,28 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
 
     mHSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    // Others panel
+    // Heating panel
     {
-        wxPanel * othersPanel = new wxPanel(mMainPanel);
+        wxPanel * heatingPanel = new wxPanel(mMainPanel);
         wxGridSizer * gPanelSizer = new wxGridSizer(1);
 
         // Heat generated
         {
-            mOthersHeatGeneratedSlider = MakeHeatGeneratedSliderControl(othersPanel);
+            mHeatingHeatGeneratedSlider = MakeHeatGeneratedSliderControl(heatingPanel);
 
-            gPanelSizer->Add(mOthersHeatGeneratedSlider, 0, wxEXPAND);
+            gPanelSizer->Add(mHeatingHeatGeneratedSlider, 0, wxEXPAND);
         }
 
         // Finalize panel
 
-        othersPanel->SetSizer(gPanelSizer);
+        heatingPanel->SetSizer(gPanelSizer);
 
         mHSizer->Add(
-            othersPanel,
+            heatingPanel,
             1,
             wxEXPAND);
 
-        mSpecializedPanels[SpecializedPanelKind::Others] = othersPanel;
+        mPanels[PanelKind::Heating] = heatingPanel;
     }
 
     // Lamp panel
@@ -113,7 +115,7 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
             1,
             wxEXPAND);
 
-        mSpecializedPanels[SpecializedPanelKind::Lamp] = lampPanel;
+        mPanels[PanelKind::Lamp] = lampPanel;
     }
 
     // Engine panel
@@ -156,7 +158,7 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
             1,
             wxEXPAND);
 
-        mSpecializedPanels[SpecializedPanelKind::Engine] = enginePanel;
+        mPanels[PanelKind::Engine] = enginePanel;
     }
 
     // Water pump
@@ -201,7 +203,7 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
             1,
             wxEXPAND);
 
-        mSpecializedPanels[SpecializedPanelKind::WaterPump] = waterPumpPanel;
+        mPanels[PanelKind::WaterPump] = waterPumpPanel;
     }
 
     // Timer switch
@@ -239,7 +241,7 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
             1,
             wxEXPAND);
 
-        mSpecializedPanels[SpecializedPanelKind::TimerSwitch] = timerSwitchPanel;
+        mPanels[PanelKind::TimerSwitch] = timerSwitchPanel;
     }
 
     // Thermal switch
@@ -278,7 +280,7 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
             1,
             wxEXPAND);
 
-        mSpecializedPanels[SpecializedPanelKind::ThermalSwitch] = thermalSwitchPanel;
+        mPanels[PanelKind::ThermalSwitch] = thermalSwitchPanel;
     }
 
     dialogVSizer->Add(
@@ -301,116 +303,72 @@ std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDi
 
     mNameTextCtrl->ChangeValue(mOverridesUnderEdit->Name);
 
-    auto heatGeneratedSliderCore = std::make_unique<ExponentialSliderCore>(
+    auto heatGeneratedSliderCore = ExponentialSliderCore(
         baseOverrideValues.HeatGenerated * 0.1f,
         baseOverrideValues.HeatGenerated,
         baseOverrideValues.HeatGenerated * 10.0f);
+
+    mHeatingHeatGeneratedSlider->SetValueAndLimits(
+        mOverridesUnderEdit->HeatGenerated,
+        std::make_unique<ExponentialSliderCore>(heatGeneratedSliderCore));
+
+    mLampHeatGeneratedSlider->SetValueAndLimits(
+        mOverridesUnderEdit->HeatGenerated,
+        std::make_unique<ExponentialSliderCore>(heatGeneratedSliderCore));
+
+    mLuminiscenceSlider->SetValueAndLimits(
+        mOverridesUnderEdit->Luminiscence,
+        std::make_unique<ExponentialSliderCore>(
+            baseOverrideValues.Luminiscence * 0.1f,
+            baseOverrideValues.Luminiscence,
+            baseOverrideValues.Luminiscence * 10.0f));
+
+    mLightSpreadSlider->SetValueAndLimits(
+        mOverridesUnderEdit->LightSpread,
+        std::make_unique<ExponentialSliderCore>(
+            baseOverrideValues.LightSpread * 0.1f,
+            baseOverrideValues.LightSpread,
+            baseOverrideValues.LightSpread * 10.0f));
+
+    mEngineHeatGeneratedSlider->SetValueAndLimits(
+        mOverridesUnderEdit->HeatGenerated,
+        std::make_unique<ExponentialSliderCore>(heatGeneratedSliderCore));
+
+    mEnginePowerSlider->SetValueAndLimits(
+        mOverridesUnderEdit->EnginePower,
+        std::make_unique<ExponentialSliderCore>(
+            baseOverrideValues.EnginePower * 0.1f,
+            baseOverrideValues.EnginePower,
+            baseOverrideValues.EnginePower * 10.0f));
+
+    mWaterPumpHeatGeneratedSlider->SetValueAndLimits(
+        mOverridesUnderEdit->HeatGenerated,
+        std::make_unique<ExponentialSliderCore>(heatGeneratedSliderCore));
+
+    mWaterPumpNominalForceSlider->SetValueAndLimits(
+        std::fabsf(mOverridesUnderEdit->WaterPumpNominalForce),
+        std::make_unique<ExponentialSliderCore>(
+            std::fabsf(baseOverrideValues.WaterPumpNominalForce) * 0.1f,
+            std::fabsf(baseOverrideValues.WaterPumpNominalForce),
+            std::fabsf(baseOverrideValues.WaterPumpNominalForce) * 10.0f));
+
+    mTimerDurationSecondsSlider->SetValue(mOverridesUnderEdit->TimerDurationSeconds);
+
+    mThermalSwitchTransitionTemperatureSlider->SetValue(mOverridesUnderEdit->ThermalSwitchTransitionTemperature);
 
     //
     // Choose panels to show
     //
 
-    for (int iSpecializedPanel = 0; iSpecializedPanel <= SpecializedPanelKind::_Last; ++iSpecializedPanel)
+    for (int iPanel = 0; iPanel <= PanelKind::_Last; ++iPanel)
     {
-        mHSizer->Hide(mSpecializedPanels[iSpecializedPanel]);
+        mHSizer->Hide(mPanels[iPanel]);
     }
 
-    switch (baseMaterial->ElectricalType)
-    {
-        case ElectricalMaterial::ElectricalElementType::Engine:
-        {
-            mEngineHeatGeneratedSlider->SetValueAndLimits(
-                mOverridesUnderEdit->HeatGenerated,
-                std::move(heatGeneratedSliderCore));
+    auto const panelKind = GetPanelKind(baseMaterial);
+    assert(panelKind.has_value()); // We shouldn't be called for a material with no properties to verride
+    mHSizer->Show(mPanels[*panelKind]);
 
-            mEnginePowerSlider->SetValueAndLimits(
-                mOverridesUnderEdit->EnginePower,
-                std::make_unique<ExponentialSliderCore>(
-                    baseOverrideValues.EnginePower * 0.1f,
-                    baseOverrideValues.EnginePower,
-                    baseOverrideValues.EnginePower * 10.0f));
-
-            mHSizer->Show(mSpecializedPanels[SpecializedPanelKind::Engine]);
-
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::Lamp:
-        {
-            mLampHeatGeneratedSlider->SetValueAndLimits(
-                mOverridesUnderEdit->HeatGenerated,
-                std::move(heatGeneratedSliderCore));
-
-            mLuminiscenceSlider->SetValueAndLimits(
-                mOverridesUnderEdit->Luminiscence,
-                std::make_unique<ExponentialSliderCore>(
-                    baseOverrideValues.Luminiscence * 0.1f,
-                    baseOverrideValues.Luminiscence,
-                    baseOverrideValues.Luminiscence * 10.0f));
-
-            mLightSpreadSlider->SetValueAndLimits(
-                mOverridesUnderEdit->LightSpread,
-                std::make_unique<ExponentialSliderCore>(
-                    baseOverrideValues.LightSpread * 0.1f,
-                    baseOverrideValues.LightSpread,
-                    baseOverrideValues.LightSpread * 10.0f));
-
-            mHSizer->Show(mSpecializedPanels[SpecializedPanelKind::Lamp]);
-
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
-        {
-            mThermalSwitchTransitionTemperatureSlider->SetValue(mOverridesUnderEdit->ThermalSwitchTransitionTemperature);
-
-            mHSizer->Show(mSpecializedPanels[SpecializedPanelKind::ThermalSwitch]);
-
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::TimerSwitch:
-        {
-            mTimerDurationSecondsSlider->SetValue(mOverridesUnderEdit->TimerDurationSeconds);
-
-            mHSizer->Show(mSpecializedPanels[SpecializedPanelKind::TimerSwitch]);
-
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::WaterPump:
-        {
-            mWaterPumpHeatGeneratedSlider->SetValueAndLimits(
-                mOverridesUnderEdit->HeatGenerated,
-                std::move(heatGeneratedSliderCore));
-
-            mWaterPumpNominalForceSlider->SetValueAndLimits(
-                std::fabsf(mOverridesUnderEdit->WaterPumpNominalForce),
-                std::make_unique<ExponentialSliderCore>(
-                    std::fabsf(baseOverrideValues.WaterPumpNominalForce) * 0.1f,
-                    std::fabsf(baseOverrideValues.WaterPumpNominalForce),
-                    std::fabsf(baseOverrideValues.WaterPumpNominalForce) * 10.0f));
-
-            mHSizer->Show(mSpecializedPanels[SpecializedPanelKind::WaterPump]);
-
-            break;
-        }
-
-        default:
-        {
-            // Others
-
-            mOthersHeatGeneratedSlider->SetValueAndLimits(
-                mOverridesUnderEdit->HeatGenerated,
-                std::move(heatGeneratedSliderCore));
-
-            mHSizer->Show(mSpecializedPanels[SpecializedPanelKind::Others]);
-
-            break;
-        }
-    }
-
-    // TODO: which needed, if any?
     mHSizer->Layout();
 
     //
@@ -427,7 +385,7 @@ SliderControl<float> * ElectricalMaterialEditDialog::MakeHeatGeneratedSliderCont
         SliderControl<float>::DirectionType::Vertical,
         SliderWidth,
         -1,
-        _("Heat Generated (KJ/s)"),
+        _("Heat Generated (W)"),
         wxEmptyString,
         [this](float value)
         {
@@ -435,6 +393,79 @@ SliderControl<float> * ElectricalMaterialEditDialog::MakeHeatGeneratedSliderCont
             mOverridesUnderEdit->HeatGenerated = value;
         },
         nullptr);
+}
+
+std::optional<ElectricalMaterialEditDialog::PanelKind> ElectricalMaterialEditDialog::GetPanelKind(ElectricalMaterial const * baseMaterial)
+{
+    switch (baseMaterial->ElectricalType)
+    {
+        case ElectricalMaterial::ElectricalElementType::Cable:
+        {
+            return std::nullopt;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::Engine:
+        {
+            return PanelKind::Engine;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::EngineController:
+        case ElectricalMaterial::ElectricalElementType::EngineTransmission:
+        {
+            return std::nullopt;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::Generator:
+        {
+            return PanelKind::Heating;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+        {
+            return std::nullopt;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::Lamp:
+        {
+            return PanelKind::Lamp;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::OtherSink:
+        {
+            return PanelKind::Heating;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+        case ElectricalMaterial::ElectricalElementType::ShipSound:
+        case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+        {
+            return std::nullopt;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
+        {
+            return PanelKind::ThermalSwitch;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::TimerSwitch:
+        {
+            return PanelKind::TimerSwitch;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::WaterPump:
+        {
+            return PanelKind::WaterPump;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+        case ElectricalMaterial::ElectricalElementType::WatertightDoor:
+        {
+            return std::nullopt;
+        }
+    }
+
+    assert(false);
+    return std::nullopt;
 }
 
 }

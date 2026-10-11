@@ -15,6 +15,7 @@
 #include <wx/sizer.h>
 
 #include <array>
+#include <optional>
 
 namespace ShipBuilder {
 
@@ -28,6 +29,11 @@ public:
         LayoutBase();
     }
 
+    static bool IsOverridable(ElectricalMaterial const * baseMaterial)
+    {
+        return GetPanelKind(baseMaterial).has_value();
+    }
+
 private:
 
     void LayoutControls(wxBoxSizer * dialogVSizer) override;
@@ -35,6 +41,20 @@ private:
     std::optional<ElectricalMaterial::VariantOverridesType> Run(ElectricalMaterial::VariantOverridesType & overrides, ElectricalMaterial const * baseMaterial) override;
 
     SliderControl<float> * MakeHeatGeneratedSliderControl(wxPanel * parent);
+
+    enum PanelKind
+    {
+        Heating = 0,
+        Lamp = 1,
+        Engine = 2,
+        WaterPump = 3,
+        TimerSwitch = 4,
+        ThermalSwitch = 5,
+
+        _Last = ThermalSwitch
+    };
+
+    static std::optional<PanelKind> GetPanelKind(ElectricalMaterial const * baseMaterial);
 
 private:
 
@@ -46,22 +66,10 @@ private:
 
     SliderControl<float> * mHeatGeneratedSlider;
 
-    enum SpecializedPanelKind
-    {
-        Others = 0,
-        Lamp = 1,
-        Engine = 2,
-        WaterPump = 3,
-        TimerSwitch = 4,
-        ThermalSwitch = 5,
+    std::array<wxPanel *, PanelKind::_Last + 1> mPanels;
 
-        _Last = ThermalSwitch
-    };
-
-    std::array<wxPanel *, SpecializedPanelKind::_Last + 1> mSpecializedPanels;
-
-    // Others
-    SliderControl<float> * mOthersHeatGeneratedSlider;
+    // Heating
+    SliderControl<float> * mHeatingHeatGeneratedSlider;
 
     // Lamp
     SliderControl<float> * mLampHeatGeneratedSlider;

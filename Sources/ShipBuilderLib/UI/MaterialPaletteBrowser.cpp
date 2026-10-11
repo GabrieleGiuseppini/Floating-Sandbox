@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "MaterialPaletteBrowser.h"
 
+#include "ElectricalMaterialEditDialog.h"
+
 #include <UILib/WxHelpers.h>
 
 #include <wx/gbsizer.h>
@@ -508,7 +510,10 @@ MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPan
                 if (iMaterial > 0)
                 {
                     assert(currentBaseMaterial != nullptr);
-                    categoryPanel->AddCreateNewCustomMaterialButton(currentBaseMaterial);
+                    if (IsOverridableMaterial(currentBaseMaterial))
+                    {
+                        categoryPanel->AddCreateNewCustomMaterialButton(currentBaseMaterial);
+                    }
                 }
 
                 // Start new stride
@@ -522,7 +527,10 @@ MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPan
 
         // Add last button
         assert(currentBaseMaterial != nullptr); // We've had at least one material
-        categoryPanel->AddCreateNewCustomMaterialButton(currentBaseMaterial);
+        if (IsOverridableMaterial(currentBaseMaterial))
+        {
+            categoryPanel->AddCreateNewCustomMaterialButton(currentBaseMaterial);
+        }
     }
 
     categoryPanel->EndDefaultMaterialsLayout();
@@ -1109,6 +1117,21 @@ void MaterialPaletteBrowser<TLayer>::OnMaterialHoveredOut()
         {
             mSoundController->PlayOneShotShipSound(std::nullopt);
         }
+    }
+}
+
+template<LayerType TLayer>
+bool MaterialPaletteBrowser<TLayer>::IsOverridableMaterial(TMaterial const * material)
+{
+    if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+    {
+        return true;
+    }
+    else
+    {
+        static_assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+
+        return ElectricalMaterialEditDialog::IsOverridable(material);
     }
 }
 

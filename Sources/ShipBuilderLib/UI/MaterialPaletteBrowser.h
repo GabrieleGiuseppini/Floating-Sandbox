@@ -99,6 +99,8 @@ private:
     void OnMaterialHoveredIn(TMaterial const * material);
     void OnMaterialHoveredOut();
 
+    static bool IsOverridableMaterial(TMaterial const * material);
+
 private:
 
     IMaterialPalettesController & mMaterialPalettesController;

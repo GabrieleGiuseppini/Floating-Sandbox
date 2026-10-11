@@ -535,11 +535,18 @@
 					+ N panels, one per-type; selects right one at Run()
 					+ Add ThermalSwitch, overrides and all
 
-					- FIX: Only electrical elements of certain types (the overridable ones, or those that emit heat) should have a button at all
-						- ElectricalElementEditDialog static private helper w/base material argument and returns PanelKind
-						- ElectricalElementEditDialog static public helper w/base material argument and uses private
-							- Use at layout when deciding to add CreateNewButton
-						- Run(): populate all values/limits, use private helper to show panel
+					= Only electrical elements of certain types (the overridable ones, or those that emit heat) should have a button at all
+						+ ElectricalElementEditDialog static private helper w/base material argument and returns PanelKind
+							+ See if all to which we give heat, do heat
+								! Generator
+								! Lamp, OtherSink, WaterPump, Engine,
+						+ ElectricalElementEditDialog static public helper w/base material argument and uses private
+							+ Use at layout when deciding to add CreateNewButton
+						+ Run(): populate all values/limits, use private helper to show panel	
+						
+						+ HeatGenerated: W (comment + label)
+						+ Engine not showing power
+						- Heating: linear X n
 
 					- Final cleanups
 

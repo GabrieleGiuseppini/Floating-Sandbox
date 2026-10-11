@@ -599,7 +599,7 @@ public:
     float ExternalPressureBreakageThreshold; // KPa
 
     // Heat
-    float HeatGenerated; // KJ/s
+    float HeatGenerated; // W=J/s
     float MinimumOperatingTemperature; // K
     float MaximumOperatingTemperature; // K
 
