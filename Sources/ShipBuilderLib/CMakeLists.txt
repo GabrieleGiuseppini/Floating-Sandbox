@@ -56,6 +56,8 @@ set (UI_SOURCES
 	UI/ElectricalPanelLayoutControl.cpp
 	UI/ElectricalPanelLayoutControl.h
 	UI/IMaterialPalettesController.h
+	UI/MaterialDatabase.cpp
+	UI/MaterialDatabase.h
 	UI/MaterialPaletteBrowser.cpp
 	UI/MaterialPaletteBrowser.h
 	UI/MaterialPalettePanel.cpp

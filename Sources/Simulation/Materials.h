@@ -13,10 +13,14 @@
 
 #include <picojson.h>
 
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
 #include <utility>
+
+template<typename TMaterial>
+using MaterialColorMap = std::map<MaterialColorKey, TMaterial>;
 
 struct MaterialPaletteCoordinatesType
 {

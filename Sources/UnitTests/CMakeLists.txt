@@ -43,6 +43,7 @@ set (UNIT_TEST_SOURCES
 	LayerTests.cpp
 	LayoutHelperTests.cpp
 	main.cpp
+	MaterialDatabaseTests.cpp
 	MaterialsTests.cpp
 	Matrix2Tests.cpp
 	MultiProviderVertexBufferTests.cpp

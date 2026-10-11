@@ -350,6 +350,8 @@
 				- vec<uq> from user
 				- vec<uq> from ship - if needed @ cctor
 
+				- Loads user's
+
 			- Ser/Deset for user custom materials
 				- parent color_key and VariantOverridesType
 					- Materialization from json uses MaterialColorMap<TLayer> and produces variants
@@ -456,7 +458,6 @@
 			- FindCellFor: can speedup with lookups
 			- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
 
-
 		= MaterialPaletteBrowser<TLayer> : IMaterialPalette
 			! Owns only its own tiles
 			+ Replace selected events with calls into IMaterialPaletteController
@@ -480,8 +481,6 @@
 					- MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
 					- Losing focus never closes it
 
-	
-
 		= MaterialPalettesController
 			+ Replaces CompositeMaterialPalette
 			+ Replace event-based args in inline callbacks with vals
@@ -491,7 +490,6 @@
 				- Controller [for reaching ship model, e.g. for replacing materials]
 				- UndoStack
 				- DefaultMaterialDatabase [to boot 3 MaterialDatabase<T>'s]
-				- Whatever needed for loading user's custom materials (e.g. directory or filename)
 				- Callback for material selected
 			- OnShipLoaded(CustomMaterialsPod &&)
 				- // Replace ship custom materials on both model & view

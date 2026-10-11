@@ -96,9 +96,6 @@ public:
     };
 
     template<typename TMaterial>
-    using MaterialColorMap = std::map<MaterialColorKey, TMaterial>;
-
-    template<typename TMaterial>
     using MaterialNameMap = std::map<std::string, MaterialColorKey>;
 
 private:
