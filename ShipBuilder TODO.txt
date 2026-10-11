@@ -547,7 +547,9 @@
 
 				- Try: hover on button: different feedback
 
-				- Normalize name (@ Utils, with unit tests)
+				+ Normalize name (@ Utils, with unit tests)
+					+ Algo
+					+ Use
 				
 				+ MaterialPalettesController instantiates and owns two MaterialEditDialog instances (Structural and Electrical)
 
@@ -561,6 +563,9 @@
 		- Model and maybe ModelController:
 			- ReplaceMaterials(map: TMaterial * -> TMaterial *|null (for removal))
 				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
+
+	- Tests:
+		- Empty name @ Create and @ Edit
 
 - Traslate (aka move)
 	- Structural, Electrical, Ropes

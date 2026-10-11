@@ -332,6 +332,8 @@ namespace Utils
         return LTrim(RTrim(str));
     }
 
+    std::string NormalizeWhitespace(std::string const & str);
+
     inline bool EndsWith(std::string const & str, std::string const & suffix)
     {
         return str.find(suffix, str.size() - suffix.size()) != std::string::npos;

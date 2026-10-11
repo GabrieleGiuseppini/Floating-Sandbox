@@ -57,6 +57,82 @@ std::string Utils::MakeStringFromJSON(picojson::value const & value)
 }
 
 ////////////////////////////////////////////////////////
+// String
+////////////////////////////////////////////////////////
+
+std::string Utils::NormalizeWhitespace(std::string const & str)
+{
+    std::stringstream s;
+
+    enum class StateType
+    {
+        SuppressingSpaces,
+        InWord,
+        MayBeSpace
+    };
+
+    StateType currentState = StateType::SuppressingSpaces;
+    for (char const ch : str)
+    {
+        bool const isSpace = std::isspace(ch);
+
+        switch (currentState)
+        {
+            case StateType::SuppressingSpaces:
+            {
+                if (isSpace)
+                {
+                    // Nop
+                }
+                else
+                {
+                    // Entering InWord
+                    s << ch;
+                    currentState = StateType::InWord;
+                }
+
+                break;
+            }
+
+            case StateType::InWord:
+            {
+                if (isSpace)
+                {
+                    // Leaving InWord
+                    currentState = StateType::MayBeSpace;
+                }
+                else
+                {
+                    s << ch;
+                }
+
+                break;
+            }
+
+            case StateType::MayBeSpace:
+            {
+                if (isSpace)
+                {
+                    // Nop
+                }
+                else
+                {
+                    // Entering InWord, but emitting that space
+                    s << ' ';
+                    s << ch;
+                    currentState = StateType::InWord;
+                }
+
+                break;
+            }
+
+        }
+    }
+
+    return s.str();
+}
+
+////////////////////////////////////////////////////////
 // Misc
 ////////////////////////////////////////////////////////
 

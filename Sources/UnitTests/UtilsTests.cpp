@@ -89,6 +89,38 @@ TEST_P(TrimTest, BasicCases)
     EXPECT_EQ(result, expected);
 }
 
+class NormalizeWhitespaceTest : public testing::TestWithParam<std::tuple<std::string, std::string>>
+{
+public:
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    NormalizeWhitespaceTests,
+    NormalizeWhitespaceTest,
+    ::testing::Values( // Input, Output
+        std::make_tuple("foo", "foo"),
+        std::make_tuple(" foo", "foo"),
+        std::make_tuple("  foo", "foo"),
+        std::make_tuple("foo ", "foo"),
+        std::make_tuple("foo  ", "foo"),
+        std::make_tuple("  foo  ", "foo"),
+        std::make_tuple("  foo bar  ", "foo bar"),
+        std::make_tuple("  foo   bar  ", "foo bar"),
+        std::make_tuple("", ""),
+        std::make_tuple("  ", "")
+    )
+);
+
+TEST_P(NormalizeWhitespaceTest, BasicCases)
+{
+    auto const result = Utils::NormalizeWhitespace(std::get<0>(GetParam()));
+    auto const expected = std::get<1>(GetParam());
+
+    EXPECT_EQ(result, expected);
+}
+
 TEST(EndsWith, Basic)
 {
     EXPECT_EQ(Utils::EndsWith("foo.bar", ".bar"), true);

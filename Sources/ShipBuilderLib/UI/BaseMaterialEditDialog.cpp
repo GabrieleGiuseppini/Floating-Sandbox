@@ -9,6 +9,7 @@
 
 #include <Core/ExponentialSliderCore.h>
 #include <Core/LinearSliderCore.h>
+#include <Core/Utils.h>
 
 #include <wx/colordlg.h>
 #include <wx/gbsizer.h>
@@ -102,9 +103,7 @@ std::optional<typename TMaterial::VariantOverridesType> BaseMaterialEditDialog<T
     if (result == wxID_OK)
     {
         // Take name now, and normalize it
-        mOverridesUnderEdit->Name = mNameTextCtrl->GetValue().ToStdString();
-
-        // TODO: normalize
+        mOverridesUnderEdit->Name = Utils::NormalizeWhitespace(mNameTextCtrl->GetValue().ToStdString());
 
         return mOverridesUnderEdit;
     }

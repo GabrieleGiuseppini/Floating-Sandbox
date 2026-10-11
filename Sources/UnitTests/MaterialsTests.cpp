@@ -274,7 +274,8 @@ TEST(MaterialTests, Electrical_VariantOverrides_Equality)
         0.8f,
         300.0f,
         1.5,
-        0.75f);
+        0.75f,
+        400.0f);
 
     auto c2 = c1;
 
@@ -312,6 +313,11 @@ TEST(MaterialTests, Electrical_VariantOverrides_Equality)
     c2.TimerDurationSeconds = 42.0f;
     EXPECT_FALSE(c1 == c2);
     c2.TimerDurationSeconds = c1.TimerDurationSeconds;
+
+    EXPECT_TRUE(c1 == c2);
+    c2.ThermalSwitchTransitionTemperature = 9000.0f;
+    EXPECT_FALSE(c1 == c2);
+    c2.ThermalSwitchTransitionTemperature = c1.ThermalSwitchTransitionTemperature;
 }
 
 TEST(MaterialTests, Electrical_VariantOverrides_LessThan)
@@ -323,7 +329,8 @@ TEST(MaterialTests, Electrical_VariantOverrides_LessThan)
         0.8f,
         300.0f,
         1.5,
-        0.75f);
+        0.75f,
+        450.0f);
 
     auto c2 = c1;
 
@@ -380,6 +387,13 @@ TEST(MaterialTests, Electrical_VariantOverrides_LessThan)
     c2.TimerDurationSeconds = c1.TimerDurationSeconds;
 
     EXPECT_TRUE(c1 == c2);
+
+    c2.ThermalSwitchTransitionTemperature = 0.1f;
+    EXPECT_TRUE(c2 < c1);
+    EXPECT_FALSE(c1 < c2);
+    c2.ThermalSwitchTransitionTemperature = c1.ThermalSwitchTransitionTemperature;
+
+    EXPECT_TRUE(c1 == c2);
 }
 
 TEST(MaterialTests, Electrical_VariantOverrides_Hash)
@@ -393,7 +407,8 @@ TEST(MaterialTests, Electrical_VariantOverrides_Hash)
         0.8f,
         300.0f,
         1.5,
-        0.75f);
+        0.76f,
+        450.0f);
 
     s.insert(c1);
     EXPECT_EQ(s.size(), 1);
@@ -405,7 +420,8 @@ TEST(MaterialTests, Electrical_VariantOverrides_Hash)
         0.8f,
         300.0f,
         1.5,
-        0.76f);
+        0.76f,
+        450.5f);
 
     s.insert(c2);
     EXPECT_EQ(s.size(), 2);
@@ -417,13 +433,8 @@ TEST(MaterialTests, Electrical_VariantOverrides_Hash)
         0.8f,
         300.0f,
         1.5,
-        0.75f);
-
-    EXPECT_FALSE(c1 < c1);
-    EXPECT_TRUE(c1 < c2);
-    EXPECT_FALSE(c2 < c1);
-    EXPECT_FALSE(c1 < c3);
-    EXPECT_FALSE(c3 < c1);
+        0.76f,
+        450.0f);
 
     s.insert(c3);
     EXPECT_EQ(s.size(), 2);
@@ -438,7 +449,8 @@ TEST(MaterialTests, Electrical_VariantOverrides_SerializeDeserialize)
         0.8f,
         300.0f,
         1.5,
-        0.75f);
+        0.75f,
+        450.0f);
 
     auto const jsonValue = overrides.Serialize();
 
@@ -463,7 +475,8 @@ TEST(MaterialTests, Electrical_MakeCustomMaterial)
         0.8f,
         300.0f,
         1.5,
-        0.75f);
+        0.75f,
+        450.0f);
 
     auto customMaterial = baseMaterial.MakeCustomMaterial(overrides);
 
@@ -474,6 +487,7 @@ TEST(MaterialTests, Electrical_MakeCustomMaterial)
     EXPECT_EQ(customMaterial->EnginePower, overrides.EnginePower);
     EXPECT_EQ(customMaterial->WaterPumpNominalForce, overrides.WaterPumpNominalForce);
     EXPECT_EQ(customMaterial->TimerDurationSeconds, overrides.TimerDurationSeconds);
+    EXPECT_EQ(customMaterial->ThermalSwitchTransitionTemperature, overrides.ThermalSwitchTransitionTemperature);
     ASSERT_TRUE(customMaterial->PaletteCoordinates.has_value());
     EXPECT_EQ(customMaterial->PaletteCoordinates->SubCategoryOrdinal, 0u);
     EXPECT_EQ(customMaterial->PaletteSubCategoryBaseMaterialOrdinal, 5u);
