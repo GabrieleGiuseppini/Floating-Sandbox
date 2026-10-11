@@ -8,6 +8,9 @@
 #include <Core/ExponentialSliderCore.h>
 #include <Core/LinearSliderCore.h>
 
+// TODO
+#include <Core/Log.h>
+
 namespace ShipBuilder {
 
 void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
@@ -190,6 +193,8 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
                 [this](float value)
                 {
                     assert(mOverridesUnderEdit.has_value());
+                    if (mBaseWaterPumpNominalForce < 0.0f)
+                        value = -value;
                     mOverridesUnderEdit->WaterPumpNominalForce = value;
                 },
                 nullptr);
@@ -262,6 +267,7 @@ std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDi
     //
 
     mOverridesUnderEdit = overrides;
+    mBaseWaterPumpNominalForce = baseMaterial->WaterPumpNominalForce;
     auto baseOverrideValues = baseMaterial->MakeStartingVariantOverrides();
 
     mNameTextCtrl->ChangeValue(mOverridesUnderEdit->Name);
@@ -341,11 +347,11 @@ std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDi
                 std::move(heatGeneratedSliderCore));
 
             mWaterPumpNominalForceSlider->SetValueAndLimits(
-                mOverridesUnderEdit->WaterPumpNominalForce,
+                std::fabsf(mOverridesUnderEdit->WaterPumpNominalForce),
                 std::make_unique<ExponentialSliderCore>(
-                    baseOverrideValues.WaterPumpNominalForce * 0.1f,
-                    baseOverrideValues.WaterPumpNominalForce,
-                    baseOverrideValues.WaterPumpNominalForce * 10.0f));
+                    std::fabsf(baseOverrideValues.WaterPumpNominalForce) * 0.1f,
+                    std::fabsf(baseOverrideValues.WaterPumpNominalForce),
+                    std::fabsf(baseOverrideValues.WaterPumpNominalForce) * 10.0f));
 
             mHSizer->Show(mSpecializedPanels[SpecializedPanelKind::WaterPump]);
 

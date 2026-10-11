@@ -534,8 +534,11 @@
 				= Electrical:
 					+ N panels, one per-type; selects right one at Run()
 					- FIX:
-						- WaterPumpNominalForce may be negative
-						- Only electrical elements of certain types (the overridable ones) should have a button at all
+						+ WaterPumpNominalForce may be negative
+						- Only electrical elements of certain types (the overridable ones, or those that emit heat) should have a button at all
+							- Where do we concentrate that knowledge?
+								- ElectricalElementEditDialog static helper w/base material argument
+							- Add ThermalSwitch, overrides and all
 					- See if mSpecializedPanels still needed
 
 

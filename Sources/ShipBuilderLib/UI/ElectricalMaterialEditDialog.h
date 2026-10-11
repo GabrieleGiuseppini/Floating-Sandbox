@@ -77,6 +77,12 @@ private:
 
     // TimerSwitch
     SliderControl<float> * mTimerDurationSecondsSlider;
+
+    //
+    // State
+    //
+
+    float mBaseWaterPumpNominalForce;
 };
 
 }
