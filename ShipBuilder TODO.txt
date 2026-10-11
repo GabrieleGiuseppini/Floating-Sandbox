@@ -171,7 +171,8 @@
 		! SB can simply store StructuralMaterial* from user and/or ship custom materials when it populates StructuralLayer 
 
 		! Undo
-			! For palette changes and for palette + ship changes, 
+			! For palette changes and for palette + ship changes
+			! Watch out: deleted materials also need to be put back, or else pointers won't exist anymore
 
 	====
 
@@ -335,7 +336,7 @@
 
 		- MaterialDatabase<TLayer>
 			- Members:
-				- MaterialColorMap<TLayer> const & from DefaultMaterialDatabase
+				- MaterialColorMap<TLayer> const & from DefaultMaterialDatabase // for color_hey lookups
 				- vec<uq> from user
 				- vec<uq> from ship
 			- cctor:
@@ -346,6 +347,8 @@
 			- Ser/Deset for user custom materials
 				- parent color_key and VariantOverridesType
 					- Materialization from json uses MaterialColorMap<TLayer> and produces variants
+
+			- See if after all VariantOverrides' less-than is needed
 
 		= IMaterialPaletteController<TLayer>: for UI to talk back to controller
 			+ OnMaterialSelected
