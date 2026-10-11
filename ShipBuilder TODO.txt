@@ -145,9 +145,7 @@
 					- Ordinal is basically made up with logic here, laying out both custom sets
 				- Edit, Remove are small buttons on custom ones (which also helps distinguish them from "standard" materials)
 				- A custom material is cloned from the base material, and contains StructuralMaterial::VariantOverridesType overrides
-				- Removal: 
-					- Only user's
-					- If material is in use, pops up dialog
+				- Removal: if material is in use, pops up dialog
 				- If it's from ship only (i.e. not from custom set), there's button to import into user's (CustomMaterialPalette)
 					- Only distinct are imported; feedback to user with # of "imported ~new"
 					- No need to remove it from ship's afterwards, we can live with dupes among the two custom sets
@@ -158,7 +156,7 @@
 			- Modifications happen on user or ship custom materials
 				- Changes to materials (user's or ship's own) done by user in ShipBuilder must be undoable via Undo
 					- Undo action: only material
-				- Deletes to materials (user's) done by user in ShipBuilder must be undoable via Undo
+				- Deletes to materials (user's or ship's own) done by user in ShipBuilder must be undoable via Undo
 					- Undo action: whole structural layer (iff modified)
 						- Deletion could have resulted in a removal of particles
 				- Changing a material currently in the ship (from user's or ship's own) should mark the ship as dirty
@@ -195,9 +193,8 @@
 				- Update palette
 				- Populate Undo with material
 				- Force ship re-analysis and re-visualization
-				- Mark ship as dirty
-					
-		- Deleting user custom materials
+				- Mark ship as dirty					
+		- Deleting user or ship custom materials
 			- User checks boxes, and then "Delete Selected"
 			- Check for in-use by ship; answer is none-in-use_or_at-least-one-in-use
 			- If at-least-one-in-use:
@@ -220,8 +217,6 @@
 				- Nuke ship's custom materials in palette
 				- Re-draw palette
 		- Importing custom materials from ship into user's
-			- TODOHERE: checkboxes are also used for deleting
-				- Could fix by allowing ship's to be deleted; see how workflow would look like
 			- User checks boxes, and then "Import Selected"
 			- Only distinct are imported; feedback to user with # of "imported ~new"
 					! No need to remove it from ship's afterwards, we can live with dupes among the two custom sets
@@ -249,7 +244,7 @@
 			- Takes care of ser/deser of user custom materials
 				- parent color_key and VariantOverridesType
 					- Materialization from json takes DefaultMaterialDatabase and produces variants
-			- Takes care of distincting
+			- Takes care of distincting where needed
 			- Unit tests for ops
 		- MVC:
 			- MaterialPalettesController: single controller for all layer types
@@ -360,6 +355,8 @@
 					- Materialization from json uses MaterialColorMap<TLayer> and produces variants
 
 			- See if after all VariantOverrides' less-than is needed
+
+			- Unit tests
 
 		= IMaterialPaletteController<TLayer>: for UI to talk back to controller
 			+ OnMaterialSelected
