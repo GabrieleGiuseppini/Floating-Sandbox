@@ -179,7 +179,7 @@
 			= When committed:
 				+ Add to user's
 					+ Save DB
-				- Update palette
+				= Update palette
 				X Populate Undo with material
 		- Editing existing user custom material
 			- User clicks on "edit" button
@@ -405,9 +405,9 @@
 									+ Invariant: iff CustomType!=None
 
 			! Lookups:
-				- <CustomMaterial *, User|Ship>:
-					- Find SubCategoryRow such that type=MaterialGroups and SubCategory=CustomMaterial->SubCategory
-					- Find MaterialStride such that SubCategoryBaseMaterialOrdinal=CustomMaterial->PaletteSubCategoryBaseMaterialOrdinal
+				! <CustomMaterial *, User|Ship>:
+					+ Find SubCategoryRow such that type=MaterialGroups and SubCategory=CustomMaterial->SubCategory
+					+ Find MaterialStride such that SubCategoryBaseMaterialOrdinal=CustomMaterial->PaletteSubCategoryBaseMaterialOrdinal
 					- In stride's User|Ship vector, find cell such that type=Material and Material*=CustomMaterial*
 			= API for layout:
 				+ Initial:
@@ -416,9 +416,9 @@
 					+ ...all methods...
 						+ Includes adding buttons, separator, etc.
 					+ EndDefaultMaterialsLayout()
-						+ Calc panel width
-						+ Make buffer bitmap on size
+						+ Calc panel width						
 						+ Assign cell coords
+						+ Make buffer bitmap on size
 						+ Render cells onto buffer
 
 				+ LayoutSession struct, appears as std::any on API
@@ -434,17 +434,17 @@
 					- Update material sample in ImageList (wxImageList::Replace)
 					- Render own cell
 					- Refresh(false)
-				- All subsequent ones (custom):
-					- StartCustomMaterialsLayout() -> LayoutSession
-					- All atomic ops, taking LayoutSession and returning LayoutSession - naming as "...CustomMaterial..."
-						- Op does op on cell
-						- Then calcs LayoutSession
-						- Ops (all take lookup args as args)
-							- Add user/ship custom (one)
-								- Add material sample to ImageList
-								- Add to stride, at end
-									- Factor out creation of material @ AddDefaultMaterial into a new helper
-									- Update LayoutSession accordingly
+
+				= All subsequent ones (custom):
+					+ StartCustomMaterialsLayout() -> LayoutSession
+					= All atomic ops, taking LayoutSession and returning LayoutSession - naming as "...CustomMaterial..."
+						! Op does op on cell, then calcs LayoutSession
+						= Ops (all take lookup args as args)
+							+ Add user/ship custom (one)
+								+ Lookup row, stride
+								+ Add to stride, at end
+									+ Factor out creation of material @ AddDefaultMaterial into a new helper
+								+ Update LayoutSession accordingly
 							- Remove user/ship custom (one)
 								- Nuke material sample from ImageList (wxImageList::Remove)
 									- Update all image list indices
@@ -452,16 +452,17 @@
 									- Update LayoutSession accordingly
 								- Zero out currently-selected if it was this one
 
-					- EndCustomMaterialsLayout(LayoutSession)
-						- (Re-)Calc panel width
-						- Rescale buffer bitmap on size
-							- Create new bitmap with new size
-							- Create two MemoryDc's and Blit old->new
-							- Replace old bitmap with new
-						- Assign cell coords
-						- Render cells onto buffer
-						----
-						- Refresh(false)
+					+ EndCustomMaterialsLayout(LayoutSession)
+						+ Do all of the below at new LayoutAndRender(); this one just becomes calling that with LayoutSession
+						+ (Re-)Calc panel width
+						+ Assign cell coords
+						+ Rescale buffer bitmap on size
+							+ Create new bitmap with new size
+							+ Create two MemoryDc's and Blit old->new
+							+ Clear new part of new (if any)
+							+ Replace old bitmap with new						
+						+ Render cells onto buffer
+						+ Refresh(false)
 				
 			+ All cells have exact same width - constant
 			+ All cells in a row have the same height - constant
@@ -481,9 +482,13 @@
 			+ Initial layout:
 				+ Kinda as now, using InitialLayout APIs
 
-			- Ops (all forwarded to panel, with layout guards):
+			= Ops (all forwarded to panel, with layout guards):
 				! Browser provides larger ops, as it's browser who orchestrates layout
-				- Add user custom [vector]
+				= Add user custom [vector]
+					- Find panel for category - TODOHERE
+					- panel-> Start custom layout
+					- panel-> Add material
+					- panel-> End custom layout
 				- Update user/ship custom [one]
 				- Replace all ship custom [vector]
 				- TODO: others

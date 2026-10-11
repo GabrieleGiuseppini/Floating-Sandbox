@@ -148,129 +148,11 @@ void MaterialPalettePanel<TLayer>::AddDefaultMaterial(TMaterial const * material
     assert(mRows.back().Kind == Row::KindType::SubCategory);
     assert(!mRows.back().Strides.empty());
 
-    Row & row = mRows.back();
-    MaterialStride & stride = row.Strides.back();
-    assert(material->PaletteSubCategoryBaseMaterialOrdinal == stride.SubCategoryBaseMaterialOrdinal);
-
-    //
-    // Store cell
-    //
-
-    int const materialSampleBitmapIndex = mMaterialSampleBitmaps.Add(MakeMaterialSample(material));
-
-    Cell & cell = stride.Cells.emplace_back(
-        Cell::MakeMaterialCell(
-            MakeNextCellId(),
-            material,
-            Cell::CustomKindType::None,
-            materialSampleBitmapIndex,
-            row.Rect.GetTop(),
-            wxSize(
-                MaterialCellSize.width,
-                MaterialCellSize.height)));
-    stride.iShipCustomStartIndex++;
-    stride.iUserCustomStartIndex++;
-
-    //
-    // Layout text
-    //
-    // Assumption: text is normalized (wrt whitespaces, etc.)
-    //
-
-    int currentTopYOffset =
-        CellInnerMargin
-        + MaterialSampleSize.height
-        + MaterialSampleToNameGapHeight;
-
-    auto const previousFont = GetFont();
-
-    // Name
-
-    SetFont(mNameFont);
-
-    auto nameSizeWidth = GetTextExtent(material->Name).GetWidth();
-    if (nameSizeWidth > MaterialSampleSize.width)
-    {
-        int lastSpaceIndex = -1;
-        while (true)
-        {
-            auto const nextSpace = material->Name.find(' ', lastSpaceIndex + 1);
-            if (nextSpace == std::string::npos
-                || GetTextExtent(material->Name.substr(0, nextSpace)).GetWidth() > MaterialSampleSize.width)
-            {
-                // Use up to last space
-                if (lastSpaceIndex > 0)
-                {
-                    cell.Name1 = material->Name.substr(0, lastSpaceIndex);
-                    cell.Name2 = TruncateAsNeeded(material->Name.substr(lastSpaceIndex + 1), MaterialSampleSize.width);
-                }
-                else
-                {
-                    // Single string, too long though
-                    cell.Name1 = TruncateAsNeeded(material->Name, MaterialSampleSize.width);
-                    cell.Name2 = wxEmptyString;
-                }
-
-                break;
-            }
-            else
-            {
-                // Up to this space would be good, continue searching
-                lastSpaceIndex = nextSpace;
-            }
-        }
-    }
-    else
-    {
-        // Fits all
-        cell.Name1 = material->Name;
-        cell.Name2 = wxEmptyString;
-    }
-
-    auto const name1Size = GetTextExtent(cell.Name1);
-    cell.Name1Width = name1Size.GetWidth();
-    cell.Name1YTopOffset = currentTopYOffset;
-
-    currentTopYOffset += NameTextHeight;
-
-    if (!cell.Name2.IsEmpty())
-    {
-        currentTopYOffset += NameToNameGapHeight;
-
-        auto const name2Size = GetTextExtent(cell.Name2);
-        cell.Name2Width = name2Size.GetWidth();
-        cell.Name2YTopOffset = currentTopYOffset;
-
-        currentTopYOffset += NameTextHeight;
-    }
-
-    // Data
-
-    if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
-    {
-        SetFont(mDataFont);
-
-        std::stringstream ss;
-
-        ss << std::fixed << std::setprecision(2)
-            << "M:" << material->GetMass()
-            << "    "
-            << "S:" << material->Strength;
-
-        cell.Data = ss.str();
-
-        currentTopYOffset += NameToDataGapHeight;
-
-        auto const dataSize = GetTextExtent(cell.Data);
-        cell.DataWidth = dataSize.GetWidth();
-        cell.DataYTopOffset = currentTopYOffset;
-
-        currentTopYOffset += DataTextHeight;
-    }
-
-    currentTopYOffset += CellInnerMargin;
-
-    assert(currentTopYOffset <= MaterialCellSize.height);
+    AppendMaterialCell(
+        material,
+        CustomKindType::None,
+        mRows.size() - 1,
+        mRows.back().Strides.size() - 1);
 }
 
 template<LayerType TLayer>
@@ -296,8 +178,8 @@ void MaterialPalettePanel<TLayer>::AddCreateNewCustomMaterialButton(TMaterial co
             wxSize(
                 MaterialCellSize.width,
                 MaterialCellSize.height)));
-    stride.iShipCustomStartIndex++;
     stride.iUserCustomStartIndex++;
+    stride.iShipCustomStartIndex++;
 }
 
 template<LayerType TLayer>
@@ -321,12 +203,36 @@ void MaterialPalettePanel<TLayer>::EndDefaultMaterialsLayout()
     {
         if (mRows[iRow].Kind == Row::KindType::SubCategory)
         {
-            layoutSession.RecordDirtyBorder(iRow, 0, 0);
+            layoutSession.RecordDirtyBoundary(iRow, 0, 0);
         }
     }
 
     // Layout
     LayoutAndRender(layoutSession, true);
+}
+
+template<LayerType TLayer>
+std::any MaterialPalettePanel<TLayer>::StartCustomMaterialsLayout()
+{
+    return LayoutSession();
+}
+
+template<LayerType TLayer>
+std::any MaterialPalettePanel<TLayer>::AddUserCustomMaterial(TMaterial const * material, std::any layoutSession)
+{
+    return AppendCustomMaterial(material, CustomKindType::User, std::any_cast<LayoutSession>(layoutSession));
+}
+
+template<LayerType TLayer>
+std::any MaterialPalettePanel<TLayer>::AddShipCustomMaterial(TMaterial const * material, std::any layoutSession)
+{
+    return AppendCustomMaterial(material, CustomKindType::Ship, std::any_cast<LayoutSession>(layoutSession));
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::EndCustomMaterialsLayout(std::any layoutSession)
+{
+    LayoutAndRender(std::any_cast<LayoutSession>(layoutSession), false);
 }
 
 template<LayerType TLayer>
@@ -463,6 +369,183 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftUp(wxMouseEvent & event)
 }
 
 template<LayerType TLayer>
+typename MaterialPalettePanel<TLayer>::LayoutSession MaterialPalettePanel<TLayer>::AppendCustomMaterial(
+    TMaterial const * material,
+    CustomKindType customKind,
+    LayoutSession layoutSession)
+{
+    size_t const iRow = FindRowFor(material);
+    size_t const iStride = FindStrideFor(material, mRows[iRow]);
+
+    size_t const iCell = AppendMaterialCell(
+        material,
+        customKind,
+        iRow,
+        iStride);
+
+    // Update layoutSession
+    layoutSession.RecordDirtyBoundary(iRow, iStride, iCell);
+
+    return layoutSession;
+}
+
+template<LayerType TLayer>
+size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
+    TMaterial const * material,
+    CustomKindType customKind,
+    size_t iRow,
+    size_t iStride)
+{
+    Row & row = mRows[iRow];
+    MaterialStride & stride = row.Strides[iStride];
+    assert(material->PaletteSubCategoryBaseMaterialOrdinal == stride.SubCategoryBaseMaterialOrdinal);
+
+    //
+    // Insert cell
+    //
+
+    size_t cellInsertIndex = std::numeric_limits<size_t>::max();
+    switch (customKind)
+    {
+        case CustomKindType::None:
+        {
+            cellInsertIndex = static_cast<size_t>(stride.iUserCustomStartIndex);
+            stride.iUserCustomStartIndex++;
+            break;
+        }
+
+        case CustomKindType::User:
+        {
+            cellInsertIndex = static_cast<size_t>(stride.iShipCustomStartIndex);
+            stride.iShipCustomStartIndex++;
+            break;
+        }
+
+        case CustomKindType::Ship:
+        {
+            cellInsertIndex = stride.Cells.size();
+        }
+    }
+
+    int const materialSampleBitmapIndex = mMaterialSampleBitmaps.Add(MakeMaterialSample(material));
+
+    Cell & cell = *stride.Cells.insert(
+        std::next(stride.Cells.begin(), cellInsertIndex),
+        Cell::MakeMaterialCell(
+            MakeNextCellId(),
+            material,
+            customKind,
+            materialSampleBitmapIndex,
+            row.Rect.GetTop(),
+            wxSize(
+                MaterialCellSize.width,
+                MaterialCellSize.height)));
+
+    //
+    // Layout text
+    //
+    // Assumption: text is normalized (wrt whitespaces, etc.)
+    //
+
+    int currentTopYOffset =
+        CellInnerMargin
+        + MaterialSampleSize.height
+        + MaterialSampleToNameGapHeight;
+
+    auto const previousFont = GetFont();
+
+    // Name
+
+    SetFont(mNameFont);
+
+    auto nameSizeWidth = GetTextExtent(material->Name).GetWidth();
+    if (nameSizeWidth > MaterialSampleSize.width)
+    {
+        int lastSpaceIndex = -1;
+        while (true)
+        {
+            auto const nextSpace = material->Name.find(' ', lastSpaceIndex + 1);
+            if (nextSpace == std::string::npos
+                || GetTextExtent(material->Name.substr(0, nextSpace)).GetWidth() > MaterialSampleSize.width)
+            {
+                // Use up to last space
+                if (lastSpaceIndex > 0)
+                {
+                    cell.Name1 = material->Name.substr(0, lastSpaceIndex);
+                    cell.Name2 = TruncateAsNeeded(material->Name.substr(lastSpaceIndex + 1), MaterialSampleSize.width);
+                }
+                else
+                {
+                    // Single string, too long though
+                    cell.Name1 = TruncateAsNeeded(material->Name, MaterialSampleSize.width);
+                    cell.Name2 = wxEmptyString;
+                }
+
+                break;
+            }
+            else
+            {
+                // Up to this space would be good, continue searching
+                lastSpaceIndex = nextSpace;
+            }
+        }
+    }
+    else
+    {
+        // Fits all
+        cell.Name1 = material->Name;
+        cell.Name2 = wxEmptyString;
+    }
+
+    auto const name1Size = GetTextExtent(cell.Name1);
+    cell.Name1Width = name1Size.GetWidth();
+    cell.Name1YTopOffset = currentTopYOffset;
+
+    currentTopYOffset += NameTextHeight;
+
+    if (!cell.Name2.IsEmpty())
+    {
+        currentTopYOffset += NameToNameGapHeight;
+
+        auto const name2Size = GetTextExtent(cell.Name2);
+        cell.Name2Width = name2Size.GetWidth();
+        cell.Name2YTopOffset = currentTopYOffset;
+
+        currentTopYOffset += NameTextHeight;
+    }
+
+    // Data
+
+    if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+    {
+        SetFont(mDataFont);
+
+        std::stringstream ss;
+
+        ss << std::fixed << std::setprecision(2)
+            << "M:" << material->GetMass()
+            << "    "
+            << "S:" << material->Strength;
+
+        cell.Data = ss.str();
+
+        currentTopYOffset += NameToDataGapHeight;
+
+        auto const dataSize = GetTextExtent(cell.Data);
+        cell.DataWidth = dataSize.GetWidth();
+        cell.DataYTopOffset = currentTopYOffset;
+
+        currentTopYOffset += DataTextHeight;
+    }
+
+    currentTopYOffset += CellInnerMargin;
+
+    assert(currentTopYOffset <= MaterialCellSize.height);
+
+    return cellInsertIndex;
+}
+
+template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::LayoutAndRender(
     LayoutSession const & layoutSession,
     bool doRenderSeparators)
@@ -576,27 +659,66 @@ void MaterialPalettePanel<TLayer>::LayoutAndRender(
     // Calculate total panel size
     wxSize const panelSize(maxRowWidth, mRows.back().Rect.y + mRows.back().Rect.height);
 
-    // TODOHERE: enlarge tricks
+    assert(!mRenderBuffer || panelSize.GetHeight() == mRenderBuffer->GetHeight()); // Height won't change
+
+    if (!mRenderBuffer || panelSize.GetWidth() != mRenderBuffer->GetWidth())
+    {
+        //
+        // Panel changes size
+        //
+
+        // Save old render buffer
+        auto oldRenderBuffer = std::move(mRenderBuffer);
+
+        // Alloc new buffer
+        mRenderBuffer = std::make_unique<wxBitmap>(panelSize);
+
+        if (oldRenderBuffer)
+        {
+            // Blit old into new
+            auto oldDc = wxMemoryDC(*oldRenderBuffer);
+            auto newDc = wxMemoryDC(*mRenderBuffer);
+            newDc.Blit(
+                0, // xDest
+                0, // yDest
+                std::min(oldRenderBuffer->GetWidth(), mRenderBuffer->GetWidth()), // width
+                mRenderBuffer->GetHeight(), // height
+                &oldDc,
+                0, // xSrc
+                0); // ySrc
+
+            // Clear part of new that's extra
+            if (mRenderBuffer->GetWidth() > oldRenderBuffer->GetWidth())
+            {
+                newDc.SetPen(*wxTRANSPARENT_PEN);
+                newDc.SetBrush(SharedUIResources::GetInstance().GetWhiteSolidBackgroundBrush());
+                newDc.DrawRectangle(wxRect(oldRenderBuffer->GetWidth(), 0, panelSize.GetWidth(), panelSize.GetHeight()));
+            }
+        }
+        else
+        {
+            // Clear whole new
+            auto dc = MakeDc();
+            dc->SetPen(*wxTRANSPARENT_PEN);
+            dc->SetBrush(SharedUIResources::GetInstance().GetWhiteSolidBackgroundBrush());
+            dc->DrawRectangle(wxRect(0, 0, panelSize.GetWidth(), panelSize.GetHeight()));
+        }
+
+        // Make sure we render separators
+        doRenderSeparators = true;
+    }
 
     // Set panel size
     SetSize(panelSize);
     SetMinSize(panelSize);
-
-    assert(!mRenderBuffer);
-    mRenderBuffer = std::make_unique<wxBitmap>(panelSize);
-    // TODOTEST
-    {
-        auto dc = MakeDc();
-        dc->SetPen(*wxTRANSPARENT_PEN);
-        dc->SetBrush(SharedUIResources::GetInstance().GetWhiteSolidBackgroundBrush());
-        dc->DrawRectangle(wxRect(0, 0, panelSize.GetWidth(), panelSize.GetHeight()));
-    }
 
     //
     // Render panel
     //
 
     RenderPanel(layoutSession, doRenderSeparators);
+
+    Refresh(false);
 }
 
 template<LayerType TLayer>
@@ -672,7 +794,12 @@ void MaterialPalettePanel<TLayer>::RenderPanel(
 
             dc.SetPen(*wxTRANSPARENT_PEN);
             dc.SetBrush(SharedUIResources::GetInstance().GetWhiteSolidBackgroundBrush());
-            dc.DrawRectangle(row.Rect);
+            dc.DrawRectangle(
+                wxRect( // Clear to the end
+                    row.Rect.x,
+                    row.Rect.y,
+                    dc.GetSize().GetWidth() - row.Rect.x,
+                    row.Rect.height));
 
             //
             // Render separator
@@ -831,6 +958,40 @@ wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(TMaterial const * mate
             rgbaColor(material->RenderColor, 255),
             MaterialSampleSize);
     }
+}
+
+template<LayerType TLayer>
+size_t MaterialPalettePanel<TLayer>::FindRowFor(TMaterial const * material) const
+{
+    for (size_t iRow = 0; iRow < mRows.size(); ++iRow)
+    {
+        Row const & row = mRows[iRow];
+        if (row.Kind == Row::KindType::SubCategory
+            && row.SubCategory == material->PaletteCoordinates->SubCategory)
+        {
+            return iRow;
+        }
+    }
+
+    assert(false);
+    return std::numeric_limits<size_t>::max();
+}
+
+template<LayerType TLayer>
+size_t MaterialPalettePanel<TLayer>::FindStrideFor(TMaterial const * material, Row const & row) const
+{
+    assert(row.Kind == Row::KindType::SubCategory);
+
+    for (size_t iStride = 0; iStride < row.Strides.size(); ++iStride)
+    {
+        if (row.Strides[iStride].SubCategoryBaseMaterialOrdinal == material->PaletteSubCategoryBaseMaterialOrdinal)
+        {
+            return iStride;
+        }
+    }
+
+    assert(false);
+    return std::numeric_limits<size_t>::max();
 }
 
 template<LayerType TLayer>

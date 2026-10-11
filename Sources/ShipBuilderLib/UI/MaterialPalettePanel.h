@@ -100,12 +100,23 @@ public:
     void AddSeparatorRow();
     void EndDefaultMaterialsLayout();
 
+    std::any StartCustomMaterialsLayout();
+    std::any AddUserCustomMaterial(TMaterial const * material, std::any layoutSession);
+    std::any AddShipCustomMaterial(TMaterial const * material, std::any layoutSession);
+    void EndCustomMaterialsLayout(std::any layoutSession);
+
     void SetSelected(TMaterial const * material);
 
 private:
 
     using CellIdType = std::uint64_t;
     static CellIdType constexpr NoneCellId = std::numeric_limits<CellIdType>::max();
+    enum class CustomKindType
+    {
+        None,
+        User,
+        Ship
+    };
 
     void OnPaint(wxPaintEvent & event);
     void OnMouseLeave();
@@ -118,7 +129,7 @@ private:
         // Row index (Subcategory only) => <Leftmost Stride Index, Leftmost Cell Index in that stride>
         std::map<size_t, std::tuple<size_t, size_t>> DirtyBoundaries;
 
-        void RecordDirtyBorder(
+        void RecordDirtyBoundary(
             size_t rowIndex,
             size_t strideIndex,
             size_t cellIndex)
@@ -138,6 +149,17 @@ private:
         }
     };
 
+    LayoutSession AppendCustomMaterial(
+        TMaterial const * material,
+        CustomKindType customKind,
+        LayoutSession layoutSession);
+
+    size_t AppendMaterialCell(
+        TMaterial const * material,
+        CustomKindType customKind,
+        size_t iRow,
+        size_t iStride);
+
     void LayoutAndRender(
         LayoutSession const & layoutSession,
         bool doRenderSeparators);
@@ -149,11 +171,15 @@ private:
         bool doRenderSeparators);
 
     struct Cell;
+    struct Row;
+
     void RenderCell(Cell const & cell);
     void RenderCell(Cell const & cell, wxDC & dc);
 
     wxBitmap MakeMaterialSample(TMaterial const * material) const;
 
+    size_t FindRowFor(TMaterial const * material) const;
+    size_t FindStrideFor(TMaterial const * material, Row const & row) const;
     Cell * FindCell(CellIdType const & id);
     Cell * FindCellAt(wxPoint const & position);
     Cell * FindCellFor(TMaterial const * material);
@@ -181,7 +207,7 @@ private:
 
     struct Cell
     {
-        CellIdType const Id;
+        CellIdType Id; // const, but need assignment
 
         enum class KindType
         {
@@ -189,20 +215,13 @@ private:
             Material
         };
 
-        KindType const Kind;
-
-        enum class CustomKindType
-        {
-            None,
-            User,
-            Ship
-        };
+        KindType Kind; // const, but need assignment
 
         // Iff Kind==CreateNewButton|Material
         TMaterial const * Material; // CreateNewButton:parent material|Material:material itself
         // Iff Kind==Material
-        CustomKindType const CustomKind;
-        int const MaterialSampleBitmapIndex;
+        CustomKindType CustomKind; // const, but need assignment
+        int MaterialSampleBitmapIndex; // const, but need assignment
         wxString Name1;
         int Name1Width;
         int Name1YTopOffset; // Relative to cell

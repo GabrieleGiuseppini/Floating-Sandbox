@@ -458,8 +458,16 @@ std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverrid
 template<LayerType TLayer>
 void MaterialPaletteBrowser<TLayer>::AddUserCustomMaterials(std::vector<TMaterial const *> const & customMaterials)
 {
-    // TODO: start orchestration; call into palette for each; close orchestration
-    (void)customMaterials;
+    // TODO: organize by category, in helper
+    for (TMaterial const * customMaterial : customMaterials)
+    {
+    }
+
+    // TODO: for each category
+    {
+        // TODO: start orchestration; call into palette for each; close orchestration
+        (void)customMaterials;
+    }
 }
 
 template<LayerType TLayer>
