@@ -35,7 +35,7 @@ CreditsPanel::CreditsPanel(wxWindow* parent)
     // Initialize look'n'feel
     //
 
-    SetBackgroundColour(wxColour("BLACK"));
+    SetBackgroundColour(*wxBLACK);
 
     mFonts = {
         wxFont(wxFontInfo(20).Family(wxFONTFAMILY_ROMAN)),
@@ -238,7 +238,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
     mMaxScrollOffsetY = currentY - panelSize.GetHeight();
 
     mCreditsBitmapBufferedPaintDC->Clear();
-    mCreditsBitmapBufferedPaintDC->SetTextForeground(wxColour("WHITE"));
+    mCreditsBitmapBufferedPaintDC->SetTextForeground(*wxWHITE);
 
     currentY = startY;
     for (auto const & title : titles)

@@ -43,7 +43,7 @@ ScalarTimeSeriesProbeControl<TElement...>::ScalarTimeSeriesProbeControl(
     SetDoubleBuffered(true);
 #endif
 
-    SetBackgroundColour(wxColour("WHITE"));
+    SetBackgroundColour(*wxWHITE);
 
     wxFont font(wxFontInfo(wxSize(8, 8)).Family(wxFONTFAMILY_TELETYPE));
     SetFont(font);

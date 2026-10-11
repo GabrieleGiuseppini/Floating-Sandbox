@@ -31,8 +31,8 @@ PressureCrossCutReadingsProbeControl::PressureCrossCutReadingsProbeControl(
     , mWidth(width)
     , mReferencePressure(Physics::Formulae::PressureToEquivalentWaterHeight(SimulationParameters::AirPressureAtSeaLevel))
     , mBufferedDCBitmap()
-    , mAirPressurePen(wxColor("RED"), 2, wxPENSTYLE_SOLID)
-    , mWaterPressurePen(wxColor("BLUE"), 2, wxPENSTYLE_SOLID)
+    , mAirPressurePen(*wxRED, 2, wxPENSTYLE_SOLID)
+    , mWaterPressurePen(*wxBLUE, 2, wxPENSTYLE_SOLID)
     , mTotalPressurePen(wxColour(50, 50, 50), 2, wxPENSTYLE_SOLID)
     , mReferencePressurePen(wxColour(200, 200, 200), 1, wxPENSTYLE_SHORT_DASH)
     , mLinearRegressionPen(wxColour(200, 200, 200), 1, wxPENSTYLE_SOLID)
@@ -46,7 +46,7 @@ PressureCrossCutReadingsProbeControl::PressureCrossCutReadingsProbeControl(
     SetDoubleBuffered(true);
 #endif
 
-    SetBackgroundColour(wxColour("WHITE"));
+    SetBackgroundColour(*wxWHITE);
 
     wxFont font(wxFontInfo(wxSize(8, 8)).Family(wxFONTFAMILY_TELETYPE));
     SetFont(font);

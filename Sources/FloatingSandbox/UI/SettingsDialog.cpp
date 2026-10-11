@@ -4756,7 +4756,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     oceanRenderModeSizer->Add(mDepthOceanRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    mDepthOceanColorStartPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                    mDepthOceanColorStartPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, *wxWHITE,
                         wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                     mDepthOceanColorStartPicker->SetToolTip(_("Sets the starting (top) color of the gradient."));
                     mDepthOceanColorStartPicker->Bind(
@@ -4774,7 +4774,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     oceanRenderModeSizer->Add(mDepthOceanColorStartPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    mDepthOceanColorEndPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                    mDepthOceanColorEndPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, *wxWHITE,
                         wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                     mDepthOceanColorEndPicker->SetToolTip(_("Sets the ending (bottom) color of the gradient."));
                     mDepthOceanColorEndPicker->Bind(
@@ -4800,7 +4800,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     oceanRenderModeSizer->Add(mFlatOceanRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    mFlatOceanColorPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                    mFlatOceanColorPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, *wxWHITE,
                         wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                     mFlatOceanColorPicker->SetToolTip(_("Sets the single color of the ocean."));
                     mFlatOceanColorPicker->Bind(
@@ -4985,7 +4985,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     landRenderModeSizer->Add(mFlatLandRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    mFlatLandBedrockColorPicker = new wxColourPickerCtrl(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                    mFlatLandBedrockColorPicker = new wxColourPickerCtrl(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, *wxWHITE,
                         wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                     mFlatLandBedrockColorPicker->SetToolTip(_("Sets the color of bedrock."));
                     mFlatLandBedrockColorPicker->Bind(
@@ -5003,7 +5003,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     landRenderModeSizer->Add(mFlatLandBedrockColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    mFlatLandSiltColorPicker = new wxColourPickerCtrl(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                    mFlatLandSiltColorPicker = new wxColourPickerCtrl(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, *wxWHITE,
                         wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                     mFlatLandSiltColorPicker->SetToolTip(_("Sets the color of silt."));
                     mFlatLandSiltColorPicker->Bind(
@@ -5103,7 +5103,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     npcRenderModeSizer->Add(mQuadFlatNpcRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    mQuadFlatNpcColorPicker = new wxColourPickerCtrl(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                    mQuadFlatNpcColorPicker = new wxColourPickerCtrl(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, *wxWHITE,
                         wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                     mQuadFlatNpcColorPicker->SetToolTip(_("Sets the color of anonymous NPCs."));
                     mQuadFlatNpcColorPicker->Bind(
@@ -5154,7 +5154,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Lamp Light color
             {
-                mFlatLampLightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                mFlatLampLightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY, *wxWHITE,
                     wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                 mFlatLampLightColorPicker->SetToolTip(_("Sets the color of lamp lights."));
                 mFlatLampLightColorPicker->Bind(
@@ -5455,7 +5455,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Default Water Color
             {
-                mDefaultWaterColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                mDefaultWaterColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY, *wxWHITE,
                     wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                 mDefaultWaterColorPicker->SetToolTip(_("Sets the color of water which is used when ocean render mode is set to 'Texture'."));
                 mDefaultWaterColorPicker->Bind(
@@ -5569,7 +5569,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     skyRenderModeSizer->Add(mFlatSkyRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
 
-                    mFlatSkyColorPicker = new wxColourPickerCtrl(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                    mFlatSkyColorPicker = new wxColourPickerCtrl(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY, *wxWHITE,
                         wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                     mFlatSkyColorPicker->SetToolTip(_("Sets the single color of the sky."));
                     mFlatSkyColorPicker->Bind(
@@ -5597,7 +5597,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     skyRenderModeSizer->Add(mCrepuscularSkyRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
 
-                    mCrepuscularColorPicker = new wxColourPickerCtrl(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                    mCrepuscularColorPicker = new wxColourPickerCtrl(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY, *wxWHITE,
                         wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                     mCrepuscularColorPicker->SetToolTip(_("Sets the crepuscolar overtone of the sky."));
                     mCrepuscularColorPicker->Bind(
@@ -5646,7 +5646,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     wxALL | wxALIGN_CENTER_VERTICAL,
                     CellBorderInner);
 
-                mMoonlightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                mMoonlightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY, *wxWHITE,
                     wxDefaultPosition, wxSize(ColorPickerWidth, -1));
                 mMoonlightColorPicker->SetToolTip(_("Sets the color of the moon's light."));
                 mMoonlightColorPicker->Bind(

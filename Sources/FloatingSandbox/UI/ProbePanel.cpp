@@ -25,7 +25,7 @@ ProbePanel::ProbePanel(wxWindow* parent)
     // Create probes
     //
 
-    wxPen const defaultPen = wxPen(wxColor("BLACK"), 2, wxPENSTYLE_SOLID);
+    wxPen const defaultPen = wxPen(*wxBLACK, 2, wxPENSTYLE_SOLID);
 
     mProbesSizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -35,7 +35,7 @@ ProbePanel::ProbePanel(wxWindow* parent)
     mPressureIntakeProbe = AddProbe<ScalarTimeSeriesProbeControl<float, float>>(
         _("Pressure Inflow"),
         150,
-        std::make_tuple(wxPen(wxColor("BLUE"), 2, wxPENSTYLE_SOLID), wxPen(wxColor("PLUM"), 2, wxPENSTYLE_SOLID)),
+        std::make_tuple(wxPen(*wxBLUE, 2, wxPENSTYLE_SOLID), wxPen(wxColor("PLUM"), 2, wxPENSTYLE_SOLID)),
         ScalarTimeSeriesProbeControlOptions::ZeroLine);
 
     mWindSpeedProbe = AddProbe<ScalarTimeSeriesProbeControl<float>>(_("Wind Speed"), 120, std::make_tuple(defaultPen));
@@ -150,7 +150,7 @@ void ProbePanel::OnCustomProbe(
     auto & probe = mCustomProbes[name];
     if (!probe)
     {
-        probe = AddProbe<ScalarTimeSeriesProbeControl<float>>(name, 100, std::make_tuple(wxPen(wxColor("BLACK"), 2, wxPENSTYLE_SOLID)));
+        probe = AddProbe<ScalarTimeSeriesProbeControl<float>>(name, 100, std::make_tuple(wxPen(*wxBLACK, 2, wxPENSTYLE_SOLID)));
         mProbesSizer->Layout();
         SetSizerAndFit(mProbesSizer);
     }

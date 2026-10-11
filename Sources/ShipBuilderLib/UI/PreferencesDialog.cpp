@@ -146,7 +146,7 @@ PreferencesDialog::PreferencesDialog(
 
             // Color picker
             {
-                mCanvasBackgroundColorColourPicker = new wxColourPickerCtrl(this, wxID_ANY, wxColour("WHITE"), wxDefaultPosition, wxDefaultSize);
+                mCanvasBackgroundColorColourPicker = new wxColourPickerCtrl(this, wxID_ANY, *wxWHITE, wxDefaultPosition, wxDefaultSize);
 
                 mCanvasBackgroundColorColourPicker->SetToolTip(_("Sets the color of the canvas background."));
 

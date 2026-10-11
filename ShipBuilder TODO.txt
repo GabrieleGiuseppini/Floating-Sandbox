@@ -489,76 +489,66 @@
 				- MaterialPalette<TLayer X 3>::TODOShipCustomMaterials(pod member)
 					- Full relayout of ship portion for all rows
 
-		= MaterialEditDialog: 
+		+ MaterialEditDialog: 
+			+ Two dialogs, two classes, one base with common code
 			+ Hook NewButton->IMaterialPalettesController
-			= Option 1:
-				+ Two dialogs, two classes, one base with common code
-				+ FIX: Edit opening makes palette close - because it's wxTransientPopupWindow, closes at focus lost
-					- Option 1: Browser is wxTransientPopupWindow
-						- Yes close on click outside
-						- No close on focus lost
-					+ Option 2: Browser is wxFrame
-						+ wxFRAME_FLOAT_ON_PARENT
-						+ OnFocus handler detects losing focus and closes
-						+ When about to open dialog, remembers to disable focus check
-							+ Change: Controller asks Browser to run dialog
-							+ Clear flag at Open()
-						+ Do we still need MainFrame checking IsOpen()? YES: it's for mouse entering WorkCanvas
+			+ FIX: Edit opening makes palette close - because it's wxTransientPopupWindow, closes at focus lost
+				- Option 1: Browser is wxTransientPopupWindow
+					- Yes close on click outside
+					- No close on focus lost
+				+ Option 2: Browser is wxFrame
+					+ wxFRAME_FLOAT_ON_PARENT
+					+ OnFocus handler detects losing focus and closes
+					+ When about to open dialog, remembers to disable focus check
+						+ Change: Controller asks Browser to run dialog
+						+ Clear flag at Open()
+					+ Do we still need MainFrame checking IsOpen()? YES: it's for mouse entering WorkCanvas
 
-				+ Contains overrides, and ctrl event handlers populate that overrides instance
-				+ Structural:
-					+ Run() also needs nominal
-					+ Notebook
-						+ Basic:
-							+ ColorPicker: button + picker
-							+ Name
-							+ Sliders: Mass, Strength
-								X Option 1: static, global limits
-									= SimulationProperties: new "MaterialLimits" section with constants
-										+ Mass: 0.0813
-										+ Strength: 0.02-7.5
-										- Ignition: 353-1e06
-										- ...
-									- Enforce at default load time
+			+ Contains overrides, and ctrl event handlers populate that overrides instance
+			+ Structural:
+				+ Run() also needs nominal
+				+ Notebook
+					+ Basic:
+						+ ColorPicker: button + picker
+						+ Name
+						+ Sliders: Mass, Strength
+							X Option 1: static, global limits
+								= SimulationProperties: new "MaterialLimits" section with constants
+									+ Mass: 0.0813
+									+ Strength: 0.02-7.5
+									- Ignition: 353-1e06
+									- ...
+								- Enforce at default load time
 
-								+ Option 2: limits between 0.1 and 10 of value, except fo truly capped ones
-									X Caps still required at SimulationProperties, or not? They're always 1.0
-										+ Enforce at default load time
-									+ Run():
-										+ Sync values and reset slider limits
-											+ Slider limits values based off base material's value, conveniently via MakeStartingOverrides()
-										+ SliderControl: substitution of slider core								
-						+ Advanced:
-							+ 5
+							+ Option 2: limits between 0.1 and 10 of value, except fo truly capped ones
+								X Caps still required at SimulationProperties, or not? They're always 1.0
+									+ Enforce at default load time
+								+ Run():
+									+ Sync values and reset slider limits
+										+ Slider limits values based off base material's value, conveniently via MakeStartingOverrides()
+									+ SliderControl: substitution of slider core								
+					+ Advanced:
+						+ 5
 
-				+ Electrical:
-					+ N panels, one per-type; selects right one at Run()
-					+ Add ThermalSwitch, overrides and all
-					+ Only electrical elements of certain types (the overridable ones, or those that emit heat) should have a button at all
-						+ ElectricalElementEditDialog static private helper w/base material argument and returns PanelKind
-							+ See if all to which we give heat, do heat
-								! Generator
-								! Lamp, OtherSink, WaterPump, Engine,
-						+ ElectricalElementEditDialog static public helper w/base material argument and uses private
-							+ Use at layout when deciding to add CreateNewButton
-						+ Run(): populate all values/limits, use private helper to show panel	
-						
-					+ Final cleanups
+			+ Electrical:
+				+ N panels, one per-type; selects right one at Run()
+				+ Add ThermalSwitch, overrides and all
+				+ Only electrical elements of certain types (the overridable ones, or those that emit heat) should have a button at all
+					+ ElectricalElementEditDialog static private helper w/base material argument and returns PanelKind
+						+ See if all to which we give heat, do heat
+							! Generator
+							! Lamp, OtherSink, WaterPump, Engine,
+					+ ElectricalElementEditDialog static public helper w/base material argument and uses private
+						+ Use at layout when deciding to add CreateNewButton
+					+ Run(): populate all values/limits, use private helper to show panel	
+					
+				+ Final cleanups
 
-				- Try: hover on button: different feedback
-
-				+ Normalize name (@ Utils, with unit tests)
-					+ Algo
-					+ Use
-				
-				+ MaterialPalettesController instantiates and owns two MaterialEditDialog instances (Structural and Electrical)
-
-			- Option 2:
-				- All 3 variants in same dialog
-				- 3 panels inside; @ open<TLayerType> shows/hides panels
-				- Structural/Rope:
-					- Shows "mass" but changes _density_ based off base's _nominal_mass_
-
+			+ Normalize name (@ Utils, with unit tests)
+				+ Algo
+				+ Use
+			
+			+ MaterialPalettesController instantiates and owns two MaterialEditDialog instances (Structural and Electrical)
 
 		- Model and maybe ModelController:
 			- ReplaceMaterials(map: TMaterial * -> TMaterial *|null (for removal))

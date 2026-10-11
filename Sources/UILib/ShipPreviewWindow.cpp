@@ -69,7 +69,7 @@ ShipPreviewWindow::ShipPreviewWindow(
 #ifdef __WXMSW__
     SetDoubleBuffered(true);
 #endif
-    SetBackgroundColour(wxColour("WHITE"));
+    SetBackgroundColour(*wxWHITE);
     mSelectionPen = wxPen(wxColor(0x10, 0x10, 0x10), 1, wxPENSTYLE_SOLID);
     mDescriptionFont = wxFont(wxFontInfo(7));
     mDescriptionColor = wxColor(0, 0, 0);

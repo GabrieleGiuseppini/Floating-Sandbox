@@ -42,7 +42,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
     , mSoundController(soundController)
     , mCurrentPlane()
 {
-    SetBackgroundColour(wxColour("WHITE"));
+    SetBackgroundColour(*wxWHITE);
 
     {
         auto font = GetFont();

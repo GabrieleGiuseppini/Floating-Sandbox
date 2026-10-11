@@ -36,7 +36,7 @@ ShipOffsetVisualizationControl::ShipOffsetVisualizationControl(
 #ifdef __WXMSW__
     SetDoubleBuffered(true);
 #endif
-    SetBackgroundColour(wxColour("WHITE"));
+    SetBackgroundColour(*wxWHITE);
     mSeaBrush = wxBrush(wxColor(77, 172, 255), wxBRUSHSTYLE_SOLID);
     mSeaPen = wxPen(mSeaBrush.GetColour(), 1, wxPENSTYLE_SOLID);
     mGuidesPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_SOLID);

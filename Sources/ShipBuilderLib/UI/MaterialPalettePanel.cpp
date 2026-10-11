@@ -49,6 +49,12 @@ int constexpr SeparatorRowHeight = 1 + SeparatorThickness + 1;
 
 int constexpr StrideHSpacing = 8;
 
+//
+// Style
+//
+
+static wxColor const BaseColor1 = wxColor(0x00, 0x78, 0xd4);
+
 ////////////////////////////////////////////////////////////////
 
 wxDEFINE_EVENT(fsEVT_STRUCTURAL_MATERIAL_PALETTE_HOVERED_OUT, fsStructuralMaterialPaletteEvent);
@@ -75,16 +81,14 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     , mCurrentSelectedCellId(NoneCellId)
     , mNextCellId(0)
 {
-    SetBackgroundColour(wxColour("WHITE"));
+    SetBackgroundColour(*wxWHITE);
 
     //
     // Build style
     //
 
-    wxColor const baseColor1 = wxColor(0x00, 0x78, 0xd4);
-
-    mSelectionPen = wxPen(baseColor1, SelectionFrameThickness, wxPENSTYLE_SOLID);
-    mCreateNewFrameBorderPen = wxPen(baseColor1, 1, wxPENSTYLE_SHORT_DASH);
+    mSelectionPen = wxPen(BaseColor1, SelectionFrameThickness, wxPENSTYLE_SOLID);
+    mCreateNewFrameBorderPen = wxPen(BaseColor1, 1, wxPENSTYLE_SHORT_DASH);
 
     // Make name font
     mNameFont = GetFont();
@@ -94,7 +98,7 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     mDataFont = GetFont();
     mDataFont.SetPointSize(DataTextHeight - 2);
 
-    mTextForegroundColor = wxColour("BLACK");
+    mTextForegroundColor = *wxBLACK;
 
     //
     // Connect events
@@ -627,6 +631,7 @@ void MaterialPalettePanel<TLayer>::RenderCell(
             // Add new button
 
             // Frame
+
             dc.SetPen(mCreateNewFrameBorderPen);
             dc.SetBrush(*wxTRANSPARENT_BRUSH);
             dc.DrawRoundedRectangle(
@@ -637,6 +642,7 @@ void MaterialPalettePanel<TLayer>::RenderCell(
                 5.0);
 
             // Plus
+
             auto const & bitmap = SharedUIResources::GetInstance().GetAddNewMaterialPlusIcon();
             dc.DrawBitmap(
                 bitmap,
