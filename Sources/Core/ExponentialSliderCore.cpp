@@ -43,7 +43,7 @@ ExponentialSliderCore::ExponentialSliderCore(
     , mUpperA(zeroValue - 1.0f)
     , mUpperB(logf(maxValue - zeroValue + 1.0f) / (Beta<float> - 1.0f))
 {
-    assert(maxValue > zeroValue && zeroValue > minValue);
+    assert(maxValue >= zeroValue && zeroValue >= minValue);
 }
 
 int ExponentialSliderCore::GetNumberOfTicks() const

@@ -11,6 +11,11 @@
 
 #include <UILib/SliderControl.h>
 
+#include <wx/panel.h>
+#include <wx/sizer.h>
+
+#include <array>
+
 namespace ShipBuilder {
 
 class ElectricalMaterialEditDialog final : public BaseMaterialEditDialog<ElectricalMaterial>
@@ -35,7 +40,30 @@ private:
     // UI
     //
 
+    wxBoxSizer * mHSizer;
+
     SliderControl<float> * mHeatGeneratedSlider;
+
+    enum SpecializedPanelKind
+    {
+        Others = 0,
+        Lamp = 1,
+        Engine = 2,
+        WaterPump = 3,
+        TimerSwitch = 4,
+
+        _Last = TimerSwitch
+    };
+
+    std::array<wxPanel *, SpecializedPanelKind::_Last + 1> mSpecializedPanels;
+
+    // Others
+    SliderControl<float> * mOthersHeatGeneratedSlider;
+
+    // Lamp
+    SliderControl<float> * mLampHeatGeneratedSlider;
+    SliderControl<float> * mLuminiscenceSlider;
+    SliderControl<float> * mLightSpreadSlider;
 };
 
 }

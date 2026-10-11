@@ -532,8 +532,14 @@
 							+ 5
 
 				- Electrical:
+					- Test 1:
+						- HSizer: left panel fixed with heat; right panel wisseling
+						- Formalize where panels start in HSizer
+
 					- N panels, one per-type; selects right one at Run()
 					- TODO
+
+					- See if mSpecializedPanels still needed
 
 
 				- Normalize name
