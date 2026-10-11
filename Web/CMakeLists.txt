@@ -20,8 +20,10 @@ find_library(FS_WEB_PNG_LIBRARY NAMES png16 png PATHS ${FS_WEB_DEPS_PREFIX}/lib 
 find_library(FS_WEB_ZLIB_LIBRARY NAMES z PATHS ${FS_WEB_DEPS_PREFIX}/lib NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH REQUIRED)
 
 set(FS_SOURCES_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../Sources)
+set(FS_DATA_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../Data)
 
 add_compile_definitions(PICOJSON_USE_INT64 LIBPNG_MODE_LIB)
+add_compile_options(-fexceptions)
 
 function(fs_web_module name)
     file(GLOB_RECURSE module_sources CONFIGURE_DEPENDS ${FS_SOURCES_ROOT}/${name}/*.cpp)
@@ -53,3 +55,30 @@ target_link_libraries(FloatingSandboxWeb INTERFACE
     Core
     ${FS_WEB_PNG_LIBRARY}
     ${FS_WEB_ZLIB_LIBRARY})
+
+add_executable(FloatingSandboxWebApp ${CMAKE_CURRENT_SOURCE_DIR}/Main.cpp)
+target_link_libraries(FloatingSandboxWebApp PRIVATE FloatingSandboxWeb)
+set_target_properties(FloatingSandboxWebApp PROPERTIES
+    OUTPUT_NAME index
+    SUFFIX ".html"
+    LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/shell.html)
+target_link_options(FloatingSandboxWebApp PRIVATE
+    -fexceptions
+    -O0
+    -sALLOW_MEMORY_GROWTH=1
+    -sINITIAL_MEMORY=536870912
+    -sMAXIMUM_MEMORY=2147483648
+    -sSTACK_SIZE=5242880
+    -sMIN_WEBGL_VERSION=2
+    -sMAX_WEBGL_VERSION=2
+    -sENVIRONMENT=web
+    -sFORCE_FILESYSTEM=1
+    -sEXPORTED_RUNTIME_METHODS=ccall,FS
+    -sASSERTIONS=1
+    --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/shell.html
+    --preload-file ${FS_DATA_ROOT}@/game/Data
+    "SHELL:--exclude-file \"*/Music/*\""
+    "SHELL:--exclude-file \"*/Sounds/*\""
+    "SHELL:--exclude-file \"*/Languages/*\""
+    "SHELL:--exclude-file \"*/Help/*\""
+    "SHELL:--exclude-file \"*/Themes/*\"")

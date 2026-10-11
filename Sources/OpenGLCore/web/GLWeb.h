@@ -160,6 +160,17 @@ inline void glPolygonMode(GLenum, GLenum)
 inline void glPointSize(GLfloat size)
 {
     glweb::PointSize = size;
+
+    GLint program = 0;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+    if (program != 0)
+    {
+        GLint const location = glGetUniformLocation(static_cast<GLuint>(program), "glwebPointSize");
+        if (location >= 0)
+        {
+            glUniform1f(location, size);
+        }
+    }
 }
 
 inline void glTexImage1D(

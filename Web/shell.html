@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Floating Sandbox</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b1e2d;
+    --panel: rgba(8, 20, 30, 0.82);
+    --line: rgba(255, 255, 255, 0.14);
+    --text: #e8f1f7;
+    --muted: #8fa6b6;
+    --accent: #3fb2e8;
+    --error: #ff7a6b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.4 system-ui, sans-serif; overflow: hidden; }
+  canvas#canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; outline: none; cursor: grab; touch-action: none; }
+  canvas#canvas:active { cursor: grabbing; }
+  .overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--bg); transition: opacity 0.4s ease; }
+  .overlay.hidden { opacity: 0; pointer-events: none; }
+  .card { width: min(420px, calc(100vw - 32px)); padding: 24px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+  h1 { margin: 0 0 4px; font-size: 20px; font-weight: 650; letter-spacing: 0.01em; }
+  .sub { margin: 0 0 18px; color: var(--muted); }
+  .bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .bar > div { height: 100%; width: 0%; background: var(--accent); transition: width 0.15s ease; }
+  .status { margin: 10px 0 0; color: var(--muted); min-height: 1.4em; font-variant-numeric: tabular-nums; }
+  .error { display: none; margin-top: 14px; padding: 10px 12px; border: 1px solid var(--error); border-radius: 8px; color: var(--error); white-space: pre-wrap; word-break: break-word; }
+  .error.visible { display: block; }
+  .toolbar { position: fixed; left: 12px; bottom: 12px; display: flex; gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); backdrop-filter: blur(6px); }
+  .toolbar span { color: var(--muted); }
+  button { font: inherit; color: var(--text); background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  input[type=file] { display: none; }
+  .toast { position: fixed; right: 12px; bottom: 12px; max-width: min(420px, calc(100vw - 24px)); padding: 10px 12px; border: 1px solid var(--error); border-radius: 8px; background: var(--panel); color: var(--error); display: none; white-space: pre-wrap; word-break: break-word; }
+  .toast.visible { display: block; }
+</style>
+</head>
+<body>
+<canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
+
+<div class="overlay" id="overlay">
+  <div class="card">
+    <h1>Floating Sandbox</h1>
+    <p class="sub">WebAssembly port, work in progress</p>
+    <div class="bar"><div id="bar-fill"></div></div>
+    <p class="status" id="status">Starting...</p>
+    <div class="error" id="boot-error" role="alert"></div>
+  </div>
+</div>
+
+<div class="toolbar" id="toolbar" hidden>
+  <button type="button" id="load-ship">Load ship...</button>
+  <input type="file" id="ship-file" accept=".shp2,.shp,.png">
+  <span>Drag to pan, scroll to zoom</span>
+</div>
+<div class="toast" id="toast" role="alert"></div>
+
+<script>
+  var overlay = document.getElementById('overlay');
+  var barFill = document.getElementById('bar-fill');
+  var statusEl = document.getElementById('status');
+  var bootError = document.getElementById('boot-error');
+  var toolbar = document.getElementById('toolbar');
+  var toast = document.getElementById('toast');
+  var isReady = false;
+  var toastTimer = 0;
+
+  function setProgress(fraction, text) {
+    barFill.style.width = Math.max(0, Math.min(1, fraction)) * 100 + '%';
+    if (text) { statusEl.textContent = text; }
+  }
+
+  function showError(message) {
+    if (isReady) {
+      toast.textContent = message;
+      toast.classList.add('visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toast.classList.remove('visible'); }, 8000);
+    } else {
+      bootError.textContent = message;
+      bootError.classList.add('visible');
+      statusEl.textContent = 'Failed to start';
+    }
+  }
+
+  var Module = {
+    canvas: document.getElementById('canvas'),
+    print: function (text) { console.log(text); },
+    printErr: function (text) { console.warn(text); },
+    setStatus: function (text) {
+      if (isReady) { return; }
+      var match = /(\d+(?:\.\d+)?)\/(\d+)/.exec(text);
+      if (match) {
+        var done = parseFloat(match[1]);
+        var total = parseFloat(match[2]);
+        setProgress(0.5 * (total > 0 ? done / total : 0), 'Downloading game data...');
+      } else if (text) {
+        statusEl.textContent = text;
+      }
+    },
+    onGameProgress: function (fraction) {
+      setProgress(0.5 + 0.5 * fraction, 'Starting the simulation...');
+    },
+    onGameReady: function () {
+      isReady = true;
+      overlay.classList.add('hidden');
+      toolbar.hidden = false;
+    },
+    onGameError: function (message) {
+      console.error(message);
+      showError(message);
+    }
+  };
+
+  window.addEventListener('error', function (event) {
+    showError(String(event.message || event.error || 'Unknown error'));
+  });
+
+  document.getElementById('canvas').addEventListener('webglcontextlost', function (event) {
+    event.preventDefault();
+    showError('The WebGL context was lost. Reload the page to continue.');
+  });
+
+  var shipFile = document.getElementById('ship-file');
+  document.getElementById('load-ship').addEventListener('click', function () { shipFile.click(); });
+  shipFile.addEventListener('change', function () {
+    var file = shipFile.files && shipFile.files[0];
+    if (!file) { return; }
+    file.arrayBuffer().then(function (buffer) {
+      var safeName = file.name.replace(/[^A-Za-z0-9._ -]/g, '_');
+      var path = '/game/Ships/' + safeName;
+      Module.FS.mkdirTree('/game/Ships');
+      Module.FS.writeFile(path, new Uint8Array(buffer));
+      Module.ccall('fs_load_ship', 'number', ['string'], [path]);
+      shipFile.value = '';
+    });
+  });
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>

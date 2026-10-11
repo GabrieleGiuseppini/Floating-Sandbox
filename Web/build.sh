@@ -7,7 +7,7 @@ here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 : "${FS_PICOJSON_DIR:?set FS_PICOJSON_DIR to the directory holding picojson.h}"
 
 build_dir="${FS_WEB_BUILD_DIR:-$here/build}"
-build_type="${FS_WEB_BUILD_TYPE:-Debug}"
+build_type="${FS_WEB_BUILD_TYPE:-Release}"
 jobs="${FS_WEB_JOBS:-2}"
 
 emcmake cmake -S "$here" -B "$build_dir" \
@@ -15,4 +15,4 @@ emcmake cmake -S "$here" -B "$build_dir" \
     -DFS_WEB_DEPS_PREFIX="$FS_WEB_DEPS_PREFIX" \
     -DFS_PICOJSON_DIR="$FS_PICOJSON_DIR"
 
-cmake --build "$build_dir" --target FloatingSandboxWebAll -j "$jobs"
+cmake --build "$build_dir" --target FloatingSandboxWebApp -j "$jobs"
