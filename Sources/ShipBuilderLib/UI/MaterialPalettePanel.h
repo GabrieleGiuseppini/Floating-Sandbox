@@ -114,6 +114,9 @@ private:
 
     std::unique_ptr<wxMemoryDC> MakeDc();
 
+    // Row index (Subcategory only) => <Leftmost Stride Index, Leftmost Cell Index in that stride>
+    using LayoutSession = std::map<size_t, std::tuple<size_t, size_t>>;
+
     void RenderPanel(wxRect const & region);
 
     struct Cell;

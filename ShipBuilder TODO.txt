@@ -180,7 +180,7 @@
 				+ Add to user's
 					+ Save DB
 				- Update palette
-				- Populate Undo with material (?)
+				X Populate Undo with material
 		- Editing existing user custom material
 			- User clicks on "edit" button
 			- When committed:
@@ -348,12 +348,15 @@
 			+ cctor:
 				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase
 				+ Loads users's
-			- Ops:
-				- AddUser: TODO
-				- RemoveUser: TODO
-				- ReplaceShip: TODO
-
-				- Loads user's
+			= Ops:
+				+ AddUser
+					+ Store
+					+ Save DB
+				- RemoveUser(one):
+					- Find
+					- Remove
+					- Save DB
+				- SetShip(vector): simply store
 
 			+ Ser/Deset for user custom materials
 				+ parent color_key and VariantOverridesType
@@ -418,6 +421,11 @@
 						+ Assign cell coords
 						+ Render cells onto buffer
 
+				+ LayoutSession struct, appears as std::any on API
+					+ Is map<rowIndex, <leftmost strideIndex, leftmost cellIndex>>
+						+ Use tuple, has less-than
+					+ Comment: kind=Strides only
+
 				- Extract layout to helper on LayoutSession
 					- Call from EndDefaultMaterialsLayout() with full LayoutSession
 
@@ -426,7 +434,6 @@
 					- Render own cell
 					- Refresh(false)
 				- All subsequent ones (custom):
-					- LayoutSession: wraps map<rowIndex, leftmost strideIndex>
 					- StartCustomMaterialsLayout() -> LayoutSession
 					- All atomic ops, taking LayoutSession and returning LayoutSession - naming as "...CustomMaterial..."
 						- Op does op on cell
@@ -435,6 +442,7 @@
 							- Add user/ship custom (one)
 								- Add material sample to ImageList
 								- Add to stride, at end
+									- Factor out creation of material @ AddDefaultMaterial into a new helper
 									- Update LayoutSession accordingly
 							- Remove user/ship custom (one)
 								- Nuke material sample from ImageList (wxImageList::Remove)
