@@ -95,6 +95,25 @@ std::optional<typename TMaterial::VariantOverridesType> BaseMaterialEditDialog<T
     return Run(overrides, baseMaterial);
 }
 
+template<typename TMaterial>
+std::optional<typename TMaterial::VariantOverridesType> BaseMaterialEditDialog<TMaterial>::BaseRun()
+{
+    auto const result = ShowModal();
+    if (result == wxID_OK)
+    {
+        // Take name now, and normalize it
+        mOverridesUnderEdit->Name = mNameTextCtrl->GetValue().ToStdString();
+
+        // TODO: normalize
+
+        return mOverridesUnderEdit;
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
 //
 // Explicit specializations for all materials
 //

@@ -5,28 +5,37 @@
  ***************************************************************************************/
 #pragma once
 
+#include "BaseMaterialEditDialog.h"
+
 #include <Simulation/Materials.h>
 
-#include <wx/dialog.h>
-
-#include <optional>
+#include <UILib/SliderControl.h>
 
 namespace ShipBuilder {
 
-class ElectricalMaterialEditDialog : public wxDialog
+class ElectricalMaterialEditDialog final : public BaseMaterialEditDialog<ElectricalMaterial>
 {
 public:
 
-    ElectricalMaterialEditDialog(wxWindow * parent);
+    ElectricalMaterialEditDialog(wxWindow * parent)
+        : BaseMaterialEditDialog<ElectricalMaterial>(parent)
+    {
+        LayoutBase();
+    }
 
-    std::optional<ElectricalMaterial::VariantOverridesType> RunForNew(ElectricalMaterial::VariantOverridesType & overrides, ElectricalMaterial const * baseMaterial);
-    std::optional<ElectricalMaterial::VariantOverridesType> RunForEdit(ElectricalMaterial::VariantOverridesType & overrides, ElectricalMaterial const * baseMaterial);
+private:
+
+    void LayoutControls(wxBoxSizer * dialogVSizer) override;
+
+    std::optional<ElectricalMaterial::VariantOverridesType> Run(ElectricalMaterial::VariantOverridesType & overrides, ElectricalMaterial const * baseMaterial) override;
 
 private:
 
-    std::optional<ElectricalMaterial::VariantOverridesType> Run(ElectricalMaterial::VariantOverridesType & overrides, ElectricalMaterial const * baseMaterial);
+    //
+    // UI
+    //
 
-private:
+    SliderControl<float> * mHeatGeneratedSlider;
 };
 
 }

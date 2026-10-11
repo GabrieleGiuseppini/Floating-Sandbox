@@ -9,6 +9,7 @@
 #include <wx/button.h>
 #include <wx/dialog.h>
 #include <wx/sizer.h>
+#include <wx/textctrl.h>
 
 #include <optional>
 
@@ -43,6 +44,8 @@ protected:
 
     virtual std::optional<typename TMaterial::VariantOverridesType> Run(typename TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial) = 0;
 
+    std::optional<typename TMaterial::VariantOverridesType> BaseRun();
+
 protected:
 
     //
@@ -51,6 +54,9 @@ protected:
 
     // Main panel
     wxPanel * mMainPanel;
+
+    // Shared controls (created by derived)
+    wxTextCtrl * mNameTextCtrl;
 
     // Buttons
     wxButton * mOkButton;

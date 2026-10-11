@@ -11,12 +11,7 @@
 
 #include <UILib/SliderControl.h>
 
-#include <wx/button.h>
-#include <wx/dialog.h>
 #include <wx/panel.h>
-#include <wx/textctrl.h>
-
-#include <optional>
 
 namespace ShipBuilder {
 
@@ -46,7 +41,6 @@ private:
 
     // Basic
     wxPanel * mRenderColorButton;
-    wxTextCtrl * mNameTextCtrl;
     SliderControl<float> * mMassSlider;
     SliderControl<float> * mStrengthSlider;
 

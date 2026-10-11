@@ -354,20 +354,7 @@ std::optional<StructuralMaterial::VariantOverridesType> StructuralMaterialEditDi
     // Run
     //
 
-    auto const result = ShowModal();
-    if (result == wxID_OK)
-    {
-        // Take name now, and normalize it
-        mOverridesUnderEdit->Name = mNameTextCtrl->GetValue().ToStdString();
-
-        // TODO: normalize
-
-        return mOverridesUnderEdit;
-    }
-    else
-    {
-        return std::nullopt;
-    }
+    return BaseRun();
 }
 
 wxColor StructuralMaterialEditDialog::GetOverridesRenderColor(StructuralMaterial::VariantOverridesType const & overrides)

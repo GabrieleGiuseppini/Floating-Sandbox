@@ -492,7 +492,7 @@
 		= MaterialEditDialog: 
 			+ Hook NewButton->IMaterialPalettesController
 			= Option 1:
-				+ Two dialogs, two classes
+				+ Two dialogs, two classes, one base with common code
 				+ FIX: Edit opening makes palette close - because it's wxTransientPopupWindow, closes at focus lost
 					- Option 1: Browser is wxTransientPopupWindow
 						- Yes close on click outside
@@ -531,14 +531,7 @@
 						+ Advanced:
 							+ 5
 
-				- Golden Ratio
-
 				- Electrical:
-					- Rethink: may be one base dialog class (templated) with helpers; commonalities:
-						- Ok/Cancel button and their setup
-						- Run logic
-							- virtual SyncToControls -- which also does overridesUnderEdit init'n
-
 					- N panels, one per-type; selects right one at Run()
 					- TODO
 

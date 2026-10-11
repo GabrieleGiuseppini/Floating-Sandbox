@@ -5,48 +5,14 @@
  ***************************************************************************************/
 #include "ElectricalMaterialEditDialog.h"
 
+#include <Core/ExponentialSliderCore.h>
+
 namespace ShipBuilder {
 
-ElectricalMaterialEditDialog::ElectricalMaterialEditDialog(wxWindow * parent)
+void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
 {
-    Create(
-        parent,
-        wxID_ANY,
-        wxString(),
-        wxDefaultPosition,
-        wxSize(400, 200),
-        wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP);
-
-    SetBackgroundColour(GetDefaultAttributes().colBg);
-
-    //
-    // Layout
-    //
-
-
-    ////
-    //// Finalize dialog
-    ////
-
-    //SetSizerAndFit(dialogVSizer);
-
-    Centre(wxCENTER_ON_SCREEN | wxBOTH);
-}
-
-std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDialog::RunForNew(
-    ElectricalMaterial::VariantOverridesType & overrides,
-    ElectricalMaterial const * baseMaterial)
-{
-    SetTitle(_T("Create New Material"));
-    return Run(overrides, baseMaterial);
-}
-
-std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDialog::RunForEdit(
-    ElectricalMaterial::VariantOverridesType & overrides,
-    ElectricalMaterial const * baseMaterial)
-{
-    SetTitle(_T("Edit Material"));
-    return Run(overrides, baseMaterial);
+    // TODO
+    (void)dialogVSizer;
 }
 
 std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDialog::Run(
@@ -57,24 +23,21 @@ std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDi
     // Sync controls
     //
 
-    // TODO
-    (void)overrides;
-    (void)baseMaterial;
+    mOverridesUnderEdit = overrides;
+    auto baseOverrideValues = baseMaterial->MakeStartingVariantOverrides();
+
+    mHeatGeneratedSlider->SetValueAndLimits(
+        mOverridesUnderEdit->HeatGenerated,
+        std::make_unique<ExponentialSliderCore>(
+            baseOverrideValues.HeatGenerated * 0.1f,
+            baseOverrideValues.HeatGenerated,
+            baseOverrideValues.HeatGenerated * 10.0f));
 
     //
     // Run
     //
 
-    auto const result = wxDialog::ShowModal();
-    if (result == wxID_OK)
-    {
-        // TODO
-        return std::nullopt;
-    }
-    else
-    {
-        return std::nullopt;
-    }
+    return BaseRun();
 }
 
 }
