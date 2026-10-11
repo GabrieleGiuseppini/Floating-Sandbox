@@ -531,11 +531,10 @@
 						+ Advanced:
 							+ 5
 
-				= Electrical:
+				+ Electrical:
 					+ N panels, one per-type; selects right one at Run()
 					+ Add ThermalSwitch, overrides and all
-
-					= Only electrical elements of certain types (the overridable ones, or those that emit heat) should have a button at all
+					+ Only electrical elements of certain types (the overridable ones, or those that emit heat) should have a button at all
 						+ ElectricalElementEditDialog static private helper w/base material argument and returns PanelKind
 							+ See if all to which we give heat, do heat
 								! Generator
@@ -544,11 +543,7 @@
 							+ Use at layout when deciding to add CreateNewButton
 						+ Run(): populate all values/limits, use private helper to show panel	
 						
-						+ HeatGenerated: W (comment + label)
-						+ Engine not showing power
-						- Heating: linear X n
-
-					- Final cleanups
+					+ Final cleanups
 
 				- Try: hover on button: different feedback
 

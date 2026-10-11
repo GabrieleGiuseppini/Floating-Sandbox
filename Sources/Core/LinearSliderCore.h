@@ -15,6 +15,8 @@ public:
         float minValue,
         float maxValue);
 
+    LinearSliderCore(LinearSliderCore const & other) = default;
+
     int GetNumberOfTicks() const override;
 
     float TickToValue(int tick) const override;

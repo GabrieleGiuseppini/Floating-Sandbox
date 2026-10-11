@@ -266,7 +266,7 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
                 std::make_unique<ExponentialSliderCore>(
                     0.1f,
                     SimulationParameters::Temperature0,
-                    100000.0f));
+                    10000.0f));
 
             gPanelSizer->Add(mThermalSwitchTransitionTemperatureSlider, 0, wxEXPAND);
         }
@@ -303,18 +303,17 @@ std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDi
 
     mNameTextCtrl->ChangeValue(mOverridesUnderEdit->Name);
 
-    auto heatGeneratedSliderCore = ExponentialSliderCore(
+    auto const heatGeneratedSliderCore = LinearSliderCore(
         baseOverrideValues.HeatGenerated * 0.1f,
-        baseOverrideValues.HeatGenerated,
         baseOverrideValues.HeatGenerated * 10.0f);
 
     mHeatingHeatGeneratedSlider->SetValueAndLimits(
         mOverridesUnderEdit->HeatGenerated,
-        std::make_unique<ExponentialSliderCore>(heatGeneratedSliderCore));
+        std::make_unique<LinearSliderCore>(heatGeneratedSliderCore));
 
     mLampHeatGeneratedSlider->SetValueAndLimits(
         mOverridesUnderEdit->HeatGenerated,
-        std::make_unique<ExponentialSliderCore>(heatGeneratedSliderCore));
+        std::make_unique<LinearSliderCore>(heatGeneratedSliderCore));
 
     mLuminiscenceSlider->SetValueAndLimits(
         mOverridesUnderEdit->Luminiscence,
@@ -332,7 +331,7 @@ std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDi
 
     mEngineHeatGeneratedSlider->SetValueAndLimits(
         mOverridesUnderEdit->HeatGenerated,
-        std::make_unique<ExponentialSliderCore>(heatGeneratedSliderCore));
+        std::make_unique<LinearSliderCore>(heatGeneratedSliderCore));
 
     mEnginePowerSlider->SetValueAndLimits(
         mOverridesUnderEdit->EnginePower,
@@ -343,7 +342,7 @@ std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDi
 
     mWaterPumpHeatGeneratedSlider->SetValueAndLimits(
         mOverridesUnderEdit->HeatGenerated,
-        std::make_unique<ExponentialSliderCore>(heatGeneratedSliderCore));
+        std::make_unique<LinearSliderCore>(heatGeneratedSliderCore));
 
     mWaterPumpNominalForceSlider->SetValueAndLimits(
         std::fabsf(mOverridesUnderEdit->WaterPumpNominalForce),
