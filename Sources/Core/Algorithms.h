@@ -17,6 +17,10 @@
 #include <optional>
 #include <vector>
 
+#if defined(__EMSCRIPTEN__) && defined(__wasm_simd128__) && defined(__SSE2__)
+#include <emmintrin.h>
+#endif
+
 namespace Algorithms {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1557,7 +1561,7 @@ inline void ApplySpringsForces_Naive(
     }
 }
 
-#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64() || (defined(__EMSCRIPTEN__) && defined(__wasm_simd128__) && defined(__SSE2__))
 template<typename TPoints, typename TSprings>
 inline void ApplySpringsForces_SSEVectorized(
     TPoints const & points,
@@ -2589,7 +2593,7 @@ inline void ApplySpringsForces(
     ElementIndex endSpringIndex,
     vec2f * restrict dynamicForceBuffer)
 {
-#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64() || (defined(__EMSCRIPTEN__) && defined(__wasm_simd128__) && defined(__SSE2__))
     ApplySpringsForces_SSEVectorized<TPoints>(points, springs, startSpringIndex, endSpringIndex, dynamicForceBuffer);
 #elif FS_IS_ARM_NEON()
     ApplySpringsForces_NeonVectorized<TPoints>(points, springs, startSpringIndex, endSpringIndex, dynamicForceBuffer);

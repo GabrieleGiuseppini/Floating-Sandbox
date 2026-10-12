@@ -354,11 +354,13 @@ public:
 
         glActiveTexture(GL_TEXTURE0 + textureUnit);
 
+#ifndef __EMSCRIPTEN__
         GLenum const glError = glGetError();
         if (GL_NO_ERROR != glError)
         {
             throw GameException("Error activating texture " + std::to_string(textureUnit) + ": " + std::to_string(glError));
         }
+#endif
     }
 
 private:
@@ -373,11 +375,16 @@ private:
         typename TShaderSet::ProgramKindType program,
         typename TShaderSet::ProgramParameterKindType parameter)
     {
+#ifndef __EMSCRIPTEN__
         GLenum const glError = glGetError();
         if (GL_NO_ERROR != glError)
         {
             throw GameException("Error setting uniform for parameter \"" + TShaderSet::ProgramParameterKindToStr(parameter) + "\" on program \"" + TShaderSet::ProgramKindToStr(program) + "\"");
         }
+#else
+        (void)program;
+        (void)parameter;
+#endif
     }
 
 private:

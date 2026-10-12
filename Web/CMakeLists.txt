@@ -23,7 +23,7 @@ set(FS_SOURCES_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../Sources)
 set(FS_DATA_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../Data)
 
 add_compile_definitions(PICOJSON_USE_INT64 LIBPNG_MODE_LIB)
-add_compile_options(-fexceptions)
+add_compile_options(-fexceptions -msimd128 -msse -msse2)
 
 function(fs_web_module name)
     file(GLOB_RECURSE module_sources CONFIGURE_DEPENDS ${FS_SOURCES_ROOT}/${name}/*.cpp)
@@ -74,7 +74,7 @@ target_link_options(FloatingSandboxWebApp PRIVATE
     -sENVIRONMENT=web
     -sFORCE_FILESYSTEM=1
     -sEXPORTED_RUNTIME_METHODS=ccall,FS
-    -sASSERTIONS=1
+    -sASSERTIONS=0
     --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/shell.html
     --preload-file ${FS_DATA_ROOT}@/game/Data
     "SHELL:--exclude-file \"*/Music/*\""
@@ -82,6 +82,13 @@ target_link_options(FloatingSandboxWebApp PRIVATE
     "SHELL:--exclude-file \"*/Languages/*\""
     "SHELL:--exclude-file \"*/Help/*\""
     "SHELL:--exclude-file \"*/Themes/*\"")
+
+find_program(FS_WASM_OPT NAMES wasm-opt HINTS ENV FS_BINARYEN_ROOT ENV BINARYEN_ROOT PATH_SUFFIXES bin)
+if(FS_WASM_OPT)
+    add_custom_command(TARGET FloatingSandboxWebApp POST_BUILD
+        COMMAND ${FS_WASM_OPT} -O3 --all-features $<TARGET_FILE_DIR:FloatingSandboxWebApp>/index.wasm -o $<TARGET_FILE_DIR:FloatingSandboxWebApp>/index.wasm
+        COMMENT "Optimizing wasm")
+endif()
 
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_FOUND AND EXISTS ${FS_DATA_ROOT}/../Ships)

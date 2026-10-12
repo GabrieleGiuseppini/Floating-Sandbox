@@ -4,6 +4,8 @@
 #include <GLES2/gl2ext.h>
 
 #include <cstdlib>
+#include <unordered_map>
+#include <vector>
 
 #ifndef APIENTRY
 #define APIENTRY
@@ -102,28 +104,91 @@ namespace glweb
         }
     }
 
+    struct BufferShadow
+    {
+        std::vector<unsigned char> data;
+        GLint size = 0;
+    };
+
+    inline std::unordered_map<GLuint, BufferShadow> BufferShadows;
+    inline GLuint BoundArrayBuffer = 0;
+    inline GLuint BoundElementBuffer = 0;
+    inline GLuint BoundOther = 0;
+
+    inline GLuint & BoundBufferFor(GLenum target)
+    {
+        if (target == GL_ARRAY_BUFFER)
+        {
+            return BoundArrayBuffer;
+        }
+
+        if (target == GL_ELEMENT_ARRAY_BUFFER)
+        {
+            return BoundElementBuffer;
+        }
+
+        return BoundOther;
+    }
+
+    inline void BindBuffer(GLenum target, GLuint buffer)
+    {
+        BoundBufferFor(target) = buffer;
+        (::glBindBuffer)(target, buffer);
+    }
+
+    inline void BufferData(GLenum target, GLsizeiptr size, const void * data, GLenum usage)
+    {
+        GLuint const buffer = BoundBufferFor(target);
+        if (buffer != 0)
+        {
+            BufferShadows[buffer].size = static_cast<GLint>(size);
+        }
+
+        (::glBufferData)(target, size, data, usage);
+    }
+
+    inline void DeleteBuffers(GLsizei count, const GLuint * buffers)
+    {
+        for (GLsizei i = 0; i < count; ++i)
+        {
+            BufferShadows.erase(buffers[i]);
+        }
+
+        (::glDeleteBuffers)(count, buffers);
+    }
+
     struct MappedBufferSlot
     {
-        GLenum target;
-        void * data;
-        GLint size;
+        GLenum target = 0;
+        GLuint buffer = 0;
+        bool isMapped = false;
     };
 
     inline MappedBufferSlot MappedBufferSlots[4] = {};
 
     inline void * MapBuffer(GLenum target)
     {
-        GLint size = 0;
-        glGetBufferParameteriv(target, GL_BUFFER_SIZE, &size);
+        GLuint const buffer = BoundBufferFor(target);
+        auto it = BufferShadows.find(buffer);
+        if (it == BufferShadows.end())
+        {
+            return nullptr;
+        }
 
         for (auto & slot : MappedBufferSlots)
         {
-            if (slot.data == nullptr)
+            if (!slot.isMapped)
             {
+                BufferShadow & shadow = it->second;
+                if (shadow.data.size() < static_cast<size_t>(shadow.size))
+                {
+                    shadow.data.resize(static_cast<size_t>(shadow.size));
+                }
+
                 slot.target = target;
-                slot.size = size;
-                slot.data = std::calloc(1, size > 0 ? static_cast<size_t>(size) : 1u);
-                return slot.data;
+                slot.buffer = buffer;
+                slot.isMapped = true;
+                return shadow.data.data();
             }
         }
 
@@ -134,12 +199,17 @@ namespace glweb
     {
         for (auto & slot : MappedBufferSlots)
         {
-            if (slot.data != nullptr && slot.target == target)
+            if (slot.isMapped && slot.target == target)
             {
-                glBufferSubData(target, 0, slot.size, slot.data);
-                std::free(slot.data);
-                slot.data = nullptr;
-                return GL_TRUE;
+                auto it = BufferShadows.find(slot.buffer);
+                slot.isMapped = false;
+                if (it != BufferShadows.end())
+                {
+                    (::glBufferSubData)(target, 0, it->second.size, it->second.data.data());
+                    return GL_TRUE;
+                }
+
+                return GL_FALSE;
             }
         }
 
@@ -147,6 +217,9 @@ namespace glweb
     }
 }
 
+#define glBindBuffer(target, buffer) glweb::BindBuffer(target, buffer)
+#define glBufferData(target, size, data, usage) glweb::BufferData(target, size, data, usage)
+#define glDeleteBuffers(count, buffers) glweb::DeleteBuffers(count, buffers)
 #define glEnable(capability) glweb::Enable(capability)
 #define glDisable(capability) glweb::Disable(capability)
 #define glHint(target, mode) glweb::Hint(target, mode)

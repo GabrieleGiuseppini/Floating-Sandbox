@@ -64,3 +64,7 @@ No special headers are needed because the build is single-threaded.
 The page has a menu bar (File, Tools, Controls, View, Sound, Help). Tools work with the mouse like the desktop game: left button uses the current tool, right or middle drag pans, the wheel zooms, Shift modifies tools.
 
 The build step generates `ships.json` plus a `Ships/` folder from the game's `Ships` directory (File > Load Ship...), and converts `Data/Sounds` and `Data/Music` to small Opus files with `sounds.json` (needs `ffmpeg` on the build machine). Sounds and music are fetched on demand, not bundled in `index.data`. Audio starts after the first click or key press, as browsers require.
+
+## Performance
+
+The link step runs at `-O0` because Emscripten's JS optimizer needs npm modules that may not be installed; instead a post-build step runs Binaryen's `wasm-opt -O3` on `index.wasm` when `wasm-opt` is found (set `FS_BINARYEN_ROOT` or `BINARYEN_ROOT`). The build uses WebAssembly SIMD (`-msimd128`), the desktop SSE spring-force kernel is used through Emscripten's SSE-to-SIMD headers, and per-call `glGetError` checks and buffer-size queries are disabled for the web build because they stall the GPU pipeline.

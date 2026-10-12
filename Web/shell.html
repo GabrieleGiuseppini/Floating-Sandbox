@@ -281,8 +281,17 @@
     });
   }
 
+  var installedShipFiles = [];
+
   function installAndLoad(displayName, mainFileName, loaded) {
     Module.FS.mkdirTree('/game/Ships');
+    var newNames = loaded.map(function (item) { return item.name; });
+    installedShipFiles.forEach(function (name) {
+      if (newNames.indexOf(name) < 0) {
+        try { Module.FS.unlink('/game/Ships/' + name); } catch (e) {}
+      }
+    });
+    installedShipFiles = newNames;
     loaded.forEach(function (item) {
       Module.FS.writeFile('/game/Ships/' + item.name, item.data);
     });
@@ -757,15 +766,35 @@
       return catalogPromise;
     }
 
+    var bufferBytes = 0;
+    var bufferTick = 0;
+    var MAX_BUFFER_BYTES = 48 * 1024 * 1024;
+
+    function evictBuffers() {
+      if (bufferBytes <= MAX_BUFFER_BYTES) { return; }
+      var stems = Object.keys(buffers).sort(function (a, b) { return buffers[a].tick - buffers[b].tick; });
+      for (var i = 0; i < stems.length && bufferBytes > MAX_BUFFER_BYTES * 0.75; i++) {
+        bufferBytes -= buffers[stems[i]].bytes;
+        delete buffers[stems[i]];
+        delete pending[stems[i]];
+      }
+    }
+
     function loadBuffer(stem) {
-      if (buffers[stem]) { return Promise.resolve(buffers[stem]); }
+      if (buffers[stem]) { buffers[stem].tick = ++bufferTick; return Promise.resolve(buffers[stem].buffer); }
       if (pending[stem]) { return pending[stem]; }
       pending[stem] = fetch('Sounds/' + stem + '.ogg').then(function (response) {
         if (!response.ok) { throw new Error('missing ' + stem); }
         return response.arrayBuffer();
       }).then(function (data) {
         return new Promise(function (resolve, reject) { context.decodeAudioData(data, resolve, reject); });
-      }).then(function (buffer) { buffers[stem] = buffer; return buffer; }).catch(function () { delete pending[stem]; return null; });
+      }).then(function (buffer) {
+        var bytes = buffer.length * buffer.numberOfChannels * 4;
+        buffers[stem] = { buffer: buffer, bytes: bytes, tick: ++bufferTick };
+        bufferBytes += bytes;
+        evictBuffers();
+        return buffer;
+      }).catch(function () { delete pending[stem]; return null; });
       return pending[stem];
     }
 
