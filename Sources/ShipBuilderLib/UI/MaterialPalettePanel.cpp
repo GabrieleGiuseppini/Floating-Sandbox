@@ -28,7 +28,7 @@ int constexpr CellHSpacing = 0;
 int constexpr CellVSpacing = 0;
 
 // Cell
-int constexpr CellInnerMargin = 8;
+int constexpr CellInnerMargin = 4;
 ImageSize constexpr MaterialSampleSize(60, 45);
 
 int constexpr SelectionFrameThickness = 1;
@@ -47,7 +47,7 @@ ImageSize constexpr MaterialCellSize(
 int constexpr SeparatorThickness = 1;
 int constexpr SeparatorRowHeight = 1 + SeparatorThickness + 1;
 
-int constexpr StrideHSpacing = 8;
+int constexpr StrideHSpacing = 10;
 
 //
 // Style
@@ -92,11 +92,11 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
 
     // Make name font
     mNameFont = GetFont();
-    mNameFont.SetPointSize(NameTextHeight - 2);
+    mNameFont.SetPointSize(NameTextHeight - 3);
 
     // Make data font
     mDataFont = GetFont();
-    mDataFont.SetPointSize(DataTextHeight - 2);
+    mDataFont.SetPointSize(DataTextHeight - 3);
 
     mTextForegroundColor = *wxBLACK;
 
@@ -411,6 +411,7 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
         {
             cellInsertIndex = static_cast<size_t>(stride.iUserCustomStartIndex);
             stride.iUserCustomStartIndex++;
+            stride.iShipCustomStartIndex++;
             break;
         }
 
@@ -453,6 +454,7 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
         + MaterialSampleToNameGapHeight;
 
     auto const previousFont = GetFont();
+
 
     // Name
 

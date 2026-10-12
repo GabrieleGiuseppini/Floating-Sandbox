@@ -498,10 +498,11 @@
 						+ panel-> End custom layout
 						+ Layout() // for H scrollbar
 					= Test:
-						= Single stride
+						+ Single stride
 							+ FIX: iShipCustomStartIndex is 1
-							- FIX: make H scrollbar appear if needed
-						- Multi stride
+							+ FIX: make H scrollbar appear if needed
+						= Multi stride
+							- FIX: different spacing between strides makes ugly; either remove it or make same as material
 				- Update user/ship custom [one]
 				- Replace all ship custom [vector]
 				- TODO: others
