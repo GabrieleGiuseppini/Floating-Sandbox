@@ -161,6 +161,8 @@
 						- Deletion could have resulted in a removal of particles
 				- Changing a material currently in the ship (from user's or ship's own) should mark the ship as dirty
 					- Marks corresponding layer as dirty
+			- When ship is loaded, its materials are pruned by lookup in user's custom materials
+				- This is to avoid load of ship just saved with user's custom materials to duplicate custom materials
 			- Can also merge another user custom material set into it, or import from ship
 				- Checks for dupes
 				- Then shows user list with checkboxes to choose which ones, and which shows which are dupe's and won't be imported
@@ -211,7 +213,10 @@
 			- Update palette
 		- Loading ship
 			- With custom materials:
-				- Replace ship's custom materials in palette
+				- Prune set of ship's custom materials with user's custom materials, producing a material replacement map
+				- Apply material replacement map to ship
+					- Without marking it as dirty, this is a pre-model construction operation
+				- Replace ship's custom materials in palette with pruned
 				- Re-draw palette
 			- Without custom materials:
 				- Nuke ship's custom materials in palette
@@ -485,10 +490,18 @@
 			= Ops (all forwarded to panel, with layout guards):
 				! Browser provides larger ops, as it's browser who orchestrates layout
 				= Add user custom [vector]
-					- Find panel for category - TODOHERE
-					- panel-> Start custom layout
-					- panel-> Add material
-					- panel-> End custom layout
+					+ Organize materials by category
+					+ For each category:
+						+ Find panel for category
+						+ panel-> Start custom layout
+						+ panel-> Add material
+						+ panel-> End custom layout
+						+ Layout() // for H scrollbar
+					= Test:
+						= Single stride
+							+ FIX: iShipCustomStartIndex is 1
+							- FIX: make H scrollbar appear if needed
+						- Multi stride
 				- Update user/ship custom [one]
 				- Replace all ship custom [vector]
 				- TODO: others

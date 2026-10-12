@@ -483,12 +483,24 @@ void MaterialPaletteBrowser<TLayer>::AddUserCustomMaterials(std::vector<TMateria
     // Visit all categories
     for (auto const it : customMaterialsByCategory)
     {
-        // TODO: get panel (index) via new helper refactored out of code at SetMaterialSelected(.)
+        // Get this panel
+        auto panel = mCategoryPanelsByCategory.at(it.first);
 
-        // TODO: start orchestration; call into palette for each; close orchestration
+        // Start layout
+        auto layoutSession = panel->StartCustomMaterialsLayout();
 
-        (void)it;
+        // Add materials
+        for (TMaterial const * material : it.second)
+        {
+            layoutSession = panel->AddUserCustomMaterial(material, layoutSession);
+        }
+
+        // Finish layout
+        panel->EndCustomMaterialsLayout(layoutSession);
     }
+
+    // Make sure that horizontal scrollbars show/hide for new panel size
+    Layout();
 }
 
 template<LayerType TLayer>
@@ -1060,14 +1072,6 @@ void MaterialPaletteBrowser<TLayer>::SetMaterialSelected(TMaterial const * mater
         {
             mCategoryPanelsContainerSizer->Show(it.second, false);
         }
-    }
-
-    // Make our container as wide as the visible panel - plus some slack for the scrollbars,
-    // will eventually shrink
-    if (selectedCategoryPanel != nullptr)
-    {
-        auto const visiblePanelWidth = selectedCategoryPanel->GetSize().x;
-        mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth, MinCategoryPanelsContainerHeight));
     }
 
     // Resize whole window now that category panel has changed its size
