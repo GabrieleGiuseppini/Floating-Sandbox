@@ -196,7 +196,7 @@
 				- Populate Undo with material
 				- Force ship re-analysis and re-visualization
 				- Mark ship as dirty					
-		- Deleting user or ship custom materials
+		- Deleting user's or ship's custom materials
 			- User checks boxes, and then "Delete Selected"
 			- Check for in-use by ship; answer is none-in-use_or_at-least-one-in-use
 			- If at-least-one-in-use:
@@ -221,14 +221,18 @@
 			- Without custom materials:
 				- Nuke ship's custom materials in palette
 				- Re-draw palette
-		- Importing custom materials from ship into user's
+		- Importing custom materials from ship's into user's
 			- User checks boxes, and then "Import Selected"
+			- Check boxes filtered for ship's only (user might have selected user's as well)
 			- Only distinct are imported; feedback to user with # of "imported ~new"
 					! No need to remove it from ship's afterwards, we can live with dupes among the two custom sets
-			- Add to DB
+					- Though could remove them, making sure original uq_ptr is moved into user's
+			- Add to User DB
 				- Save DB
+			- If we go for removing from ship: Remove from Ship DB
 			- Update palette
 			- Populate Undo with materials 
+				- Needs to put back ship's as well
 		- Importing custom materials from a json or from a ship into user's
 			- User chooses from list, filtered by distincting with user's
 				- If none available, popup message
@@ -468,6 +472,19 @@
 							+ Replace old bitmap with new						
 						+ Render cells onto buffer
 						+ Refresh(false)
+
+			- ShipOverlay, EditButton, Checkbox:
+				- All std::optional<wxRect>
+				- Set at Layout
+					- ShipOverlay: iff CustomKind=Ship
+					- EditButton, Checkbox: iff CustomKind!=None
+				- Honor at RenderCell
+				- Handling of clicks:
+					- EditButton:
+						- Start workflow via PalettesController - copy from AddNewButton
+							- Both: watch out for re-entrantness
+					- Checkbox:
+						- Send event for browser via checked counter, it'll Reconciliate
 				
 			+ All cells have exact same width - constant
 			+ All cells in a row have the same height - constant

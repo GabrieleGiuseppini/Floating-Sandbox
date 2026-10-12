@@ -90,14 +90,14 @@ public:
     void OnElectricalMaterialSelected(ElectricalMaterial const * material, MaterialPlaneType plane) override;
     void OnRopesMaterialSelected(StructuralMaterial const * material, MaterialPlaneType plane) override;
 
-    void OnNewCustomStructuralMaterial(StructuralMaterial const * baseMaterial) override;
-    void OnNewCustomElectricalMaterial(ElectricalMaterial const * baseMaterial) override;
-    void OnNewCustomRopesMaterial(StructuralMaterial const * baseMaterial) override;
+    void OnNewUserCustomStructuralMaterial(StructuralMaterial const * baseMaterial) override;
+    void OnNewUserCustomElectricalMaterial(ElectricalMaterial const * baseMaterial) override;
+    void OnNewUserCustomRopesMaterial(StructuralMaterial const * baseMaterial) override;
 
 private:
 
     template<LayerType TLayerType>
-    void OnNewCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * baseMaterial);
+    void OnNewUserCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * baseMaterial);
 
 private:
 

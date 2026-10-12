@@ -150,7 +150,7 @@ void MaterialPalettePanel<TLayer>::AddDefaultMaterial(TMaterial const * material
 
     AppendMaterialCell(
         material,
-        CustomKindType::None,
+        std::nullopt,
         mRows.size() - 1,
         mRows.back().Strides.size() - 1);
 }
@@ -218,15 +218,9 @@ std::any MaterialPalettePanel<TLayer>::StartCustomMaterialsLayout()
 }
 
 template<LayerType TLayer>
-std::any MaterialPalettePanel<TLayer>::AddUserCustomMaterial(TMaterial const * material, std::any layoutSession)
+std::any MaterialPalettePanel<TLayer>::AddCustomMaterial(TMaterial const * material, CustomMaterialRegisterKindType registerKind, std::any layoutSession)
 {
-    return AppendCustomMaterial(material, CustomKindType::User, std::any_cast<LayoutSession>(layoutSession));
-}
-
-template<LayerType TLayer>
-std::any MaterialPalettePanel<TLayer>::AddShipCustomMaterial(TMaterial const * material, std::any layoutSession)
-{
-    return AppendCustomMaterial(material, CustomKindType::Ship, std::any_cast<LayoutSession>(layoutSession));
+    return AppendCustomMaterial(material, registerKind, std::any_cast<LayoutSession>(layoutSession));
 }
 
 template<LayerType TLayer>
@@ -314,16 +308,16 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
                 // Notify
                 if constexpr (TLayer == LayerType::Structural)
                 {
-                    mMaterialPalettesController.OnNewCustomStructuralMaterial(cell->Material);
+                    mMaterialPalettesController.OnNewUserCustomStructuralMaterial(cell->Material);
                 }
                 else if constexpr (TLayer == LayerType::Electrical)
                 {
-                    mMaterialPalettesController.OnNewCustomElectricalMaterial(cell->Material);
+                    mMaterialPalettesController.OnNewUserCustomElectricalMaterial(cell->Material);
                 }
                 else
                 {
                     static_assert(TLayer == LayerType::Ropes);
-                    mMaterialPalettesController.OnNewCustomRopesMaterial(cell->Material);
+                    mMaterialPalettesController.OnNewUserCustomRopesMaterial(cell->Material);
                 }
 
                 break;
@@ -371,7 +365,7 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftUp(wxMouseEvent & event)
 template<LayerType TLayer>
 typename MaterialPalettePanel<TLayer>::LayoutSession MaterialPalettePanel<TLayer>::AppendCustomMaterial(
     TMaterial const * material,
-    CustomKindType customKind,
+    CustomMaterialRegisterKindType registerKind,
     LayoutSession layoutSession)
 {
     size_t const iRow = FindRowFor(material);
@@ -379,7 +373,7 @@ typename MaterialPalettePanel<TLayer>::LayoutSession MaterialPalettePanel<TLayer
 
     size_t const iCell = AppendMaterialCell(
         material,
-        customKind,
+        registerKind,
         iRow,
         iStride);
 
@@ -392,7 +386,7 @@ typename MaterialPalettePanel<TLayer>::LayoutSession MaterialPalettePanel<TLayer
 template<LayerType TLayer>
 size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
     TMaterial const * material,
-    CustomKindType customKind,
+    std::optional<CustomMaterialRegisterKindType> customRegisterKind,
     size_t iRow,
     size_t iStride)
 {
@@ -405,26 +399,27 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
     //
 
     size_t cellInsertIndex = std::numeric_limits<size_t>::max();
-    switch (customKind)
+    if (!customRegisterKind.has_value())
     {
-        case CustomKindType::None:
+        cellInsertIndex = static_cast<size_t>(stride.iUserCustomStartIndex);
+        stride.iUserCustomStartIndex++;
+        stride.iShipCustomStartIndex++;
+    }
+    else
+    {
+        switch (*customRegisterKind)
         {
-            cellInsertIndex = static_cast<size_t>(stride.iUserCustomStartIndex);
-            stride.iUserCustomStartIndex++;
-            stride.iShipCustomStartIndex++;
-            break;
-        }
+            case CustomMaterialRegisterKindType::User:
+            {
+                cellInsertIndex = static_cast<size_t>(stride.iShipCustomStartIndex);
+                stride.iShipCustomStartIndex++;
+                break;
+            }
 
-        case CustomKindType::User:
-        {
-            cellInsertIndex = static_cast<size_t>(stride.iShipCustomStartIndex);
-            stride.iShipCustomStartIndex++;
-            break;
-        }
-
-        case CustomKindType::Ship:
-        {
-            cellInsertIndex = stride.Cells.size();
+            case CustomMaterialRegisterKindType::Ship:
+            {
+                cellInsertIndex = stride.Cells.size();
+            }
         }
     }
 
@@ -435,7 +430,7 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
         Cell::MakeMaterialCell(
             MakeNextCellId(),
             material,
-            customKind,
+            customRegisterKind,
             materialSampleBitmapIndex,
             row.Rect.GetTop(),
             wxSize(

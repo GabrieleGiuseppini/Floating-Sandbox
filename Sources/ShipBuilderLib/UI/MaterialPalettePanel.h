@@ -22,6 +22,7 @@
 #include <any>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace ShipBuilder {
@@ -101,8 +102,7 @@ public:
     void EndDefaultMaterialsLayout();
 
     std::any StartCustomMaterialsLayout();
-    std::any AddUserCustomMaterial(TMaterial const * material, std::any layoutSession);
-    std::any AddShipCustomMaterial(TMaterial const * material, std::any layoutSession);
+    std::any AddCustomMaterial(TMaterial const * material, CustomMaterialRegisterKindType registerKind, std::any layoutSession);
     void EndCustomMaterialsLayout(std::any layoutSession);
 
     void SetSelected(TMaterial const * material);
@@ -111,12 +111,6 @@ private:
 
     using CellIdType = std::uint64_t;
     static CellIdType constexpr NoneCellId = std::numeric_limits<CellIdType>::max();
-    enum class CustomKindType
-    {
-        None,
-        User,
-        Ship
-    };
 
     void OnPaint(wxPaintEvent & event);
     void OnMouseLeave();
@@ -151,12 +145,12 @@ private:
 
     LayoutSession AppendCustomMaterial(
         TMaterial const * material,
-        CustomKindType customKind,
+        CustomMaterialRegisterKindType registerKind,
         LayoutSession layoutSession);
 
     size_t AppendMaterialCell(
         TMaterial const * material,
-        CustomKindType customKind,
+        std::optional<CustomMaterialRegisterKindType> customRegisterKind,
         size_t iRow,
         size_t iStride);
 
@@ -220,7 +214,7 @@ private:
         // Iff Kind==CreateNewButton|Material
         TMaterial const * Material; // CreateNewButton:parent material|Material:material itself
         // Iff Kind==Material
-        CustomKindType CustomKind; // const, but need assignment
+        std::optional<CustomMaterialRegisterKindType> CustomRegisterKind; // const, but need assignment
         int MaterialSampleBitmapIndex; // const, but need assignment
         wxString Name1;
         int Name1Width;
@@ -231,7 +225,7 @@ private:
         wxString Data;
         int DataWidth;
         int DataYTopOffset; // Relative to cell
-        bool IsChecked; // Iff CustomKind!=None
+        bool IsChecked; // Iff customRegisterKind!=None
 
         // Layout
         wxRect Rect; // Origin.x set at Layout, Origin.y set at cctor, Size set at cctor
@@ -246,7 +240,7 @@ private:
                 id,
                 KindType::CreateNewButton,
                 parentMaterial,
-                CustomKindType::None,
+                std::nullopt,
                 -1,
                 originY,
                 size);
@@ -255,7 +249,7 @@ private:
         static Cell MakeMaterialCell(
             CellIdType id,
             TMaterial const * material,
-            CustomKindType customKind,
+            std::optional<CustomMaterialRegisterKindType> customRegisterKind,
             int materialSampleBitmapIndex,
             int originY,
             wxSize size)
@@ -264,7 +258,7 @@ private:
                 id,
                 KindType::Material,
                 material,
-                customKind,
+                customRegisterKind,
                 materialSampleBitmapIndex,
                 originY,
                 size);
@@ -276,14 +270,14 @@ private:
             CellIdType id,
             KindType kind,
             TMaterial const * material,
-            CustomKindType customKind,
+            std::optional<CustomMaterialRegisterKindType> customRegisterKind,
             int materialSampleBitmapIndex,
             int originY,
             wxSize size)
             : Id(id)
             , Kind(kind)
             , Material(material)
-            , CustomKind(customKind)
+            , CustomRegisterKind(customRegisterKind)
             , IsChecked(false)
             , MaterialSampleBitmapIndex(materialSampleBitmapIndex)
             , Name1Width(0)

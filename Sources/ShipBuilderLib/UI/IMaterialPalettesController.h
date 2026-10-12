@@ -20,9 +20,9 @@ struct IMaterialPalettesController
     virtual void OnElectricalMaterialSelected(ElectricalMaterial const * material, MaterialPlaneType plane) = 0;
     virtual void OnRopesMaterialSelected(StructuralMaterial const * material, MaterialPlaneType plane) = 0;
 
-    virtual void OnNewCustomStructuralMaterial(StructuralMaterial const * baseMaterial) = 0;
-    virtual void OnNewCustomElectricalMaterial(ElectricalMaterial const * baseMaterial) = 0;
-    virtual void OnNewCustomRopesMaterial(StructuralMaterial const * baseMaterial) = 0;
+    virtual void OnNewUserCustomStructuralMaterial(StructuralMaterial const * baseMaterial) = 0;
+    virtual void OnNewUserCustomElectricalMaterial(ElectricalMaterial const * baseMaterial) = 0;
+    virtual void OnNewUserCustomRopesMaterial(StructuralMaterial const * baseMaterial) = 0;
 };
 
 }

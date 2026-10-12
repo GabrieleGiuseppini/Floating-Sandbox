@@ -70,6 +70,12 @@ enum class MaterialPlaneType
     Background
 };
 
+enum class CustomMaterialRegisterKindType
+{
+    User,
+    Ship
+};
+
 enum class FillMode
 {
     FillWithForeground,
@@ -166,6 +172,10 @@ enum class ExteriorTextureLayerVisualizationModeType
     None,
     MatteMode
 };
+
+//
+// Misc
+//
 
 struct ModelMacroProperties
 {

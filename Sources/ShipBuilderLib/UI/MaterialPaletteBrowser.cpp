@@ -470,7 +470,9 @@ std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverrid
 }
 
 template<LayerType TLayer>
-void MaterialPaletteBrowser<TLayer>::AddUserCustomMaterials(std::vector<TMaterial const *> const & customMaterials)
+void MaterialPaletteBrowser<TLayer>::AddCustomMaterials(
+    std::vector<TMaterial const *> const & customMaterials,
+    CustomMaterialRegisterKindType registerKind)
 {
     // Organize materials into Category->Materials map
     std::map<std::string, std::vector<TMaterial const *>> customMaterialsByCategory;
@@ -492,7 +494,7 @@ void MaterialPaletteBrowser<TLayer>::AddUserCustomMaterials(std::vector<TMateria
         // Add materials
         for (TMaterial const * material : it.second)
         {
-            layoutSession = panel->AddUserCustomMaterial(material, layoutSession);
+            layoutSession = panel->AddCustomMaterial(material, registerKind, layoutSession);
         }
 
         // Finish layout

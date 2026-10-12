@@ -84,7 +84,9 @@ public:
     // Operations
     //
 
-    void AddUserCustomMaterials(std::vector<TMaterial const *> const & customMaterials);
+    void AddCustomMaterials(
+        std::vector<TMaterial const *> const & customMaterials,
+        CustomMaterialRegisterKindType registerKind);
 
 private:
 
