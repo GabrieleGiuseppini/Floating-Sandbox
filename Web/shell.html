@@ -637,6 +637,12 @@
         },
         { label: 'Switchboard', role: 'menuitemcheckbox', checked: function () { return FSPanel.isEnabled(); }, action: function () { FSPanel.toggle(); } },
         { separator: true },
+        { heading: 'Performance' },
+        { label: 'Auto', role: 'menuitemradio', checked: function () { return call('fs_perf_mode', 'number') === 0; }, action: function () { call('fs_set_perf_mode', null, ['number'], [0]); } },
+        { label: 'High quality', role: 'menuitemradio', checked: function () { return call('fs_perf_mode', 'number') === 1; }, action: function () { call('fs_set_perf_mode', null, ['number'], [1]); } },
+        { label: 'Balanced', role: 'menuitemradio', checked: function () { return call('fs_perf_mode', 'number') === 2; }, action: function () { call('fs_set_perf_mode', null, ['number'], [2]); } },
+        { label: 'Fast (low-end)', role: 'menuitemradio', checked: function () { return call('fs_perf_mode', 'number') === 3; }, action: function () { call('fs_set_perf_mode', null, ['number'], [3]); } },
+        { separator: true },
         { heading: 'Ship view' }
       ].concat(
         enumItems('ShipViewMode', ['Exterior', 'Interior']),

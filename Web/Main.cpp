@@ -160,7 +160,30 @@ namespace
         int canvasCssWidth = 0;
         int canvasCssHeight = 0;
         int pixelRatio = 1;
+        int engineWidth = 0;
+        int engineHeight = 0;
+        float mouseScaleX = 1.0f;
+        float mouseScaleY = 1.0f;
         double lastLowFrequencyUpdateMs = 0.0;
+
+        int perfMode = 0;
+        float renderScale = 1.0f;
+        float scaleCeiling = 1.0f;
+        int qualityTier = 0;
+        double lastFrameStartMs = 0.0;
+        double emaIntervalMs = 16.7;
+        double emaCpuMs = 4.0;
+        int framesSinceChange = 0;
+        int stableFrames = 0;
+        bool tierSaved = false;
+        unsigned int savedFishes = 0;
+        unsigned int savedClouds = 0;
+        unsigned int savedStars = 0;
+        int savedOceanDetail = 1;
+        int savedLandDetail = 1;
+        int savedCloudDetail = 1;
+        bool savedWake = true;
+        float savedIterations = 1.0f;
 
         Tool tool = Tool::Move;
         bool isLeftDown = false;
@@ -838,9 +861,195 @@ namespace
         pixelRatio = std::max(1, static_cast<int>(std::lround(emscripten_get_device_pixel_ratio())));
     }
 
+    void ComputeEngineSize(int cssWidth, int cssHeight, int pixelRatio, float scale, int & width, int & height)
+    {
+        width = std::max(64, static_cast<int>(std::lround(static_cast<double>(cssWidth) * pixelRatio * scale)));
+        height = std::max(64, static_cast<int>(std::lround(static_cast<double>(cssHeight) * pixelRatio * scale)));
+    }
+
     void ApplyCanvasSize(int cssWidth, int cssHeight, int pixelRatio)
     {
-        emscripten_set_canvas_element_size(CanvasSelector, cssWidth * pixelRatio, cssHeight * pixelRatio);
+        int width = 0;
+        int height = 0;
+        ComputeEngineSize(cssWidth, cssHeight, pixelRatio, app->renderScale, width, height);
+        emscripten_set_canvas_element_size(CanvasSelector, width, height);
+        app->engineWidth = width;
+        app->engineHeight = height;
+        app->mouseScaleX = static_cast<float>(width) / static_cast<float>(std::max(1, cssWidth));
+        app->mouseScaleY = static_cast<float>(height) / static_cast<float>(std::max(1, cssHeight));
+    }
+
+    void ApplyQualityTier(int tier)
+    {
+        IGameControllerSettings & settings = *app->gameController;
+
+        if (!app->tierSaved)
+        {
+            app->savedFishes = settings.GetNumberOfFishes();
+            app->savedClouds = settings.GetNumberOfClouds();
+            app->savedStars = settings.GetNumberOfStars();
+            app->savedOceanDetail = static_cast<int>(settings.GetOceanRenderDetail());
+            app->savedLandDetail = static_cast<int>(settings.GetLandRenderDetail());
+            app->savedCloudDetail = static_cast<int>(settings.GetCloudRenderDetail());
+            app->savedWake = settings.GetDoGenerateEngineWakeParticles();
+            app->savedIterations = settings.GetNumMechanicalDynamicsIterationsAdjustment();
+            app->tierSaved = true;
+        }
+
+        if (tier <= 0)
+        {
+            settings.SetNumberOfFishes(app->savedFishes);
+            settings.SetNumberOfClouds(app->savedClouds);
+            settings.SetNumberOfStars(app->savedStars);
+            settings.SetOceanRenderDetail(static_cast<OceanRenderDetailType>(app->savedOceanDetail));
+            settings.SetLandRenderDetail(static_cast<LandRenderDetailType>(app->savedLandDetail));
+            settings.SetCloudRenderDetail(static_cast<CloudRenderDetailType>(app->savedCloudDetail));
+            settings.SetDoGenerateEngineWakeParticles(app->savedWake);
+            settings.SetNumMechanicalDynamicsIterationsAdjustment(app->savedIterations);
+        }
+        else if (tier == 1)
+        {
+            settings.SetNumberOfFishes(std::min(app->savedFishes, 20u));
+            settings.SetNumberOfClouds(std::min(app->savedClouds, 8u));
+            settings.SetNumberOfStars(std::min(app->savedStars, 500u));
+            settings.SetOceanRenderDetail(OceanRenderDetailType::Basic);
+            settings.SetLandRenderDetail(LandRenderDetailType::Basic);
+            settings.SetCloudRenderDetail(CloudRenderDetailType::Basic);
+            settings.SetDoGenerateEngineWakeParticles(app->savedWake);
+            settings.SetNumMechanicalDynamicsIterationsAdjustment(app->savedIterations);
+        }
+        else
+        {
+            settings.SetNumberOfFishes(0);
+            settings.SetNumberOfClouds(std::min(app->savedClouds, 4u));
+            settings.SetNumberOfStars(std::min(app->savedStars, 200u));
+            settings.SetOceanRenderDetail(OceanRenderDetailType::Basic);
+            settings.SetLandRenderDetail(LandRenderDetailType::Basic);
+            settings.SetCloudRenderDetail(CloudRenderDetailType::Basic);
+            settings.SetDoGenerateEngineWakeParticles(false);
+            settings.SetNumMechanicalDynamicsIterationsAdjustment(std::min(app->savedIterations, 0.75f));
+        }
+
+        app->qualityTier = tier;
+    }
+
+    void ApplyRenderScale(float scale)
+    {
+        scale = std::clamp(scale, 0.4f, 1.0f);
+        if (std::abs(scale - app->renderScale) < 0.001f)
+        {
+            return;
+        }
+
+        app->renderScale = scale;
+        ApplyCanvasSize(app->canvasCssWidth, app->canvasCssHeight, app->pixelRatio);
+        app->gameController->SetCanvasSize(DisplayLogicalSize(app->engineWidth, app->engineHeight));
+    }
+
+    void SetPerfMode(int mode)
+    {
+        app->perfMode = mode;
+        app->framesSinceChange = 0;
+        app->stableFrames = 0;
+
+        switch (mode)
+        {
+            case 1:
+            {
+                app->scaleCeiling = 1.0f;
+                ApplyQualityTier(0);
+                ApplyRenderScale(1.0f);
+                break;
+            }
+
+            case 2:
+            {
+                app->scaleCeiling = 0.75f;
+                ApplyQualityTier(1);
+                ApplyRenderScale(0.75f);
+                break;
+            }
+
+            case 3:
+            {
+                app->scaleCeiling = 0.5f;
+                ApplyQualityTier(2);
+                ApplyRenderScale(0.5f);
+                break;
+            }
+
+            default:
+            {
+                app->scaleCeiling = 1.0f;
+                ApplyQualityTier(0);
+                ApplyRenderScale(1.0f);
+                break;
+            }
+        }
+    }
+
+    void AdaptPerformance(double frameStartMs, double cpuMs)
+    {
+        if (app->lastFrameStartMs > 0.0)
+        {
+            double const interval = std::min(frameStartMs - app->lastFrameStartMs, 250.0);
+            app->emaIntervalMs += (interval - app->emaIntervalMs) * 0.08;
+            app->emaCpuMs += (cpuMs - app->emaCpuMs) * 0.08;
+        }
+
+        app->lastFrameStartMs = frameStartMs;
+
+        if (app->perfMode != 0)
+        {
+            return;
+        }
+
+        ++app->framesSinceChange;
+        if (app->framesSinceChange < 45)
+        {
+            return;
+        }
+
+        bool const slow = app->emaIntervalMs > 21.5;
+        bool const cpuBound = app->emaCpuMs > app->emaIntervalMs * 0.6;
+
+        if (slow)
+        {
+            app->stableFrames = 0;
+
+            if (!cpuBound && app->renderScale > 0.5f)
+            {
+                ApplyRenderScale(app->renderScale - 0.125f);
+                app->framesSinceChange = 0;
+            }
+            else if (app->qualityTier < 2)
+            {
+                ApplyQualityTier(app->qualityTier + 1);
+                app->framesSinceChange = 0;
+            }
+            else if (app->renderScale > 0.5f)
+            {
+                ApplyRenderScale(app->renderScale - 0.125f);
+                app->framesSinceChange = 0;
+            }
+        }
+        else if (app->emaIntervalMs < 17.5)
+        {
+            if (++app->stableFrames > 900)
+            {
+                app->stableFrames = 0;
+
+                if (app->renderScale < 0.999f && app->emaCpuMs < app->emaIntervalMs * 0.5)
+                {
+                    ApplyRenderScale(app->renderScale + 0.125f);
+                    app->framesSinceChange = 0;
+                }
+            }
+        }
+        else
+        {
+            app->stableFrames = 0;
+        }
     }
 
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE CreateGlContext()
@@ -1934,7 +2143,7 @@ namespace
                 app->canvasCssHeight = cssHeight;
                 app->pixelRatio = pixelRatio;
                 ApplyCanvasSize(cssWidth, cssHeight, pixelRatio);
-                app->gameController->SetCanvasSize(DisplayLogicalSize(cssWidth, cssHeight));
+                app->gameController->SetCanvasSize(DisplayLogicalSize(app->engineWidth, app->engineHeight));
             }
 
             double const nowMs = emscripten_get_now();
@@ -1947,6 +2156,8 @@ namespace
             UpdateTool(nowMs);
 
             app->gameController->RunGameIteration();
+
+            AdaptPerformance(nowMs, emscripten_get_now() - nowMs);
         }
         catch (std::exception const & exception)
         {
@@ -1968,8 +2179,8 @@ namespace
     {
         app->previousMouseX = app->mouseX;
         app->previousMouseY = app->mouseY;
-        app->mouseX = static_cast<int>(event->targetX);
-        app->mouseY = static_cast<int>(event->targetY);
+        app->mouseX = static_cast<int>(event->targetX * app->mouseScaleX);
+        app->mouseY = static_cast<int>(event->targetY * app->mouseScaleY);
         SetShift(event->shiftKey != 0);
     }
 
@@ -2134,8 +2345,8 @@ namespace
             EMSCRIPTEN_WEBGL_CONTEXT_HANDLE const glContext = app->glContext;
 
             RenderDeviceProperties const renderDeviceProperties(
-                DisplayLogicalSize(app->canvasCssWidth, app->canvasCssHeight),
-                app->pixelRatio,
+                DisplayLogicalSize(app->engineWidth, app->engineHeight),
+                1,
                 false,
                 std::optional<bool>(true),
                 std::optional<bool>(true),
@@ -2539,6 +2750,19 @@ extern "C"
         {
             app->gameController->AdjustZoom(amount);
         });
+    }
+
+    EMSCRIPTEN_KEEPALIVE void fs_set_perf_mode(int mode)
+    {
+        Guarded("Performance error", [&]()
+        {
+            SetPerfMode(mode);
+        });
+    }
+
+    EMSCRIPTEN_KEEPALIVE int fs_perf_mode()
+    {
+        return app != nullptr ? app->perfMode : 0;
     }
 
     EMSCRIPTEN_KEEPALIVE void fs_reset_view()

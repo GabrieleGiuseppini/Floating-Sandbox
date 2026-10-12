@@ -71,3 +71,7 @@ Tools menu has Effects (blast, electric spark, laser cannon, lamp, Thanos snap, 
 ## Performance
 
 The link step runs at `-O0` because Emscripten's JS optimizer needs npm modules that may not be installed; instead a post-build step runs Binaryen's `wasm-opt -O3` on `index.wasm` when `wasm-opt` is found (set `FS_BINARYEN_ROOT` or `BINARYEN_ROOT`). The build uses WebAssembly SIMD (`-msimd128`), the desktop SSE spring-force kernel is used through Emscripten's SSE-to-SIMD headers, and per-call `glGetError` checks and buffer-size queries are disabled for the web build because they stall the GPU pipeline.
+
+### Adaptive quality
+
+View > Performance has Auto, High quality, Balanced and Fast. Auto watches the frame interval and the CPU time per frame: when frames are slow and the CPU is idle it lowers the render resolution (down to 50%); when the CPU is the limit, or resolution is already low, it steps through reduced fish, cloud and star counts and basic ocean, land and cloud detail, and finally fewer mechanical iterations and no engine wake particles. It raises quality again after a long stable stretch. Mouse input is mapped through the render scale.
