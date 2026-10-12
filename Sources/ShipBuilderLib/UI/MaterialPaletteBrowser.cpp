@@ -9,6 +9,8 @@
 
 #include <UILib/WxHelpers.h>
 
+#include <Core/GameExceptions.h>
+
 #include <wx/gbsizer.h>
 #include <wx/statline.h>
 #include <wx/wupdlock.h>
@@ -25,7 +27,7 @@ template<LayerType TLayer>
 MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
     wxWindow * parent,
     IMaterialPalettesController & materialPalettesController,
-    DefaultMaterialDatabase::Palette<TMaterial> const & materialPalette,
+    DefaultMaterialDatabase::Palette<TMaterial> const & defaultMaterialPalette,
     ShipTexturizer const & shipTexturizer,
     ISoundController * soundController,
     GameAssetManager const & gameAssetManager,
@@ -38,7 +40,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
         wxDefaultSize,
         wxFRAME_FLOAT_ON_PARENT | wxBORDER_SIMPLE)
     , mMaterialPalettesController(materialPalettesController)
-    , mMaterialPalette(materialPalette)
+    , mDefaultMaterialPalette(defaultMaterialPalette)
     , mSoundController(soundController)
     , mCurrentPlane()
 {
@@ -75,7 +77,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
             mCategoryListPanelSizer->AddSpacer(Margin);
 
             // All material categories
-            for (auto const & category : materialPalette.Categories)
+            for (auto const & category : defaultMaterialPalette.Categories)
             {
                 assert(category.SubCategories.size() > 0 && category.SubCategories[0].Materials.size() > 0);
                 TMaterial const & categoryHeadMaterial = category.SubCategories[0].Materials[0];
@@ -121,7 +123,11 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                         wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
                         Margin);
 
-                    mCategoryButtons.push_back(categoryButton);
+                    auto const [_, isInserted] = mCategoryButtonsByCategory.try_emplace(category.Name, categoryButton);
+                    if (!isInserted)
+                    {
+                        throw GameException("Category \"" + category.Name + "\" is found duplicated among default " + LayerTypeToStr_snake(TLayer) + " materials' palette");
+                    }
                 }
 
                 // Create label
@@ -167,7 +173,11 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                         wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
                         Margin);
 
-                    mCategoryButtons.push_back(categoryButton);
+                    auto const [_, isInserted] = mCategoryButtonsByCategory.try_emplace("", categoryButton);
+                    if (!isInserted)
+                    {
+                        throw GameException("Category \"\" is found duplicated among default " + LayerTypeToStr_snake(TLayer) + " materials' palette");
+                    }
                 }
 
                 // Create label
@@ -203,10 +213,10 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
 
             mCategoryPanelsContainerSizer = new wxBoxSizer(wxHORIZONTAL);
 
-            size_t const categoriesCount = materialPalette.Categories.size();
+            size_t const categoriesCount = defaultMaterialPalette.Categories.size();
             for (size_t c = 0; c < categoriesCount; ++c)
             {
-                auto const & category = materialPalette.Categories[c];
+                auto const & category = defaultMaterialPalette.Categories[c];
 
                 auto * categoryPanel = CreateCategoryPanel(
                     mCategoryPanelsContainer,
@@ -280,7 +290,11 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                     0,
                     0);
 
-                mCategoryPanels.push_back(categoryPanel);
+                auto const [_, isInserted] = mCategoryPanelsByCategory.try_emplace(category.Name, categoryPanel);
+                if (!isInserted)
+                {
+                    throw GameException("Category \"" + category.Name + "\" is found duplicated among default " + LayerTypeToStr_snake(TLayer) + " materials' palette");
+                }
 
                 progressCallback(static_cast<float>(c + 1) / static_cast<float>(categoriesCount), ProgressMessageType::LoadingMaterialPalette);
             }
@@ -458,15 +472,22 @@ std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverrid
 template<LayerType TLayer>
 void MaterialPaletteBrowser<TLayer>::AddUserCustomMaterials(std::vector<TMaterial const *> const & customMaterials)
 {
-    // TODO: organize by category, in helper
+    // Organize materials into Category->Materials map
+    std::map<std::string, std::vector<TMaterial const *>> customMaterialsByCategory;
     for (TMaterial const * customMaterial : customMaterials)
     {
+        assert(customMaterial->PaletteCoordinates.has_value());
+        customMaterialsByCategory[customMaterial->PaletteCoordinates->Category].push_back(customMaterial);
     }
 
-    // TODO: for each category
+    // Visit all categories
+    for (auto const it : customMaterialsByCategory)
     {
+        // TODO: get panel (index) via new helper refactored out of code at SetMaterialSelected(.)
+
         // TODO: start orchestration; call into palette for each; close orchestration
-        (void)customMaterials;
+
+        (void)it;
     }
 }
 
@@ -995,38 +1016,24 @@ void MaterialPaletteBrowser<TLayer>::SetMaterialSelected(TMaterial const * mater
 {
     wxWindowUpdateLocker locker(this);
 
+    std::string categoryName;
+    if (material != nullptr)
+    {
+        categoryName = material->PaletteCoordinates->Category;
+    }
+    else
+    {
+        // Clear material
+        categoryName = "";
+    }
+
     //
     // Select category button and unselect all others
     //
 
-    size_t iCategorySelected = 0;
-
-    if (material != nullptr)
+    for (auto it : mCategoryButtonsByCategory)
     {
-        assert(material->PaletteCoordinates.has_value());
-
-        // Find category index
-        for (size_t iCategory = 0; iCategory < mMaterialPalette.Categories.size(); ++iCategory)
-        {
-            auto const & category = mMaterialPalette.Categories[iCategory];
-            if (category.Name == material->PaletteCoordinates->Category)
-            {
-                iCategorySelected = iCategory;
-                break;
-            }
-        }
-    }
-    else
-    {
-        // Use "Clear" category
-        assert(TLayer != LayerType::Ropes);
-        iCategorySelected = mMaterialPalette.Categories.size();
-    }
-
-    // Select category button and deselect others
-    for (size_t i = 0; i < mCategoryButtons.size(); ++i)
-    {
-        mCategoryButtons[i]->SetValue(i == iCategorySelected);
+        it.second->SetValue(it.first == categoryName);
     }
 
     //
@@ -1035,13 +1042,13 @@ void MaterialPaletteBrowser<TLayer>::SetMaterialSelected(TMaterial const * mater
 
     MaterialPalettePanel<TLayer> * selectedCategoryPanel = nullptr;
 
-    for (size_t i = 0; i < mCategoryPanels.size(); ++i)
+    for (auto it : mCategoryPanelsByCategory)
     {
-        if (i == iCategorySelected)
+        if (it.first == categoryName)
         {
             // This is the panel we want to be shown
 
-            selectedCategoryPanel = mCategoryPanels[i];
+            selectedCategoryPanel = it.second;
 
             // Make it visible
             mCategoryPanelsContainerSizer->Show(selectedCategoryPanel, true);
@@ -1051,7 +1058,7 @@ void MaterialPaletteBrowser<TLayer>::SetMaterialSelected(TMaterial const * mater
         }
         else
         {
-            mCategoryPanelsContainerSizer->Show(mCategoryPanels[i], false);
+            mCategoryPanelsContainerSizer->Show(it.second, false);
         }
     }
 

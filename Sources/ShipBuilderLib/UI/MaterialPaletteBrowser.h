@@ -31,6 +31,7 @@
 #include <wx/tglbtn.h>
 
 #include <array>
+#include <map>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -58,7 +59,7 @@ public:
     MaterialPaletteBrowser(
         wxWindow * parent,
         IMaterialPalettesController & materialPalettesController,
-        DefaultMaterialDatabase::Palette<TMaterial> const & materialPalette,
+        DefaultMaterialDatabase::Palette<TMaterial> const & defaultMaterialPalette,
         ShipTexturizer const & shipTexturizer,
         ISoundController * soundController,
         GameAssetManager const & gameAssetManager,
@@ -110,7 +111,7 @@ private:
 private:
 
     IMaterialPalettesController & mMaterialPalettesController;
-    DefaultMaterialDatabase::Palette<TMaterial> const & mMaterialPalette;
+    DefaultMaterialDatabase::Palette<TMaterial> const & mDefaultMaterialPalette;
     ISoundController * const mSoundController;
 
     wxSizer * mRootHSizer;
@@ -123,8 +124,8 @@ private:
     wxScrolledWindow * mCategoryListPanel;
     wxSizer * mCategoryListPanelSizer;
 
-    // Category buttons in the category list; one for each category + 1 ("clear")
-    std::vector<wxToggleButton *> mCategoryButtons;
+    // Category buttons in the category list; one for each category + 1 ("clear", category is "")
+    std::map<std::string, wxToggleButton *> mCategoryButtonsByCategory;
 
     //
     // Category panels
@@ -135,7 +136,7 @@ private:
     wxSizer * mCategoryPanelsContainerSizer;
 
     // Category panels; one for each category
-    std::vector<MaterialPalettePanel<TLayer> *> mCategoryPanels;
+    std::map<std::string, MaterialPalettePanel<TLayer> *> mCategoryPanelsByCategory;
 
     //
     // Material properties
