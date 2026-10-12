@@ -48,9 +48,8 @@ No special headers are needed because the build is single-threaded.
 
 ## Known gaps
 
-- No audio (the SFML sound and music controllers are not ported).
-- No UI beyond pan, zoom and ship loading: no settings, menus, interactive tools (grab, bombs, saw, and so on), ship builder or electrical panel.
-- Only the fallback ship is bundled; other ships must be loaded from disk.
+- No ship builder or ship saving.
+- The Move Gripped tool, the NPC subkind picker and colour settings are not ported.
 - Point size is passed through a `glwebPointSize` uniform that the converter injects into every vertex shader.
 - `GL_TEXTURE_1D` is mapped to a height-1 2D texture, so the cloud shadows texture shares the 2D binding on its texture unit.
 - Line smoothing, point sprite toggles, multisampling and polygon mode are ignored.
@@ -64,6 +63,10 @@ No special headers are needed because the build is single-threaded.
 The page has a menu bar (File, Tools, Controls, View, Sound, Help). Tools work with the mouse like the desktop game: left button uses the current tool, right or middle drag pans, the wheel zooms, Shift modifies tools.
 
 The build step generates `ships.json` plus a `Ships/` folder from the game's `Ships` directory (File > Load Ship...), and converts `Data/Sounds` and `Data/Music` to small Opus files with `sounds.json` (needs `ffmpeg` on the build machine). Sounds and music are fetched on demand, not bundled in `index.data`. Audio starts after the first click or key press, as browsers require.
+
+## NPCs, electrical panel and settings
+
+Tools menu has Effects (blast, electric spark, laser cannon, lamp, Thanos snap, wind maker, terrain adjust, tornado, anti-gravity) and NPCs (add human, add furniture, move, remove, turn around, follow, plus add-group and select-next commands). Ships with electrical elements get a floating Switchboard panel (switches, engine telegraphs, jet throttles, probes). View and Controls menus expose the render-mode enums, and a Settings dialog is generated from `IGameControllerSettings` with `Web/generate_settings.py` into `Web/WebSettings.inc`.
 
 ## Performance
 

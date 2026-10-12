@@ -2,15 +2,20 @@
 #include <Core/ThreadManager.h>
 #include <Game/GameAssetManager.h>
 #include <Game/GameController.h>
+#include <Game/IGameControllerSettings.h>
+#include <Game/IGameControllerSettingsOptions.h>
 #include <Game/ShipLoadSpecifications.h>
 #include <Render/RenderDeviceProperties.h>
 #include <Simulation/ISimulationEventHandlers.h>
+#include <Simulation/Materials.h>
 
 #include <emscripten.h>
 #include <emscripten/html5.h>
 
 #include <algorithm>
 #include <chrono>
+#include <cstdio>
+#include <cstdlib>
 #include <cmath>
 #include <exception>
 #include <filesystem>
@@ -54,7 +59,22 @@ namespace
         WaveMaker,
         ScareFish,
         PhysicsProbe,
-        Lightning
+        Lightning,
+        Blast,
+        ElectricSpark,
+        LaserCannon,
+        Lamp,
+        ThanosSnap,
+        WindMaker,
+        TerrainAdjust,
+        Tornado,
+        AntiGravity,
+        AddHuman,
+        AddFurniture,
+        MoveNpc,
+        RemoveNpc,
+        TurnaroundNpc,
+        FollowNpc
     };
 
     std::unordered_map<std::string, Tool> const ToolsByName = {
@@ -80,8 +100,39 @@ namespace
         {"wavemaker", Tool::WaveMaker},
         {"scarefish", Tool::ScareFish},
         {"physicsprobe", Tool::PhysicsProbe},
-        {"lightning", Tool::Lightning}
+        {"lightning", Tool::Lightning},
+        {"blast", Tool::Blast},
+        {"electricspark", Tool::ElectricSpark},
+        {"lasercannon", Tool::LaserCannon},
+        {"lamp", Tool::Lamp},
+        {"thanossnap", Tool::ThanosSnap},
+        {"windmaker", Tool::WindMaker},
+        {"terrainadjust", Tool::TerrainAdjust},
+        {"tornado", Tool::Tornado},
+        {"antigravity", Tool::AntiGravity},
+        {"addhuman", Tool::AddHuman},
+        {"addfurniture", Tool::AddFurniture},
+        {"movenpc", Tool::MoveNpc},
+        {"removenpc", Tool::RemoveNpc},
+        {"turnaroundnpc", Tool::TurnaroundNpc},
+        {"follownpc", Tool::FollowNpc}
     };
+
+    enum class NpcPhase
+    {
+        Idle,
+        Placing,
+        PlaceError,
+        MovingOne,
+        Selecting,
+        HaveMany,
+        MovingMany
+    };
+
+    bool IsNpcTool(Tool tool)
+    {
+        return tool >= Tool::AddHuman && tool <= Tool::FollowNpc;
+    }
 
     struct PullState
     {
@@ -132,6 +183,30 @@ namespace
         SessionId smashSession;
         SequenceNumber repairStep;
         bool isFirstSawSegment = true;
+
+        int blastPhase = 0;
+        double blastStartSec = 0.0;
+        float blastSeed = 0.0f;
+        std::uint64_t sparkCounter = 0;
+        DisplayLogicalCoordinates laserPrevious = DisplayLogicalCoordinates(0, 0);
+
+        int windPhase = 0;
+        double windStartSec = 0.0;
+        double windMainStartSec = 0.0;
+        double windTearDownStartSec = 0.0;
+        DisplayLogicalCoordinates windCenter = DisplayLogicalCoordinates(0, 0);
+        bool windShift = false;
+
+        std::optional<ElementIndex> tornadoId;
+        int tornadoStartY = 0;
+        std::optional<ElementIndex> antiGravityId;
+        std::optional<DisplayLogicalCoordinates> terrainStart;
+
+        NpcPhase npcPhase = NpcPhase::Idle;
+        std::optional<PickedNpc> npcPicked;
+        std::vector<NpcId> npcIds;
+        DisplayLogicalCoordinates npcStart = DisplayLogicalCoordinates(0, 0);
+        DisplayLogicalCoordinates npcLast = DisplayLogicalCoordinates(0, 0);
     };
 
     WebApp * app = nullptr;
@@ -185,6 +260,8 @@ namespace
         EM_ASM({ if (window.FSAudio) { FSAudio.playMaterial(UTF8ToString($0), UTF8ToString($1), $2, $3, $4); } },
             kind, name, static_cast<int>(size), isUnderwater ? 1 : 0, volume);
     }
+
+    double lastProbeMs = 0.0;
 
     struct WebSoundHandler final
         : public IStructuralShipEventHandler
@@ -303,6 +380,35 @@ namespace
             PlaySoundBase("antimatterbombimplosion", 1.0f);
         }
 
+        void OnPhysicsProbeReading(
+            vec2f const & velocity,
+            float temperature,
+            float depth,
+            float externalPressure,
+            float internalPressure) override
+        {
+            double const now = emscripten_get_now();
+            if (now - lastProbeMs < 100.0)
+            {
+                return;
+            }
+
+            lastProbeMs = now;
+            EM_ASM({ if (window.FSPanel) { FSPanel.probe($0, $1, $2, $3, $4, $5); } },
+                static_cast<double>(velocity.x), static_cast<double>(velocity.y), static_cast<double>(temperature),
+                static_cast<double>(depth), static_cast<double>(externalPressure), static_cast<double>(internalPressure));
+        }
+
+        void OnPhysicsProbePanelOpened() override
+        {
+            EM_ASM({ if (window.FSPanel) { FSPanel.probeVisible(1); } });
+        }
+
+        void OnPhysicsProbePanelClosed() override
+        {
+            EM_ASM({ if (window.FSPanel) { FSPanel.probeVisible(0); } });
+        }
+
         void OnWaterReactionExplosion(bool, unsigned int) override
         {
             PlaySoundBase("waterreactionexplosion", 0.8f);
@@ -349,6 +455,328 @@ namespace
         }
     };
 
+    void PanelEvent(char const * op, std::string const & key, std::string const & label, int a, double b, double c)
+    {
+        EM_ASM({ if (window.FSPanel) { FSPanel.event(UTF8ToString($0), UTF8ToString($1), UTF8ToString($2), $3, $4, $5); } },
+            op, key.c_str(), label.c_str(), a, b, c);
+    }
+
+    std::string ElementKey(GlobalElectricalElementId const & id)
+    {
+        return std::to_string(id.GetShipId()) + "_" + std::to_string(id.GetLocalObjectId());
+    }
+
+    struct PanelInfo
+    {
+        std::string Label;
+        bool IsHidden;
+    };
+
+    PanelInfo MakePanelInfo(
+        ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const & material,
+        std::optional<ElectricalPanel::ElementMetadata> const & metadata)
+    {
+        PanelInfo info{ std::string(), false };
+
+        if (metadata.has_value())
+        {
+            if (metadata->Label.has_value())
+            {
+                info.Label = *metadata->Label;
+            }
+
+            info.IsHidden = metadata->IsHidden;
+        }
+
+        if (info.Label.empty())
+        {
+            info.Label = material.IsInstanced ? material.MakeInstancedElementLabel(instanceIndex) : material.Name;
+        }
+
+        return info;
+    }
+
+    char const * ShipSoundBase(ElectricalMaterial::ShipSoundElementType type)
+    {
+        switch (type)
+        {
+            case ElectricalMaterial::ShipSoundElementType::Bell1: return "shipbell1";
+            case ElectricalMaterial::ShipSoundElementType::Bell2: return "shipbell2";
+            case ElectricalMaterial::ShipSoundElementType::QueenMaryHorn: return "shipqueenmaryhorn";
+            case ElectricalMaterial::ShipSoundElementType::FourFunnelLinerWhistle: return "shipfourfunnellinerwhistle";
+            case ElectricalMaterial::ShipSoundElementType::TripodHorn: return "shiptripodhorn";
+            case ElectricalMaterial::ShipSoundElementType::PipeWhistle: return "shippipewhistle";
+            case ElectricalMaterial::ShipSoundElementType::LakeFreighterHorn: return "shiplakefreighterhorn";
+            case ElectricalMaterial::ShipSoundElementType::ShieldhallSteamSiren: return "shipshieldhallsteamsiren";
+            case ElectricalMaterial::ShipSoundElementType::QueenElizabeth2Horn: return "shipqueenelizabeth2horn";
+            case ElectricalMaterial::ShipSoundElementType::SSRexWhistle: return "shipssrexwhistle";
+            case ElectricalMaterial::ShipSoundElementType::SteamWhistle: return "shipsteamwhistle";
+            case ElectricalMaterial::ShipSoundElementType::SuperWhistle: return "shipsuperwhistle";
+            case ElectricalMaterial::ShipSoundElementType::IndustrialHorn: return "shipindustrialhorn";
+            case ElectricalMaterial::ShipSoundElementType::Klaxon1: return "shipklaxon1";
+            case ElectricalMaterial::ShipSoundElementType::NuclearAlarm1: return "shipnuclearalarm1";
+            case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm1: return "shipevacuationalarm1";
+            case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm2: return "shipevacuationalarm2";
+        }
+
+        return "shipbell1";
+    }
+
+    struct WebElectricalHandler final : public IElectricalElementEventHandler
+    {
+        std::unordered_map<std::string, std::string> engineSounds;
+
+        void OnElectricalElementAnnouncementsBegin() override
+        {
+            engineSounds.clear();
+            EM_ASM({ if (window.FSAudio) { FSAudio.stopGroup('eng_'); FSAudio.stopGroup('ship_'); } });
+            PanelEvent("begin", "", "", 0, 0.0, 0.0);
+        }
+
+        void OnElectricalElementAnnouncementsEnd() override
+        {
+            PanelEvent("end", "", "", 0, 0.0, 0.0);
+        }
+
+        void OnSwitchCreated(
+            GlobalElectricalElementId electricalElementId,
+            ElectricalElementInstanceIndex instanceIndex,
+            SwitchType type,
+            ElectricalState state,
+            ElectricalMaterial const & electricalMaterial,
+            std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
+        {
+            PanelInfo const info = MakePanelInfo(instanceIndex, electricalMaterial, panelElementMetadata);
+            if (info.IsHidden)
+            {
+                return;
+            }
+
+            PanelEvent("switch", ElementKey(electricalElementId), info.Label, static_cast<int>(type), state == ElectricalState::On ? 1.0 : 0.0, static_cast<double>(instanceIndex));
+        }
+
+        void OnPowerProbeCreated(
+            GlobalElectricalElementId electricalElementId,
+            ElectricalElementInstanceIndex instanceIndex,
+            PowerProbeType type,
+            ElectricalState state,
+            ElectricalMaterial const & electricalMaterial,
+            std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
+        {
+            PanelInfo const info = MakePanelInfo(instanceIndex, electricalMaterial, panelElementMetadata);
+            if (info.IsHidden)
+            {
+                return;
+            }
+
+            PanelEvent("probe", ElementKey(electricalElementId), info.Label, static_cast<int>(type), state == ElectricalState::On ? 1.0 : 0.0, static_cast<double>(instanceIndex));
+        }
+
+        void OnEngineControllerCreated(
+            GlobalElectricalElementId electricalElementId,
+            ElectricalElementInstanceIndex instanceIndex,
+            ElectricalMaterial const & electricalMaterial,
+            std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
+        {
+            PanelInfo const info = MakePanelInfo(instanceIndex, electricalMaterial, panelElementMetadata);
+            if (info.IsHidden)
+            {
+                return;
+            }
+
+            PanelEvent("enginectl", ElementKey(electricalElementId), info.Label, static_cast<int>(electricalMaterial.EngineControllerType), 0.0, static_cast<double>(instanceIndex));
+        }
+
+        void OnEngineMonitorCreated(
+            GlobalElectricalElementId electricalElementId,
+            ElectricalElementInstanceIndex instanceIndex,
+            float thrustMagnitude,
+            float rpm,
+            ElectricalMaterial const & electricalMaterial,
+            std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
+        {
+            char const * sound = "enginediesel1";
+            switch (electricalMaterial.EngineType)
+            {
+                case ElectricalMaterial::EngineElementType::Jet: sound = "enginejet1"; break;
+                case ElectricalMaterial::EngineElementType::Outboard: sound = "engineoutboard1"; break;
+                case ElectricalMaterial::EngineElementType::Steam: sound = "enginesteam1"; break;
+                default: break;
+            }
+
+            engineSounds[ElementKey(electricalElementId)] = sound;
+
+            PanelInfo const info = MakePanelInfo(instanceIndex, electricalMaterial, panelElementMetadata);
+            if (info.IsHidden)
+            {
+                return;
+            }
+
+            PanelEvent("enginemon", ElementKey(electricalElementId), info.Label, 0, static_cast<double>(thrustMagnitude), static_cast<double>(rpm));
+        }
+
+        void OnWaterPumpCreated(
+            GlobalElectricalElementId electricalElementId,
+            ElectricalElementInstanceIndex instanceIndex,
+            float normalizedForce,
+            ElectricalMaterial const & electricalMaterial,
+            std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
+        {
+            PanelInfo const info = MakePanelInfo(instanceIndex, electricalMaterial, panelElementMetadata);
+            if (info.IsHidden)
+            {
+                return;
+            }
+
+            PanelEvent("pump", ElementKey(electricalElementId), info.Label, 0, static_cast<double>(normalizedForce), 0.0);
+        }
+
+        void OnWatertightDoorCreated(
+            GlobalElectricalElementId electricalElementId,
+            ElectricalElementInstanceIndex instanceIndex,
+            bool isOpen,
+            ElectricalMaterial const & electricalMaterial,
+            std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
+        {
+            PanelInfo const info = MakePanelInfo(instanceIndex, electricalMaterial, panelElementMetadata);
+            if (info.IsHidden)
+            {
+                return;
+            }
+
+            PanelEvent("door", ElementKey(electricalElementId), info.Label, 0, isOpen ? 1.0 : 0.0, 0.0);
+        }
+
+        void OnSwitchEnabled(GlobalElectricalElementId electricalElementId, bool isEnabled) override
+        {
+            PanelEvent("enabled", ElementKey(electricalElementId), "", 0, isEnabled ? 1.0 : 0.0, 0.0);
+        }
+
+        void OnSwitchToggled(GlobalElectricalElementId electricalElementId, ElectricalState newState) override
+        {
+            PanelEvent("state", ElementKey(electricalElementId), "", 0, newState == ElectricalState::On ? 1.0 : 0.0, 0.0);
+            PlaySoundBase(newState == ElectricalState::On ? "interactiveswitchon" : "interactiveswitchoff", 0.8f);
+        }
+
+        void OnPowerProbeToggled(GlobalElectricalElementId electricalElementId, ElectricalState newState) override
+        {
+            PanelEvent("state", ElementKey(electricalElementId), "", 0, newState == ElectricalState::On ? 1.0 : 0.0, 0.0);
+        }
+
+        void OnEngineControllerEnabled(GlobalElectricalElementId electricalElementId, bool isEnabled) override
+        {
+            PanelEvent("enabled", ElementKey(electricalElementId), "", 0, isEnabled ? 1.0 : 0.0, 0.0);
+        }
+
+        void OnEngineControllerUpdated(
+            GlobalElectricalElementId electricalElementId,
+            ElectricalMaterial const & electricalMaterial,
+            float oldControllerValue,
+            float newControllerValue) override
+        {
+            PanelEvent("value", ElementKey(electricalElementId), "", 0, static_cast<double>(newControllerValue), 0.0);
+
+            switch (electricalMaterial.EngineControllerType)
+            {
+                case ElectricalMaterial::EngineControllerElementType::JetThrust:
+                {
+                    PlaySoundBase(newControllerValue != 0.0f ? "interactiveswitchon" : "interactiveswitchoff", 0.8f);
+                    break;
+                }
+
+                case ElectricalMaterial::EngineControllerElementType::Telegraph:
+                {
+                    if (oldControllerValue != newControllerValue)
+                    {
+                        PlaySoundBase("enginetelegraph", 0.7f);
+                    }
+
+                    break;
+                }
+
+                default:
+                {
+                    break;
+                }
+            }
+        }
+
+        void OnEngineMonitorUpdated(GlobalElectricalElementId electricalElementId, float thrustMagnitude, float rpm) override
+        {
+            std::string const key = ElementKey(electricalElementId);
+            PanelEvent("monitor", key, "", 0, static_cast<double>(thrustMagnitude), static_cast<double>(rpm));
+
+            auto const it = engineSounds.find(key);
+            if (it != engineSounds.end())
+            {
+                EM_ASM({ if (window.FSAudio) { FSAudio.engine('eng_' + UTF8ToString($0), UTF8ToString($1), $2); } },
+                    key.c_str(), it->second.c_str(), static_cast<double>(rpm));
+            }
+        }
+
+        void OnShipSoundUpdated(
+            GlobalElectricalElementId electricalElementId,
+            ElectricalMaterial const & electricalMaterial,
+            bool isPlaying,
+            bool isUnderwater) override
+        {
+            std::string base = ShipSoundBase(electricalMaterial.ShipSoundType);
+            if (isUnderwater)
+            {
+                base += "_underwater";
+            }
+
+            std::string const key = "ship_" + ElementKey(electricalElementId);
+            EM_ASM({ if (window.FSAudio) { FSAudio.shipSound(UTF8ToString($0), UTF8ToString($1), $2); } },
+                key.c_str(), base.c_str(), isPlaying ? 1 : 0);
+        }
+
+        void OnWaterPumpEnabled(GlobalElectricalElementId electricalElementId, bool isEnabled) override
+        {
+            PanelEvent("enabled", ElementKey(electricalElementId), "", 0, isEnabled ? 1.0 : 0.0, 0.0);
+        }
+
+        void OnWaterPumpUpdated(GlobalElectricalElementId electricalElementId, float normalizedForce) override
+        {
+            PanelEvent("value", ElementKey(electricalElementId), "", 0, static_cast<double>(normalizedForce), 0.0);
+        }
+
+        void OnWatertightDoorEnabled(GlobalElectricalElementId electricalElementId, bool isEnabled) override
+        {
+            PanelEvent("enabled", ElementKey(electricalElementId), "", 0, isEnabled ? 1.0 : 0.0, 0.0);
+        }
+
+        void OnWatertightDoorUpdated(GlobalElectricalElementId electricalElementId, bool isOpen) override
+        {
+            PanelEvent("state", ElementKey(electricalElementId), "", 0, isOpen ? 1.0 : 0.0, 0.0);
+            PlaySoundBase(isOpen ? "watertightdooropened" : "watertightdoorclosed", 0.8f);
+        }
+
+        void OnLampBroken(bool isUnderwater, unsigned int size) override
+        {
+            EM_ASM({ if (window.FSAudio) { FSAudio.playMaterial('break', 'glass', $0, $1, 0.8); } }, static_cast<int>(size), isUnderwater ? 1 : 0);
+        }
+
+        void OnLampExploded(bool isUnderwater, unsigned int) override
+        {
+            EM_ASM({ if (window.FSAudio) { FSAudio.playUnderwater('lampexplosion', $0, 1.0); } }, isUnderwater ? 1 : 0);
+        }
+
+        void OnLampImploded(bool isUnderwater, unsigned int) override
+        {
+            EM_ASM({ if (window.FSAudio) { FSAudio.playUnderwater('lampimplosion', $0, 1.0); } }, isUnderwater ? 1 : 0);
+        }
+
+        void OnLightFlicker(DurationShortLongType duration, bool isUnderwater, unsigned int) override
+        {
+            EM_ASM({ if (window.FSAudio) { FSAudio.playUnderwater($2 ? 'lightflicker_long' : 'lightflicker_short', $0, 0.7); } },
+                isUnderwater ? 1 : 0, 0, duration == DurationShortLongType::Long ? 1 : 0);
+        }
+    };
+
+    WebElectricalHandler electricalHandler;
+
     WebSoundHandler soundHandler;
 
     char const * ToolLoopSound(Tool tool, bool isShiftDown)
@@ -366,6 +794,9 @@ namespace
             case Tool::InjectAir: return "pressureinjection";
             case Tool::WaveMaker: return "wavemaker";
             case Tool::ScareFish: return "fishscream";
+            case Tool::ElectricSpark: return "electricspark";
+            case Tool::LaserCannon: return isShiftDown ? "laserrayamplified" : "laserraynormal";
+            case Tool::Tornado: return "tornado";
             default: return nullptr;
         }
     }
@@ -457,6 +888,430 @@ namespace
         return MinToolFraction + (1.0f - MinToolFraction) * static_cast<float>(std::min(1.0, elapsed / ToolRampMs));
     }
 
+
+    void ResetNpcState()
+    {
+        IGameController & controller = *app->gameController;
+
+        if (app->npcPicked.has_value())
+        {
+            if (app->npcPhase == NpcPhase::Placing)
+            {
+                controller.AbortNewNpc(app->npcPicked->Id);
+            }
+            else if (app->npcPhase == NpcPhase::MovingOne)
+            {
+                controller.EndMoveNpc(app->npcPicked->Id);
+            }
+        }
+
+        if (app->npcPhase == NpcPhase::MovingMany)
+        {
+            for (NpcId const id : app->npcIds)
+            {
+                controller.EndMoveNpc(id);
+            }
+        }
+
+        app->npcPicked.reset();
+        app->npcIds.clear();
+        app->npcPhase = NpcPhase::Idle;
+    }
+
+    void BeginNpcLeft()
+    {
+        IGameController & controller = *app->gameController;
+        DisplayLogicalCoordinates const position = MousePosition();
+        bool const shift = app->isShiftDown;
+
+        switch (app->tool)
+        {
+            case Tool::AddHuman:
+            case Tool::AddFurniture:
+            {
+                std::optional<PickedNpc> const picked = app->tool == Tool::AddHuman
+                    ? controller.BeginPlaceNewHumanNpc(std::nullopt, position, shift)
+                    : controller.BeginPlaceNewFurnitureNpc(std::nullopt, position, shift);
+
+                if (picked.has_value())
+                {
+                    app->npcPicked = picked;
+                    app->npcPhase = NpcPhase::Placing;
+                }
+                else
+                {
+                    app->npcPhase = NpcPhase::PlaceError;
+                    PlaySoundBase("error", 0.8f);
+                }
+
+                break;
+            }
+
+            case Tool::MoveNpc:
+            {
+                if (app->npcPhase == NpcPhase::HaveMany && !app->npcIds.empty())
+                {
+                    controller.BeginMoveNpcs(app->npcIds);
+                    app->npcLast = position;
+                    app->npcPhase = NpcPhase::MovingMany;
+                    break;
+                }
+
+                std::optional<PickedNpc> probe;
+                if (!shift)
+                {
+                    probe = controller.ProbeNpcAt(position);
+                }
+
+                if (probe.has_value())
+                {
+                    controller.BeginMoveNpc(probe->Id, probe->ParticleOrdinal, shift);
+                    app->npcPicked = probe;
+                    app->npcPhase = NpcPhase::MovingOne;
+                }
+                else
+                {
+                    app->npcStart = position;
+                    app->npcPhase = NpcPhase::Selecting;
+                }
+
+                break;
+            }
+
+            case Tool::RemoveNpc:
+            case Tool::TurnaroundNpc:
+            {
+                std::optional<PickedNpc> probe;
+                if (!shift)
+                {
+                    probe = controller.ProbeNpcAt(position);
+                }
+
+                if (probe.has_value())
+                {
+                    if (app->tool == Tool::RemoveNpc)
+                    {
+                        controller.RemoveNpc(probe->Id);
+                    }
+                    else
+                    {
+                        controller.TurnaroundNpc(probe->Id);
+                    }
+                }
+                else
+                {
+                    app->npcStart = position;
+                    app->npcPhase = NpcPhase::Selecting;
+                }
+
+                break;
+            }
+
+            case Tool::FollowNpc:
+            {
+                std::optional<PickedNpc> const probe = controller.ProbeNpcAt(position);
+                if (probe.has_value())
+                {
+                    controller.SelectNpc(probe->Id);
+                }
+                else
+                {
+                    controller.SelectNpc(std::nullopt);
+                }
+
+                break;
+            }
+
+            default:
+            {
+                break;
+            }
+        }
+    }
+
+    void EndNpcLeft()
+    {
+        IGameController & controller = *app->gameController;
+        DisplayLogicalCoordinates const position = MousePosition();
+
+        switch (app->npcPhase)
+        {
+            case NpcPhase::Placing:
+            {
+                controller.CompleteNewNpc(app->npcPicked->Id);
+                app->npcPicked.reset();
+                app->npcPhase = NpcPhase::Idle;
+                break;
+            }
+
+            case NpcPhase::PlaceError:
+            {
+                app->npcPhase = NpcPhase::Idle;
+                break;
+            }
+
+            case NpcPhase::MovingOne:
+            {
+                controller.EndMoveNpc(app->npcPicked->Id);
+                app->npcPicked.reset();
+                app->npcPhase = NpcPhase::Idle;
+                break;
+            }
+
+            case NpcPhase::Selecting:
+            {
+                if (app->tool == Tool::MoveNpc)
+                {
+                    app->npcIds = controller.ProbeNpcsInRect(app->npcStart, position);
+                    app->npcPhase = app->npcIds.empty() ? NpcPhase::Idle : NpcPhase::HaveMany;
+                }
+                else
+                {
+                    if (app->tool == Tool::RemoveNpc)
+                    {
+                        controller.RemoveNpcsInRect(app->npcStart, position);
+                    }
+                    else
+                    {
+                        controller.TurnaroundNpcsInRect(app->npcStart, position);
+                    }
+
+                    app->npcPhase = NpcPhase::Idle;
+                }
+
+                break;
+            }
+
+            case NpcPhase::MovingMany:
+            {
+                for (NpcId const id : app->npcIds)
+                {
+                    controller.EndMoveNpc(id);
+                }
+
+                app->npcPhase = NpcPhase::HaveMany;
+                break;
+            }
+
+            case NpcPhase::HaveMany:
+            case NpcPhase::Idle:
+            {
+                break;
+            }
+        }
+    }
+
+    void UpdateNpcTool()
+    {
+        IGameController & controller = *app->gameController;
+        DisplayLogicalCoordinates const position = MousePosition();
+        bool const shift = app->isShiftDown;
+
+        switch (app->npcPhase)
+        {
+            case NpcPhase::Placing:
+            case NpcPhase::MovingOne:
+            {
+                controller.MoveNpcTo(app->npcPicked->Id, position, app->npcPicked->WorldOffset, shift);
+                break;
+            }
+
+            case NpcPhase::Selecting:
+            {
+                controller.ShowInteractiveToolDashedRect(app->npcStart, position);
+                controller.HighlightNpcsInRect(app->npcStart, position);
+                break;
+            }
+
+            case NpcPhase::HaveMany:
+            {
+                controller.HighlightNpcs(app->npcIds);
+                break;
+            }
+
+            case NpcPhase::MovingMany:
+            {
+                int const dx = position.x - app->npcLast.x;
+                int const dy = position.y - app->npcLast.y;
+                if (dx != 0 || dy != 0)
+                {
+                    controller.MoveNpcsBy(app->npcIds, DisplayLogicalSize(dx, dy));
+                }
+
+                app->npcLast = position;
+                break;
+            }
+
+            case NpcPhase::PlaceError:
+            {
+                break;
+            }
+
+            case NpcPhase::Idle:
+            {
+                bool const isHoverTool = app->tool == Tool::MoveNpc || app->tool == Tool::RemoveNpc || app->tool == Tool::TurnaroundNpc;
+                if (isHoverTool && !shift && controller.HasNpcs())
+                {
+                    std::optional<PickedNpc> const probe = controller.ProbeNpcAt(position);
+                    if (probe.has_value())
+                    {
+                        controller.HighlightNpcs({ probe->Id });
+                    }
+                }
+
+                break;
+            }
+        }
+    }
+
+    void UpdateBlast(double nowSec)
+    {
+        IGameController & controller = *app->gameController;
+        DisplayLogicalCoordinates const position = MousePosition();
+        float const elapsed = static_cast<float>(nowSec - app->blastStartSec);
+
+        switch (app->blastPhase)
+        {
+            case 1:
+            {
+                float const progress = std::min(elapsed / 0.75f, 1.0f);
+                controller.ApplyBlastAt(position, progress, 1.0f, progress, app->blastSeed);
+                if (progress >= 1.0f)
+                {
+                    app->blastPhase = 2;
+                    app->blastStartSec = nowSec;
+                }
+
+                break;
+            }
+
+            case 2:
+            {
+                if (elapsed >= 0.5f)
+                {
+                    app->blastPhase = 3;
+                    app->blastStartSec = nowSec;
+                    PlaySoundBase("blasttoolslow2", 0.9f);
+                }
+
+                break;
+            }
+
+            case 3:
+            {
+                float const progress = std::min(elapsed / 0.25f, 1.0f);
+                controller.ApplyBlastAt(position, 1.0f + progress * 2.5f, 2.5f, progress, app->blastSeed);
+                if (progress >= 1.0f)
+                {
+                    app->blastPhase = 0;
+                }
+
+                break;
+            }
+
+            case 4:
+            {
+                float const progress = std::min(elapsed / 0.25f, 1.0f);
+                controller.ApplyBlastAt(position, progress * 2.0f, 2.0f, progress, app->blastSeed);
+                if (progress >= 1.0f)
+                {
+                    app->blastPhase = 0;
+                }
+
+                break;
+            }
+
+            default:
+            {
+                break;
+            }
+        }
+    }
+
+    void UpdateWind(double nowSec)
+    {
+        if (app->windPhase == 0)
+        {
+            return;
+        }
+
+        IGameController & controller = *app->gameController;
+        bool const shift = app->windShift;
+
+        if (app->windPhase != 3 && !app->isLeftDown)
+        {
+            app->windPhase = 3;
+            app->windTearDownStartSec = nowSec;
+            app->windCenter = MousePosition();
+        }
+
+        float const preElapsed = static_cast<float>(std::max(nowSec - app->windStartSec, 0.0));
+        float intensity = 0.0f;
+
+        if (app->windPhase == 1)
+        {
+            app->windCenter = MousePosition();
+            float const duration = shift ? 0.05f : 1.5f;
+            if (preElapsed >= duration)
+            {
+                intensity = 1.0f;
+                app->windPhase = 2;
+                app->windMainStartSec = nowSec;
+            }
+            else
+            {
+                intensity = preElapsed / duration;
+            }
+        }
+        else if (app->windPhase == 2)
+        {
+            app->windCenter = MousePosition();
+            intensity = 1.0f;
+        }
+        else
+        {
+            float const elapsed = static_cast<float>(nowSec - app->windTearDownStartSec);
+            if (elapsed >= 2.0f)
+            {
+                app->windPhase = 0;
+                EM_ASM({ if (window.FSAudio) { FSAudio.loop('wind', '', 0, 0); } });
+                return;
+            }
+
+            intensity = 1.0f - elapsed / 2.0f;
+        }
+
+        float const mainElapsed = app->windMainStartSec > 0.0 ? static_cast<float>(nowSec - app->windMainStartSec) : 0.0f;
+        controller.ApplyRadialWindFrom(
+            app->windCenter,
+            preElapsed,
+            intensity * (shift ? 3.0f : 1.0f),
+            mainElapsed,
+            intensity * (shift ? 1.5f : 1.0f));
+    }
+
+    void ResetToolSpecificState()
+    {
+        IGameController & controller = *app->gameController;
+
+        if (app->tornadoId.has_value())
+        {
+            controller.EndPlaceTornado(*app->tornadoId);
+            app->tornadoId.reset();
+        }
+
+        if (app->antiGravityId.has_value())
+        {
+            controller.AbortPlaceAntiGravityField(*app->antiGravityId);
+            app->antiGravityId.reset();
+        }
+
+        app->terrainStart.reset();
+        app->blastPhase = 0;
+        controller.ResetLamp();
+        ResetNpcState();
+    }
+
     void ReleasePull()
     {
         app->pull.reset();
@@ -507,6 +1362,12 @@ namespace
         if (app->tool == Tool::Pliers)
         {
             PlaySoundBase("pliers", 0.8f);
+        }
+
+        if (IsNpcTool(app->tool))
+        {
+            BeginNpcLeft();
+            return;
         }
 
         switch (app->tool)
@@ -589,6 +1450,131 @@ namespace
                 break;
             }
 
+            case Tool::Blast:
+            {
+                app->blastPhase = app->isShiftDown ? 4 : 1;
+                app->blastStartSec = nowMs / 1000.0;
+                app->blastSeed = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
+                PlaySoundBase(app->isShiftDown ? "blasttoolfast" : "blasttoolslow1", 0.9f);
+                break;
+            }
+
+            case Tool::ElectricSpark:
+            {
+                app->sparkCounter = 0;
+                break;
+            }
+
+            case Tool::LaserCannon:
+            {
+                app->laserPrevious = position;
+                break;
+            }
+
+            case Tool::Lamp:
+            {
+                controller.SetLampAt(position, app->isShiftDown ? 1.0f / 2.5f : 1.0f / 6.0f);
+                break;
+            }
+
+            case Tool::ThanosSnap:
+            {
+                controller.ApplyThanosSnapAt(position, app->isShiftDown);
+                PlaySoundBase("thanossnap", 0.9f);
+                break;
+            }
+
+            case Tool::WindMaker:
+            {
+                app->windPhase = 1;
+                app->windStartSec = nowMs / 1000.0;
+                app->windMainStartSec = 0.0;
+                app->windShift = app->isShiftDown;
+                app->windCenter = position;
+                EM_ASM({ if (window.FSAudio) { FSAudio.loop('wind', 'wind', 1, 0.6); } });
+                if (app->isShiftDown)
+                {
+                    PlaySoundBase("windgustshort", 0.8f);
+                }
+
+                break;
+            }
+
+            case Tool::TerrainAdjust:
+            {
+                app->terrainStart = position;
+                break;
+            }
+
+            case Tool::Tornado:
+            {
+                app->tornadoId = controller.BeginPlaceTornado(position.x);
+                app->tornadoStartY = position.y;
+                break;
+            }
+
+            case Tool::AntiGravity:
+            {
+                app->antiGravityId = controller.BeginPlaceAntiGravityField(position);
+                break;
+            }
+
+            default:
+            {
+                break;
+            }
+        }
+    }
+
+
+    void EndToolSpecific()
+    {
+        IGameController & controller = *app->gameController;
+        DisplayLogicalCoordinates const position = MousePosition();
+
+        switch (app->tool)
+        {
+            case Tool::Lamp:
+            {
+                controller.ResetLamp();
+                break;
+            }
+
+            case Tool::Tornado:
+            {
+                if (app->tornadoId.has_value())
+                {
+                    controller.EndPlaceTornado(*app->tornadoId);
+                    app->tornadoId.reset();
+                }
+
+                break;
+            }
+
+            case Tool::AntiGravity:
+            {
+                if (app->antiGravityId.has_value())
+                {
+                    controller.EndPlaceAntiGravityField(*app->antiGravityId, position, app->isShiftDown ? 10.0f : 1.0f);
+                    app->antiGravityId.reset();
+                }
+
+                break;
+            }
+
+            case Tool::TerrainAdjust:
+            {
+                if (app->terrainStart.has_value() && app->isShiftDown)
+                {
+                    controller.AdjustOceanFloorTo(
+                        controller.ScreenToWorld(*app->terrainStart),
+                        controller.ScreenToWorld(position));
+                }
+
+                app->terrainStart.reset();
+                break;
+            }
+
             default:
             {
                 break;
@@ -608,12 +1594,32 @@ namespace
         SetToolLoop(false);
         EM_ASM({ if (window.FSAudio) { FSAudio.loop('tool', '', 0, 0); } });
 
+        if (IsNpcTool(app->tool))
+        {
+            EndNpcLeft();
+            return;
+        }
+
+        EndToolSpecific();
+
         EndMove();
         ReleasePull();
     }
 
     void UpdateTool(double nowMs)
     {
+        if (IsNpcTool(app->tool))
+        {
+            if (!app->isPanning)
+            {
+                UpdateNpcTool();
+            }
+
+            return;
+        }
+
+        UpdateWind(nowMs / 1000.0);
+
         if (!app->isLeftDown || app->isPanning)
         {
             return;
@@ -625,6 +1631,68 @@ namespace
 
         switch (app->tool)
         {
+            case Tool::Blast:
+            {
+                UpdateBlast(nowMs / 1000.0);
+                break;
+            }
+
+            case Tool::ElectricSpark:
+            {
+                controller.ApplyElectricSparkAt(position, ++app->sparkCounter, shift ? 3.2f : 1.0f);
+                break;
+            }
+
+            case Tool::LaserCannon:
+            {
+                controller.ApplyLaserCannonThrough(app->laserPrevious, position, shift ? 2.0f : 1.0f);
+                app->laserPrevious = position;
+                break;
+            }
+
+            case Tool::Lamp:
+            {
+                controller.SetLampAt(position, shift ? 1.0f / 2.5f : 1.0f / 6.0f);
+                break;
+            }
+
+            case Tool::Tornado:
+            {
+                if (app->tornadoId.has_value())
+                {
+                    float strength = 1.0f;
+                    float heat = 0.0f;
+                    int const deltaY = position.y - app->tornadoStartY;
+                    if (deltaY < -20)
+                    {
+                        strength = 1.0f + std::min(static_cast<float>(-deltaY - 20) / 150.0f, 1.0f);
+                    }
+                    else if (deltaY > 20)
+                    {
+                        heat = std::min(static_cast<float>(deltaY - 20) / 150.0f, 1.0f);
+                    }
+
+                    controller.UpdateTornado(*app->tornadoId, position.x, strength, heat);
+                }
+
+                break;
+            }
+
+            case Tool::AntiGravity:
+            {
+                if (app->antiGravityId.has_value())
+                {
+                    controller.UpdatePlaceAntiGravityField(*app->antiGravityId, position);
+                }
+
+                if (shift)
+                {
+                    controller.BoostAntiGravityFields(10.0f);
+                }
+
+                break;
+            }
+
             case Tool::Grab:
             {
                 float const fraction = RampedFraction(nowMs);
@@ -818,6 +1886,22 @@ namespace
                 else
                 {
                     controller.ScrubThrough(previous, position);
+                }
+
+                break;
+            }
+
+            case Tool::Lamp:
+            {
+                controller.SetLampAt(position, app->isShiftDown ? 1.0f / 2.5f : 1.0f / 6.0f);
+                break;
+            }
+
+            case Tool::TerrainAdjust:
+            {
+                if (!app->isShiftDown)
+                {
+                    controller.AdjustOceanFloorTo(controller.ScreenToWorld(previous), controller.ScreenToWorld(position));
                 }
 
                 break;
@@ -1079,6 +2163,7 @@ namespace
             app->gameController->RegisterGenericShipEventHandler(&soundHandler);
             app->gameController->RegisterCombustionEventHandler(&soundHandler);
             app->gameController->RegisterAtmosphereEventHandler(&soundHandler);
+            app->gameController->RegisterElectricalElementEventHandler(&electricalHandler);
 
             app->gameController->ResetAndLoadShip(
                 ShipLoadSpecifications(app->assetManager->GetFallbackShipDefinitionFilePath()),
@@ -1120,6 +2205,130 @@ namespace
             ReportError(std::string(what) + ": " + exception.what());
         }
     }
+
+    struct ScalarSetting
+    {
+        char const * Name;
+        char const * Label;
+        char const * Group;
+        char const * Kind;
+        int Step;
+        double (*Get)(IGameControllerSettings const &, IGameControllerSettingsOptions const &);
+        double (*Min)(IGameControllerSettings const &, IGameControllerSettingsOptions const &);
+        double (*Max)(IGameControllerSettings const &, IGameControllerSettingsOptions const &);
+        void (*Set)(IGameControllerSettings &, double);
+    };
+
+    ScalarSetting const ScalarSettings[] = {
+#include "WebSettings.inc"
+    };
+
+    struct EnumSetting
+    {
+        char const * Name;
+        char const * Label;
+        char const * Group;
+        std::vector<std::string> Options;
+        int (*Get)(IGameControllerSettings const &);
+        void (*Set)(IGameControllerSettings &, int);
+    };
+
+#define FS_ENUM_SETTING(NAME, TYPE, LABEL, GROUP, ...) \
+    { #NAME, LABEL, GROUP, { __VA_ARGS__ }, \
+        [](IGameControllerSettings const & c) { return static_cast<int>(c.Get##NAME()); }, \
+        [](IGameControllerSettings & c, int v) { c.Set##NAME(static_cast<TYPE>(v)); } }
+
+    std::vector<EnumSetting> const & EnumSettings()
+    {
+        static std::vector<EnumSetting> const settings = {
+            FS_ENUM_SETTING(ShipViewMode, ShipViewModeType, "Ship View", "Render parameters", "Exterior", "Interior"),
+            FS_ENUM_SETTING(DebugShipRenderMode, DebugShipRenderModeType, "Debug Ship Render", "Render parameters", "None", "Wireframe", "Points", "Springs", "Edge springs", "Structure", "Air pressure", "Strength"),
+            FS_ENUM_SETTING(HeatRenderMode, HeatRenderModeType, "Heat Render", "Render parameters", "None", "Incandescence", "Heat overlay"),
+            FS_ENUM_SETTING(StressRenderMode, StressRenderModeType, "Stress Render", "Render parameters", "None", "Stress overlay", "Tension overlay"),
+            FS_ENUM_SETTING(ShipParticleRenderMode, ShipParticleRenderModeType, "Ship Particle Render", "Render parameters", "Fragment", "Particle"),
+            FS_ENUM_SETTING(NpcRenderMode, NpcRenderModeType, "NPC Render", "Render parameters", "Texture", "Quad with roles", "Quad flat"),
+            FS_ENUM_SETTING(VectorFieldRenderMode, VectorFieldRenderModeType, "Vector Field", "Render parameters", "None", "Point velocity", "Point static force", "Point dynamic force", "Point air momentum", "Point water momentum", "Point air and water momentum"),
+            FS_ENUM_SETTING(OceanRenderMode, OceanRenderModeType, "Ocean Render", "Render parameters", "Texture", "Depth", "Flat"),
+            FS_ENUM_SETTING(OceanRenderDetail, OceanRenderDetailType, "Ocean Detail", "Render parameters", "Basic", "Detailed"),
+            FS_ENUM_SETTING(LandRenderMode, LandRenderModeType, "Land Render", "Render parameters", "Texture", "Flat"),
+            FS_ENUM_SETTING(LandRenderDetail, LandRenderDetailType, "Land Detail", "Render parameters", "Basic", "Detailed"),
+            FS_ENUM_SETTING(CloudRenderDetail, CloudRenderDetailType, "Cloud Detail", "Render parameters", "Basic", "Detailed")
+        };
+
+        return settings;
+    }
+
+    std::string JsonEscape(std::string const & text)
+    {
+        std::string result;
+        for (char const c : text)
+        {
+            if (c == '"' || c == '\\')
+            {
+                result += '\\';
+            }
+
+            result += c;
+        }
+
+        return result;
+    }
+
+    std::string FormatNumber(double value)
+    {
+        char buffer[64];
+        std::snprintf(buffer, sizeof(buffer), "%.9g", value);
+        return buffer;
+    }
+
+    std::string BuildSettingsJson()
+    {
+        IGameControllerSettings const & settings = *app->gameController;
+        IGameControllerSettingsOptions const & options = *app->gameController;
+
+        std::string json = "[";
+        bool isFirst = true;
+
+        for (ScalarSetting const & setting : ScalarSettings)
+        {
+            if (!isFirst)
+            {
+                json += ",";
+            }
+
+            isFirst = false;
+            json += "{\"name\":\"" + std::string(setting.Name) + "\",\"label\":\"" + JsonEscape(setting.Label)
+                + "\",\"group\":\"" + setting.Group + "\",\"kind\":\"" + setting.Kind
+                + "\",\"value\":" + FormatNumber(setting.Get(settings, options))
+                + ",\"min\":" + FormatNumber(setting.Min(settings, options))
+                + ",\"max\":" + FormatNumber(setting.Max(settings, options)) + "}";
+        }
+
+        for (EnumSetting const & setting : EnumSettings())
+        {
+            if (!isFirst)
+            {
+                json += ",";
+            }
+
+            isFirst = false;
+            json += "{\"name\":\"" + std::string(setting.Name) + "\",\"label\":\"" + JsonEscape(setting.Label)
+                + "\",\"group\":\"" + setting.Group + "\",\"kind\":\"enum\",\"value\":" + std::to_string(setting.Get(settings))
+                + ",\"options\":[";
+
+            for (size_t i = 0; i < setting.Options.size(); ++i)
+            {
+                json += (i == 0 ? "\"" : ",\"") + JsonEscape(setting.Options[i]) + "\"";
+            }
+
+            json += "]}";
+        }
+
+        json += "]";
+        return json;
+    }
+
+    std::string SettingsJsonBuffer;
 }
 
 extern "C"
@@ -1148,6 +2357,137 @@ extern "C"
         }
     }
 
+
+    EMSCRIPTEN_KEEPALIVE char const * fs_settings_json()
+    {
+        SettingsJsonBuffer.clear();
+
+        if (IsReady())
+        {
+            try
+            {
+                SettingsJsonBuffer = BuildSettingsJson();
+            }
+            catch (std::exception const & exception)
+            {
+                ReportError(std::string("Settings error: ") + exception.what());
+            }
+        }
+
+        return SettingsJsonBuffer.c_str();
+    }
+
+    EMSCRIPTEN_KEEPALIVE int fs_set_setting(char const * name, double value)
+    {
+        if (!IsReady())
+        {
+            return 0;
+        }
+
+        int result = 0;
+
+        Guarded("Settings error", [&]()
+        {
+            IGameControllerSettings & settings = *app->gameController;
+
+            for (ScalarSetting const & setting : ScalarSettings)
+            {
+                if (std::string(setting.Name) == name)
+                {
+                    setting.Set(settings, value);
+                    result = 1;
+                    return;
+                }
+            }
+
+            for (EnumSetting const & setting : EnumSettings())
+            {
+                if (std::string(setting.Name) == name)
+                {
+                    setting.Set(settings, static_cast<int>(value + 0.5));
+                    result = 1;
+                    return;
+                }
+            }
+        });
+
+        return result;
+    }
+
+    EMSCRIPTEN_KEEPALIVE void fs_set_switch(unsigned int shipId, unsigned int localId, int isOn)
+    {
+        Guarded("Switch error", [&]()
+        {
+            app->gameController->SetSwitchState(
+                GlobalElectricalElementId(static_cast<ShipId>(shipId), static_cast<ElementIndex>(localId)),
+                isOn ? ElectricalState::On : ElectricalState::Off);
+        });
+    }
+
+    EMSCRIPTEN_KEEPALIVE void fs_set_engine(unsigned int shipId, unsigned int localId, double value)
+    {
+        Guarded("Engine control error", [&]()
+        {
+            app->gameController->SetEngineControllerState(
+                GlobalElectricalElementId(static_cast<ShipId>(shipId), static_cast<ElementIndex>(localId)),
+                static_cast<float>(value));
+        });
+    }
+
+    EMSCRIPTEN_KEEPALIVE void fs_add_npc_group(int isHuman)
+    {
+        Guarded("NPC error", [&]()
+        {
+            app->gameController->AddNpcGroup(isHuman ? NpcKindType::Human : NpcKindType::Furniture);
+        });
+    }
+
+    EMSCRIPTEN_KEEPALIVE void fs_select_next_npc()
+    {
+        Guarded("NPC error", [&]()
+        {
+            app->gameController->SelectNextNpc();
+        });
+    }
+
+    EMSCRIPTEN_KEEPALIVE void fs_trigger(char const * name)
+    {
+        Guarded("Trigger error", [&]()
+        {
+            std::string const what(name);
+            IGameController & controller = *app->gameController;
+
+            if (what == "tsunami")
+            {
+                controller.TriggerTsunami();
+            }
+            else if (what == "roguewave")
+            {
+                controller.TriggerRogueWave();
+            }
+            else if (what == "storm")
+            {
+                controller.TriggerStorm();
+            }
+            else if (what == "lightning")
+            {
+                controller.TriggerRandomLightning();
+            }
+            else if (what == "removeantigravity")
+            {
+                controller.RemoveAllAntiGravityFields();
+            }
+            else if (what == "panleft")
+            {
+                controller.PanToWorldEnd(0);
+            }
+            else if (what == "panright")
+            {
+                controller.PanToWorldEnd(1);
+            }
+        });
+    }
+
     EMSCRIPTEN_KEEPALIVE int fs_set_tool(char const * name)
     {
         if (!IsReady())
@@ -1164,6 +2504,7 @@ extern "C"
         Guarded("Tool error", [&]()
         {
             EndLeft();
+            ResetToolSpecificState();
             app->tool = it->second;
         });
 

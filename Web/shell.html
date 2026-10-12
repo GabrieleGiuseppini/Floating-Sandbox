@@ -88,6 +88,38 @@
   .help-body { padding: 0 16px 16px; color: var(--muted); }
   .help-body dt { color: var(--text); margin-top: 10px; }
   .help-body dd { margin: 2px 0 0; }
+
+  .floating { position: fixed; z-index: 25; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); backdrop-filter: blur(8px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); }
+  .floating[hidden] { display: none; }
+  .floating-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px 6px 12px; cursor: move; user-select: none; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .floating-head button { background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 0 8px; cursor: pointer; }
+  .floating-body { padding: 8px; overflow: auto; }
+  .floating.collapsed .floating-body { display: none; }
+  #switchboard { left: 12px; bottom: calc(var(--status-height) + 12px); width: min(340px, calc(100vw - 24px)); }
+  #switchboard .floating-body { max-height: 38vh; display: flex; flex-direction: column; gap: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  .sb-item .sb-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sb-item.disabled { opacity: 0.45; }
+  .sb-item button { min-width: 64px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 6px; background: rgba(255, 255, 255, 0.06); cursor: pointer; }
+  .sb-item button[aria-pressed="true"] { background: var(--accent); color: #04121f; border-color: var(--accent); }
+  .sb-item input[type=range] { width: 130px; }
+  .sb-lamp { width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--line); background: #243445; }
+  .sb-lamp.on { background: #6be675; border-color: #6be675; box-shadow: 0 0 8px #6be675; }
+  .sb-value { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 70px; text-align: right; }
+  #probe-card { right: 12px; bottom: calc(var(--status-height) + 12px); width: 230px; }
+  #probe-card dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-variant-numeric: tabular-nums; }
+  #probe-card dt { color: var(--muted); }
+  #probe-card dd { margin: 0; text-align: right; }
+  #settings-dialog { width: min(760px, calc(100vw - 24px)); }
+  .settings-layout { display: flex; gap: 12px; height: min(60vh, 520px); }
+  .settings-tabs { display: flex; flex-direction: column; gap: 2px; width: 170px; overflow-y: auto; flex: none; }
+  .settings-tabs button { text-align: left; padding: 6px 10px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; }
+  .settings-tabs button[aria-selected="true"] { background: var(--hover); color: var(--accent); }
+  .settings-pane { flex: 1; overflow-y: auto; padding-right: 6px; }
+  .setting-row { display: grid; grid-template-columns: 1fr 170px 70px; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--line); }
+  .setting-row .setting-value { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .setting-row select, .setting-row input[type=range] { width: 100%; }
+  @media (max-width: 640px) { .settings-layout { flex-direction: column; } .settings-tabs { flex-direction: row; width: auto; overflow-x: auto; } .setting-row { grid-template-columns: 1fr 110px 54px; } }
   input[type=file] { display: none; }
 </style>
 </head>
@@ -136,8 +168,41 @@
     <dt>Mouse wheel</dt><dd>Zooms in and out.</dd>
     <dt>Shift</dt><dd>Changes what many tools do: rotate instead of move, repel instead of attract, cool instead of heat, and so on. The status bar describes the current tool.</dd>
     <dt>Keyboard</dt><dd>Space pauses, Enter steps one frame while paused, + and - zoom, Home resets the view.</dd>
-    <dt>Not available yet</dt><dd>Sound, music, settings, NPCs, ship building and the electrical panel.</dd>
+    <dt>NPCs</dt><dd>Use the NPC tools to add people and furniture, move them, remove them and turn them around. Drag a rectangle with Move, Remove or Turn Around to select several at once.</dd>
+    <dt>Switchboard</dt><dd>Ships with electrical parts get a draggable switchboard for switches, engine controls and gauges. Toggle it from the Options menu.</dd>
+    <dt>Not available yet</dt><dd>Ship building and saving ships.</dd>
   </dl>
+</dialog>
+
+<div class="floating" id="switchboard" hidden>
+  <div class="floating-head" id="switchboard-head"><span>Switchboard</span><button type="button" id="switchboard-toggle" aria-label="Collapse switchboard">-</button></div>
+  <div class="floating-body" id="switchboard-body"></div>
+</div>
+
+<div class="floating" id="probe-card" hidden>
+  <div class="floating-head"><span>Physics Probe</span></div>
+  <div class="floating-body">
+    <dl>
+      <dt>Speed</dt><dd id="probe-speed">-</dd>
+      <dt>Temperature</dt><dd id="probe-temp">-</dd>
+      <dt>Depth</dt><dd id="probe-depth">-</dd>
+      <dt>External pressure</dt><dd id="probe-ext">-</dd>
+      <dt>Internal pressure</dt><dd id="probe-int">-</dd>
+    </dl>
+  </div>
+</div>
+
+<dialog id="settings-dialog" aria-labelledby="settings-dialog-title">
+  <div class="dialog-head">
+    <h2 id="settings-dialog-title">Settings</h2>
+    <button type="button" class="dialog-close" id="settings-close">Close</button>
+  </div>
+  <div class="dialog-body">
+    <div class="settings-layout">
+      <div class="settings-tabs" id="settings-tabs" role="tablist"></div>
+      <div class="settings-pane" id="settings-pane"></div>
+    </div>
+  </div>
 </dialog>
 
 <input type="file" id="ship-file" accept=".shp2,.shp,.png,.dat">
@@ -198,6 +263,23 @@
     { id: 'rcbomb', label: 'Remote Control Bomb', hint: 'Click a ship to place or remove a bomb; detonate from Controls.' },
     { id: 'timerbomb', label: 'Timer Bomb', hint: 'Click a ship to place or remove a bomb; it explodes after a delay.' },
     { id: 'physicsprobe', label: 'Physics Probe', hint: 'Click a point of a ship to attach or remove a probe.' },
+    { heading: 'Effects' },
+    { id: 'blast', label: 'Blast', hint: 'Hold to charge a blast; Shift fires a fast one.' },
+    { id: 'electricspark', label: 'Electric Spark', hint: 'Hold to shoot sparks; Shift makes them longer.' },
+    { id: 'lasercannon', label: 'Laser Cannon', hint: 'Drag to cut with a laser; Shift amplifies it.' },
+    { id: 'windmaker', label: 'Wind Maker', hint: 'Hold to blow wind outward; Shift makes a sudden gust.' },
+    { id: 'antigravity', label: 'Anti-Gravity Field', hint: 'Drag a rectangle to make a field; Shift boosts it.' },
+    { id: 'tornado', label: 'Tornado', hint: 'Hold to place a tornado; drag up for strength, down for heat.' },
+    { id: 'thanossnap', label: 'Thanos Snap', hint: 'Click to turn parts to dust; Shift snaps sparsely.' },
+    { id: 'lamp', label: 'Lamp', hint: 'Hold to light up the area; Shift widens the light.' },
+    { id: 'terrainadjust', label: 'Adjust Terrain', hint: 'Drag to reshape the sea floor; Shift draws a straight line.' },
+    { heading: 'NPCs' },
+    { id: 'addhuman', label: 'Add Human', hint: 'Click and drag to place a person; Shift moves the whole body.' },
+    { id: 'addfurniture', label: 'Add Furniture', hint: 'Click and drag to place a piece of furniture.' },
+    { id: 'movenpc', label: 'Move NPC', hint: 'Drag an NPC, or drag a rectangle to select several and move them.' },
+    { id: 'removenpc', label: 'Remove NPC', hint: 'Click an NPC, or drag a rectangle to remove several.' },
+    { id: 'turnaroundnpc', label: 'Turn Around NPC', hint: 'Click an NPC, or drag a rectangle to turn several around.' },
+    { id: 'follownpc', label: 'Follow NPC', hint: 'Click an NPC to follow it with the camera; click empty space to stop.' },
     { heading: 'World' },
     { id: 'scarefish', label: 'Scare Fish', hint: 'Hold near fish to scare them; Shift attracts them.' },
     { id: 'lightning', label: 'Lightning', hint: 'Click to strike lightning.' }
@@ -460,6 +542,39 @@
     if (files.length) { loadShipFromFiles(files); }
   });
 
+  var settingValues = null;
+
+  function loadSettingValues() {
+    var json = call('fs_settings_json', 'string');
+    var list = [];
+    try { list = json ? JSON.parse(json) : []; } catch (e) { list = []; }
+    settingValues = {};
+    list.forEach(function (setting) { settingValues[setting.name] = setting; });
+    return list;
+  }
+
+  function settingValue(name) {
+    if (!settingValues) { loadSettingValues(); }
+    return settingValues[name] ? settingValues[name].value : null;
+  }
+
+  function applySetting(name, value) {
+    if (call('fs_set_setting', 'number', ['string', 'number'], [name, value])) {
+      if (settingValues && settingValues[name]) { settingValues[name].value = value; }
+    }
+  }
+
+  function enumItems(name, labels) {
+    return labels.map(function (label, index) {
+      return {
+        label: label,
+        role: 'menuitemradio',
+        checked: function () { return settingValue(name) === index; },
+        action: function () { applySetting(name, index); }
+      };
+    });
+  }
+
   var MENUS = [
     {
       label: 'File',
@@ -490,7 +605,22 @@
         { label: 'Toggle Day / Night', action: function () { call('fs_toggle_day_night'); } },
         { label: 'Detonate Remote Control Bombs', action: function () { call('fs_detonate_rc_bombs'); } },
         { label: 'Detonate Anti-Matter Bombs', action: function () { call('fs_detonate_anti_matter_bombs'); } },
-        { label: 'Remove All Pins', action: function () { call('fs_remove_all_pins'); } }
+        { label: 'Remove All Pins', action: function () { call('fs_remove_all_pins'); } },
+        { label: 'Remove Anti-Gravity Fields', action: function () { call('fs_trigger', null, ['string'], ['removeantigravity']); } },
+        { separator: true },
+        { heading: 'Weather and waves' },
+        { label: 'Trigger Tsunami', action: function () { call('fs_trigger', null, ['string'], ['tsunami']); } },
+        { label: 'Trigger Rogue Wave', action: function () { call('fs_trigger', null, ['string'], ['roguewave']); } },
+        { label: 'Trigger Storm', action: function () { call('fs_trigger', null, ['string'], ['storm']); } },
+        { label: 'Trigger Lightning', action: function () { call('fs_trigger', null, ['string'], ['lightning']); } },
+        { separator: true },
+        { heading: 'NPCs' },
+        { label: 'Add Group of Humans', action: function () { call('fs_add_npc_group', null, ['number'], [1]); } },
+        { label: 'Add Group of Furniture', action: function () { call('fs_add_npc_group', null, ['number'], [0]); } },
+        { label: 'Select Next NPC', action: function () { call('fs_select_next_npc'); } },
+        { separator: true },
+        { label: 'Pan to Left World End', action: function () { call('fs_trigger', null, ['string'], ['panleft']); } },
+        { label: 'Pan to Right World End', action: function () { call('fs_trigger', null, ['string'], ['panright']); } }
       ]
     },
     {
@@ -504,8 +634,17 @@
             statusTextShown = !statusTextShown;
             call('fs_set_status_text', null, ['number'], [statusTextShown ? 1 : 0]);
           }
-        }
-      ]
+        },
+        { label: 'Switchboard', role: 'menuitemcheckbox', checked: function () { return FSPanel.isEnabled(); }, action: function () { FSPanel.toggle(); } },
+        { separator: true },
+        { heading: 'Ship view' }
+      ].concat(
+        enumItems('ShipViewMode', ['Exterior', 'Interior']),
+        [{ heading: 'Heat' }], enumItems('HeatRenderMode', ['None', 'Incandescence', 'Heat overlay']),
+        [{ heading: 'Stress' }], enumItems('StressRenderMode', ['None', 'Stress overlay', 'Tension overlay']),
+        [{ heading: 'Debug' }], enumItems('DebugShipRenderMode', ['None', 'Wireframe', 'Points', 'Springs', 'Edge springs', 'Structure', 'Air pressure', 'Strength']),
+        [{ separator: true }, { label: 'Settings...', action: function () { openSettingsDialog(); } }]
+      )
     },
     {
       label: 'Sound',
@@ -710,6 +849,343 @@
   });
   window.addEventListener('mouseup', function () { canvas.classList.remove('panning'); });
 
+  var FSPanel = (function () {
+    var board = document.getElementById('switchboard');
+    var boardBody = document.getElementById('switchboard-body');
+    var boardHead = document.getElementById('switchboard-head');
+    var boardToggle = document.getElementById('switchboard-toggle');
+    var probeCard = document.getElementById('probe-card');
+    var elements = {};
+    var order = [];
+    var enabled = true;
+    var pending = false;
+
+    try {
+      if (localStorage.getItem('fs-switchboard') === '0') { enabled = false; }
+    } catch (e) {}
+
+    function ids(key) {
+      var parts = key.split('_');
+      return [Number(parts[0]), Number(parts[1])];
+    }
+
+    function send(el, value) {
+      var id = ids(el.key);
+      if (el.kind === 'enginectl') {
+        call('fs_set_engine', null, ['number', 'number', 'number'], [id[0], id[1], value]);
+      } else {
+        call('fs_set_switch', null, ['number', 'number', 'number'], [id[0], id[1], value ? 1 : 0]);
+      }
+    }
+
+    function lamp(el) {
+      el.lamp = document.createElement('span');
+      el.lamp.className = 'sb-lamp' + (el.state ? ' on' : '');
+      return el.lamp;
+    }
+
+    function buildControl(el) {
+      var control;
+      if (el.kind === 'switch' && el.type === 0) {
+        control = document.createElement('button');
+        control.type = 'button';
+        control.textContent = el.state ? 'On' : 'Off';
+        control.setAttribute('aria-pressed', el.state ? 'true' : 'false');
+        control.addEventListener('click', function () { send(el, !el.state); });
+        el.button = control;
+      } else if (el.kind === 'switch' && (el.type === 1 || el.type === 4)) {
+        control = document.createElement('button');
+        control.type = 'button';
+        control.textContent = el.type === 4 ? 'Sound' : 'Push';
+        control.setAttribute('aria-pressed', el.state ? 'true' : 'false');
+        control.addEventListener('pointerdown', function (event) { event.preventDefault(); send(el, true); });
+        control.addEventListener('pointerup', function () { send(el, false); });
+        control.addEventListener('pointerleave', function () { if (el.state) { send(el, false); } });
+        el.button = control;
+      } else if (el.kind === 'switch' || el.kind === 'probe' || el.kind === 'door') {
+        control = lamp(el);
+      } else if (el.kind === 'enginectl' && el.type === 2) {
+        control = document.createElement('button');
+        control.type = 'button';
+        control.textContent = el.value ? 'Thrust' : 'Off';
+        control.setAttribute('aria-pressed', el.value ? 'true' : 'false');
+        control.addEventListener('click', function () { send(el, el.value ? 0 : 1); });
+        el.button = control;
+      } else if (el.kind === 'enginectl') {
+        control = document.createElement('input');
+        control.type = 'range';
+        if (el.type === 0) {
+          control.min = '0'; control.max = '10'; control.step = '1';
+          control.value = String(Math.round(el.value * 5 + 5));
+          control.addEventListener('input', function () { send(el, (Number(control.value) - 5) / 5); });
+        } else {
+          control.min = '0'; control.max = '100'; control.step = '1';
+          control.value = String(Math.round(el.value * 100));
+          control.addEventListener('input', function () { send(el, Number(control.value) / 100); });
+        }
+        el.slider = control;
+      } else {
+        control = document.createElement('span');
+        control.className = 'sb-value';
+        el.readout = control;
+        showReadout(el);
+      }
+      return control;
+    }
+
+    function showReadout(el) {
+      if (!el.readout) { return; }
+      if (el.kind === 'enginemon') {
+        el.readout.textContent = Math.round(el.rpm * 100) + '% rpm';
+      } else {
+        el.readout.textContent = Math.round(el.value * 100) + '%';
+      }
+    }
+
+    function render() {
+      boardBody.textContent = '';
+      var list = order.map(function (key) { return elements[key]; });
+      list.sort(function (a, b) { return a.group - b.group || a.instance - b.instance; });
+      list.forEach(function (el) {
+        var row = document.createElement('div');
+        row.className = 'sb-item' + (el.enabled ? '' : ' disabled');
+        var label = document.createElement('span');
+        label.className = 'sb-label';
+        label.textContent = el.label;
+        label.title = el.label;
+        row.appendChild(label);
+        row.appendChild(buildControl(el));
+        el.row = row;
+        applyEnabled(el);
+        boardBody.appendChild(row);
+      });
+      updateVisibility(list.length);
+    }
+
+    function applyEnabled(el) {
+      if (!el.row) { return; }
+      el.row.classList.toggle('disabled', !el.enabled);
+      Array.prototype.forEach.call(el.row.querySelectorAll('button, input'), function (node) { node.disabled = !el.enabled; });
+    }
+
+    function updateVisibility(count) {
+      board.hidden = !(enabled && count > 0);
+    }
+
+    function refreshElement(el) {
+      if (el.lamp) { el.lamp.classList.toggle('on', !!el.state); }
+      if (el.button) {
+        var on = el.kind === 'enginectl' ? !!el.value : !!el.state;
+        el.button.setAttribute('aria-pressed', on ? 'true' : 'false');
+        if (el.kind === 'enginectl') { el.button.textContent = on ? 'Thrust' : 'Off'; }
+        else if (el.type === 0) { el.button.textContent = on ? 'On' : 'Off'; }
+      }
+      if (el.slider && document.activeElement !== el.slider) {
+        el.slider.value = String(el.type === 0 ? Math.round(el.value * 5 + 5) : Math.round(el.value * 100));
+      }
+      showReadout(el);
+    }
+
+    function scheduleRefresh(el) {
+      el.dirty = true;
+      if (!pending) {
+        pending = true;
+        requestAnimationFrame(function () {
+          pending = false;
+          order.forEach(function (key) {
+            var item = elements[key];
+            if (item && item.dirty) { item.dirty = false; refreshElement(item); }
+          });
+        });
+      }
+    }
+
+    var groups = { switch: 0, enginectl: 1, enginemon: 2, pump: 3, door: 4, probe: 5 };
+
+    function add(kind, key, label, type, value, instance) {
+      elements[key] = {
+        kind: kind, key: key, label: label, type: type, instance: instance,
+        group: groups[kind] || 0, enabled: true, dirty: false,
+        state: value ? 1 : 0, value: value, rpm: 0
+      };
+      order.push(key);
+    }
+
+    function event(op, key, label, a, b, c) {
+      var el = elements[key];
+      switch (op) {
+        case 'begin':
+          elements = {};
+          order = [];
+          boardBody.textContent = '';
+          updateVisibility(0);
+          break;
+        case 'end':
+          render();
+          break;
+        case 'switch': add('switch', key, label, a, b, c); break;
+        case 'probe': add('probe', key, label, a, b, c); break;
+        case 'enginectl': add('enginectl', key, label, a, 0, c); break;
+        case 'enginemon': add('enginemon', key, label, a, b, 0); elements[key].rpm = c; break;
+        case 'pump': add('pump', key, label, a, b, 0); break;
+        case 'door': add('door', key, label, a, b, 0); break;
+        case 'state':
+          if (el) { el.state = b ? 1 : 0; scheduleRefresh(el); }
+          break;
+        case 'value':
+          if (el) { el.value = b; scheduleRefresh(el); }
+          break;
+        case 'monitor':
+          if (el) { el.value = b; el.rpm = c; scheduleRefresh(el); }
+          break;
+        case 'enabled':
+          if (el) { el.enabled = !!b; applyEnabled(el); }
+          break;
+      }
+    }
+
+    function probe(vx, vy, temperature, depth, external, internal) {
+      document.getElementById('probe-speed').textContent = Math.sqrt(vx * vx + vy * vy).toFixed(1) + ' m/s';
+      document.getElementById('probe-temp').textContent = (temperature - 273.15).toFixed(1) + ' \u00b0C';
+      document.getElementById('probe-depth').textContent = depth.toFixed(1) + ' m';
+      document.getElementById('probe-ext').textContent = (external / 1000).toFixed(1) + ' kPa';
+      document.getElementById('probe-int').textContent = (internal / 1000).toFixed(1) + ' kPa';
+    }
+
+    function probeVisible(visible) {
+      probeCard.hidden = !visible;
+    }
+
+    boardToggle.addEventListener('click', function () {
+      var collapsed = board.classList.toggle('collapsed');
+      boardToggle.textContent = collapsed ? '+' : '-';
+    });
+
+    var drag = null;
+    boardHead.addEventListener('pointerdown', function (event) {
+      if (event.target === boardToggle) { return; }
+      var rect = board.getBoundingClientRect();
+      drag = { dx: event.clientX - rect.left, dy: event.clientY - rect.top };
+      boardHead.setPointerCapture(event.pointerId);
+    });
+    boardHead.addEventListener('pointermove', function (event) {
+      if (!drag) { return; }
+      board.style.left = Math.max(0, Math.min(window.innerWidth - 80, event.clientX - drag.dx)) + 'px';
+      board.style.top = Math.max(0, Math.min(window.innerHeight - 40, event.clientY - drag.dy)) + 'px';
+      board.style.bottom = 'auto';
+    });
+    boardHead.addEventListener('pointerup', function () { drag = null; });
+
+    return {
+      event: event,
+      probe: probe,
+      probeVisible: probeVisible,
+      isEnabled: function () { return enabled; },
+      toggle: function () {
+        enabled = !enabled;
+        try { localStorage.setItem('fs-switchboard', enabled ? '1' : '0'); } catch (e) {}
+        updateVisibility(order.length);
+      }
+    };
+  })();
+  window.FSPanel = FSPanel;
+
+  var settingsDialog = document.getElementById('settings-dialog');
+  var settingsTabs = document.getElementById('settings-tabs');
+  var settingsPane = document.getElementById('settings-pane');
+  var settingsList = [];
+  var settingsGroup = null;
+
+  function formatSettingValue(setting, value) {
+    if (setting.kind === 'bool') { return value ? 'On' : 'Off'; }
+    if (setting.kind === 'float') { return Math.abs(value) >= 100 ? value.toFixed(0) : Math.abs(value) >= 10 ? value.toFixed(1) : value.toFixed(2); }
+    if (setting.kind === 'minutes') { return value + ' min'; }
+    if (setting.kind === 'seconds') { return value + ' s'; }
+    return String(Math.round(value));
+  }
+
+  function renderSettingsPane() {
+    settingsPane.textContent = '';
+    settingsList.filter(function (setting) { return setting.group === settingsGroup; }).forEach(function (setting) {
+      var row = document.createElement('div');
+      row.className = 'setting-row';
+      var label = document.createElement('label');
+      label.textContent = setting.label;
+      var readout = document.createElement('span');
+      readout.className = 'setting-value';
+      var control;
+
+      if (setting.kind === 'enum') {
+        control = document.createElement('select');
+        setting.options.forEach(function (option, index) {
+          var node = document.createElement('option');
+          node.value = String(index);
+          node.textContent = option;
+          control.appendChild(node);
+        });
+        control.value = String(setting.value);
+        control.addEventListener('change', function () { setting.value = Number(control.value); applySetting(setting.name, setting.value); });
+      } else if (setting.kind === 'bool') {
+        control = document.createElement('input');
+        control.type = 'checkbox';
+        control.checked = setting.value >= 0.5;
+        readout.textContent = formatSettingValue(setting, setting.value);
+        control.addEventListener('change', function () {
+          setting.value = control.checked ? 1 : 0;
+          readout.textContent = formatSettingValue(setting, setting.value);
+          applySetting(setting.name, setting.value);
+        });
+      } else {
+        control = document.createElement('input');
+        control.type = 'range';
+        var span = setting.max - setting.min;
+        control.min = String(setting.min);
+        control.max = String(setting.max);
+        control.step = setting.kind === 'float' ? String(span > 0 ? span / 1000 : 0.01) : '1';
+        control.value = String(setting.value);
+        readout.textContent = formatSettingValue(setting, setting.value);
+        control.addEventListener('input', function () {
+          setting.value = Number(control.value);
+          readout.textContent = formatSettingValue(setting, setting.value);
+          applySetting(setting.name, setting.value);
+        });
+      }
+
+      control.setAttribute('aria-label', setting.label);
+      row.appendChild(label);
+      row.appendChild(control);
+      row.appendChild(readout);
+      settingsPane.appendChild(row);
+    });
+  }
+
+  function openSettingsDialog() {
+    settingsList = loadSettingValues();
+    var groups = [];
+    settingsList.forEach(function (setting) { if (groups.indexOf(setting.group) < 0) { groups.push(setting.group); } });
+    settingsTabs.textContent = '';
+    groups.forEach(function (group) {
+      var tab = document.createElement('button');
+      tab.type = 'button';
+      tab.textContent = group;
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-selected', group === settingsGroup ? 'true' : 'false');
+      tab.addEventListener('click', function () {
+        settingsGroup = group;
+        Array.prototype.forEach.call(settingsTabs.children, function (node) { node.setAttribute('aria-selected', node === tab ? 'true' : 'false'); });
+        renderSettingsPane();
+      });
+      settingsTabs.appendChild(tab);
+    });
+    if (groups.indexOf(settingsGroup) < 0) { settingsGroup = groups[0] || null; }
+    Array.prototype.forEach.call(settingsTabs.children, function (node) { node.setAttribute('aria-selected', node.textContent === settingsGroup ? 'true' : 'false'); });
+    renderSettingsPane();
+    closeMenus();
+    settingsDialog.showModal();
+  }
+
+  document.getElementById('settings-close').addEventListener('click', function () { settingsDialog.close(); });
+
   var FSAudio = (function () {
     var settings = { master: true, music: true, effects: true };
     try {
@@ -888,6 +1364,36 @@
       }).then(function (buffer) {
         if (!buffer || entry.cancelled) { return; }
         entry.voice = playBuffer(buffer, volume, true);
+        if (entry.rate) { entry.voice.source.playbackRate.value = entry.rate; }
+      });
+    }
+
+    function setLoopRate(id, rate) {
+      var entry = loops[id];
+      if (entry && entry.voice) { entry.voice.source.playbackRate.value = rate; }
+    }
+
+    function engine(id, base, rpm) {
+      if (!rpm) { stopLoop(id); return; }
+      var rate = 0.6 + 0.8 * Math.min(Math.max(rpm, 0), 1.5);
+      var entry = loops[id];
+      if (!entry) {
+        loop(id, base, 1, 0.5);
+        entry = loops[id];
+        if (entry) { entry.rate = rate; }
+        return;
+      }
+      entry.rate = rate;
+      setLoopRate(id, rate);
+    }
+
+    function shipSound(id, base, on) {
+      loop(id, base, on, 0.8);
+    }
+
+    function stopGroup(prefix) {
+      Object.keys(loops).forEach(function (id) {
+        if (id.indexOf(prefix) === 0) { stopLoop(id); }
       });
     }
 
@@ -943,6 +1449,9 @@
 
     return {
       playBase: playBase,
+      engine: engine,
+      shipSound: shipSound,
+      stopGroup: stopGroup,
       playUnderwater: playUnderwater,
       playMaterial: playMaterial,
       loop: loop,
