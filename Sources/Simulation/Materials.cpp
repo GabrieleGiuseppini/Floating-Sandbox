@@ -913,6 +913,7 @@ std::unique_ptr<ElectricalMaterial> ElectricalMaterial::MakeCustomMaterial(Elect
     customElectricalMaterial.WaterPumpNominalForce = overrides.WaterPumpNominalForce;
     customElectricalMaterial.TimerDurationSeconds = overrides.TimerDurationSeconds;
     customElectricalMaterial.ThermalSwitchTransitionTemperature = overrides.ThermalSwitchTransitionTemperature;
+    customElectricalMaterial.VariantOverrides = overrides;
 
     // Override palette coordinates
     assert(customElectricalMaterial.PaletteCoordinates.has_value());

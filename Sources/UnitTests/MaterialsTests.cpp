@@ -253,6 +253,7 @@ TEST(MaterialTests, Structural_MakeCustomMaterial)
     EXPECT_EQ(customMaterial->RotReceptivity, overrides.RotReceptivity);
     EXPECT_EQ(customMaterial->RustReceptivity, overrides.RustReceptivity);
     EXPECT_EQ(customMaterial->WaterSolubility, overrides.WaterSolubility);
+    EXPECT_EQ(customMaterial->VariantOverrides, overrides);
 
     ASSERT_TRUE(customMaterial->PaletteCoordinates.has_value());
     EXPECT_EQ(customMaterial->PaletteCoordinates->SubCategoryOrdinal, 0u);
@@ -480,6 +481,8 @@ TEST(MaterialTests, Electrical_MakeCustomMaterial)
     EXPECT_EQ(customMaterial->WaterPumpNominalForce, overrides.WaterPumpNominalForce);
     EXPECT_EQ(customMaterial->TimerDurationSeconds, overrides.TimerDurationSeconds);
     EXPECT_EQ(customMaterial->ThermalSwitchTransitionTemperature, overrides.ThermalSwitchTransitionTemperature);
+    EXPECT_EQ(customMaterial->VariantOverrides, overrides);
+
     ASSERT_TRUE(customMaterial->PaletteCoordinates.has_value());
     EXPECT_EQ(customMaterial->PaletteCoordinates->SubCategoryOrdinal, 0u);
     EXPECT_EQ(customMaterial->PaletteSubCategoryBaseMaterialOrdinal, 5u);
