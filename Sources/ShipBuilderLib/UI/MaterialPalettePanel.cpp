@@ -47,7 +47,8 @@ ImageSize constexpr MaterialCellSize(
 int constexpr SeparatorThickness = 1;
 int constexpr SeparatorRowHeight = 1 + SeparatorThickness + 1;
 
-int constexpr StrideHSpacing = 10;
+// To guarantee aligned cols
+int constexpr StrideHSpacing = CellHSpacing + MaterialCellSize.width + CellHSpacing;
 
 //
 // Style

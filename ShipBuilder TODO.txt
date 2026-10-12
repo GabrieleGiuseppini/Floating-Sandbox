@@ -176,12 +176,12 @@
 	====
 
 	= Worflows:
-		= Adding new custom material
+		+ Adding new custom material
 			+ User clicks on "+" button
-			= When committed:
+			+ When committed:
 				+ Add to user's
 					+ Save DB
-				= Update palette
+				+ Update palette
 				X Populate Undo with material
 		- Editing existing user custom material
 			- User clicks on "edit" button
@@ -328,6 +328,7 @@
 			- New structural, electrical, rope layer set of tags:
 				- CustomMaterialPalette: custom materials used in Buffer plus those specified in ShipDefinition (just to be clean)
 					- (Implicitly) pruned @ Serialize to only contain used ones
+						- Key: base + overrides
 					- Stores (parent) color_key and content of VariantOverridesType
 					- Assigned local indices for new Buffer to address (see below)
 					- Come up with a way to be able to add more overrides in the future, so that older version and newer versions digest both
@@ -365,7 +366,9 @@
 					- Find
 					- Remove
 					- Save DB
-				- SetShip(vector): simply store
+				- SetShip(vector):
+					- TODO: merge
+					- TODO: return replacement map
 
 			+ Ser/Deset for user custom materials
 				+ parent color_key and VariantOverridesType
@@ -379,14 +382,16 @@
 
 		= IMaterialPaletteController<TLayer>: for UI to talk back to controller
 			+ OnMaterialSelected
-			= OnNewCustomXYZMaterial(XYZMaterial * baseMaterial)
+			+ OnNewUserCustomXYZMaterial(XYZMaterial * baseMaterial)
 				+ Create overrides
 				+ Run dialog
-				- TODOHERE
-			- OnEditCustomXYZMaterial(XYZMaterial * material)
+				+ If OK:
+					+ Add to user DB
+					+ Add to palette (vector of one)
+			- OnEditCustomXYZMaterial(XYZMaterial * material, RegisterKind)
 				- Get overrides
 				- Run dialog
-				- Remember starting point and does nothing if no real edits
+				- Remember starting point and do nothing if no real edits
 				- TODOHERE
 			- TODO: other workflows above
 
@@ -506,7 +511,7 @@
 
 			= Ops (all forwarded to panel, with layout guards):
 				! Browser provides larger ops, as it's browser who orchestrates layout
-				= Add user custom [vector]
+				+ Add user custom [vector]
 					+ Organize materials by category
 					+ For each category:
 						+ Find panel for category
@@ -514,14 +519,22 @@
 						+ panel-> Add material
 						+ panel-> End custom layout
 						+ Layout() // for H scrollbar
-					= Test:
+					+ Test:
 						+ Single stride
 							+ FIX: iShipCustomStartIndex is 1
 							+ FIX: make H scrollbar appear if needed
-						= Multi stride
-							- FIX: different spacing between strides makes ugly; either remove it or make same as material
+						+ Multi stride
+							+ FIX: different spacing between strides makes ugly; either remove it or make same as material
 				- Update user/ship custom [one]
 				- Replace all ship custom [vector]
+					- Organize materials by category
+					- For each category:
+						- Find panel for category
+						- panel-> Start custom layout
+						- panel-> Remove ship one by one
+						- panel-> Add ship one by one
+						- panel-> End custom layout
+						- Layout() // for H scrollbar
 				- TODO: others
 
 			- Make it dockable
@@ -540,17 +553,16 @@
 			+ Replace event-based args in inline callbacks with vals
 				+ mOnXXXLayerMaterialSelected callbacks: take same args as interface
 			+ Implements IMaterialPaletteController
-			- cctor: 
+			= cctor: 
 				- Controller [for reaching ship model, e.g. for replacing materials]
 				- UndoStack
-				- DefaultMaterialDatabase [to boot 3 MaterialDatabase<T>'s]
-				- Callback for material selected
+				+ DefaultMaterialDatabase [to boot 3 MaterialDatabase<T>'s]
+				+ Callback for material selected
 			- OnShipLoaded(CustomMaterialsPod &&)
 				- // Replace ship custom materials on both model & view
-				- MaterialDatabase<TLayer X 3>::TODOShipCustomMaterials(pod member)
-					- TODO: merges
-				- MaterialPalette<TLayer X 3>::TODOShipCustomMaterials(pod member)
-					- Full relayout of ship portion for all rows
+				- MaterialDatabase<TLayer X 3>::SetShip(pod member) -> TODOHERE
+					- TODO: merges, material_map
+				- MaterialPaletteBrowser<TLayer X 3>::TODOShipCustomMaterials(result of merge) [Replace all ship custom [vector]]
 
 		+ MaterialEditDialog: 
 			+ Two dialogs, two classes, one base with common code
