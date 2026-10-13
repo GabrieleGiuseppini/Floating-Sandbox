@@ -21,13 +21,14 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
+#include <limits>
 #include <utility>
 
 namespace {
 
 unsigned char const HeaderTitle[] = "FLOATING SANDBOX SHIP\x1a\x00\x00";
 
-uint8_t constexpr LatestFileFormatVersion = 2;
+uint8_t constexpr LatestFileFormatVersion = 2; // Bump whenever we add a mandatory tag
 
 }
 
@@ -903,13 +904,18 @@ static size_t ShipDefinitionFormatDeSerializer::AppendCustomMaterialMap(
     CustomMaterialOverridesMap<TMaterial> const & customMaterialOverridesMap,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
-    size_t subSectionBodySize = 0;
+    buffer.Append(static_cast<uint32_t>(CustomMaterialMapTagType::Map));
+    size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+
+    size_t sectionBodySize = 0;
 
     // Number of entries
 
-    assert(customMaterialOverridesMap.size() <= std::numeric_limits<std::uint16_t>::max());
+    assert(customMaterialOverridesMap.size() <= SimulationParameters::MaxCustomMaterialPerShip);
     std::uint16_t count = static_cast<std::uint16_t>(customMaterialOverridesMap.size());
-    subSectionBodySize += buffer.Append(count);
+    sectionBodySize += buffer.Append(count);
 
     // Entries
 
@@ -927,13 +933,15 @@ static size_t ShipDefinitionFormatDeSerializer::AppendCustomMaterialMap(
         assert(mk != nullptr);
 
         // Serialize RGB base color key
-        subSectionBodySize += buffer.Append(reinterpret_cast<unsigned char const *>(&(mk->BaseColorKey)), sizeof(MaterialColorKey));
+        sectionBodySize += buffer.Append(reinterpret_cast<unsigned char const *>(&(mk->BaseColorKey)), sizeof(MaterialColorKey));
 
         // Serialize variant overrides
-        subSectionBodySize += AppendCustomMaterialVariantOverrides(mk->VariantOverrides, buffer);
+        sectionBodySize += AppendCustomMaterialVariantOverrides(mk->VariantOverrides, buffer);
     }
 
-    return subSectionBodySize;
+    buffer.WriteAt(static_cast<std::uint32_t>(sectionBodySize), sectionBodySizeIndex);
+
+    return sectionBodySize;
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendCustomMaterialVariantOverrides(
@@ -998,7 +1006,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V1(
     //
 
     {
-        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType::Buffer));
+        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType_V1::Buffer));
         size_t const subSectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
 
         static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
@@ -1019,7 +1027,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V1(
     //
 
     {
-        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType::Tail));
+        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType_V1::Tail));
         buffer.Append<std::uint32_t>(0);
 
         static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
@@ -1088,20 +1096,9 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V2(
     //
 
     {
-        buffer.Append(static_cast<uint32_t>(CustomMaterialMapTagType::Map));
-        size_t const subSectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
-
-        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
-        sectionBodySize += sizeof(SectionHeader);
-
-        // Body
-        size_t const subSectionBodySize = AppendCustomMaterialMap(
+        sectionBodySize += AppendCustomMaterialMap(
             customMaterialOverridesMap,
             buffer);
-
-        buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), subSectionBodySizeIndex);
-
-        sectionBodySize += subSectionBodySize;
     }
 
     //
@@ -1109,15 +1106,16 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V2(
     //
 
     {
-        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType::Buffer));
+        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType_V2::Buffer));
         size_t const subSectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
 
         static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
         sectionBodySize += sizeof(SectionHeader);
 
         // Body
-        size_t const subSectionBodySize = AppendStructuralLayerBuffer_V1(
+        size_t const subSectionBodySize = AppendStructuralLayerBuffer_V2(
             structuralLayer.Buffer,
+            customMaterialOverridesMap,
             buffer);
 
         buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), subSectionBodySizeIndex);
@@ -1130,7 +1128,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V2(
     //
 
     {
-        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType::Tail));
+        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType_V2::Tail));
         buffer.Append<std::uint32_t>(0);
 
         static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
@@ -1193,7 +1191,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayerBuffer_V2(
             // Default material
 
             // Serialize custom material index
-            rleBuffer.Append<std::uint16_t>(std::numeric_limits<std::uint16_t>::max());
+            rleBuffer.Append<std::uint16_t>(SimulationParameters::MaxCustomMaterialPerShip);
 
             // Serialize RGB color key
             MaterialColorKey const colorKey = (structuralElement.Material == nullptr) ? EmptyMaterialColorKey : structuralElement.Material->ColorKey;
@@ -1550,7 +1548,8 @@ ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial>
     for (size_t i = 0; i < layerLinearSize; ++i)
     {
         StructuralMaterial const * material = structuralElementBuffer[i].Material;
-        if (material->VariantOverrides.has_value())
+        if (material != nullptr
+            && material->VariantOverrides.has_value())
         {
             // Calc its index
             size_t customMaterialIndex = customMaterialOverridesMap.size();
@@ -2104,9 +2103,10 @@ ShipAutoTexturizationSettings ShipDefinitionFormatDeSerializer::ReadAutoTexturiz
 
 std::vector<std::unique_ptr<StructuralMaterial const>> ShipDefinitionFormatDeSerializer::ReadCustomMaterialMap(
     DeSerializationBuffer<BigEndianess> const & buffer,
+    size_t bufferReadOffset,
     MaterialColorMap<StructuralMaterial> const & baseMaterialColorMap)
 {
-    size_t offset = 0;
+    size_t offset = bufferReadOffset;
 
     // Number of entries
 
@@ -2164,7 +2164,7 @@ std::vector<std::unique_ptr<StructuralMaterial const>> ShipDefinitionFormatDeSer
 void ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V1(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
-    MaterialColorMap<StructuralMaterial> const & materialColorMap,
+    MaterialColorMap<StructuralMaterial> const & defaultMaterialColorMap,
     std::unique_ptr<StructuralLayerData> & structuralLayer)
 {
     size_t readOffset = 0;
@@ -2180,7 +2180,7 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V1(
 
         switch (sectionHeader.Tag)
         {
-            case static_cast<uint32_t>(StructuralLayerTagType::Buffer) :
+            case static_cast<uint32_t>(StructuralLayerTagType_V1::Buffer) :
             {
                 // Decode RLE buffer
                 size_t writeOffset = 0;
@@ -2203,8 +2203,8 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V1(
                     }
                     else
                     {
-                        auto const materialIt = materialColorMap.find(colorKey);
-                        if (materialIt == materialColorMap.cend())
+                        auto const materialIt = defaultMaterialColorMap.find(colorKey);
+                        if (materialIt == defaultMaterialColorMap.cend())
                         {
                             ThrowMaterialNotFound(shipAttributes);
                         }
@@ -2227,7 +2227,7 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V1(
                 break;
             }
 
-            case static_cast<uint32_t>(StructuralLayerTagType::Tail) :
+            case static_cast<uint32_t>(StructuralLayerTagType_V1::Tail) :
             {
                 // We're done
                 break;
@@ -2241,7 +2241,7 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V1(
             }
         }
 
-        if (sectionHeader.Tag == static_cast<uint32_t>(StructuralLayerTagType::Tail))
+        if (sectionHeader.Tag == static_cast<uint32_t>(StructuralLayerTagType_V1::Tail))
         {
             // We're done
             break;
@@ -2251,10 +2251,131 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V1(
     }
 }
 
+std::vector<std::unique_ptr<StructuralMaterial const>> ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V2(
+    DeSerializationBuffer<BigEndianess> const & buffer,
+    ShipAttributes const & shipAttributes,
+    MaterialColorMap<StructuralMaterial> const & defaultMaterialColorMap,
+    std::unique_ptr<StructuralLayerData> & structuralLayer)
+{
+    std::vector<std::unique_ptr<StructuralMaterial const>> customMaterials;
+
+    size_t readOffset = 0;
+
+    // Allocate buffer
+    structuralLayer.reset(new StructuralLayerData(shipAttributes.ShipSize));
+
+    // Read all tags
+    while (true)
+    {
+        SectionHeader const sectionHeader = ReadSectionHeader(buffer, readOffset);
+        readOffset += sizeof(SectionHeader);
+
+        switch (sectionHeader.Tag)
+        {
+            case static_cast<uint32_t>(CustomMaterialMapTagType::Map):
+            {
+                customMaterials = ReadCustomMaterialMap(
+                    buffer,
+                    readOffset,
+                    defaultMaterialColorMap);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(StructuralLayerTagType_V2::Buffer):
+            {
+                // Decode RLE buffer
+                size_t writeOffset = 0;
+                StructuralElement * structuralLayerWrite = structuralLayer->Buffer.Data.get();
+                for (size_t bufferReadOffset = 0; bufferReadOffset < sectionHeader.SectionBodySize; /*incremented in loop*/)
+                {
+                    // Deserialize count
+                    var_uint16_t count;
+                    bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, count);
+
+                    // Deserialize custom material index
+                    std::uint16_t customMaterialIndex;
+                    bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, customMaterialIndex);
+
+                    StructuralMaterial const * material;
+                    if (customMaterialIndex != SimulationParameters::MaxCustomMaterialPerShip)
+                    {
+                        // Custom material
+                        if (customMaterialIndex >= customMaterials.size())
+                        {
+                            throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                        }
+
+                        material = customMaterials[customMaterialIndex].get();
+                    }
+                    else
+                    {
+                        // Deserialize colorKey value
+                        MaterialColorKey colorKey;
+                        bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
+
+                        // Lookup material
+                        if (colorKey == EmptyMaterialColorKey)
+                        {
+                            material = nullptr;
+                        }
+                        else
+                        {
+                            auto const materialIt = defaultMaterialColorMap.find(colorKey);
+                            if (materialIt == defaultMaterialColorMap.cend())
+                            {
+                                ThrowMaterialNotFound(shipAttributes);
+                            }
+
+                            material = &(materialIt->second);
+                        }
+                    }
+
+                    // Fill material
+                    std::fill_n(
+                        structuralLayerWrite + writeOffset,
+                        count.value(),
+                        StructuralElement(material));
+
+                    // Advance
+                    writeOffset += count.value();
+                }
+
+                assert(writeOffset == shipAttributes.ShipSize.GetLinearSize());
+
+                break;
+            }
+
+            case static_cast<uint32_t>(StructuralLayerTagType_V2::Tail):
+            {
+                // We're done
+                break;
+            }
+
+            default:
+            {
+                // Unrecognized tag
+                LogMessage("WARNING: Unrecognized structural tag ", sectionHeader.Tag);
+                break;
+            }
+        }
+
+        if (sectionHeader.Tag == static_cast<uint32_t>(StructuralLayerTagType_V2::Tail))
+        {
+            // We're done
+            break;
+        }
+
+        readOffset += sectionHeader.SectionBodySize;
+    }
+
+    return customMaterials;
+}
+
 void ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V1(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
-    MaterialColorMap<ElectricalMaterial> const & materialColorMap,
+    MaterialColorMap<ElectricalMaterial> const & defaultMaterialColorMap,
     std::unique_ptr<ElectricalLayerData> & electricalLayer)
 {
     size_t readOffset = 0;
@@ -2293,8 +2414,8 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V1(
                     }
                     else
                     {
-                        auto const materialIt = materialColorMap.find(colorKey);
-                        if (materialIt == materialColorMap.cend())
+                        auto const materialIt = defaultMaterialColorMap.find(colorKey);
+                        if (materialIt == defaultMaterialColorMap.cend())
                         {
                             ThrowMaterialNotFound(shipAttributes);
                         }
@@ -2416,7 +2537,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V1(
 void ShipDefinitionFormatDeSerializer::ReadRopesLayer_V1(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
-    MaterialColorMap<StructuralMaterial> const & materialColorMap,
+    MaterialColorMap<StructuralMaterial> const & defaultMaterialColorMap,
     std::unique_ptr<RopesLayerData> & ropesLayer)
 {
     size_t readOffset = 0;
@@ -2460,8 +2581,8 @@ void ShipDefinitionFormatDeSerializer::ReadRopesLayer_V1(
                     bufferReadOffset += buffer.ReadAt(bufferReadOffset, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
 
                     // Lookup material
-                    auto const materialIt = materialColorMap.find(colorKey);
-                    if (materialIt == materialColorMap.cend())
+                    auto const materialIt = defaultMaterialColorMap.find(colorKey);
+                    if (materialIt == defaultMaterialColorMap.cend())
                     {
                         ThrowMaterialNotFound(shipAttributes);
                     }

@@ -10,6 +10,7 @@
 #include <Core/Vectors.h>
 
 #include <chrono>
+#include <limits>
 
 /*
  * Parameters that affect the game's physics and its world.
@@ -851,7 +852,7 @@ struct SimulationParameters
 
     static float constexpr EngineControllerJetThrottleIdleFraction = 0.20f; // Fraction of 0.0->1.0 range occupied by "idle"
 
-    static size_t constexpr MaxCustomMaterialPerShip = 65535;
+    static size_t constexpr MaxCustomMaterialPerShip = std::numeric_limits<std::uint16_t>::max();
 
 private:
 

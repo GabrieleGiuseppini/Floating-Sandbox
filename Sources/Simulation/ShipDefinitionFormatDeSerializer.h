@@ -183,12 +183,22 @@ private:
         Tail = 0xffffffff
     };
 
-    enum class StructuralLayerTagType : std::uint32_t
+    enum class StructuralLayerTagType_V1 : std::uint32_t
     {
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
         Buffer = MAKE_TAG('B', 'U', 'F', '1'),
+
+        Tail = 0xffffffff
+    };
+
+    enum class StructuralLayerTagType_V2 : std::uint32_t
+    {
+        // Numeric values are serialized in ship files, changing them will result
+        // in ship files being un-deserializable!
+
+        Buffer = MAKE_TAG('B', 'U', 'F', '2'),
 
         Tail = 0xffffffff
     };
@@ -424,24 +434,31 @@ private:
 
     static std::vector<std::unique_ptr<StructuralMaterial const>> ReadCustomMaterialMap(
         DeSerializationBuffer<BigEndianess> const & buffer,
+        size_t bufferReadOffset,
         MaterialColorMap<StructuralMaterial> const & baseMaterialColorMap);
 
     static void ReadStructuralLayer_V1(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
-        MaterialColorMap<StructuralMaterial> const & materialColorMap,
+        MaterialColorMap<StructuralMaterial> const & defaultMaterialColorMap,
+        std::unique_ptr<StructuralLayerData> & structuralLayer);
+
+    static std::vector<std::unique_ptr<StructuralMaterial const>> ReadStructuralLayer_V2(
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        ShipAttributes const & shipAttributes,
+        MaterialColorMap<StructuralMaterial> const & defaultMaterialColorMap,
         std::unique_ptr<StructuralLayerData> & structuralLayer);
 
     static void ReadElectricalLayer_V1(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
-        MaterialColorMap<ElectricalMaterial> const & materialColorMap,
+        MaterialColorMap<ElectricalMaterial> const & defaultMaterialColorMap,
         std::unique_ptr<ElectricalLayerData> & electricalLayer);
 
     static void ReadRopesLayer_V1(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
-        MaterialColorMap<StructuralMaterial> const & materialColorMap,
+        MaterialColorMap<StructuralMaterial> const & defaultMaterialColorMap,
         std::unique_ptr<RopesLayerData> & ropesLayer);
 
 private:
@@ -456,17 +473,26 @@ private:
     friend class ShipDefinitionFormatDeSerializerTests_AutoTexturizationSettings_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralCustomMaterialMapTests;
     friend class ShipDefinitionFormatDeSerializer_StructuralCustomMaterialMapTests_Basic_Test;
+
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests_VariousSizes_Uniform_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests_MidSize_Heterogeneous_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests_Nulls_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests_UnrecognizedMaterial_Test;
+
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests_Basic_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests_UnrecognizedMaterial_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests_VersionSelection_Test;
+
+
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_MidSize_NonInstanced_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_MidSize_Instanced_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_Nulls_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_ElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_UnrecognizedMaterial_Test;
+
     friend class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests;
     friend class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests_TwoElements_Test;
     friend class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests_UnrecognizedMaterial_Test;

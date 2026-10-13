@@ -342,22 +342,15 @@
 							! Save_1(...)
 						! Else:
 							! Save2(..., custom_material_map):
-								! Save palette
+								! Save palette (writes own section)
 								! Save buffer
 									! No encode <whatever> for custom materials
 
-				- Deser Algo:
-					- TODOHERE: 
-						- Check custom material palette size against limits
-					- Structural
-						- Rename load chain
-						- If V2 tag:
-							- Deser "deser" material map -> vector<std::uq_ptr<TMaterial *>>
-							- Deser layer
-					- Electrical
-						- Rename load chain
-					- Ropes
-						- Rename load chain
+				! Deser Algo:
+					! @ (Structural, Electrical, Ropes):
+						! If V2 tag:
+							! Deser "deser" material map -> vector<std::uq_ptr<TMaterial *>>
+							! Deser layer (reads raw)
 
 				+ ExtractCustomMaterialMap/Structural
 				+ AppendCustomMaterialMap/Structural
@@ -378,10 +371,11 @@
 						+ Rename save chain
 						+ Custom material map
 						+ Structural layer					
-					- Deser
-						- Rename read chain
-						- TODO
-					- Unit tests for structural layer V2
+					= Deser
+						- Rename read chain (plumb up)
+						+ Custom material map
+						+ Structural layer
+					= Unit tests for structural layer V2
 						- Also V1 vs V2
 				- Electrical layer
 					- Rename read & save chain
@@ -390,7 +384,7 @@
 						- Rename save chain
 						- TODO
 					- Deser
-						- Rename read chain
+						- Rename read chain (plumb up)
 						- TODO
 					- Unit tests for electrical layer V2
 						- Also V1 vs V2
@@ -401,10 +395,12 @@
 						- Rename save chain
 						- TODO
 					- Deser
-						- Rename read chain
+						- Rename read chain (plumb up)
 						- TODO
 					- Unit tests for ropes layer V2
 						- Also V1 vs V2
+
+				- Plug final Load()
 
 			- Deserialize() returns CustomMaterialsPod (3x vector<uq_ptr<TMaterial>> for each TMaterial) in ShipDefinition, just for lifetime extension
 				+ Might group all layers' vectors in a single CustomMaterialsPod, for convenience

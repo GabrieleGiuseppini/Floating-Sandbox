@@ -230,6 +230,7 @@ protected:
 
         std::vector<std::unique_ptr<StructuralMaterial const>> customMaterials = ShipDefinitionFormatDeSerializer::ReadCustomMaterialMap(
             buffer,
+            sizeof(ShipDefinitionFormatDeSerializer::SectionHeader),
             testBaseMaterialColorMap);
 
         ASSERT_EQ(customMaterials.size(), NumCustomMaterials);
@@ -255,7 +256,7 @@ protected:
         }
     }
 
-    StructuralMaterial::VariantOverridesType MakeVariantOverrides(size_t i)
+    static StructuralMaterial::VariantOverridesType MakeVariantOverrides(size_t i)
     {
         StructuralMaterial::VariantOverridesType variantOverrides = StructuralMaterial::VariantOverridesType(
             "CustomMaterial " + std::to_string(i),
@@ -584,6 +585,324 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests, UnrecognizedMate
         EXPECT_EQ(exc.Parameters[0], fileFSVersion.ToMajorMinorPatchString());
     }
 }
+
+class ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests : public testing::Test
+{
+protected:
+
+    static bool IsTestMaterialCustom(size_t i)
+    {
+        return (i % 5) == 1;
+    }
+
+    void SetUp()
+    {
+        //
+        // Create default material map
+        // Create custom materials
+        // Create all materials
+        //
+
+        for (size_t i = 0; i < 250; ++i)
+        {
+            if (IsTestMaterialCustom(i))
+            {
+                MaterialColorKey baseColorKey = MakeMaterialColorKey(i - 1);
+
+                StructuralMaterial baseMaterial = StructuralMaterial(
+                    baseColorKey,
+                    "Base Material " + std::to_string(i - 1),
+                    rgbaColor(baseColorKey, 255));
+                baseMaterial.PaletteCoordinates = { "Category", "SubCategory", std::uint32_t(i - 1) };
+
+                auto variantOverrides = MakeVariantOverrides(i);
+
+                // Add in this order
+                TestCustomMaterials.emplace_back(baseMaterial.MakeCustomMaterial(variantOverrides));
+                TestAllMaterialsList.push_back(*TestCustomMaterials.back().get());
+            }
+            else
+            {
+                MaterialColorKey colorKey = MakeMaterialColorKey(i);
+
+                StructuralMaterial material = StructuralMaterial(
+                    colorKey,
+                    "Base Material " + std::to_string(i),
+                    rgbaColor(colorKey, 255));
+                material.PaletteCoordinates = { "Category", "SubCategory", std::uint32_t(i) };
+
+                TestDefaultMaterialMap.try_emplace(
+                    colorKey,
+                    material);
+
+                TestAllMaterialsList.push_back(material);
+            }
+        }
+    }
+
+    void VerifyDeserializedStructuralLayer(
+        StructuralLayerData const & sourceStructuralLayer,
+        DeSerializationBuffer<BigEndianess> & buffer)
+    {
+        std::unique_ptr<StructuralLayerData> targetStructuralLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version(1, 16, 200, 4), sourceStructuralLayer.Buffer.Size, false, false);
+        auto const customMaterials = ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V2(
+            buffer,
+            shipAttributes,
+            TestDefaultMaterialMap,
+            targetStructuralLayer);
+
+        EXPECT_EQ(targetStructuralLayer->Buffer.Size, sourceStructuralLayer.Buffer.Size);
+        ASSERT_EQ(targetStructuralLayer->Buffer.GetByteSize(), sourceStructuralLayer.Buffer.GetByteSize());
+        for (int y = 0; y < targetStructuralLayer->Buffer.Size.height; ++y)
+        {
+            for (int x = 0; x < targetStructuralLayer->Buffer.Size.width; ++x)
+            {
+                ShipSpaceCoordinates const coords{ x, y };
+                if (sourceStructuralLayer.Buffer[coords].Material == nullptr)
+                {
+                    EXPECT_EQ(targetStructuralLayer->Buffer[coords].Material, nullptr);
+                }
+                else
+                {
+                    ASSERT_NE(targetStructuralLayer->Buffer[coords].Material, nullptr);
+                    EXPECT_EQ(sourceStructuralLayer.Buffer[coords].Material->ColorKey, targetStructuralLayer->Buffer[coords].Material->ColorKey);
+                    EXPECT_EQ(sourceStructuralLayer.Buffer[coords].Material->Name, targetStructuralLayer->Buffer[coords].Material->Name);
+                    EXPECT_EQ(sourceStructuralLayer.Buffer[coords].Material->RenderColor, targetStructuralLayer->Buffer[coords].Material->RenderColor);
+                    EXPECT_EQ(sourceStructuralLayer.Buffer[coords].Material->VariantOverrides, targetStructuralLayer->Buffer[coords].Material->VariantOverrides);
+                }
+            }
+        }
+    }
+
+    static MaterialColorKey MakeMaterialColorKey(size_t i)
+    {
+        return MaterialColorKey(
+            std::uint8_t(i) + 2,
+            std::uint8_t(i) + 1,
+            std::uint8_t(i));
+    }
+
+    static StructuralMaterial::VariantOverridesType MakeVariantOverrides(size_t i)
+    {
+        StructuralMaterial::VariantOverridesType variantOverrides = StructuralMaterial::VariantOverridesType(
+            "CustomMaterial " + std::to_string(i),
+            rgbaColor(uint8_t(i) + 7, uint8_t(i) + 9, uint8_t(i) + 1, 100),
+            1.0f,
+            2.0f,
+            3.0f,
+            4.0f,
+            5.0f,
+            6.0f,
+            7.0f + static_cast<float>(i));
+
+        return variantOverrides;
+    }
+
+    std::map<MaterialColorKey, StructuralMaterial> TestDefaultMaterialMap;
+    std::vector<std::unique_ptr<StructuralMaterial const>> TestCustomMaterials;
+    std::vector<StructuralMaterial> TestAllMaterialsList; // For choosing
+};
+
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests, Basic)
+{
+    // Populate structural layer
+    StructuralLayerData sourceStructuralLayer(ShipSpaceSize(10, 12));
+    size_t customMaterialCount = 0;
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        size_t const iTestMaterial = i % TestAllMaterialsList.size();
+
+        if (i % 2 == 0)
+        {
+            sourceStructuralLayer.Buffer.Data[i].Material = nullptr;
+        }
+        else
+        {
+            sourceStructuralLayer.Buffer.Data[i].Material = &TestAllMaterialsList[iTestMaterial];
+            if (IsTestMaterialCustom(iTestMaterial))
+            {
+                customMaterialCount++;
+            }
+        }
+    }
+
+    // Build custom material map
+    auto const customMaterialMap = ShipDefinitionFormatDeSerializer::ExtractCustomMaterialMap(sourceStructuralLayer);
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V2(sourceStructuralLayer, customMaterialMap, buffer);
+
+    //
+    // Verify custom material map
+    //
+
+    ShipDefinitionFormatDeSerializer::SectionHeader mapHeader = ShipDefinitionFormatDeSerializer::ReadSectionHeader(buffer, 0);
+    size_t idx = sizeof(ShipDefinitionFormatDeSerializer::SectionHeader);
+
+    std::uint16_t mapEntryCount;
+    buffer.ReadAt<std::uint16_t>(idx, mapEntryCount);
+    EXPECT_EQ(mapEntryCount, customMaterialCount);
+
+    idx += mapHeader.SectionBodySize;
+
+    //
+    // Verify RLE
+    //
+
+    idx += sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Buffer header
+
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        size_t const iTestMaterial = i % TestAllMaterialsList.size();
+
+        bool const isCustomMaterial = IsTestMaterialCustom(iTestMaterial);
+
+        // Count
+        var_uint16_t count;
+        idx += buffer.ReadAt(idx, count);
+        EXPECT_EQ(count.value(), 1);
+
+        // Index
+        std::uint16_t customMaterialIndex;
+        idx += buffer.ReadAt(idx, customMaterialIndex);
+
+        if (isCustomMaterial && (i % 2) != 0)
+        {
+            assert(TestAllMaterialsList[iTestMaterial].VariantOverrides.has_value());
+
+            auto const customMaterialMapKey = ShipDefinitionFormatDeSerializer::CustomMaterialOverridesKey<StructuralMaterial>(
+                TestAllMaterialsList[iTestMaterial].ColorKey,
+                *TestAllMaterialsList[iTestMaterial].VariantOverrides);
+
+            ASSERT_EQ(customMaterialMap.count(customMaterialMapKey), 1);
+            EXPECT_EQ(customMaterialMap.at(customMaterialMapKey), customMaterialIndex);
+        }
+        else
+        {
+            EXPECT_EQ(customMaterialIndex, std::numeric_limits<std::uint16_t>::max());
+
+            // Value
+            MaterialColorKey colorKey;
+            idx += buffer.ReadAt(idx, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
+            if (i % 2 == 0)
+            {
+                EXPECT_EQ(colorKey, EmptyMaterialColorKey);
+            }
+            else
+            {
+                EXPECT_EQ(colorKey, TestAllMaterialsList[iTestMaterial].ColorKey);
+            }
+        }
+    }
+
+    idx += sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Tail
+
+    // Buffer is done
+    EXPECT_EQ(idx, buffer.GetSize());
+
+    //
+    // Verify may be read
+    //
+
+    VerifyDeserializedStructuralLayer(
+        sourceStructuralLayer,
+        buffer);
+}
+
+/* TODOHERE
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests, UnrecognizedMaterial)
+{
+    StructuralMaterial unrecognizedMaterial = StructuralMaterial(
+        rgbColor(0x12, 0x34, 0x56),
+        "Unrecognized Material",
+        rgbaColor(0x12, 0x34, 0x56, 0xff));
+
+    // Populate structural layer
+    StructuralLayerData sourceStructuralLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        sourceStructuralLayer.Buffer.Data[i].Material = &unrecognizedMaterial;
+    }
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V2(sourceStructuralLayer, buffer);
+
+    //
+    // Verify exception
+    //
+
+    Version const fileFSVersion(1, 2, 3, 4);
+
+    try
+    {
+        std::unique_ptr<StructuralLayerData> targetStructuralLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
+            fileFSVersion,
+            sourceStructuralLayer.Buffer.Size, false, false);
+        ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V2(
+            buffer,
+            shipAttributes,
+            TestMaterialMap,
+            targetStructuralLayer);
+
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFound);
+        EXPECT_EQ(exc.Parameters[0], fileFSVersion.ToMajorMinorPatchString());
+    }
+}
+
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests, VersionSelection)
+{
+    // TODOHERE
+    StructuralMaterial unrecognizedMaterial = StructuralMaterial(
+        rgbColor(0x12, 0x34, 0x56),
+        "Unrecognized Material",
+        rgbaColor(0x12, 0x34, 0x56, 0xff));
+
+    // Populate structural layer
+    StructuralLayerData sourceStructuralLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        sourceStructuralLayer.Buffer.Data[i].Material = &unrecognizedMaterial;
+    }
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V2(sourceStructuralLayer, buffer);
+
+    //
+    // Verify exception
+    //
+
+    Version const fileFSVersion(1, 2, 3, 4);
+
+    try
+    {
+        std::unique_ptr<StructuralLayerData> targetStructuralLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
+            fileFSVersion,
+            sourceStructuralLayer.Buffer.Size, false, false);
+        ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V2(
+            buffer,
+            shipAttributes,
+            TestMaterialMap,
+            targetStructuralLayer);
+
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFound);
+        EXPECT_EQ(exc.Parameters[0], fileFSVersion.ToMajorMinorPatchString());
+    }
+}
+*/
 
 class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests : public testing::Test
 {
