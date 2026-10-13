@@ -268,10 +268,13 @@ private:
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static void AppendFileHeader(
+        std::uint16_t fileFormatVersion,
         BinaryWriteStream & shipDefinitionOutputStream,
         DeSerializationBuffer<BigEndianess> & buffer);
 
-    static void AppendFileHeader(DeSerializationBuffer<BigEndianess> & buffer);
+    static void AppendFileHeader(
+        std::uint16_t fileFormatVersion,
+        DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendShipAttributes(
         ShipAttributes const & shipAttributes,
@@ -369,6 +372,10 @@ private:
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static CustomMaterialOverridesMap<StructuralMaterial> ExtractCustomMaterialMap(StructuralLayerData const & layerData);
+
+    static CustomMaterialOverridesMap<ElectricalMaterial> ExtractCustomMaterialMap(ElectricalLayerData const & layerData);
+
+    static CustomMaterialOverridesMap<StructuralMaterial> ExtractCustomMaterialMap(RopesLayerData const & layerData);
 
     // Read
 

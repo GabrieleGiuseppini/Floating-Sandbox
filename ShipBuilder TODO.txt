@@ -338,10 +338,7 @@
 					- @ (Structural, Electrical, Ropes):
 						! ExtractCustomMaterialMap(Layer/data) -> map<CustomMaterialKey -> index>
 							! Check against limits
-						= If empty:
-							- TODO: verify presence of tag is enough; else need to bump file format version
-								- VERIFIED: NEED TO BUMP FORMAT
-								- SO, DETECT VERSION EARLIER (extract earlier)
+						+ If empty:
 							! Save_1(...)
 						= Else:
 							! Save2(..., custom_material_map):
@@ -355,10 +352,12 @@
 					+ UTs: read+write
 
 					- ExtractCustomMaterialMap/Electrical
-					+ AppendCustomMaterialMap/Structural
+					+ AppendCustomMaterialMap/Electrical
 					- ReadCustomMaterialMap/Electrical
 					- UTs: read+write
 
+					- ExtractCustomMaterialMap/Ropes
+					- UTs: read+write
 
 					= Structural layer
 						+ Rename save chain
@@ -366,8 +365,8 @@
 						= Ser
 							+ Custom material map
 							- Structural layer
-						- Unit tests for custom material map
 						- Unit tests for structural layer
+							- Also V1 vs V2
 					- Electrical layer
 						- Rename save chain
 						- ExtractCustomMaterialMap

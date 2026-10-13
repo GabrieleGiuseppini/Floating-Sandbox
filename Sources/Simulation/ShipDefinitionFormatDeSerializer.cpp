@@ -27,7 +27,7 @@ namespace {
 
 unsigned char const HeaderTitle[] = "FLOATING SANDBOX SHIP\x1a\x00\x00";
 
-uint8_t constexpr CurrentFileFormatVersion = 1;
+uint8_t constexpr LatestFileFormatVersion = 2;
 
 }
 
@@ -347,10 +347,38 @@ void ShipDefinitionFormatDeSerializer::Save(
     DeSerializationBuffer<BigEndianess> buffer(256);
 
     //
+    // Decide file format version
+    //
+
+    CustomMaterialOverridesMap<StructuralMaterial> structuralLayerCustomMaterialOverridesMap;
+    if (shipDefinition.Layers.StructuralLayer)
+    {
+        structuralLayerCustomMaterialOverridesMap = ExtractCustomMaterialMap(*shipDefinition.Layers.StructuralLayer);
+    }
+
+    CustomMaterialOverridesMap<ElectricalMaterial> electricalLayerCustomMaterialOverridesMap;
+    if (shipDefinition.Layers.ElectricalLayer)
+    {
+        electricalLayerCustomMaterialOverridesMap = ExtractCustomMaterialMap(*shipDefinition.Layers.ElectricalLayer);
+    }
+
+    CustomMaterialOverridesMap<StructuralMaterial> ropesLayerCustomMaterialOverridesMap;
+    if (shipDefinition.Layers.RopesLayer)
+    {
+        ropesLayerCustomMaterialOverridesMap = ExtractCustomMaterialMap(*shipDefinition.Layers.RopesLayer);
+    }
+
+    std::uint16_t fileFormatVersion =
+        (structuralLayerCustomMaterialOverridesMap.empty() && electricalLayerCustomMaterialOverridesMap.empty() && ropesLayerCustomMaterialOverridesMap.empty())
+        ? 1 : 2;
+
+    assert(fileFormatVersion <= LatestFileFormatVersion);
+
+    //
     // Write header
     //
 
-    AppendFileHeader(shipDefinitionOutputStream, buffer);
+    AppendFileHeader(fileFormatVersion, shipDefinitionOutputStream, buffer);
 
     //
     // Write ship attributes
@@ -413,9 +441,7 @@ void ShipDefinitionFormatDeSerializer::Save(
 
     if (shipDefinition.Layers.StructuralLayer)
     {
-        // Get custom material map
-        auto const customMaterialMap = ExtractCustomMaterialMap(*shipDefinition.Layers.StructuralLayer);
-        if (customMaterialMap.empty())
+        if (structuralLayerCustomMaterialOverridesMap.empty())
         {
             // V1 Structural Layer
             AppendSection(
@@ -430,7 +456,7 @@ void ShipDefinitionFormatDeSerializer::Save(
             AppendSection(
                 shipDefinitionOutputStream,
                 static_cast<std::uint32_t>(MainSectionTagType::StructuralLayer_V2),
-                [&]() { return AppendStructuralLayer_V2(*shipDefinition.Layers.StructuralLayer, customMaterialMap, buffer); },
+                [&]() { return AppendStructuralLayer_V2(*shipDefinition.Layers.StructuralLayer, structuralLayerCustomMaterialOverridesMap, buffer); },
                 buffer);
         }
     }
@@ -544,14 +570,17 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngImage(
 }
 
 void ShipDefinitionFormatDeSerializer::AppendFileHeader(
+    std::uint16_t fileFormatVersion,
     BinaryWriteStream & shipDefinitionOutputStream,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
-    AppendFileHeader(buffer);
+    AppendFileHeader(fileFormatVersion, buffer);
     shipDefinitionOutputStream.Write(buffer.GetData(), buffer.GetSize());
 }
 
-void ShipDefinitionFormatDeSerializer::AppendFileHeader(DeSerializationBuffer<BigEndianess> & buffer)
+void ShipDefinitionFormatDeSerializer::AppendFileHeader(
+    std::uint16_t fileFormatVersion,
+    DeSerializationBuffer<BigEndianess> & buffer)
 {
     buffer.Reset();
 
@@ -562,7 +591,7 @@ void ShipDefinitionFormatDeSerializer::AppendFileHeader(DeSerializationBuffer<Bi
         HeaderTitle,
         24);
 
-    buffer.Append<std::uint16_t>(CurrentFileFormatVersion);
+    buffer.Append<std::uint16_t>(fileFormatVersion);
     // Padding
     buffer.Append<std::uint8_t>(0);
     buffer.Append<std::uint8_t>(0);
@@ -1521,6 +1550,20 @@ ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial>
     return customMaterialOverridesMap;
 }
 
+ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<ElectricalMaterial> ShipDefinitionFormatDeSerializer::ExtractCustomMaterialMap(ElectricalLayerData const & layerData)
+{
+    // TODO
+    (void)layerData;
+    return CustomMaterialOverridesMap<ElectricalMaterial>();
+}
+
+ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial> ShipDefinitionFormatDeSerializer::ExtractCustomMaterialMap(RopesLayerData const & layerData)
+{
+    // TODO
+    (void)layerData;
+    return CustomMaterialOverridesMap<StructuralMaterial>();
+}
+
 // Read
 
 template<typename SectionHandler>
@@ -1662,7 +1705,7 @@ void ShipDefinitionFormatDeSerializer::ReadFileHeader(DeSerializationBuffer<BigE
 
     std::uint16_t fileFormatVersion;
     buffer.ReadAt<std::uint16_t>(offsetof(FileHeader, FileFormatVersion), fileFormatVersion);
-    if (fileFormatVersion > CurrentFileFormatVersion)
+    if (fileFormatVersion > LatestFileFormatVersion)
     {
         throw UserGameException(UserGameException::MessageIdType::UnsupportedShipFile);
     }

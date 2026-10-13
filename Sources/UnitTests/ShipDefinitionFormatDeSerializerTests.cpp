@@ -13,7 +13,7 @@
 TEST(ShipDefinitionFormatDeSerializerTests, FileHeader)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendFileHeader(buffer);
+    ShipDefinitionFormatDeSerializer::AppendFileHeader(1, buffer);
     buffer.WriteAt(std::uint16_t(200), offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FileFormatVersion));
 
     std::uint16_t fileFormatVersion;
@@ -42,7 +42,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, FileHeader_UnrecognizedHeader)
 TEST(ShipDefinitionFormatDeSerializerTests, FileHeader_UnsupportedFileFormatVersion)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendFileHeader(buffer);
+    ShipDefinitionFormatDeSerializer::AppendFileHeader(1, buffer);
     buffer.WriteAt(std::uint16_t(200), offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FileFormatVersion));
 
     try
