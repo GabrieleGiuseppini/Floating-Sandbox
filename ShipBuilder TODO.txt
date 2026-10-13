@@ -347,6 +347,7 @@
 							! Save2(..., custom_material_map):
 								! Save palette
 								- Save buffer
+									- No encode color_key for custom materials
 
 					+ ExtractCustomMaterialMap/Structural
 					+ AppendCustomMaterialMap/Structural

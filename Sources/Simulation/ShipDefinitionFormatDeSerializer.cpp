@@ -1502,22 +1502,19 @@ ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial>
         StructuralMaterial const * material = structuralElementBuffer[i].Material;
         if (material->VariantOverrides.has_value())
         {
-            // Add to map
+            // Calc its index
             size_t customMaterialIndex = customMaterialOverridesMap.size();
+            if (customMaterialIndex > SimulationParameters::MaxCustomMaterialPerShip)
+            {
+                throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+            }
+
+            // Add to map
             auto const [_, isInserted] = customMaterialOverridesMap.try_emplace(
                 CustomMaterialOverridesKey<StructuralMaterial>(
                     material->ColorKey,
                     *(material->VariantOverrides)),
-                customMaterialIndex);
-
-            // Check limits
-            if (isInserted)
-            {
-                if (customMaterialOverridesMap.size() > SimulationParameters::MaxCustomMaterialPerShip)
-                {
-                    throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
-                }
-            }
+                static_cast<std::uint16_t>(customMaterialIndex));
         }
     }
 

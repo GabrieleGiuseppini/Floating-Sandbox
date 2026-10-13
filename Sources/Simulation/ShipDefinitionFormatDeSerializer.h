@@ -250,7 +250,7 @@ private:
 
     // Custom material map extracted from a ship
     template<typename TMaterial>
-    using CustomMaterialOverridesMap = std::map<CustomMaterialOverridesKey<TMaterial>, size_t>; // Key -> Index in serialized map
+    using CustomMaterialOverridesMap = std::map<CustomMaterialOverridesKey<TMaterial>, std::uint16_t>; // Key -> Index in serialized map
 
 private:
 

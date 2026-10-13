@@ -206,7 +206,7 @@ protected:
 
             TestCustomMaterialOverridesMap.try_emplace(
                 mapKey,
-                NumCustomMaterials - 1 - i);
+                static_cast<std::uint16_t>(NumCustomMaterials - 1 - i));
         }
     }
 
@@ -272,7 +272,7 @@ protected:
     }
 
     std::vector<MaterialColorKey> TestBaseMaterialColorKeys;
-    std::map<ShipDefinitionFormatDeSerializer::CustomMaterialOverridesKey<StructuralMaterial>, size_t> TestCustomMaterialOverridesMap;
+    std::map<ShipDefinitionFormatDeSerializer::CustomMaterialOverridesKey<StructuralMaterial>, std::uint16_t> TestCustomMaterialOverridesMap;
 };
 
 TEST_F(ShipDefinitionFormatDeSerializer_StructuralCustomMaterialMapTests, Basic)
