@@ -334,47 +334,18 @@
 					- Come up with a way to be able to add more overrides in the future, so that older version and newer versions digest both
 				- Buffer: color_key + local index in MaterialPalette
 					- TODO: index=-1 for standard materials? Do we waste all this space?
-				- Ser Algo:
-					- @ (Structural, Electrical, Ropes):
+				! Ser Algo:
+					! @ (Structural, Electrical, Ropes):
 						! ExtractCustomMaterialMap(Layer/data) -> map<CustomMaterialKey -> index>
 							! Check against limits
-						+ If empty:
+						! If empty:
 							! Save_1(...)
-						= Else:
+						! Else:
 							! Save2(..., custom_material_map):
 								! Save palette
-								- Save buffer
-									- No encode color_key for custom materials
+								! Save buffer
+									! No encode <whatever> for custom materials
 
-					+ ExtractCustomMaterialMap/Structural
-					+ AppendCustomMaterialMap/Structural
-					+ ReadCustomMaterialMap/Structural
-					+ UTs: read+write
-
-					- ExtractCustomMaterialMap/Electrical
-					+ AppendCustomMaterialMap/Electrical
-					- ReadCustomMaterialMap/Electrical
-					- UTs: read+write
-
-					- ExtractCustomMaterialMap/Ropes
-					- UTs: read+write
-
-					= Structural layer
-						+ Rename save chain
-						+ ExtractCustomMaterialMap
-						= Ser
-							+ Custom material map
-							- Structural layer
-						- Unit tests for structural layer
-							- Also V1 vs V2
-					- Electrical layer
-						- Rename save chain
-						- ExtractCustomMaterialMap
-						- Ser
-					- Ropes layer
-						- Rename save chain
-						- ExtractCustomMaterialMap
-						- Ser
 				- Deser Algo:
 					- TODOHERE: 
 						- Check custom material palette size against limits
@@ -387,6 +358,54 @@
 						- Rename load chain
 					- Ropes
 						- Rename load chain
+
+				+ ExtractCustomMaterialMap/Structural
+				+ AppendCustomMaterialMap/Structural
+				+ ReadCustomMaterialMap/Structural
+				+ UTs: read+write
+
+				- ExtractCustomMaterialMap/Electrical
+				+ AppendCustomMaterialMap/Electrical
+				- ReadCustomMaterialMap/Electrical
+				- UTs: read+write
+
+				- ExtractCustomMaterialMap/Ropes
+				- UTs: read+write
+
+				= Structural layer					
+					+ ExtractCustomMaterialMap
+					+ Ser
+						+ Rename save chain
+						+ Custom material map
+						+ Structural layer					
+					- Deser
+						- Rename read chain
+						- TODO
+					- Unit tests for structural layer V2
+						- Also V1 vs V2
+				- Electrical layer
+					- Rename read & save chain
+					- ExtractCustomMaterialMap
+					- Ser
+						- Rename save chain
+						- TODO
+					- Deser
+						- Rename read chain
+						- TODO
+					- Unit tests for electrical layer V2
+						- Also V1 vs V2
+				- Ropes layer
+					- Rename read & save chain
+					- ExtractCustomMaterialMap
+					- Ser
+						- Rename save chain
+						- TODO
+					- Deser
+						- Rename read chain
+						- TODO
+					- Unit tests for ropes layer V2
+						- Also V1 vs V2
+
 			- Deserialize() returns CustomMaterialsPod (3x vector<uq_ptr<TMaterial>> for each TMaterial) in ShipDefinition, just for lifetime extension
 				+ Might group all layers' vectors in a single CustomMaterialsPod, for convenience
 				+ Will be stored by Ship, given by ShipFactory

@@ -1147,15 +1147,13 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayerBuffer_V2(
 {
     size_t subSectionBodySize = 0;
 
-    // TODOHERE
-    (void)customMaterialOverridesMap;
-
     //
-    // Encode layer with RLE of RGB color key buffer
+    // Encode layer with RLE of [uint16 custom material index [RGB color key]]
     //
 
     size_t const layerLinearSize = structuralLayerBuffer.Size.GetLinearSize();
     DeSerializationBuffer<BigEndianess> rleBuffer(layerLinearSize * sizeof(MaterialColorKey)); // Upper bound
+    static_assert(sizeof(std::uint16_t) <= sizeof(MaterialColorKey)); // Or else not upper bound
 
     StructuralElement const * structuralElementBuffer = structuralLayerBuffer.Data.get();
     for (size_t i = 0; i < layerLinearSize; /*incremented in loop*/)
@@ -1175,9 +1173,32 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayerBuffer_V2(
         // Serialize count
         rleBuffer.Append<var_uint16_t>(var_uint16_t(materialCount));
 
-        // Serialize RGB color key
-        MaterialColorKey const colorKey = (structuralElement.Material == nullptr) ? EmptyMaterialColorKey : structuralElement.Material->ColorKey;
-        rleBuffer.Append(reinterpret_cast<unsigned char const *>(&colorKey), sizeof(MaterialColorKey));
+        // Serialize material
+        if (structuralElement.Material != nullptr && structuralElement.Material->VariantOverrides.has_value())
+        {
+            // Custom material
+
+            // Look it up
+            CustomMaterialOverridesKey<StructuralMaterial> customMaterialKey(
+                structuralElement.Material->ColorKey,
+                *structuralElement.Material->VariantOverrides);
+            assert(customMaterialOverridesMap.count(customMaterialKey) == 1);
+            std::uint16_t const customMaterialIndex = customMaterialOverridesMap.at(customMaterialKey);
+
+            // Serialize custom material index
+            rleBuffer.Append<std::uint16_t>(customMaterialIndex);
+        }
+        else
+        {
+            // Default material
+
+            // Serialize custom material index
+            rleBuffer.Append<std::uint16_t>(std::numeric_limits<std::uint16_t>::max());
+
+            // Serialize RGB color key
+            MaterialColorKey const colorKey = (structuralElement.Material == nullptr) ? EmptyMaterialColorKey : structuralElement.Material->ColorKey;
+            rleBuffer.Append(reinterpret_cast<unsigned char const *>(&colorKey), sizeof(MaterialColorKey));
+        }
     }
 
     //
@@ -1533,7 +1554,7 @@ ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial>
         {
             // Calc its index
             size_t customMaterialIndex = customMaterialOverridesMap.size();
-            if (customMaterialIndex > SimulationParameters::MaxCustomMaterialPerShip)
+            if (customMaterialIndex >= SimulationParameters::MaxCustomMaterialPerShip)
             {
                 throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
             }
