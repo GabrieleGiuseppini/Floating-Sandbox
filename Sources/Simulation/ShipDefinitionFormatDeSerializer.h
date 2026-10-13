@@ -21,6 +21,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #define MAKE_TAG(ch1, ch2, ch3, ch4) \
     std::uint32_t( ((ch1 & 0xff) << 24) | ((ch2 & 0xff) << 16) | ((ch3 & 0xff) << 8) | (ch4 & 0xff) )
@@ -50,6 +51,10 @@ public:
     static PasswordHash CalculatePasswordHash(std::string const & password);
 
 private:
+
+    //
+    // File format
+    //
 
 #pragma pack(push, 1)
 
@@ -94,9 +99,12 @@ private:
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
-        StructuralLayer = MAKE_TAG('S', 'T', 'R', '1'),
-        ElectricalLayer = MAKE_TAG('E', 'L', 'C', '1'),
-        RopesLayer = MAKE_TAG('R', 'P', 'S', '1'),
+        StructuralLayer_V1 = MAKE_TAG('S', 'T', 'R', '1'),
+        StructuralLayer_V2 = MAKE_TAG('S', 'T', 'R', '2'),
+        ElectricalLayer_V1 = MAKE_TAG('E', 'L', 'C', '1'),
+        ElectricalLayer_V2 = MAKE_TAG('E', 'L', 'C', '2'),
+        RopesLayer_V1 = MAKE_TAG('R', 'P', 'S', '1'),
+        RopesLayer_V2 = MAKE_TAG('R', 'P', 'S', '2'),
         TextureLayer_PNG = MAKE_TAG('T', 'X', 'P', '1'),
         Metadata = MAKE_TAG('M', 'E', 'T', '1'),
         PhysicsData = MAKE_TAG('P', 'H', 'S', '1'),
@@ -165,6 +173,16 @@ private:
         Tail = 0xffffffff
     };
 
+    enum class CustomMaterialMapTagType : std::uint32_t
+    {
+        // Numeric values are serialized in ship files, changing them will result
+        // in ship files being un-deserializable!
+
+        Map = MAKE_TAG('C', 'M', 'M', '1'),
+
+        Tail = 0xffffffff
+    };
+
     enum class StructuralLayerTagType : std::uint32_t
     {
         // Numeric values are serialized in ship files, changing them will result
@@ -195,6 +213,44 @@ private:
 
         Tail = 0xffffffff
     };
+
+    //
+    // Other data structures
+    //
+
+    // Key of a custom material found in a ship
+    template<typename TMaterial>
+    struct CustomMaterialOverridesKey
+    {
+        MaterialColorKey BaseColorKey;
+        typename TMaterial::VariantOverridesType VariantOverrides;
+
+        CustomMaterialOverridesKey(
+            MaterialColorKey const & baseColorKey,
+            typename TMaterial::VariantOverridesType const & variantOverrides)
+            : BaseColorKey(baseColorKey)
+            , VariantOverrides(variantOverrides)
+        { }
+
+        bool operator==(CustomMaterialOverridesKey const & other) const
+        {
+            return BaseColorKey == other.BaseColorKey
+                && VariantOverrides == other.VariantOverrides;
+        }
+
+        bool operator<(CustomMaterialOverridesKey const & other) const
+        {
+            return std::tie(
+                BaseColorKey,
+                VariantOverrides) < std::tie(
+                    other.BaseColorKey,
+                    other.VariantOverrides);
+        }
+    };
+
+    // Custom material map extracted from a ship
+    template<typename TMaterial>
+    using CustomMaterialOverridesMap = std::map<CustomMaterialOverridesKey<TMaterial>, size_t>; // Key -> Index in serialized map
 
 private:
 
@@ -257,19 +313,42 @@ private:
         T const & value,
         DeSerializationBuffer<BigEndianess> & buffer);
 
-    static size_t AppendStructuralLayer(
+    template<typename TMaterial>
+    static size_t AppendCustomMaterialMap(
+        CustomMaterialOverridesMap<TMaterial> const & customMaterialMap,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendCustomMaterialVariantOverrides(
+        StructuralMaterial::VariantOverridesType const & variantOverrides,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendCustomMaterialVariantOverrides(
+        ElectricalMaterial::VariantOverridesType const & variantOverrides,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendStructuralLayer_V1(
         StructuralLayerData const & structuralLayer,
         DeSerializationBuffer<BigEndianess> & buffer);
 
-    static size_t AppendStructuralLayerBuffer(
+    static size_t AppendStructuralLayerBuffer_V1(
         Buffer2D<StructuralElement, struct ShipSpaceTag> const & structuralLayerBuffer,
         DeSerializationBuffer<BigEndianess> & buffer);
 
-    static size_t AppendElectricalLayer(
+    static size_t AppendStructuralLayer_V2(
+        StructuralLayerData const & structuralLayer,
+        CustomMaterialOverridesMap<StructuralMaterial> const & customMaterialMap,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendStructuralLayerBuffer_V2(
+        Buffer2D<StructuralElement, struct ShipSpaceTag> const & structuralLayerBuffer,
+        CustomMaterialOverridesMap<StructuralMaterial> const & customMaterialMap,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendElectricalLayer_V1(
         ElectricalLayerData const & electricalLayer,
         DeSerializationBuffer<BigEndianess> & buffer);
 
-    static size_t AppendElectricalLayerBuffer(
+    static size_t AppendElectricalLayerBuffer_V1(
         Buffer2D<ElectricalElement, struct ShipSpaceTag> const & electricalLayerBuffer,
         DeSerializationBuffer<BigEndianess> & buffer);
 
@@ -277,17 +356,19 @@ private:
         ElectricalPanel const & electricalPanel,
         DeSerializationBuffer<BigEndianess> & buffer);
 
-    static size_t AppendRopesLayer(
+    static size_t AppendRopesLayer_V1(
         RopesLayerData const & ropesLayer,
         DeSerializationBuffer<BigEndianess> & buffer);
 
-    static size_t AppendRopesLayerBuffer(
+    static size_t AppendRopesLayerBuffer_V1(
         RopeBuffer const & ropesLayerBuffer,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendPngPreview(
         StructuralLayerData const & structuralLayer,
         DeSerializationBuffer<BigEndianess> & buffer);
+
+    static CustomMaterialOverridesMap<StructuralMaterial> ExtractCustomMaterialMap(StructuralLayerData const & layerData);
 
     // Read
 
@@ -334,19 +415,23 @@ private:
 
     static ShipAutoTexturizationSettings ReadAutoTexturizationSettings(DeSerializationBuffer<BigEndianess> const & buffer);
 
-    static void ReadStructuralLayer(
+    static std::vector<std::unique_ptr<StructuralMaterial const>> ReadCustomMaterialMap(
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        MaterialColorMap<StructuralMaterial> const & baseMaterialColorMap);
+
+    static void ReadStructuralLayer_V1(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
         MaterialColorMap<StructuralMaterial> const & materialColorMap,
         std::unique_ptr<StructuralLayerData> & structuralLayer);
 
-    static void ReadElectricalLayer(
+    static void ReadElectricalLayer_V1(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
         MaterialColorMap<ElectricalMaterial> const & materialColorMap,
         std::unique_ptr<ElectricalLayerData> & electricalLayer);
 
-    static void ReadRopesLayer(
+    static void ReadRopesLayer_V1(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
         MaterialColorMap<StructuralMaterial> const & materialColorMap,
@@ -362,18 +447,20 @@ private:
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Minimal_Test;
     friend class ShipDefinitionFormatDeSerializerTests_PhysicsData_Test;
     friend class ShipDefinitionFormatDeSerializerTests_AutoTexturizationSettings_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_VariousSizes_Uniform_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_MidSize_Heterogeneous_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_Nulls_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_MidSize_NonInstanced_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_MidSize_Instanced_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_Nulls_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_ElectricalPanel_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_Test;
-    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests;
-    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_TwoElements_Test;
-    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_UnrecognizedMaterial_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralCustomMaterialMapTests;
+    friend class ShipDefinitionFormatDeSerializer_StructuralCustomMaterialMapTests_Basic_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests_VariousSizes_Uniform_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests_MidSize_Heterogeneous_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests_Nulls_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests_UnrecognizedMaterial_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_MidSize_NonInstanced_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_MidSize_Instanced_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_Nulls_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_ElectricalPanel_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_UnrecognizedMaterial_Test;
+    friend class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests;
+    friend class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests_TwoElements_Test;
+    friend class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests_UnrecognizedMaterial_Test;
 };

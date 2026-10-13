@@ -179,7 +179,116 @@ TEST(ShipDefinitionFormatDeSerializerTests, AutoTexturizationSettings)
     EXPECT_EQ(sourceAts.MaterialTextureTransparency, targetAts.MaterialTextureTransparency);
 }
 
-class ShipDefinitionFormatDeSerializer_StructuralLayerTests : public testing::Test
+class ShipDefinitionFormatDeSerializer_StructuralCustomMaterialMapTests : public testing::Test
+{
+protected:
+
+    static std::uint8_t constexpr NumBaseMaterials = 4;
+    static std::uint8_t constexpr NumCustomMaterials = 10;
+
+    void SetUp()
+    {
+        for (uint8_t i = 0; i < NumBaseMaterials; ++i)
+        {
+            TestBaseMaterialColorKeys.emplace_back(
+                uint8_t(i + 2),
+                uint8_t(i + 1),
+                i);
+        }
+
+        for (std::uint8_t i = 0; i < NumCustomMaterials; ++i)
+        {
+            MaterialColorKey baseColorKey = TestBaseMaterialColorKeys[i % NumBaseMaterials];
+
+            ShipDefinitionFormatDeSerializer::CustomMaterialOverridesKey<StructuralMaterial> mapKey(
+                baseColorKey,
+                MakeVariantOverrides(i));
+
+            TestCustomMaterialOverridesMap.try_emplace(
+                mapKey,
+                NumCustomMaterials - 1 - i);
+        }
+    }
+
+    void VerifyDeserializedStructuralCustomMaterialMap(DeSerializationBuffer<BigEndianess> & buffer)
+    {
+        MaterialColorMap<StructuralMaterial> testBaseMaterialColorMap;
+        for (std::uint8_t i = 0; i < NumCustomMaterials; ++i)
+        {
+            MaterialColorKey baseColorKey = TestBaseMaterialColorKeys[i % NumBaseMaterials];
+
+            StructuralMaterial baseMaterial(
+                baseColorKey,
+                std::string("ZORRO"),
+                rgbaColor(i + 17, i + 19, i + 11, 0));
+            baseMaterial.PaletteCoordinates = { "Category", "SubCategory", i };
+
+            testBaseMaterialColorMap.try_emplace(
+                baseColorKey,
+                baseMaterial);
+        }
+
+        std::vector<std::unique_ptr<StructuralMaterial const>> customMaterials = ShipDefinitionFormatDeSerializer::ReadCustomMaterialMap(
+            buffer,
+            testBaseMaterialColorMap);
+
+        ASSERT_EQ(customMaterials.size(), NumCustomMaterials);
+
+        for (size_t c = 0; c < NumCustomMaterials; ++c)
+        {
+            StructuralMaterial const & customMaterial = *(customMaterials[c].get());
+
+            MaterialColorKey expectedBaseColorKey = TestBaseMaterialColorKeys[(NumCustomMaterials - 1 - c) % NumBaseMaterials];
+
+            EXPECT_EQ(customMaterial.ColorKey, expectedBaseColorKey);
+
+            StructuralMaterial::VariantOverridesType expectedVariantOverrides = MakeVariantOverrides(NumCustomMaterials - 1 - c);
+            EXPECT_EQ(customMaterial.Name, expectedVariantOverrides.Name);
+            EXPECT_EQ(customMaterial.RenderColor, expectedVariantOverrides.RenderColor);
+            EXPECT_EQ(customMaterial.Strength, expectedVariantOverrides.Strength);
+            EXPECT_EQ(customMaterial.Density, expectedVariantOverrides.Density);
+            EXPECT_EQ(customMaterial.IgnitionTemperature, expectedVariantOverrides.IgnitionTemperature);
+            EXPECT_EQ(customMaterial.MeltingTemperature, expectedVariantOverrides.MeltingTemperature);
+            EXPECT_EQ(customMaterial.RotReceptivity, expectedVariantOverrides.RotReceptivity);
+            EXPECT_EQ(customMaterial.RustReceptivity, expectedVariantOverrides.RustReceptivity);
+            EXPECT_EQ(customMaterial.WaterSolubility, expectedVariantOverrides.WaterSolubility);
+        }
+    }
+
+    StructuralMaterial::VariantOverridesType MakeVariantOverrides(size_t i)
+    {
+        StructuralMaterial::VariantOverridesType variantOverrides = StructuralMaterial::VariantOverridesType(
+            "CustomMaterial " + std::to_string(i),
+            rgbaColor(uint8_t(i) + 7, uint8_t(i) + 9, uint8_t(i) + 1, 100),
+            1.0f,
+            2.0f,
+            3.0f,
+            4.0f,
+            5.0f,
+            6.0f,
+            7.0f + static_cast<float>(i));
+
+        return variantOverrides;
+    }
+
+    std::vector<MaterialColorKey> TestBaseMaterialColorKeys;
+    std::map<ShipDefinitionFormatDeSerializer::CustomMaterialOverridesKey<StructuralMaterial>, size_t> TestCustomMaterialOverridesMap;
+};
+
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralCustomMaterialMapTests, Basic)
+{
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendCustomMaterialMap(TestCustomMaterialOverridesMap, buffer);
+
+    //
+    // Verify may be read
+    //
+
+    VerifyDeserializedStructuralCustomMaterialMap(buffer);
+}
+
+class ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests : public testing::Test
 {
 protected:
 
@@ -207,7 +316,7 @@ protected:
     {
         std::unique_ptr<StructuralLayerData> targetStructuralLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version(1, 16, 200, 4), sourceStructuralLayer.Buffer.Size, false, false);
-        ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
+        ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V1(
             buffer,
             shipAttributes,
             TestMaterialMap,
@@ -228,7 +337,7 @@ protected:
     std::map<MaterialColorKey, StructuralMaterial> TestMaterialMap;
 };
 
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, VariousSizes_Uniform)
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests, VariousSizes_Uniform)
 {
     for (int iParam = 1; iParam < 16384 * 2 + 1;)
     {
@@ -240,7 +349,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, VariousSizes_Unifo
         ASSERT_EQ(sourceStructuralLayer.Buffer.Size.GetLinearSize(), static_cast<size_t>(iParam));
 
         DeSerializationBuffer<BigEndianess> buffer(256);
-        ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayer, buffer);
+        ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V1(sourceStructuralLayer, buffer);
 
         //
         // Verify RLE:
@@ -310,7 +419,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, VariousSizes_Unifo
     }
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, MidSize_Heterogeneous)
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests, MidSize_Heterogeneous)
 {
     // Linearize materials
     std::vector<StructuralMaterial const *> materials;
@@ -332,7 +441,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, MidSize_Heterogene
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V1(sourceStructuralLayer, buffer);
 
     //
     // Verify RLE
@@ -367,7 +476,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, MidSize_Heterogene
         buffer);
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, Nulls)
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests, Nulls)
 {
     // Linearize materials
     std::vector<StructuralMaterial const *> materials;
@@ -389,7 +498,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, Nulls)
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V1(sourceStructuralLayer, buffer);
 
     //
     // Verify RLE
@@ -431,7 +540,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, Nulls)
         buffer);
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMaterial)
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests, UnrecognizedMaterial)
 {
     StructuralMaterial unrecognizedMaterial = StructuralMaterial(
         rgbColor(0x12, 0x34, 0x56),
@@ -447,7 +556,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V1(sourceStructuralLayer, buffer);
 
     //
     // Verify exception
@@ -461,7 +570,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
             fileFSVersion,
             sourceStructuralLayer.Buffer.Size, false, false);
-        ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
+        ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V1(
             buffer,
             shipAttributes,
             TestMaterialMap,
@@ -476,7 +585,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
     }
 }
 
-class ShipDefinitionFormatDeSerializer_ElectricalLayerTests : public testing::Test
+class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests : public testing::Test
 {
 protected:
 
@@ -505,7 +614,7 @@ protected:
     {
         std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version(1, 2, 3, 4), sourceElectricalLayer.Buffer.Size, false, false);
-        ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
+        ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V1(
             buffer,
             shipAttributes,
             TestMaterialMap,
@@ -539,7 +648,7 @@ protected:
     std::map<MaterialColorKey, ElectricalMaterial> TestMaterialMap;
 };
 
-TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, MidSize_NonInstanced)
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests, MidSize_NonInstanced)
 {
     // Linearize materials
     std::vector<ElectricalMaterial const *> materials;
@@ -561,7 +670,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, MidSize_NonInstanc
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V1(sourceElectricalLayer, buffer);
 
     //
     // Verify RLE
@@ -596,7 +705,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, MidSize_NonInstanc
         buffer);
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, MidSize_Instanced)
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests, MidSize_Instanced)
 {
     // Linearize materials
     std::vector<ElectricalMaterial const *> materials;
@@ -618,7 +727,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, MidSize_Instanced)
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V1(sourceElectricalLayer, buffer);
 
     //
     // Verify RLE
@@ -658,7 +767,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, MidSize_Instanced)
         buffer);
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, Nulls)
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests, Nulls)
 {
     // Linearize materials
     std::vector<ElectricalMaterial const *> materials;
@@ -680,7 +789,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, Nulls)
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V1(sourceElectricalLayer, buffer);
 
     //
     // Verify RLE
@@ -722,7 +831,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, Nulls)
         buffer);
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, ElectricalPanel)
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests, ElectricalPanel)
 {
     // Linearize materials
     std::vector<ElectricalMaterial const *> materials;
@@ -771,7 +880,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, ElectricalPanel)
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V1(sourceElectricalLayer, buffer);
 
     //
     // Verify may be read
@@ -782,7 +891,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, ElectricalPanel)
         buffer);
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMaterial)
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests, UnrecognizedMaterial)
 {
     ElectricalMaterial unrecognizedMaterial = ElectricalMaterial(
         rgbColor(0x12, 0x34, 0x56),
@@ -799,7 +908,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMateri
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V1(sourceElectricalLayer, buffer);
 
     //
     // Verify exception
@@ -812,7 +921,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMateri
         std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
             fileFSVersion, sourceElectricalLayer.Buffer.Size, false, false);
-        ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
+        ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V1(
             buffer,
             shipAttributes,
             TestMaterialMap,
@@ -827,7 +936,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMateri
     }
 }
 
-class ShipDefinitionFormatDeSerializer_RopesLayerTests : public testing::Test
+class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests : public testing::Test
 {
 protected:
 
@@ -855,7 +964,7 @@ protected:
     {
         std::unique_ptr<RopesLayerData> targetRopesLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version(1, 2, 3, 4), sourceRopesLayer.Buffer.GetSize(), false, false);
-        ShipDefinitionFormatDeSerializer::ReadRopesLayer(
+        ShipDefinitionFormatDeSerializer::ReadRopesLayer_V1(
             buffer,
             shipAttributes,
             TestMaterialMap,
@@ -872,7 +981,7 @@ protected:
     std::map<MaterialColorKey, StructuralMaterial> TestMaterialMap;
 };
 
-TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, TwoElements)
+TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerV1Tests, TwoElements)
 {
     // Linearize materials
     std::vector<StructuralMaterial const *> materials;
@@ -900,7 +1009,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, TwoElements)
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendRopesLayer(sourceRopesLayer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendRopesLayer_V1(sourceRopesLayer, buffer);
 
     //
     // Verify may be read
@@ -911,7 +1020,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, TwoElements)
         buffer);
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial)
+TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerV1Tests, UnrecognizedMaterial)
 {
     StructuralMaterial unrecognizedMaterial = StructuralMaterial(
         rgbColor(0x12, 0x34, 0x56),
@@ -928,7 +1037,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial)
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendRopesLayer(sourceRopesLayer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendRopesLayer_V1(sourceRopesLayer, buffer);
 
     //
     // Verify exception
@@ -941,7 +1050,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial)
         std::unique_ptr<RopesLayerData> targetRopesLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
             fileFSVersion, sourceRopesLayer.Buffer.GetSize(), false, false);
-        ShipDefinitionFormatDeSerializer::ReadRopesLayer(
+        ShipDefinitionFormatDeSerializer::ReadRopesLayer_V1(
             buffer,
             shipAttributes,
             TestMaterialMap,
@@ -956,7 +1065,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial)
     }
 }
 
-TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
+TEST(ShipDefinitionFormatDeSerializer, RoundtripV1)
 {
     ShipSpaceSize const shipSize(4, 2);
 
@@ -1075,7 +1184,7 @@ TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
     // Interior layer
     //
 
-    // TODOHERE
+    // TODO
 
     //
     // Serialize
@@ -1164,7 +1273,7 @@ TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
         }
     }
 
-    // TODOHERE: InteriorTextureLayer
+    // TODO: InteriorTextureLayer
 
     // Metadata
 

@@ -334,6 +334,59 @@
 					- Come up with a way to be able to add more overrides in the future, so that older version and newer versions digest both
 				- Buffer: color_key + local index in MaterialPalette
 					- TODO: index=-1 for standard materials? Do we waste all this space?
+				- Ser Algo:
+					- @ (Structural, Electrical, Ropes):
+						! ExtractCustomMaterialMap(Layer/data) -> map<CustomMaterialKey -> index>
+							! Check against limits
+						= If empty:
+							- TODO: verify presence of tag is enough; else need to bump file format version
+								- VERIFIED: NEED TO BUMP FORMAT
+								- SO, DETECT VERSION EARLIER (extract earlier)
+							! Save_1(...)
+						= Else:
+							! Save2(..., custom_material_map):
+								! Save palette
+								- Save buffer
+
+					+ ExtractCustomMaterialMap/Structural
+					+ AppendCustomMaterialMap/Structural
+					+ ReadCustomMaterialMap/Structural
+					+ UTs: read+write
+
+					- ExtractCustomMaterialMap/Electrical
+					+ AppendCustomMaterialMap/Structural
+					- ReadCustomMaterialMap/Electrical
+					- UTs: read+write
+
+
+					= Structural layer
+						+ Rename save chain
+						+ ExtractCustomMaterialMap
+						= Ser
+							+ Custom material map
+							- Structural layer
+						- Unit tests for custom material map
+						- Unit tests for structural layer
+					- Electrical layer
+						- Rename save chain
+						- ExtractCustomMaterialMap
+						- Ser
+					- Ropes layer
+						- Rename save chain
+						- ExtractCustomMaterialMap
+						- Ser
+				- Deser Algo:
+					- TODOHERE: 
+						- Check custom material palette size against limits
+					- Structural
+						- Rename load chain
+						- If V2 tag:
+							- Deser "deser" material map -> vector<std::uq_ptr<TMaterial *>>
+							- Deser layer
+					- Electrical
+						- Rename load chain
+					- Ropes
+						- Rename load chain
 			- Deserialize() returns CustomMaterialsPod (3x vector<uq_ptr<TMaterial>> for each TMaterial) in ShipDefinition, just for lifetime extension
 				+ Might group all layers' vectors in a single CustomMaterialsPod, for convenience
 				+ Will be stored by Ship, given by ShipFactory

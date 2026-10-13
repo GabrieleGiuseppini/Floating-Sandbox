@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "ShipDefinitionFormatDeSerializer.h"
 
+#include "SimulationParameters.h" // For limits
+
 #include <Core/Colors.h>
 #include <Core/GameExceptions.h>
 #include <Core/GameTypes.h>
@@ -55,7 +57,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
         {
             switch (sectionHeader.Tag)
             {
-                case static_cast<uint32_t>(MainSectionTagType::ShipAttributes) :
+                case static_cast<uint32_t>(MainSectionTagType::ShipAttributes):
                 {
                     ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
                     shipAttributes = ReadShipAttributes(buffer);
@@ -63,7 +65,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     break;
                 }
 
-                case static_cast<uint32_t>(MainSectionTagType::Metadata) :
+                case static_cast<uint32_t>(MainSectionTagType::Metadata):
                 {
                     ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
                     shipMetadata = ReadMetadata(buffer);
@@ -71,7 +73,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     break;
                 }
 
-                case static_cast<uint32_t>(MainSectionTagType::PhysicsData) :
+                case static_cast<uint32_t>(MainSectionTagType::PhysicsData):
                 {
                     ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
                     shipPhysicsData = ReadPhysicsData(buffer);
@@ -79,7 +81,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     break;
                 }
 
-                case static_cast<uint32_t>(MainSectionTagType::AutoTexturizationSettings) :
+                case static_cast<uint32_t>(MainSectionTagType::AutoTexturizationSettings):
                 {
                     ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
                     shipAutoTexturizationSettings = ReadAutoTexturizationSettings(buffer);
@@ -87,7 +89,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     break;
                 }
 
-                case static_cast<uint32_t>(MainSectionTagType::StructuralLayer) :
+                case static_cast<uint32_t>(MainSectionTagType::StructuralLayer_V1):
                 {
                     // Make sure we've already gotten the ship attributes
                     if (!shipAttributes.has_value())
@@ -96,7 +98,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     }
 
                     ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
-                    ReadStructuralLayer(
+                    ReadStructuralLayer_V1(
                         buffer,
                         *shipAttributes,
                         defaultMaterialDatabase.GetStructuralMaterialColorMap(),
@@ -105,7 +107,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     break;
                 }
 
-                case static_cast<uint32_t>(MainSectionTagType::ElectricalLayer) :
+                case static_cast<uint32_t>(MainSectionTagType::ElectricalLayer_V1):
                 {
                     // Make sure we've already gotten the ship attributes
                     if (!shipAttributes.has_value())
@@ -114,7 +116,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     }
 
                     ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
-                    ReadElectricalLayer(
+                    ReadElectricalLayer_V1(
                         buffer,
                         *shipAttributes,
                         defaultMaterialDatabase.GetElectricalMaterialColorMap(),
@@ -123,7 +125,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     break;
                 }
 
-                case static_cast<uint32_t>(MainSectionTagType::RopesLayer) :
+                case static_cast<uint32_t>(MainSectionTagType::RopesLayer_V1):
                 {
                     // Make sure we've already gotten the ship attributes
                     if (!shipAttributes.has_value())
@@ -132,7 +134,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     }
 
                     ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
-                    ReadRopesLayer(
+                    ReadRopesLayer_V1(
                         buffer,
                         *shipAttributes,
                         defaultMaterialDatabase.GetStructuralMaterialColorMap(),
@@ -141,7 +143,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     break;
                 }
 
-                case static_cast<uint32_t>(MainSectionTagType::TextureLayer_PNG) :
+                case static_cast<uint32_t>(MainSectionTagType::TextureLayer_PNG):
                 {
                     RgbaImageData image = ReadPngImage(inputStream, sectionHeader.SectionBodySize);
 
@@ -151,14 +153,14 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     break;
                 }
 
-                case static_cast<uint32_t>(MainSectionTagType::Tail) :
+                case static_cast<uint32_t>(MainSectionTagType::Tail):
                 {
                     hasSeenTail = true;
 
                     break;
                 }
 
-                case static_cast<uint32_t>(MainSectionTagType::Preview_PNG) :
+                case static_cast<uint32_t>(MainSectionTagType::Preview_PNG):
                 {
                     // Ignore and skip section
                     size_t const szSkipped = inputStream.Skip(sectionHeader.SectionBodySize);
@@ -411,11 +413,26 @@ void ShipDefinitionFormatDeSerializer::Save(
 
     if (shipDefinition.Layers.StructuralLayer)
     {
-        AppendSection(
-            shipDefinitionOutputStream,
-            static_cast<std::uint32_t>(MainSectionTagType::StructuralLayer),
-            [&]() { return AppendStructuralLayer(*shipDefinition.Layers.StructuralLayer, buffer); },
-            buffer);
+        // Get custom material map
+        auto const customMaterialMap = ExtractCustomMaterialMap(*shipDefinition.Layers.StructuralLayer);
+        if (customMaterialMap.empty())
+        {
+            // V1 Structural Layer
+            AppendSection(
+                shipDefinitionOutputStream,
+                static_cast<std::uint32_t>(MainSectionTagType::StructuralLayer_V1),
+                [&]() { return AppendStructuralLayer_V1(*shipDefinition.Layers.StructuralLayer, buffer); },
+                buffer);
+        }
+        else
+        {
+            // V2 Structural Layer
+            AppendSection(
+                shipDefinitionOutputStream,
+                static_cast<std::uint32_t>(MainSectionTagType::StructuralLayer_V2),
+                [&]() { return AppendStructuralLayer_V2(*shipDefinition.Layers.StructuralLayer, customMaterialMap, buffer); },
+                buffer);
+        }
     }
 
     //
@@ -426,8 +443,8 @@ void ShipDefinitionFormatDeSerializer::Save(
     {
         AppendSection(
             shipDefinitionOutputStream,
-            static_cast<std::uint32_t>(MainSectionTagType::ElectricalLayer),
-            [&]() { return AppendElectricalLayer(*shipDefinition.Layers.ElectricalLayer, buffer); },
+            static_cast<std::uint32_t>(MainSectionTagType::ElectricalLayer_V1),
+            [&]() { return AppendElectricalLayer_V1(*shipDefinition.Layers.ElectricalLayer, buffer); },
             buffer);
     }
 
@@ -439,8 +456,8 @@ void ShipDefinitionFormatDeSerializer::Save(
     {
         AppendSection(
             shipDefinitionOutputStream,
-            static_cast<std::uint32_t>(MainSectionTagType::RopesLayer),
-            [&]() { return AppendRopesLayer(*shipDefinition.Layers.RopesLayer, buffer); },
+            static_cast<std::uint32_t>(MainSectionTagType::RopesLayer_V1),
+            [&]() { return AppendRopesLayer_V1(*shipDefinition.Layers.RopesLayer, buffer); },
             buffer);
     }
 
@@ -852,6 +869,80 @@ size_t ShipDefinitionFormatDeSerializer::AppendAutoTexturizationSettings(
     return sectionBodySize;
 }
 
+template<typename TMaterial>
+static size_t ShipDefinitionFormatDeSerializer::AppendCustomMaterialMap(
+    CustomMaterialOverridesMap<TMaterial> const & customMaterialOverridesMap,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t subSectionBodySize = 0;
+
+    // Number of entries
+
+    assert(customMaterialOverridesMap.size() <= std::numeric_limits<std::uint16_t>::max());
+    std::uint16_t count = static_cast<std::uint16_t>(customMaterialOverridesMap.size());
+    subSectionBodySize += buffer.Append(count);
+
+    // Entries
+
+    // Transform map into vector, by index
+    std::vector<CustomMaterialOverridesKey<TMaterial> const *> customMaterialOverridesVector(customMaterialOverridesMap.size(), nullptr);
+    for (auto const & it : customMaterialOverridesMap)
+    {
+        assert(it.second < customMaterialOverridesVector.size());
+        customMaterialOverridesVector[it.second] = &(it.first);
+    }
+
+    // List of material overrides
+    for (CustomMaterialOverridesKey<TMaterial> const * mk : customMaterialOverridesVector)
+    {
+        assert(mk != nullptr);
+
+        // Serialize RGB base color key
+        subSectionBodySize += buffer.Append(reinterpret_cast<unsigned char const *>(&(mk->BaseColorKey)), sizeof(MaterialColorKey));
+
+        // Serialize variant overrides
+        subSectionBodySize += AppendCustomMaterialVariantOverrides(mk->VariantOverrides, buffer);
+    }
+
+    return subSectionBodySize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendCustomMaterialVariantOverrides(
+    StructuralMaterial::VariantOverridesType const & variantOverrides,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t subSectionBodySize = 0;
+
+    subSectionBodySize += buffer.Append(variantOverrides.Name);
+    subSectionBodySize += buffer.Append(reinterpret_cast<unsigned char const *>(&(variantOverrides.RenderColor)), sizeof(rgbaColor));
+    subSectionBodySize += buffer.Append(variantOverrides.Strength);
+    subSectionBodySize += buffer.Append(variantOverrides.Density);
+    subSectionBodySize += buffer.Append(variantOverrides.IgnitionTemperature);
+    subSectionBodySize += buffer.Append(variantOverrides.MeltingTemperature);
+    subSectionBodySize += buffer.Append(variantOverrides.RotReceptivity);
+    subSectionBodySize += buffer.Append(variantOverrides.RustReceptivity);
+    subSectionBodySize += buffer.Append(variantOverrides.WaterSolubility);
+
+    return subSectionBodySize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendCustomMaterialVariantOverrides(
+    ElectricalMaterial::VariantOverridesType const & variantOverrides,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t subSectionBodySize = 0;
+
+    subSectionBodySize += buffer.Append(variantOverrides.Name);
+    subSectionBodySize += buffer.Append(variantOverrides.Luminiscence);
+    subSectionBodySize += buffer.Append(variantOverrides.LightSpread);
+    subSectionBodySize += buffer.Append(variantOverrides.EnginePower);
+    subSectionBodySize += buffer.Append(variantOverrides.WaterPumpNominalForce);
+    subSectionBodySize += buffer.Append(variantOverrides.TimerDurationSeconds);
+    subSectionBodySize += buffer.Append(variantOverrides.ThermalSwitchTransitionTemperature);
+
+    return subSectionBodySize;
+}
+
 template<typename T>
 size_t ShipDefinitionFormatDeSerializer::AppendAutoTexturizationSettingsEntry(
     ShipDefinitionFormatDeSerializer::AutoTexturizationSettingsTagType tag,
@@ -867,7 +958,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendAutoTexturizationSettingsEntry(
     return sizeof(SectionHeader) + valueSize;
 }
 
-size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
+size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V1(
     StructuralLayerData const & structuralLayer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
@@ -885,7 +976,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
         sectionBodySize += sizeof(SectionHeader);
 
         // Body
-        size_t const subSectionBodySize = AppendStructuralLayerBuffer(
+        size_t const subSectionBodySize = AppendStructuralLayerBuffer_V1(
             structuralLayer.Buffer,
             buffer);
 
@@ -909,7 +1000,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
     return sectionBodySize;
 }
 
-size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayerBuffer(
+size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayerBuffer_V1(
     Buffer2D<StructuralElement, struct ShipSpaceTag> const & structuralLayerBuffer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
@@ -956,7 +1047,122 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayerBuffer(
     return subSectionBodySize;
 }
 
-size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer(
+size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V2(
+    StructuralLayerData const & structuralLayer,
+    CustomMaterialOverridesMap<StructuralMaterial> const & customMaterialOverridesMap,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t sectionBodySize = 0;
+
+    //
+    // Custom Material Map
+    //
+
+    {
+        buffer.Append(static_cast<uint32_t>(CustomMaterialMapTagType::Map));
+        size_t const subSectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
+
+        // Body
+        size_t const subSectionBodySize = AppendCustomMaterialMap(
+            customMaterialOverridesMap,
+            buffer);
+
+        buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), subSectionBodySizeIndex);
+
+        sectionBodySize += subSectionBodySize;
+    }
+
+    //
+    // Buffer
+    //
+
+    {
+        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType::Buffer));
+        size_t const subSectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
+
+        // Body
+        size_t const subSectionBodySize = AppendStructuralLayerBuffer_V1(
+            structuralLayer.Buffer,
+            buffer);
+
+        buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), subSectionBodySizeIndex);
+
+        sectionBodySize += subSectionBodySize;
+    }
+
+    //
+    // Tail
+    //
+
+    {
+        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType::Tail));
+        buffer.Append<std::uint32_t>(0);
+
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
+    }
+
+    return sectionBodySize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayerBuffer_V2(
+    Buffer2D<StructuralElement, struct ShipSpaceTag> const & structuralLayerBuffer,
+    CustomMaterialOverridesMap<StructuralMaterial> const & customMaterialOverridesMap,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t subSectionBodySize = 0;
+
+    // TODOHERE
+    (void)customMaterialOverridesMap;
+
+    //
+    // Encode layer with RLE of RGB color key buffer
+    //
+
+    size_t const layerLinearSize = structuralLayerBuffer.Size.GetLinearSize();
+    DeSerializationBuffer<BigEndianess> rleBuffer(layerLinearSize * sizeof(MaterialColorKey)); // Upper bound
+
+    StructuralElement const * structuralElementBuffer = structuralLayerBuffer.Data.get();
+    for (size_t i = 0; i < layerLinearSize; /*incremented in loop*/)
+    {
+        // Get the element at this position
+        StructuralElement const & structuralElement = structuralElementBuffer[i];
+        ++i;
+
+        // Count consecutive identical values
+        std::uint16_t materialCount = 1;
+        for (;
+            i < layerLinearSize
+            && structuralElementBuffer[i] == structuralElement
+            && materialCount < std::numeric_limits<var_uint16_t>::max().value();
+            ++i, ++materialCount);
+
+        // Serialize count
+        rleBuffer.Append<var_uint16_t>(var_uint16_t(materialCount));
+
+        // Serialize RGB color key
+        MaterialColorKey const colorKey = (structuralElement.Material == nullptr) ? EmptyMaterialColorKey : structuralElement.Material->ColorKey;
+        rleBuffer.Append(reinterpret_cast<unsigned char const *>(&colorKey), sizeof(MaterialColorKey));
+    }
+
+    //
+    // Serialize RLE buffer
+    //
+
+    subSectionBodySize += buffer.Append(
+        rleBuffer.GetData(),
+        rleBuffer.GetSize());
+
+    return subSectionBodySize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V1(
     ElectricalLayerData const & electricalLayer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
@@ -974,7 +1180,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer(
         sectionBodySize += sizeof(SectionHeader);
 
         // Body
-        size_t const subSectionBodySize = AppendElectricalLayerBuffer(
+        size_t const subSectionBodySize = AppendElectricalLayerBuffer_V1(
             electricalLayer.Buffer,
             buffer);
 
@@ -1020,7 +1226,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer(
     return sectionBodySize;
 }
 
-size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerBuffer(
+size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerBuffer_V1(
     Buffer2D<ElectricalElement, struct ShipSpaceTag> const & electricalLayerBuffer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
@@ -1109,7 +1315,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerPanel(
     return subSectionBodySize;
 }
 
-size_t ShipDefinitionFormatDeSerializer::AppendRopesLayer(
+size_t ShipDefinitionFormatDeSerializer::AppendRopesLayer_V1(
     RopesLayerData const & ropesLayer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
@@ -1127,7 +1333,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendRopesLayer(
         sectionBodySize += sizeof(SectionHeader);
 
         // Body
-        size_t const subSectionBodySize = AppendRopesLayerBuffer(
+        size_t const subSectionBodySize = AppendRopesLayerBuffer_V1(
             ropesLayer.Buffer,
             buffer);
 
@@ -1151,7 +1357,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendRopesLayer(
     return sectionBodySize;
 }
 
-size_t ShipDefinitionFormatDeSerializer::AppendRopesLayerBuffer(
+size_t ShipDefinitionFormatDeSerializer::AppendRopesLayerBuffer_V1(
     RopeBuffer const & ropesLayerBuffer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
@@ -1283,6 +1489,39 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
     return AppendPngImage(
         previewRawData,
         buffer);
+}
+
+ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial> ShipDefinitionFormatDeSerializer::ExtractCustomMaterialMap(StructuralLayerData const & layerData)
+{
+    CustomMaterialOverridesMap<StructuralMaterial> customMaterialOverridesMap;
+
+    size_t const layerLinearSize = layerData.Buffer.GetLinearSize();
+    StructuralElement const * structuralElementBuffer = layerData.Buffer.Data.get();
+    for (size_t i = 0; i < layerLinearSize; ++i)
+    {
+        StructuralMaterial const * material = structuralElementBuffer[i].Material;
+        if (material->VariantOverrides.has_value())
+        {
+            // Add to map
+            size_t customMaterialIndex = customMaterialOverridesMap.size();
+            auto const [_, isInserted] = customMaterialOverridesMap.try_emplace(
+                CustomMaterialOverridesKey<StructuralMaterial>(
+                    material->ColorKey,
+                    *(material->VariantOverrides)),
+                customMaterialIndex);
+
+            // Check limits
+            if (isInserted)
+            {
+                if (customMaterialOverridesMap.size() > SimulationParameters::MaxCustomMaterialPerShip)
+                {
+                    throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                }
+            }
+        }
+    }
+
+    return customMaterialOverridesMap;
 }
 
 // Read
@@ -1802,7 +2041,66 @@ ShipAutoTexturizationSettings ShipDefinitionFormatDeSerializer::ReadAutoTexturiz
     return autoTexturizationSettings;
 }
 
-void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
+std::vector<std::unique_ptr<StructuralMaterial const>> ShipDefinitionFormatDeSerializer::ReadCustomMaterialMap(
+    DeSerializationBuffer<BigEndianess> const & buffer,
+    MaterialColorMap<StructuralMaterial> const & baseMaterialColorMap)
+{
+    size_t offset = 0;
+
+    // Number of entries
+
+    std::uint16_t count;
+    offset += buffer.ReadAt<std::uint16_t>(offset, count);
+
+    // Entries
+
+    std::vector<std::unique_ptr<StructuralMaterial const>> customMaterials;
+
+    for (size_t i = 0; i < static_cast<size_t>(count); ++i)
+    {
+        // Deserialize RGB base color key
+        MaterialColorKey baseColorKey;
+        offset += buffer.ReadAt(offset, reinterpret_cast<unsigned char *>(&baseColorKey), sizeof(baseColorKey));
+
+        // Deserialize variant overrides
+        std::string name;
+        offset += buffer.ReadAt<std::string>(offset, name);
+        rgbaColor renderColor;
+        offset += buffer.ReadAt(offset, reinterpret_cast<unsigned char *>(&renderColor), sizeof(renderColor));
+        float strength;
+        offset += buffer.ReadAt<float>(offset, strength);
+        float density;
+        offset += buffer.ReadAt<float>(offset, density);
+        float ignitionTemperature;
+        offset += buffer.ReadAt<float>(offset, ignitionTemperature);
+        float meltingTemperature;
+        offset += buffer.ReadAt<float>(offset, meltingTemperature);
+        float rotReceptivity;
+        offset += buffer.ReadAt<float>(offset, rotReceptivity);
+        float rustReceptivity;
+        offset += buffer.ReadAt<float>(offset, rustReceptivity);
+        float waterSolubility;
+        offset += buffer.ReadAt<float>(offset, waterSolubility);
+
+        // Make material
+        customMaterials.emplace_back(
+            baseMaterialColorMap.at(baseColorKey).MakeCustomMaterial(
+                StructuralMaterial::VariantOverridesType(
+                    name,
+                    renderColor,
+                    strength,
+                    density,
+                    ignitionTemperature,
+                    meltingTemperature,
+                    rotReceptivity,
+                    rustReceptivity,
+                    waterSolubility)));
+    }
+
+    return customMaterials;
+}
+
+void ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V1(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
     MaterialColorMap<StructuralMaterial> const & materialColorMap,
@@ -1892,7 +2190,7 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
     }
 }
 
-void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
+void ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V1(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
     MaterialColorMap<ElectricalMaterial> const & materialColorMap,
@@ -2054,7 +2352,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
     }
 }
 
-void ShipDefinitionFormatDeSerializer::ReadRopesLayer(
+void ShipDefinitionFormatDeSerializer::ReadRopesLayer_V1(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
     MaterialColorMap<StructuralMaterial> const & materialColorMap,

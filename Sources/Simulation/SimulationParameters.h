@@ -851,6 +851,8 @@ struct SimulationParameters
 
     static float constexpr EngineControllerJetThrottleIdleFraction = 0.20f; // Fraction of 0.0->1.0 range occupied by "idle"
 
+    static size_t constexpr MaxCustomMaterialPerShip = 65536;
+
 private:
 
     //
