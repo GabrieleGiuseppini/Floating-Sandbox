@@ -13,6 +13,7 @@ void SharedUIResources::Initialize(GameAssetManager const & gameAssetManager)
 {
 	sInstance = new SharedUIResources();
 	sInstance->mAddNewMaterialPlusIcon = WxHelpers::LoadBitmap("add_new_material_plus_icon", gameAssetManager);
+	sInstance->mShipOverlaySmall = WxHelpers::LoadBitmap("ship_overlay_small", gameAssetManager);
 	sInstance->mWhiteSolidBackgroundBrush = wxBrush(*wxWHITE, wxBRUSHSTYLE_SOLID);
 	sInstance->mSeparatorBrush = wxBrush(wxColor(0xa0, 0xa0, 0xa0), wxBRUSHSTYLE_SOLID);
 }

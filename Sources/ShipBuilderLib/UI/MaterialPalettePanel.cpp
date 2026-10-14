@@ -47,6 +47,8 @@ ImageSize constexpr MaterialCellSize(
 int constexpr SeparatorThickness = 1;
 int constexpr SeparatorRowHeight = 1 + SeparatorThickness + 1;
 
+int const MaterialSampleOverlayMargin = 1;
+
 // To guarantee aligned cols
 int constexpr StrideHSpacing = CellHSpacing + MaterialCellSize.width + CellHSpacing;
 
@@ -424,7 +426,7 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
         }
     }
 
-    int const materialSampleBitmapIndex = mMaterialSampleBitmaps.Add(MakeMaterialSample(material));
+    int const materialSampleBitmapIndex = mMaterialSampleBitmaps.Add(MakeMaterialSample(material, customRegisterKind));
 
     Cell & cell = *stride.Cells.insert(
         std::next(stride.Cells.begin(), cellInsertIndex),
@@ -934,14 +936,18 @@ void MaterialPalettePanel<TLayer>::RenderCell(
 }
 
 template<LayerType TLayer>
-wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(TMaterial const * material) const
+wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(
+    TMaterial const * material,
+    std::optional<CustomMaterialRegisterKindType> customRegisterKind) const
 {
+    wxBitmap sampleBitmap;
+
     if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
     {
         ShipAutoTexturizationSettings texturizationSettings;
         texturizationSettings.MaterialTextureMagnification = 0.5f;
 
-        return WxHelpers::MakeBitmap(
+        sampleBitmap = WxHelpers::MakeBitmap(
             mShipTexturizer.MakeMaterialTextureSample(
                 texturizationSettings,
                 MaterialSampleSize,
@@ -952,10 +958,25 @@ wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(TMaterial const * mate
     {
         static_assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
 
-        return WxHelpers::MakeMatteBitmap(
+        sampleBitmap = WxHelpers::MakeMatteBitmap(
             rgbaColor(material->RenderColor, 255),
             MaterialSampleSize);
     }
+
+    if (customRegisterKind == CustomMaterialRegisterKindType::Ship)
+    {
+        // Apply overlay
+
+        wxImage sampleImage = sampleBitmap.ConvertToImage();
+        sampleImage.Paste(
+            SharedUIResources::GetInstance().GetShipOverlaySmall().ConvertToImage(),
+            MaterialSampleOverlayMargin,
+            MaterialSampleOverlayMargin);
+
+        sampleBitmap = wxBitmap(sampleImage);
+    }
+
+    return sampleBitmap;
 }
 
 template<LayerType TLayer>

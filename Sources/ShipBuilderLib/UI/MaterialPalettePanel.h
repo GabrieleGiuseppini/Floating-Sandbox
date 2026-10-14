@@ -170,7 +170,9 @@ private:
     void RenderCell(Cell const & cell);
     void RenderCell(Cell const & cell, wxDC & dc);
 
-    wxBitmap MakeMaterialSample(TMaterial const * material) const;
+    wxBitmap MakeMaterialSample(
+        TMaterial const * material,
+        std::optional<CustomMaterialRegisterKindType> customRegisterKind) const;
 
     size_t FindRowFor(TMaterial const * material) const;
     size_t FindStrideFor(TMaterial const * material, Row const & row) const;

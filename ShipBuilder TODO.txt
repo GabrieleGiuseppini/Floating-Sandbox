@@ -403,7 +403,7 @@
 
 				= Plug final Save() and Load() for all layers
 
-				- Do E2E test via ShipBuilder
+				= Do E2E test via ShipBuilder
 					+ Structural
 					- Electrical
 					- Ropes
@@ -540,7 +540,7 @@
 								+ Add to stride, at end
 									+ Factor out creation of material @ AddDefaultMaterial into a new helper
 								+ Update LayoutSession accordingly
-							- RemoveAllShipCustomMaterials()
+							- RemoveAllShipCustomMaterials(LayoutSession)- > LayoutSession
 								- Visit all rows:
 									- Visit all strides
 										- Prune ship region
@@ -549,7 +549,7 @@
 								- Test:
 									- Go from ship with many to ship with less
 									- Go from ship with a few to ship with more
-							- Remove user/ship custom (one)
+							- RemoveCustomMaterial(TMaterial const *, [User|Ship], LayoutSession) -> LayoutSession
 								- Nuke material sample from ImageList (wxImageList::Remove)
 									- Update all image list indices
 								- Remove from stride
@@ -568,18 +568,22 @@
 						+ Render cells onto buffer
 						+ Refresh(false)
 
-			- ShipOverlay, EditButton, Checkbox:
-				- All std::optional<wxRect>
-				- Set at Layout
-					- ShipOverlay: iff CustomKind=Ship
-					- EditButton, Checkbox: iff CustomKind!=None
-				- Honor at RenderCell
-				- Handling of clicks:
-					- EditButton:
-						- Start workflow via PalettesController - copy from AddNewButton
-							- Both: watch out for re-entrantness
-					- Checkbox:
-						- Send event for browser via checked counter, it'll Reconciliate
+			= ShipOverlay, EditButton, Checkbox:
+				= Ship: set on sample material at cell creation time
+					= Icon
+					+ Code: iff custom is ship
+				- EditButton, Checkbox:
+					- All std::optional<wxRect>
+					- Set at Layout
+						- ShipOverlay: iff CustomKind=Ship
+						- EditButton, Checkbox: iff CustomKind!=None
+					- Honor at RenderCell
+					- Handling of clicks:
+						- EditButton:
+							- Start workflow via PalettesController - copy from AddNewButton
+								- Both: watch out for re-entrantness
+						- Checkbox:
+							- Send event for browser via checked counter, it'll Reconciliate
 				
 			+ All cells have exact same width - constant
 			+ All cells in a row have the same height - constant
@@ -726,6 +730,8 @@
 		- Model and maybe ModelController:
 			- ReplaceMaterials(map: TMaterial * -> TMaterial *|null (for removal))
 				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
+
+	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 
 	- Tests:
 		- Empty name @ Create and @ Edit
