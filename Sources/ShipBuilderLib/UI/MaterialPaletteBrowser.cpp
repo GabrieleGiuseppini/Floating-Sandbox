@@ -29,7 +29,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
     wxWindow * parent,
     IMaterialPalettesController & materialPalettesController,
     DefaultMaterialDatabase::Palette<TMaterial> const & defaultMaterialPalette,
-    std::vector<std::unique_ptr<TMaterial const>> const & customUserMaterials,
+    std::vector<std::unique_ptr<TMaterial const>> const & initialCustomUserMaterials,
     ShipTexturizer const & shipTexturizer,
     ISoundController * soundController,
     GameAssetManager const & gameAssetManager,
@@ -356,18 +356,18 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
     // Populate with these initial custom user materials
     //
 
-    std::vector<TMaterial const *> customUserMaterialsPtr;
+    std::vector<TMaterial const *> initialCustomUserMaterialsPtr;
     std::transform(
-        customUserMaterials.cbegin(),
-        customUserMaterials.cend(),
-        std::back_inserter(customUserMaterialsPtr),
+        initialCustomUserMaterials.cbegin(),
+        initialCustomUserMaterials.cend(),
+        std::back_inserter(initialCustomUserMaterialsPtr),
         [](auto const & uq_ptr) -> TMaterial const *
         {
             return uq_ptr.get();
         });
 
     AddCustomMaterials(
-        customUserMaterialsPtr,
+        initialCustomUserMaterialsPtr,
         CustomMaterialRegisterKindType::User);
 
     //

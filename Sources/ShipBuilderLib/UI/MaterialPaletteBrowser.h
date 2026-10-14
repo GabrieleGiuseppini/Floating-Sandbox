@@ -60,7 +60,7 @@ public:
         wxWindow * parent,
         IMaterialPalettesController & materialPalettesController,
         DefaultMaterialDatabase::Palette<TMaterial> const & defaultMaterialPalette,
-        std::vector<std::unique_ptr<TMaterial const>> const & customUserMaterials,
+        std::vector<std::unique_ptr<TMaterial const>> const & initialCustomUserMaterials,
         ShipTexturizer const & shipTexturizer,
         ISoundController * soundController,
         GameAssetManager const & gameAssetManager,
