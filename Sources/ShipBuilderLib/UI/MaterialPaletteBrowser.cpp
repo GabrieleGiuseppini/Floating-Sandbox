@@ -15,6 +15,7 @@
 #include <wx/statline.h>
 #include <wx/wupdlock.h>
 
+#include <algorithm>
 #include <cassert>
 
 namespace ShipBuilder {
@@ -28,6 +29,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
     wxWindow * parent,
     IMaterialPalettesController & materialPalettesController,
     DefaultMaterialDatabase::Palette<TMaterial> const & defaultMaterialPalette,
+    std::vector<std::unique_ptr<TMaterial const>> const & customUserMaterials,
     ShipTexturizer const & shipTexturizer,
     ISoundController * soundController,
     GameAssetManager const & gameAssetManager,
@@ -349,6 +351,24 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
     }
 
     SetSizer(mRootHSizer);
+
+    //
+    // Populate with these initial custom user materials
+    //
+
+    std::vector<TMaterial const *> customUserMaterialsPtr;
+    std::transform(
+        customUserMaterials.cbegin(),
+        customUserMaterials.cend(),
+        std::back_inserter(customUserMaterialsPtr),
+        [](auto const & uq_ptr) -> TMaterial const *
+        {
+            return uq_ptr.get();
+        });
+
+    AddCustomMaterials(
+        customUserMaterialsPtr,
+        CustomMaterialRegisterKindType::User);
 
     //
     // Connect events

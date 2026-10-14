@@ -40,7 +40,7 @@ typename MaterialDatabase<TLayer>::TMaterial const * MaterialDatabase<TLayer>::A
 //////////////////////////////////////////////////
 
 template<LayerType TLayer>
-typename MaterialDatabase<TLayer>::Pod MaterialDatabase<TLayer>::LoadDefaultUserDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap)
+typename MaterialDatabase<TLayer>::SinglePod MaterialDatabase<TLayer>::LoadDefaultUserDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap)
 {
     // TODO: backup mechanism
 
@@ -68,13 +68,13 @@ void MaterialDatabase<TLayer>::SaveDefaultUserDatabase() const
 }
 
 template<LayerType TLayer>
-typename MaterialDatabase<TLayer>::Pod MaterialDatabase<TLayer>::LoadUserDatabase(
+typename MaterialDatabase<TLayer>::SinglePod MaterialDatabase<TLayer>::LoadUserDatabase(
     std::filesystem::path const & databaseFilepath,
     MaterialColorMap<TMaterial> const & defaultMaterialColorMap)
 {
     if (!std::filesystem::exists(databaseFilepath))
     {
-        return Pod();
+        return SinglePod();
     }
 
     auto const rootJsonValue = GameAssetManager::LoadJson(databaseFilepath);
@@ -82,14 +82,14 @@ typename MaterialDatabase<TLayer>::Pod MaterialDatabase<TLayer>::LoadUserDatabas
     if (!rootJsonValue.is<picojson::object>())
     {
         LogMessage("ERROR: root of user database file \"", databaseFilepath, "\" is not a json object");
-        return Pod();
+        return SinglePod();
     }
 
     picojson::object const & rootJsonObject = rootJsonValue.get<picojson::object>();
 
     // De-serialize materials
 
-    Pod pod;
+    SinglePod pod;
 
     picojson::array const & materialsJsonArray = Utils::GetMandatoryJsonArray(rootJsonObject, "custom_materials");
     for (auto const & materialJsonValue : materialsJsonArray)

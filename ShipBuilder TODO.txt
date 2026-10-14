@@ -405,6 +405,7 @@
 
 				- Do E2E test via ShipBuilder
 					- Also: verify user materials saved and loaded
+					- TODOHERE: ShipBuilder: must pass ship materials to DB, workflow above
 
 				- Do the above: custom materials map extracted includes input ShipDefinition's
 					- Right after extracting, we merge ShipDefinition's (via templated helper) and then we check if empty
@@ -580,7 +581,10 @@
 			+ Replace selected events with calls into IMaterialPaletteController
 			+ cctor:
 				+ Palette<TLayer> const & from DefaultMaterialDatabase
+				+ User's custom materials (from DB)
 				+ IMaterialPalettesController &
+				+ Create default category panel
+				+ Add User's (via existing AddUserCustom[vector])
 
 			+ Initial layout:
 				+ Kinda as now, using InitialLayout APIs
