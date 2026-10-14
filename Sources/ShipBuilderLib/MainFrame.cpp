@@ -1278,7 +1278,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
                 case LayerType::InteriorTexture:
                 {
-                    // TODOHERE
+                    // TODO
                     //ImportInteriorTextureLayerFromImage();
 
                     break;
@@ -3434,7 +3434,7 @@ wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
 
         auto * sizer = new wxGridBagSizer(0, 0);
 
-        // TODOHERE
+        // TODO
 
         modePanel->SetSizerAndFit(sizer);
 
@@ -4692,7 +4692,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
         wxBoxSizer * interiorTextureToolbarSizer = new wxBoxSizer(wxVERTICAL);
 
-        // TODOHERE
+        // TODO
 
         interiorTextureToolbarPanel->SetSizerAndFit(interiorTextureToolbarSizer);
 
@@ -5789,7 +5789,7 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     // Replace materials in definition
     //
     // Note that now the ship's materials that are to be replaced are non-addressable
-    // (their uq_ptr's are dead)
+    // (their uq_ptr's are dead); they will be fine after this call
     shipDefinition->Layers.ReplaceMaterials(
         layersMaterialReplacementMaps.StructuralLayerMaterialReplacementMap,
         layersMaterialReplacementMaps.ElectricalLayerMaterialReplacementMap,
@@ -5810,7 +5810,7 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     else
     {
         // Same ship, make sure all undo actions mark model as dirty
-        // TODOHERE: see spec
+        // TODO: see spec
     }
 
     // Reset current ship filename
@@ -6181,7 +6181,7 @@ void MainFrame::ReconciliateUIWithLayerPresence(IModelObservable const & model)
 
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
-        // TODOHERE: not yet implemented
+        // TODO: not yet implemented
         if (iLayer == static_cast<int>(LayerType::InteriorTexture))
             continue;
 
@@ -6406,7 +6406,7 @@ void MainFrame::ReconciliateUIWithSelectedTool(
     // Select this tool's button and unselect the others
     for (size_t i = 0; i < mToolButtons.size(); ++i)
     {
-        // TODOHERE: not yet implemented
+        // TODO: not yet implemented
         if (auto const tt = static_cast<ToolType>(i);
             tt == ToolType::InteriorTextureEraser
             || tt == ToolType::InteriorTextureMagicWand
@@ -6426,7 +6426,7 @@ void MainFrame::ReconciliateUIWithSelectedTool(
     // Consistency of Paste buttons enablement<->selection
     for (ToolType t : {ToolType::StructuralPaste, ToolType::ElectricalPaste, ToolType::RopePaste, ToolType::ExteriorTexturePaste, ToolType::InteriorTexturePaste})
     {
-        // TODOHERE: not yet implemented
+        // TODO: not yet implemented
         if (t == ToolType::InteriorTextureEraser
             || t == ToolType::InteriorTextureMagicWand
             || t == ToolType::InteriorTexturePaste
@@ -6578,7 +6578,7 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
     auto const iPrimaryVisualization = static_cast<uint32_t>(primaryVisualization);
     for (uint32_t iVisualization = 0; iVisualization < VisualizationCount; ++iVisualization)
     {
-        // TODOHERE: not yet implemented
+        // TODO: not yet implemented
         if (iVisualization == static_cast<int>(VisualizationType::InteriorTextureLayer))
             continue;
 
@@ -6672,7 +6672,7 @@ void MainFrame::ReconciliateUIWithExteriorTextureLayerVisualizationModeSelection
 
 void MainFrame::ReconciliateUIWithInteriorTextureLayerVisualizationModeSelection(InteriorTextureLayerVisualizationModeType mode)
 {
-    // TODOHERE
+    // TODO
     (void)mode;
 }
 

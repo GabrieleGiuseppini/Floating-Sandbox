@@ -43,16 +43,16 @@ public:
 
 private:
 
-	std::filesystem::path const mUserGameRootFolderPath;
-
 	using SinglePod = typename std::vector<std::unique_ptr<typename TMaterial const>>;
 
 	SinglePod LoadDefaultUserDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap) const;
+
 	void SaveDefaultUserDatabase() const;
 
 	static SinglePod LoadUserDatabase(
 		std::filesystem::path const & databaseFilepath,
 		MaterialColorMap<TMaterial> const & defaultMaterialColorMap);
+
 	static void SaveUserMaterials(
 		std::vector<TMaterial const *> const & materials,
 		std::filesystem::path const & databaseFilepath);
@@ -60,6 +60,8 @@ private:
 	std::filesystem::path GetDefaultUserDatabaseFilePath() const;
 
 private:
+
+	std::filesystem::path const mUserGameRootFolderPath;
 
 	MaterialColorMap<TMaterial> const & mDefaultMaterialColorMap; // For color_key lookups
 	SinglePod mUserCustomMaterials;
