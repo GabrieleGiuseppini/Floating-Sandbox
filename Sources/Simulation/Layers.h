@@ -15,6 +15,7 @@
 #include <Core/ImageData.h>
 
 #include <cassert>
+#include <map>
 #include <memory>
 
 template <LayerType TLayer>
@@ -79,6 +80,8 @@ struct StructuralLayerData
         ShipSpaceSize const & newSize, // Final size
         ShipSpaceCoordinates const & originOffset, // Position in final buffer of original {0, 0}
         StructuralElement const & fillerValue) const;
+
+    void ReplaceMaterials(std::map<StructuralMaterial const *, StructuralMaterial const *> const & replacementMap);
 };
 
 template <>
@@ -174,6 +177,8 @@ struct ElectricalLayerData
         ShipSpaceCoordinates const & originOffset, // Position in final buffer of original {0, 0}
         ElectricalElement const & fillerValue) const;
 
+    void ReplaceMaterials(std::map<ElectricalMaterial const *, ElectricalMaterial const *> const & replacementMap);
+
 private:
 
     ElectricalPanel MakeTrimmedPanel(
@@ -237,6 +242,8 @@ struct RopesLayerData
     RopesLayerData MakeReframed(
         ShipSpaceSize const & newSize, // Final size
         ShipSpaceCoordinates const & originOffset) const; // Position in final buffer of original {0, 0}
+
+    void ReplaceMaterials(std::map<StructuralMaterial const *, StructuralMaterial const *> const & replacementMap);
 };
 
 template <>
@@ -356,4 +363,17 @@ struct ShipLayers
     void Flip(DirectionType direction);
 
     void Rotate90(RotationDirectionType direction);
+
+    void ReplaceMaterials(
+        std::map<StructuralMaterial const *, StructuralMaterial const *> const & structuralLayerReplacementMap,
+        std::map<ElectricalMaterial const *, ElectricalMaterial const *> const & electricalLayerReplacementMap,
+        std::map<StructuralMaterial const *, StructuralMaterial const *> const & ropesLayerReplacementMap)
+    {
+        if (StructuralLayer)
+            StructuralLayer->ReplaceMaterials(structuralLayerReplacementMap);
+        if (ElectricalLayer)
+            ElectricalLayer->ReplaceMaterials(electricalLayerReplacementMap);
+        if (RopesLayer)
+            RopesLayer->ReplaceMaterials(ropesLayerReplacementMap);
+    }
 };

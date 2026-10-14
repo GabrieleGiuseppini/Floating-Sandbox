@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "MaterialPalettesController.h"
 
+#include <UILib/StandardSystemPaths.h>
+
 namespace ShipBuilder {
 
 MaterialPalettesController::MaterialPalettesController(
@@ -24,9 +26,17 @@ MaterialPalettesController::MaterialPalettesController(
 {
     // Model
 
-    mStructuralLayerMaterialDatabase = std::make_unique<MaterialDatabase<LayerType::Structural>>(defaultMaterialDatabase.GetStructuralMaterialColorMap());
-    mElectricalLayerMaterialDatabase = std::make_unique<MaterialDatabase<LayerType::Electrical>>(defaultMaterialDatabase.GetElectricalMaterialColorMap());
-    mRopesLayerMaterialDatabase = std::make_unique<MaterialDatabase<LayerType::Ropes>>(defaultMaterialDatabase.GetStructuralMaterialColorMap());
+    mStructuralLayerMaterialDatabase = std::make_unique<MaterialDatabase<LayerType::Structural>>(
+        defaultMaterialDatabase.GetStructuralMaterialColorMap(),
+        StandardSystemPaths::GetInstance().GetUserGameRootFolderPath());
+
+    mElectricalLayerMaterialDatabase = std::make_unique<MaterialDatabase<LayerType::Electrical>>(
+        defaultMaterialDatabase.GetElectricalMaterialColorMap(),
+        StandardSystemPaths::GetInstance().GetUserGameRootFolderPath());
+
+    mRopesLayerMaterialDatabase = std::make_unique<MaterialDatabase<LayerType::Ropes>>(
+        defaultMaterialDatabase.GetStructuralMaterialColorMap(),
+        StandardSystemPaths::GetInstance().GetUserGameRootFolderPath());
 
     // View
 
@@ -65,6 +75,24 @@ MaterialPalettesController::MaterialPalettesController(
         progressCallback.MakeSubCallback(0.66f, 0.33f));
 
     progressCallback(1.0f, ProgressMessageType::LoadingMaterialPalette);
+}
+
+LayersMaterialReplacementMaps MaterialPalettesController::OnShipLoaded(CustomMaterialsPod && shipCustomMaterials)
+{
+    //
+    // Replace ship custom materials on both model & view
+    //
+
+    MaterialReplacementMap<StructuralMaterial> structuralLayerMaterialReplacementMap = mStructuralLayerMaterialDatabase->SetShipCustomMaterials(std::move(shipCustomMaterials.CustomStructuralLayerMaterials));
+    MaterialReplacementMap<ElectricalMaterial> electricalLayerMaterialReplacementMap = mElectricalLayerMaterialDatabase->SetShipCustomMaterials(std::move(shipCustomMaterials.CustomElectricalLayerMaterials));
+    MaterialReplacementMap<StructuralMaterial> ropesLayerMaterialReplacementMap = mRopesLayerMaterialDatabase->SetShipCustomMaterials(std::move(shipCustomMaterials.CustomRopesLayerMaterials));
+
+    // TODO: view
+
+    return LayersMaterialReplacementMaps(
+        std::move(structuralLayerMaterialReplacementMap),
+        std::move(electricalLayerMaterialReplacementMap),
+        std::move(ropesLayerMaterialReplacementMap));
 }
 
 bool MaterialPalettesController::IsOpen() const

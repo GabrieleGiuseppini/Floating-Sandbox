@@ -18,10 +18,14 @@ class CustomMaterialsPod
 {
 public:
 
+    std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Structural>::material_type const>> CustomStructuralLayerMaterials;
+    std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Electrical>::material_type const>> CustomElectricalLayerMaterials;
+    std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Ropes>::material_type const>> CustomRopesLayerMaterials;
+
     CustomMaterialsPod()
-        : mCustomStructuralLayerMaterials()
-        , mCustomElectricalLayerMaterials()
-        , mCustomRopesLayerMaterials()
+        : CustomStructuralLayerMaterials()
+        , CustomElectricalLayerMaterials()
+        , CustomRopesLayerMaterials()
     {
     }
 
@@ -29,20 +33,15 @@ public:
         std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Structural>::material_type const>> && customStructuralLayerMaterials,
         std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Electrical>::material_type const>> && customElectricalLayerMaterials,
         std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Ropes>::material_type const>> && customRopesLayerMaterials)
-        : mCustomStructuralLayerMaterials(std::move(customStructuralLayerMaterials))
-        , mCustomElectricalLayerMaterials(std::move(customElectricalLayerMaterials))
-        , mCustomRopesLayerMaterials(std::move(customRopesLayerMaterials))
+        : CustomStructuralLayerMaterials(std::move(customStructuralLayerMaterials))
+        , CustomElectricalLayerMaterials(std::move(customElectricalLayerMaterials))
+        , CustomRopesLayerMaterials(std::move(customRopesLayerMaterials))
     { }
 
     bool IsEmpty() const
     {
-        return mCustomStructuralLayerMaterials.empty()
-            && mCustomElectricalLayerMaterials.empty()
-            && mCustomRopesLayerMaterials.empty();
+        return CustomStructuralLayerMaterials.empty()
+            && CustomElectricalLayerMaterials.empty()
+            && CustomRopesLayerMaterials.empty();
     }
-
-private:
-    std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Structural>::material_type const>> mCustomStructuralLayerMaterials;
-    std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Electrical>::material_type const>> mCustomElectricalLayerMaterials;
-    std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Ropes>::material_type const>> mCustomRopesLayerMaterials;
 };

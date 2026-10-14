@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include <Simulation/Materials.h>
+
 #include <Core/GameTypes.h>
 #include <Core/Vectors.h>
 
@@ -12,6 +14,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <string>
 #include <sstream>
@@ -74,6 +77,25 @@ enum class CustomMaterialRegisterKindType
 {
     User,
     Ship
+};
+
+template<typename TMaterial>
+using MaterialReplacementMap = std::map<TMaterial const *, TMaterial const *>;
+
+struct LayersMaterialReplacementMaps
+{
+    MaterialReplacementMap<StructuralMaterial> StructuralLayerMaterialReplacementMap;
+    MaterialReplacementMap<ElectricalMaterial> ElectricalLayerMaterialReplacementMap;
+    MaterialReplacementMap<StructuralMaterial> RopesLayerMaterialReplacementMap;
+
+    LayersMaterialReplacementMaps(
+        MaterialReplacementMap<StructuralMaterial> && structuralLayerMaterialReplacementMap,
+        MaterialReplacementMap<ElectricalMaterial> && electricalLayerMaterialReplacementMap,
+        MaterialReplacementMap<StructuralMaterial> && ropesLayerMaterialReplacementMap)
+        : StructuralLayerMaterialReplacementMap(std::move(structuralLayerMaterialReplacementMap))
+        , ElectricalLayerMaterialReplacementMap(std::move(electricalLayerMaterialReplacementMap))
+        , RopesLayerMaterialReplacementMap(std::move(ropesLayerMaterialReplacementMap))
+    { }
 };
 
 enum class FillMode

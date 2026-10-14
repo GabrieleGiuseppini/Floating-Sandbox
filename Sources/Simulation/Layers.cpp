@@ -17,6 +17,19 @@ StructuralLayerData StructuralLayerData::MakeReframed(
             fillerValue));
 }
 
+void StructuralLayerData::ReplaceMaterials(std::map<StructuralMaterial const *, StructuralMaterial const *> const & replacementMap)
+{
+    StructuralElement * bufferData = Buffer.Data.get();
+    for (size_t i = 0; i < Buffer.GetLinearSize(); ++i)
+    {
+        auto const & it = replacementMap.find(bufferData[i].Material);
+        if (it != replacementMap.end())
+        {
+            bufferData[i].Material = it->second;
+        }
+    }
+}
+
 ElectricalLayerData ElectricalLayerData::MakeReframed(
     ShipSpaceSize const & newSize, // Final size
     ShipSpaceCoordinates const & originOffset, // Position in final buffer of original {0, 0}
@@ -70,6 +83,19 @@ ElectricalPanel ElectricalLayerData::MakeTrimmedPanel(
     return newPanel;
 }
 
+void ElectricalLayerData::ReplaceMaterials(std::map<ElectricalMaterial const *, ElectricalMaterial const *> const & replacementMap)
+{
+    ElectricalElement * bufferData = Buffer.Data.get();
+    for (size_t i = 0; i < Buffer.GetLinearSize(); ++i)
+    {
+        auto const & it = replacementMap.find(bufferData[i].Material);
+        if (it != replacementMap.end())
+        {
+            bufferData[i].Material = it->second;
+        }
+    }
+}
+
 RopesLayerData RopesLayerData::MakeReframed(
     ShipSpaceSize const & newSize, // Final size
     ShipSpaceCoordinates const & originOffset) const // Position in final buffer of original {0, 0}
@@ -80,6 +106,18 @@ RopesLayerData RopesLayerData::MakeReframed(
         originOffset);
 
     return RopesLayerData(std::move(newBuffer));
+}
+
+void RopesLayerData::ReplaceMaterials(std::map<StructuralMaterial const *, StructuralMaterial const *> const & replacementMap)
+{
+    for (size_t i = 0; i < Buffer.GetElementCount(); ++i)
+    {
+        auto const & it = replacementMap.find(Buffer[i].Material);
+        if (it != replacementMap.end())
+        {
+            Buffer[i].Material = it->second;
+        }
+    }
 }
 
 TextureLayerData TextureLayerData::MakeReframed(

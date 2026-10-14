@@ -211,11 +211,11 @@
 				- Do Undo with just material
 			- Remove from DB // Delayed, as to-be-deleted pointer must be addressable
 			- Update palette
-		- Loading ship
-			- With custom materials:
-				- Prune set of ship's custom materials with user's custom materials, producing a material replacement map
-				- Apply material replacement map to ship
-					- Without marking it as dirty, this is a pre-model construction operation
+		= Loading ship
+			= With custom materials:
+				+ Prune set of ship's custom materials with user's custom materials, producing a material replacement map
+				+ Apply material replacement map to ship
+					+ Without marking it as dirty, this is a pre-model construction operation
 				- Replace ship's custom materials in palette with pruned
 				- Re-draw palette
 			- Without custom materials:
@@ -367,7 +367,7 @@
 				- ExtractCustomMaterialMap/Ropes
 				- UTs: read+write
 
-				= Structural layer					
+				+ Structural layer					
 					+ ExtractCustomMaterialMap
 					+ Ser
 						+ Rename save chain
@@ -378,7 +378,7 @@
 							+ Populate pod
 						+ Custom material map
 						+ Structural layer
-					= Unit tests for structural layer V2
+					+ Unit tests for structural layer V2
 						+ Add checks to Roundtrip_V2
 				- Electrical layer
 					- ExtractCustomMaterialMap
@@ -404,18 +404,21 @@
 				= Plug final Save() and Load() for all layers
 
 				- Do E2E test via ShipBuilder
-					- Also: verify user materials saved and loaded
-					- TODOHERE: ShipBuilder: must pass ship materials to DB, workflow above
+					+ Structural
+					- Electrical
+					- Ropes
 
-				- Do the above: custom materials map extracted includes input ShipDefinition's
-					- Right after extracting, we merge ShipDefinition's (via templated helper) and then we check if empty
-					- OR NOT: really needed? What's the semantics after all?
+				- Do E2E test via ShipBuilder: loading ship with new materials altogether
+					- Structural
+					- Electrical
+					- Ropes
 
-			- Deserialize() returns CustomMaterialsPod (3x vector<uq_ptr<TMaterial>> for each TMaterial) in ShipDefinition, just for lifetime extension
+			+ Deserialize() returns CustomMaterialsPod (3x vector<uq_ptr<TMaterial>> for each TMaterial) in ShipDefinition, just for lifetime extension
 				+ Might group all layers' vectors in a single CustomMaterialsPod, for convenience
 				+ Will be stored by Ship, given by ShipFactory
-			- If no custom materials are present, ships should be loadable by older FS versions; only if custom materials are present, the load should fail with "newer version" error
-				- So file format version should be conditional on presence of custom materials
+			= If no custom materials are present, ships should be loadable by older FS versions; only if custom materials are present, the load should fail with "newer version" error
+				+ So file format version should be conditional on presence of custom materials
+				- Test: save ship in dev version with no custom materials, and verify it's loadable by released FS
 			+ Legacy deserializer: empty pod
 
 			- Unit tests:
@@ -443,9 +446,9 @@
 					- Find
 					- Remove
 					- Save DB
-				- SetShip(vector):
-					- TODO: merge
-					- TODO: return replacement map
+				+ SetShipCustomMaterials(vector<uq_ptr<TMaterial const>>):
+					+ Merge and build replacement map
+					+ Return replacement map
 
 			+ Ser/Deset for user custom materials
 				+ parent color_key and VariantOverridesType
@@ -455,7 +458,8 @@
 
 			- Backup mechanism
 
-			- Unit tests
+			= Unit tests
+				+ SetShipCustomMaterials: verify pruned (inside DB) and returned replacement map
 
 		= IMaterialPaletteController<TLayer>: for UI to talk back to controller
 			+ OnMaterialSelected
@@ -591,7 +595,7 @@
 
 			= Ops (all forwarded to panel, with layout guards):
 				! Browser provides larger ops, as it's browser who orchestrates layout
-				+ Add user custom [vector]
+				+ AddCustomMaterials(vector<TMaterial*>, RegistryKind)
 					+ Organize materials by category
 					+ For each category:
 						+ Find panel for category
@@ -606,12 +610,13 @@
 						+ Multi stride
 							+ FIX: different spacing between strides makes ugly; either remove it or make same as material
 				- Update user/ship custom [one]
-				- Replace all ship custom [vector]
+				- SetShipCustomMaterials(vector<uq_ptr<>>)
+					- TODO: AddCustomMaterials becomes strictly "User" - no registry kind arg 
 					- Organize materials by category
 					- For each category:
 						- Find panel for category
 						- panel-> Start custom layout
-						- panel-> Remove ship one by one
+						- panel-> Remove all ship
 						- panel-> Add ship one by one
 						- panel-> End custom layout
 						- Layout() // for H scrollbar
@@ -638,11 +643,14 @@
 				- UndoStack
 				+ DefaultMaterialDatabase [to boot 3 MaterialDatabase<T>'s]
 				+ Callback for material selected
-			- OnShipLoaded(CustomMaterialsPod &&)
-				- // Replace ship custom materials on both model & view
-				- MaterialDatabase<TLayer X 3>::SetShip(pod member) -> TODOHERE
-					- TODO: merges, material_map
-				- MaterialPaletteBrowser<TLayer X 3>::TODOShipCustomMaterials(result of merge) [Replace all ship custom [vector]]
+			= OnShipLoaded(CustomMaterialsPod &&) -> MaterialsReplacementMap
+				+ // Replace ship custom materials on both model & view
+				+ MaterialDatabase<TLayer X 3>::SetShipCustomMaterials(pod member) -> MaterialsReplacementMap
+					+ Define MaterialsReplacementMap @ ShipBuilderTypes
+					+ -> merges, material_map
+				- MaterialPaletteBrowser<TLayer X 3>::SetShipCustomMaterials(from DB, result of pruning) [Replace all ship custom [vector]]
+				+ return MaterialsReplacementMap
+				+ Caller (MainFrame) uses MaterialsReplacementMap to mess with layers in-place within definition, using layers' helpers (or AllLayers/?), before giving definition to new controller
 
 		+ MaterialEditDialog: 
 			+ Two dialogs, two classes, one base with common code

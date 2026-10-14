@@ -5775,6 +5775,27 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     }
 
     //
+    // Give custom materials to palettes controller
+    //
+    // We do not want users reloading their ships after editing to get duplicate materials between user's and ship's,
+    // as that would be confusing, and lead to two copies that may be edited independently.
+    //
+    // Se the controller prunes custom ship materials with those equivalents already among the user's materials,
+    // and returns enough information to replace those in the ship with the user's pointers
+    //
+
+    LayersMaterialReplacementMaps layersMaterialReplacementMaps = mMaterialPalettesController->OnShipLoaded(std::move(shipDefinition->CustomMaterials));
+
+    // Replace materials in definition
+    //
+    // Note that now the ship's materials that are to be replaced are non-addressable
+    // (their uq_ptr's are dead)
+    shipDefinition->Layers.ReplaceMaterials(
+        layersMaterialReplacementMaps.StructuralLayerMaterialReplacementMap,
+        layersMaterialReplacementMaps.ElectricalLayerMaterialReplacementMap,
+        layersMaterialReplacementMaps.RopesLayerMaterialReplacementMap);
+
+    //
     // Recreate controller
     //
 

@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "../ShipBuilderTypes.h"
+
 #include <Simulation/Layers.h>
 #include <Simulation/Materials.h>
 
@@ -21,7 +23,9 @@ public:
 
 	using TMaterial = typename LayerTypeTraits<TLayer>::material_type;
 
-	MaterialDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap);
+	MaterialDatabase(
+		MaterialColorMap<TMaterial> const & defaultMaterialColorMap,
+		std::filesystem::path userGameRootFolderPath);
 
 	std::vector<std::unique_ptr<typename TMaterial const>> const & GetUserCustomMaterials() const
 	{
@@ -30,11 +34,20 @@ public:
 
 	TMaterial const * AddUserCustomMaterial(std::unique_ptr<TMaterial> && customMaterial);
 
+	std::vector<std::unique_ptr<typename TMaterial const>> const & GetShipCustomMaterials() const
+	{
+		return mShipCustomMaterials;
+	}
+
+	MaterialReplacementMap<TMaterial> SetShipCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> && shipMaterials);
+
 private:
+
+	std::filesystem::path const mUserGameRootFolderPath;
 
 	using SinglePod = typename std::vector<std::unique_ptr<typename TMaterial const>>;
 
-	static SinglePod LoadDefaultUserDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap);
+	SinglePod LoadDefaultUserDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap) const;
 	void SaveDefaultUserDatabase() const;
 
 	static SinglePod LoadUserDatabase(
@@ -44,7 +57,7 @@ private:
 		std::vector<TMaterial const *> const & materials,
 		std::filesystem::path const & databaseFilepath);
 
-	static std::filesystem::path GetDefaultUserDatabaseFilePath();
+	std::filesystem::path GetDefaultUserDatabaseFilePath() const;
 
 private:
 

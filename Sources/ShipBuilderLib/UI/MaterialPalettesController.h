@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "../ShipBuilderTypes.h"
+
 #include "IMaterialPalettesController.h"
 #include "MaterialDatabase.h"
 #include "MaterialPaletteBrowser.h"
@@ -12,6 +14,7 @@
 #include <Game/GameAssetManager.h>
 #include <Game/ISoundController.h>
 
+#include <Simulation/CustomMaterialsPod.h>
 #include <Simulation/DefaultMaterialDatabase.h>
 #include <Simulation/Layers.h>
 #include <Simulation/ShipTexturizer.h>
@@ -42,6 +45,8 @@ public:
         ISoundController * soundController,
         GameAssetManager const & gameAssetManager,
         ProgressCallback const & progressCallback);
+
+    LayersMaterialReplacementMaps OnShipLoaded(CustomMaterialsPod && shipCustomMaterials);
 
     template<LayerType TLayer>
     void Open(
