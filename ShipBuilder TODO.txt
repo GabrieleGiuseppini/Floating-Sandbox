@@ -365,22 +365,6 @@
 				- ExtractCustomMaterialMap/Ropes
 				- UTs: read+write
 
-				- TODOHERE:
-					- Redo ser/desr: use tags for elements
-						- Reason: allow later additions without bumping up version
-
-						- AppendCustomMaterialMap:
-							! Normally not responsible for own tag
-							= Write CMM1
-							- Write tags
-							- Write tail
-						- ReadCustomMaterialMap:
-							- Read all tags until tail - except own CMM1
-					X Redo DB ser/deser: only unchanged
-						- Reason: to not pin unnecessarily materials that we'll need
-						- However, this reason would also imply we do this @ ship Ser(); costly and scattered logic
-							- Plus "not pinning" is really arbitrary, values will be changed by dialog anyway
-
 				= Structural layer					
 					+ ExtractCustomMaterialMap
 					+ Ser

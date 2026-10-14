@@ -904,18 +904,13 @@ static size_t ShipDefinitionFormatDeSerializer::AppendCustomMaterialMap(
     CustomMaterialOverridesMap<TMaterial> const & customMaterialOverridesMap,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
-    buffer.Append(static_cast<uint32_t>(CustomMaterialMapTagType::Map));
-    size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
-
-    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
-
-    size_t sectionBodySize = 0;
+    size_t subSectionBodySize = 0;
 
     // Number of entries
 
     assert(customMaterialOverridesMap.size() <= SimulationParameters::MaxCustomMaterialPerShip);
     std::uint16_t count = static_cast<std::uint16_t>(customMaterialOverridesMap.size());
-    sectionBodySize += buffer.Append(count);
+    subSectionBodySize += buffer.Append(count);
 
     // Entries
 
@@ -932,52 +927,160 @@ static size_t ShipDefinitionFormatDeSerializer::AppendCustomMaterialMap(
     {
         assert(mk != nullptr);
 
+        size_t entryBodySize = 0;
+
         // Serialize RGB base color key
-        sectionBodySize += buffer.Append(reinterpret_cast<unsigned char const *>(&(mk->BaseColorKey)), sizeof(MaterialColorKey));
+        entryBodySize += buffer.Append(reinterpret_cast<unsigned char const *>(&(mk->BaseColorKey)), sizeof(MaterialColorKey));
 
         // Serialize variant overrides
-        sectionBodySize += AppendCustomMaterialVariantOverrides(mk->VariantOverrides, buffer);
+        entryBodySize += AppendCustomMaterialVariantOverrides(mk->VariantOverrides, buffer);
+
+        subSectionBodySize += entryBodySize;
     }
 
-    buffer.WriteAt(static_cast<std::uint32_t>(sectionBodySize), sectionBodySizeIndex);
-
-    return sectionBodySize;
+    return subSectionBodySize;
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendCustomMaterialVariantOverrides(
     StructuralMaterial::VariantOverridesType const & variantOverrides,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
-    size_t subSectionBodySize = 0;
+    size_t overridesSize = 0;
 
-    subSectionBodySize += buffer.Append(variantOverrides.Name);
-    subSectionBodySize += buffer.Append(reinterpret_cast<unsigned char const *>(&(variantOverrides.RenderColor)), sizeof(rgbaColor));
-    subSectionBodySize += buffer.Append(variantOverrides.Strength);
-    subSectionBodySize += buffer.Append(variantOverrides.Density);
-    subSectionBodySize += buffer.Append(variantOverrides.IgnitionTemperature);
-    subSectionBodySize += buffer.Append(variantOverrides.MeltingTemperature);
-    subSectionBodySize += buffer.Append(variantOverrides.RotReceptivity);
-    subSectionBodySize += buffer.Append(variantOverrides.RustReceptivity);
-    subSectionBodySize += buffer.Append(variantOverrides.WaterSolubility);
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::Name,
+        variantOverrides.Name,
+        buffer);
 
-    return subSectionBodySize;
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::RenderColor,
+        variantOverrides.RenderColor,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::Strength,
+        variantOverrides.Strength,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::Density,
+        variantOverrides.Density,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::IgnitionTemperature,
+        variantOverrides.IgnitionTemperature,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::MeltingTemperature,
+        variantOverrides.MeltingTemperature,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::RotReceptivity,
+        variantOverrides.RotReceptivity,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::RustReceptivity,
+        variantOverrides.RustReceptivity,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::WaterSolubility,
+        variantOverrides.WaterSolubility,
+        buffer);
+
+    // Tail
+    overridesSize += buffer.Append(static_cast<std::uint32_t>(CustomMaterialMapEntryTagType::Tail));
+    overridesSize += buffer.Append(static_cast<std::uint32_t>(0));
+    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+
+    return overridesSize;
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendCustomMaterialVariantOverrides(
     ElectricalMaterial::VariantOverridesType const & variantOverrides,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
-    size_t subSectionBodySize = 0;
+    size_t overridesSize = 0;
 
-    subSectionBodySize += buffer.Append(variantOverrides.Name);
-    subSectionBodySize += buffer.Append(variantOverrides.Luminiscence);
-    subSectionBodySize += buffer.Append(variantOverrides.LightSpread);
-    subSectionBodySize += buffer.Append(variantOverrides.EnginePower);
-    subSectionBodySize += buffer.Append(variantOverrides.WaterPumpNominalForce);
-    subSectionBodySize += buffer.Append(variantOverrides.TimerDurationSeconds);
-    subSectionBodySize += buffer.Append(variantOverrides.ThermalSwitchTransitionTemperature);
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::Name,
+        variantOverrides.Name,
+        buffer);
 
-    return subSectionBodySize;
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::HeatGenerated,
+        variantOverrides.HeatGenerated,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::Luminiscence,
+        variantOverrides.Luminiscence,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::LightSpread,
+        variantOverrides.LightSpread,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::EnginePower,
+        variantOverrides.EnginePower,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::WaterPumpNominalForce,
+        variantOverrides.WaterPumpNominalForce,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::TimerDurationSeconds,
+        variantOverrides.TimerDurationSeconds,
+        buffer);
+
+    overridesSize += AppendCustomMaterialVariantOverrideEntry(
+        CustomMaterialMapEntryTagType::ThermalSwitchTransitionTemperature,
+        variantOverrides.ThermalSwitchTransitionTemperature,
+        buffer);
+
+    // Tail
+    overridesSize += buffer.Append(static_cast<std::uint32_t>(CustomMaterialMapEntryTagType::Tail));
+    overridesSize += buffer.Append(static_cast<std::uint32_t>(0));
+    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+
+    return overridesSize;
+}
+
+template<typename T>
+size_t ShipDefinitionFormatDeSerializer::AppendCustomMaterialVariantOverrideEntry(
+    ShipDefinitionFormatDeSerializer::CustomMaterialMapEntryTagType tag,
+    T const & value,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    buffer.Append(static_cast<std::uint32_t>(tag));
+    size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+    size_t const valueSize = buffer.Append(value);
+    buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
+
+    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+    return sizeof(SectionHeader) + valueSize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendCustomMaterialVariantOverrideEntry(
+    ShipDefinitionFormatDeSerializer::CustomMaterialMapEntryTagType tag,
+    rgbaColor const & value,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    buffer.Append(static_cast<std::uint32_t>(tag));
+    size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+    size_t const valueSize = buffer.Append(reinterpret_cast<unsigned char const *>(&value), sizeof(rgbaColor));
+    buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
+
+    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+    return sizeof(SectionHeader) + valueSize;
 }
 
 template<typename T>
@@ -1096,10 +1199,19 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V2(
     //
 
     {
-        sectionBodySize += AppendCustomMaterialMap(
+        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType_V2::CustomMaterialsMap));
+        size_t const subSectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
+
+        size_t const subSectionBodySize = AppendCustomMaterialMap(
             customMaterialOverridesMap,
             buffer);
-    }
+
+        buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), subSectionBodySizeIndex);
+
+        sectionBodySize += subSectionBodySize;    }
 
     //
     // Buffer
@@ -2123,39 +2235,114 @@ std::vector<std::unique_ptr<StructuralMaterial const>> ShipDefinitionFormatDeSer
         MaterialColorKey baseColorKey;
         offset += buffer.ReadAt(offset, reinterpret_cast<unsigned char *>(&baseColorKey), sizeof(baseColorKey));
 
+        auto const baseSrchIt = baseMaterialColorMap.find(baseColorKey);
+        assert(baseSrchIt != baseMaterialColorMap.end());
+        if (baseSrchIt == baseMaterialColorMap.end())
+        {
+            throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+        }
+
+        // Make base variant override, which we'll override with what we find here
+        StructuralMaterial::VariantOverridesType variantOverrides = baseSrchIt->second.MakeStartingVariantOverrides();
+
         // Deserialize variant overrides
-        std::string name;
-        offset += buffer.ReadAt<std::string>(offset, name);
-        rgbaColor renderColor;
-        offset += buffer.ReadAt(offset, reinterpret_cast<unsigned char *>(&renderColor), sizeof(renderColor));
-        float strength;
-        offset += buffer.ReadAt<float>(offset, strength);
-        float density;
-        offset += buffer.ReadAt<float>(offset, density);
-        float ignitionTemperature;
-        offset += buffer.ReadAt<float>(offset, ignitionTemperature);
-        float meltingTemperature;
-        offset += buffer.ReadAt<float>(offset, meltingTemperature);
-        float rotReceptivity;
-        offset += buffer.ReadAt<float>(offset, rotReceptivity);
-        float rustReceptivity;
-        offset += buffer.ReadAt<float>(offset, rustReceptivity);
-        float waterSolubility;
-        offset += buffer.ReadAt<float>(offset, waterSolubility);
+        for (;;)
+        {
+            SectionHeader const sectionHeader = ReadSectionHeader(buffer, offset);
+            offset += sizeof(SectionHeader);
+
+            switch (sectionHeader.Tag)
+            {
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::Name):
+                {
+                    buffer.ReadAt<std::string>(offset, variantOverrides.Name);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::RenderColor):
+                {
+                    buffer.ReadAt(offset, reinterpret_cast<unsigned char *>(&variantOverrides.RenderColor), sizeof(variantOverrides.RenderColor));
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::Strength):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.Strength);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::Density):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.Density);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::IgnitionTemperature):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.IgnitionTemperature);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::MeltingTemperature):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.MeltingTemperature);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::RotReceptivity):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.RotReceptivity);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::RustReceptivity):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.RustReceptivity);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::WaterSolubility):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.WaterSolubility);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::Tail):
+                {
+                    // We're done
+                    break;
+                }
+
+                default:
+                {
+                    // Unrecognized tag
+                    LogMessage("WARNING: Unrecognized physics data tag ", sectionHeader.Tag);
+                    break;
+                }
+            }
+
+            if (sectionHeader.Tag == static_cast<uint32_t>(CustomMaterialMapEntryTagType::Tail))
+            {
+                // We're done
+                break;
+            }
+
+            offset += sectionHeader.SectionBodySize;
+        }
 
         // Make material
         customMaterials.emplace_back(
-            baseMaterialColorMap.at(baseColorKey).MakeCustomMaterial(
-                StructuralMaterial::VariantOverridesType(
-                    name,
-                    renderColor,
-                    strength,
-                    density,
-                    ignitionTemperature,
-                    meltingTemperature,
-                    rotReceptivity,
-                    rustReceptivity,
-                    waterSolubility)));
+            baseSrchIt->second.MakeCustomMaterial(
+                variantOverrides));
     }
 
     return customMaterials;
@@ -2272,7 +2459,7 @@ std::vector<std::unique_ptr<StructuralMaterial const>> ShipDefinitionFormatDeSer
 
         switch (sectionHeader.Tag)
         {
-            case static_cast<uint32_t>(CustomMaterialMapTagType::Map):
+            case static_cast<uint32_t>(StructuralLayerTagType_V2::CustomMaterialsMap):
             {
                 customMaterials = ReadCustomMaterialMap(
                     buffer,

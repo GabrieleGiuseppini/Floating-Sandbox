@@ -230,7 +230,7 @@ protected:
 
         std::vector<std::unique_ptr<StructuralMaterial const>> customMaterials = ShipDefinitionFormatDeSerializer::ReadCustomMaterialMap(
             buffer,
-            sizeof(ShipDefinitionFormatDeSerializer::SectionHeader),
+            0,
             testBaseMaterialColorMap);
 
         ASSERT_EQ(customMaterials.size(), NumCustomMaterials);

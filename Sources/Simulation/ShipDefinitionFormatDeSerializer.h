@@ -173,12 +173,29 @@ private:
         Tail = 0xffffffff
     };
 
-    enum class CustomMaterialMapTagType : std::uint32_t
+    enum class CustomMaterialMapEntryTagType : std::uint32_t
     {
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
-        Map = MAKE_TAG('C', 'M', 'M', '1'),
+        Name = MAKE_TAG('C', 'N', 'M', '1'),
+
+        RenderColor = MAKE_TAG('C', 'R', 'C', '1'),
+        Strength = MAKE_TAG('C', 'S', 'T', '1'),
+        Density = MAKE_TAG('C', 'D', 'N', '1'),
+        IgnitionTemperature = MAKE_TAG('C', 'I', 'T', '1'),
+        MeltingTemperature = MAKE_TAG('C', 'M', 'T', '1'),
+        RotReceptivity = MAKE_TAG('C', 'R', 'R', '1'),
+        RustReceptivity = MAKE_TAG('C', 'S', 'R', '1'),
+        WaterSolubility = MAKE_TAG('C', 'W', 'S', '1'),
+
+        HeatGenerated = MAKE_TAG('C', 'H', 'G', '1'),
+        Luminiscence = MAKE_TAG('C', 'L', 'M', '1'),
+        LightSpread = MAKE_TAG('C', 'L', 'S', '1'),
+        EnginePower = MAKE_TAG('C', 'E', 'P', '1'),
+        WaterPumpNominalForce = MAKE_TAG('C', 'W', 'F', '1'),
+        TimerDurationSeconds = MAKE_TAG('C', 'T', 'D', '1'),
+        ThermalSwitchTransitionTemperature = MAKE_TAG('C', 'T', 'T', '1'),
 
         Tail = 0xffffffff
     };
@@ -198,6 +215,7 @@ private:
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
+        CustomMaterialsMap = MAKE_TAG('C', 'M', 'M', '1'),
         Buffer = MAKE_TAG('B', 'U', 'F', '2'),
 
         Tail = 0xffffffff
@@ -337,6 +355,17 @@ private:
 
     static size_t AppendCustomMaterialVariantOverrides(
         ElectricalMaterial::VariantOverridesType const & variantOverrides,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    template<typename T>
+    static size_t AppendCustomMaterialVariantOverrideEntry(
+        ShipDefinitionFormatDeSerializer::CustomMaterialMapEntryTagType tag,
+        T const & value,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendCustomMaterialVariantOverrideEntry(
+        ShipDefinitionFormatDeSerializer::CustomMaterialMapEntryTagType tag,
+        rgbaColor const & value,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendStructuralLayer_V1(
