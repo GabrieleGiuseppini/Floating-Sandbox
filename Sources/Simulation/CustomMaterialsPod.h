@@ -34,6 +34,13 @@ public:
         , mCustomRopesLayerMaterials(std::move(customRopesLayerMaterials))
     { }
 
+    bool IsEmpty() const
+    {
+        return mCustomStructuralLayerMaterials.empty()
+            && mCustomElectricalLayerMaterials.empty()
+            && mCustomRopesLayerMaterials.empty();
+    }
+
 private:
     std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Structural>::material_type const>> mCustomStructuralLayerMaterials;
     std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Electrical>::material_type const>> mCustomElectricalLayerMaterials;

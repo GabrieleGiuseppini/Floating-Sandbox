@@ -1641,3 +1641,285 @@ TEST(ShipDefinitionFormatDeSerializer, RoundtripV1)
         }
     }
 }
+
+TEST(ShipDefinitionFormatDeSerializer, RoundtripV2)
+{
+    ShipSpaceSize const shipSize(4, 2);
+
+    //
+    // Structural
+    //
+
+    std::map<MaterialColorKey, StructuralMaterial> TestStructuralMaterialMap;
+    for (std::uint8_t i = 0; i < 250; ++i)
+    {
+        MaterialColorKey colorKey(
+            i + 2,
+            i + 1,
+            i);
+
+        StructuralMaterial material(
+            colorKey,
+            "Material " + std::to_string(i),
+            rgbaColor(colorKey, 255));
+        material.PaletteCoordinates = MaterialPaletteCoordinatesType({ "A", "B", 12 });
+
+        TestStructuralMaterialMap.try_emplace(
+            colorKey,
+            material);
+    }
+
+    auto const customStructuralMaterial = TestStructuralMaterialMap.begin()->second.MakeCustomMaterial(
+        StructuralMaterial::VariantOverridesType(
+            "Custom Material 0",
+            rgbaColor(TestStructuralMaterialMap.begin()->first, 100),
+            1.0f,
+            2.0f,
+            3.0f,
+            4.0f,
+            5.0f,
+            6.0f,
+            7.0f));
+
+    // Linearize
+    std::vector<StructuralMaterial const *> structuralMaterials;
+    std::transform(
+        TestStructuralMaterialMap.cbegin(),
+        TestStructuralMaterialMap.cend(),
+        std::back_inserter(structuralMaterials),
+        [](auto const & entry)
+        {
+            return &(entry.second);
+        });
+
+    StructuralLayerData sourceStructuralLayer(shipSize);
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize() - 1; ++i)
+    {
+        sourceStructuralLayer.Buffer.Data[i].Material = structuralMaterials[i % structuralMaterials.size()];
+    }
+    sourceStructuralLayer.Buffer.Data[sourceStructuralLayer.Buffer.Size.GetLinearSize() - 1].Material = customStructuralMaterial.get();
+
+    //
+    // Electrical
+    //
+
+    std::map<MaterialColorKey, ElectricalMaterial> TestElectricalMaterialMap;
+    for (std::uint8_t i = 0; i < 200; ++i)
+    {
+        MaterialColorKey colorKey(
+            i + 2,
+            i + 1,
+            i);
+
+        TestElectricalMaterialMap.try_emplace(
+            colorKey,
+            ElectricalMaterial(
+                colorKey,
+                "Material " + std::to_string(i),
+                colorKey,
+                i == 1));
+    }
+
+    // Linearize materials
+    std::vector<ElectricalMaterial const *> electricalMaterials;
+    std::transform(
+        TestElectricalMaterialMap.cbegin(),
+        TestElectricalMaterialMap.cend(),
+        std::back_inserter(electricalMaterials),
+        [](auto const & entry)
+        {
+            return &(entry.second);
+        });
+
+    // Populate electrical layer with non-instanced materials
+    ElectricalLayerData sourceElectricalLayer(shipSize);
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(electricalMaterials[i % 100], i == 1 ? 22 : NoneElectricalElementInstanceIndex);
+    }
+
+    sourceElectricalLayer.Panel = ElectricalPanel();
+    sourceElectricalLayer.Panel.Add(22, ElectricalPanel::ElementMetadata(std::nullopt, "FOO", true));
+
+    //
+    // Ropes
+    //
+
+    // Populate ropes layer
+    RopesLayerData sourceRopesLayer(shipSize);
+    sourceRopesLayer.Buffer.EmplaceBack(
+        ShipSpaceCoordinates(0, 1),
+        ShipSpaceCoordinates(90, 91),
+        structuralMaterials[0],
+        rgbaColor(0x02, 0x11, 0x90, 0xfe));
+    sourceRopesLayer.Buffer.EmplaceBack(
+        ShipSpaceCoordinates(200, 201),
+        ShipSpaceCoordinates(100010, 100011),
+        structuralMaterials[1],
+        rgbaColor(0xff, 0xff, 0xff, 0xff));
+
+    //
+    // Exterior layer
+    //
+
+    RgbaImageData sourceExteriorTexture(ImageSize(4, 4));
+    for (int x = 0; x < sourceExteriorTexture.Size.width; ++x)
+    {
+        for (int y = 0; y < sourceExteriorTexture.Size.height; ++y)
+        {
+            sourceExteriorTexture[{x, y}] = rgbaColor(0, 0, 0x80, 0xff);
+        }
+    }
+
+    TextureLayerData sourceExteriorLayer(sourceExteriorTexture.Clone());
+
+    //
+    // Interior layer
+    //
+
+    // TODO
+
+    //
+    // Serialize
+    //
+
+    ShipLayers layers(
+        shipSize,
+        std::make_unique<StructuralLayerData>(sourceStructuralLayer.Clone()),
+        std::make_unique<ElectricalLayerData>(sourceElectricalLayer.Clone()),
+        std::make_unique<RopesLayerData>(sourceRopesLayer.Clone()),
+        std::make_unique<TextureLayerData>(sourceExteriorTexture.Clone()),
+        nullptr); // TODO
+
+    ShipDefinition shipDefinition = ShipDefinition(
+        std::move(layers),
+        ShipMetadata("TestShipName"),
+        ShipPhysicsData(vec2f(242.0f, -242.0f), 2420.0f),
+        ShipAutoTexturizationSettings(ShipAutoTexturizationModeType::MaterialTextures, 10.0f, 0.5f),
+        CustomMaterialsPod());
+
+    MemoryBinaryWriteStream outputStream;
+    ShipDefinitionFormatDeSerializer::Save(
+        shipDefinition,
+        Version(1, 2, 3, 4),
+        outputStream);
+
+    //
+    // Deserialize whole
+    //
+
+    DefaultMaterialDatabase const defaultMaterialDatabase = DefaultMaterialDatabase::Make(structuralMaterials, electricalMaterials);
+
+    auto inputStream1 = outputStream.MakeReadStreamCopy();
+
+    ShipDefinition const sd = ShipDefinitionFormatDeSerializer::Load(
+        inputStream1,
+        defaultMaterialDatabase);
+
+    // Layers
+
+    EXPECT_EQ(sd.Layers.Size, shipSize);
+
+    ASSERT_TRUE(sd.Layers.StructuralLayer);
+    ASSERT_EQ(sd.Layers.StructuralLayer->Buffer.Size, shipSize);
+    for (size_t i = 0; i < shipSize.GetLinearSize() - 1; ++i)
+    {
+        EXPECT_EQ(sd.Layers.StructuralLayer->Buffer.Data[i].Material->ColorKey, structuralMaterials[i % structuralMaterials.size()]->ColorKey);
+    }
+
+    EXPECT_EQ(
+        sd.Layers.StructuralLayer->Buffer.Data[shipSize.GetLinearSize() - 1].Material->ColorKey,
+        customStructuralMaterial->ColorKey);
+
+    EXPECT_EQ(
+        sd.Layers.StructuralLayer->Buffer.Data[shipSize.GetLinearSize() - 1].Material->VariantOverrides,
+        customStructuralMaterial->VariantOverrides);
+
+    ASSERT_TRUE(sd.Layers.ElectricalLayer);
+    ASSERT_EQ(sd.Layers.ElectricalLayer->Buffer.Size, shipSize);
+    for (size_t i = 0; i < shipSize.GetLinearSize(); ++i)
+    {
+        ASSERT_NE(sd.Layers.ElectricalLayer->Buffer.Data[i].Material, nullptr);
+        EXPECT_EQ(sd.Layers.ElectricalLayer->Buffer.Data[i].Material->ColorKey, electricalMaterials[i % 100]->ColorKey);
+        EXPECT_EQ(sd.Layers.ElectricalLayer->Buffer.Data[i].InstanceIndex, sourceElectricalLayer.Buffer.Data[i].InstanceIndex);
+    }
+    ASSERT_EQ(sd.Layers.ElectricalLayer->Panel.GetSize(), 1u);
+    ASSERT_TRUE(sd.Layers.ElectricalLayer->Panel.Contains(22));
+    EXPECT_EQ(sd.Layers.ElectricalLayer->Panel[22].PanelCoordinates, std::nullopt);
+    EXPECT_EQ(sd.Layers.ElectricalLayer->Panel[22].Label, "FOO");
+    EXPECT_EQ(sd.Layers.ElectricalLayer->Panel[22].IsHidden, true);
+
+    ASSERT_TRUE(sd.Layers.RopesLayer);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer.GetSize(), shipSize);
+    ASSERT_EQ(sd.Layers.RopesLayer->Buffer.GetElementCount(), 2u);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[0].StartCoords, sourceRopesLayer.Buffer[0].StartCoords);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[0].EndCoords, sourceRopesLayer.Buffer[0].EndCoords);
+    ASSERT_NE(sd.Layers.RopesLayer->Buffer[0].Material, nullptr);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[0].Material->ColorKey, structuralMaterials[0]->ColorKey);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[0].RenderColor, sourceRopesLayer.Buffer[0].RenderColor);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].StartCoords, sourceRopesLayer.Buffer[1].StartCoords);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].EndCoords, sourceRopesLayer.Buffer[1].EndCoords);
+    ASSERT_NE(sd.Layers.RopesLayer->Buffer[1].Material, nullptr);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].Material->ColorKey, structuralMaterials[1]->ColorKey);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].RenderColor, sourceRopesLayer.Buffer[1].RenderColor);
+
+    ASSERT_TRUE(sd.Layers.ExteriorTextureLayer);
+    EXPECT_EQ(sd.Layers.ExteriorTextureLayer->Buffer.Size, sourceExteriorTexture.Size);
+    for (int x = 0; x < sourceExteriorTexture.Size.width; ++x)
+    {
+        for (int y = 0; y < sourceExteriorTexture.Size.height; ++y)
+        {
+            auto const c = typename RgbaImageData::coordinates_type(x, y);
+            EXPECT_EQ(sd.Layers.ExteriorTextureLayer->Buffer[c], sourceExteriorTexture[c]);
+        }
+    }
+
+    // TODO: InteriorTextureLayer
+
+    // Metadata
+
+    EXPECT_EQ(sd.Metadata.ShipName, shipDefinition.Metadata.ShipName);
+
+    // Physics Data
+
+    EXPECT_EQ(sd.PhysicsData.Offset, shipDefinition.PhysicsData.Offset);
+    EXPECT_EQ(sd.PhysicsData.InternalAirPressure, shipDefinition.PhysicsData.InternalAirPressure);
+
+    // Auto-texturization settings
+
+    ASSERT_TRUE(sd.AutoTexturizationSettings.has_value());
+    EXPECT_EQ(sd.AutoTexturizationSettings->Mode, shipDefinition.AutoTexturizationSettings->Mode);
+    EXPECT_EQ(sd.AutoTexturizationSettings->MaterialTextureMagnification, shipDefinition.AutoTexturizationSettings->MaterialTextureMagnification);
+    EXPECT_EQ(sd.AutoTexturizationSettings->MaterialTextureTransparency, shipDefinition.AutoTexturizationSettings->MaterialTextureTransparency);
+
+    //
+    // Deserialize preview data
+    //
+
+    auto inputStream2 = outputStream.MakeReadStreamCopy();
+
+    ShipPreviewData previewData = ShipDefinitionFormatDeSerializer::LoadPreviewData(inputStream2);
+
+    EXPECT_EQ(previewData.ShipSize, shipSize);
+    EXPECT_EQ(previewData.Metadata.ShipName, shipDefinition.Metadata.ShipName);
+    EXPECT_EQ(previewData.IsHD, true);
+    EXPECT_EQ(previewData.HasElectricals, true);
+
+    //
+    // Deserialize preview image
+    //
+
+    auto inputStream3 = outputStream.MakeReadStreamCopy();
+
+    RgbaImageData previewImage = ShipDefinitionFormatDeSerializer::LoadPreviewImage(inputStream3, sourceExteriorTexture.Size);
+
+    ASSERT_EQ(previewImage.Size, sourceExteriorTexture.Size);
+    for (int x = 0; x < sourceExteriorTexture.Size.width; ++x)
+    {
+        for (int y = 0; y < sourceExteriorTexture.Size.height; ++y)
+        {
+            auto const c = typename RgbaImageData::coordinates_type(x, y);
+            EXPECT_EQ(previewImage[c], sourceExteriorTexture[c]);
+        }
+    }
+}

@@ -47,8 +47,11 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     ShipPhysicsData shipPhysicsData;
     std::optional<ShipAutoTexturizationSettings> shipAutoTexturizationSettings;
     std::unique_ptr<StructuralLayerData> structuralLayer;
+    std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Structural>::material_type const>> CustomStructuralLayerMaterials;
     std::unique_ptr<ElectricalLayerData> electricalLayer;
+    std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Electrical>::material_type const>> CustomElectricalLayerMaterials;
     std::unique_ptr<RopesLayerData> ropesLayer;
+    std::vector<std::unique_ptr<LayerTypeTraits<LayerType::Ropes>::material_type const>> CustomRopesLayerMaterials;
     std::unique_ptr<TextureLayerData> textureLayer;
     bool hasSeenTail = false;
 
@@ -100,6 +103,24 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
 
                     ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
                     ReadStructuralLayer_V1(
+                        buffer,
+                        *shipAttributes,
+                        defaultMaterialDatabase.GetStructuralMaterialColorMap(),
+                        structuralLayer);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(MainSectionTagType::StructuralLayer_V2):
+                {
+                    // Make sure we've already gotten the ship attributes
+                    if (!shipAttributes.has_value())
+                    {
+                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                    }
+
+                    ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
+                    CustomStructuralLayerMaterials = ReadStructuralLayer_V2(
                         buffer,
                         *shipAttributes,
                         defaultMaterialDatabase.GetStructuralMaterialColorMap(),
@@ -213,7 +234,10 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
         *shipMetadata,
         shipPhysicsData,
         shipAutoTexturizationSettings,
-        CustomMaterialsPod()); // TODOHERE
+        CustomMaterialsPod(
+            std::move(CustomStructuralLayerMaterials),
+            std::move(CustomElectricalLayerMaterials),
+            std::move(CustomRopesLayerMaterials)));
 }
 
 ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(BinaryReadStream & shipDefinitionInputStream)
@@ -345,6 +369,9 @@ void ShipDefinitionFormatDeSerializer::Save(
     Version const & currentGameVersion,
     BinaryWriteStream & shipDefinitionOutputStream)
 {
+    // We just don't expect these to be populated
+    assert(shipDefinition.CustomMaterials.IsEmpty());
+
     DeSerializationBuffer<BigEndianess> buffer(256);
 
     //

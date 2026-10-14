@@ -322,18 +322,20 @@
 
 		+ CustomMaterialsPod defined @ own .cc/.h
 
-		- Ship De/Serialize:
-			- First off, verify current behavior with unrecognized tags
-				- Worst case we bump file format version (hopefully exists, and check is already done!)
-			- New structural, electrical, rope layer set of tags:
-				- CustomMaterialPalette: custom materials used in Buffer plus those specified in ShipDefinition (just to be clean)
-					- (Implicitly) pruned @ Serialize to only contain used ones
-						- Key: base + overrides
-					- Stores (parent) color_key and content of VariantOverridesType
-					- Assigned local indices for new Buffer to address (see below)
-					- Come up with a way to be able to add more overrides in the future, so that older version and newer versions digest both
-				- Buffer: color_key + local index in MaterialPalette
-					- TODO: index=-1 for standard materials? Do we waste all this space?
+		= Ship De/Serialize:
+			+ First off, verify current behavior with unrecognized tags
+				+ Worst case we bump file format version (hopefully exists, and check is already done!)
+			= New structural, electrical, rope layer set of tags:
+				+ CustomMaterialPalette: custom materials used in Buffer
+					+ Ignore ones in definition
+						+ assert empty
+					+ (Implicitly) pruned @ Serialize to only contain used ones
+						+ Key: base + overrides
+					+ Stores (parent) color_key and content of VariantOverridesType
+					+ Assigned local indices for new Buffer to address (see below)
+					+ Come up with a way to be able to add more overrides in the future, so that older version and newer versions digest both
+				+ Buffer: color_key + local index in MaterialPalette
+					+ Index=-1 for standard materials
 				! Ser Algo:
 					! @ (Structural, Electrical, Ropes):
 						! ExtractCustomMaterialMap(Layer/data) -> map<CustomMaterialKey -> index>
@@ -371,15 +373,14 @@
 						+ Rename save chain
 						+ Custom material map
 						+ Structural layer					
-					= Deser
-						- Rename read chain (plumb up)
-							- Populate pod
+					+ Deser
+						+ Rename read chain (plumb up)
+							+ Populate pod
 						+ Custom material map
 						+ Structural layer
 					= Unit tests for structural layer V2
-						- Also V1 vs V2
+						+ Add checks to Roundtrip_V2
 				- Electrical layer
-					- Rename read & save chain
 					- ExtractCustomMaterialMap
 					- Ser
 						- Rename save chain
@@ -388,9 +389,8 @@
 						- Rename read chain (plumb up)
 						- TODO
 					- Unit tests for electrical layer V2
-						- Also V1 vs V2
+						- Add checks to Roundtrip_V2
 				- Ropes layer
-					- Rename read & save chain
 					- ExtractCustomMaterialMap
 					- Ser
 						- Rename save chain
@@ -399,9 +399,16 @@
 						- Rename read chain (plumb up)
 						- TODO
 					- Unit tests for ropes layer V2
-						- Also V1 vs V2
+						- Add checks to Roundtrip_V2
 
-				- Plug final Load()
+				= Plug final Save() and Load() for all layers
+
+				- Do E2E test via ShipBuilder
+					- Also: verify user materials saved and loaded
+
+				- Do the above: custom materials map extracted includes input ShipDefinition's
+					- Right after extracting, we merge ShipDefinition's (via templated helper) and then we check if empty
+					- OR NOT: really needed? What's the semantics after all?
 
 			- Deserialize() returns CustomMaterialsPod (3x vector<uq_ptr<TMaterial>> for each TMaterial) in ShipDefinition, just for lifetime extension
 				+ Might group all layers' vectors in a single CustomMaterialsPod, for convenience
