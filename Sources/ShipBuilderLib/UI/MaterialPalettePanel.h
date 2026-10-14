@@ -102,6 +102,7 @@ public:
     void EndDefaultMaterialsLayout();
 
     std::any StartCustomMaterialsLayout();
+    std::any RemoveAllShipCustomMaterials(std::any layoutSession);
     std::any AddCustomMaterial(TMaterial const * material, CustomMaterialRegisterKindType registerKind, std::any layoutSession);
     void EndCustomMaterialsLayout(std::any layoutSession);
 
@@ -367,6 +368,9 @@ private:
 
     // Images are stored here, in order to limit number of GDI objects
     wxImageList mMaterialSampleBitmaps;
+    // ...and here we track which are free to use, to avoid
+    // having to renumber entries
+    std::vector<size_t> mFreeMaterialSampleBitmapIndices;
 
     //
     // Render style

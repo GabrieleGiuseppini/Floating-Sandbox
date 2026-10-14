@@ -80,6 +80,7 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     , mRenderBuffer() // Start empty
     , mRows() // Start empty
     , mMaterialSampleBitmaps(MaterialSampleSize.width, MaterialSampleSize.height, false)
+    , mFreeMaterialSampleBitmapIndices()
     // State
     , mCurrentSelectedCellId(NoneCellId)
     , mNextCellId(0)
@@ -121,6 +122,7 @@ void MaterialPalettePanel<TLayer>::StartDefaultMaterialsLayout()
     mRenderBuffer.reset();
     mRows.clear();
     mMaterialSampleBitmaps.RemoveAll();
+    mFreeMaterialSampleBitmapIndices.clear();
     mCurrentSelectedCellId = NoneCellId;
     mNextCellId = 0;
 }
@@ -218,6 +220,35 @@ template<LayerType TLayer>
 std::any MaterialPalettePanel<TLayer>::StartCustomMaterialsLayout()
 {
     return LayoutSession();
+}
+
+template<LayerType TLayer>
+std::any MaterialPalettePanel<TLayer>::RemoveAllShipCustomMaterials(std::any layoutSession)
+{
+    LayoutSession _layoutSession = std::any_cast<LayoutSession>(layoutSession);
+
+    // Visit all rows
+    for (size_t r = 0; r < mRows.size(); ++r)
+    {
+        Row & row = mRows[r];
+        if (row.Kind == Row::KindType::SubCategory)
+        {
+            // Visit all strides
+            for (size_t s = 0; s < row.Strides.size(); ++s)
+            {
+                MaterialStride & stride = row.Strides[s];
+                while (stride.Cells.size() > stride.iShipCustomStartIndex)
+                {
+                    assert(stride.Cells.back().Kind == Cell::KindType::Material); // Wouldn't be in the "ship" section otherwise
+                    mFreeMaterialSampleBitmapIndices.push_back(stride.Cells.back().MaterialSampleBitmapIndex);
+                    _layoutSession.RecordDirtyBoundary(r, s, stride.Cells.size() - 1);
+                    stride.Cells.pop_back();
+                }
+            }
+        }
+    }
+
+    return _layoutSession;
 }
 
 template<LayerType TLayer>
@@ -426,7 +457,17 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
         }
     }
 
-    int const materialSampleBitmapIndex = mMaterialSampleBitmaps.Add(MakeMaterialSample(material, customRegisterKind));
+    int materialSampleBitmapIndex;
+    if (!mFreeMaterialSampleBitmapIndices.empty())
+    {
+        materialSampleBitmapIndex = mFreeMaterialSampleBitmapIndices.back();
+        mFreeMaterialSampleBitmapIndices.pop_back();
+        mMaterialSampleBitmaps.Replace(materialSampleBitmapIndex, MakeMaterialSample(material, customRegisterKind));
+    }
+    else
+    {
+        materialSampleBitmapIndex = mMaterialSampleBitmaps.Add(MakeMaterialSample(material, customRegisterKind));
+    }
 
     Cell & cell = *stride.Cells.insert(
         std::next(stride.Cells.begin(), cellInsertIndex),

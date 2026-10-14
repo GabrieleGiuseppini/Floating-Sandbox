@@ -502,7 +502,7 @@ void MaterialPaletteBrowser<TLayer>::AddCustomMaterials(
         customMaterialsByCategory[customMaterial->PaletteCoordinates->Category].push_back(customMaterial);
     }
 
-    // Visit all categories
+    // Visit all these categories
     for (auto const it : customMaterialsByCategory)
     {
         // Get this panel
@@ -515,6 +515,52 @@ void MaterialPaletteBrowser<TLayer>::AddCustomMaterials(
         for (TMaterial const * material : it.second)
         {
             layoutSession = panel->AddCustomMaterial(material, registerKind, layoutSession);
+        }
+
+        // Finish layout
+        panel->EndCustomMaterialsLayout(layoutSession);
+    }
+
+    // Make sure that horizontal scrollbars show/hide for new panel size
+    Layout();
+}
+
+template<LayerType TLayer>
+void MaterialPaletteBrowser<TLayer>::SetShipCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> const & shipCustomMaterials)
+{
+    // Organize materials into Category->Materials map
+    std::map<std::string, std::vector<TMaterial const *>> newShipCustomMaterialsByCategory;
+    for (auto const & shipCustomMaterial : shipCustomMaterials)
+    {
+        assert(shipCustomMaterial->PaletteCoordinates.has_value());
+        newShipCustomMaterialsByCategory[shipCustomMaterial->PaletteCoordinates->Category].push_back(shipCustomMaterial.get());
+    }
+
+    //
+    // Visit all our categories; for each:
+    //  - Remove its ship materials
+    //  - Add ship materials
+    //
+
+    for (auto & entry : mCategoryPanelsByCategory)
+    {
+        // Get this panel
+        auto panel = entry.second;
+
+        // Start layout
+        auto layoutSession = panel->StartCustomMaterialsLayout();
+
+        // Remove its ships
+        layoutSession = panel->RemoveAllShipCustomMaterials(layoutSession);
+
+        // Add all ship's, if any
+        auto srchIt = newShipCustomMaterialsByCategory.find(entry.first);
+        if (srchIt != newShipCustomMaterialsByCategory.end())
+        {
+            for (TMaterial const * newShipMaterial : srchIt->second)
+            {
+                layoutSession = panel->AddCustomMaterial(newShipMaterial, CustomMaterialRegisterKindType::Ship, layoutSession);
+            }
         }
 
         // Finish layout

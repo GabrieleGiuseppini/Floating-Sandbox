@@ -540,18 +540,19 @@
 								+ Add to stride, at end
 									+ Factor out creation of material @ AddDefaultMaterial into a new helper
 								+ Update LayoutSession accordingly
-							- RemoveAllShipCustomMaterials(LayoutSession)- > LayoutSession
-								- Visit all rows:
-									- Visit all strides
-										- Prune ship region
-										- Keep LayoutSession updated for this row - first cell in first stride, if any
-											- Just Register iff stride had ship's
+							= RemoveAllShipCustomMaterials(LayoutSession)- > LayoutSession
+								+ Visit all rows:
+									+ Visit all strides
+										+ Prune ship region
+											+ Store image indices in "free list"
+										+ Keep LayoutSession updated for this row - first cell in first stride, if any
+											+ Just Register iff stride had ship's
 								- Test:
 									- Go from ship with many to ship with less
 									- Go from ship with a few to ship with more
 							- RemoveCustomMaterial(TMaterial const *, [User|Ship], LayoutSession) -> LayoutSession
 								- Nuke material sample from ImageList (wxImageList::Remove)
-									- Update all image list indices
+									- Store image list index in "free list"
 								- Remove from stride
 									- Update LayoutSession accordingly
 								- Zero out currently-selected if it was this one
@@ -571,6 +572,7 @@
 			= ShipOverlay, EditButton, Checkbox:
 				= Ship: set on sample material at cell creation time
 					= Icon
+						- Could it be smaller?
 					+ Code: iff custom is ship
 				- EditButton, Checkbox:
 					- All std::optional<wxRect>
@@ -627,14 +629,14 @@
 					- panel-> UpdateCustomMaterial(TMaterial, User|Ship)
 				- SetShipCustomMaterials(vector<uq_ptr<>>)
 					- TODO: AddCustomMaterials becomes strictly "User" - no registry kind arg 
-					- Organize materials by category
-					- For each category:
-						- Find panel for category
-						- panel-> Start custom layout
-						- panel-> Remove all ship [RemoveAllShipCustomMaterials()]
-						- panel-> Add ship one by one
-						- panel-> End custom layout
-						- Layout() // for H scrollbar
+					+ Organize materials by category
+					+ For each _our_ category:
+						+ Find panel for category
+						+ panel-> Start custom layout
+						+ panel-> Remove all ship [RemoveAllShipCustomMaterials()]
+						+ panel-> Add ship one by one, if any
+						+ panel-> End custom layout
+						+ Layout() // for H scrollbar
 
 			- Make it dockable
 				- When docked:

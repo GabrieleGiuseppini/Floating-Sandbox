@@ -89,6 +89,8 @@ public:
         std::vector<TMaterial const *> const & customMaterials,
         CustomMaterialRegisterKindType registerKind);
 
+    void SetShipCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> const & shipCustomMaterials);
+
 private:
 
     MaterialPalettePanel<TLayer> * CreateCategoryPanel(
