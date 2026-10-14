@@ -237,12 +237,17 @@ std::any MaterialPalettePanel<TLayer>::RemoveAllShipCustomMaterials(std::any lay
             for (size_t s = 0; s < row.Strides.size(); ++s)
             {
                 MaterialStride & stride = row.Strides[s];
-                while (stride.Cells.size() > stride.iShipCustomStartIndex)
+                if (stride.Cells.size() > stride.iShipCustomStartIndex)
                 {
-                    assert(stride.Cells.back().Kind == Cell::KindType::Material); // Wouldn't be in the "ship" section otherwise
-                    mFreeMaterialSampleBitmapIndices.push_back(stride.Cells.back().MaterialSampleBitmapIndex);
+                    while (stride.Cells.size() > stride.iShipCustomStartIndex)
+                    {
+                        assert(stride.Cells.back().Kind == Cell::KindType::Material); // Wouldn't be in the "ship" section otherwise
+                        mFreeMaterialSampleBitmapIndices.push_back(stride.Cells.back().MaterialSampleBitmapIndex);
+                        stride.Cells.pop_back();
+                    }
+
+                    // Right after this stride we're dirty
                     _layoutSession.RecordDirtyBoundary(r, s, stride.Cells.size() - 1);
-                    stride.Cells.pop_back();
                 }
             }
         }

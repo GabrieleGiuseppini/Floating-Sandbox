@@ -85,9 +85,7 @@ public:
     // Operations
     //
 
-    void AddCustomMaterials(
-        std::vector<TMaterial const *> const & customMaterials,
-        CustomMaterialRegisterKindType registerKind);
+    void AddUserCustomMaterials(std::vector<TMaterial const *> const & customMaterials);
 
     void SetShipCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> const & shipCustomMaterials);
 

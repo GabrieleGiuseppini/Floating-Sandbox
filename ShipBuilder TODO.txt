@@ -212,15 +212,15 @@
 			- Remove from DB // Delayed, as to-be-deleted pointer must be addressable
 			- Update palette
 		= Loading ship
-			= With custom materials:
+			+ With custom materials:
 				+ Prune set of ship's custom materials with user's custom materials, producing a material replacement map
 				+ Apply material replacement map to ship
 					+ Without marking it as dirty, this is a pre-model construction operation
-				- Replace ship's custom materials in palette with pruned
-				- Re-draw palette
-			- Without custom materials:
-				- Nuke ship's custom materials in palette
-				- Re-draw palette
+				+ Replace ship's custom materials in palette with pruned
+				+ Re-draw palette
+			+ Without custom materials:
+				+ Nuke ship's custom materials in palette
+				+ Re-draw palette
 		- Importing custom materials from ship's into user's
 			- User checks boxes, and then "Import Selected"
 			- Check boxes filtered for ship's only (user might have selected user's as well)
@@ -548,8 +548,8 @@
 										+ Keep LayoutSession updated for this row - first cell in first stride, if any
 											+ Just Register iff stride had ship's
 								- Test:
-									- Go from ship with many to ship with less
-									- Go from ship with a few to ship with more
+									- Go from ship with many to ship with less - verify layout adjusts
+									- Go from ship with a few to ship with more - verify layout adjusts
 							- RemoveCustomMaterial(TMaterial const *, [User|Ship], LayoutSession) -> LayoutSession
 								- Nuke material sample from ImageList (wxImageList::Remove)
 									- Store image list index in "free list"
@@ -627,8 +627,7 @@
 				- UpdateCustomMaterial(TMaterial, User|Ship)
 					- Find panel for category
 					- panel-> UpdateCustomMaterial(TMaterial, User|Ship)
-				- SetShipCustomMaterials(vector<uq_ptr<>>)
-					- TODO: AddCustomMaterials becomes strictly "User" - no registry kind arg 
+				= SetShipCustomMaterials(vector<uq_ptr<>>)
 					+ Organize materials by category
 					+ For each _our_ category:
 						+ Find panel for category
@@ -659,12 +658,12 @@
 				- UndoStack
 				+ DefaultMaterialDatabase [to boot 3 MaterialDatabase<T>'s]
 				+ Callback for material selected
-			= OnShipLoaded(CustomMaterialsPod &&) -> MaterialsReplacementMap
+			+ OnShipLoaded(CustomMaterialsPod &&) -> MaterialsReplacementMap
 				+ // Replace ship custom materials on both model & view
 				+ MaterialDatabase<TLayer X 3>::SetShipCustomMaterials(pod member) -> MaterialsReplacementMap
 					+ Define MaterialsReplacementMap @ ShipBuilderTypes
 					+ -> merges, material_map
-				- MaterialPaletteBrowser<TLayer X 3>::SetShipCustomMaterials(from DB, result of pruning) [Replace all ship custom [vector]]
+				+ MaterialPaletteBrowser<TLayer X 3>::SetShipCustomMaterials(from DB, result of pruning) [Replace all ship custom [vector]]
 				+ return MaterialsReplacementMap
 				+ Caller (MainFrame) uses MaterialsReplacementMap to mess with layers in-place within definition, using layers' helpers (or AllLayers/?), before giving definition to new controller
 

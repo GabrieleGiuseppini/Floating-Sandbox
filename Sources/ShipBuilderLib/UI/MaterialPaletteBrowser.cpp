@@ -366,9 +366,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
             return uq_ptr.get();
         });
 
-    AddCustomMaterials(
-        initialCustomUserMaterialsPtr,
-        CustomMaterialRegisterKindType::User);
+    AddUserCustomMaterials(initialCustomUserMaterialsPtr);
 
     //
     // Connect events
@@ -490,9 +488,7 @@ std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverrid
 }
 
 template<LayerType TLayer>
-void MaterialPaletteBrowser<TLayer>::AddCustomMaterials(
-    std::vector<TMaterial const *> const & customMaterials,
-    CustomMaterialRegisterKindType registerKind)
+void MaterialPaletteBrowser<TLayer>::AddUserCustomMaterials(std::vector<TMaterial const *> const & customMaterials)
 {
     // Organize materials into Category->Materials map
     std::map<std::string, std::vector<TMaterial const *>> customMaterialsByCategory;
@@ -514,7 +510,7 @@ void MaterialPaletteBrowser<TLayer>::AddCustomMaterials(
         // Add materials
         for (TMaterial const * material : it.second)
         {
-            layoutSession = panel->AddCustomMaterial(material, registerKind, layoutSession);
+            layoutSession = panel->AddCustomMaterial(material, CustomMaterialRegisterKindType::User, layoutSession);
         }
 
         // Finish layout
