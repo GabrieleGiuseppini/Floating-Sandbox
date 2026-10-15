@@ -751,7 +751,7 @@
 			
 			+ MaterialPalettesController instantiates and owns two MaterialEditDialog instances (Structural and Electrical)
 
-			- Disallow empty name
+			+ Disallow empty name
 
 		- Model and maybe ModelController:
 			- ReplaceMaterials(map: TMaterial * -> TMaterial *|null (for removal))

@@ -48,6 +48,12 @@ protected:
 
     void MakeNameTextCtrl(wxPanel * parent);
 
+private:
+
+    void ReconciliateUIWithName();
+
+    std::string GetNormalizedName() const;
+
 protected:
 
     //

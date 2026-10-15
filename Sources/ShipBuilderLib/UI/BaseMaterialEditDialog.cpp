@@ -99,11 +99,13 @@ std::optional<typename TMaterial::VariantOverridesType> BaseMaterialEditDialog<T
 template<typename TMaterial>
 std::optional<typename TMaterial::VariantOverridesType> BaseMaterialEditDialog<TMaterial>::BaseRun()
 {
+    ReconciliateUIWithName();
+
     auto const result = ShowModal();
     if (result == wxID_OK)
     {
         // Take name now, and normalize it
-        mOverridesUnderEdit->Name = Utils::NormalizeWhitespace(mNameTextCtrl->GetValue().ToStdString());
+        mOverridesUnderEdit->Name = GetNormalizedName();
 
         return mOverridesUnderEdit;
     }
@@ -119,13 +121,45 @@ void BaseMaterialEditDialog<TMaterial>::MakeNameTextCtrl(wxPanel * parent)
     mNameTextCtrl = new wxTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition,
         wxSize(DialogWidth - 2 * MarginSize, -1), wxTE_CENTRE);
 
-    // No events: we'll take the name when user is done
+    mNameTextCtrl->Bind(
+        wxEVT_TEXT,
+        [this](wxCommandEvent & event)
+        {
+            // Prevent empty string
+            ReconciliateUIWithName();
+
+            event.Skip();
+        });
 
     auto font = parent->GetFont();
     font.SetPointSize(font.GetPointSize() + 2);
     mNameTextCtrl->SetFont(font);
 
     mNameTextCtrl->SetMaxLength(64);
+}
+
+template<typename TMaterial>
+void BaseMaterialEditDialog<TMaterial>::ReconciliateUIWithName()
+{
+    auto const doEnable = !GetNormalizedName().empty();
+    if (doEnable)
+    {
+        mOkButton->Enable(true);
+        mNameTextCtrl->SetBackgroundColour(GetBackgroundColour());
+        mNameTextCtrl->Refresh();
+    }
+    else
+    {
+        mOkButton->Enable(false);
+        mNameTextCtrl->SetBackgroundColour(*wxRED);
+        mNameTextCtrl->Refresh();
+    }
+}
+
+template<typename TMaterial>
+std::string BaseMaterialEditDialog<TMaterial>::GetNormalizedName() const
+{
+    return Utils::NormalizeWhitespace(mNameTextCtrl->GetValue().ToStdString());
 }
 
 //
