@@ -757,7 +757,14 @@
 			- ReplaceMaterials(map: TMaterial * -> TMaterial *|null (for removal))
 				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
 
-	- TODOHERE:
+	- TODOHERE: master list of all tasks:
+		- Feedback:
+			+ Larger text
+		- DB in separate files
+		- Better layout of overlays
+		- Complete electrical & rope serialization
+		- Complete new electrical & rope workflow
+		- Complete electrical & rope loading from ship
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 

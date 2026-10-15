@@ -31,16 +31,16 @@ int constexpr CellVSpacing = 0;
 
 // Cell
 int constexpr CellInnerMargin = 4;
-ImageSize constexpr MaterialSampleSize(64, 46);
+ImageSize constexpr MaterialSampleSize(70, 48);
 
 int constexpr SelectionFrameThickness = 1;
 static_assert(SelectionFrameThickness < CellInnerMargin); // To fit selection frame inside cell
 
 int constexpr MaterialSampleToNameGapHeight = 2;
-int constexpr NameTextHeight = 9;
+int constexpr NameTextHeight = 10;
 int constexpr NameToNameGapHeight = 1;
 int constexpr NameToDataGapHeight = 2;
-int constexpr DataTextHeight = 8;
+int constexpr DataTextHeight = 9;
 
 ImageSize constexpr MaterialCellSize(
     CellInnerMargin + MaterialSampleSize.width + CellInnerMargin,
