@@ -103,6 +103,9 @@ private:
 
     void PopulateMaterialProperties(TMaterial const * material);
 
+    StructuralMaterialEditDialog & GetStructuralMaterialEditDialog();
+    ElectricalMaterialEditDialog & GetElectricalMaterialEditDialog();
+
     void SetMaterialSelected(TMaterial const * material);
 
     void OnMaterialClicked(TMaterial const * material);

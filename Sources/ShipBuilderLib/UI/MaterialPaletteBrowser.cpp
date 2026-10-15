@@ -401,13 +401,6 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                 event.Veto();
             }
         });
-
-    //
-    // Create children
-    //
-
-    mStructuralMaterialEditDialog = std::make_unique<StructuralMaterialEditDialog>(this);
-    mElectricalMaterialEditDialog = std::make_unique<ElectricalMaterialEditDialog>(this);
 }
 
 template<LayerType TLayer>
@@ -466,13 +459,13 @@ std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverrid
     std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType> result;
     if constexpr (TLayer == LayerType::Structural || TLayer == LayerType::Ropes)
     {
-        result = mStructuralMaterialEditDialog->RunForNew(startingOverrides, baseMaterial);
+        result = GetStructuralMaterialEditDialog().RunForNew(startingOverrides, baseMaterial);
     }
     else
     {
         static_assert(TLayer == LayerType::Electrical);
 
-        result = mElectricalMaterialEditDialog->RunForNew(startingOverrides, baseMaterial);
+        result = GetElectricalMaterialEditDialog().RunForNew(startingOverrides, baseMaterial);
     }
 
     // Go back to closing ourselves whenever we lose focus from now on
@@ -495,13 +488,13 @@ std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverrid
     std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType> result;
     if constexpr (TLayer == LayerType::Structural || TLayer == LayerType::Ropes)
     {
-        result = mStructuralMaterialEditDialog->RunForEdit(startingOverrides, baseMaterial);
+        result = GetStructuralMaterialEditDialog().RunForEdit(startingOverrides, baseMaterial);
     }
     else
     {
         static_assert(TLayer == LayerType::Electrical);
 
-        result = mElectricalMaterialEditDialog->RunForEdit(startingOverrides, baseMaterial);
+        result = GetElectricalMaterialEditDialog().RunForEdit(startingOverrides, baseMaterial);
     }
 
     // Go back to closing ourselves whenever we lose focus from now on
@@ -1109,6 +1102,32 @@ void MaterialPaletteBrowser<TLayer>::PopulateMaterialProperties(TMaterial const 
         mElectricalMaterialPropertyGrids[0]->Thaw();
         mElectricalMaterialPropertyGrids[1]->Thaw();
     }
+}
+
+template<LayerType TLayer>
+StructuralMaterialEditDialog & MaterialPaletteBrowser<TLayer>::GetStructuralMaterialEditDialog()
+{
+    // Delayed creation of dialog
+
+    if (!mStructuralMaterialEditDialog)
+    {
+        mStructuralMaterialEditDialog = std::make_unique<StructuralMaterialEditDialog>(this);
+    }
+
+    return *mStructuralMaterialEditDialog;
+}
+
+template<LayerType TLayer>
+ElectricalMaterialEditDialog & MaterialPaletteBrowser<TLayer>::GetElectricalMaterialEditDialog()
+{
+    // Delayed creation of dialog
+
+    if (!mElectricalMaterialEditDialog)
+    {
+        mElectricalMaterialEditDialog = std::make_unique<ElectricalMaterialEditDialog>(this);
+    }
+
+    return *mElectricalMaterialEditDialog;
 }
 
 template<LayerType TLayer>

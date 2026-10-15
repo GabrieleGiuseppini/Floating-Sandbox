@@ -758,8 +758,6 @@
 				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
 
 	- TODOHERE:
-		- FIX: freezing window
-			= ReleaseMouse
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 
