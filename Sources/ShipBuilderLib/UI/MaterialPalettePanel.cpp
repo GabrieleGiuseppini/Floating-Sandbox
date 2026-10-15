@@ -10,6 +10,8 @@
 
 #include <Core/Log.h>
 
+#include <wx/app.h>
+
 #include <cassert>
 #include <iomanip>
 #include <sstream>
@@ -414,40 +416,63 @@ template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::OnCreateNewButton(Cell & cell)
 {
     assert(cell.Material != nullptr);
+    auto const * material = cell.Material;
 
-    // Call up
-    if constexpr (TLayer == LayerType::Structural)
-    {
-        mMaterialPalettesController.OnNewUserCustomStructuralMaterial(cell.Material);
-    }
-    else if constexpr (TLayer == LayerType::Electrical)
-    {
-        mMaterialPalettesController.OnNewUserCustomElectricalMaterial(cell.Material);
-    }
-    else
-    {
-        static_assert(TLayer == LayerType::Ropes);
-        mMaterialPalettesController.OnNewUserCustomRopesMaterial(cell.Material);
-    }
+    //
+    // From WX: this is useful when processing some events as certain actions typically can't be performed inside their handlers,
+    // e.g. you shouldn't show a modal dialog from a mouse click event handler as this would break the mouse capture state
+    //
+
+    wxTheApp->CallAfter(
+        [material, this]
+        {
+            // Call up
+            if constexpr (TLayer == LayerType::Structural)
+            {
+                mMaterialPalettesController.OnNewUserCustomStructuralMaterial(material);
+            }
+            else if constexpr (TLayer == LayerType::Electrical)
+            {
+                mMaterialPalettesController.OnNewUserCustomElectricalMaterial(material);
+            }
+            else
+            {
+                static_assert(TLayer == LayerType::Ropes);
+                mMaterialPalettesController.OnNewUserCustomRopesMaterial(material);
+            }
+        });
 }
 
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::OnEditButton(Cell & cell)
 {
-    // Call up
-    if constexpr (TLayer == LayerType::Structural)
-    {
-        mMaterialPalettesController.OnEditCustomStructuralMaterial(cell.Material, cell.CustomRegisterKind);
-    }
-    else if constexpr (TLayer == LayerType::Electrical)
-    {
-        mMaterialPalettesController.OnEditCustomElectricalMaterial(cell.Material, cell.CustomRegisterKind);
-    }
-    else
-    {
-        static_assert(TLayer == LayerType::Ropes);
-        mMaterialPalettesController.OnEditCustomRopesMaterial(cell.Material, cell.CustomRegisterKind);
-    }
+    assert(cell.Material != nullptr);
+    auto const * material = cell.Material;
+    auto const customRegisterKind = cell.CustomRegisterKind;
+
+    //
+    // From WX: this is useful when processing some events as certain actions typically can't be performed inside their handlers,
+    // e.g. you shouldn't show a modal dialog from a mouse click event handler as this would break the mouse capture state
+    //
+
+    wxTheApp->CallAfter(
+        [material, customRegisterKind, this]
+        {
+            // Call up
+            if constexpr (TLayer == LayerType::Structural)
+            {
+                mMaterialPalettesController.OnEditCustomStructuralMaterial(material, customRegisterKind);
+            }
+            else if constexpr (TLayer == LayerType::Electrical)
+            {
+                mMaterialPalettesController.OnEditCustomElectricalMaterial(material, customRegisterKind);
+            }
+            else
+            {
+                static_assert(TLayer == LayerType::Ropes);
+                mMaterialPalettesController.OnEditCustomRopesMaterial(material, customRegisterKind);
+            }
+        });
 }
 
 template<LayerType TLayer>
