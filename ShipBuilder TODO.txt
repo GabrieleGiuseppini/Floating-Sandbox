@@ -403,7 +403,7 @@
 
 				= Plug final Save() and Load() for all layers
 
-				= Do E2E test via ShipBuilder
+				= Do E2E test via FloatingSandbox: create material, use in ship, save ship, load ship in game
 					+ Structural
 					- Electrical
 					- Ropes
