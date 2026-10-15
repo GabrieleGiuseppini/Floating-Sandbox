@@ -353,7 +353,7 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
         {
             case Cell::KindType::CreateNewButton:
             {
-                OnEditButton(*cell);
+                OnCreateNewButton(*cell);
 
                 break;
             }
