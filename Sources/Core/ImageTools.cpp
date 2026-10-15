@@ -10,6 +10,17 @@
 #include <memory>
 
 template<typename TImageData>
+static TImageData ImageTools::MakeMatteImage(
+    typename TImageData::element_type const & color,
+    ImageSize const & size)
+{
+    return TImageData(size, color);
+}
+
+template RgbaImageData ImageTools::MakeMatteImage(rgbaColor const & color, ImageSize const & size);
+template RgbImageData ImageTools::MakeMatteImage(rgbColor const & color, ImageSize const & size);
+
+template<typename TImageData>
 TImageData ImageTools::Resize(
     TImageData const & image,
     ImageSize const & newSize)
@@ -290,6 +301,27 @@ void ImageTools::Overlay(
             baseBuffer[baseRowStartIndex + baseC] =
                 baseBuffer[baseRowStartIndex + baseC].blend(overlayBuffer[overlayRowStartIndex + overlayC]);
         }
+    }
+}
+
+void ImageTools::OverlayFrame(
+    RgbaImageData & imageData,
+    rgbaColor const & frameColor)
+{
+    int const h = imageData.Size.height;
+    int const w = imageData.Size.width;
+
+    int bottomRowStartIndex = (h - 1) * w;
+    for (int c = 0; c < w; ++c)
+    {
+        imageData.Data[c] = frameColor;
+        imageData.Data[bottomRowStartIndex + c] = frameColor;
+    }
+
+    for (int r = 0; r < h; ++r)
+    {
+        imageData.Data[r * w] = frameColor;
+        imageData.Data[r * w + (w - 1)] = frameColor;
     }
 }
 

@@ -15,6 +15,8 @@
 #include <Simulation/Materials.h>
 #include <Simulation/ShipTexturizer.h>
 
+#include <Core/ImageData.h>
+
 #include <wx/wx.h>
 #include <wx/dcmemory.h>
 #include <wx/imaglist.h>
@@ -371,6 +373,12 @@ private:
     // ...and here we track which are free to use, to avoid
     // having to renumber entries
     std::vector<size_t> mFreeMaterialSampleBitmapIndices;
+
+    //
+    // Reused resources
+    //
+
+    RgbaImageData const mShipOverlaySmallImage;
 
     //
     // Render style

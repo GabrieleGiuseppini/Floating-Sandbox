@@ -20,6 +20,11 @@ class ImageTools
 public:
 
     template<typename TImageData>
+    static TImageData MakeMatteImage(
+        typename TImageData::element_type const & color,
+        ImageSize const & size);
+
+    template<typename TImageData>
     static TImageData Resize(
         TImageData const & image,
         ImageSize const & newSize);
@@ -34,6 +39,10 @@ public:
         RgbaImageData const & overlayImageData,
         int x,
         int y);
+
+    static void OverlayFrame(
+        RgbaImageData & imageData,
+        rgbaColor const & frameColor);
 
     static void Transform(
         RgbaImageData & imageData,

@@ -29,12 +29,6 @@ public:
         return mAddNewMaterialPlusIcon;
     }
 
-    wxBitmap const & GetShipOverlaySmall() const
-    {
-        assert(mShipOverlaySmall.IsOk());
-        return mShipOverlaySmall;
-    }
-
     wxBrush const & GetWhiteSolidBackgroundBrush() const
     {
         return mWhiteSolidBackgroundBrush;
@@ -50,7 +44,6 @@ private:
     static SharedUIResources *sInstance;
 
     wxBitmap mAddNewMaterialPlusIcon;
-    wxBitmap mShipOverlaySmall;
     wxBrush mWhiteSolidBackgroundBrush;
     wxBrush mSeparatorBrush;
 };

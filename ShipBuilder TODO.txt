@@ -474,6 +474,8 @@
 				- Run dialog
 				- Remember starting point and do nothing if no real edits
 				- TODOHERE
+			- Single json file for three databases
+				- We do not have cross-layer operations anyway, hence fine if each file update is for a single layer
 			- TODO: other workflows above
 
 		= MaterialPalettePanel<TLayer>: HEAVY REDESIGN
@@ -569,17 +571,19 @@
 						+ Render cells onto buffer
 						+ Refresh(false)
 
+			+ Make black frame around sample materials, for white materials
+				+ And while you're at it, simplify all: work on rgbaImage, and only @ end make it into a wxBitmap
+
 			= ShipOverlay, EditButton, Checkbox:
-				= Ship: set on sample material at cell creation time
-					= Icon
-						- Could it be smaller?
+				+ Ship: set on sample material at cell creation time
+					+ Icon
 					+ Code: iff custom is ship
 				- EditButton, Checkbox:
 					- All std::optional<wxRect>
-					- Set at Layout
+					- Set at Layout, passed to MakeMaterialSample
 						- ShipOverlay: iff CustomKind=Ship
 						- EditButton, Checkbox: iff CustomKind!=None
-					- Honor at RenderCell
+					- Honor checkbox at RenderCell
 					- Handling of clicks:
 						- EditButton:
 							- Start workflow via PalettesController - copy from AddNewButton
@@ -667,7 +671,7 @@
 				+ return MaterialsReplacementMap
 				+ Caller (MainFrame) uses MaterialsReplacementMap to mess with layers in-place within definition, using layers' helpers (or AllLayers/?), before giving definition to new controller
 
-		+ MaterialEditDialog: 
+		= MaterialEditDialog: 
 			+ Two dialogs, two classes, one base with common code
 			+ Hook NewButton->IMaterialPalettesController
 			+ FIX: Edit opening makes palette close - because it's wxTransientPopupWindow, closes at focus lost
@@ -727,6 +731,8 @@
 				+ Use
 			
 			+ MaterialPalettesController instantiates and owns two MaterialEditDialog instances (Structural and Electrical)
+
+			- Disallow empty name
 
 		- Model and maybe ModelController:
 			- ReplaceMaterials(map: TMaterial * -> TMaterial *|null (for removal))

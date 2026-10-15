@@ -81,6 +81,8 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     , mRows() // Start empty
     , mMaterialSampleBitmaps(MaterialSampleSize.width, MaterialSampleSize.height, false)
     , mFreeMaterialSampleBitmapIndices()
+    // Resources
+    , mShipOverlaySmallImage(mGameAssetManager.LoadPngImageRgba(mGameAssetManager.GetPngImageFilePath("ship_overlay_small")))
     // State
     , mCurrentSelectedCellId(NoneCellId)
     , mNextCellId(0)
@@ -986,14 +988,13 @@ wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(
     TMaterial const * material,
     std::optional<CustomMaterialRegisterKindType> customRegisterKind) const
 {
-    wxBitmap sampleBitmap;
-
+    std::unique_ptr<RgbaImageData> sampleImageData;
     if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
     {
         ShipAutoTexturizationSettings texturizationSettings;
         texturizationSettings.MaterialTextureMagnification = 0.5f;
 
-        sampleBitmap = WxHelpers::MakeBitmap(
+        sampleImageData = std::make_unique<RgbaImageData>(
             mShipTexturizer.MakeMaterialTextureSample(
                 texturizationSettings,
                 MaterialSampleSize,
@@ -1004,25 +1005,26 @@ wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(
     {
         static_assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
 
-        sampleBitmap = WxHelpers::MakeMatteBitmap(
-            rgbaColor(material->RenderColor, 255),
-            MaterialSampleSize);
+        sampleImageData = std::make_unique<RgbaImageData>(
+            ImageTools::MakeMatteImage<RgbaImageData>(
+                rgbaColor(material->RenderColor, 255),
+                MaterialSampleSize));
     }
 
     if (customRegisterKind == CustomMaterialRegisterKindType::Ship)
     {
-        // Apply overlay
-
-        wxImage sampleImage = sampleBitmap.ConvertToImage();
-        sampleImage.Paste(
-            SharedUIResources::GetInstance().GetShipOverlaySmall().ConvertToImage(),
+        // Apply ship overlay
+        ImageTools::Overlay(
+            *sampleImageData,
+            mShipOverlaySmallImage,
             MaterialSampleOverlayMargin,
-            MaterialSampleOverlayMargin);
-
-        sampleBitmap = wxBitmap(sampleImage);
+            MaterialSampleSize.height - mShipOverlaySmallImage.Size.height - MaterialSampleOverlayMargin);
     }
 
-    return sampleBitmap;
+    // Apply frame
+    ImageTools::OverlayFrame(*sampleImageData, rgbaColor(0, 0, 0, rgbaColor::data_type_max));
+
+    return WxHelpers::MakeBitmap(*sampleImageData);
 }
 
 template<LayerType TLayer>
