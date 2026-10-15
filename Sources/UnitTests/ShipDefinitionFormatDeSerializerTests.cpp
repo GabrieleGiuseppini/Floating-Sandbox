@@ -730,6 +730,8 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests, Basic)
     // Build custom material map
     auto const customMaterialMap = ShipDefinitionFormatDeSerializer::ExtractCustomMaterialMap(sourceStructuralLayer);
 
+    EXPECT_EQ(customMaterialMap.size(), customMaterialCount);
+
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
     ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V2(sourceStructuralLayer, customMaterialMap, buffer);
