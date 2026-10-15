@@ -29,7 +29,7 @@ private:
 
     void LayoutControls(wxBoxSizer * dialogVSizer) override;
 
-    std::optional<StructuralMaterial::VariantOverridesType> Run(StructuralMaterial::VariantOverridesType & overrides, StructuralMaterial const * baseMaterial) override;
+    std::optional<StructuralMaterial::VariantOverridesType> Run(StructuralMaterial::VariantOverridesType const & startingOverrides, StructuralMaterial const * baseMaterial) override;
 
     static wxColor GetOverridesRenderColor(StructuralMaterial::VariantOverridesType const & overrides);
 

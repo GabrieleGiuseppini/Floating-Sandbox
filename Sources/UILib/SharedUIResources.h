@@ -29,6 +29,12 @@ public:
         return mAddNewMaterialPlusIcon;
     }
 
+    wxBitmap const & GetCheckboxOnIcon() const
+    {
+        assert(mCheckboxOnIcon.IsOk());
+        return mCheckboxOnIcon;
+    }
+
     wxBrush const & GetWhiteSolidBackgroundBrush() const
     {
         return mWhiteSolidBackgroundBrush;
@@ -44,6 +50,7 @@ private:
     static SharedUIResources *sInstance;
 
     wxBitmap mAddNewMaterialPlusIcon;
+    wxBitmap mCheckboxOnIcon;
     wxBrush mWhiteSolidBackgroundBrush;
     wxBrush mSeparatorBrush;
 };

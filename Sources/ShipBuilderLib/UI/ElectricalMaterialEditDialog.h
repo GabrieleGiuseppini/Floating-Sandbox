@@ -38,7 +38,7 @@ private:
 
     void LayoutControls(wxBoxSizer * dialogVSizer) override;
 
-    std::optional<ElectricalMaterial::VariantOverridesType> Run(ElectricalMaterial::VariantOverridesType & overrides, ElectricalMaterial const * baseMaterial) override;
+    std::optional<ElectricalMaterial::VariantOverridesType> Run(ElectricalMaterial::VariantOverridesType const & startingOverrides, ElectricalMaterial const * baseMaterial) override;
 
     SliderControl<float> * MakeHeatGeneratedSliderControl(wxPanel * parent);
 

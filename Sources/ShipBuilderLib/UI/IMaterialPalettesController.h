@@ -23,6 +23,10 @@ struct IMaterialPalettesController
     virtual void OnNewUserCustomStructuralMaterial(StructuralMaterial const * baseMaterial) = 0;
     virtual void OnNewUserCustomElectricalMaterial(ElectricalMaterial const * baseMaterial) = 0;
     virtual void OnNewUserCustomRopesMaterial(StructuralMaterial const * baseMaterial) = 0;
+
+    virtual void OnEditCustomStructuralMaterial(StructuralMaterial const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind) = 0;
+    virtual void OnEditCustomElectricalMaterial(ElectricalMaterial const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind) = 0;
+    virtual void OnEditCustomRopesMaterial(StructuralMaterial const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind) = 0;
 };
 
 }

@@ -20,8 +20,8 @@ class BaseMaterialEditDialog : public wxDialog
 {
 public:
 
-    std::optional<typename TMaterial::VariantOverridesType> RunForNew(typename TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial);
-    std::optional<typename TMaterial::VariantOverridesType> RunForEdit(typename TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial);
+    std::optional<typename TMaterial::VariantOverridesType> RunForNew(typename TMaterial::VariantOverridesType const & startingOverrides, TMaterial const * baseMaterial);
+    std::optional<typename TMaterial::VariantOverridesType> RunForEdit(typename TMaterial::VariantOverridesType const & startingOverrides, TMaterial const * baseMaterial);
 
 protected:
 
@@ -42,7 +42,7 @@ protected:
 
     virtual void LayoutControls(wxBoxSizer * dialogVSizer) = 0;
 
-    virtual std::optional<typename TMaterial::VariantOverridesType> Run(typename TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial) = 0;
+    virtual std::optional<typename TMaterial::VariantOverridesType> Run(typename TMaterial::VariantOverridesType const & startingOverrides, TMaterial const * baseMaterial) = 0;
 
     std::optional<typename TMaterial::VariantOverridesType> BaseRun();
 

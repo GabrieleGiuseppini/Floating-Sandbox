@@ -80,20 +80,20 @@ void BaseMaterialEditDialog<TMaterial>::LayoutBase()
 
 template<typename TMaterial>
 std::optional<typename TMaterial::VariantOverridesType> BaseMaterialEditDialog<TMaterial>::RunForNew(
-    typename TMaterial::VariantOverridesType & overrides,
+    typename TMaterial::VariantOverridesType const & startingOverrides,
     TMaterial const * baseMaterial)
 {
     SetTitle(_T("Create New Material"));
-    return Run(overrides, baseMaterial);
+    return Run(startingOverrides, baseMaterial);
 }
 
 template<typename TMaterial>
 std::optional<typename TMaterial::VariantOverridesType> BaseMaterialEditDialog<TMaterial>::RunForEdit(
-    typename TMaterial::VariantOverridesType & overrides,
+    typename TMaterial::VariantOverridesType const & startingOverrides,
     TMaterial const * baseMaterial)
 {
     SetTitle(_T("Edit Material"));
-    return Run(overrides, baseMaterial);
+    return Run(startingOverrides, baseMaterial);
 }
 
 template<typename TMaterial>

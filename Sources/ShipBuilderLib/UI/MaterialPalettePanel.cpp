@@ -67,6 +67,8 @@ wxDEFINE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_OUT, fsElectricalMateri
 wxDEFINE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_IN, fsElectricalMaterialPaletteEvent);
 wxDEFINE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_CLICKED, fsElectricalMaterialPaletteEvent);
 
+wxDEFINE_EVENT(fsEVT_MATERIAL_PALETTE_CHECKED_STATE_CHANGED, fsCheckedStateChanged);
+
 template<LayerType TLayer>
 MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     wxWindow * parent,
@@ -82,10 +84,13 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     , mMaterialSampleBitmaps(MaterialSampleSize.width, MaterialSampleSize.height, false)
     , mFreeMaterialSampleBitmapIndices()
     // Resources
-    , mShipOverlaySmallImage(mGameAssetManager.LoadPngImageRgba(mGameAssetManager.GetPngImageFilePath("ship_overlay_small")))
+    , mShipOverlayImage(mGameAssetManager.LoadPngImageRgba(mGameAssetManager.GetPngImageFilePath("ship_overlay_small")))
+    , mCheckboxOffImage(mGameAssetManager.LoadPngImageRgba(mGameAssetManager.GetPngImageFilePath("checkbox_off_small")))
+    , mEditButtonImage(mGameAssetManager.LoadPngImageRgba(mGameAssetManager.GetPngImageFilePath("edit_icon_small")))
     // State
     , mCurrentSelectedCellId(NoneCellId)
     , mNextCellId(0)
+    , mCheckedCellsCount(0)
 {
     SetBackgroundColour(*wxWHITE);
 
@@ -127,6 +132,7 @@ void MaterialPalettePanel<TLayer>::StartDefaultMaterialsLayout()
     mFreeMaterialSampleBitmapIndices.clear();
     mCurrentSelectedCellId = NoneCellId;
     mNextCellId = 0;
+    mCheckedCellsCount = 0;
 }
 
 template<LayerType TLayer>
@@ -337,7 +343,8 @@ void MaterialPalettePanel<TLayer>::OnMouseMoved(wxMouseEvent & event)
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
 {
-    auto const * cell = FindCellAt(event.GetPosition());
+    wxPoint clickAbsoluteCoords = event.GetPosition();
+    auto * cell = FindCellAt(clickAbsoluteCoords);
     if (cell != nullptr)
     {
         switch (cell->Kind)
@@ -366,28 +373,43 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
 
             case Cell::KindType::Material:
             {
-                assert(cell->Material != nullptr);
-
-                // Fire clicked event
-                if constexpr (TLayer == LayerType::Structural || TLayer == LayerType::Ropes)
+                // Check if edit button
+                clickAbsoluteCoords -= wxSize(cell->Rect.x, cell->Rect.y);
+                if (cell->EditButtonRect.has_value()
+                    && cell->EditButtonRect->Contains(clickAbsoluteCoords))
                 {
-                    auto eventToFire = fsStructuralMaterialPaletteEvent(
-                        fsEVT_STRUCTURAL_MATERIAL_PALETTE_CLICKED,
-                        this->GetId(),
-                        cell->Material);
-
-                    ProcessWindowEvent(eventToFire);
+                    OnEditButton(*cell);
+                }
+                else if (cell->CheckboxRect.has_value()
+                    && cell->CheckboxRect->Contains(clickAbsoluteCoords))
+                {
+                    OnCheckboxToggled(*cell);
                 }
                 else
                 {
-                    assert(TLayer == LayerType::Electrical);
+                    assert(cell->Material != nullptr);
 
-                    auto eventToFire = fsElectricalMaterialPaletteEvent(
-                        fsEVT_ELECTRICAL_MATERIAL_PALETTE_CLICKED,
-                        this->GetId(),
-                        cell->Material);
+                    // Fire clicked event
+                    if constexpr (TLayer == LayerType::Structural || TLayer == LayerType::Ropes)
+                    {
+                        auto eventToFire = fsStructuralMaterialPaletteEvent(
+                            fsEVT_STRUCTURAL_MATERIAL_PALETTE_CLICKED,
+                            this->GetId(),
+                            cell->Material);
 
-                    ProcessWindowEvent(eventToFire);
+                        ProcessWindowEvent(eventToFire);
+                    }
+                    else
+                    {
+                        assert(TLayer == LayerType::Electrical);
+
+                        auto eventToFire = fsElectricalMaterialPaletteEvent(
+                            fsEVT_ELECTRICAL_MATERIAL_PALETTE_CLICKED,
+                            this->GetId(),
+                            cell->Material);
+
+                        ProcessWindowEvent(eventToFire);
+                    }
                 }
 
                 break;
@@ -399,8 +421,57 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
 template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::OnMouseLeftUp(wxMouseEvent & event)
 {
-    // TODOHERE: button feedback if any, otherwise nuke
+    // TODO: button feedback if any, otherwise nuke
     (void)event;
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::OnEditButton(Cell & cell)
+{
+    // Notify
+    if constexpr (TLayer == LayerType::Structural)
+    {
+        mMaterialPalettesController.OnEditCustomStructuralMaterial(cell.Material, cell.CustomRegisterKind);
+    }
+    else if constexpr (TLayer == LayerType::Electrical)
+    {
+        mMaterialPalettesController.OnEditCustomElectricalMaterial(cell.Material, cell.CustomRegisterKind);
+    }
+    else
+    {
+        static_assert(TLayer == LayerType::Ropes);
+        mMaterialPalettesController.OnEditCustomRopesMaterial(cell.Material, cell.CustomRegisterKind);
+    }
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::OnCheckboxToggled(Cell & cell)
+{
+    // Change cell state
+    assert(cell.CustomRegisterKind.has_value());
+    if (cell.IsChecked)
+    {
+        cell.IsChecked = false;
+
+        assert(mCheckedCellsCount > 0);
+        --mCheckedCellsCount;
+    }
+    else
+    {
+        cell.IsChecked = true;
+        ++mCheckedCellsCount;
+    }
+
+    // Redraw cell
+    RenderCell(cell);
+    Refresh(false);
+
+    // Send event for browser, it'll reconciliate
+    auto eventToFire = fsCheckedStateChanged(
+        fsEVT_MATERIAL_PALETTE_CHECKED_STATE_CHANGED,
+        this->GetId());
+
+    ProcessWindowEvent(eventToFire);
 }
 
 template<LayerType TLayer>
@@ -436,6 +507,43 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
     assert(material->PaletteSubCategoryBaseMaterialOrdinal == stride.SubCategoryBaseMaterialOrdinal);
 
     //
+    // Make material sample
+    //
+
+    std::optional<wxRect> shipOverlayRect;
+    if (customRegisterKind == CustomMaterialRegisterKindType::Ship)
+    {
+        shipOverlayRect = wxRect(
+            MaterialSampleOverlayMargin,
+            MaterialSampleOverlayMargin,
+            mShipOverlayImage.Size.width,
+            mShipOverlayImage.Size.height);
+    }
+
+    std::optional<wxRect> editButtonRect;
+    std::optional<wxRect> checkboxRect;
+    if (customRegisterKind.has_value())
+    {
+        editButtonRect = wxRect(
+            MaterialSampleSize.width - MaterialSampleOverlayMargin - mEditButtonImage.Size.width,
+            MaterialSampleOverlayMargin,
+            mEditButtonImage.Size.width,
+            mEditButtonImage.Size.height);
+
+        checkboxRect = wxRect(
+            MaterialSampleSize.width - MaterialSampleOverlayMargin - mCheckboxOffImage.Size.width,
+            editButtonRect->y + editButtonRect->height + MaterialSampleOverlayMargin,
+            mCheckboxOffImage.Size.width,
+            mCheckboxOffImage.Size.height);
+    }
+
+    wxBitmap materialSampleBitmap = MakeMaterialSample(
+        material,
+        shipOverlayRect,
+        editButtonRect,
+        checkboxRect);
+
+    //
     // Insert cell
     //
 
@@ -469,11 +577,11 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
     {
         materialSampleBitmapIndex = mFreeMaterialSampleBitmapIndices.back();
         mFreeMaterialSampleBitmapIndices.pop_back();
-        mMaterialSampleBitmaps.Replace(materialSampleBitmapIndex, MakeMaterialSample(material, customRegisterKind));
+        mMaterialSampleBitmaps.Replace(materialSampleBitmapIndex, materialSampleBitmap);
     }
     else
     {
-        materialSampleBitmapIndex = mMaterialSampleBitmaps.Add(MakeMaterialSample(material, customRegisterKind));
+        materialSampleBitmapIndex = mMaterialSampleBitmaps.Add(materialSampleBitmap);
     }
 
     Cell & cell = *stride.Cells.insert(
@@ -487,6 +595,9 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
             wxSize(
                 MaterialCellSize.width,
                 MaterialCellSize.height)));
+
+    cell.EditButtonRect = editButtonRect;
+    cell.CheckboxRect = checkboxRect;
 
     //
     // Layout text
@@ -953,17 +1064,16 @@ void MaterialPalettePanel<TLayer>::RenderCell(
                 dc.DrawText(cell.Data, dataX, cell.Rect.GetY() + cell.DataYTopOffset);
             }
 
-            // Edit button
-
-            // TODO
-
             // Checkbox
 
-            // TODO
-
-            // Ship icon overlay
-
-            // TODO
+            if (cell.IsChecked)
+            {
+                assert(cell.CheckboxRect.has_value());
+                dc.DrawBitmap(
+                    SharedUIResources::GetInstance().GetCheckboxOnIcon(),
+                    cell.Rect.GetX() + CellInnerMargin + cell.CheckboxRect->x,
+                    cell.Rect.GetY() + CellInnerMargin + cell.CheckboxRect->y);
+            }
 
             break;
         }
@@ -986,7 +1096,9 @@ void MaterialPalettePanel<TLayer>::RenderCell(
 template<LayerType TLayer>
 wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(
     TMaterial const * material,
-    std::optional<CustomMaterialRegisterKindType> customRegisterKind) const
+    std::optional<wxRect> shipOverlayRect,
+    std::optional<wxRect> editButtonRect,
+    std::optional<wxRect> checkboxRect) const
 {
     std::unique_ptr<RgbaImageData> sampleImageData;
     if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
@@ -1011,14 +1123,34 @@ wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(
                 MaterialSampleSize));
     }
 
-    if (customRegisterKind == CustomMaterialRegisterKindType::Ship)
+    if (shipOverlayRect.has_value())
     {
         // Apply ship overlay
         ImageTools::Overlay(
             *sampleImageData,
-            mShipOverlaySmallImage,
-            MaterialSampleOverlayMargin,
-            MaterialSampleSize.height - mShipOverlaySmallImage.Size.height - MaterialSampleOverlayMargin);
+            mShipOverlayImage,
+            shipOverlayRect->x,
+            MaterialSampleSize.height - mShipOverlayImage.Size.height - shipOverlayRect->y);
+    }
+
+    if (editButtonRect.has_value())
+    {
+        // Apply edit button overlay
+        ImageTools::Overlay(
+            *sampleImageData,
+            mEditButtonImage,
+            editButtonRect->x,
+            MaterialSampleSize.height - mEditButtonImage.Size.height - editButtonRect->y);
+    }
+
+    if (checkboxRect.has_value())
+    {
+        // Apply checbox overlay - we start OFF
+        ImageTools::Overlay(
+            *sampleImageData,
+            mCheckboxOffImage,
+            checkboxRect->x,
+            MaterialSampleSize.height - mCheckboxOffImage.Size.height - checkboxRect->y);
     }
 
     // Apply frame

@@ -79,6 +79,35 @@ wxDECLARE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_OUT, fsElectricalMater
 wxDECLARE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_HOVERED_IN, fsElectricalMaterialPaletteEvent);
 wxDECLARE_EVENT(fsEVT_ELECTRICAL_MATERIAL_PALETTE_CLICKED, fsElectricalMaterialPaletteEvent);
 
+/*
+ * Event fired when the checked-cell state of this panel has changed.
+ */
+class fsCheckedStateChanged : public wxEvent
+{
+public:
+
+    fsCheckedStateChanged(
+        wxEventType eventType,
+        int winid)
+        : wxEvent(winid, eventType)
+    {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+    }
+
+    fsCheckedStateChanged(fsCheckedStateChanged  const & other)
+        : wxEvent(other)
+    {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+    }
+
+    virtual wxEvent * Clone() const override
+    {
+        return new fsCheckedStateChanged(*this);
+    }
+};
+
+wxDECLARE_EVENT(fsEVT_MATERIAL_PALETTE_CHECKED_STATE_CHANGED, fsCheckedStateChanged);
+
 ///////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer>
@@ -94,6 +123,11 @@ public:
         IMaterialPalettesController & materialPalettesController,
         ShipTexturizer const & shipTexturizer,
         GameAssetManager const & gameAssetManager);
+
+    bool IsAnyChecked() const
+    {
+        return mCheckedCellsCount > 0;
+    }
 
     void StartDefaultMaterialsLayout();
     void StartNewSubcategoryRow(std::string const & subCategory);
@@ -115,11 +149,17 @@ private:
     using CellIdType = std::uint64_t;
     static CellIdType constexpr NoneCellId = std::numeric_limits<CellIdType>::max();
 
+    struct Cell;
+    struct Row;
+
     void OnPaint(wxPaintEvent & event);
     void OnMouseLeave();
     void OnMouseMoved(wxMouseEvent & event);
     void OnMouseLeftDown(wxMouseEvent & event);
     void OnMouseLeftUp(wxMouseEvent & event);
+
+    void OnEditButton(Cell & cell);
+    void OnCheckboxToggled(Cell & cell);
 
     struct LayoutSession
     {
@@ -167,15 +207,14 @@ private:
         LayoutSession const & layoutSession,
         bool doRenderSeparators);
 
-    struct Cell;
-    struct Row;
-
     void RenderCell(Cell const & cell);
     void RenderCell(Cell const & cell, wxDC & dc);
 
     wxBitmap MakeMaterialSample(
         TMaterial const * material,
-        std::optional<CustomMaterialRegisterKindType> customRegisterKind) const;
+        std::optional<wxRect> shipOverlayRect,
+        std::optional<wxRect> editButtonRect,
+        std::optional<wxRect> checkboxRect) const;
 
     size_t FindRowFor(TMaterial const * material) const;
     size_t FindStrideFor(TMaterial const * material, Row const & row) const;
@@ -230,6 +269,8 @@ private:
         wxString Data;
         int DataWidth;
         int DataYTopOffset; // Relative to cell
+        std::optional<wxRect> EditButtonRect; // Iff customRegisterKind!=None; Relative to cell + margin (relative to sample thumbnail)
+        std::optional<wxRect> CheckboxRect; // Iff customRegisterKind!=None; Relative to cell + margin (relative to sample thumbnail)
         bool IsChecked; // Iff customRegisterKind!=None
 
         // Layout
@@ -378,7 +419,9 @@ private:
     // Reused resources
     //
 
-    RgbaImageData const mShipOverlaySmallImage;
+    RgbaImageData const mShipOverlayImage;
+    RgbaImageData const mCheckboxOffImage;
+    RgbaImageData const mEditButtonImage;
 
     //
     // Render style
@@ -396,6 +439,7 @@ private:
 
     CellIdType mCurrentSelectedCellId;
     CellIdType mNextCellId;
+    size_t mCheckedCellsCount;
 };
 
 }

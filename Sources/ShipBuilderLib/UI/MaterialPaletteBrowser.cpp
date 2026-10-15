@@ -286,6 +286,14 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                         });
                 }
 
+                // Bind checked state change
+                categoryPanel->Bind(
+                    fsEVT_MATERIAL_PALETTE_CHECKED_STATE_CHANGED,
+                    [this](fsCheckedStateChanged & /*event*/)
+                    {
+                        OnPanelCheckedStateChanged();
+                    });
+
                 mCategoryPanelsContainerSizer->Add(
                     categoryPanel,
                     0,
@@ -446,7 +454,9 @@ void MaterialPaletteBrowser<TLayer>::Close()
 }
 
 template<LayerType TLayer>
-std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType> MaterialPaletteBrowser<TLayer>::RunNewCustomMaterial(typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial)
+std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType> MaterialPaletteBrowser<TLayer>::RunNewCustomMaterial(
+    typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType const & startingOverrides,
+    TMaterial const * baseMaterial)
 {
     assert(IsOpen());
 
@@ -456,13 +466,13 @@ std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverrid
     std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType> result;
     if constexpr (TLayer == LayerType::Structural || TLayer == LayerType::Ropes)
     {
-        result = mStructuralMaterialEditDialog->RunForNew(overrides, baseMaterial);
+        result = mStructuralMaterialEditDialog->RunForNew(startingOverrides, baseMaterial);
     }
     else
     {
         static_assert(TLayer == LayerType::Electrical);
 
-        result = mElectricalMaterialEditDialog->RunForNew(overrides, baseMaterial);
+        result = mElectricalMaterialEditDialog->RunForNew(startingOverrides, baseMaterial);
     }
 
     // Go back to closing ourselves whenever we lose focus from now on
@@ -473,18 +483,32 @@ std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverrid
 }
 
 template<LayerType TLayer>
-std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType> MaterialPaletteBrowser<TLayer>::RunEditCustomMaterial(typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial)
+std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType> MaterialPaletteBrowser<TLayer>::RunEditCustomMaterial(
+    typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType const & startingOverrides,
+    TMaterial const * baseMaterial)
 {
+    assert(IsOpen());
+
+    // Do not close ourselves when we'll lose the focus
+    mStickAroundOnFocusLoss = true;
+
+    std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType> result;
     if constexpr (TLayer == LayerType::Structural || TLayer == LayerType::Ropes)
     {
-        return mStructuralMaterialEditDialog->RunForEdit(overrides, baseMaterial);
+        result = mStructuralMaterialEditDialog->RunForEdit(startingOverrides, baseMaterial);
     }
     else
     {
         static_assert(TLayer == LayerType::Electrical);
 
-        return mElectricalMaterialEditDialog->RunForEdit(overrides, baseMaterial);
+        result = mElectricalMaterialEditDialog->RunForEdit(startingOverrides, baseMaterial);
     }
+
+    // Go back to closing ourselves whenever we lose focus from now on
+    mStickAroundOnFocusLoss = false;
+    SetFocus();
+
+    return result;
 }
 
 template<LayerType TLayer>
@@ -1208,6 +1232,13 @@ void MaterialPaletteBrowser<TLayer>::OnMaterialHoveredOut()
             mSoundController->PlayOneShotShipSound(std::nullopt);
         }
     }
+}
+
+template<LayerType TLayer>
+void MaterialPaletteBrowser<TLayer>::OnPanelCheckedStateChanged()
+{
+    // TODOHERE
+    LogMessage("!!! MaterialPaletteBrowser<TLayer>::OnPanelCheckedStateChanged()");
 }
 
 template<LayerType TLayer>

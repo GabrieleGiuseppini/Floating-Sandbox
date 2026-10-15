@@ -99,12 +99,21 @@ public:
     void OnNewUserCustomElectricalMaterial(ElectricalMaterial const * baseMaterial) override;
     void OnNewUserCustomRopesMaterial(StructuralMaterial const * baseMaterial) override;
 
+    void OnEditCustomStructuralMaterial(StructuralMaterial const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind);
+    void OnEditCustomElectricalMaterial(ElectricalMaterial const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind);
+    void OnEditCustomRopesMaterial(StructuralMaterial const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind);
+
 private:
 
     template<LayerType TLayerType>
     void OnNewUserCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * baseMaterial);
 
+    template<LayerType TLayerType>
+    void OnEditCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind);
+
 private:
+
+    DefaultMaterialDatabase const & mDefaultMaterialDatabase; // For color_key lookups
 
     std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> const mOnStructuralLayerMaterialSelected;
     std::function<void(ElectricalMaterial const * material, MaterialPlaneType plane)> const mOnElectricalLayerMaterialSelected;

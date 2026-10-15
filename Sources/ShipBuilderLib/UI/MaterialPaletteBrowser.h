@@ -78,8 +78,8 @@ public:
         return IsShown();
     }
 
-    std::optional<typename TMaterial::VariantOverridesType> RunNewCustomMaterial(typename TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial);
-    std::optional<typename TMaterial::VariantOverridesType> RunEditCustomMaterial(typename TMaterial::VariantOverridesType & overrides, TMaterial const * baseMaterial);
+    std::optional<typename TMaterial::VariantOverridesType> RunNewCustomMaterial(typename TMaterial::VariantOverridesType const & startingOverrides, TMaterial const * baseMaterial);
+    std::optional<typename TMaterial::VariantOverridesType> RunEditCustomMaterial(typename TMaterial::VariantOverridesType const & startingOverrides, TMaterial const * baseMaterial);
 
     //
     // Operations
@@ -108,6 +108,7 @@ private:
     void OnMaterialClicked(TMaterial const * material);
     void OnMaterialHoveredIn(TMaterial const * material);
     void OnMaterialHoveredOut();
+    void OnPanelCheckedStateChanged();
 
     static bool IsOverridableMaterial(TMaterial const * material);
 

@@ -19,7 +19,8 @@ MaterialPalettesController::MaterialPalettesController(
     ISoundController * soundController,
     GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
-    : mOnStructuralLayerMaterialSelected(std::move(onStructuralLayerMaterialSelected))
+    : mDefaultMaterialDatabase(defaultMaterialDatabase)
+    , mOnStructuralLayerMaterialSelected(std::move(onStructuralLayerMaterialSelected))
     , mOnElectricalLayerMaterialSelected(std::move(onElectricalLayerMaterialSelected))
     , mOnRopeLayerMaterialSelected(std::move(onRopeLayerMaterialSelected))
     , mLastOpenedPalette(nullptr)
@@ -27,15 +28,15 @@ MaterialPalettesController::MaterialPalettesController(
     // Model
 
     mStructuralLayerMaterialDatabase = std::make_unique<MaterialDatabase<LayerType::Structural>>(
-        defaultMaterialDatabase.GetStructuralMaterialColorMap(),
+        mDefaultMaterialDatabase.GetStructuralMaterialColorMap(),
         StandardSystemPaths::GetInstance().GetUserGameRootFolderPath());
 
     mElectricalLayerMaterialDatabase = std::make_unique<MaterialDatabase<LayerType::Electrical>>(
-        defaultMaterialDatabase.GetElectricalMaterialColorMap(),
+        mDefaultMaterialDatabase.GetElectricalMaterialColorMap(),
         StandardSystemPaths::GetInstance().GetUserGameRootFolderPath());
 
     mRopesLayerMaterialDatabase = std::make_unique<MaterialDatabase<LayerType::Ropes>>(
-        defaultMaterialDatabase.GetStructuralMaterialColorMap(),
+        mDefaultMaterialDatabase.GetStructuralMaterialColorMap(),
         StandardSystemPaths::GetInstance().GetUserGameRootFolderPath());
 
     // View
@@ -43,7 +44,7 @@ MaterialPalettesController::MaterialPalettesController(
     mStructuralLayerMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Structural>>(
         parent,
         *this,
-        defaultMaterialDatabase.GetStructuralMaterialPalette(),
+        mDefaultMaterialDatabase.GetStructuralMaterialPalette(),
         mStructuralLayerMaterialDatabase->GetUserCustomMaterials(),
         shipTexturizer,
         soundController,
@@ -55,7 +56,7 @@ MaterialPalettesController::MaterialPalettesController(
     mElectricalLayerMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Electrical>>(
         parent,
         *this,
-        defaultMaterialDatabase.GetElectricalMaterialPalette(),
+        mDefaultMaterialDatabase.GetElectricalMaterialPalette(),
         mElectricalLayerMaterialDatabase->GetUserCustomMaterials(),
         shipTexturizer,
         soundController,
@@ -67,7 +68,7 @@ MaterialPalettesController::MaterialPalettesController(
     mRopesLayerMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Ropes>>(
         parent,
         *this,
-        defaultMaterialDatabase.GetRopeMaterialPalette(),
+        mDefaultMaterialDatabase.GetRopeMaterialPalette(),
         mRopesLayerMaterialDatabase->GetUserCustomMaterials(),
         shipTexturizer,
         soundController,
@@ -145,6 +146,27 @@ void MaterialPalettesController::OnNewUserCustomRopesMaterial(StructuralMaterial
     OnNewUserCustomMaterial<LayerType::Ropes>(baseMaterial);
 }
 
+void MaterialPalettesController::OnEditCustomStructuralMaterial(
+    StructuralMaterial const * customMaterial,
+    std::optional<CustomMaterialRegisterKindType> registerKind)
+{
+    OnEditCustomMaterial<LayerType::Structural>(customMaterial, registerKind);
+}
+
+void MaterialPalettesController::OnEditCustomElectricalMaterial(
+    ElectricalMaterial const * customMaterial,
+    std::optional<CustomMaterialRegisterKindType> registerKind)
+{
+    OnEditCustomMaterial<LayerType::Electrical>(customMaterial, registerKind);
+}
+
+void MaterialPalettesController::OnEditCustomRopesMaterial(
+    StructuralMaterial const * customMaterial,
+    std::optional<CustomMaterialRegisterKindType> registerKind)
+{
+    OnEditCustomMaterial<LayerType::Ropes>(customMaterial, registerKind);
+}
+
 ////////////////////////////////////////////////////////////
 
 template<LayerType TLayerType>
@@ -153,24 +175,24 @@ void MaterialPalettesController::OnNewUserCustomMaterial(typename LayerTypeTrait
     using TMaterial = typename LayerTypeTraits<TLayerType>::material_type;
     using TVariantOverridesType = typename TMaterial::VariantOverridesType;
 
-    // Make new override
-    TVariantOverridesType overrides = baseMaterial->MakeStartingVariantOverrides();
+    // Make new overrides as a starting point
+    TVariantOverridesType startingOverrides = baseMaterial->MakeStartingVariantOverrides();
 
     // Run dialog
     std::optional<TVariantOverridesType> resultOverrides;
     if constexpr (TLayerType == LayerType::Structural)
     {
-        resultOverrides = mStructuralLayerMaterialPaletteBrowser->RunNewCustomMaterial(overrides, baseMaterial);
+        resultOverrides = mStructuralLayerMaterialPaletteBrowser->RunNewCustomMaterial(startingOverrides, baseMaterial);
     }
     else if constexpr (TLayerType == LayerType::Electrical)
     {
-        resultOverrides = mElectricalLayerMaterialPaletteBrowser->RunNewCustomMaterial(overrides, baseMaterial);
+        resultOverrides = mElectricalLayerMaterialPaletteBrowser->RunNewCustomMaterial(startingOverrides, baseMaterial);
     }
     else
     {
         static_assert(TLayerType == LayerType::Ropes);
 
-        resultOverrides = mRopesLayerMaterialPaletteBrowser->RunNewCustomMaterial(overrides, baseMaterial);
+        resultOverrides = mRopesLayerMaterialPaletteBrowser->RunNewCustomMaterial(startingOverrides, baseMaterial);
     }
 
     if (resultOverrides.has_value())
@@ -202,6 +224,83 @@ void MaterialPalettesController::OnNewUserCustomMaterial(typename LayerTypeTrait
             TMaterial const * customMaterialPtr = mRopesLayerMaterialDatabase->AddUserCustomMaterial(std::move(customMaterial));
             mRopesLayerMaterialPaletteBrowser->AddUserCustomMaterials({ customMaterialPtr });
         }
+    }
+}
+
+template<LayerType TLayerType>
+void MaterialPalettesController::OnEditCustomMaterial(
+    typename LayerTypeTraits<TLayerType>::material_type const * customMaterial,
+    std::optional<CustomMaterialRegisterKindType> registerKind)
+{
+    using TMaterial = typename LayerTypeTraits<TLayerType>::material_type;
+    using TVariantOverridesType = typename TMaterial::VariantOverridesType;
+
+    // Find base
+    TMaterial const * baseMaterial;
+    if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+    {
+        baseMaterial = mDefaultMaterialDatabase.FindStructuralMaterial(customMaterial->ColorKey);
+    }
+    else
+    {
+        static_assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
+        baseMaterial = mDefaultMaterialDatabase.FindElectricalMaterial(customMaterial->ColorKey);
+    }
+
+    assert(baseMaterial != nullptr);
+
+    // Take starting overrides from custom material
+    TVariantOverridesType startingOverrides = customMaterial->MakeStartingVariantOverrides();
+
+    // Run dialog
+    std::optional<TVariantOverridesType> resultOverrides;
+    if constexpr (TLayerType == LayerType::Structural)
+    {
+        resultOverrides = mStructuralLayerMaterialPaletteBrowser->RunEditCustomMaterial(startingOverrides, customMaterial);
+    }
+    else if constexpr (TLayerType == LayerType::Electrical)
+    {
+        resultOverrides = mElectricalLayerMaterialPaletteBrowser->RunEditCustomMaterial(startingOverrides, customMaterial);
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::Ropes);
+
+        resultOverrides = mRopesLayerMaterialPaletteBrowser->RunEditCustomMaterial(startingOverrides, customMaterial);
+    }
+
+    if (resultOverrides.has_value())
+    {
+        //
+        // Make new material
+        //
+
+        std::unique_ptr<TMaterial> newCustomMaterial = baseMaterial->MakeCustomMaterial(*resultOverrides);
+
+        // TODOHERE:
+        // Replace in ship
+        // Replace in DB
+        // Update in PaletteBrowser
+
+        (void)registerKind;
+
+        //if constexpr (TLayerType == LayerType::Structural)
+        //{
+        //    TMaterial const * customMaterialPtr = mStructuralLayerMaterialDatabase->AddUserCustomMaterial(std::move(customMaterial));
+        //    mStructuralLayerMaterialPaletteBrowser->AddUserCustomMaterials({ customMaterialPtr });
+        //}
+        //else if constexpr (TLayerType == LayerType::Electrical)
+        //{
+        //    TMaterial const * customMaterialPtr = mElectricalLayerMaterialDatabase->AddUserCustomMaterial(std::move(customMaterial));
+        //    mElectricalLayerMaterialPaletteBrowser->AddUserCustomMaterials({ customMaterialPtr });
+        //}
+        //else
+        //{
+        //    static_assert(TLayerType == LayerType::Ropes);
+
+        //    TMaterial const * customMaterialPtr = mRopesLayerMaterialDatabase->AddUserCustomMaterial(std::move(customMaterial));
+        //    mRopesLayerMaterialPaletteBrowser->AddUserCustomMaterials({ customMaterialPtr });
+        //}
     }
 }
 

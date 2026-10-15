@@ -290,16 +290,16 @@ void StructuralMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
 }
 
 std::optional<StructuralMaterial::VariantOverridesType> StructuralMaterialEditDialog::Run(
-    StructuralMaterial::VariantOverridesType & overrides,
+    StructuralMaterial::VariantOverridesType const & startingOverrides,
     StructuralMaterial const * baseMaterial)
 {
     //
     // Sync controls
     //
 
-    mOverridesUnderEdit = overrides;
+    mOverridesUnderEdit = startingOverrides;
     mBaseNominalMass = baseMaterial->NominalMass;
-    auto baseOverrideValues = baseMaterial->MakeStartingVariantOverrides();
+    auto const baseOverrideValues = baseMaterial->MakeStartingVariantOverrides();
 
     wxColor const renderColor = wxColor(mOverridesUnderEdit->RenderColor.r, mOverridesUnderEdit->RenderColor.g, mOverridesUnderEdit->RenderColor.b);
     mRenderColorButton->SetForegroundColour(renderColor);

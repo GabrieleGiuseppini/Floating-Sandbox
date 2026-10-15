@@ -290,14 +290,14 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
 }
 
 std::optional<ElectricalMaterial::VariantOverridesType> ElectricalMaterialEditDialog::Run(
-    ElectricalMaterial::VariantOverridesType & overrides,
+    ElectricalMaterial::VariantOverridesType const & startingOverrides,
     ElectricalMaterial const * baseMaterial)
 {
     //
     // Sync controls
     //
 
-    mOverridesUnderEdit = overrides;
+    mOverridesUnderEdit = startingOverrides;
     mBaseWaterPumpNominalForce = baseMaterial->WaterPumpNominalForce;
     auto baseOverrideValues = baseMaterial->MakeStartingVariantOverrides();
 
