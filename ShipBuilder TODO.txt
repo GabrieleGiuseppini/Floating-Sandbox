@@ -757,6 +757,9 @@
 			- ReplaceMaterials(map: TMaterial * -> TMaterial *|null (for removal))
 				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
 
+	- TODOHERE:
+		- FIX: freezing window
+			- Don't call SetModal from event handler
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 
