@@ -351,22 +351,7 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
         {
             case Cell::KindType::CreateNewButton:
             {
-                assert(cell->Material != nullptr);
-
-                // Notify
-                if constexpr (TLayer == LayerType::Structural)
-                {
-                    mMaterialPalettesController.OnNewUserCustomStructuralMaterial(cell->Material);
-                }
-                else if constexpr (TLayer == LayerType::Electrical)
-                {
-                    mMaterialPalettesController.OnNewUserCustomElectricalMaterial(cell->Material);
-                }
-                else
-                {
-                    static_assert(TLayer == LayerType::Ropes);
-                    mMaterialPalettesController.OnNewUserCustomRopesMaterial(cell->Material);
-                }
+                OnEditButton(*cell);
 
                 break;
             }
@@ -426,9 +411,30 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftUp(wxMouseEvent & event)
 }
 
 template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::OnCreateNewButton(Cell & cell)
+{
+    assert(cell.Material != nullptr);
+
+    // Call up
+    if constexpr (TLayer == LayerType::Structural)
+    {
+        mMaterialPalettesController.OnNewUserCustomStructuralMaterial(cell.Material);
+    }
+    else if constexpr (TLayer == LayerType::Electrical)
+    {
+        mMaterialPalettesController.OnNewUserCustomElectricalMaterial(cell.Material);
+    }
+    else
+    {
+        static_assert(TLayer == LayerType::Ropes);
+        mMaterialPalettesController.OnNewUserCustomRopesMaterial(cell.Material);
+    }
+}
+
+template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::OnEditButton(Cell & cell)
 {
-    // Notify
+    // Call up
     if constexpr (TLayer == LayerType::Structural)
     {
         mMaterialPalettesController.OnEditCustomStructuralMaterial(cell.Material, cell.CustomRegisterKind);

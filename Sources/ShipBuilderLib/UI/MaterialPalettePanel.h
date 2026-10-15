@@ -158,6 +158,7 @@ private:
     void OnMouseLeftDown(wxMouseEvent & event);
     void OnMouseLeftUp(wxMouseEvent & event);
 
+    void OnCreateNewButton(Cell & cell);
     void OnEditButton(Cell & cell);
     void OnCheckboxToggled(Cell & cell);
 

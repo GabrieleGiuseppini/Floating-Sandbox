@@ -759,7 +759,14 @@
 
 	- TODOHERE:
 		- FIX: freezing window
-			- Don't call SetModal from event handler
+			- Commit
+			- Don't call SetModal from event handler: 
+				wxGetApp().CallAfter([]{
+				    wxBell();
+				});
+			- @ New
+				+ Refactor in internal helper
+			- @ Edit
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 
