@@ -37,35 +37,65 @@ void StructuralMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
 
         panelVSizer->AddSpacer(MarginSize);
 
-        // Render color
+        // Render color & opacity
         {
-            mRenderColorButton = new wxPanel(panel,wxID_ANY, wxDefaultPosition,
-                wxSize(ColorPickerSideSize, ColorPickerSideSize), wxBORDER_SIMPLE);
+            wxBoxSizer * renderColorHSizer = new wxBoxSizer(wxHORIZONTAL);
 
-            mRenderColorButton->Bind(
-                wxEVT_LEFT_DOWN,
-                [this](wxMouseEvent &)
-                {
-                    assert(mOverridesUnderEdit.has_value());
+            // Render color
+            {
+                mRenderColorButton = new wxPanel(panel, wxID_ANY, wxDefaultPosition,
+                    wxSize(ColorPickerSideSize, ColorPickerSideSize), wxBORDER_SIMPLE);
 
-                    wxColourData data;
-                    data.SetColour(GetOverridesRenderColor(*mOverridesUnderEdit));
-                    data.SetChooseFull(true);
-
-                    wxColourDialog dlg(this, &data);
-                    if (dlg.ShowModal() == wxID_OK)
+                mRenderColorButton->Bind(
+                    wxEVT_LEFT_DOWN,
+                    [this](wxMouseEvent &)
                     {
-                        auto const color = dlg.GetColourData().GetColour();
+                        assert(mOverridesUnderEdit.has_value());
 
-                        mOverridesUnderEdit->RenderColor = rgbaColor(color.Red(), color.Green(), color.Blue(), mOverridesUnderEdit->RenderColor.a);
-                        mRenderColorButton->SetForegroundColour(color);
-                        mRenderColorButton->SetBackgroundColour(color);
-                        mRenderColorButton->Refresh();
-                    }
-                });
+                        wxColourData data;
+                        data.SetColour(GetOverridesRenderColor(*mOverridesUnderEdit));
+                        data.SetChooseFull(true);
+
+                        wxColourDialog dlg(this, &data);
+                        if (dlg.ShowModal() == wxID_OK)
+                        {
+                            auto const color = dlg.GetColourData().GetColour();
+
+                            mOverridesUnderEdit->RenderColor = rgbaColor(color.Red(), color.Green(), color.Blue(), mOverridesUnderEdit->RenderColor.a);
+                            mRenderColorButton->SetForegroundColour(color);
+                            mRenderColorButton->SetBackgroundColour(color);
+                            mRenderColorButton->Refresh();
+                        }
+                    });
+
+                renderColorHSizer->Add(mRenderColorButton, 0, wxALIGN_CENTER_VERTICAL);
+            }
+
+            renderColorHSizer->AddSpacer(5);
+
+            // Opacity
+            {
+                mOpacitySlider = new SliderControl<float>(
+                    panel,
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    -1,
+                    _("Opacity"),
+                    wxEmptyString,
+                    [this](float value)
+                    {
+                        assert(mOverridesUnderEdit.has_value());
+                        mOverridesUnderEdit->RenderColor.a = static_cast<typename rgbaColor::data_type>(static_cast<float>(rgbaColor::data_type_max) * value);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.4f, // Barely visible
+                        1.0f));
+
+                renderColorHSizer->Add(mOpacitySlider, 0, wxEXPAND);
+            }
 
             panelVSizer->Add(
-                mRenderColorButton,
+                renderColorHSizer,
                 0,
                 wxALIGN_CENTER_HORIZONTAL);
         }
@@ -305,6 +335,8 @@ std::optional<StructuralMaterial::VariantOverridesType> StructuralMaterialEditDi
     mRenderColorButton->SetForegroundColour(renderColor);
     mRenderColorButton->SetBackgroundColour(renderColor);
     mRenderColorButton->Refresh();
+
+    mOpacitySlider->SetValue(static_cast<float>(mOverridesUnderEdit->RenderColor.a) / static_cast<float>(rgbaColor::data_type_max));
 
     mNameTextCtrl->ChangeValue(mOverridesUnderEdit->Name);
 

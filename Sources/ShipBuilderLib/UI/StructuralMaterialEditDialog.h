@@ -41,6 +41,7 @@ private:
 
     // Basic
     wxPanel * mRenderColorButton;
+    SliderControl<float> * mOpacitySlider;
     SliderControl<float> * mMassSlider;
     SliderControl<float> * mStrengthSlider;
 

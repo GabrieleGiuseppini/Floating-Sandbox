@@ -198,6 +198,7 @@
 				- Mark ship as dirty					
 		- Deleting user's or ship's custom materials
 			- User checks boxes, and then "Delete Selected"
+			- TODOHERE: do we mean to delete across all categories and all layers?
 			- Check for in-use by ship; answer is none-in-use_or_at-least-one-in-use
 			- If at-least-one-in-use:
 				- Ask user if remove from ship or not
@@ -698,7 +699,7 @@
 					- Replace material in DB
 						- New Replace(), which does std::swap
 					- Update material in palette: UpdateCustomMaterial(...)
-			- RemoveCustomMaterial
+			- OnRemoveCustomMaterial/s/TODO? result of "Delete selected"
 				- TODO
 				- Also here, like at SetShipCustomMaterials: if currently-picked materials among those being deleted, tell controller to select null
 					- Just call PreMaterialDeleted
@@ -771,13 +772,7 @@
 				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
 
 	- TODOHERE: master list of all tasks:
-
-		- FIX: At new ship, ship deletion might remove currently-picked material
-
-			- Then see that currentlySelected - comment out again
-
 		- Better layout of overlays
-			- TODO: check vote on Discord
 			- Checkbox: transparent (@ImageTools - already?) as circle - smaller
 				- Image still larger (like now) so click rect is larger than circle
 		- Try blue tinting for overlays
