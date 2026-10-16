@@ -772,10 +772,12 @@
 				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
 
 	- TODOHERE: master list of all tasks:
-		- Better layout of overlays
-			- Checkbox: transparent (@ImageTools - already?) as circle - smaller
-				- Image still larger (like now) so click rect is larger than circle
-		- Try blue tinting for overlays
+		= Better layout of overlays
+			+ Checkbox: transparent (@ImageTools - already?) as circle - smaller
+				+ Image still larger (like now) so click rect is larger than circle
+		+ Try blue tinting for overlays
+
+		= Opacity slider: nail down layout and range
 
 		- Complete rope serialization
 		- Test new rope workflow

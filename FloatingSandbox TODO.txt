@@ -2158,14 +2158,26 @@
 
 
 	- Feedback:
-		- Hey Gabe, I'm sure your probably tired of hearing about the rusting by now but I do suggest whenever you get back or whenever you have the time to make the exposure rust go a little faster 
-		  then it is currently. It kind of needs that balance to where damage rust is faster then normal exposure rust is and I think the exposure rust should be faster but not as fast as the current public release to floating sandbox exposure rust. Sorry if this doesn't make sense but I just decided to put in my 2 cents after a day of testing it.
-		 - The rust from damage goes about as quick as the regular, the exposure needs to be right at or a little below damage but i think the speed is about normal 
-		   the weird thing im wondering is if it takes into account above and below water flooded vs ot
-		- In other words: doesn't spread - or spreads too little
-			- Try to go back to orig, but slower exposure&neighbors
-		- Also slower damage rot
-		- Ratio: 2:1
+		- Rusting
+			- Hey Gabe, I'm sure your probably tired of hearing about the rusting by now but I do suggest whenever you get back or whenever you have the time to make the exposure rust go a little faster 
+			  then it is currently. It kind of needs that balance to where damage rust is faster then normal exposure rust is and I think the exposure rust should be faster but not as fast as the current public release to floating sandbox exposure rust. Sorry if this doesn't make sense but I just decided to put in my 2 cents after a day of testing it.
+			- The rust from damage goes about as quick as the regular, the exposure needs to be right at or a little below damage but i think the speed is about normal 
+			  the weird thing im wondering is if it takes into account above and below water flooded vs ot
+			- i know im not in call rn cus im doing stuff with friends but i think rust needs to be like balanced out for both exposure and damage, as well as wayy more underwater rusting. also i think opacity for custom materials should be an option as well as full transparency
+			- In other words: 
+				- Doesn't spread - or spreads too little
+
+				- Try to go back to orig, but slower exposure & neighbors
+					- Problem is ratio between damage and other two
+					- Also weakness
+					- Also: below and above waterline
+					- Damage should collapse first
+			- Doesn't rot more when wet
+			- Also slower damage rot
+			- Ratio: 2:1
+
+		- Check Bandit ship for silt clouds
+			- Rusting 500
 
 	- New electrical elements: 
 		- Electrical material for explosions when powered

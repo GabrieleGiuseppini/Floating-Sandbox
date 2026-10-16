@@ -580,7 +580,7 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
 
         checkboxRect = wxRect(
             MaterialSampleSize.width - MaterialSampleOverlayMargin - mCheckboxOffImage.Size.width,
-            editButtonRect->y + editButtonRect->height + MaterialSampleOverlayMargin,
+            MaterialSampleSize.height - MaterialSampleOverlayMargin - mCheckboxOffImage.Size.height,
             mCheckboxOffImage.Size.width,
             mCheckboxOffImage.Size.height);
     }

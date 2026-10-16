@@ -28,7 +28,7 @@ protected:
     static int constexpr DialogWidth = 300;
     static int constexpr DialogHeight = 600;
 
-    static int constexpr MarginSize = 4;
+    static int constexpr MarginSize = 10;
     static int constexpr SliderWidth = 72; // Min
 
     static int constexpr VMarginAroundButtons = 10;

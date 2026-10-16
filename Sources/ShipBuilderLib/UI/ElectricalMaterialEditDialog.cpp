@@ -25,7 +25,8 @@ void ElectricalMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
         dialogVSizer->Add(
             mNameTextCtrl,
             0,
-            wxALIGN_CENTER_HORIZONTAL);
+            wxEXPAND | wxLEFT | wxRIGHT,
+            MarginSize);
     }
 
     dialogVSizer->AddSpacer(MarginSize);

@@ -41,6 +41,8 @@ void StructuralMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
         {
             wxBoxSizer * renderColorHSizer = new wxBoxSizer(wxHORIZONTAL);
 
+            renderColorHSizer->AddSpacer(MarginSize);
+
             // Render color
             {
                 mRenderColorButton = new wxPanel(panel, wxID_ANY, wxDefaultPosition,
@@ -71,8 +73,6 @@ void StructuralMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
                 renderColorHSizer->Add(mRenderColorButton, 0, wxALIGN_CENTER_VERTICAL);
             }
 
-            renderColorHSizer->AddSpacer(5);
-
             // Opacity
             {
                 mOpacitySlider = new SliderControl<float>(
@@ -88,16 +88,18 @@ void StructuralMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
                         mOverridesUnderEdit->RenderColor.a = static_cast<typename rgbaColor::data_type>(static_cast<float>(rgbaColor::data_type_max) * value);
                     },
                     std::make_unique<LinearSliderCore>(
-                        0.4f, // Barely visible
+                        0.2f, // Barely visible
                         1.0f));
 
-                renderColorHSizer->Add(mOpacitySlider, 0, wxEXPAND);
+                renderColorHSizer->Add(mOpacitySlider, 1, wxEXPAND);
             }
+
+            renderColorHSizer->AddSpacer(MarginSize);
 
             panelVSizer->Add(
                 renderColorHSizer,
                 0,
-                wxALIGN_CENTER_HORIZONTAL);
+                wxEXPAND);
         }
 
         panelVSizer->AddSpacer(MarginSize);
@@ -109,7 +111,8 @@ void StructuralMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
             panelVSizer->Add(
                 mNameTextCtrl,
                 0,
-                wxALIGN_CENTER_HORIZONTAL);
+                wxEXPAND | wxLEFT | wxRIGHT,
+                MarginSize);
         }
 
         panelVSizer->AddSpacer(MarginSize);

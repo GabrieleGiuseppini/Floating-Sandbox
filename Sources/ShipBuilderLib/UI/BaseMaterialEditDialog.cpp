@@ -119,7 +119,7 @@ template<typename TMaterial>
 void BaseMaterialEditDialog<TMaterial>::MakeNameTextCtrl(wxPanel * parent)
 {
     mNameTextCtrl = new wxTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition,
-        wxSize(DialogWidth - 2 * MarginSize, -1), wxTE_CENTRE);
+        wxDefaultSize, wxTE_CENTRE);
 
     mNameTextCtrl->Bind(
         wxEVT_TEXT,
