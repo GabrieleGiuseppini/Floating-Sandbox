@@ -251,6 +251,10 @@ std::any MaterialPalettePanel<TLayer>::RemoveAllShipCustomMaterials(std::any lay
                 {
                     while (stride.Cells.size() > stride.iShipCustomStartIndex)
                     {
+                        //
+                        // Nuke this cell
+                        //
+
                         assert(stride.Cells.back().Kind == Cell::KindType::Material); // Wouldn't be in the "ship" section otherwise
                         mFreeMaterialSampleBitmapIndices.push_back(stride.Cells.back().MaterialSampleBitmapIndex);
 
