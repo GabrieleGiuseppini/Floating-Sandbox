@@ -11,8 +11,6 @@
 #include <Core/Log.h>
 #include <Core/Utils.h>
 
-#include <picojson.h>
-
 #include <algorithm>
 #include <set>
 
@@ -127,39 +125,29 @@ typename MaterialDatabase<TLayer>::SinglePod MaterialDatabase<TLayer>::LoadUserD
     std::filesystem::path const & databaseFilepath,
     MaterialColorMap<TMaterial> const & defaultMaterialColorMap)
 {
-    if (!std::filesystem::exists(databaseFilepath))
-    {
-        return SinglePod();
-    }
+    picojson::object const rootJsonObject = LoadUserDatabaseJson(databaseFilepath);
 
-    auto const rootJsonValue = GameAssetManager::LoadJson(databaseFilepath);
-
-    if (!rootJsonValue.is<picojson::object>())
-    {
-        LogMessage("ERROR: root of user database file \"", databaseFilepath, "\" is not a json object");
-        return SinglePod();
-    }
-
-    picojson::object const & rootJsonObject = rootJsonValue.get<picojson::object>();
-
-    // De-serialize materials
+    // De-serialize materials for this layer
 
     SinglePod pod;
 
-    picojson::array const & materialsJsonArray = Utils::GetMandatoryJsonArray(rootJsonObject, "custom_materials");
-    for (auto const & materialJsonValue : materialsJsonArray)
+    std::optional<picojson::array> const & materialsJsonArray = Utils::GetOptionalJsonArray(rootJsonObject, MakeLayerTypeMaterialsNodeName());
+    if (materialsJsonArray.has_value())
     {
-        picojson::object const & materialJsonObject = Utils::GetJsonValueAsObject(materialJsonValue, "custom_materials");
-
-        rgbColor const baseColorKey = Utils::Hex2RgbColor(Utils::GetMandatoryJsonMember<std::string>(materialJsonObject, "base_color_key"));
-        typename TMaterial::VariantOverridesType const variantOverrides = TMaterial::VariantOverridesType::Deserialize(Utils::GetMandatoryJsonValue(materialJsonObject, "variant_overrides"));
-
-        // Lookup material
-        auto const srchIt = defaultMaterialColorMap.find(baseColorKey);
-        if (srchIt != defaultMaterialColorMap.cend())
+        for (auto const & materialJsonValue : *materialsJsonArray)
         {
-            TMaterial const & baseMaterial = srchIt->second;
-            pod.emplace_back(baseMaterial.MakeCustomMaterial(variantOverrides));
+            picojson::object const & materialJsonObject = Utils::GetJsonValueAsObject(materialJsonValue, "custom_material");
+
+            rgbColor const baseColorKey = Utils::Hex2RgbColor(Utils::GetMandatoryJsonMember<std::string>(materialJsonObject, "base_color_key"));
+            typename TMaterial::VariantOverridesType const variantOverrides = TMaterial::VariantOverridesType::Deserialize(Utils::GetMandatoryJsonValue(materialJsonObject, "variant_overrides"));
+
+            // Lookup material
+            auto const srchIt = defaultMaterialColorMap.find(baseColorKey);
+            if (srchIt != defaultMaterialColorMap.cend())
+            {
+                TMaterial const & baseMaterial = srchIt->second;
+                pod.emplace_back(baseMaterial.MakeCustomMaterial(variantOverrides));
+            }
         }
     }
 
@@ -171,12 +159,12 @@ void MaterialDatabase<TLayer>::SaveUserMaterials(
     std::vector<TMaterial const *> const & materials,
     std::filesystem::path const & databaseFilepath)
 {
-    picojson::object rootJsonObject;
+    picojson::object rootJsonObject = LoadUserDatabaseJson(databaseFilepath);
 
-    // Add version
+    // Set version
     rootJsonObject["_version"] = picojson::value(CurrentGameVersion.ToString());
 
-    // Add timestamp
+    // Set timestamp
     rootJsonObject["_saved_at"] = picojson::value(Utils::MakeNowDateAndTimeString());
 
     // Materials
@@ -193,7 +181,7 @@ void MaterialDatabase<TLayer>::SaveUserMaterials(
         materialsJsonArray.push_back(picojson::value(materialJsonObject));
     }
 
-    rootJsonObject["custom_materials"] = picojson::value(materialsJsonArray);
+    rootJsonObject[MakeLayerTypeMaterialsNodeName()] = picojson::value(materialsJsonArray);
 
     GameAssetManager::SaveJson(
         picojson::value(rootJsonObject),
@@ -201,9 +189,28 @@ void MaterialDatabase<TLayer>::SaveUserMaterials(
 }
 
 template<LayerType TLayer>
+picojson::object MaterialDatabase<TLayer>::LoadUserDatabaseJson(std::filesystem::path const & databaseFilepath)
+{
+    if (!std::filesystem::exists(databaseFilepath))
+    {
+        return picojson::object();
+    }
+
+    auto const rootJsonValue = GameAssetManager::LoadJson(databaseFilepath);
+
+    if (!rootJsonValue.is<picojson::object>())
+    {
+        LogMessage("ERROR: root of user database file \"", databaseFilepath, "\" is not a json object");
+        return picojson::object();
+    }
+
+    return rootJsonValue.get<picojson::object>();
+}
+
+template<LayerType TLayer>
 std::filesystem::path MaterialDatabase<TLayer>::GetDefaultUserDatabaseFilePath() const
 {
-    return mUserGameRootFolderPath / (std::string("shipbuilder_user_custom_") + LayerTypeToStr_snake(TLayer) + "_materials.json");
+    return mUserGameRootFolderPath / std::string("shipbuilder_user_custom_materials.json");
 }
 
 //

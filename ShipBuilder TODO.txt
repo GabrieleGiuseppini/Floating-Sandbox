@@ -454,9 +454,20 @@
 				+ parent color_key and VariantOverridesType
 					+ Materialization from json uses MaterialColorMap<TLayer> and produces variants
 
-			- See if after all VariantOverrides' less-than is needed
-
+			+ Merge DB files into one
+				+ One DB loads whole (object w/3 members), replaces own node
+			- Deser: only ones that are present
 			- Backup mechanism
+				- @ Save:
+					- If DB exists:
+						- If DB.backup exists:
+							- Delete DB.backup
+						- Rename DB as DB.backup
+					- Save DB
+				- @ Load:
+					- If DB does not exist, or exception loading:
+						- If DB.backup exists:
+							- Load DB.backup
 
 			= Unit tests
 				+ SetShipCustomMaterials: verify pruned (inside DB) and returned replacement map
@@ -760,8 +771,11 @@
 	- TODOHERE: master list of all tasks:
 		- Feedback:
 			+ Larger text
-		- DB in separate files
 		- Better layout of overlays
+			- Checkbox: transparent (@ImageTools - already?) as circle - smaller
+				- Image still larger (like now) so click rect is larger than circle
+
+		- DB in same file		
 		- Complete electrical & rope serialization
 		- Complete new electrical & rope workflow
 		- Complete electrical & rope loading from ship

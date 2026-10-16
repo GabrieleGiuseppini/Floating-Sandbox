@@ -10,6 +10,10 @@
 #include <Simulation/Layers.h>
 #include <Simulation/Materials.h>
 
+#include <Core/GameTypes.h>
+
+#include <picojson.h>
+
 #include <filesystem>
 #include <memory>
 #include <vector>
@@ -57,7 +61,14 @@ private:
 		std::vector<TMaterial const *> const & materials,
 		std::filesystem::path const & databaseFilepath);
 
+	static picojson::object LoadUserDatabaseJson(std::filesystem::path const & databaseFilepath);
+
 	std::filesystem::path GetDefaultUserDatabaseFilePath() const;
+
+	static std::string MakeLayerTypeMaterialsNodeName()
+	{
+		return "custom_" + LayerTypeToStr_snake(TLayer) + "_materials";
+	}
 
 private:
 
