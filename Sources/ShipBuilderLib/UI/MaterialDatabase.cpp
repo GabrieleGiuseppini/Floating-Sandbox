@@ -94,9 +94,21 @@ MaterialReplacementMap<typename MaterialDatabase<TLayer>::TMaterial> MaterialDat
 template<LayerType TLayer>
 typename MaterialDatabase<TLayer>::SinglePod MaterialDatabase<TLayer>::LoadDefaultUserDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap) const
 {
-    // TODO: backup mechanism
+    std::filesystem::path const defaultUserDatabaseFilePath = MakeDefaultUserDatabaseFilePath();
+    if (std::filesystem::exists(defaultUserDatabaseFilePath))
+    {
+        try
+        {
+            return LoadUserDatabase(defaultUserDatabaseFilePath, defaultMaterialColorMap);
+        }
+        catch(std::exception const & ex)
+        {
+            LogMessage("ERROR loading ShipBuilder's user custom material database: ", ex.what());
+        }
+    }
 
-    return LoadUserDatabase(MakeDefaultUserDatabaseFilePath(), defaultMaterialColorMap);
+    // Try backup
+    return LoadUserDatabase(MakeDefaultUserDatabaseBackupFilePath(), defaultMaterialColorMap);
 }
 
 template<LayerType TLayer>
