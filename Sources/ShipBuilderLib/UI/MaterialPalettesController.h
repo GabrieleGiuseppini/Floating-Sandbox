@@ -6,6 +6,7 @@
 #pragma once
 
 #include "../ShipBuilderTypes.h"
+#include "../WorkbenchState.h"
 
 #include "IMaterialPalettesController.h"
 #include "MaterialDatabase.h"
@@ -43,6 +44,7 @@ public:
         DefaultMaterialDatabase const & defaultMaterialDatabase,
         ShipTexturizer const & shipTexturizer,
         ISoundController * soundController,
+        WorkbenchState const & workbenchState,
         GameAssetManager const & gameAssetManager,
         ProgressCallback const & progressCallback);
 
@@ -106,14 +108,21 @@ public:
 private:
 
     template<LayerType TLayerType>
+    void OnMaterialSelected(typename LayerTypeTraits<TLayerType>::material_type const * material, MaterialPlaneType plane);
+
+    template<LayerType TLayerType>
     void OnNewUserCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * baseMaterial);
 
     template<LayerType TLayerType>
     void OnEditCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind);
 
+    template<LayerType TLayerType>
+    void PreCustomMaterialDeleted(typename LayerTypeTraits<TLayerType>::material_type const * customMaterial);
+
 private:
 
     DefaultMaterialDatabase const & mDefaultMaterialDatabase; // For color_key lookups
+    WorkbenchState const & mWorkbenchState; // For discovering which materials are currently-picked
 
     std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> const mOnStructuralLayerMaterialSelected;
     std::function<void(ElectricalMaterial const * material, MaterialPlaneType plane)> const mOnElectricalLayerMaterialSelected;

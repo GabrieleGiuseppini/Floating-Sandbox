@@ -10,6 +10,7 @@
 #include "ShipBuilderTypes.h"
 
 #include <Simulation/DefaultMaterialDatabase.h>
+#include <Simulation/Layers.h>
 #include <Simulation/Materials.h>
 
 #include <Core/Colors.h>
@@ -161,6 +162,31 @@ public:
         {
             assert(plane == MaterialPlaneType::Background);
             SetRopesBackgroundMaterial(material);
+        }
+    }
+
+    template<LayerType TLayerType>
+    typename LayerTypeTraits<TLayerType>::material_type const *  GetMaterial(MaterialPlaneType plane) const
+    {
+        if constexpr (TLayerType == LayerType::Structural)
+        {
+            return plane == MaterialPlaneType::Foreground
+                ? GetStructuralForegroundMaterial()
+                : GetStructuralBackgroundMaterial();
+        }
+        else if constexpr (TLayerType == LayerType::Electrical)
+        {
+            return plane == MaterialPlaneType::Foreground
+                ? GetElectricalForegroundMaterial()
+                : GetElectricalBackgroundMaterial();
+        }
+        else
+        {
+            static_assert(TLayerType == LayerType::Ropes);
+
+            return plane == MaterialPlaneType::Foreground
+                ? GetRopesForegroundMaterial()
+                : GetRopesBackgroundMaterial();
         }
     }
 

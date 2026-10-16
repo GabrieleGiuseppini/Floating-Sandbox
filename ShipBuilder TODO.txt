@@ -558,11 +558,9 @@
 									+ Go from ship with many to ship with less - verify layout adjusts
 									+ Go from ship with a few to ship with more - verify layout adjusts
 							- RemoveCustomMaterial(TMaterial const *, [User|Ship], LayoutSession) -> LayoutSession
-								- Nuke material sample from ImageList (wxImageList::Remove)
-									- Store image list index in "free list"
 								- Remove from stride
-									- Update LayoutSession accordingly
-								- Zero out currently-selected if it was this one
+									- Refactor out cell deletion logic (image list index, checked cell count, etc.) from RemoveAllShipCustomMaterials
+								- Update LayoutSession accordingly
 
 					+ EndCustomMaterialsLayout(LayoutSession)
 						+ Do all of the below at new LayoutAndRender(); this one just becomes calling that with LayoutSession
@@ -648,6 +646,8 @@
 						+ panel-> Add ship one by one, if any
 						+ panel-> End custom layout
 						+ Layout() // for H scrollbar
+				- RemoveCustomMaterial(...)
+					- TODO
 
 			= Handle events from Panel:
 				= fsCheckedStateChange
@@ -672,9 +672,13 @@
 			= cctor: 
 				- Controller getter [for reaching ship model, e.g. for replacing materials]
 				- UndoStack
+				+ WorkbenchState const & (for currently-selected materials)
 				+ DefaultMaterialDatabase [to boot 3 MaterialDatabase<T>'s]
 				+ Callback for material selected
 			+ OnShipLoaded(CustomMaterialsPod &&) -> MaterialsReplacementMap
+				+ if currently-picked material(s) (both planes) are among ship's delenda, synthesize selection of nullptr for the plane
+					+ WorkbenchState helper to get material given <LayerType, Plane>
+						+ Refactor out of MainFrame::OpenMaterialPalette
 				+ // Replace ship custom materials on both model & view
 				+ MaterialDatabase<TLayer X 3>::SetShipCustomMaterials(pod member) -> MaterialsReplacementMap
 					+ Define MaterialsReplacementMap @ ShipBuilderTypes
@@ -694,6 +698,10 @@
 					- Replace material in DB
 						- New Replace(), which does std::swap
 					- Update material in palette: UpdateCustomMaterial(...)
+			- RemoveCustomMaterial
+				- TODO
+				- Also here, like at SetShipCustomMaterials: if currently-picked materials among those being deleted, tell controller to select null
+					- Just call PreMaterialDeleted
 
 		+ MaterialEditDialog: 
 			+ Two dialogs, two classes, one base with common code
@@ -763,6 +771,11 @@
 				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
 
 	- TODOHERE: master list of all tasks:
+
+		- FIX: At new ship, ship deletion might remove currently-picked material
+
+			- Then see that currentlySelected - comment out again
+
 		- Better layout of overlays
 			- TODO: check vote on Discord
 			- Checkbox: transparent (@ImageTools - already?) as circle - smaller

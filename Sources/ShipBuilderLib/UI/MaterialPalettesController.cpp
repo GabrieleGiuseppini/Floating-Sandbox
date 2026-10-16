@@ -17,9 +17,11 @@ MaterialPalettesController::MaterialPalettesController(
     DefaultMaterialDatabase const & defaultMaterialDatabase,
     ShipTexturizer const & shipTexturizer,
     ISoundController * soundController,
+    WorkbenchState const & workbenchState,
     GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
     : mDefaultMaterialDatabase(defaultMaterialDatabase)
+    , mWorkbenchState(workbenchState)
     , mOnStructuralLayerMaterialSelected(std::move(onStructuralLayerMaterialSelected))
     , mOnElectricalLayerMaterialSelected(std::move(onElectricalLayerMaterialSelected))
     , mOnRopeLayerMaterialSelected(std::move(onRopeLayerMaterialSelected))
@@ -81,6 +83,25 @@ MaterialPalettesController::MaterialPalettesController(
 LayersMaterialReplacementMaps MaterialPalettesController::OnShipLoaded(CustomMaterialsPod && shipCustomMaterials)
 {
     //
+    // First off, if any of these materials is current in the workbench state, synthesize a toggle to the "clear" material
+    //
+
+    for (auto const & m : mStructuralLayerMaterialDatabase->GetShipCustomMaterials())
+    {
+        PreCustomMaterialDeleted<LayerType::Structural>(m.get());
+    }
+
+    for (auto const & m : mElectricalLayerMaterialDatabase->GetShipCustomMaterials())
+    {
+        PreCustomMaterialDeleted<LayerType::Electrical>(m.get());
+    }
+
+    for (auto const & m : mRopesLayerMaterialDatabase->GetShipCustomMaterials())
+    {
+        PreCustomMaterialDeleted<LayerType::Ropes>(m.get());
+    }
+
+    //
     // Replace ship custom materials on both model & view
     //
 
@@ -114,21 +135,21 @@ void MaterialPalettesController::OnStructuralMaterialSelected(
     StructuralMaterial const * material,
     MaterialPlaneType plane)
 {
-    mOnStructuralLayerMaterialSelected(material, plane);
+    OnMaterialSelected<LayerType::Structural>(material, plane);
 }
 
 void MaterialPalettesController::OnElectricalMaterialSelected(
     ElectricalMaterial const * material,
     MaterialPlaneType plane)
 {
-    mOnElectricalLayerMaterialSelected(material, plane);
+    OnMaterialSelected<LayerType::Electrical>(material, plane);
 }
 
 void MaterialPalettesController::OnRopesMaterialSelected(
     StructuralMaterial const * material,
     MaterialPlaneType plane)
 {
-    mOnRopeLayerMaterialSelected(material, plane);
+    OnMaterialSelected<LayerType::Ropes>(material, plane);
 }
 
 void MaterialPalettesController::OnNewUserCustomStructuralMaterial(StructuralMaterial const * baseMaterial)
@@ -168,6 +189,27 @@ void MaterialPalettesController::OnEditCustomRopesMaterial(
 }
 
 ////////////////////////////////////////////////////////////
+
+template<LayerType TLayerType>
+void MaterialPalettesController::OnMaterialSelected(
+    typename LayerTypeTraits<TLayerType>::material_type const * material,
+    MaterialPlaneType plane)
+{
+    if constexpr (TLayerType == LayerType::Structural)
+    {
+        mOnStructuralLayerMaterialSelected(material, plane);
+    }
+    else if constexpr (TLayerType == LayerType::Electrical)
+    {
+        mOnElectricalLayerMaterialSelected(material, plane);
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::Ropes);
+
+        mOnRopeLayerMaterialSelected(material, plane);
+    }
+}
 
 template<LayerType TLayerType>
 void MaterialPalettesController::OnNewUserCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * baseMaterial)
@@ -301,6 +343,22 @@ void MaterialPalettesController::OnEditCustomMaterial(
         //    TMaterial const * customMaterialPtr = mRopesLayerMaterialDatabase->AddUserCustomMaterial(std::move(customMaterial));
         //    mRopesLayerMaterialPaletteBrowser->AddUserCustomMaterials({ customMaterialPtr });
         //}
+    }
+}
+
+template<LayerType TLayerType>
+void MaterialPalettesController::PreCustomMaterialDeleted(typename LayerTypeTraits<TLayerType>::material_type const * customMaterial)
+{
+    // Reset workbench material selection if this is a currently-picked material
+
+    if (mWorkbenchState.GetMaterial<TLayerType>(MaterialPlaneType::Foreground) == customMaterial)
+    {
+        OnMaterialSelected<TLayerType>(nullptr, MaterialPlaneType::Foreground);
+    }
+
+    if (mWorkbenchState.GetMaterial<TLayerType>(MaterialPlaneType::Background) == customMaterial)
+    {
+        OnMaterialSelected<TLayerType>(nullptr, MaterialPlaneType::Background);
     }
 }
 

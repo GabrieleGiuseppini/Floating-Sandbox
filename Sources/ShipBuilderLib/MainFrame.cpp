@@ -349,6 +349,7 @@ MainFrame::MainFrame(
             mDefaultMaterialDatabase,
             mShipTexturizer,
             mSoundController,
+            mWorkbenchState,
             mGameAssetManager,
             progressCallback.MakeSubCallback(0.0f, 0.8f));
     }
@@ -5676,18 +5677,14 @@ void MainFrame::OpenMaterialPalette(
         mMaterialPalettesController->Open<LayerType::Structural>(
             referenceRect,
             plane,
-            plane == MaterialPlaneType::Foreground
-            ? mWorkbenchState.GetStructuralForegroundMaterial()
-            : mWorkbenchState.GetStructuralBackgroundMaterial());
+            mWorkbenchState.GetMaterial<LayerType::Structural>(plane));
     }
     else if (layer == LayerType::Electrical)
     {
         mMaterialPalettesController->Open<LayerType::Electrical>(
             referenceRect,
             plane,
-            plane == MaterialPlaneType::Foreground
-            ? mWorkbenchState.GetElectricalForegroundMaterial()
-            : mWorkbenchState.GetElectricalBackgroundMaterial());
+            mWorkbenchState.GetMaterial<LayerType::Electrical>(plane));
     }
     else
     {
@@ -5696,9 +5693,7 @@ void MainFrame::OpenMaterialPalette(
         mMaterialPalettesController->Open<LayerType::Ropes>(
             referenceRect,
             plane,
-            plane == MaterialPlaneType::Foreground
-            ? mWorkbenchState.GetRopesForegroundMaterial()
-            : mWorkbenchState.GetRopesBackgroundMaterial());
+            mWorkbenchState.GetMaterial<LayerType::Ropes>(plane));
     }
 }
 
