@@ -728,7 +728,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests, Basic)
     }
 
     // Build custom material map
-    auto const customMaterialMap = ShipDefinitionFormatDeSerializer::ExtractCustomMaterialMap(sourceStructuralLayer);
+    auto const customMaterialMap = ShipDefinitionFormatDeSerializer::ExtractCustomMaterialOverridesMap(sourceStructuralLayer);
 
     EXPECT_EQ(customMaterialMap.size(), customMaterialCount);
 
@@ -813,98 +813,114 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests, Basic)
         buffer);
 }
 
-/* TODOHERE
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests, UnrecognizedMaterial)
+class ShipDefinitionFormatDeSerializer_ElectricalCustomMaterialMapTests : public testing::Test
 {
-    StructuralMaterial unrecognizedMaterial = StructuralMaterial(
-        rgbColor(0x12, 0x34, 0x56),
-        "Unrecognized Material",
-        rgbaColor(0x12, 0x34, 0x56, 0xff));
+protected:
 
-    // Populate structural layer
-    StructuralLayerData sourceStructuralLayer(ShipSpaceSize(10, 12));
-    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
+    static std::uint8_t constexpr NumBaseMaterials = 4;
+    static std::uint8_t constexpr NumCustomMaterials = 10;
+
+    void SetUp()
     {
-        sourceStructuralLayer.Buffer.Data[i].Material = &unrecognizedMaterial;
+        for (uint8_t i = 0; i < NumBaseMaterials; ++i)
+        {
+            TestBaseMaterialColorKeys.emplace_back(
+                uint8_t(i + 2),
+                uint8_t(i + 1),
+                i);
+        }
+
+        for (std::uint8_t i = 0; i < NumCustomMaterials; ++i)
+        {
+            MaterialColorKey baseColorKey = TestBaseMaterialColorKeys[i % NumBaseMaterials];
+
+            ShipDefinitionFormatDeSerializer::CustomMaterialOverridesKey<ElectricalMaterial> mapKey(
+                baseColorKey,
+                MakeVariantOverrides(i));
+
+            TestCustomMaterialOverridesMap.try_emplace(
+                mapKey,
+                static_cast<std::uint16_t>(NumCustomMaterials - 1 - i));
+        }
     }
 
+    void VerifyDeserializedElectricalCustomMaterialMap(DeSerializationBuffer<BigEndianess> & buffer)
+    {
+        MaterialColorMap<ElectricalMaterial> testBaseMaterialColorMap;
+        for (std::uint8_t i = 0; i < NumCustomMaterials; ++i)
+        {
+            MaterialColorKey baseColorKey = TestBaseMaterialColorKeys[i % NumBaseMaterials];
+
+            ElectricalMaterial baseMaterial(
+                baseColorKey,
+                std::string("ZORRO"),
+                rgbColor(i + 17, i + 19, i + 11),
+                false);
+            baseMaterial.PaletteCoordinates = { "Category", "SubCategory", i };
+
+            testBaseMaterialColorMap.try_emplace(
+                baseColorKey,
+                baseMaterial);
+        }
+
+        std::vector<std::unique_ptr<ElectricalMaterial const>> customMaterials = ShipDefinitionFormatDeSerializer::ReadCustomMaterialMap(
+            buffer,
+            0,
+            testBaseMaterialColorMap);
+
+        ASSERT_EQ(customMaterials.size(), NumCustomMaterials);
+
+        for (size_t c = 0; c < NumCustomMaterials; ++c)
+        {
+            ElectricalMaterial const & customMaterial = *(customMaterials[c].get());
+
+            MaterialColorKey expectedBaseColorKey = TestBaseMaterialColorKeys[(NumCustomMaterials - 1 - c) % NumBaseMaterials];
+
+            EXPECT_EQ(customMaterial.ColorKey, expectedBaseColorKey);
+
+            ElectricalMaterial::VariantOverridesType expectedVariantOverrides = MakeVariantOverrides(NumCustomMaterials - 1 - c);
+            EXPECT_EQ(customMaterial.Name, expectedVariantOverrides.Name);
+            EXPECT_EQ(customMaterial.HeatGenerated, expectedVariantOverrides.HeatGenerated);
+            EXPECT_EQ(customMaterial.Luminiscence, expectedVariantOverrides.Luminiscence);
+            EXPECT_EQ(customMaterial.LightSpread, expectedVariantOverrides.LightSpread);
+            EXPECT_EQ(customMaterial.EnginePower, expectedVariantOverrides.EnginePower);
+            EXPECT_EQ(customMaterial.WaterPumpNominalForce, expectedVariantOverrides.WaterPumpNominalForce);
+            EXPECT_EQ(customMaterial.TimerDurationSeconds, expectedVariantOverrides.TimerDurationSeconds);
+            EXPECT_EQ(customMaterial.ThermalSwitchTransitionTemperature, expectedVariantOverrides.ThermalSwitchTransitionTemperature);
+        }
+    }
+
+    static ElectricalMaterial::VariantOverridesType MakeVariantOverrides(size_t i)
+    {
+        ElectricalMaterial::VariantOverridesType variantOverrides = ElectricalMaterial::VariantOverridesType(
+            "CustomMaterial " + std::to_string(i),
+            1.0f,
+            2.0f,
+            3.0f,
+            4.0f,
+            5.0f,
+            6.0f,
+            7.0f + static_cast<float>(i));
+
+        return variantOverrides;
+    }
+
+    std::vector<MaterialColorKey> TestBaseMaterialColorKeys;
+    std::map<ShipDefinitionFormatDeSerializer::CustomMaterialOverridesKey<ElectricalMaterial>, std::uint16_t> TestCustomMaterialOverridesMap;
+};
+
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalCustomMaterialMapTests, Basic)
+{
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V2(sourceStructuralLayer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendCustomMaterialMap(TestCustomMaterialOverridesMap, buffer);
 
     //
-    // Verify exception
+    // Verify may be read
     //
 
-    Version const fileFSVersion(1, 2, 3, 4);
-
-    try
-    {
-        std::unique_ptr<StructuralLayerData> targetStructuralLayer;
-        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            fileFSVersion,
-            sourceStructuralLayer.Buffer.Size, false, false);
-        ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V2(
-            buffer,
-            shipAttributes,
-            TestMaterialMap,
-            targetStructuralLayer);
-
-        FAIL();
-    }
-    catch (UserGameException const & exc)
-    {
-        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFound);
-        EXPECT_EQ(exc.Parameters[0], fileFSVersion.ToMajorMinorPatchString());
-    }
+    VerifyDeserializedElectricalCustomMaterialMap(buffer);
 }
-
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests, VersionSelection)
-{
-    // TODOHERE
-    StructuralMaterial unrecognizedMaterial = StructuralMaterial(
-        rgbColor(0x12, 0x34, 0x56),
-        "Unrecognized Material",
-        rgbaColor(0x12, 0x34, 0x56, 0xff));
-
-    // Populate structural layer
-    StructuralLayerData sourceStructuralLayer(ShipSpaceSize(10, 12));
-    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
-    {
-        sourceStructuralLayer.Buffer.Data[i].Material = &unrecognizedMaterial;
-    }
-
-    // Serialize
-    DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V2(sourceStructuralLayer, buffer);
-
-    //
-    // Verify exception
-    //
-
-    Version const fileFSVersion(1, 2, 3, 4);
-
-    try
-    {
-        std::unique_ptr<StructuralLayerData> targetStructuralLayer;
-        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            fileFSVersion,
-            sourceStructuralLayer.Buffer.Size, false, false);
-        ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V2(
-            buffer,
-            shipAttributes,
-            TestMaterialMap,
-            targetStructuralLayer);
-
-        FAIL();
-    }
-    catch (UserGameException const & exc)
-    {
-        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFound);
-        EXPECT_EQ(exc.Parameters[0], fileFSVersion.ToMajorMinorPatchString());
-    }
-}
-*/
 
 class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests : public testing::Test
 {

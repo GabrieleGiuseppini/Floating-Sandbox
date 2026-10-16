@@ -381,19 +381,19 @@ void ShipDefinitionFormatDeSerializer::Save(
     CustomMaterialOverridesMap<StructuralMaterial> structuralLayerCustomMaterialOverridesMap;
     if (shipDefinition.Layers.StructuralLayer)
     {
-        structuralLayerCustomMaterialOverridesMap = ExtractCustomMaterialMap(*shipDefinition.Layers.StructuralLayer);
+        structuralLayerCustomMaterialOverridesMap = ExtractCustomMaterialOverridesMap(*shipDefinition.Layers.StructuralLayer);
     }
 
     CustomMaterialOverridesMap<ElectricalMaterial> electricalLayerCustomMaterialOverridesMap;
     if (shipDefinition.Layers.ElectricalLayer)
     {
-        electricalLayerCustomMaterialOverridesMap = ExtractCustomMaterialMap(*shipDefinition.Layers.ElectricalLayer);
+        electricalLayerCustomMaterialOverridesMap = ExtractCustomMaterialOverridesMap(*shipDefinition.Layers.ElectricalLayer);
     }
 
     CustomMaterialOverridesMap<StructuralMaterial> ropesLayerCustomMaterialOverridesMap;
     if (shipDefinition.Layers.RopesLayer)
     {
-        ropesLayerCustomMaterialOverridesMap = ExtractCustomMaterialMap(*shipDefinition.Layers.RopesLayer);
+        ropesLayerCustomMaterialOverridesMap = ExtractCustomMaterialOverridesMap(*shipDefinition.Layers.RopesLayer);
     }
 
     std::uint16_t fileFormatVersion =
@@ -1360,7 +1360,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V1(
     //
 
     {
-        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Buffer));
+        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType_V1::Buffer));
         size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
 
         static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
@@ -1382,7 +1382,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V1(
 
     if (!electricalLayer.Panel.IsEmpty())
     {
-        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Panel));
+        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType_V1::Panel));
         size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
 
         static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
@@ -1403,7 +1403,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V1(
     //
 
     {
-        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Tail));
+        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType_V1::Tail));
         buffer.Append<std::uint32_t>(0);
 
         static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
@@ -1466,6 +1466,94 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerBuffer_V1(
         rleBuffer.GetSize());
 
     return subSectionBodySize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V2(
+    ElectricalLayerData const & electricalLayer,
+    CustomMaterialOverridesMap<ElectricalMaterial> const & customMaterialOverridesMap,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t sectionBodySize = 0;
+
+    //
+    // Custom Material Map
+    //
+
+    {
+        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType_V2::CustomMaterialsMap));
+        size_t const subSectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
+
+        size_t const subSectionBodySize = AppendCustomMaterialMap(
+            customMaterialOverridesMap,
+            buffer);
+
+        buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), subSectionBodySizeIndex);
+
+        sectionBodySize += subSectionBodySize;
+    }
+
+    // TODOHERE
+    (void)electricalLayer;
+
+    ////
+    //// Buffer
+    ////
+
+    //{
+    //    buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Buffer));
+    //    size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+    //    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+    //    sectionBodySize += sizeof(SectionHeader);
+
+    //    // Body
+    //    size_t const subSectionBodySize = AppendElectricalLayerBuffer_V2(
+    //        electricalLayer.Buffer,
+    //        buffer);
+
+    //    buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), sectionBodySizeIndex);
+
+    //    sectionBodySize += subSectionBodySize;
+    //}
+
+    ////
+    //// Electrical panel
+    ////
+
+    //if (!electricalLayer.Panel.IsEmpty())
+    //{
+    //    buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Panel));
+    //    size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+    //    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+    //    sectionBodySize += sizeof(SectionHeader);
+
+    //    // Body
+    //    size_t const subSectionBodySize = AppendElectricalLayerPanel(
+    //        electricalLayer.Panel,
+    //        buffer);
+
+    //    buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), sectionBodySizeIndex);
+
+    //    sectionBodySize += subSectionBodySize;
+    //}
+
+    ////
+    //// Tail
+    ////
+
+    //{
+    //    buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Tail));
+    //    buffer.Append<std::uint32_t>(0);
+
+    //    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+    //    sectionBodySize += sizeof(SectionHeader);
+    //}
+
+    return sectionBodySize;
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerPanel(
@@ -1678,7 +1766,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
         buffer);
 }
 
-ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial> ShipDefinitionFormatDeSerializer::ExtractCustomMaterialMap(StructuralLayerData const & layerData)
+ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial> ShipDefinitionFormatDeSerializer::ExtractCustomMaterialOverridesMap(StructuralLayerData const & layerData)
 {
     CustomMaterialOverridesMap<StructuralMaterial> customMaterialOverridesMap;
 
@@ -1709,14 +1797,14 @@ ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial>
     return customMaterialOverridesMap;
 }
 
-ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<ElectricalMaterial> ShipDefinitionFormatDeSerializer::ExtractCustomMaterialMap(ElectricalLayerData const & layerData)
+ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<ElectricalMaterial> ShipDefinitionFormatDeSerializer::ExtractCustomMaterialOverridesMap(ElectricalLayerData const & layerData)
 {
     // TODO
     (void)layerData;
     return CustomMaterialOverridesMap<ElectricalMaterial>();
 }
 
-ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial> ShipDefinitionFormatDeSerializer::ExtractCustomMaterialMap(RopesLayerData const & layerData)
+ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial> ShipDefinitionFormatDeSerializer::ExtractCustomMaterialOverridesMap(RopesLayerData const & layerData)
 {
     // TODO
     (void)layerData;
@@ -2375,6 +2463,134 @@ std::vector<std::unique_ptr<StructuralMaterial const>> ShipDefinitionFormatDeSer
     return customMaterials;
 }
 
+std::vector<std::unique_ptr<ElectricalMaterial const>> ShipDefinitionFormatDeSerializer::ReadCustomMaterialMap(
+    DeSerializationBuffer<BigEndianess> const & buffer,
+    size_t bufferReadOffset,
+    MaterialColorMap<ElectricalMaterial> const & baseMaterialColorMap)
+{
+    size_t offset = bufferReadOffset;
+
+    // Number of entries
+
+    std::uint16_t count;
+    offset += buffer.ReadAt<std::uint16_t>(offset, count);
+
+    // Entries
+
+    std::vector<std::unique_ptr<ElectricalMaterial const>> customMaterials;
+
+    for (size_t i = 0; i < static_cast<size_t>(count); ++i)
+    {
+        // Deserialize RGB base color key
+        MaterialColorKey baseColorKey;
+        offset += buffer.ReadAt(offset, reinterpret_cast<unsigned char *>(&baseColorKey), sizeof(baseColorKey));
+
+        auto const baseSrchIt = baseMaterialColorMap.find(baseColorKey);
+        assert(baseSrchIt != baseMaterialColorMap.end());
+        if (baseSrchIt == baseMaterialColorMap.end())
+        {
+            throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+        }
+
+        // Make base variant override, which we'll override with what we find here
+        ElectricalMaterial::VariantOverridesType variantOverrides = baseSrchIt->second.MakeStartingVariantOverrides();
+
+        // Deserialize variant overrides
+        for (;;)
+        {
+            SectionHeader const sectionHeader = ReadSectionHeader(buffer, offset);
+            offset += sizeof(SectionHeader);
+
+            switch (sectionHeader.Tag)
+            {
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::Name):
+                {
+                    buffer.ReadAt<std::string>(offset, variantOverrides.Name);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::HeatGenerated):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.HeatGenerated);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::Luminiscence):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.Luminiscence);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::LightSpread):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.LightSpread);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::EnginePower):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.EnginePower);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::WaterPumpNominalForce):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.WaterPumpNominalForce);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::TimerDurationSeconds):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.TimerDurationSeconds);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::ThermalSwitchTransitionTemperature):
+                {
+                    buffer.ReadAt<float>(offset, variantOverrides.ThermalSwitchTransitionTemperature);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(CustomMaterialMapEntryTagType::Tail):
+                {
+                    // We're done
+                    break;
+                }
+
+                default:
+                {
+                    // Unrecognized tag
+                    LogMessage("WARNING: Unrecognized physics data tag ", sectionHeader.Tag);
+                    break;
+                }
+            }
+
+            if (sectionHeader.Tag == static_cast<uint32_t>(CustomMaterialMapEntryTagType::Tail))
+            {
+                // We're done
+                break;
+            }
+
+            offset += sectionHeader.SectionBodySize;
+        }
+
+        // Make material
+        customMaterials.emplace_back(
+            baseSrchIt->second.MakeCustomMaterial(
+                variantOverrides));
+    }
+
+    return customMaterials;
+}
+
 void ShipDefinitionFormatDeSerializer::ReadStructuralLayer_V1(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
@@ -2605,7 +2821,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V1(
 
         switch (sectionHeader.Tag)
         {
-            case static_cast<uint32_t>(ElectricalLayerTagType::Buffer) :
+            case static_cast<uint32_t>(ElectricalLayerTagType_V1::Buffer) :
             {
                 // Decode RLE buffer
                 size_t writeOffset = 0;
@@ -2666,7 +2882,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V1(
                 break;
             }
 
-            case static_cast<uint32_t>(ElectricalLayerTagType::Panel) :
+            case static_cast<uint32_t>(ElectricalLayerTagType_V1::Panel) :
             {
                 electricalLayer->Panel.Clear();
 
@@ -2724,7 +2940,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V1(
                 break;
             }
 
-            case static_cast<uint32_t>(ElectricalLayerTagType::Tail) :
+            case static_cast<uint32_t>(ElectricalLayerTagType_V1::Tail) :
             {
                 // We're done
                 break;
@@ -2738,7 +2954,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V1(
             }
         }
 
-        if (sectionHeader.Tag == static_cast<uint32_t>(ElectricalLayerTagType::Tail))
+        if (sectionHeader.Tag == static_cast<uint32_t>(ElectricalLayerTagType_V1::Tail))
         {
             // We're done
             break;

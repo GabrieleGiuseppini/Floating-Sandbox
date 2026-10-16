@@ -354,18 +354,13 @@
 							! Deser "deser" material map -> vector<std::uq_ptr<TMaterial *>>
 							! Deser layer (reads raw)
 
-				+ ExtractCustomMaterialMap/Structural
 				+ AppendCustomMaterialMap/Structural
 				+ ReadCustomMaterialMap/Structural
 				+ UTs: read+write
 
-				- ExtractCustomMaterialMap/Electrical
 				+ AppendCustomMaterialMap/Electrical
-				- ReadCustomMaterialMap/Electrical
-				- UTs: read+write
-
-				- ExtractCustomMaterialMap/Ropes
-				- UTs: read+write
+				+ ReadCustomMaterialMap/Electrical
+				+ UTs: read+write
 
 				+ Structural layer					
 					+ ExtractCustomMaterialMap
@@ -380,11 +375,11 @@
 						+ Structural layer
 					+ Unit tests for structural layer V2
 						+ Add checks to Roundtrip_V2
-				- Electrical layer
-					- ExtractCustomMaterialMap
+				= Electrical layer
+					= ExtractCustomMaterialMap
 					- Ser
 						- Rename save chain
-						- TODO
+						- TODO: @ AppendElectricalLayer_V2
 					- Deser
 						- Rename read chain (plumb up)
 						- TODO
