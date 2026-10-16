@@ -375,17 +375,18 @@
 						+ Structural layer
 					+ Unit tests for structural layer V2
 						+ Add checks to Roundtrip_V2
-				= Electrical layer
+				+ Electrical layer
 					+ ExtractCustomMaterialMap
-					= Ser
+					+ Ser
 						+ Rename save chain
-						- AppendElectricalLayer_V2
-					- Deser
-						- Rename read chain (plumb up)
-						- ReadElectricalLayer_V2
-					= Unit tests for electrical layer V2
-						= Basic
-						= Add checks to Roundtrip_V2
+						+ AppendElectricalLayer_V2
+					+ Deser
+						+ Rename read chain (plumb up)
+						+ ReadElectricalLayer_V2
+							+ Factor out panel reading into helper, probably needs offset
+					+ Unit tests for electrical layer V2
+						+ Basic
+						+ Add checks to Roundtrip_V2
 				- Ropes layer
 					- ExtractCustomMaterialMap
 					- Ser
@@ -765,14 +766,18 @@
 				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
 
 	- TODOHERE: master list of all tasks:
-		- Feedback:
-			+ Larger text
 		- Better layout of overlays
+			- TODO: check vote on Discord
 			- Checkbox: transparent (@ImageTools - already?) as circle - smaller
 				- Image still larger (like now) so click rect is larger than circle
-		- Complete electrical & rope serialization
-		- Complete new electrical & rope workflow
-		- Complete electrical & rope loading from ship
+
+		+ Complete electrical serialization
+		- Complete new electrical workflow
+		- Complete electrical loading from ship
+
+		- Complete rope serialization
+		- Complete new rope workflow
+		- Complete rope loading from ship
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 

@@ -147,6 +147,24 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     break;
                 }
 
+                case static_cast<uint32_t>(MainSectionTagType::ElectricalLayer_V2):
+                {
+                    // Make sure we've already gotten the ship attributes
+                    if (!shipAttributes.has_value())
+                    {
+                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                    }
+
+                    ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
+                    CustomElectricalLayerMaterials = ReadElectricalLayer_V2(
+                        buffer,
+                        *shipAttributes,
+                        defaultMaterialDatabase.GetElectricalMaterialColorMap(),
+                        electricalLayer);
+
+                    break;
+                }
+
                 case static_cast<uint32_t>(MainSectionTagType::RopesLayer_V1):
                 {
                     // Make sure we've already gotten the ship attributes
@@ -1298,12 +1316,11 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayerBuffer_V2(
     size_t subSectionBodySize = 0;
 
     //
-    // Encode layer with RLE of [uint16 custom material index [RGB color key]]
+    // Encode layer with RLE of [uint16 custom material index [, RGB color key]]
     //
 
     size_t const layerLinearSize = structuralLayerBuffer.Size.GetLinearSize();
-    DeSerializationBuffer<BigEndianess> rleBuffer(layerLinearSize * sizeof(MaterialColorKey)); // Upper bound
-    static_assert(sizeof(std::uint16_t) <= sizeof(MaterialColorKey)); // Or else not upper bound
+    DeSerializationBuffer<BigEndianess> rleBuffer(layerLinearSize * (sizeof(std::uint16_t) + sizeof(MaterialColorKey))); // Upper bound
 
     StructuralElement const * structuralElementBuffer = structuralLayerBuffer.Data.get();
     for (size_t i = 0; i < layerLinearSize; /*incremented in loop*/)
@@ -1508,65 +1525,142 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V2(
         sectionBodySize += subSectionBodySize;
     }
 
-    // TODOHERE
-    (void)electricalLayer;
+    //
+    // Buffer
+    //
 
-    ////
-    //// Buffer
-    ////
+    {
+        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType_V2::Buffer));
+        size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
 
-    //{
-    //    buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Buffer));
-    //    size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
 
-    //    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
-    //    sectionBodySize += sizeof(SectionHeader);
+        // Body
+        size_t const subSectionBodySize = AppendElectricalLayerBuffer_V2(
+            electricalLayer.Buffer,
+            customMaterialOverridesMap,
+            buffer);
 
-    //    // Body
-    //    size_t const subSectionBodySize = AppendElectricalLayerBuffer_V2(
-    //        electricalLayer.Buffer,
-    //        buffer);
+        buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), sectionBodySizeIndex);
 
-    //    buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), sectionBodySizeIndex);
+        sectionBodySize += subSectionBodySize;
+    }
 
-    //    sectionBodySize += subSectionBodySize;
-    //}
+    //
+    // Electrical panel
+    //
 
-    ////
-    //// Electrical panel
-    ////
+    if (!electricalLayer.Panel.IsEmpty())
+    {
+        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType_V2::Panel));
+        size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
 
-    //if (!electricalLayer.Panel.IsEmpty())
-    //{
-    //    buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Panel));
-    //    size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
 
-    //    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
-    //    sectionBodySize += sizeof(SectionHeader);
+        // Body
+        size_t const subSectionBodySize = AppendElectricalLayerPanel(
+            electricalLayer.Panel,
+            buffer);
 
-    //    // Body
-    //    size_t const subSectionBodySize = AppendElectricalLayerPanel(
-    //        electricalLayer.Panel,
-    //        buffer);
+        buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), sectionBodySizeIndex);
 
-    //    buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), sectionBodySizeIndex);
+        sectionBodySize += subSectionBodySize;
+    }
 
-    //    sectionBodySize += subSectionBodySize;
-    //}
+    //
+    // Tail
+    //
 
-    ////
-    //// Tail
-    ////
+    {
+        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType_V2::Tail));
+        buffer.Append<std::uint32_t>(0);
 
-    //{
-    //    buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Tail));
-    //    buffer.Append<std::uint32_t>(0);
-
-    //    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
-    //    sectionBodySize += sizeof(SectionHeader);
-    //}
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
+    }
 
     return sectionBodySize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerBuffer_V2(
+    Buffer2D<ElectricalElement, struct ShipSpaceTag> const & electricalLayerBuffer,
+    CustomMaterialOverridesMap<ElectricalMaterial> const & customMaterialOverridesMap,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t subSectionBodySize = 0;
+
+    //
+    // Encode layer with RLE of [uint16 custom material index [, RGB color key], instance ID]
+    //
+
+    size_t const layerLinearSize = electricalLayerBuffer.Size.GetLinearSize();
+    DeSerializationBuffer<BigEndianess> rleBuffer(layerLinearSize * (sizeof(std::uint16_t) + sizeof(MaterialColorKey) + sizeof(std::uint16_t))); // Upper bound
+
+    ElectricalElement const * electricalElementBuffer = electricalLayerBuffer.Data.get();
+    for (size_t i = 0; i < layerLinearSize; /*incremented in loop*/)
+    {
+        // Get the element at this position
+        ElectricalElement const & electricalElement = electricalElementBuffer[i];
+        ++i;
+
+        // Count consecutive identical values
+        std::uint16_t materialCount = 1;
+        for (;
+            i < layerLinearSize
+            && electricalElementBuffer[i] == electricalElement
+            && materialCount < std::numeric_limits<var_uint16_t>::max().value();
+            ++i, ++materialCount);
+
+        // Serialize count
+        rleBuffer.Append<var_uint16_t>(var_uint16_t(materialCount));
+
+        // Serialize material
+        if (electricalElement.Material != nullptr && electricalElement.Material->VariantOverrides.has_value())
+        {
+            // Custom material
+
+            // Look it up
+            CustomMaterialOverridesKey<ElectricalMaterial> customMaterialKey(
+                electricalElement.Material->ColorKey,
+                *electricalElement.Material->VariantOverrides);
+            assert(customMaterialOverridesMap.count(customMaterialKey) == 1);
+            std::uint16_t const customMaterialIndex = customMaterialOverridesMap.at(customMaterialKey);
+
+            // Serialize custom material index
+            rleBuffer.Append<std::uint16_t>(customMaterialIndex);
+        }
+        else
+        {
+            // Default material
+
+            // Serialize custom material index
+            rleBuffer.Append<std::uint16_t>(SimulationParameters::MaxCustomMaterialPerShip);
+
+            // Serialize RGB key
+            MaterialColorKey const colorKey = (electricalElement.Material == nullptr) ? EmptyMaterialColorKey : electricalElement.Material->ColorKey;
+            rleBuffer.Append(reinterpret_cast<unsigned char const *>(&colorKey), sizeof(MaterialColorKey));
+        }
+
+        // Serialize instance index - only if instanced
+        if (electricalElement.Material != nullptr
+            && electricalElement.Material->IsInstanced)
+        {
+            static_assert(sizeof(ElectricalElementInstanceIndex) <= sizeof(std::uint16_t));
+            rleBuffer.Append<var_uint16_t>(var_uint16_t(electricalElement.InstanceIndex));
+        }
+    }
+
+    //
+    // Serialize RLE buffer
+    //
+
+    subSectionBodySize += buffer.Append(
+        rleBuffer.GetData(),
+        rleBuffer.GetSize());
+
+    return subSectionBodySize;
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerPanel(
@@ -2921,58 +3015,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V1(
 
             case static_cast<uint32_t>(ElectricalLayerTagType_V1::Panel) :
             {
-                electricalLayer->Panel.Clear();
-
-                size_t elecPanelReadOffset = readOffset;
-
-                // Number of entries
-                std::uint16_t entryCount;
-                elecPanelReadOffset += buffer.ReadAt<std::uint16_t>(elecPanelReadOffset, entryCount);
-
-                // Entries
-                for (std::uint16_t i = 0; i < entryCount; ++i)
-                {
-                    std::uint32_t instanceIndex;
-                    elecPanelReadOffset += buffer.ReadAt<std::uint32_t>(elecPanelReadOffset, instanceIndex);
-
-                    std::optional<IntegralCoordinates> panelCoordinates;
-                    bool panelCoordsHasValue;
-                    elecPanelReadOffset += buffer.ReadAt<bool>(elecPanelReadOffset, panelCoordsHasValue);
-                    if (panelCoordsHasValue)
-                    {
-                        int32_t x;
-                        elecPanelReadOffset += buffer.ReadAt<std::int32_t>(elecPanelReadOffset, x);
-                        int32_t y;
-                        elecPanelReadOffset += buffer.ReadAt<std::int32_t>(elecPanelReadOffset, y);
-
-                        panelCoordinates = IntegralCoordinates(static_cast<int>(x), static_cast<int>(y));
-                    }
-
-                    std::optional<std::string> label;
-                    bool labelHasValue;
-                    elecPanelReadOffset += buffer.ReadAt<bool>(elecPanelReadOffset, labelHasValue);
-                    if (labelHasValue)
-                    {
-                        std::string labelStr;
-                        elecPanelReadOffset += buffer.ReadAt<std::string>(elecPanelReadOffset, labelStr);
-                        label = labelStr;
-                    }
-
-                    bool isHidden;
-                    elecPanelReadOffset += buffer.ReadAt<bool>(elecPanelReadOffset, isHidden);
-
-                    auto const [_, isAdded] = electricalLayer->Panel.TryAdd(
-                        static_cast<ElectricalElementInstanceIndex>(instanceIndex),
-                        ElectricalPanel::ElementMetadata(
-                            panelCoordinates,
-                            label,
-                            isHidden));
-
-                    if (!isAdded)
-                    {
-                        LogMessage("WARNING: Duplicate electrical element instance index \"", instanceIndex, "\"");
-                    }
-                }
+                electricalLayer->Panel = ReadElectricalPanel(buffer, readOffset);
 
                 break;
             }
@@ -2999,6 +3042,206 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V1(
 
         readOffset += sectionHeader.SectionBodySize;
     }
+}
+
+std::vector<std::unique_ptr<ElectricalMaterial const>> ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V2(
+    DeSerializationBuffer<BigEndianess> const & buffer,
+    ShipAttributes const & shipAttributes,
+    MaterialColorMap<ElectricalMaterial> const & defaultMaterialColorMap,
+    std::unique_ptr<ElectricalLayerData> & electricalLayer)
+{
+    std::vector<std::unique_ptr<ElectricalMaterial const>> customMaterials;
+
+    size_t readOffset = 0;
+
+    // Allocate buffer
+    electricalLayer.reset(new ElectricalLayerData(shipAttributes.ShipSize));
+
+    // Read all tags
+    while (true)
+    {
+        SectionHeader const sectionHeader = ReadSectionHeader(buffer, readOffset);
+        readOffset += sizeof(SectionHeader);
+
+        switch (sectionHeader.Tag)
+        {
+            case static_cast<uint32_t>(ElectricalLayerTagType_V2::CustomMaterialsMap):
+            {
+                customMaterials = ReadCustomMaterialMap(
+                    buffer,
+                    readOffset,
+                    defaultMaterialColorMap);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(ElectricalLayerTagType_V2::Buffer):
+            {
+                // Decode RLE buffer
+                size_t writeOffset = 0;
+                ElectricalElement * electricalLayerWrite = electricalLayer->Buffer.Data.get();
+                for (size_t bufferReadOffset = 0; bufferReadOffset < sectionHeader.SectionBodySize; /*incremented in loop*/)
+                {
+                    // Deserialize count
+                    var_uint16_t count;
+                    bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, count);
+
+                    // Deserialize custom material index
+                    std::uint16_t customMaterialIndex;
+                    bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, customMaterialIndex);
+
+                    ElectricalMaterial const * material;
+                    if (customMaterialIndex != SimulationParameters::MaxCustomMaterialPerShip)
+                    {
+                        // Custom material
+                        if (customMaterialIndex >= customMaterials.size())
+                        {
+                            throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                        }
+
+                        material = customMaterials[customMaterialIndex].get();
+                    }
+                    else
+                    {
+                        // Deserialize colorKey value
+                        MaterialColorKey colorKey;
+                        bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
+
+                        // Lookup material
+                        if (colorKey == EmptyMaterialColorKey)
+                        {
+                            material = nullptr;
+                        }
+                        else
+                        {
+                            auto const materialIt = defaultMaterialColorMap.find(colorKey);
+                            if (materialIt == defaultMaterialColorMap.cend())
+                            {
+                                ThrowMaterialNotFound(shipAttributes);
+                            }
+
+                            material = &(materialIt->second);
+                        }
+                    }
+
+                    // Deserialize instanceID - only if instanced
+                    ElectricalElementInstanceIndex instanceId;
+                    if (material != nullptr
+                        && material->IsInstanced)
+                    {
+                        var_uint16_t instanceIdTmp;
+                        bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, instanceIdTmp);
+                        instanceId = static_cast<ElectricalElementInstanceIndex>(instanceIdTmp.value());
+                    }
+                    else
+                    {
+                        instanceId = NoneElectricalElementInstanceIndex;
+                    }
+
+                    // Fill material
+                    std::fill_n(
+                        electricalLayerWrite + writeOffset,
+                        count.value(),
+                        ElectricalElement(material, instanceId));
+
+                    // Advance
+                    writeOffset += count.value();
+                }
+
+                assert(writeOffset == shipAttributes.ShipSize.GetLinearSize());
+
+                break;
+            }
+
+            case static_cast<uint32_t>(ElectricalLayerTagType_V2::Panel):
+            {
+                electricalLayer->Panel = ReadElectricalPanel(buffer, readOffset);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(ElectricalLayerTagType_V2::Tail):
+            {
+                // We're done
+                break;
+            }
+
+            default:
+            {
+                // Unrecognized tag
+                LogMessage("WARNING: Unrecognized electrical tag ", sectionHeader.Tag);
+                break;
+            }
+        }
+
+        if (sectionHeader.Tag == static_cast<uint32_t>(ElectricalLayerTagType_V2::Tail))
+        {
+            // We're done
+            break;
+        }
+
+        readOffset += sectionHeader.SectionBodySize;
+    }
+
+    return customMaterials;
+}
+
+ElectricalPanel ShipDefinitionFormatDeSerializer::ReadElectricalPanel(
+    DeSerializationBuffer<BigEndianess> const & buffer,
+    size_t readOffset)
+{
+    ElectricalPanel panel;
+
+    // Number of entries
+    std::uint16_t entryCount;
+    readOffset += buffer.ReadAt<std::uint16_t>(readOffset, entryCount);
+
+    // Entries
+    for (std::uint16_t i = 0; i < entryCount; ++i)
+    {
+        std::uint32_t instanceIndex;
+        readOffset += buffer.ReadAt<std::uint32_t>(readOffset, instanceIndex);
+
+        std::optional<IntegralCoordinates> panelCoordinates;
+        bool panelCoordsHasValue;
+        readOffset += buffer.ReadAt<bool>(readOffset, panelCoordsHasValue);
+        if (panelCoordsHasValue)
+        {
+            int32_t x;
+            readOffset += buffer.ReadAt<std::int32_t>(readOffset, x);
+            int32_t y;
+            readOffset += buffer.ReadAt<std::int32_t>(readOffset, y);
+
+            panelCoordinates = IntegralCoordinates(static_cast<int>(x), static_cast<int>(y));
+        }
+
+        std::optional<std::string> label;
+        bool labelHasValue;
+        readOffset += buffer.ReadAt<bool>(readOffset, labelHasValue);
+        if (labelHasValue)
+        {
+            std::string labelStr;
+            readOffset += buffer.ReadAt<std::string>(readOffset, labelStr);
+            label = labelStr;
+        }
+
+        bool isHidden;
+        readOffset += buffer.ReadAt<bool>(readOffset, isHidden);
+
+        auto const [_, isAdded] = panel.TryAdd(
+            static_cast<ElectricalElementInstanceIndex>(instanceIndex),
+            ElectricalPanel::ElementMetadata(
+                panelCoordinates,
+                label,
+                isHidden));
+
+        if (!isAdded)
+        {
+            LogMessage("WARNING: Duplicate electrical element instance index \"", instanceIndex, "\"");
+        }
+    }
+
+    return panel;
 }
 
 void ShipDefinitionFormatDeSerializer::ReadRopesLayer_V1(

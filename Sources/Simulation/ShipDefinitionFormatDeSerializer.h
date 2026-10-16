@@ -411,6 +411,11 @@ private:
         CustomMaterialOverridesMap<ElectricalMaterial> const & customMaterialOverridesMap,
         DeSerializationBuffer<BigEndianess> & buffer);
 
+    static size_t AppendElectricalLayerBuffer_V2(
+        Buffer2D<ElectricalElement, struct ShipSpaceTag> const & electricalLayerBuffer,
+        CustomMaterialOverridesMap<ElectricalMaterial> const & customMaterialOverridesMap,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
     static size_t AppendElectricalLayerPanel(
         ElectricalPanel const & electricalPanel,
         DeSerializationBuffer<BigEndianess> & buffer);
@@ -511,6 +516,10 @@ private:
         ShipAttributes const & shipAttributes,
         MaterialColorMap<ElectricalMaterial> const & defaultMaterialColorMap,
         std::unique_ptr<ElectricalLayerData> & electricalLayer);
+
+    static ElectricalPanel ReadElectricalPanel(
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        size_t readOffset);
 
     static void ReadRopesLayer_V1(
         DeSerializationBuffer<BigEndianess> const & buffer,

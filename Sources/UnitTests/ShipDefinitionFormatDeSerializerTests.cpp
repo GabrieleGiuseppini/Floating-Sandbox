@@ -1957,13 +1957,16 @@ TEST(ShipDefinitionFormatDeSerializer, RoundtripV2)
             i + 1,
             i);
 
+        ElectricalMaterial material(
+            colorKey,
+            "Material " + std::to_string(i),
+            colorKey,
+            i == 1);
+        material.PaletteCoordinates = MaterialPaletteCoordinatesType({ "A", "B", 12 });
+
         TestElectricalMaterialMap.try_emplace(
             colorKey,
-            ElectricalMaterial(
-                colorKey,
-                "Material " + std::to_string(i),
-                colorKey,
-                i == 1));
+            material);
     }
 
     auto const customElectricalMaterial = TestElectricalMaterialMap.begin()->second.MakeCustomMaterial(
@@ -1992,7 +1995,7 @@ TEST(ShipDefinitionFormatDeSerializer, RoundtripV2)
     ElectricalLayerData sourceElectricalLayer(shipSize);
     for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize() - 1; ++i)
     {
-        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(electricalMaterials[i % 100], i == 1 ? 22 : NoneElectricalElementInstanceIndex);
+        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(electricalMaterials[i % electricalMaterials.size()], i == 1 ? 22 : NoneElectricalElementInstanceIndex);
     }
     sourceElectricalLayer.Buffer.Data[sourceElectricalLayer.Buffer.Size.GetLinearSize() - 1].Material = customElectricalMaterial.get();
 
@@ -2082,6 +2085,7 @@ TEST(ShipDefinitionFormatDeSerializer, RoundtripV2)
     ASSERT_EQ(sd.Layers.StructuralLayer->Buffer.Size, shipSize);
     for (size_t i = 0; i < shipSize.GetLinearSize() - 1; ++i)
     {
+        ASSERT_NE(sd.Layers.StructuralLayer->Buffer.Data[i].Material, nullptr);
         EXPECT_EQ(sd.Layers.StructuralLayer->Buffer.Data[i].Material->ColorKey, structuralMaterials[i % structuralMaterials.size()]->ColorKey);
     }
 
@@ -2098,7 +2102,7 @@ TEST(ShipDefinitionFormatDeSerializer, RoundtripV2)
     for (size_t i = 0; i < shipSize.GetLinearSize() - 1; ++i)
     {
         ASSERT_NE(sd.Layers.ElectricalLayer->Buffer.Data[i].Material, nullptr);
-        EXPECT_EQ(sd.Layers.ElectricalLayer->Buffer.Data[i].Material->ColorKey, electricalMaterials[i % 100]->ColorKey);
+        EXPECT_EQ(sd.Layers.ElectricalLayer->Buffer.Data[i].Material->ColorKey, electricalMaterials[i % electricalMaterials.size()]->ColorKey);
         EXPECT_EQ(sd.Layers.ElectricalLayer->Buffer.Data[i].InstanceIndex, sourceElectricalLayer.Buffer.Data[i].InstanceIndex);
     }
 
