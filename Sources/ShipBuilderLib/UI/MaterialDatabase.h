@@ -58,12 +58,13 @@ private:
 		MaterialColorMap<TMaterial> const & defaultMaterialColorMap);
 
 	static void SaveUserMaterials(
-		std::vector<TMaterial const *> const & materials,
+		SinglePod const & materials,
 		std::filesystem::path const & databaseFilepath);
 
 	static picojson::object LoadUserDatabaseJson(std::filesystem::path const & databaseFilepath);
 
-	std::filesystem::path GetDefaultUserDatabaseFilePath() const;
+	std::filesystem::path MakeDefaultUserDatabaseFilePath() const;
+	std::filesystem::path MakeDefaultUserDatabaseBackupFilePath() const;
 
 	static std::string MakeLayerTypeMaterialsNodeName()
 	{

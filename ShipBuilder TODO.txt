@@ -457,13 +457,13 @@
 			+ Merge DB files into one
 				+ One DB loads whole (object w/3 members), replaces own node
 			- Deser: only ones that are present
-			- Backup mechanism
-				- @ Save:
-					- If DB exists:
-						- If DB.backup exists:
-							- Delete DB.backup
-						- Rename DB as DB.backup
-					- Save DB
+			= Backup mechanism
+				+ @ Save:
+					+ If DB exists:
+						+ If DB.backup exists:
+							+ Delete DB.backup
+						+ Copy DB as DB.backup
+					+ Save DB
 				- @ Load:
 					- If DB does not exist, or exception loading:
 						- If DB.backup exists:

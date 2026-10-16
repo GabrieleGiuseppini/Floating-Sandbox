@@ -11,7 +11,6 @@
 #include <Core/Log.h>
 #include <Core/Utils.h>
 
-#include <algorithm>
 #include <set>
 
 namespace ShipBuilder {
@@ -97,27 +96,31 @@ typename MaterialDatabase<TLayer>::SinglePod MaterialDatabase<TLayer>::LoadDefau
 {
     // TODO: backup mechanism
 
-    return LoadUserDatabase(GetDefaultUserDatabaseFilePath(), defaultMaterialColorMap);
+    return LoadUserDatabase(MakeDefaultUserDatabaseFilePath(), defaultMaterialColorMap);
 }
 
 template<LayerType TLayer>
 void MaterialDatabase<TLayer>::SaveDefaultUserDatabase() const
 {
-    std::vector<TMaterial const *> materials;
-    std::transform(
-        mUserCustomMaterials.cbegin(),
-        mUserCustomMaterials.cend(),
-        std::back_inserter(materials),
-        [](auto const & uq_ptr) -> TMaterial const *
-        {
-            return uq_ptr.get();
-        });
+    auto const defaultUserDatabaseFilePath = MakeDefaultUserDatabaseFilePath();
+    if (std::filesystem::exists(defaultUserDatabaseFilePath))
+    {
+        // Make backup
 
-    // TODO: backup mechanism
+        // Delete old backup
+        std::filesystem::path const defaultUserDatabaseBackupFilePath = MakeDefaultUserDatabaseBackupFilePath();
+        if (std::filesystem::exists(defaultUserDatabaseBackupFilePath))
+        {
+            std::filesystem::remove(defaultUserDatabaseBackupFilePath);
+        }
+
+        // Make new backup
+        std::filesystem::copy_file(defaultUserDatabaseFilePath, defaultUserDatabaseBackupFilePath);
+    }
 
     SaveUserMaterials(
-        materials,
-        GetDefaultUserDatabaseFilePath());
+        mUserCustomMaterials,
+        defaultUserDatabaseFilePath);
 }
 
 template<LayerType TLayer>
@@ -156,7 +159,7 @@ typename MaterialDatabase<TLayer>::SinglePod MaterialDatabase<TLayer>::LoadUserD
 
 template<LayerType TLayer>
 void MaterialDatabase<TLayer>::SaveUserMaterials(
-    std::vector<TMaterial const *> const & materials,
+    SinglePod const & materials,
     std::filesystem::path const & databaseFilepath)
 {
     picojson::object rootJsonObject = LoadUserDatabaseJson(databaseFilepath);
@@ -170,7 +173,7 @@ void MaterialDatabase<TLayer>::SaveUserMaterials(
     // Materials
 
     picojson::array materialsJsonArray;
-    for (TMaterial const * material : materials)
+    for (auto const & material : materials)
     {
         assert(material->VariantOverrides.has_value()); // Or else wouldn't be a custom material
 
@@ -208,9 +211,16 @@ picojson::object MaterialDatabase<TLayer>::LoadUserDatabaseJson(std::filesystem:
 }
 
 template<LayerType TLayer>
-std::filesystem::path MaterialDatabase<TLayer>::GetDefaultUserDatabaseFilePath() const
+std::filesystem::path MaterialDatabase<TLayer>::MakeDefaultUserDatabaseFilePath() const
 {
     return mUserGameRootFolderPath / std::string("shipbuilder_user_custom_materials.json");
+}
+
+template<LayerType TLayer>
+std::filesystem::path MaterialDatabase<TLayer>::MakeDefaultUserDatabaseBackupFilePath() const
+{
+    auto const defaultUserDatabaseFilePath = MakeDefaultUserDatabaseFilePath();
+    return (defaultUserDatabaseFilePath.parent_path() / defaultUserDatabaseFilePath.filename()).concat(".bak");
 }
 
 //
