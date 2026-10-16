@@ -253,6 +253,13 @@ std::any MaterialPalettePanel<TLayer>::RemoveAllShipCustomMaterials(std::any lay
                     {
                         assert(stride.Cells.back().Kind == Cell::KindType::Material); // Wouldn't be in the "ship" section otherwise
                         mFreeMaterialSampleBitmapIndices.push_back(stride.Cells.back().MaterialSampleBitmapIndex);
+
+                        // Maintain selection count
+                        if (stride.Cells.back().IsChecked)
+                        {
+                            --mCheckedCellsCount;
+                        }
+
                         stride.Cells.pop_back();
                     }
 
