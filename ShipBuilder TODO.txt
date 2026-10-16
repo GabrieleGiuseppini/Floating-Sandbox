@@ -482,30 +482,27 @@
 				- Run dialog
 				- Remember starting point and do nothing if no real edits
 				- TODOHERE
-			- Single json file for three databases
-				- We do not have cross-layer operations anyway, hence fine if each file update is for a single layer
 			- TODO: other workflows above
 
 		= MaterialPalettePanel<TLayer>: HEAVY REDESIGN
 			+ cctor:
 				+ IMaterialPaletteController<TLayer> (for workflows)
 
-			= Hierarchy: 
-				= SubCategoryRow: type=SubCategory|Separator
+			+ Hierarchy: 
+				+ SubCategoryRow: type=SubCategory|Separator
 					+ Meta:
 						+ SubCategory (str)
 							+ @ default DB deser: verify unique
-					= MaterialStride: made of N1 default materials, 1 AddNewButton, N2 user custom materials, N3 ship custom materials
+					+ MaterialStride: made of N1 default materials, 1 AddNewButton, N2 user custom materials, N3 ship custom materials
 						+ All kept in single vector<Cell>, but maintaining counters: startUser, startShip
 						+ Meta:
 							+ SubCategoryBaseMaterialOrdinal
-						= Cell: type=Material|AddNewButton
-							= Meta:
-								- [SubCategoryOrdinal?]
+						+ Cell: type=Material|AddNewButton
+							+ Meta:
 								+ Material TMaterial*
-								= CustomKind // Material only; CustomTypeKind: None, User, Ship
-									- Used for drawing checkbox overlay and edit button overlay
-									- Used for drawing ship icon overlay
+								+ CustomKind // Material only; CustomTypeKind: None, User, Ship
+									+ Used for drawing checkbox overlay and edit button overlay
+									+ Used for drawing ship icon overlay
 								+ IsChecked // Material only
 									+ Invariant: iff CustomType!=None
 
@@ -698,7 +695,7 @@
 						- New Replace(), which does std::swap
 					- Update material in palette: UpdateCustomMaterial(...)
 
-		= MaterialEditDialog: 
+		+ MaterialEditDialog: 
 			+ Two dialogs, two classes, one base with common code
 			+ Hook NewButton->IMaterialPalettesController
 			+ FIX: Edit opening makes palette close - because it's wxTransientPopupWindow, closes at focus lost
@@ -771,13 +768,9 @@
 			- Checkbox: transparent (@ImageTools - already?) as circle - smaller
 				- Image still larger (like now) so click rect is larger than circle
 
-		+ Complete electrical serialization
-		- Complete new electrical workflow
-		- Complete electrical loading from ship
-
 		- Complete rope serialization
-		- Complete new rope workflow
-		- Complete rope loading from ship
+		- Test new rope workflow
+		- Test rope loading from ship
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 
