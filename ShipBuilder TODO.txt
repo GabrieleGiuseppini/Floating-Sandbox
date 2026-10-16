@@ -768,9 +768,6 @@
 			- Checkbox: transparent (@ImageTools - already?) as circle - smaller
 				- Image still larger (like now) so click rect is larger than circle
 		- Try blue tinting for overlays
-		- Add name to property grid for all types of materials
-			- Struct: TODO: decide which goes
-			- Elect: Type might go
 
 		- Complete rope serialization
 		- Test new rope workflow

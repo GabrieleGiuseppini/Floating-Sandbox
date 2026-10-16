@@ -748,9 +748,9 @@ std::array<wxPropertyGrid *, 2> MaterialPaletteBrowser<TLayer>::CreateStructural
     pgs[0] = CreatePropertyGrid(parent);
     pgs[1] = CreatePropertyGrid(parent);
 
+    AddStringProperty(pgs[0], "Name", _("Name"));
     AddFloatProperty(pgs[0], "Mass", _("Mass (Kg)"));
     AddFloatProperty(pgs[0], "Strength", _("Strength"));
-    AddFloatProperty(pgs[0], "Stiffness", _("Stiffness"));
     AddBoolProperty(pgs[0], "IsHull", _("Hull"));
     AddFloatProperty(pgs[0], "BuoyancyVolumeFill", _("Buoyant Volume"));
     AddFloatProperty(pgs[0], "RustReceptivity", _("Rust Receptivity"));
@@ -777,6 +777,7 @@ std::array<wxPropertyGrid *, 2> MaterialPaletteBrowser<TLayer>::CreateElectrical
     pgs[0] = CreatePropertyGrid(parent);
     pgs[1] = CreatePropertyGrid(parent);
 
+    AddStringProperty(pgs[0], "Name", _("Name"));
     AddBoolProperty(pgs[0], "IsSelfPowered", _("Self-Powered"));
     AddBoolProperty(pgs[0], "ConductsElectricity", _("Conductive"));
     AddFloatProperty(pgs[0], "HeatGenerated", _("Heat Generated (KJ/s)"));
@@ -811,9 +812,9 @@ void MaterialPaletteBrowser<TLayer>::PopulateMaterialProperties(TMaterial const 
         }
         else
         {
+            mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Name", wxString(material->Name));
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Mass", material->GetMass());
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Strength", material->Strength);
-            mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Stiffness", material->Stiffness);
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("IsHull", material->IsHull);
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("BuoyancyVolumeFill", material->BuoyancyVolumeFill);
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("RustReceptivity", material->RustReceptivity);
@@ -868,6 +869,7 @@ void MaterialPaletteBrowser<TLayer>::PopulateMaterialProperties(TMaterial const 
         }
         else
         {
+            mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Name", wxString(material->Name));
             mElectricalMaterialPropertyGrids[0]->SetPropertyValue("IsSelfPowered", material->IsSelfPowered);
             mElectricalMaterialPropertyGrids[0]->SetPropertyValue("ConductsElectricity", material->ConductsElectricity);
             mElectricalMaterialPropertyGrids[0]->SetPropertyValue("HeatGenerated", material->HeatGenerated);
@@ -1090,7 +1092,7 @@ void MaterialPaletteBrowser<TLayer>::PopulateMaterialProperties(TMaterial const 
             }
 
             // Fill-in second grid with dummy properties
-            for (; grid1PropertyCount < 4; ++grid1PropertyCount)
+            for (; grid1PropertyCount < 5; ++grid1PropertyCount)
             {
                 AddStringProperty(mElectricalMaterialPropertyGrids[1], std::string("Dummy") + std::to_string(grid1PropertyCount), "");
             }
