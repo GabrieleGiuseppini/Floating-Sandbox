@@ -154,13 +154,19 @@ typename MaterialDatabase<TLayer>::SinglePod MaterialDatabase<TLayer>::LoadUserD
             picojson::object const & materialJsonObject = Utils::GetJsonValueAsObject(materialJsonValue, "custom_material");
 
             rgbColor const baseColorKey = Utils::Hex2RgbColor(Utils::GetMandatoryJsonMember<std::string>(materialJsonObject, "base_color_key"));
-            typename TMaterial::VariantOverridesType const variantOverrides = TMaterial::VariantOverridesType::Deserialize(Utils::GetMandatoryJsonValue(materialJsonObject, "variant_overrides"));
 
             // Lookup material
             auto const srchIt = defaultMaterialColorMap.find(baseColorKey);
-            if (srchIt != defaultMaterialColorMap.cend())
+            if (srchIt != defaultMaterialColorMap.cend()) // Safety
             {
                 TMaterial const & baseMaterial = srchIt->second;
+
+                // Deserialize overrides
+                typename TMaterial::VariantOverridesType const variantOverrides = TMaterial::VariantOverridesType::Deserialize(
+                    Utils::GetMandatoryJsonValue(materialJsonObject, "variant_overrides"),
+                    baseMaterial.MakeStartingVariantOverrides());
+
+                // Store material
                 pod.emplace_back(baseMaterial.MakeCustomMaterial(variantOverrides));
             }
         }

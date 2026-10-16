@@ -220,7 +220,19 @@ TEST(MaterialTests, Structural_VariantOverrides_SerializeDeserialize)
         0.2f);
 
     auto const jsonValue = overrides.Serialize();
-    auto const overrides2 = StructuralMaterial::VariantOverridesType::Deserialize(jsonValue);
+
+    auto const fakeBaseOverrides = StructuralMaterial::VariantOverridesType(
+        "FAKE",
+        rgbaColor(1, 2, 3, 4),
+        11.0f,
+        1100.0f,
+        1250.0f,
+        1300.0f,
+        11.0,
+        10.9f,
+        10.2f);
+
+    auto const overrides2 = StructuralMaterial::VariantOverridesType::Deserialize(jsonValue, fakeBaseOverrides);
 
     EXPECT_EQ(overrides, overrides2);
 }
@@ -450,7 +462,18 @@ TEST(MaterialTests, Electrical_VariantOverrides_SerializeDeserialize)
         450.0f);
 
     auto const jsonValue = overrides.Serialize();
-    auto const overrides2 = ElectricalMaterial::VariantOverridesType::Deserialize(jsonValue);
+
+    auto const fakeBaseOverrides = ElectricalMaterial::VariantOverridesType(
+        "FAKE",
+        1100.0f,
+        10.9f,
+        10.8f,
+        1300.0f,
+        11.5,
+        10.75f,
+        1450.0f);
+
+    auto const overrides2 = ElectricalMaterial::VariantOverridesType::Deserialize(jsonValue, fakeBaseOverrides);
 
     EXPECT_EQ(overrides, overrides2);
 }

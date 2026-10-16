@@ -467,7 +467,7 @@
 					+ If DB does not exist, or exception loading:
 						+ If DB.backup exists:
 							+ Load DB.backup
-			- Deser: only ones that are present
+			+ Deser: only ones that are present
 
 			= Unit tests
 				+ SetShipCustomMaterials: verify pruned (inside DB) and returned replacement map
@@ -774,8 +774,6 @@
 		- Better layout of overlays
 			- Checkbox: transparent (@ImageTools - already?) as circle - smaller
 				- Image still larger (like now) so click rect is larger than circle
-
-		- DB in same file		
 		- Complete electrical & rope serialization
 		- Complete new electrical & rope workflow
 		- Complete electrical & rope loading from ship
