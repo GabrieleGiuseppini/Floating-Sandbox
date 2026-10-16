@@ -15,7 +15,7 @@
         "name": "High Lamp Watertight",
 	"palette_coordinates": {
 		"category": "Lamps",
-		"sub_category": "Lamps",
+		"sub_category": "High Lamps",
 		"sub_category_ordinal": 0
 	},
         "wet_failure_rate": 0.0
@@ -35,7 +35,7 @@
         "name": "High Lamp",
 	"palette_coordinates": {
 		"category": "Lamps",
-		"sub_category": "Lamps",
+		"sub_category": "High Lamps",
 		"sub_category_ordinal": 1
 	},
         "wet_failure_rate": 4.5
@@ -61,8 +61,8 @@
         "name": "Medium Lamp Watertight",
 	"palette_coordinates": {
 		"category": "Lamps",
-		"sub_category": "Lamps",
-		"sub_category_ordinal": 2
+		"sub_category": "Medium Lamps",
+		"sub_category_ordinal": 0
 	},
         "wet_failure_rate": 0.0
     },
@@ -81,8 +81,8 @@
         "name": "Medium Lamp",
 	"palette_coordinates": {
 		"category": "Lamps",
-		"sub_category": "Lamps",
-		"sub_category_ordinal": 3
+		"sub_category": "Medium Lamps",
+		"sub_category_ordinal": 1
 	},
         "wet_failure_rate": 4.5
     },
@@ -109,8 +109,8 @@
         "name": "Low Lamp Watertight",
 	"palette_coordinates": {
 		"category": "Lamps",
-		"sub_category": "Lamps",
-		"sub_category_ordinal": 4
+		"sub_category": "Low Lamps",
+		"sub_category_ordinal": 0
 	},
         "wet_failure_rate": 0.0
     },
@@ -129,8 +129,8 @@
         "name": "Low Lamp",
 	"palette_coordinates": {
 		"category": "Lamps",
-		"sub_category": "Lamps",
-		"sub_category_ordinal": 5
+		"sub_category": "Low Lamps",
+		"sub_category_ordinal": 1
 	},
         "wet_failure_rate": 3.0
     },
@@ -149,8 +149,8 @@
         "name": "Heat-Resistant Lamp Watertight",
         "palette_coordinates": {
 		"category": "Lamps",
-		"sub_category": "Lamps",
-		"sub_category_ordinal": 6
+		"sub_category": "Heat-Resistant Watertight Lamps",
+		"sub_category_ordinal": 0
 	},
         "wet_failure_rate": 0.0
     },
@@ -210,7 +210,7 @@
         "name": "Self-Powered High Lamp Watertight",
         "palette_coordinates": {
 		"category": "Lamps",
-		"sub_category": "Self-Powered Lamps",
+		"sub_category": "Self-Powered High Lamps",
 		"sub_category_ordinal": 0
 	},
         "wet_failure_rate": 0.0
@@ -230,7 +230,7 @@
         "name": "Self-Powered High Lamp",
         "palette_coordinates": {
 		"category": "Lamps",
-		"sub_category": "Self-Powered Lamps",
+		"sub_category": "Self-Powered High Lamps",
 		"sub_category_ordinal": 1
 	},
         "wet_failure_rate": 4.5
@@ -250,8 +250,8 @@
         "name": "Self-Powered Low Lamp Watertight",
         "palette_coordinates": {
 		"category": "Lamps",
-		"sub_category": "Self-Powered Lamps",
-		"sub_category_ordinal": 2
+		"sub_category": "Self-Powered Low Lamps",
+		"sub_category_ordinal": 0
 	},
         "wet_failure_rate": 0.0
     },
@@ -270,8 +270,8 @@
         "name": "Self-Powered Low Lamp",
         "palette_coordinates": {
 		"category": "Lamps",
-		"sub_category": "Self-Powered Lamps",
-		"sub_category_ordinal": 3
+		"sub_category": "Self-Powered Low Lamps",
+		"sub_category_ordinal": 1
 	},
         "wet_failure_rate": 3.0
     },
@@ -527,13 +527,13 @@
 	"is_instanced": true,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Thermal Switch ON Low",
+        "name": "Thermal Switch ON 350K",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Thermal Switches",
+		"sub_category": "Thermal Switches ON",
 		"sub_category_ordinal": 0
 	},
-	"thermal_switch_transition_temperature": 373.15
+	"thermal_switch_transition_temperature": 350.0
     },
     {
         "color_key": "#986600",
@@ -543,13 +543,13 @@
 	"is_instanced": true,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Thermal Switch ON Medium",
+        "name": "Thermal Switch ON 750K",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Thermal Switches",
+		"sub_category": "Thermal Switches ON",
 		"sub_category_ordinal": 1
 	},
-	"thermal_switch_transition_temperature": 773.15
+	"thermal_switch_transition_temperature": 750.0
     },
     {
         "color_key": "#986C00",
@@ -559,13 +559,13 @@
 	"is_instanced": true,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Thermal Switch ON High",
+        "name": "Thermal Switch ON 1250K",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Thermal Switches",
+		"sub_category": "Thermal Switches ON",
 		"sub_category_ordinal": 2
 	},
-	"thermal_switch_transition_temperature": 1273.15
+	"thermal_switch_transition_temperature": 1250.15
     },
     {
         "color_key": "#286000",
@@ -575,13 +575,13 @@
 	"is_instanced": true,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Thermal Switch OFF Low",
+        "name": "Thermal Switch OFF 350K",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Thermal Switches",
-		"sub_category_ordinal": 3
+		"sub_category": "Thermal Switches OFF",
+		"sub_category_ordinal": 0
 	},
-	"thermal_switch_transition_temperature": 373.15
+	"thermal_switch_transition_temperature": 350.0
     },
     {
         "color_key": "#286600",
@@ -591,13 +591,13 @@
 	"is_instanced": true,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Thermal Switch OFF Medium",
+        "name": "Thermal Switch OFF 750K",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Thermal Switches",
-		"sub_category_ordinal": 4
+		"sub_category": "Thermal Switches OFF",
+		"sub_category_ordinal": 1
 	},
-	"thermal_switch_transition_temperature": 773.15
+	"thermal_switch_transition_temperature": 750
     },
     {
         "color_key": "#286C00",
@@ -607,13 +607,13 @@
 	"is_instanced": true,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Thermal Switch OFF High",
+        "name": "Thermal Switch OFF 1250K",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Thermal Switches",
-		"sub_category_ordinal": 5
+		"sub_category": "Thermal Switches OFF",
+		"sub_category_ordinal": 2
 	},
-	"thermal_switch_transition_temperature": 1273.15
+	"thermal_switch_transition_temperature": 1250.0
     },
 
     {
@@ -624,13 +624,13 @@
 	"is_instanced": false,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Non-Instanced Thermal Switch ON Low",
+        "name": "Non-Instanced Thermal Switch ON 350K",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Thermal Switches",
-		"sub_category_ordinal": 6
+		"sub_category": "Non-Instanced Thermal Switches ON",
+		"sub_category_ordinal": 0
 	},
-	"thermal_switch_transition_temperature": 373.15
+	"thermal_switch_transition_temperature": 350.0
     },
     {
         "color_key": "#987600",
@@ -640,14 +640,14 @@
 	"is_instanced": false,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Non-Instanced Thermal Switch ON Medium",
+        "name": "Non-Instanced Thermal Switch ON 750K",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Thermal Switches",
-		"sub_category_ordinal": 7
+		"sub_category": "Non-Instanced Thermal Switches ON",
+		"sub_category_ordinal": 1
 	}
 	,
-	"thermal_switch_transition_temperature": 773.15
+	"thermal_switch_transition_temperature": 750.0
     },
     {
         "color_key": "#987C00",
@@ -657,14 +657,14 @@
 	"is_instanced": false,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Non-Instanced Thermal Switch ON High",
+        "name": "Non-Instanced Thermal Switch ON 1250K",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Thermal Switches",
-		"sub_category_ordinal": 8
+		"sub_category": "Non-Instanced Thermal Switches ON",
+		"sub_category_ordinal": 2
 	}
 	,
-	"thermal_switch_transition_temperature": 1273.15
+	"thermal_switch_transition_temperature": 1250.0
     },
 
     {
@@ -675,13 +675,13 @@
 	"is_instanced": false,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Non-Instanced Thermal Switch OFF Low",
+        "name": "Non-Instanced Thermal Switch OFF 350K",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Thermal Switches",
-		"sub_category_ordinal": 9
+		"sub_category": "Non-Instanced Thermal Switches OFF",
+		"sub_category_ordinal": 0
 	},
-	"thermal_switch_transition_temperature": 373.15
+	"thermal_switch_transition_temperature": 350.0
     },
     {
         "color_key": "#287600",
@@ -691,13 +691,13 @@
 	"is_instanced": false,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Non-Instanced Thermal Switch OFF Medium",
+        "name": "Non-Instanced Thermal Switch OFF 750K",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Thermal Switches",
-		"sub_category_ordinal": 10
+		"sub_category": "Non-Instanced Thermal Switches OFF",
+		"sub_category_ordinal": 1
 	},
-	"thermal_switch_transition_temperature": 773.15
+	"thermal_switch_transition_temperature": 750.0
     },
     {
         "color_key": "#287C00",
@@ -707,13 +707,13 @@
 	"is_instanced": false,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Non-Instanced Thermal Switch OFF High",
+        "name": "Non-Instanced Thermal Switch OFF 1250K",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Thermal Switches",
-		"sub_category_ordinal": 11
+		"sub_category": "Non-Instanced Thermal Switches OFF",
+		"sub_category_ordinal": 2
 	},
-	"thermal_switch_transition_temperature": 1273.15
+	"thermal_switch_transition_temperature": 1250.0
     },
 
 
@@ -729,7 +729,7 @@
         "name": "Timed Switch ON 1s",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Timed Switches",
+		"sub_category": "Timed Switches ON",
 		"sub_category_ordinal": 0
 	},
 	"timer_duration": 1.0
@@ -746,7 +746,7 @@
         "name": "Timed Switch ON 3s",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Timed Switches",
+		"sub_category": "Timed Switches ON",
 		"sub_category_ordinal": 1
 	},
 	"timer_duration": 3.0
@@ -763,7 +763,7 @@
         "name": "Timed Switch ON 5s",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Timed Switches",
+		"sub_category": "Timed Switches ON",
 		"sub_category_ordinal": 2
 	},
 	"timer_duration": 5.0
@@ -780,7 +780,7 @@
         "name": "Timed Switch ON 10s",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Timed Switches",
+		"sub_category": "Timed Switches ON",
 		"sub_category_ordinal": 3
 	},
 	"timer_duration": 10.0
@@ -798,8 +798,8 @@
         "name": "Timed Switch OFF 1s",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Timed Switches",
-		"sub_category_ordinal": 4
+		"sub_category": "Timed Switches OFF",
+		"sub_category_ordinal": 0
 	},
 	"timer_duration": 1.0
     },
@@ -815,8 +815,8 @@
         "name": "Timed Switch OFF 3s",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Timed Switches",
-		"sub_category_ordinal": 5
+		"sub_category": "Timed Switches OFF",
+		"sub_category_ordinal": 1
 	},
 	"timer_duration": 3.0
     },
@@ -832,8 +832,8 @@
         "name": "Timed Switch OFF 5s",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Timed Switches",
-		"sub_category_ordinal": 6
+		"sub_category": "Timed Switches OFF",
+		"sub_category_ordinal": 2
 	},
 	"timer_duration": 5.0
     },
@@ -849,8 +849,8 @@
         "name": "Timed Switch OFF 10s",
         "palette_coordinates": {
 		"category": "Switches",
-		"sub_category": "Timed Switches",
-		"sub_category_ordinal": 7
+		"sub_category": "Timed Switches OFF",
+		"sub_category_ordinal": 3
 	},
 	"timer_duration": 10.0
     },
@@ -872,7 +872,7 @@
         "name": "50HP Outboard Engine R/L",
 	"palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Outboard Engines",
+		"sub_category": "Outboard Engines R/L",
 		"sub_category_ordinal": 0
 	}
     },
@@ -893,7 +893,7 @@
         "name": "130HP Outboard Engine R/L",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Outboard Engines",
+		"sub_category": "Outboard Engines R/L",
 		"sub_category_ordinal": 1
 	}
     },
@@ -914,7 +914,7 @@
         "name": "230HP Outboard Engine R/L",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Outboard Engines",
+		"sub_category": "Outboard Engines R/L",
 		"sub_category_ordinal": 2
 	}
     },
@@ -935,7 +935,7 @@
         "name": "400HP Outboard Engine R/L",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Outboard Engines",
+		"sub_category": "Outboard Engines R/L",
 		"sub_category_ordinal": 3
 	}
     },
@@ -956,7 +956,7 @@
         "name": "600HP Outboard Engine R/L",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Outboard Engines",
+		"sub_category": "Outboard Engines R/L",
 		"sub_category_ordinal": 4
 	}
     },
@@ -976,7 +976,7 @@
         "name": "1000HP Outboard Engine R/L",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Outboard Engines",
+		"sub_category": "Outboard Engines R/L",
 		"sub_category_ordinal": 5
 	}
     },
@@ -996,8 +996,8 @@
         "name": "50HP Outboard Engine U/D",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Outboard Engines",
-		"sub_category_ordinal": 6
+		"sub_category": "Outboard Engines U/D",
+		"sub_category_ordinal": 0
 	}
     },
     {
@@ -1016,8 +1016,8 @@
         "name": "600HP Outboard Engine U/D",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Outboard Engines",
-		"sub_category_ordinal": 7
+		"sub_category": "Outboard Engines U/D",
+		"sub_category_ordinal": 1
 	}
     },
 
@@ -1769,6 +1769,9 @@
 
 
 
+
+
+
     {
         "color_key": "#30EB00",
 	"conducts_electricity": false,
@@ -1785,7 +1788,7 @@
         "name": "1000HP Diesel Engine R/L",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Diesel Engines",
+		"sub_category": "Diesel Engines R/L",
 		"sub_category_ordinal": 0
 	}
     },
@@ -1805,7 +1808,7 @@
         "name": "2000HP Diesel Engine R/L",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Diesel Engines",
+		"sub_category": "Diesel Engines R/L",
 		"sub_category_ordinal": 1
 	}
     },
@@ -1825,10 +1828,73 @@
         "name": "6000HP Diesel Engine R/L",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Diesel Engines",
+		"sub_category": "Diesel Engines R/L",
 		"sub_category_ordinal": 2
 	}
     },
+
+    {
+        "color_key": "#30EE00",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 1.570796327,
+	"engine_power": 1000.0,
+	"engine_responsiveness": 0.021,
+	"engine_type": "Diesel",
+        "heat_generated": 20000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "1000HP Diesel Engine U/D",
+        "palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Diesel Engines U/D",
+		"sub_category_ordinal": 0
+	}
+    },
+    {
+        "color_key": "#29EC00",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 1.570796327,
+	"engine_power": 2000.0,
+	"engine_responsiveness": 0.023,
+	"engine_type": "Diesel",
+        "heat_generated": 30000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "2000HP Diesel Engine U/D",
+        "palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Diesel Engines U/D",
+		"sub_category_ordinal": 1
+	}
+    },
+    {
+        "color_key": "#29ED00",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 1.570796327,
+	"engine_power": 6000.0,
+	"engine_responsiveness": 0.018,
+	"engine_type": "Diesel",
+        "heat_generated": 40000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "6000HP Diesel Engine U/D",
+        "palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Diesel Engines U/D",
+		"sub_category_ordinal": 2
+	}
+    },
+
+
 
     {
         "color_key": "#30E600",
@@ -1846,7 +1912,7 @@
         "name": "550HP Steam Engine R/L",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Steam Engines",
+		"sub_category": "Steam Engines R/L",
 		"sub_category_ordinal": 0
 	}
     },
@@ -1867,29 +1933,8 @@
         "name": "1300HP Steam Engine R/L",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Steam Engines",
+		"sub_category": "Steam Engines R/L",
 		"sub_category_ordinal": 1
-	}
-    },
-
-    {
-        "color_key": "#30E300",
-	"conducts_electricity": false,
-        "electrical_type": "Engine",
-	"engine_direction": 1.570796327,
-	"engine_power": 1300.0,
-	"engine_responsiveness": 0.02,
-	"engine_type": "Steam",
-        "heat_generated": 30000.0,
-	"is_instanced": true,
-        "is_self_powered": false,
-        "maximum_operating_temperature": 1000000.0,
-        "minimum_operating_temperature": 0.0,
-        "name": "1300HP Steam Engine U/D",
-        "palette_coordinates": {
-		"category": "Engines",
-		"sub_category": "Steam Engines",
-		"sub_category_ordinal": 2
 	}
     },
 
@@ -1909,10 +1954,74 @@
         "name": "4000HP Steam Engine R/L",
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Steam Engines",
-		"sub_category_ordinal": 3
+		"sub_category": "Steam Engines R/L",
+		"sub_category_ordinal": 2
 	}
     },
+
+    {
+        "color_key": "#29E400",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 1.570796327,
+	"engine_power": 550.0,
+	"engine_responsiveness": 0.024,
+	"engine_type": "Steam",
+        "heat_generated": 30000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "5500HP Steam Engine U/D",
+        "palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Steam Engines U/D",
+		"sub_category_ordinal": 0
+	}
+    },
+
+    {
+        "color_key": "#30E300",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 1.570796327,
+	"engine_power": 1300.0,
+	"engine_responsiveness": 0.02,
+	"engine_type": "Steam",
+        "heat_generated": 30000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "1300HP Steam Engine U/D",
+        "palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Steam Engines U/D",
+		"sub_category_ordinal": 1
+	}
+    },
+
+    {
+        "color_key": "#30F300",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 1.570796327,
+	"engine_power": 4000.0,
+	"engine_responsiveness": 0.005,
+	"engine_type": "Steam",
+        "heat_generated": 30000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "4000HP Steam Engine U/D",
+        "palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Steam Engines U/D",
+		"sub_category_ordinal": 2
+	}
+    },
+
 
 
     {
@@ -2767,8 +2876,12 @@
 				"sub_categories": [
 					"Interactive Switches",
 					"Push Switches",
-					"Timed Switches",
-					"Thermal Switches",
+					"Timed Switches ON",
+					"Timed Switches OFF",
+					"Thermal Switches ON",
+					"Thermal Switches OFF",
+					"Non-Instanced Thermal Switches ON",
+					"Non-Instanced Thermal Switches OFF",
 					"Water Switches"]
 			}
 		]
@@ -2779,8 +2892,12 @@
 			{
 				"name": "Lamps",
 				"sub_categories": [
-					"Lamps",
-					"Self-Powered Lamps"]
+					"High Lamps",
+					"Medium Lamps",
+					"Low Lamps",
+					"Heat-Resistant Watertight Lamps",
+					"Self-Powered High Lamps",
+					"Self-Powered Low Lamps"]
 			},
 			{
 				"name": "Portholes",
@@ -2796,9 +2913,12 @@
 			{
 				"name": "Propeller Engines",
 				"sub_categories": [
-					"Outboard Engines",
-					"Diesel Engines",
-					"Steam Engines",
+					"Outboard Engines R/L",
+					"Outboard Engines U/D",
+					"Diesel Engines R/L",
+					"Diesel Engines U/D",
+					"Steam Engines R/L",
+					"Steam Engines U/D",
 					"Propeller Engine Controllers"]
 			},
 			{

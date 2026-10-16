@@ -767,12 +767,18 @@
 			- TODO: check vote on Discord
 			- Checkbox: transparent (@ImageTools - already?) as circle - smaller
 				- Image still larger (like now) so click rect is larger than circle
+		- Try blue tinting for overlays
+		- Add name to property grid for all types of materials
+			- Struct: TODO: decide which goes
+			- Elect: Type might go
 
 		- Complete rope serialization
 		- Test new rope workflow
 		- Test rope loading from ship
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
+
+	+ Restructure palettes for less strides and more rows (SubCategories)
 
 	- Tests:
 		- Empty name @ Create and @ Edit
