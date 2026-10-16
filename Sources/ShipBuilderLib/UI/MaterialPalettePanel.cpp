@@ -264,6 +264,12 @@ std::any MaterialPalettePanel<TLayer>::RemoveAllShipCustomMaterials(std::any lay
                             --mCheckedCellsCount;
                         }
 
+                        // Zero out currently-selected if it was this one
+                        if (mCurrentSelectedCellId == stride.Cells.back().Id)
+                        {
+                            mCurrentSelectedCellId = NoneCellId;
+                        }
+
                         stride.Cells.pop_back();
                     }
 
