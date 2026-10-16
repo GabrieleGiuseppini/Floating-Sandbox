@@ -376,15 +376,16 @@
 					+ Unit tests for structural layer V2
 						+ Add checks to Roundtrip_V2
 				= Electrical layer
-					= ExtractCustomMaterialMap
-					- Ser
-						- Rename save chain
-						- TODO: @ AppendElectricalLayer_V2
+					+ ExtractCustomMaterialMap
+					= Ser
+						+ Rename save chain
+						- AppendElectricalLayer_V2
 					- Deser
 						- Rename read chain (plumb up)
-						- TODO
-					- Unit tests for electrical layer V2
-						- Add checks to Roundtrip_V2
+						- ReadElectricalLayer_V2
+					= Unit tests for electrical layer V2
+						= Basic
+						= Add checks to Roundtrip_V2
 				- Ropes layer
 					- ExtractCustomMaterialMap
 					- Ser

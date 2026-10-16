@@ -506,6 +506,12 @@ private:
         MaterialColorMap<ElectricalMaterial> const & defaultMaterialColorMap,
         std::unique_ptr<ElectricalLayerData> & electricalLayer);
 
+    static std::vector<std::unique_ptr<ElectricalMaterial const>> ReadElectricalLayer_V2(
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        ShipAttributes const & shipAttributes,
+        MaterialColorMap<ElectricalMaterial> const & defaultMaterialColorMap,
+        std::unique_ptr<ElectricalLayerData> & electricalLayer);
+
     static void ReadRopesLayer_V1(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
@@ -533,8 +539,6 @@ private:
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests_UnrecognizedMaterial_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests_Basic_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests_UnrecognizedMaterial_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerV2Tests_VersionSelection_Test;
 
     friend class ShipDefinitionFormatDeSerializer_ElectricalCustomMaterialMapTests;
     friend class ShipDefinitionFormatDeSerializer_ElectricalCustomMaterialMapTests_Basic_Test;
@@ -545,6 +549,8 @@ private:
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_Nulls_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_ElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests_UnrecognizedMaterial_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV2Tests;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerV2Tests_Basic_Test;
 
     friend class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests;
     friend class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests_TwoElements_Test;

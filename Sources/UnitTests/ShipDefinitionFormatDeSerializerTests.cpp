@@ -1273,6 +1273,234 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerV1Tests, UnrecognizedMate
     }
 }
 
+class ShipDefinitionFormatDeSerializer_ElectricalLayerV2Tests : public testing::Test
+{
+protected:
+
+    static bool IsTestMaterialCustom(size_t i)
+    {
+        return (i % 5) == 1;
+    }
+
+    void SetUp()
+    {
+        //
+        // Create default material map
+        // Create custom materials
+        // Create all materials
+        //
+
+        for (size_t i = 0; i < 250; ++i)
+        {
+            if (IsTestMaterialCustom(i))
+            {
+                MaterialColorKey baseColorKey = MakeMaterialColorKey(i - 1);
+
+                ElectricalMaterial baseMaterial = ElectricalMaterial(
+                    baseColorKey,
+                    "Base Material " + std::to_string(i - 1),
+                    rgbColor(baseColorKey.r, baseColorKey.g + 3, baseColorKey.b),
+                    false);
+                baseMaterial.PaletteCoordinates = { "Category", "SubCategory", std::uint32_t(i - 1) };
+
+                auto variantOverrides = MakeVariantOverrides(i);
+
+                // Add in this order
+                TestCustomMaterials.emplace_back(baseMaterial.MakeCustomMaterial(variantOverrides));
+                TestAllMaterialsList.push_back(*TestCustomMaterials.back().get());
+            }
+            else
+            {
+                MaterialColorKey colorKey = MakeMaterialColorKey(i);
+
+                ElectricalMaterial material = ElectricalMaterial(
+                    colorKey,
+                    "Base Material " + std::to_string(i),
+                    rgbColor(colorKey.r, colorKey.g + 3, colorKey.b),
+                    false);
+                material.PaletteCoordinates = { "Category", "SubCategory", std::uint32_t(i) };
+
+                TestDefaultMaterialMap.try_emplace(
+                    colorKey,
+                    material);
+
+                TestAllMaterialsList.push_back(material);
+            }
+        }
+    }
+
+    void VerifyDeserializedElectricalLayer(
+        ElectricalLayerData const & sourceElectricalLayer,
+        DeSerializationBuffer<BigEndianess> & buffer)
+    {
+        std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version(1, 16, 200, 4), sourceElectricalLayer.Buffer.Size, false, false);
+        auto const customMaterials = ShipDefinitionFormatDeSerializer::ReadElectricalLayer_V2(
+            buffer,
+            shipAttributes,
+            TestDefaultMaterialMap,
+            targetElectricalLayer);
+
+        EXPECT_EQ(targetElectricalLayer->Buffer.Size, sourceElectricalLayer.Buffer.Size);
+        ASSERT_EQ(targetElectricalLayer->Buffer.GetByteSize(), sourceElectricalLayer.Buffer.GetByteSize());
+        for (int y = 0; y < targetElectricalLayer->Buffer.Size.height; ++y)
+        {
+            for (int x = 0; x < targetElectricalLayer->Buffer.Size.width; ++x)
+            {
+                ShipSpaceCoordinates const coords{ x, y };
+                if (sourceElectricalLayer.Buffer[coords].Material == nullptr)
+                {
+                    EXPECT_EQ(targetElectricalLayer->Buffer[coords].Material, nullptr);
+                }
+                else
+                {
+                    ASSERT_NE(targetElectricalLayer->Buffer[coords].Material, nullptr);
+                    EXPECT_EQ(sourceElectricalLayer.Buffer[coords].Material->ColorKey, targetElectricalLayer->Buffer[coords].Material->ColorKey);
+                    EXPECT_EQ(sourceElectricalLayer.Buffer[coords].Material->Name, targetElectricalLayer->Buffer[coords].Material->Name);
+                    EXPECT_EQ(sourceElectricalLayer.Buffer[coords].Material->RenderColor, targetElectricalLayer->Buffer[coords].Material->RenderColor);
+                    EXPECT_EQ(sourceElectricalLayer.Buffer[coords].Material->VariantOverrides, targetElectricalLayer->Buffer[coords].Material->VariantOverrides);
+                }
+            }
+        }
+    }
+
+    static MaterialColorKey MakeMaterialColorKey(size_t i)
+    {
+        return MaterialColorKey(
+            std::uint8_t(i) + 2,
+            std::uint8_t(i) + 1,
+            std::uint8_t(i));
+    }
+
+    static ElectricalMaterial::VariantOverridesType MakeVariantOverrides(size_t i)
+    {
+        ElectricalMaterial::VariantOverridesType variantOverrides = ElectricalMaterial::VariantOverridesType(
+            "CustomMaterial " + std::to_string(i),
+            1.0f,
+            2.0f,
+            3.0f,
+            4.0f,
+            5.0f,
+            6.0f,
+            7.0f + static_cast<float>(i));
+
+        return variantOverrides;
+    }
+
+    std::map<MaterialColorKey, ElectricalMaterial> TestDefaultMaterialMap;
+    std::vector<std::unique_ptr<ElectricalMaterial const>> TestCustomMaterials;
+    std::vector<ElectricalMaterial> TestAllMaterialsList; // For choosing
+};
+
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerV2Tests, Basic)
+{
+    // Populate electrical layer
+    ElectricalLayerData sourceElectricalLayer(ShipSpaceSize(10, 12));
+    size_t customMaterialCount = 0;
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        size_t const iTestMaterial = i % TestAllMaterialsList.size();
+
+        if (i % 2 == 0)
+        {
+            sourceElectricalLayer.Buffer.Data[i].Material = nullptr;
+        }
+        else
+        {
+            sourceElectricalLayer.Buffer.Data[i].Material = &TestAllMaterialsList[iTestMaterial];
+            if (IsTestMaterialCustom(iTestMaterial))
+            {
+                customMaterialCount++;
+            }
+        }
+    }
+
+    // Build custom material map
+    auto const customMaterialMap = ShipDefinitionFormatDeSerializer::ExtractCustomMaterialOverridesMap(sourceElectricalLayer);
+
+    EXPECT_EQ(customMaterialMap.size(), customMaterialCount);
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V2(sourceElectricalLayer, customMaterialMap, buffer);
+
+    //
+    // Verify custom material map
+    //
+
+    ShipDefinitionFormatDeSerializer::SectionHeader mapHeader = ShipDefinitionFormatDeSerializer::ReadSectionHeader(buffer, 0);
+    size_t idx = sizeof(ShipDefinitionFormatDeSerializer::SectionHeader);
+
+    std::uint16_t mapEntryCount;
+    buffer.ReadAt<std::uint16_t>(idx, mapEntryCount);
+    EXPECT_EQ(mapEntryCount, customMaterialCount);
+
+    idx += mapHeader.SectionBodySize;
+
+    //
+    // Verify RLE
+    //
+
+    idx += sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Buffer header
+
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        size_t const iTestMaterial = i % TestAllMaterialsList.size();
+
+        bool const isCustomMaterial = IsTestMaterialCustom(iTestMaterial);
+
+        // Count
+        var_uint16_t count;
+        idx += buffer.ReadAt(idx, count);
+        EXPECT_EQ(count.value(), 1);
+
+        // Index
+        std::uint16_t customMaterialIndex;
+        idx += buffer.ReadAt(idx, customMaterialIndex);
+
+        if (isCustomMaterial && (i % 2) != 0)
+        {
+            assert(TestAllMaterialsList[iTestMaterial].VariantOverrides.has_value());
+
+            auto const customMaterialMapKey = ShipDefinitionFormatDeSerializer::CustomMaterialOverridesKey<ElectricalMaterial>(
+                TestAllMaterialsList[iTestMaterial].ColorKey,
+                *TestAllMaterialsList[iTestMaterial].VariantOverrides);
+
+            ASSERT_EQ(customMaterialMap.count(customMaterialMapKey), 1);
+            EXPECT_EQ(customMaterialMap.at(customMaterialMapKey), customMaterialIndex);
+        }
+        else
+        {
+            EXPECT_EQ(customMaterialIndex, std::numeric_limits<std::uint16_t>::max());
+
+            // Value
+            MaterialColorKey colorKey;
+            idx += buffer.ReadAt(idx, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
+            if (i % 2 == 0)
+            {
+                EXPECT_EQ(colorKey, EmptyMaterialColorKey);
+            }
+            else
+            {
+                EXPECT_EQ(colorKey, TestAllMaterialsList[iTestMaterial].ColorKey);
+            }
+        }
+    }
+
+    idx += sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Tail
+
+    // Buffer is done
+    EXPECT_EQ(idx, buffer.GetSize());
+
+    //
+    // Verify may be read
+    //
+
+    VerifyDeserializedElectricalLayer(
+        sourceElectricalLayer,
+        buffer);
+}
+
 class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests : public testing::Test
 {
 protected:
@@ -1689,7 +1917,7 @@ TEST(ShipDefinitionFormatDeSerializer, RoundtripV2)
 
     auto const customStructuralMaterial = TestStructuralMaterialMap.begin()->second.MakeCustomMaterial(
         StructuralMaterial::VariantOverridesType(
-            "Custom Material 0",
+            "Custom S Material 0",
             rgbaColor(TestStructuralMaterialMap.begin()->first, 100),
             1.0f,
             2.0f,
@@ -1738,6 +1966,17 @@ TEST(ShipDefinitionFormatDeSerializer, RoundtripV2)
                 i == 1));
     }
 
+    auto const customElectricalMaterial = TestElectricalMaterialMap.begin()->second.MakeCustomMaterial(
+        ElectricalMaterial::VariantOverridesType(
+            "Custom E Material 0",
+            1.0f,
+            2.0f,
+            3.0f,
+            4.0f,
+            5.0f,
+            6.0f,
+            7.0f));
+
     // Linearize materials
     std::vector<ElectricalMaterial const *> electricalMaterials;
     std::transform(
@@ -1751,10 +1990,11 @@ TEST(ShipDefinitionFormatDeSerializer, RoundtripV2)
 
     // Populate electrical layer with non-instanced materials
     ElectricalLayerData sourceElectricalLayer(shipSize);
-    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize() - 1; ++i)
     {
         sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(electricalMaterials[i % 100], i == 1 ? 22 : NoneElectricalElementInstanceIndex);
     }
+    sourceElectricalLayer.Buffer.Data[sourceElectricalLayer.Buffer.Size.GetLinearSize() - 1].Material = customElectricalMaterial.get();
 
     sourceElectricalLayer.Panel = ElectricalPanel();
     sourceElectricalLayer.Panel.Add(22, ElectricalPanel::ElementMetadata(std::nullopt, "FOO", true));
@@ -1855,12 +2095,21 @@ TEST(ShipDefinitionFormatDeSerializer, RoundtripV2)
 
     ASSERT_TRUE(sd.Layers.ElectricalLayer);
     ASSERT_EQ(sd.Layers.ElectricalLayer->Buffer.Size, shipSize);
-    for (size_t i = 0; i < shipSize.GetLinearSize(); ++i)
+    for (size_t i = 0; i < shipSize.GetLinearSize() - 1; ++i)
     {
         ASSERT_NE(sd.Layers.ElectricalLayer->Buffer.Data[i].Material, nullptr);
         EXPECT_EQ(sd.Layers.ElectricalLayer->Buffer.Data[i].Material->ColorKey, electricalMaterials[i % 100]->ColorKey);
         EXPECT_EQ(sd.Layers.ElectricalLayer->Buffer.Data[i].InstanceIndex, sourceElectricalLayer.Buffer.Data[i].InstanceIndex);
     }
+
+    EXPECT_EQ(
+        sd.Layers.ElectricalLayer->Buffer.Data[shipSize.GetLinearSize() - 1].Material->ColorKey,
+        customElectricalMaterial->ColorKey);
+
+    EXPECT_EQ(
+        sd.Layers.ElectricalLayer->Buffer.Data[shipSize.GetLinearSize() - 1].Material->VariantOverrides,
+        customElectricalMaterial->VariantOverrides);
+
     ASSERT_EQ(sd.Layers.ElectricalLayer->Panel.GetSize(), 1u);
     ASSERT_TRUE(sd.Layers.ElectricalLayer->Panel.Contains(22));
     EXPECT_EQ(sd.Layers.ElectricalLayer->Panel[22].PanelCoordinates, std::nullopt);

@@ -495,11 +495,24 @@ void ShipDefinitionFormatDeSerializer::Save(
 
     if (shipDefinition.Layers.ElectricalLayer)
     {
-        AppendSection(
-            shipDefinitionOutputStream,
-            static_cast<std::uint32_t>(MainSectionTagType::ElectricalLayer_V1),
-            [&]() { return AppendElectricalLayer_V1(*shipDefinition.Layers.ElectricalLayer, buffer); },
-            buffer);
+        if (electricalLayerCustomMaterialOverridesMap.empty())
+        {
+            // V1 Electrical Layer
+            AppendSection(
+                shipDefinitionOutputStream,
+                static_cast<std::uint32_t>(MainSectionTagType::ElectricalLayer_V1),
+                [&]() { return AppendElectricalLayer_V1(*shipDefinition.Layers.ElectricalLayer, buffer); },
+                buffer);
+        }
+        else
+        {
+            // V2 Electrical Layer
+            AppendSection(
+                shipDefinitionOutputStream,
+                static_cast<std::uint32_t>(MainSectionTagType::ElectricalLayer_V2),
+                [&]() { return AppendElectricalLayer_V2(*shipDefinition.Layers.ElectricalLayer, electricalLayerCustomMaterialOverridesMap, buffer); },
+                buffer);
+        }
     }
 
     //
@@ -1799,9 +1812,33 @@ ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial>
 
 ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<ElectricalMaterial> ShipDefinitionFormatDeSerializer::ExtractCustomMaterialOverridesMap(ElectricalLayerData const & layerData)
 {
-    // TODO
-    (void)layerData;
-    return CustomMaterialOverridesMap<ElectricalMaterial>();
+    CustomMaterialOverridesMap<ElectricalMaterial> customMaterialOverridesMap;
+
+    size_t const layerLinearSize = layerData.Buffer.GetLinearSize();
+    ElectricalElement const * electricalElementBuffer = layerData.Buffer.Data.get();
+    for (size_t i = 0; i < layerLinearSize; ++i)
+    {
+        ElectricalMaterial const * material = electricalElementBuffer[i].Material;
+        if (material != nullptr
+            && material->VariantOverrides.has_value())
+        {
+            // Calc its index
+            size_t customMaterialIndex = customMaterialOverridesMap.size();
+            if (customMaterialIndex >= SimulationParameters::MaxCustomMaterialPerShip)
+            {
+                throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+            }
+
+            // Add to map
+            auto const [_, isInserted] = customMaterialOverridesMap.try_emplace(
+                CustomMaterialOverridesKey<ElectricalMaterial>(
+                    material->ColorKey,
+                    *(material->VariantOverrides)),
+                static_cast<std::uint16_t>(customMaterialIndex));
+        }
+    }
+
+    return customMaterialOverridesMap;
 }
 
 ShipDefinitionFormatDeSerializer::CustomMaterialOverridesMap<StructuralMaterial> ShipDefinitionFormatDeSerializer::ExtractCustomMaterialOverridesMap(RopesLayerData const & layerData)
