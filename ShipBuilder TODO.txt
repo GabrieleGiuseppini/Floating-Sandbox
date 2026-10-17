@@ -380,6 +380,7 @@
 					+ ExtractCustomMaterialMap
 					+ Ser
 						+ Rename save chain
+						+ Custom material map
 						+ AppendElectricalLayer_V2
 					+ Deser
 						+ Rename read chain (plumb up)
@@ -388,22 +389,23 @@
 					+ Unit tests for electrical layer V2
 						+ Basic
 						+ Add checks to Roundtrip_V2
-				- Ropes layer
-					- ExtractCustomMaterialMap
-					- Ser
-						- Rename save chain
-						- TODO
-					- Deser
-						- Rename read chain (plumb up)
-						- TODO
-					- Unit tests for ropes layer V2
-						- Add checks to Roundtrip_V2
+				+ Ropes layer
+					+ ExtractCustomMaterialMap
+					+ Ser
+						+ Rename save chain
+						+ Custom material map
+						+ Append_V2
+					+ Deser
+						+ Rename read chain (plumb up)
+						+ Read_V2
+					+ Unit tests for ropes layer V2
+						+ Add checks to Roundtrip_V2
 
-				= Plug final Save() and Load() for all layers
+				+ Plug final Save() and Load() for all layers
 
 				= Do E2E test via FloatingSandbox: create material, use in ship, save ship, load ship in game
 					+ Structural
-					- Electrical
+					+ Electrical
 					- Ropes
 
 				- Do E2E test via ShipBuilder: loading ship with new materials altogether
@@ -418,10 +420,6 @@
 				+ So file format version should be conditional on presence of custom materials
 				- Test: save ship in dev version with no custom materials, and verify it's loadable by released FS
 			+ Legacy deserializer: empty pod
-
-			- Unit tests:
-				- Keep tests for loading old version
-				- Adjust/Make tests for new version
 
 		+ ShipFactory:
 			+ Passes (via std::move) CustomMaterialsPod for custom materials to Ship ("shipSpecificCustomMaterials", and const private member), just for extending their lifetime
@@ -600,8 +598,6 @@
 				
 			+ All cells have exact same width - constant
 			+ All cells in a row have the same height - constant
-			- FIX:
-				- Need more room for text, do 3 lines OR smaller font
 			+ There's a H separator between MaterialStride's
 			- FindCellFor: can speedup with lookups
 			- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
@@ -769,26 +765,26 @@
 
 		- Model and maybe ModelController:
 			- ReplaceMaterials(map: TMaterial * -> TMaterial *|null (for removal))
+				- Watch out: for ropes, we also have to set RopeElement.RenderColor - to material's color
 				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
 
 	- TODOHERE: master list of all tasks:
-		= Better layout of overlays
-			+ Checkbox: transparent (@ImageTools - already?) as circle - smaller
-				+ Image still larger (like now) so click rect is larger than circle
-		+ Try blue tinting for overlays
-
-		= Opacity slider: nail down layout and range
-
-		- Complete rope serialization
-		- Test new rope workflow
-		- Test rope loading from ship
+		= Ropes:
+			= Complete rope serialization
+			- Test new rope material workflow
+			- Test rope loading from ship
+			- TODO: there's a sin here: we save RenderColor into RopeBuffer @ author time; however, we take it from the material, so should be fine. Test it
+				- Another reason for replacing material altogeher: forces ModelController to replace element altogether
+			- Test transparent ropes
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 
 	+ Restructure palettes for less strides and more rows (SubCategories)
 
 	- Tests:
-		- Empty name @ Create and @ Edit
+
+
+
 
 - Traslate (aka move)
 	- Structural, Electrical, Ropes

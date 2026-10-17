@@ -1630,6 +1630,166 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerV1Tests, UnrecognizedMaterial)
     }
 }
 
+class ShipDefinitionFormatDeSerializer_RopesLayerV2Tests : public testing::Test
+{
+protected:
+
+    static bool IsTestMaterialCustom(size_t i)
+    {
+        return (i % 5) == 1;
+    }
+
+    void SetUp()
+    {
+        //
+        // Create default material map
+        // Create custom materials
+        // Create all materials
+        //
+
+        for (size_t i = 0; i < 50; ++i)
+        {
+            if (IsTestMaterialCustom(i))
+            {
+                MaterialColorKey baseColorKey = MakeMaterialColorKey(i - 1);
+
+                StructuralMaterial baseMaterial = StructuralMaterial(
+                    baseColorKey,
+                    "Base Material " + std::to_string(i - 1),
+                    rgbaColor(baseColorKey, 255));
+                baseMaterial.PaletteCoordinates = { "Category", "SubCategory", std::uint32_t(i - 1) };
+
+                auto variantOverrides = MakeVariantOverrides(i);
+
+                // Add in this order
+                TestCustomMaterials.emplace_back(baseMaterial.MakeCustomMaterial(variantOverrides));
+                TestAllMaterialsList.push_back(*TestCustomMaterials.back().get());
+            }
+            else
+            {
+                MaterialColorKey colorKey = MakeMaterialColorKey(i);
+
+                StructuralMaterial material = StructuralMaterial(
+                    colorKey,
+                    "Base Material " + std::to_string(i),
+                    rgbaColor(colorKey, 255));
+                material.PaletteCoordinates = { "Category", "SubCategory", std::uint32_t(i) };
+
+                TestDefaultMaterialMap.try_emplace(
+                    colorKey,
+                    material);
+
+                TestAllMaterialsList.push_back(material);
+            }
+        }
+    }
+
+    void VerifyDeserializedRopesLayer(
+        RopesLayerData const & sourceRopesLayer,
+        DeSerializationBuffer<BigEndianess> & buffer)
+    {
+        std::unique_ptr<RopesLayerData> targetRopesLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version(1, 16, 200, 4), sourceRopesLayer.Buffer.GetSize(), false, false);
+        auto const customMaterials = ShipDefinitionFormatDeSerializer::ReadRopesLayer_V2(
+            buffer,
+            shipAttributes,
+            TestDefaultMaterialMap,
+            targetRopesLayer);
+
+        EXPECT_EQ(targetRopesLayer->Buffer.GetSize(), sourceRopesLayer.Buffer.GetSize());
+        ASSERT_EQ(targetRopesLayer->Buffer.GetElementCount(), sourceRopesLayer.Buffer.GetElementCount());
+        for (size_t i = 0; i < sourceRopesLayer.Buffer.GetElementCount(); ++i)
+        {
+            EXPECT_EQ(targetRopesLayer->Buffer[i].StartCoords, sourceRopesLayer.Buffer[i].StartCoords);
+            EXPECT_EQ(targetRopesLayer->Buffer[i].EndCoords, sourceRopesLayer.Buffer[i].EndCoords);
+            EXPECT_EQ(targetRopesLayer->Buffer[i].Material->ColorKey, sourceRopesLayer.Buffer[i].Material->ColorKey);
+            EXPECT_EQ(targetRopesLayer->Buffer[i].Material->Name, sourceRopesLayer.Buffer[i].Material->Name);
+            EXPECT_EQ(targetRopesLayer->Buffer[i].Material->RenderColor, sourceRopesLayer.Buffer[i].Material->RenderColor);
+            EXPECT_EQ(targetRopesLayer->Buffer[i].Material->VariantOverrides, sourceRopesLayer.Buffer[i].Material->VariantOverrides);
+        }
+    }
+
+    static MaterialColorKey MakeMaterialColorKey(size_t i)
+    {
+        return MaterialColorKey(
+            std::uint8_t(i) + 2,
+            std::uint8_t(i) + 1,
+            std::uint8_t(i));
+    }
+
+    static StructuralMaterial::VariantOverridesType MakeVariantOverrides(size_t i)
+    {
+        StructuralMaterial::VariantOverridesType variantOverrides = StructuralMaterial::VariantOverridesType(
+            "CustomMaterial " + std::to_string(i),
+            rgbaColor(uint8_t(i) + 7, uint8_t(i) + 9, uint8_t(i) + 1, 100),
+            1.0f,
+            2.0f,
+            3.0f,
+            4.0f,
+            5.0f,
+            6.0f,
+            7.0f + static_cast<float>(i));
+
+        return variantOverrides;
+    }
+
+    std::map<MaterialColorKey, StructuralMaterial> TestDefaultMaterialMap;
+    std::vector<std::unique_ptr<StructuralMaterial const>> TestCustomMaterials;
+    std::vector<StructuralMaterial> TestAllMaterialsList; // For choosing
+};
+
+TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerV2Tests, Basic)
+{
+    // Populate ropes layer
+    RopesLayerData sourceRopesLayer(ShipSpaceSize(10, 12));
+    size_t customMaterialCount = 0;
+    for (size_t i = 0; i < 50; ++i)
+    {
+        size_t const iTestMaterial = i % TestAllMaterialsList.size();
+
+        sourceRopesLayer.Buffer.EmplaceBack(
+            ShipSpaceCoordinates(0, 1 + int(i)),
+            ShipSpaceCoordinates(90, 91 + int(i)),
+            &TestAllMaterialsList[iTestMaterial],
+            rgbaColor(0x02, 0x11, 0x90, 0xfe));
+
+        if (IsTestMaterialCustom(iTestMaterial))
+        {
+            customMaterialCount++;
+        }
+    }
+
+    // Build custom material map
+    auto const customMaterialMap = ShipDefinitionFormatDeSerializer::ExtractCustomMaterialOverridesMap(sourceRopesLayer);
+
+    EXPECT_EQ(customMaterialMap.size(), customMaterialCount);
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendRopesLayer_V2(sourceRopesLayer, customMaterialMap, buffer);
+
+    //
+    // Verify custom material map
+    //
+
+    ShipDefinitionFormatDeSerializer::SectionHeader mapHeader = ShipDefinitionFormatDeSerializer::ReadSectionHeader(buffer, 0);
+    size_t idx = sizeof(ShipDefinitionFormatDeSerializer::SectionHeader);
+
+    std::uint16_t mapEntryCount;
+    buffer.ReadAt<std::uint16_t>(idx, mapEntryCount);
+    EXPECT_EQ(mapEntryCount, customMaterialCount);
+
+    idx += mapHeader.SectionBodySize;
+
+    //
+    // Verify may be read
+    //
+
+    VerifyDeserializedRopesLayer(
+        sourceRopesLayer,
+        buffer);
+}
+
 TEST(ShipDefinitionFormatDeSerializer, RoundtripV1)
 {
     ShipSpaceSize const shipSize(4, 2);
@@ -2016,7 +2176,7 @@ TEST(ShipDefinitionFormatDeSerializer, RoundtripV2)
     sourceRopesLayer.Buffer.EmplaceBack(
         ShipSpaceCoordinates(200, 201),
         ShipSpaceCoordinates(100010, 100011),
-        structuralMaterials[1],
+        customStructuralMaterial.get(),
         rgbaColor(0xff, 0xff, 0xff, 0xff));
 
     //
@@ -2127,11 +2287,14 @@ TEST(ShipDefinitionFormatDeSerializer, RoundtripV2)
     EXPECT_EQ(sd.Layers.RopesLayer->Buffer[0].EndCoords, sourceRopesLayer.Buffer[0].EndCoords);
     ASSERT_NE(sd.Layers.RopesLayer->Buffer[0].Material, nullptr);
     EXPECT_EQ(sd.Layers.RopesLayer->Buffer[0].Material->ColorKey, structuralMaterials[0]->ColorKey);
+    EXPECT_FALSE(sd.Layers.RopesLayer->Buffer[0].Material->VariantOverrides.has_value());
     EXPECT_EQ(sd.Layers.RopesLayer->Buffer[0].RenderColor, sourceRopesLayer.Buffer[0].RenderColor);
     EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].StartCoords, sourceRopesLayer.Buffer[1].StartCoords);
     EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].EndCoords, sourceRopesLayer.Buffer[1].EndCoords);
     ASSERT_NE(sd.Layers.RopesLayer->Buffer[1].Material, nullptr);
-    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].Material->ColorKey, structuralMaterials[1]->ColorKey);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].Material->ColorKey, customStructuralMaterial->ColorKey);
+    EXPECT_TRUE(sd.Layers.RopesLayer->Buffer[1].Material->VariantOverrides.has_value());
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].Material->VariantOverrides, customStructuralMaterial->VariantOverrides);
     EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].RenderColor, sourceRopesLayer.Buffer[1].RenderColor);
 
     ASSERT_TRUE(sd.Layers.ExteriorTextureLayer);

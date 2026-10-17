@@ -244,12 +244,23 @@ private:
         Tail = 0xffffffff
     };
 
-    enum class RopesLayerTagType : std::uint32_t
+    enum class RopesLayerTagType_V1 : std::uint32_t
     {
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
         Buffer = MAKE_TAG('B', 'U', 'F', '1'),
+
+        Tail = 0xffffffff
+    };
+
+    enum class RopesLayerTagType_V2 : std::uint32_t
+    {
+        // Numeric values are serialized in ship files, changing them will result
+        // in ship files being un-deserializable!
+
+        CustomMaterialsMap = MAKE_TAG('C', 'M', 'M', '1'),
+        Buffer = MAKE_TAG('B', 'U', 'F', '2'),
 
         Tail = 0xffffffff
     };
@@ -428,6 +439,16 @@ private:
         RopeBuffer const & ropesLayerBuffer,
         DeSerializationBuffer<BigEndianess> & buffer);
 
+    static size_t AppendRopesLayer_V2(
+        RopesLayerData const & ropesLayer,
+        CustomMaterialOverridesMap<StructuralMaterial> const & customMaterialOverridesMap,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendRopesLayerBuffer_V2(
+        RopeBuffer const & ropesLayerBuffer,
+        CustomMaterialOverridesMap<StructuralMaterial> const & customMaterialOverridesMap,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
     static size_t AppendPngPreview(
         StructuralLayerData const & structuralLayer,
         DeSerializationBuffer<BigEndianess> & buffer);
@@ -527,6 +548,12 @@ private:
         MaterialColorMap<StructuralMaterial> const & defaultMaterialColorMap,
         std::unique_ptr<RopesLayerData> & ropesLayer);
 
+    static std::vector<std::unique_ptr<StructuralMaterial const>> ReadRopesLayer_V2(
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        ShipAttributes const & shipAttributes,
+        MaterialColorMap<StructuralMaterial> const & defaultMaterialColorMap,
+        std::unique_ptr<RopesLayerData> & ropesLayer);
+
 private:
 
     friend class ShipDefinitionFormatDeSerializerTests_FileHeader_Test;
@@ -564,4 +591,7 @@ private:
     friend class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests;
     friend class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests_TwoElements_Test;
     friend class ShipDefinitionFormatDeSerializer_RopesLayerV1Tests_UnrecognizedMaterial_Test;
+
+    friend class ShipDefinitionFormatDeSerializer_RopesLayerV2Tests;
+    friend class ShipDefinitionFormatDeSerializer_RopesLayerV2Tests_Basic_Test;
 };
