@@ -703,9 +703,6 @@
 					- Call onto controller with that vector
 					+ Recon: enabled==any checked
 
-				- TODOHERE:
-					- Layout: buttons a bit more vertically centered
-
 				- TODOHERE: following needs spec refining
 				- Import [From File - depends on other Import]
 					- Opens dialog for .shp and .json

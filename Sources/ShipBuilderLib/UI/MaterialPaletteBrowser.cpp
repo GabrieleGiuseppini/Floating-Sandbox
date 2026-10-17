@@ -370,7 +370,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                         mSelectAllButton,
                         wxGBPosition(0, 0),
                         wxGBSpan(1, 1),
-                        wxEXPAND);
+                        wxALIGN_CENTRE);
                 }
 
                 {
@@ -393,7 +393,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                         mClearSelectionButton,
                         wxGBPosition(0, 1),
                         wxGBSpan(1, 1),
-                        wxEXPAND);
+                        wxALIGN_CENTRE);
                 }
 
                 {
@@ -414,10 +414,12 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                         mDeleteSelectedButton,
                         wxGBPosition(1, 0),
                         wxGBSpan(1, 1),
-                        wxEXPAND);
+                        wxALIGN_CENTRE);
                 }
 
-                hSizer->Add(gridSizer, 10, wxEXPAND);
+                WxHelpers::MakeAllRowsExpandable(gridSizer);
+
+                hSizer->Add(gridSizer, 0, wxEXPAND);
             }
 
             hSizer->AddStretchSpacer(1);
