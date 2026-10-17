@@ -126,7 +126,12 @@ public:
 
     bool IsAnyChecked() const
     {
-        return mCheckedCellsCount > 0;
+        return mCheckedUserCellsCount + mCheckedShipCellsCount > 0;
+    }
+
+    size_t GetCheckedShipCellsCount() const
+    {
+        return mCheckedShipCellsCount;
     }
 
     void StartDefaultMaterialsLayout();
@@ -143,6 +148,8 @@ public:
     void EndCustomMaterialsLayout(std::any layoutSession);
 
     void SetSelected(TMaterial const * material);
+
+    void SetAllCustomMaterialsIsChecked(bool value);
 
 private:
 
@@ -440,7 +447,8 @@ private:
 
     CellIdType mCurrentSelectedCellId;
     CellIdType mNextCellId;
-    size_t mCheckedCellsCount;
+    size_t mCheckedUserCellsCount;
+    size_t mCheckedShipCellsCount;
 };
 
 }

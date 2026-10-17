@@ -92,7 +92,8 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     // State
     , mCurrentSelectedCellId(NoneCellId)
     , mNextCellId(0)
-    , mCheckedCellsCount(0)
+    , mCheckedUserCellsCount(0)
+    , mCheckedShipCellsCount(0)
 {
     SetBackgroundColour(*wxWHITE);
 
@@ -134,7 +135,8 @@ void MaterialPalettePanel<TLayer>::StartDefaultMaterialsLayout()
     mFreeMaterialSampleBitmapIndices.clear();
     mCurrentSelectedCellId = NoneCellId;
     mNextCellId = 0;
-    mCheckedCellsCount = 0;
+    mCheckedUserCellsCount = 0;
+    mCheckedShipCellsCount = 0;
 }
 
 template<LayerType TLayer>
@@ -255,13 +257,25 @@ std::any MaterialPalettePanel<TLayer>::RemoveAllShipCustomMaterials(std::any lay
                         // Nuke this cell
                         //
 
-                        assert(stride.Cells.back().Kind == Cell::KindType::Material); // Wouldn't be in the "ship" section otherwise
-                        mFreeMaterialSampleBitmapIndices.push_back(stride.Cells.back().MaterialSampleBitmapIndex);
+                        Cell const & delendaCell = stride.Cells.back();
+
+                        assert(delendaCell.Kind == Cell::KindType::Material); // Wouldn't be in the "ship" section otherwise
+                        mFreeMaterialSampleBitmapIndices.push_back(delendaCell.MaterialSampleBitmapIndex);
 
                         // Maintain selection count
-                        if (stride.Cells.back().IsChecked)
+                        if (delendaCell.IsChecked)
                         {
-                            --mCheckedCellsCount;
+                            if (delendaCell.CustomRegisterKind == CustomMaterialRegisterKindType::User)
+                            {
+                                assert(mCheckedUserCellsCount > 0);
+                                --mCheckedUserCellsCount;
+                            }
+                            else
+                            {
+                                assert(delendaCell.CustomRegisterKind == CustomMaterialRegisterKindType::Ship);
+                                assert(mCheckedShipCellsCount > 0);
+                                --mCheckedShipCellsCount;
+                            }
                         }
 
                         // Zero out currently-selected if it was this one
@@ -313,6 +327,86 @@ void MaterialPalettePanel<TLayer>::SetSelected(TMaterial const * material)
         ToggleSelectionToNone();
 
         Refresh(false);
+    }
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::SetAllCustomMaterialsIsChecked(bool value)
+{
+    bool hasAnyChanged = false;
+
+    for (Row & row : mRows)
+    {
+        switch (row.Kind)
+        {
+            case Row::KindType::SubCategory:
+            {
+                for (MaterialStride & stride : row.Strides)
+                {
+                    for (Cell & cell : stride.Cells)
+                    {
+                        if (cell.CustomRegisterKind.has_value())
+                        {
+                            if (cell.IsChecked != value)
+                            {
+                                // Maintain count
+                                if (cell.CustomRegisterKind == CustomMaterialRegisterKindType::User)
+                                {
+                                    if (value)
+                                    {
+                                        ++mCheckedUserCellsCount;
+                                    }
+                                    else
+                                    {
+                                        assert(mCheckedUserCellsCount > 0);
+                                        --mCheckedUserCellsCount;
+                                    }
+                                }
+                                else
+                                {
+                                    if (value)
+                                    {
+                                        ++mCheckedShipCellsCount;
+                                    }
+                                    else
+                                    {
+                                        assert(mCheckedShipCellsCount > 0);
+                                        --mCheckedShipCellsCount;
+                                    }
+                                }
+
+                                // Change state
+                                cell.IsChecked = value;
+
+                                // Render
+                                RenderCell(cell);
+
+                                hasAnyChanged = true;
+                            }
+                        }
+                    }
+                }
+
+                break;
+            }
+
+            case Row::KindType::Separator:
+            {
+                break;
+            }
+        }
+    }
+
+    if (hasAnyChanged)
+    {
+        Refresh(false);
+
+        // Send event for browser, it'll reconciliate
+        auto eventToFire = fsCheckedStateChanged(
+            fsEVT_MATERIAL_PALETTE_CHECKED_STATE_CHANGED,
+            this->GetId());
+
+        ProcessWindowEvent(eventToFire);
     }
 }
 
@@ -499,15 +593,33 @@ void MaterialPalettePanel<TLayer>::OnCheckboxToggled(Cell & cell)
     assert(cell.CustomRegisterKind.has_value());
     if (cell.IsChecked)
     {
-        cell.IsChecked = false;
+        if (cell.CustomRegisterKind == CustomMaterialRegisterKindType::User)
+        {
+            assert(mCheckedUserCellsCount > 0);
+            --mCheckedUserCellsCount;
+        }
+        else
+        {
+            assert(cell.CustomRegisterKind == CustomMaterialRegisterKindType::Ship);
+            assert(mCheckedShipCellsCount > 0);
+            --mCheckedShipCellsCount;
+        }
 
-        assert(mCheckedCellsCount > 0);
-        --mCheckedCellsCount;
+        cell.IsChecked = false;
     }
     else
     {
         cell.IsChecked = true;
-        ++mCheckedCellsCount;
+
+        if (cell.CustomRegisterKind == CustomMaterialRegisterKindType::User)
+        {
+            ++mCheckedUserCellsCount;
+        }
+        else
+        {
+            assert(cell.CustomRegisterKind == CustomMaterialRegisterKindType::Ship);
+            ++mCheckedShipCellsCount;
+        }
     }
 
     // Redraw cell

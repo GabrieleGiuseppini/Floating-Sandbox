@@ -613,10 +613,12 @@
 			+ All cells have exact same width - constant
 			+ All cells in a row have the same height - constant
 			+ There's a H separator between MaterialStride's
-			- SetAllCustomMaterialsIsChecked(bool value=true)
-				- Navigate hierarchy and change
-					- Maintain count
-				- Fire event for browser, it'll reconciliate via panel::IsAnyChecked()
+			+ SetAllCustomMaterialsIsChecked(bool value=true)
+				+ Navigate hierarchy and change
+					+ Maintain count
+					+ Render cell
+				+ Refresh(false)
+				+ Fire event for browser, it'll reconciliate via panel::IsAnyChecked()
 			- GetCheckedMaterials() const -> vector<TMaterial *>
 				- Navigate hierarchy and fetch selected ones
 			- FindCellFor: can speedup with lookups
@@ -673,31 +675,36 @@
 						- panel-> End custom layout
 						- Layout() // for H scrollbar
 
-			= Handle events from Panel:
-				= fsCheckedStateChange
-					- ReconciliateUIWithCheckedItems()
-						- Check current_panel->IsAnyChecked and reconciliate
+			+ Handle events from Panel:
+				+ fsCheckedStateChange
+					+ ReconciliateUIWithCheckedItems()
+						+ Check current_panel->IsAnyChecked and reconciliate
 
 			- Multi-element ops:
-				- Prelim:
-					- private helper: GetCurrentlyShownPanel() -> panel *
-						- Goes through mCategoryPanelsContainerSizer and finds the (only) one that's shown
-					- When we change selection, re-run Reconciliation - for new panel
-				- Select All
+				+ Prelim:
+					+ private helper: GetCurrentlyShownPanel() -> panel *
+						+ Goes through mCategoryPanelsContainerSizer and finds the (only) one that's shown
+					+ When we change selection, re-run Reconciliation - for new panel
+				+ Select All
+					+ Layout
 					! Selects all visible ones - i.e. current Layer, current Category
-					- GetCurrentlyShownPanel()->SetAllCustomMaterialsIsChecked(true)
-						- Will fire event that will recon UI
-				- Clear Selection
+					+ GetCurrentlyShownPanel()->SetAllCustomMaterialsIsChecked(true)
+						+ Will fire event that will recon UI
+				+ Clear Selection
+					+ Layout
 					! Unselects all visible ones - i.e. current Layer, current Category
-					- GetCurrentlyShownPanel()->SetAllCustomMaterialsIsChecked(false)
-						- Will fire event that will recon UI
-					- Recon: enabled==any checked
-				- Delete Selected
+					+ GetCurrentlyShownPanel()->SetAllCustomMaterialsIsChecked(false)
+						+ Will fire event that will recon UI
+					+ Recon: enabled==any checked
+				= Delete Selected
+					+ Layout
 					! Deletes only from current Layer, current Category -- otherwise dangerous
 					- Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedMaterials()
 					- Call onto controller with that vector
-					- Recon: enabled==any checked
+					+ Recon: enabled==any checked
 
+				- TODOHERE:
+					- Layout: buttons a bit more vertically centered
 
 				- TODOHERE: following needs spec refining
 				- Import [From File - depends on other Import]
@@ -762,6 +769,8 @@
 				! For "Delete checked"
 				- Remove from DB via ExtractCustomMaterials, and get back SinglePod
 				- Ask controller if any in use, via IsAny[Structural|Electrical|Ropes]MaterialInUse
+					- TODO: controller could return set<TMaterial*> for those used; PalettesController
+					  could then ask if wants to remove them from delenda selection
 				- If at-least-one-in-use:
 					- Ask user if remove from ship or not
 					- If abort => abort

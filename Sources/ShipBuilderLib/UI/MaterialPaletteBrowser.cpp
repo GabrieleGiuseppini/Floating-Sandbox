@@ -213,7 +213,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
             mCategoryPanelsContainer = new wxScrolledWindow(this);
             mCategoryPanelsContainer->SetScrollRate(5, 5);
 
-            mCategoryPanelsContainerSizer = new wxBoxSizer(wxHORIZONTAL);
+            mCategoryPanelsContainerSizer = new wxBoxSizer(wxHORIZONTAL); // Note: only panels added to this, as we search in it visible items by index
 
             size_t const categoriesCount = defaultMaterialPalette.Categories.size();
             for (size_t c = 0; c < categoriesCount; ++c)
@@ -291,7 +291,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                     fsEVT_MATERIAL_PALETTE_CHECKED_STATE_CHANGED,
                     [this](fsCheckedStateChanged & /*event*/)
                     {
-                        OnPanelCheckedStateChanged();
+                        ReconciliateUIWithCurrentPanelCheckedState();
                     });
 
                 mCategoryPanelsContainerSizer->Add(
@@ -320,12 +320,14 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
 
         rVSizer->AddSpacer(5);
 
-        // Material property grid(s)
+        // Material property grid(s) and controls
         {
             wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
+            hSizer->AddStretchSpacer(1);
+
+            // Material property grid(s)
             {
-                hSizer->AddStretchSpacer(1);
                 if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
                 {
                     mStructuralMaterialPropertyGrids = CreateStructuralMaterialPropertyGrids(this);
@@ -340,9 +342,85 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                     hSizer->Add(mElectricalMaterialPropertyGrids[0], 0, wxEXPAND, 0);
                     hSizer->Add(mElectricalMaterialPropertyGrids[1], 0, wxEXPAND, 0);
                 }
-
-                hSizer->AddStretchSpacer(1);
             }
+
+            hSizer->AddStretchSpacer(1);
+
+            // Controls
+            {
+                wxGridBagSizer * gridSizer = new wxGridBagSizer(5, 5);
+
+                {
+                    mSelectAllButton = new wxButton(this, wxID_ANY, _T("Select All"), wxDefaultPosition, wxDefaultSize);
+
+                    mSelectAllButton->Bind(
+                        wxEVT_BUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            // Selects all visible ones - i.e. current Layer, current Category
+
+                            auto * panel = GetCurrentlyShownPanel();
+                            if (panel != nullptr) // Safety
+                            {
+                                panel->SetAllCustomMaterialsIsChecked(true);
+                            }
+                        });
+
+                    gridSizer->Add(
+                        mSelectAllButton,
+                        wxGBPosition(0, 0),
+                        wxGBSpan(1, 1),
+                        wxEXPAND);
+                }
+
+                {
+                    mClearSelectionButton = new wxButton(this, wxID_ANY, _T("Clear Selection"), wxDefaultPosition, wxDefaultSize);
+
+                    mClearSelectionButton->Bind(
+                        wxEVT_BUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            // Unselects all visible ones - i.e. current Layer, current Category
+
+                            auto * panel = GetCurrentlyShownPanel();
+                            if (panel != nullptr) // Safety
+                            {
+                                panel->SetAllCustomMaterialsIsChecked(false);
+                            }
+                        });
+
+                    gridSizer->Add(
+                        mClearSelectionButton,
+                        wxGBPosition(0, 1),
+                        wxGBSpan(1, 1),
+                        wxEXPAND);
+                }
+
+                {
+                    mDeleteSelectedButton = new wxButton(this, wxID_ANY, _T("Delete Selected"), wxDefaultPosition, wxDefaultSize);
+
+                    mDeleteSelectedButton->Bind(
+                        wxEVT_BUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            // Deletes only from current Layer, current Category -- otherwise dangerous
+
+                            // TODOHERE
+                            // - Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedMaterials()
+                            // - Call onto controller with that vector
+                        });
+
+                    gridSizer->Add(
+                        mDeleteSelectedButton,
+                        wxGBPosition(1, 0),
+                        wxGBSpan(1, 1),
+                        wxEXPAND);
+                }
+
+                hSizer->Add(gridSizer, 10, wxEXPAND);
+            }
+
+            hSizer->AddStretchSpacer(1);
 
             rVSizer->Add(
                 hSizer,
@@ -382,11 +460,15 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
 
     Bind(
         wxEVT_KILL_FOCUS,
-        [this](wxFocusEvent &)
+        [this](wxFocusEvent & focusEvent)
         {
-            if (!mStickAroundOnFocusLoss)
+            // Ignore if focus is given to a child
+            if (!IsDescendant(focusEvent.GetWindow()))
             {
-                Hide();
+                if (!mStickAroundOnFocusLoss)
+                {
+                    Hide();
+                }
             }
         });
 
@@ -1176,6 +1258,9 @@ void MaterialPaletteBrowser<TLayer>::SetMaterialSelected(TMaterial const * mater
 
             // Set selection on the material
             selectedCategoryPanel->SetSelected(material);
+
+            // Reconciliate UI with _this_ panel
+            ReconciliateUIWithPanelCheckedState(selectedCategoryPanel);
         }
         else
         {
@@ -1256,10 +1341,38 @@ void MaterialPaletteBrowser<TLayer>::OnMaterialHoveredOut()
 }
 
 template<LayerType TLayer>
-void MaterialPaletteBrowser<TLayer>::OnPanelCheckedStateChanged()
+void MaterialPaletteBrowser<TLayer>::ReconciliateUIWithCurrentPanelCheckedState()
 {
-    // TODOHERE
-    LogMessage("!!! MaterialPaletteBrowser<TLayer>::OnPanelCheckedStateChanged()");
+    auto * panel = GetCurrentlyShownPanel();
+    if (panel != nullptr) // Safety
+    {
+        ReconciliateUIWithPanelCheckedState(panel);
+    }
+}
+
+template<LayerType TLayer>
+void MaterialPaletteBrowser<TLayer>::ReconciliateUIWithPanelCheckedState(MaterialPalettePanel<TLayer> * const panel)
+{
+    assert(panel != nullptr);
+
+    mClearSelectionButton->Enable(panel->IsAnyChecked());
+    mDeleteSelectedButton->Enable(panel->IsAnyChecked());
+}
+
+template<LayerType TLayer>
+MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::GetCurrentlyShownPanel()
+{
+    // Find panel currently visible
+    for (size_t i = 0; i < mCategoryPanelsContainerSizer->GetItemCount(); ++i)
+    {
+        if (mCategoryPanelsContainerSizer->IsShown(i))
+        {
+            // Assuming only one
+            return dynamic_cast<MaterialPalettePanel<TLayer> *>(mCategoryPanelsContainerSizer->GetItem(i)->GetWindow());
+        }
+    }
+
+    return nullptr;
 }
 
 template<LayerType TLayer>

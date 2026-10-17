@@ -111,7 +111,11 @@ private:
     void OnMaterialClicked(TMaterial const * material);
     void OnMaterialHoveredIn(TMaterial const * material);
     void OnMaterialHoveredOut();
-    void OnPanelCheckedStateChanged();
+
+    void ReconciliateUIWithCurrentPanelCheckedState();
+    void ReconciliateUIWithPanelCheckedState(MaterialPalettePanel<TLayer> * const panel);
+
+    MaterialPalettePanel<TLayer> * GetCurrentlyShownPanel();
 
     static bool IsOverridableMaterial(TMaterial const * material);
 
@@ -146,12 +150,17 @@ private:
     std::map<std::string, MaterialPalettePanel<TLayer> *> mCategoryPanelsByCategory;
 
     //
-    // Material properties
+    // Own UI
     //
 
     // Material properties
     std::array<wxPropertyGrid *, 2> mStructuralMaterialPropertyGrids;
     std::array<wxPropertyGrid *, 2> mElectricalMaterialPropertyGrids;
+
+    // Controls
+    wxButton * mSelectAllButton;
+    wxButton * mClearSelectionButton;
+    wxButton * mDeleteSelectedButton;
 
     //
     // State
