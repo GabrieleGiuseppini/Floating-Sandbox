@@ -481,7 +481,6 @@ private:
     wxScrollBar * mWorkCanvasVScrollBar;
 
     // Misc UI elements
-    std::unique_ptr<MaterialPalettesController> mMaterialPalettesController;
     StatusBar * mStatusBar;
 
     //
@@ -524,6 +523,7 @@ private:
 
     WorkbenchState mWorkbenchState;
     UndoStack mUndoStack;
+    std::unique_ptr<MaterialPalettesController> mMaterialPalettesController;
 
     std::optional<std::filesystem::path> mCurrentShipFilePath;
 };

@@ -171,11 +171,18 @@
 
 		! Undo
 			! For palette changes and for palette + ship changes
-			! Watch out: deleted materials also need to be put back, or else pointers won't exist anymore
+			! Watch out: deleted materials also need to be saved in undo and put back into database, or else pointers won't exist anymore
+			! Gist:
+				! All ops required (mostly material replacement) fully implemented by Controller
+					! To stay with "tradition" - no business logic above Controller
+				! These Controller ops bake Undo action, just like Controller already does for non-tool ops - like in our case - for example @ Flip()
+					! Note that for tool ops, tools themselves bake Undo action, and ask Controller to store it - but this is not our case
+					! Since undo action requires interaction with MaterialPalettesController, MaterialPalettesController bakes a lambda
+					  that it moves into Controller's ops, and Controller ops bake move lambda into own lambda
 
 	====
 
-	= Worflows:
+	= Workflows:
 		+ Adding new custom material
 			+ User clicks on "+" button
 			+ When committed:
@@ -197,8 +204,8 @@
 				- Force ship re-analysis and re-visualization
 				- Mark ship as dirty					
 		- Deleting user's or ship's custom materials
+			! ASSUMPTION: only applies to current Category, thus to current layer
 			- User checks boxes, and then "Delete Selected"
-			- TODOHERE: do we mean to delete across all categories and all layers?
 			- Check for in-use by ship; answer is none-in-use_or_at-least-one-in-use
 			- If at-least-one-in-use:
 				- Ask user if remove from ship or not
@@ -210,7 +217,7 @@
 				- Do Undo with material + ship
 			- Else:
 				- Do Undo with just material
-			- Remove from DB // Delayed, as to-be-deleted pointer must be addressable
+			- Remove from DB // Delayed to here, as to-be-deleted pointer must be addressable
 			- Update palette
 		+ Loading ship
 			+ With custom materials:
@@ -243,6 +250,9 @@
 				- Update palette
 				- Populate Undo with materials 
 		- Export custom user and/or ship materials to ad-hoc json
+			- TODO: decide: just all (thus regardless of checks) or only checked?
+			- TODO: decide: user only, or also ship?
+			- OLD:
 			- User checks boxes, and then "Export Selected"
 			- File SaveAs dialog => save
 			
@@ -438,13 +448,17 @@
 				+ AddUser
 					+ Store
 					+ Save DB
-				- RemoveUser(one):
-					- Find
-					- Remove
+				- ExtractCustomMaterials(vector<TMaterial const *>) -> SinglePod:
+					- Find among user's and ship's
+					- Extract into SinglePod
 					- Save DB
+					- Return SinglePod
 				+ SetShipCustomMaterials(vector<uq_ptr<TMaterial const>>):
 					+ Merge and build replacement map
 					+ Return replacement map
+				- ReplaceCustomMaterial(TMaterial const * old, uq_ptr<TMaterial const> && new) -> uq_ptr<TMaterial const>
+					- Find
+					- Just std::swap
 
 			+ Ser/Deset for user custom materials
 				+ parent color_key and VariantOverridesType
@@ -599,6 +613,12 @@
 			+ All cells have exact same width - constant
 			+ All cells in a row have the same height - constant
 			+ There's a H separator between MaterialStride's
+			- SetAllCustomMaterialsIsChecked(bool value=true)
+				- Navigate hierarchy and change
+					- Maintain count
+				- Fire event for browser, it'll reconciliate via panel::IsAnyChecked()
+			- GetCheckedMaterials() const -> vector<TMaterial *>
+				- Navigate hierarchy and fetch selected ones
 			- FindCellFor: can speedup with lookups
 			- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
 
@@ -615,7 +635,7 @@
 			+ Initial layout:
 				+ Kinda as now, using InitialLayout APIs
 
-			= Ops (all forwarded to panel, with layout guards):
+			= Ops exposed (all forwarded to panel, most with layout guards):
 				! Browser provides larger ops, as it's browser who orchestrates layout
 				+ AddCustomMaterials(vector<TMaterial*>, RegistryKind)
 					+ Organize materials by category
@@ -632,6 +652,7 @@
 						+ Multi stride
 							+ FIX: different spacing between strides makes ugly; either remove it or make same as material
 				- UpdateCustomMaterial(TMaterial, User|Ship)
+					! No layout guard for this one
 					- Find panel for category
 					- panel-> UpdateCustomMaterial(TMaterial, User|Ship)
 				+ SetShipCustomMaterials(vector<uq_ptr<>>)
@@ -643,13 +664,52 @@
 						+ panel-> Add ship one by one, if any
 						+ panel-> End custom layout
 						+ Layout() // for H scrollbar
-				- RemoveCustomMaterial(...)
-					- TODO
+				- RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
+					- Organize materials by category
+					- For each _our_ category:
+						- Find panel for category
+						- panel-> Start custom layout
+						- panel-> RemoveCustomMaterial
+						- panel-> End custom layout
+						- Layout() // for H scrollbar
 
 			= Handle events from Panel:
 				= fsCheckedStateChange
 					- ReconciliateUIWithCheckedItems()
 						- Check current_panel->IsAnyChecked and reconciliate
+
+			- Multi-element ops:
+				- Prelim:
+					- private helper: GetCurrentlyShownPanel() -> panel *
+						- Goes through mCategoryPanelsContainerSizer and finds the (only) one that's shown
+					- When we change selection, re-run Reconciliation - for new panel
+				- Select All
+					! Selects all visible ones - i.e. current Layer, current Category
+					- GetCurrentlyShownPanel()->SetAllCustomMaterialsIsChecked(true)
+						- Will fire event that will recon UI
+				- Clear Selection
+					! Unselects all visible ones - i.e. current Layer, current Category
+					- GetCurrentlyShownPanel()->SetAllCustomMaterialsIsChecked(false)
+						- Will fire event that will recon UI
+					- Recon: enabled==any checked
+				- Delete Selected
+					! Deletes only from current Layer, current Category -- otherwise dangerous
+					- Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedMaterials()
+					- Call onto controller with that vector
+					- Recon: enabled==any checked
+
+
+				- TODOHERE: following needs spec refining
+				- Import [From File - depends on other Import]
+					- Opens dialog for .shp and .json
+					- TODO				
+				- Move Selected to User / Import Selected Into User
+					- TODO: should only be enabled if current panel has Ship materials checked, hence need helper or a rethink of IsAnyChecked
+				- Export
+					- TODO: if we agree with workflow that this is about _all_ materials, regardless of checked state
+					! Exports all custom materials
+					- TODO
+
 			- Make it dockable
 				- When docked:
 					- Fixed pos and size (based off referenceRect)
@@ -687,18 +747,32 @@
 				+ Run dialog
 				= If ok:
 					+ Make new material
-					- Replace old material (ptr) with new material (ptr) in ship
-						- Get controller via getter
-						- Ask controller to replace
-							- TODO: marking as dirty & undo: normally taken care by controller?
-							- If not, do here
-					- Replace material in DB
+					- Replace material in DB, via ReplaceCustomMaterial(move(new material)) -> uq_ptr<old material>
 						- New Replace(), which does std::swap
-					- Update material in palette: UpdateCustomMaterial(...)
-			- OnRemoveCustomMaterial/s/TODO? result of "Delete selected"
-				- TODO
-				- Also here, like at SetShipCustomMaterials: if currently-picked materials among those being deleted, tell controller to select null
-					- Just call PreMaterialDeleted
+					- Call (new) PreCustomMaterialUpdated on old pointer
+						- Like PreCustomMaterialDeleted, but also takes new pointer and selects that instead of nullptr
+					- Bake Undo material-specific lambda, moving old material into it
+					- Ask controller if old in use, via IsAny[Structural|Electrical|Ropes]MaterialInUse
+					- If in-use:
+						- Replace in ship, via Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials(map with old<->new, Undo material-specific lambda)
+					- Else:
+						- Controller::PushCustomMaterialUndoAction(Undo material-specific lambda)
+					- Update material in palette via Browser::UpdateCustomMaterial(...)
+			- OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
+				! For "Delete checked"
+				- Remove from DB via ExtractCustomMaterials, and get back SinglePod
+				- Ask controller if any in use, via IsAny[Structural|Electrical|Ropes]MaterialInUse
+				- If at-least-one-in-use:
+					- Ask user if remove from ship or not
+					- If abort => abort
+				- Call PreCustomMaterialDeleted on each pointer
+					- Like at SetShipCustomMaterials: if currently-picked materials among those being deleted, select null in WorkbenchState and browser
+				- Bake Undo material-specific lambda, moving SinglePod into it
+				- If at-least-one-in-use:					
+					- Remove from ship, via Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials(map with nullptr's, Undo material-specific lambda)
+				- Else:
+					- Controller::PushCustomMaterialUndoAction(Undo material-specific lambda)
+				- Update palette, via Browser::RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
 
 		+ MaterialEditDialog: 
 			+ Two dialogs, two classes, one base with common code
@@ -763,14 +837,27 @@
 
 			+ Disallow empty name
 
-		- Model and maybe ModelController:
-			- ReplaceMaterials(map: TMaterial * -> TMaterial *|null (for removal))
-				- Watch out: for ropes, we also have to set RopeElement.RenderColor - to material's color
-				- With delivery of undo payload, so MaterialPalettesController can bake whole Undo action for Palette+ShipModel
+		- Controller/Model/ModelController/Undo:
+			- void Controller::PushCustomMaterialUndoAction(lambda &&)
+				! Convenience used by MaterialPalettesController for all undo actions that do not involve executing Controller ops; facilitates dirty state
+				- Copy Undo baking (only) from InternalFlip
+			- bool Controller::IsAny[Structural|Electrical|Ropes]MaterialInUse(std::vector<XXXMaterial const *> materials) const -> bool
+				! Used by "delete checked" - ASSUMPTION: "delete checked" only applies to a given Category - and thus to a given LayerType
+			- void Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials:
+				- Args:
+					- map: TMaterial * -> TMaterial *|null (for removal)
+					- std::function for material restore
+				- Impl:
+					- Not that different than Flood non-contiguous
+						- Watch out: for ropes, we also have to set RopeElement.RenderColor - to material's color
+					- Force ship re-analysis and re-visualization
+					- Mark ship as dirty
+					- Undo payload:
+						- Move material restore call into lambda
 
 	- TODOHERE: master list of all tasks:
 		= Ropes:
-			= Complete rope serialization
+			+ Complete rope serialization
 			- Test new rope material workflow
 			- Test rope loading from ship
 			- TODO: there's a sin here: we save RenderColor into RopeBuffer @ author time; however, we take it from the material, so should be fine. Test it
@@ -778,8 +865,6 @@
 			- Test transparent ropes
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
-
-	+ Restructure palettes for less strides and more rows (SubCategories)
 
 	- Tests:
 
