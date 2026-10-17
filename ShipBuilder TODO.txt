@@ -717,6 +717,7 @@
 			- Make it dockable
 				- When docked:
 					- Fixed pos and size (based off referenceRect)
+						- Have to store referenceRect in order to dock again
 					- Losing focus (still) closes it
 				- When undocked:
 					- Gains close button, move bar, and resizing controls
@@ -724,6 +725,18 @@
 					- MainFrame trying to open palette (controller): checks first if already open 
 					- MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
 					- Losing focus never closes it
+
+				- Impl:
+					- Need an icon - or see if can have none
+					- Frame itself (browser) needs to not set max size, a reasonable min size, and the right size (off referenceRect)
+					- @ Open():
+						- Store referenceRect
+						- Begin as docked
+					- Undocking:
+						- SetWindowStyle(wxMAXIMIZE_BOX | wxCLOSE_BOX | wxRESIZE_BORDER | wxFRAME_FLOAT_ON_PARENT);
+						- Close event: don't close but hide, like @ losing focus
+
+
 
 		= MaterialPalettesController
 			+ Replaces CompositeMaterialPalette

@@ -364,6 +364,9 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                             {
                                 panel->SetAllCustomMaterialsIsChecked(true);
                             }
+
+                            // Make us regain focus, or else we los focus loss notification
+                            this->SetFocus();
                         });
 
                     gridSizer->Add(
@@ -387,6 +390,9 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                             {
                                 panel->SetAllCustomMaterialsIsChecked(false);
                             }
+
+                            // Make us regain focus, or else we los focus loss notification
+                            this->SetFocus();
                         });
 
                     gridSizer->Add(
@@ -408,6 +414,9 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                             // TODOHERE
                             // - Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedMaterials()
                             // - Call onto controller with that vector
+
+                            // Make us regain focus, or else we los focus loss notification
+                            this->SetFocus();
                         });
 
                     gridSizer->Add(
@@ -767,7 +776,16 @@ public:
             wxDefaultPosition,
             size,
             style)
-    {}
+    {
+        // If a child control gains focus, give it back to parent - assumed to be this frame (browser)
+        // (or else browser loses the ability to notice focus loss)
+        Bind(
+            wxEVT_CHILD_FOCUS,
+            [this](wxChildFocusEvent & /*focusEvent*/)
+            {
+                GetParent()->SetFocus();
+            });
+    }
 
     wxSize DoGetBestSize() const override
     {

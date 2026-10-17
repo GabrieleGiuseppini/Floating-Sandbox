@@ -45,6 +45,7 @@ set  (UI_LIB_SOURCES
 	TextValidators.h
 	UnderConstructionDialog.cpp
 	UnderConstructionDialog.h
+	UnFocusableControl.h
 	UnFocusablePanel.h
 	UnFocusableScrollablePanel.h
 	WxHelpers.cpp
