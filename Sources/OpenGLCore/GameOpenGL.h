@@ -272,4 +272,8 @@ inline void _CheckOpenGLError(char const * file, int line)
     }
 }
 
+#ifdef __EMSCRIPTEN__
+#define CheckOpenGLError() ((void)0)
+#else
 #define CheckOpenGLError() _CheckOpenGLError(__FILE__, __LINE__)
+#endif

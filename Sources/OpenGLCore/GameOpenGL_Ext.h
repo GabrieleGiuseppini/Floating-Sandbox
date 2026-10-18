@@ -5,6 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
+#ifdef __EMSCRIPTEN__
+#include "web/GLWeb.h"
+#else
 // Bring-in the total glad environment
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -251,6 +254,8 @@ GLAPI PFNGLDEBUGMESSAGECALLBACKARB glDebugMessageCallback;
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
 
 //////////////////////////////////////////////////////////////////////////

@@ -13,6 +13,10 @@
 #include <numeric>
 #include <regex>
 
+#ifdef __EMSCRIPTEN__
+#include "web/ShaderConverter.h"
+#endif
+
 int GameOpenGL::MaxVertexAttributes = 0;
 int GameOpenGL::MaxViewportWidth = 0;
 int GameOpenGL::MaxViewportHeight = 0;
@@ -25,7 +29,7 @@ int GameOpenGL::MaxSupportedOpenGLVersionMinor = 0;
 bool GameOpenGL::PreventSteepTriangles = false;
 bool GameOpenGL::AvoidGlFinish = false;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(__EMSCRIPTEN__)
 
 static void APIENTRY OpenGLDebugCallback(
     GLenum source, GLenum type, GLuint /*id*/, GLenum severity,
@@ -166,7 +170,7 @@ void GameOpenGL::InitOpenGL()
     // Initialize debugging
     //
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(__EMSCRIPTEN__)
 
     if (glDebugMessageCallback != nullptr)
     {
@@ -183,7 +187,12 @@ void GameOpenGL::CompileShader(
     GameOpenGLShaderProgram const & shaderProgram,
     std::string const & programName)
 {
+#ifdef __EMSCRIPTEN__
+    std::string const convertedShaderSource = glweb::ConvertShaderToEs300(shaderSource, shaderType == GL_VERTEX_SHADER);
+    char const * shaderSourceCString = convertedShaderSource.c_str();
+#else
     char const * shaderSourceCString = shaderSource.c_str();
+#endif
     std::string const shaderTypeName = (shaderType == GL_VERTEX_SHADER) ? "vertex" : "fragment";
 
     // Set source

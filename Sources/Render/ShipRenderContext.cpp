@@ -901,7 +901,7 @@ void ShipRenderContext::UploadPointTextureCoordinates(vec2f const * textureCoord
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-template<bool IsHighQualityRendering>
+template<bool IsHighQualityRendering, typename TDst>
 inline void PopulateAttributeGroup(
     float const * const restrict pSrc1,
     float const * const restrict pSrc2,
@@ -909,7 +909,7 @@ inline void PopulateAttributeGroup(
     vec3f const * const restrict pSrc4,
     vec2f const * const restrict pSrc5,
     vec2f * const restrict pPreviousWaterMomentum,
-    ShipRenderContext::PointAttributeGroupVertex * const restrict pDst,
+    TDst * const restrict pDst,
     size_t const shipPointCount)
 {
     for (size_t i = 0; i < shipPointCount; ++i)
@@ -1373,12 +1373,12 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
 
     if (!mDebrisVertexBuffer.empty())
     {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mDebrisVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mDebrisVBO);
 
         if (mDebrisVertexBuffer.size() > mDebrisVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, mDebrisVertexBuffer.size() * sizeof(DebrisVertex), mDebrisVertexBuffer.data(), GL_STREAM_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mDebrisVertexBuffer.size() * sizeof(DebrisVertex), mDebrisVertexBuffer.data(), GL_STREAM_DRAW);
             CheckOpenGLError();
 
             mDebrisVBOAllocatedVertexSize = mDebrisVertexBuffer.size();
@@ -1386,11 +1386,11 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
         else
         {
             // No size change, just upload VBO buffer
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mDebrisVertexBuffer.size() * sizeof(DebrisVertex), mDebrisVertexBuffer.data());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mDebrisVertexBuffer.size() * sizeof(DebrisVertex), mDebrisVertexBuffer.data());
             CheckOpenGLError();
         }
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     //

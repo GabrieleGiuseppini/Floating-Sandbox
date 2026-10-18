@@ -1,0 +1,1515 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Floating Sandbox</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b1e2d;
+    --bar: #0f2638;
+    --panel: rgba(8, 20, 30, 0.94);
+    --line: rgba(255, 255, 255, 0.14);
+    --hover: rgba(63, 178, 232, 0.16);
+    --text: #e8f1f7;
+    --muted: #8fa6b6;
+    --accent: #3fb2e8;
+    --error: #ff7a6b;
+    --bar-height: 34px;
+    --status-height: 28px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.4 system-ui, sans-serif; overflow: hidden; }
+  button { font: inherit; color: inherit; }
+
+  #menubar { position: fixed; top: 0; left: 0; right: 0; height: var(--bar-height); display: flex; align-items: stretch; gap: 2px; padding: 0 6px; background: var(--bar); border-bottom: 1px solid var(--line); z-index: 20; overflow: hidden; }
+  #menubar > button { background: transparent; border: 0; border-radius: 6px; padding: 0 12px; margin: 3px 0; cursor: pointer; }
+  #menubar > button:hover, #menubar > button[aria-expanded="true"] { background: var(--hover); }
+  #menubar > button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  #menubar .spacer { flex: 1; }
+  #menubar .ship-name { align-self: center; color: var(--muted); max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 8px; }
+
+  .menu { position: fixed; min-width: 240px; max-height: calc(100vh - var(--bar-height) - 12px); overflow-y: auto; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); backdrop-filter: blur(8px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); z-index: 30; display: none; }
+  .menu.open { display: block; }
+  .menu button { display: flex; align-items: center; width: 100%; gap: 8px; text-align: left; background: transparent; border: 0; border-radius: 5px; padding: 6px 10px 6px 26px; cursor: pointer; position: relative; }
+  .menu button:hover, .menu button:focus-visible { background: var(--hover); outline: none; }
+  .menu button[aria-checked="true"]::before { content: ""; position: absolute; left: 10px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: var(--accent); }
+  .menu button[role="menuitemcheckbox"][aria-checked="true"]::before { border-radius: 1px; }
+  .menu button[disabled] { opacity: 0.4; cursor: default; }
+  .menu button[disabled]:hover { background: transparent; }
+  .menu .label { flex: 1; }
+  .menu .shortcut { color: var(--muted); font-size: 12px; }
+  .menu hr { border: 0; border-top: 1px solid var(--line); margin: 4px 2px; }
+  .menu .heading { padding: 6px 10px 2px 10px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  canvas#canvas { position: fixed; left: 0; right: 0; top: var(--bar-height); bottom: var(--status-height); width: 100vw; height: calc(100vh - var(--bar-height) - var(--status-height)); display: block; outline: none; touch-action: none; cursor: crosshair; }
+  canvas#canvas.tool-move { cursor: grab; }
+  canvas#canvas.panning { cursor: move; }
+
+  #statusbar { position: fixed; left: 0; right: 0; bottom: 0; height: var(--status-height); display: flex; align-items: center; gap: 16px; padding: 0 12px; background: var(--bar); border-top: 1px solid var(--line); color: var(--muted); z-index: 20; white-space: nowrap; overflow: hidden; }
+  #statusbar strong { color: var(--text); font-weight: 600; }
+  #statusbar .hint { overflow: hidden; text-overflow: ellipsis; }
+  #statusbar .paused { color: #ffd166; }
+
+  .overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--bg); transition: opacity 0.4s ease; z-index: 50; }
+  .overlay.hidden { opacity: 0; pointer-events: none; }
+  .card { width: min(420px, calc(100vw - 32px)); padding: 24px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+  h1 { margin: 0 0 4px; font-size: 20px; font-weight: 650; letter-spacing: 0.01em; }
+  .sub { margin: 0 0 18px; color: var(--muted); }
+  .bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .bar > div { height: 100%; width: 0%; background: var(--accent); transition: width 0.15s ease; }
+  .status { margin: 10px 0 0; color: var(--muted); min-height: 1.4em; font-variant-numeric: tabular-nums; }
+  .error { display: none; margin-top: 14px; padding: 10px 12px; border: 1px solid var(--error); border-radius: 8px; color: var(--error); white-space: pre-wrap; word-break: break-word; }
+  .error.visible { display: block; }
+
+  .toast { position: fixed; right: 12px; bottom: calc(var(--status-height) + 12px); max-width: min(420px, calc(100vw - 24px)); padding: 10px 12px; border: 1px solid var(--error); border-radius: 8px; background: var(--panel); color: var(--error); display: none; white-space: pre-wrap; word-break: break-word; z-index: 40; }
+  .toast.visible { display: block; }
+  .busy { position: fixed; top: calc(var(--bar-height) + 12px); left: 50%; transform: translateX(-50%); padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); display: none; z-index: 40; }
+  .busy.visible { display: block; }
+
+  dialog { width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 48px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); }
+  dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+  .dialog-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 8px; }
+  .dialog-head h2 { margin: 0; font-size: 17px; }
+  .dialog-close { background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+  .dialog-close:hover { border-color: var(--accent); }
+  .dialog-body { padding: 0 16px 16px; }
+  #ship-search { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text); font: inherit; }
+  #ship-search:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  #ship-count { margin: 8px 0; color: var(--muted); font-size: 12px; }
+  #ship-list { list-style: none; margin: 0; padding: 0; height: min(52vh, 420px); overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; }
+  #ship-list li button { display: flex; width: 100%; align-items: center; gap: 10px; padding: 7px 10px; background: transparent; border: 0; text-align: left; cursor: pointer; }
+  #ship-list li button:hover, #ship-list li button:focus-visible { background: var(--hover); outline: none; }
+  #ship-list .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #ship-list .meta { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  #ship-list .badge { color: var(--muted); font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+  #ship-message { padding: 16px; color: var(--muted); }
+  .help-body { padding: 0 16px 16px; color: var(--muted); }
+  .help-body dt { color: var(--text); margin-top: 10px; }
+  .help-body dd { margin: 2px 0 0; }
+
+  .floating { position: fixed; z-index: 25; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); backdrop-filter: blur(8px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); }
+  .floating[hidden] { display: none; }
+  .floating-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px 6px 12px; cursor: move; user-select: none; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .floating-head button { background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 0 8px; cursor: pointer; }
+  .floating-body { padding: 8px; overflow: auto; }
+  .floating.collapsed .floating-body { display: none; }
+  #switchboard { left: 12px; bottom: calc(var(--status-height) + 12px); width: min(340px, calc(100vw - 24px)); }
+  #switchboard .floating-body { max-height: 38vh; display: flex; flex-direction: column; gap: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  .sb-item .sb-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sb-item.disabled { opacity: 0.45; }
+  .sb-item button { min-width: 64px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 6px; background: rgba(255, 255, 255, 0.06); cursor: pointer; }
+  .sb-item button[aria-pressed="true"] { background: var(--accent); color: #04121f; border-color: var(--accent); }
+  .sb-item input[type=range] { width: 130px; }
+  .sb-lamp { width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--line); background: #243445; }
+  .sb-lamp.on { background: #6be675; border-color: #6be675; box-shadow: 0 0 8px #6be675; }
+  .sb-value { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 70px; text-align: right; }
+  #probe-card { right: 12px; bottom: calc(var(--status-height) + 12px); width: 230px; }
+  #probe-card dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-variant-numeric: tabular-nums; }
+  #probe-card dt { color: var(--muted); }
+  #probe-card dd { margin: 0; text-align: right; }
+  #settings-dialog { width: min(760px, calc(100vw - 24px)); }
+  .settings-layout { display: flex; gap: 12px; height: min(60vh, 520px); }
+  .settings-tabs { display: flex; flex-direction: column; gap: 2px; width: 170px; overflow-y: auto; flex: none; }
+  .settings-tabs button { text-align: left; padding: 6px 10px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; }
+  .settings-tabs button[aria-selected="true"] { background: var(--hover); color: var(--accent); }
+  .settings-pane { flex: 1; overflow-y: auto; padding-right: 6px; }
+  .setting-row { display: grid; grid-template-columns: 1fr 170px 70px; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--line); }
+  .setting-row .setting-value { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .setting-row select, .setting-row input[type=range] { width: 100%; }
+  @media (max-width: 640px) { .settings-layout { flex-direction: column; } .settings-tabs { flex-direction: row; width: auto; overflow-x: auto; } .setting-row { grid-template-columns: 1fr 110px 54px; } }
+  input[type=file] { display: none; }
+</style>
+</head>
+<body>
+<nav id="menubar" role="menubar" aria-label="Main menu"></nav>
+<canvas id="canvas" class="tool-move" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
+<div id="statusbar" role="status">
+  <span>Tool: <strong id="status-tool">Move</strong></span>
+  <span class="hint" id="status-hint"></span>
+  <span class="paused" id="status-paused" hidden>Paused</span>
+</div>
+
+<div class="busy" id="busy" role="status"></div>
+<div class="toast" id="toast" role="alert"></div>
+
+<div class="overlay" id="overlay">
+  <div class="card">
+    <h1>Floating Sandbox</h1>
+    <p class="sub">WebAssembly port, work in progress</p>
+    <div class="bar"><div id="bar-fill"></div></div>
+    <p class="status" id="status">Starting...</p>
+    <div class="error" id="boot-error" role="alert"></div>
+  </div>
+</div>
+
+<dialog id="ship-dialog" aria-labelledby="ship-dialog-title">
+  <div class="dialog-head">
+    <h2 id="ship-dialog-title">Load Ship</h2>
+    <button type="button" class="dialog-close" id="ship-close">Close</button>
+  </div>
+  <div class="dialog-body">
+    <input type="search" id="ship-search" placeholder="Search ships" aria-label="Search ships" autocomplete="off">
+    <div id="ship-count" aria-live="polite"></div>
+    <ul id="ship-list"></ul>
+  </div>
+</dialog>
+
+<dialog id="help-dialog" aria-labelledby="help-dialog-title">
+  <div class="dialog-head">
+    <h2 id="help-dialog-title">Controls</h2>
+    <button type="button" class="dialog-close" id="help-close">Close</button>
+  </div>
+  <dl class="help-body">
+    <dt>Left mouse button</dt><dd>Uses the current tool. Pick tools from the Tools menu.</dd>
+    <dt>Right or middle mouse button, drag</dt><dd>Pans the view.</dd>
+    <dt>Mouse wheel</dt><dd>Zooms in and out.</dd>
+    <dt>Shift</dt><dd>Changes what many tools do: rotate instead of move, repel instead of attract, cool instead of heat, and so on. The status bar describes the current tool.</dd>
+    <dt>Keyboard</dt><dd>Space pauses, Enter steps one frame while paused, + and - zoom, Home resets the view.</dd>
+    <dt>NPCs</dt><dd>Use the NPC tools to add people and furniture, move them, remove them and turn them around. Drag a rectangle with Move, Remove or Turn Around to select several at once.</dd>
+    <dt>Switchboard</dt><dd>Ships with electrical parts get a draggable switchboard for switches, engine controls and gauges. Toggle it from the Options menu.</dd>
+    <dt>Not available yet</dt><dd>Ship building and saving ships.</dd>
+  </dl>
+</dialog>
+
+<div class="floating" id="switchboard" hidden>
+  <div class="floating-head" id="switchboard-head"><span>Switchboard</span><button type="button" id="switchboard-toggle" aria-label="Collapse switchboard">-</button></div>
+  <div class="floating-body" id="switchboard-body"></div>
+</div>
+
+<div class="floating" id="probe-card" hidden>
+  <div class="floating-head"><span>Physics Probe</span></div>
+  <div class="floating-body">
+    <dl>
+      <dt>Speed</dt><dd id="probe-speed">-</dd>
+      <dt>Temperature</dt><dd id="probe-temp">-</dd>
+      <dt>Depth</dt><dd id="probe-depth">-</dd>
+      <dt>External pressure</dt><dd id="probe-ext">-</dd>
+      <dt>Internal pressure</dt><dd id="probe-int">-</dd>
+    </dl>
+  </div>
+</div>
+
+<dialog id="settings-dialog" aria-labelledby="settings-dialog-title">
+  <div class="dialog-head">
+    <h2 id="settings-dialog-title">Settings</h2>
+    <button type="button" class="dialog-close" id="settings-close">Close</button>
+  </div>
+  <div class="dialog-body">
+    <div class="settings-layout">
+      <div class="settings-tabs" id="settings-tabs" role="tablist"></div>
+      <div class="settings-pane" id="settings-pane"></div>
+    </div>
+  </div>
+</dialog>
+
+<input type="file" id="ship-file" accept=".shp2,.shp,.png,.dat">
+
+<script>
+  var overlay = document.getElementById('overlay');
+  var barFill = document.getElementById('bar-fill');
+  var statusEl = document.getElementById('status');
+  var bootError = document.getElementById('boot-error');
+  var toast = document.getElementById('toast');
+  var busy = document.getElementById('busy');
+  var canvas = document.getElementById('canvas');
+  var menubar = document.getElementById('menubar');
+  var statusTool = document.getElementById('status-tool');
+  var statusHint = document.getElementById('status-hint');
+  var statusPaused = document.getElementById('status-paused');
+  var shipDialog = document.getElementById('ship-dialog');
+  var helpDialog = document.getElementById('help-dialog');
+  var shipSearch = document.getElementById('ship-search');
+  var shipList = document.getElementById('ship-list');
+  var shipCount = document.getElementById('ship-count');
+  var shipFile = document.getElementById('ship-file');
+
+  var isReady = false;
+  var toastTimer = 0;
+  var currentTool = 'move';
+  var currentShipPath = null;
+  var currentShipName = '';
+  var statusTextShown = false;
+  var shipManifest = null;
+  var shipManifestError = null;
+  var shipManifestPromise = null;
+  var openMenu = null;
+
+  var TOOLS = [
+    { heading: 'Move' },
+    { id: 'move', label: 'Move', hint: 'Drag a piece of a ship. Hold Shift to rotate it.' },
+    { id: 'moveall', label: 'Move All', hint: 'Drag a whole ship. Hold Shift to rotate it.' },
+    { heading: 'Interact' },
+    { id: 'grab', label: 'Grab', hint: 'Hold to attract things; Shift repels. Strength grows while held.' },
+    { id: 'swirl', label: 'Swirl', hint: 'Hold to whirl the water; Shift reverses. Strength grows while held.' },
+    { id: 'smash', label: 'Smash', hint: 'Hold to destroy; the radius grows while held.' },
+    { id: 'saw', label: 'Saw', hint: 'Drag across a ship to cut through it.' },
+    { id: 'pliers', label: 'Pliers', hint: 'Drag a point of a ship to pull it around.' },
+    { id: 'repair', label: 'Repair', hint: 'Hold over damaged areas to repair them.' },
+    { id: 'scrub', label: 'Scrub', hint: 'Drag across a ship to clean it; Shift rusts it.' },
+    { heading: 'Heat and water' },
+    { id: 'heatblaster', label: 'Heat Blaster', hint: 'Hold to heat; Shift cools.' },
+    { id: 'fireextinguisher', label: 'Fire Extinguisher', hint: 'Hold to put out fires; Shift is stronger.' },
+    { id: 'flood', label: 'Flood', hint: 'Hold to pour water into a ship; Shift pumps it out.' },
+    { id: 'injectair', label: 'Inject Air', hint: 'Hold to add air pressure; Shift removes it.' },
+    { id: 'wavemaker', label: 'Wave Maker', hint: 'Drag across the water to make waves.' },
+    { heading: 'Place' },
+    { id: 'pin', label: 'Pin', hint: 'Click to pin or unpin a point; Shift removes all pins.' },
+    { id: 'antimatterbomb', label: 'Anti-Matter Bomb', hint: 'Click a ship to place or remove a bomb; detonate from Controls.' },
+    { id: 'fireextinguishingbomb', label: 'Fire Extinguishing Bomb', hint: 'Click a ship to place or remove a bomb.' },
+    { id: 'impactbomb', label: 'Impact Bomb', hint: 'Click a ship to place or remove a bomb; it explodes on impact.' },
+    { id: 'rcbomb', label: 'Remote Control Bomb', hint: 'Click a ship to place or remove a bomb; detonate from Controls.' },
+    { id: 'timerbomb', label: 'Timer Bomb', hint: 'Click a ship to place or remove a bomb; it explodes after a delay.' },
+    { id: 'physicsprobe', label: 'Physics Probe', hint: 'Click a point of a ship to attach or remove a probe.' },
+    { heading: 'Effects' },
+    { id: 'blast', label: 'Blast', hint: 'Hold to charge a blast; Shift fires a fast one.' },
+    { id: 'electricspark', label: 'Electric Spark', hint: 'Hold to shoot sparks; Shift makes them longer.' },
+    { id: 'lasercannon', label: 'Laser Cannon', hint: 'Drag to cut with a laser; Shift amplifies it.' },
+    { id: 'windmaker', label: 'Wind Maker', hint: 'Hold to blow wind outward; Shift makes a sudden gust.' },
+    { id: 'antigravity', label: 'Anti-Gravity Field', hint: 'Drag a rectangle to make a field; Shift boosts it.' },
+    { id: 'tornado', label: 'Tornado', hint: 'Hold to place a tornado; drag up for strength, down for heat.' },
+    { id: 'thanossnap', label: 'Thanos Snap', hint: 'Click to turn parts to dust; Shift snaps sparsely.' },
+    { id: 'lamp', label: 'Lamp', hint: 'Hold to light up the area; Shift widens the light.' },
+    { id: 'terrainadjust', label: 'Adjust Terrain', hint: 'Drag to reshape the sea floor; Shift draws a straight line.' },
+    { heading: 'NPCs' },
+    { id: 'addhuman', label: 'Add Human', hint: 'Click and drag to place a person; Shift moves the whole body.' },
+    { id: 'addfurniture', label: 'Add Furniture', hint: 'Click and drag to place a piece of furniture.' },
+    { id: 'movenpc', label: 'Move NPC', hint: 'Drag an NPC, or drag a rectangle to select several and move them.' },
+    { id: 'removenpc', label: 'Remove NPC', hint: 'Click an NPC, or drag a rectangle to remove several.' },
+    { id: 'turnaroundnpc', label: 'Turn Around NPC', hint: 'Click an NPC, or drag a rectangle to turn several around.' },
+    { id: 'follownpc', label: 'Follow NPC', hint: 'Click an NPC to follow it with the camera; click empty space to stop.' },
+    { heading: 'World' },
+    { id: 'scarefish', label: 'Scare Fish', hint: 'Hold near fish to scare them; Shift attracts them.' },
+    { id: 'lightning', label: 'Lightning', hint: 'Click to strike lightning.' }
+  ];
+
+  var toolsById = {};
+  TOOLS.forEach(function (tool) { if (tool.id) { toolsById[tool.id] = tool; } });
+
+  function call(name, returnType, argTypes, args) {
+    if (!isReady || !Module.ccall) { return 0; }
+    return Module.ccall(name, returnType, argTypes || [], args || []);
+  }
+
+  function setProgress(fraction, text) {
+    barFill.style.width = Math.max(0, Math.min(1, fraction)) * 100 + '%';
+    if (text) { statusEl.textContent = text; }
+  }
+
+  function showError(message) {
+    busy.classList.remove('visible');
+    if (isReady) {
+      toast.textContent = message;
+      toast.classList.add('visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toast.classList.remove('visible'); }, 8000);
+    } else {
+      bootError.textContent = message;
+      bootError.classList.add('visible');
+      statusEl.textContent = 'Failed to start';
+    }
+  }
+
+  function setBusy(text) {
+    if (text) {
+      busy.textContent = text;
+      busy.classList.add('visible');
+    } else {
+      busy.classList.remove('visible');
+    }
+  }
+
+  function formatSize(bytes) {
+    if (bytes >= 1048576) { return (bytes / 1048576).toFixed(1) + ' MB'; }
+    return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+  }
+
+  function updateStatusBar() {
+    var tool = toolsById[currentTool];
+    statusTool.textContent = tool ? tool.label : currentTool;
+    statusHint.textContent = tool ? tool.hint : '';
+    statusPaused.hidden = !call('fs_is_paused', 'number');
+    document.getElementById('menu-ship-name').textContent = currentShipName;
+    canvas.classList.toggle('tool-move', currentTool === 'move' || currentTool === 'moveall');
+  }
+
+  function selectTool(id) {
+    if (call('fs_set_tool', 'number', ['string'], [id])) {
+      currentTool = id;
+      updateStatusBar();
+    }
+  }
+
+  function isPaused() { return !!call('fs_is_paused', 'number'); }
+
+  function togglePause() {
+    call('fs_set_paused', null, ['number'], [isPaused() ? 0 : 1]);
+    updateStatusBar();
+  }
+
+  function loadShipFromFiles(files) {
+    var main = files.filter(function (file) { return /\.(shp2|shp|png)$/i.test(file.name); })[0] || files[0];
+    if (!main) { return Promise.resolve(); }
+
+    setBusy('Loading ' + main.name + '...');
+    return Promise.all(files.map(function (file) {
+      return file.arrayBuffer().then(function (buffer) { return { name: file.name, data: new Uint8Array(buffer) }; });
+    })).then(function (loaded) {
+      return installAndLoad(main.name.replace(/\.[^.]+$/, ''), main.name, loaded);
+    }).catch(function (error) {
+      showError('Could not load the ship: ' + (error && error.message ? error.message : error));
+    });
+  }
+
+  var installedShipFiles = [];
+
+  function installAndLoad(displayName, mainFileName, loaded) {
+    Module.FS.mkdirTree('/game/Ships');
+    var newNames = loaded.map(function (item) { return item.name; });
+    installedShipFiles.forEach(function (name) {
+      if (newNames.indexOf(name) < 0) {
+        try { Module.FS.unlink('/game/Ships/' + name); } catch (e) {}
+      }
+    });
+    installedShipFiles = newNames;
+    loaded.forEach(function (item) {
+      Module.FS.writeFile('/game/Ships/' + item.name, item.data);
+    });
+
+    return new Promise(function (resolve) {
+      requestAnimationFrame(function () {
+        setTimeout(function () {
+          var path = '/game/Ships/' + mainFileName;
+          var ok = Module.ccall('fs_load_ship', 'number', ['string'], [path]);
+          setBusy(null);
+          if (ok) {
+            currentShipPath = path;
+            currentShipName = displayName;
+            updateStatusBar();
+          }
+          resolve();
+        }, 30);
+      });
+    });
+  }
+
+  function loadShipEntry(entry) {
+    var names = [entry.file].concat(entry.deps || []);
+    setBusy('Loading ' + entry.name + '...');
+
+    return Promise.all(names.map(function (name) {
+      return fetch('Ships/' + encodeURIComponent(name)).then(function (response) {
+        if (!response.ok) { throw new Error('Could not download ' + name + ' (' + response.status + ')'); }
+        return response.arrayBuffer();
+      }).then(function (buffer) { return { name: name, data: new Uint8Array(buffer) }; });
+    })).then(function (loaded) {
+      return installAndLoad(entry.name, entry.file, loaded);
+    }).catch(function (error) {
+      showError(error && error.message ? error.message : String(error));
+    });
+  }
+
+  function reloadShip() {
+    if (!currentShipPath) { return; }
+    setBusy('Reloading...');
+    requestAnimationFrame(function () {
+      setTimeout(function () {
+        Module.ccall('fs_load_ship', 'number', ['string'], [currentShipPath]);
+        setBusy(null);
+      }, 30);
+    });
+  }
+
+  function fetchManifest() {
+    if (shipManifestPromise) { return shipManifestPromise; }
+    shipManifestPromise = fetch('ships.json').then(function (response) {
+      if (!response.ok) { throw new Error('ships.json not found (' + response.status + ')'); }
+      return response.json();
+    }).then(function (data) {
+      shipManifest = data.ships || [];
+    }).catch(function (error) {
+      shipManifestError = error && error.message ? error.message : String(error);
+      shipManifestPromise = null;
+    });
+    return shipManifestPromise;
+  }
+
+  function renderShipList() {
+    var query = shipSearch.value.trim().toLowerCase();
+    shipList.textContent = '';
+
+    if (!shipManifest) {
+      var message = document.createElement('li');
+      message.id = 'ship-message';
+      message.textContent = shipManifestError
+        ? 'The ship list could not be loaded: ' + shipManifestError + '. Use File > Load Ship from File instead.'
+        : 'Loading the ship list...';
+      shipList.appendChild(message);
+      shipCount.textContent = '';
+      return;
+    }
+
+    var matches = shipManifest.filter(function (entry) {
+      return !query || entry.name.toLowerCase().indexOf(query) !== -1 || entry.file.toLowerCase().indexOf(query) !== -1;
+    });
+
+    shipCount.textContent = matches.length + ' of ' + shipManifest.length + ' ships';
+
+    var fragment = document.createDocumentFragment();
+    matches.forEach(function (entry) {
+      var item = document.createElement('li');
+      var button = document.createElement('button');
+      button.type = 'button';
+
+      var name = document.createElement('span');
+      name.className = 'name';
+      name.textContent = entry.name;
+      name.title = entry.file;
+
+      var badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = entry.format;
+
+      var meta = document.createElement('span');
+      meta.className = 'meta';
+      meta.textContent = formatSize(entry.size);
+
+      button.appendChild(name);
+      button.appendChild(badge);
+      button.appendChild(meta);
+      button.addEventListener('click', function () {
+        shipDialog.close();
+        loadShipEntry(entry);
+      });
+
+      item.appendChild(button);
+      fragment.appendChild(item);
+    });
+
+    if (!matches.length) {
+      var none = document.createElement('li');
+      none.id = 'ship-message';
+      none.textContent = 'No ships match.';
+      fragment.appendChild(none);
+    }
+
+    shipList.appendChild(fragment);
+  }
+
+  function openShipDialog() {
+    closeMenus();
+    shipDialog.showModal();
+    shipSearch.value = '';
+    renderShipList();
+    shipSearch.focus();
+    if (!shipManifest) {
+      fetchManifest().then(renderShipList);
+    }
+  }
+
+  shipSearch.addEventListener('input', renderShipList);
+  shipSearch.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+      var first = shipList.querySelector('button');
+      if (first) { first.click(); }
+    } else if (event.key === 'ArrowDown') {
+      var firstButton = shipList.querySelector('button');
+      if (firstButton) { event.preventDefault(); firstButton.focus(); }
+    }
+  });
+  shipList.addEventListener('keydown', function (event) {
+    var target = event.target;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      var item = target.closest('li');
+      var next = event.key === 'ArrowDown' ? item.nextElementSibling : item.previousElementSibling;
+      event.preventDefault();
+      if (next && next.querySelector('button')) {
+        next.querySelector('button').focus();
+      } else if (!next && event.key === 'ArrowUp') {
+        shipSearch.focus();
+      }
+    }
+  });
+
+  document.getElementById('ship-close').addEventListener('click', function () { shipDialog.close(); });
+  document.getElementById('help-close').addEventListener('click', function () { helpDialog.close(); });
+
+  shipFile.addEventListener('change', function () {
+    var files = Array.prototype.slice.call(shipFile.files || []);
+    shipFile.value = '';
+    if (files.length) { loadShipFromFiles(files); }
+  });
+
+  var settingValues = null;
+
+  function loadSettingValues() {
+    var json = call('fs_settings_json', 'string');
+    var list = [];
+    try { list = json ? JSON.parse(json) : []; } catch (e) { list = []; }
+    settingValues = {};
+    list.forEach(function (setting) { settingValues[setting.name] = setting; });
+    return list;
+  }
+
+  function settingValue(name) {
+    if (!settingValues) { loadSettingValues(); }
+    return settingValues[name] ? settingValues[name].value : null;
+  }
+
+  function applySetting(name, value) {
+    if (call('fs_set_setting', 'number', ['string', 'number'], [name, value])) {
+      if (settingValues && settingValues[name]) { settingValues[name].value = value; }
+    }
+  }
+
+  function enumItems(name, labels) {
+    return labels.map(function (label, index) {
+      return {
+        label: label,
+        role: 'menuitemradio',
+        checked: function () { return settingValue(name) === index; },
+        action: function () { applySetting(name, index); }
+      };
+    });
+  }
+
+  var MENUS = [
+    {
+      label: 'File',
+      items: [
+        { label: 'Load Ship...', action: openShipDialog },
+        { label: 'Load Ship from File...', action: function () { shipFile.click(); } },
+        { label: 'Reload Current Ship', action: reloadShip, enabled: function () { return !!currentShipPath; } }
+      ]
+    },
+    {
+      label: 'Tools',
+      items: TOOLS.map(function (tool) {
+        if (tool.heading) { return { heading: tool.heading }; }
+        return { label: tool.label, role: 'menuitemradio', checked: function () { return currentTool === tool.id; }, action: function () { selectTool(tool.id); } };
+      })
+    },
+    {
+      label: 'Controls',
+      items: [
+        { label: 'Zoom In', shortcut: '+', action: function () { call('fs_zoom', null, ['number'], [1.25]); } },
+        { label: 'Zoom Out', shortcut: '-', action: function () { call('fs_zoom', null, ['number'], [0.8]); } },
+        { label: 'Reset View', shortcut: 'Home', action: function () { call('fs_reset_view'); } },
+        { label: 'Focus on Ships', action: function () { call('fs_focus_on_ships'); } },
+        { separator: true },
+        { label: 'Pause', shortcut: 'Space', role: 'menuitemcheckbox', checked: isPaused, action: togglePause },
+        { label: 'Step', shortcut: 'Enter', enabled: isPaused, action: function () { call('fs_step'); } },
+        { separator: true },
+        { label: 'Toggle Day / Night', action: function () { call('fs_toggle_day_night'); } },
+        { label: 'Detonate Remote Control Bombs', action: function () { call('fs_detonate_rc_bombs'); } },
+        { label: 'Detonate Anti-Matter Bombs', action: function () { call('fs_detonate_anti_matter_bombs'); } },
+        { label: 'Remove All Pins', action: function () { call('fs_remove_all_pins'); } },
+        { label: 'Remove Anti-Gravity Fields', action: function () { call('fs_trigger', null, ['string'], ['removeantigravity']); } },
+        { separator: true },
+        { heading: 'Weather and waves' },
+        { label: 'Trigger Tsunami', action: function () { call('fs_trigger', null, ['string'], ['tsunami']); } },
+        { label: 'Trigger Rogue Wave', action: function () { call('fs_trigger', null, ['string'], ['roguewave']); } },
+        { label: 'Trigger Storm', action: function () { call('fs_trigger', null, ['string'], ['storm']); } },
+        { label: 'Trigger Lightning', action: function () { call('fs_trigger', null, ['string'], ['lightning']); } },
+        { separator: true },
+        { heading: 'NPCs' },
+        { label: 'Add Group of Humans', action: function () { call('fs_add_npc_group', null, ['number'], [1]); } },
+        { label: 'Add Group of Furniture', action: function () { call('fs_add_npc_group', null, ['number'], [0]); } },
+        { label: 'Select Next NPC', action: function () { call('fs_select_next_npc'); } },
+        { separator: true },
+        { label: 'Pan to Left World End', action: function () { call('fs_trigger', null, ['string'], ['panleft']); } },
+        { label: 'Pan to Right World End', action: function () { call('fs_trigger', null, ['string'], ['panright']); } }
+      ]
+    },
+    {
+      label: 'View',
+      items: [
+        {
+          label: 'Show Status Text',
+          role: 'menuitemcheckbox',
+          checked: function () { return statusTextShown; },
+          action: function () {
+            statusTextShown = !statusTextShown;
+            call('fs_set_status_text', null, ['number'], [statusTextShown ? 1 : 0]);
+          }
+        },
+        { label: 'Switchboard', role: 'menuitemcheckbox', checked: function () { return FSPanel.isEnabled(); }, action: function () { FSPanel.toggle(); } },
+        { separator: true },
+        { heading: 'Performance' },
+        { label: 'Auto', role: 'menuitemradio', checked: function () { return call('fs_perf_mode', 'number') === 0; }, action: function () { call('fs_set_perf_mode', null, ['number'], [0]); } },
+        { label: 'High quality', role: 'menuitemradio', checked: function () { return call('fs_perf_mode', 'number') === 1; }, action: function () { call('fs_set_perf_mode', null, ['number'], [1]); } },
+        { label: 'Balanced', role: 'menuitemradio', checked: function () { return call('fs_perf_mode', 'number') === 2; }, action: function () { call('fs_set_perf_mode', null, ['number'], [2]); } },
+        { label: 'Fast (low-end)', role: 'menuitemradio', checked: function () { return call('fs_perf_mode', 'number') === 3; }, action: function () { call('fs_set_perf_mode', null, ['number'], [3]); } },
+        { separator: true },
+        { heading: 'Ship view' }
+      ].concat(
+        enumItems('ShipViewMode', ['Exterior', 'Interior']),
+        [{ heading: 'Heat' }], enumItems('HeatRenderMode', ['None', 'Incandescence', 'Heat overlay']),
+        [{ heading: 'Stress' }], enumItems('StressRenderMode', ['None', 'Stress overlay', 'Tension overlay']),
+        [{ heading: 'Debug' }], enumItems('DebugShipRenderMode', ['None', 'Wireframe', 'Points', 'Springs', 'Edge springs', 'Structure', 'Air pressure', 'Strength']),
+        [{ separator: true }, { label: 'Settings...', action: function () { openSettingsDialog(); } }]
+      )
+    },
+    {
+      label: 'Sound',
+      items: [
+        { label: 'Sound', role: 'menuitemcheckbox', checked: function () { return FSAudio.settings.master; }, action: function () { FSAudio.toggleMaster(); } },
+        { label: 'Music', role: 'menuitemcheckbox', checked: function () { return FSAudio.settings.music; }, action: function () { FSAudio.toggleMusic(); } },
+        { label: 'Sound Effects', role: 'menuitemcheckbox', checked: function () { return FSAudio.settings.effects; }, action: function () { FSAudio.toggleEffects(); } }
+      ]
+    },
+    {
+      label: 'Help',
+      items: [
+        { label: 'Controls', action: function () { closeMenus(); helpDialog.showModal(); } }
+      ]
+    }
+  ];
+
+  var menuButtons = [];
+  var menuPanels = [];
+
+  function closeMenus() {
+    menuButtons.forEach(function (button) { button.setAttribute('aria-expanded', 'false'); });
+    menuPanels.forEach(function (panel) { panel.classList.remove('open'); });
+    openMenu = null;
+  }
+
+  function refreshMenuState(panel, definition) {
+    var buttons = panel.querySelectorAll('button[data-index]');
+    Array.prototype.forEach.call(buttons, function (button) {
+      var item = definition.items[Number(button.dataset.index)];
+      if (item.checked) { button.setAttribute('aria-checked', item.checked() ? 'true' : 'false'); }
+      button.disabled = item.enabled ? !item.enabled() : false;
+    });
+  }
+
+  function showMenu(index, focusFirst) {
+    closeMenus();
+    var button = menuButtons[index];
+    var panel = menuPanels[index];
+    refreshMenuState(panel, MENUS[index]);
+    var rect = button.getBoundingClientRect();
+    panel.style.left = Math.min(rect.left, window.innerWidth - 250) + 'px';
+    panel.style.top = rect.bottom + 2 + 'px';
+    panel.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    openMenu = index;
+    if (focusFirst) {
+      var first = panel.querySelector('button:not([disabled])');
+      if (first) { first.focus(); }
+    }
+  }
+
+  MENUS.forEach(function (definition, menuIndex) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = definition.label;
+    button.setAttribute('role', 'menuitem');
+    button.setAttribute('aria-haspopup', 'menu');
+    button.setAttribute('aria-expanded', 'false');
+
+    var panel = document.createElement('div');
+    panel.className = 'menu';
+    panel.setAttribute('role', 'menu');
+    panel.setAttribute('aria-label', definition.label);
+
+    definition.items.forEach(function (item, itemIndex) {
+      if (item.separator) {
+        panel.appendChild(document.createElement('hr'));
+        return;
+      }
+      if (item.heading) {
+        var heading = document.createElement('div');
+        heading.className = 'heading';
+        heading.textContent = item.heading;
+        panel.appendChild(heading);
+        return;
+      }
+
+      var entry = document.createElement('button');
+      entry.type = 'button';
+      entry.dataset.index = String(itemIndex);
+      entry.setAttribute('role', item.role || 'menuitem');
+      if (item.checked) { entry.setAttribute('aria-checked', 'false'); }
+
+      var label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = item.label;
+      entry.appendChild(label);
+
+      if (item.shortcut) {
+        var shortcut = document.createElement('span');
+        shortcut.className = 'shortcut';
+        shortcut.textContent = item.shortcut;
+        entry.appendChild(shortcut);
+      }
+
+      entry.addEventListener('click', function () {
+        closeMenus();
+        item.action();
+        updateStatusBar();
+        canvas.focus();
+      });
+
+      panel.appendChild(entry);
+    });
+
+    button.addEventListener('click', function () {
+      if (openMenu === menuIndex) { closeMenus(); } else { showMenu(menuIndex, false); }
+    });
+    button.addEventListener('mouseenter', function () {
+      if (openMenu !== null && openMenu !== menuIndex) { showMenu(menuIndex, false); }
+    });
+    button.addEventListener('keydown', function (event) {
+      if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        showMenu(menuIndex, true);
+      } else if (event.key === 'ArrowRight') {
+        menuButtons[(menuIndex + 1) % menuButtons.length].focus();
+      } else if (event.key === 'ArrowLeft') {
+        menuButtons[(menuIndex + menuButtons.length - 1) % menuButtons.length].focus();
+      }
+    });
+
+    panel.addEventListener('keydown', function (event) {
+      var items = Array.prototype.slice.call(panel.querySelectorAll('button:not([disabled])'));
+      var position = items.indexOf(document.activeElement);
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        items[(position + 1) % items.length].focus();
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        items[(position + items.length - 1) % items.length].focus();
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        showMenu((menuIndex + 1) % MENUS.length, true);
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        showMenu((menuIndex + MENUS.length - 1) % MENUS.length, true);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        closeMenus();
+        button.focus();
+      }
+    });
+
+    menubar.appendChild(button);
+    document.body.appendChild(panel);
+    menuButtons.push(button);
+    menuPanels.push(panel);
+  });
+
+  var spacer = document.createElement('span');
+  spacer.className = 'spacer';
+  menubar.appendChild(spacer);
+  var shipNameLabel = document.createElement('span');
+  shipNameLabel.className = 'ship-name';
+  shipNameLabel.id = 'menu-ship-name';
+  menubar.appendChild(shipNameLabel);
+
+  document.addEventListener('mousedown', function (event) {
+    if (openMenu !== null && !event.target.closest('.menu') && !event.target.closest('#menubar')) {
+      closeMenus();
+    }
+  });
+
+  function isTypingTarget(target) {
+    return target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+  }
+
+  window.addEventListener('keydown', function (event) {
+    if (event.key === 'Shift') { call('fs_set_shift', null, ['number'], [1]); }
+    if (!isReady || shipDialog.open || helpDialog.open || isTypingTarget(event.target)) { return; }
+    if (event.target.closest && event.target.closest('.menu')) { return; }
+
+    if (event.key === ' ') {
+      event.preventDefault();
+      togglePause();
+    } else if (event.key === 'Enter' && isPaused()) {
+      event.preventDefault();
+      call('fs_step');
+    } else if (event.key === '+' || event.key === '=') {
+      call('fs_zoom', null, ['number'], [1.25]);
+    } else if (event.key === '-' || event.key === '_') {
+      call('fs_zoom', null, ['number'], [0.8]);
+    } else if (event.key === 'Home') {
+      call('fs_reset_view');
+    }
+  });
+
+  window.addEventListener('keyup', function (event) {
+    if (event.key === 'Shift') { call('fs_set_shift', null, ['number'], [0]); }
+  });
+
+  window.addEventListener('blur', function () {
+    call('fs_set_shift', null, ['number'], [0]);
+  });
+
+  canvas.addEventListener('mousedown', function (event) {
+    closeMenus();
+    canvas.focus();
+    if (event.button === 1 || event.button === 2) { canvas.classList.add('panning'); }
+  });
+  window.addEventListener('mouseup', function () { canvas.classList.remove('panning'); });
+
+  var FSPanel = (function () {
+    var board = document.getElementById('switchboard');
+    var boardBody = document.getElementById('switchboard-body');
+    var boardHead = document.getElementById('switchboard-head');
+    var boardToggle = document.getElementById('switchboard-toggle');
+    var probeCard = document.getElementById('probe-card');
+    var elements = {};
+    var order = [];
+    var enabled = true;
+    var pending = false;
+
+    try {
+      if (localStorage.getItem('fs-switchboard') === '0') { enabled = false; }
+    } catch (e) {}
+
+    function ids(key) {
+      var parts = key.split('_');
+      return [Number(parts[0]), Number(parts[1])];
+    }
+
+    function send(el, value) {
+      var id = ids(el.key);
+      if (el.kind === 'enginectl') {
+        call('fs_set_engine', null, ['number', 'number', 'number'], [id[0], id[1], value]);
+      } else {
+        call('fs_set_switch', null, ['number', 'number', 'number'], [id[0], id[1], value ? 1 : 0]);
+      }
+    }
+
+    function lamp(el) {
+      el.lamp = document.createElement('span');
+      el.lamp.className = 'sb-lamp' + (el.state ? ' on' : '');
+      return el.lamp;
+    }
+
+    function buildControl(el) {
+      var control;
+      if (el.kind === 'switch' && el.type === 0) {
+        control = document.createElement('button');
+        control.type = 'button';
+        control.textContent = el.state ? 'On' : 'Off';
+        control.setAttribute('aria-pressed', el.state ? 'true' : 'false');
+        control.addEventListener('click', function () { send(el, !el.state); });
+        el.button = control;
+      } else if (el.kind === 'switch' && (el.type === 1 || el.type === 4)) {
+        control = document.createElement('button');
+        control.type = 'button';
+        control.textContent = el.type === 4 ? 'Sound' : 'Push';
+        control.setAttribute('aria-pressed', el.state ? 'true' : 'false');
+        control.addEventListener('pointerdown', function (event) { event.preventDefault(); send(el, true); });
+        control.addEventListener('pointerup', function () { send(el, false); });
+        control.addEventListener('pointerleave', function () { if (el.state) { send(el, false); } });
+        el.button = control;
+      } else if (el.kind === 'switch' || el.kind === 'probe' || el.kind === 'door') {
+        control = lamp(el);
+      } else if (el.kind === 'enginectl' && el.type === 2) {
+        control = document.createElement('button');
+        control.type = 'button';
+        control.textContent = el.value ? 'Thrust' : 'Off';
+        control.setAttribute('aria-pressed', el.value ? 'true' : 'false');
+        control.addEventListener('click', function () { send(el, el.value ? 0 : 1); });
+        el.button = control;
+      } else if (el.kind === 'enginectl') {
+        control = document.createElement('input');
+        control.type = 'range';
+        if (el.type === 0) {
+          control.min = '0'; control.max = '10'; control.step = '1';
+          control.value = String(Math.round(el.value * 5 + 5));
+          control.addEventListener('input', function () { send(el, (Number(control.value) - 5) / 5); });
+        } else {
+          control.min = '0'; control.max = '100'; control.step = '1';
+          control.value = String(Math.round(el.value * 100));
+          control.addEventListener('input', function () { send(el, Number(control.value) / 100); });
+        }
+        el.slider = control;
+      } else {
+        control = document.createElement('span');
+        control.className = 'sb-value';
+        el.readout = control;
+        showReadout(el);
+      }
+      return control;
+    }
+
+    function showReadout(el) {
+      if (!el.readout) { return; }
+      if (el.kind === 'enginemon') {
+        el.readout.textContent = Math.round(el.rpm * 100) + '% rpm';
+      } else {
+        el.readout.textContent = Math.round(el.value * 100) + '%';
+      }
+    }
+
+    function render() {
+      boardBody.textContent = '';
+      var list = order.map(function (key) { return elements[key]; });
+      list.sort(function (a, b) { return a.group - b.group || a.instance - b.instance; });
+      list.forEach(function (el) {
+        var row = document.createElement('div');
+        row.className = 'sb-item' + (el.enabled ? '' : ' disabled');
+        var label = document.createElement('span');
+        label.className = 'sb-label';
+        label.textContent = el.label;
+        label.title = el.label;
+        row.appendChild(label);
+        row.appendChild(buildControl(el));
+        el.row = row;
+        applyEnabled(el);
+        boardBody.appendChild(row);
+      });
+      updateVisibility(list.length);
+    }
+
+    function applyEnabled(el) {
+      if (!el.row) { return; }
+      el.row.classList.toggle('disabled', !el.enabled);
+      Array.prototype.forEach.call(el.row.querySelectorAll('button, input'), function (node) { node.disabled = !el.enabled; });
+    }
+
+    function updateVisibility(count) {
+      board.hidden = !(enabled && count > 0);
+    }
+
+    function refreshElement(el) {
+      if (el.lamp) { el.lamp.classList.toggle('on', !!el.state); }
+      if (el.button) {
+        var on = el.kind === 'enginectl' ? !!el.value : !!el.state;
+        el.button.setAttribute('aria-pressed', on ? 'true' : 'false');
+        if (el.kind === 'enginectl') { el.button.textContent = on ? 'Thrust' : 'Off'; }
+        else if (el.type === 0) { el.button.textContent = on ? 'On' : 'Off'; }
+      }
+      if (el.slider && document.activeElement !== el.slider) {
+        el.slider.value = String(el.type === 0 ? Math.round(el.value * 5 + 5) : Math.round(el.value * 100));
+      }
+      showReadout(el);
+    }
+
+    function scheduleRefresh(el) {
+      el.dirty = true;
+      if (!pending) {
+        pending = true;
+        requestAnimationFrame(function () {
+          pending = false;
+          order.forEach(function (key) {
+            var item = elements[key];
+            if (item && item.dirty) { item.dirty = false; refreshElement(item); }
+          });
+        });
+      }
+    }
+
+    var groups = { switch: 0, enginectl: 1, enginemon: 2, pump: 3, door: 4, probe: 5 };
+
+    function add(kind, key, label, type, value, instance) {
+      elements[key] = {
+        kind: kind, key: key, label: label, type: type, instance: instance,
+        group: groups[kind] || 0, enabled: true, dirty: false,
+        state: value ? 1 : 0, value: value, rpm: 0
+      };
+      order.push(key);
+    }
+
+    function event(op, key, label, a, b, c) {
+      var el = elements[key];
+      switch (op) {
+        case 'begin':
+          elements = {};
+          order = [];
+          boardBody.textContent = '';
+          updateVisibility(0);
+          break;
+        case 'end':
+          render();
+          break;
+        case 'switch': add('switch', key, label, a, b, c); break;
+        case 'probe': add('probe', key, label, a, b, c); break;
+        case 'enginectl': add('enginectl', key, label, a, 0, c); break;
+        case 'enginemon': add('enginemon', key, label, a, b, 0); elements[key].rpm = c; break;
+        case 'pump': add('pump', key, label, a, b, 0); break;
+        case 'door': add('door', key, label, a, b, 0); break;
+        case 'state':
+          if (el) { el.state = b ? 1 : 0; scheduleRefresh(el); }
+          break;
+        case 'value':
+          if (el) { el.value = b; scheduleRefresh(el); }
+          break;
+        case 'monitor':
+          if (el) { el.value = b; el.rpm = c; scheduleRefresh(el); }
+          break;
+        case 'enabled':
+          if (el) { el.enabled = !!b; applyEnabled(el); }
+          break;
+      }
+    }
+
+    function probe(vx, vy, temperature, depth, external, internal) {
+      document.getElementById('probe-speed').textContent = Math.sqrt(vx * vx + vy * vy).toFixed(1) + ' m/s';
+      document.getElementById('probe-temp').textContent = (temperature - 273.15).toFixed(1) + ' \u00b0C';
+      document.getElementById('probe-depth').textContent = depth.toFixed(1) + ' m';
+      document.getElementById('probe-ext').textContent = (external / 1000).toFixed(1) + ' kPa';
+      document.getElementById('probe-int').textContent = (internal / 1000).toFixed(1) + ' kPa';
+    }
+
+    function probeVisible(visible) {
+      probeCard.hidden = !visible;
+    }
+
+    boardToggle.addEventListener('click', function () {
+      var collapsed = board.classList.toggle('collapsed');
+      boardToggle.textContent = collapsed ? '+' : '-';
+    });
+
+    var drag = null;
+    boardHead.addEventListener('pointerdown', function (event) {
+      if (event.target === boardToggle) { return; }
+      var rect = board.getBoundingClientRect();
+      drag = { dx: event.clientX - rect.left, dy: event.clientY - rect.top };
+      boardHead.setPointerCapture(event.pointerId);
+    });
+    boardHead.addEventListener('pointermove', function (event) {
+      if (!drag) { return; }
+      board.style.left = Math.max(0, Math.min(window.innerWidth - 80, event.clientX - drag.dx)) + 'px';
+      board.style.top = Math.max(0, Math.min(window.innerHeight - 40, event.clientY - drag.dy)) + 'px';
+      board.style.bottom = 'auto';
+    });
+    boardHead.addEventListener('pointerup', function () { drag = null; });
+
+    return {
+      event: event,
+      probe: probe,
+      probeVisible: probeVisible,
+      isEnabled: function () { return enabled; },
+      toggle: function () {
+        enabled = !enabled;
+        try { localStorage.setItem('fs-switchboard', enabled ? '1' : '0'); } catch (e) {}
+        updateVisibility(order.length);
+      }
+    };
+  })();
+  window.FSPanel = FSPanel;
+
+  var settingsDialog = document.getElementById('settings-dialog');
+  var settingsTabs = document.getElementById('settings-tabs');
+  var settingsPane = document.getElementById('settings-pane');
+  var settingsList = [];
+  var settingsGroup = null;
+
+  function formatSettingValue(setting, value) {
+    if (setting.kind === 'bool') { return value ? 'On' : 'Off'; }
+    if (setting.kind === 'float') { return Math.abs(value) >= 100 ? value.toFixed(0) : Math.abs(value) >= 10 ? value.toFixed(1) : value.toFixed(2); }
+    if (setting.kind === 'minutes') { return value + ' min'; }
+    if (setting.kind === 'seconds') { return value + ' s'; }
+    return String(Math.round(value));
+  }
+
+  function renderSettingsPane() {
+    settingsPane.textContent = '';
+    settingsList.filter(function (setting) { return setting.group === settingsGroup; }).forEach(function (setting) {
+      var row = document.createElement('div');
+      row.className = 'setting-row';
+      var label = document.createElement('label');
+      label.textContent = setting.label;
+      var readout = document.createElement('span');
+      readout.className = 'setting-value';
+      var control;
+
+      if (setting.kind === 'enum') {
+        control = document.createElement('select');
+        setting.options.forEach(function (option, index) {
+          var node = document.createElement('option');
+          node.value = String(index);
+          node.textContent = option;
+          control.appendChild(node);
+        });
+        control.value = String(setting.value);
+        control.addEventListener('change', function () { setting.value = Number(control.value); applySetting(setting.name, setting.value); });
+      } else if (setting.kind === 'bool') {
+        control = document.createElement('input');
+        control.type = 'checkbox';
+        control.checked = setting.value >= 0.5;
+        readout.textContent = formatSettingValue(setting, setting.value);
+        control.addEventListener('change', function () {
+          setting.value = control.checked ? 1 : 0;
+          readout.textContent = formatSettingValue(setting, setting.value);
+          applySetting(setting.name, setting.value);
+        });
+      } else {
+        control = document.createElement('input');
+        control.type = 'range';
+        var span = setting.max - setting.min;
+        control.min = String(setting.min);
+        control.max = String(setting.max);
+        control.step = setting.kind === 'float' ? String(span > 0 ? span / 1000 : 0.01) : '1';
+        control.value = String(setting.value);
+        readout.textContent = formatSettingValue(setting, setting.value);
+        control.addEventListener('input', function () {
+          setting.value = Number(control.value);
+          readout.textContent = formatSettingValue(setting, setting.value);
+          applySetting(setting.name, setting.value);
+        });
+      }
+
+      control.setAttribute('aria-label', setting.label);
+      row.appendChild(label);
+      row.appendChild(control);
+      row.appendChild(readout);
+      settingsPane.appendChild(row);
+    });
+  }
+
+  function openSettingsDialog() {
+    settingsList = loadSettingValues();
+    var groups = [];
+    settingsList.forEach(function (setting) { if (groups.indexOf(setting.group) < 0) { groups.push(setting.group); } });
+    settingsTabs.textContent = '';
+    groups.forEach(function (group) {
+      var tab = document.createElement('button');
+      tab.type = 'button';
+      tab.textContent = group;
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-selected', group === settingsGroup ? 'true' : 'false');
+      tab.addEventListener('click', function () {
+        settingsGroup = group;
+        Array.prototype.forEach.call(settingsTabs.children, function (node) { node.setAttribute('aria-selected', node === tab ? 'true' : 'false'); });
+        renderSettingsPane();
+      });
+      settingsTabs.appendChild(tab);
+    });
+    if (groups.indexOf(settingsGroup) < 0) { settingsGroup = groups[0] || null; }
+    Array.prototype.forEach.call(settingsTabs.children, function (node) { node.setAttribute('aria-selected', node.textContent === settingsGroup ? 'true' : 'false'); });
+    renderSettingsPane();
+    closeMenus();
+    settingsDialog.showModal();
+  }
+
+  document.getElementById('settings-close').addEventListener('click', function () { settingsDialog.close(); });
+
+  var FSAudio = (function () {
+    var settings = { master: true, music: true, effects: true };
+    try {
+      var saved = JSON.parse(localStorage.getItem('fs-sound') || 'null');
+      if (saved) { settings.master = saved.master !== false; settings.music = saved.music !== false; settings.effects = saved.effects !== false; }
+    } catch (e) {}
+
+    var context = null;
+    var masterGain = null;
+    var effectsGain = null;
+    var catalog = null;
+    var catalogPromise = null;
+    var buffers = {};
+    var pending = {};
+    var lastPlayed = {};
+    var loops = {};
+    var activeVoices = 0;
+    var musicElement = null;
+    var musicQueue = [];
+    var musicStarted = false;
+
+    function save() {
+      try { localStorage.setItem('fs-sound', JSON.stringify(settings)); } catch (e) {}
+    }
+
+    function ensureContext() {
+      if (!context) {
+        var Ctor = window.AudioContext || window.webkitAudioContext;
+        if (!Ctor) { return null; }
+        context = new Ctor();
+        masterGain = context.createGain();
+        effectsGain = context.createGain();
+        effectsGain.connect(masterGain);
+        masterGain.connect(context.destination);
+        applyGains();
+      }
+      return context;
+    }
+
+    function applyGains() {
+      if (!context) { return; }
+      masterGain.gain.value = settings.master ? 1 : 0;
+      effectsGain.gain.value = settings.effects ? 1 : 0;
+      if (musicElement) { musicElement.volume = settings.master && settings.music ? 0.35 : 0; }
+    }
+
+    function loadCatalog() {
+      if (!catalogPromise) {
+        catalogPromise = fetch('sounds.json').then(function (response) {
+          if (!response.ok) { throw new Error('no sounds'); }
+          return response.json();
+        }).then(function (data) { catalog = data; return data; }).catch(function () { catalog = { sounds: {}, music: {} }; return catalog; });
+      }
+      return catalogPromise;
+    }
+
+    var bufferBytes = 0;
+    var bufferTick = 0;
+    var MAX_BUFFER_BYTES = 48 * 1024 * 1024;
+
+    function evictBuffers() {
+      if (bufferBytes <= MAX_BUFFER_BYTES) { return; }
+      var stems = Object.keys(buffers).sort(function (a, b) { return buffers[a].tick - buffers[b].tick; });
+      for (var i = 0; i < stems.length && bufferBytes > MAX_BUFFER_BYTES * 0.75; i++) {
+        bufferBytes -= buffers[stems[i]].bytes;
+        delete buffers[stems[i]];
+        delete pending[stems[i]];
+      }
+    }
+
+    function loadBuffer(stem) {
+      if (buffers[stem]) { buffers[stem].tick = ++bufferTick; return Promise.resolve(buffers[stem].buffer); }
+      if (pending[stem]) { return pending[stem]; }
+      pending[stem] = fetch('Sounds/' + stem + '.ogg').then(function (response) {
+        if (!response.ok) { throw new Error('missing ' + stem); }
+        return response.arrayBuffer();
+      }).then(function (data) {
+        return new Promise(function (resolve, reject) { context.decodeAudioData(data, resolve, reject); });
+      }).then(function (buffer) {
+        var bytes = buffer.length * buffer.numberOfChannels * 4;
+        buffers[stem] = { buffer: buffer, bytes: bytes, tick: ++bufferTick };
+        bufferBytes += bytes;
+        evictBuffers();
+        return buffer;
+      }).catch(function () { delete pending[stem]; return null; });
+      return pending[stem];
+    }
+
+    function pickStem(base) {
+      var variants = catalog && catalog.sounds[base];
+      if (!variants || !variants.length) { return null; }
+      return variants[Math.floor(Math.random() * variants.length)];
+    }
+
+    function playBuffer(buffer, volume, loop) {
+      var source = context.createBufferSource();
+      var gain = context.createGain();
+      source.buffer = buffer;
+      source.loop = !!loop;
+      gain.gain.value = volume;
+      source.connect(gain);
+      gain.connect(effectsGain);
+      source.start();
+      return { source: source, gain: gain };
+    }
+
+    function playBase(base, volume) {
+      if (!settings.master || !settings.effects || !ensureContext() || context.state !== 'running') { return; }
+      var now = performance.now();
+      if (lastPlayed[base] && now - lastPlayed[base] < 70) { return; }
+      if (activeVoices > 28) { return; }
+      lastPlayed[base] = now;
+      loadCatalog().then(function () {
+        var stem = pickStem(base);
+        if (!stem) { return; }
+        return loadBuffer(stem).then(function (buffer) {
+          if (!buffer) { return; }
+          var voice = playBuffer(buffer, volume, false);
+          activeVoices++;
+          voice.source.onended = function () { activeVoices--; };
+        });
+      });
+    }
+
+    function playUnderwater(base, underwater, volume) {
+      var name = underwater ? base + '_underwater' : base;
+      if (catalog && !catalog.sounds[name]) { name = underwater ? base : base + '_underwater'; }
+      playBase(name, volume);
+    }
+
+    function resolveMaterial(kind, material, size, underwater) {
+      var sizes = ['small', 'medium', 'large'];
+      var index = size < 2 ? 0 : (size < 9 ? 1 : 2);
+      var order = [];
+      var i;
+      for (i = index; i >= 0; i--) { order.push([sizes[i], underwater]); }
+      for (i = index; i >= 0; i--) { order.push([sizes[i], !underwater]); }
+      for (i = 0; i < order.length; i++) {
+        var name = kind + '_' + material + '_' + order[i][0] + (order[i][1] ? '_underwater' : '');
+        if (catalog.sounds[name]) { return name; }
+      }
+      return null;
+    }
+
+    function playMaterial(kind, material, size, underwater, volume) {
+      if (!settings.master || !settings.effects || !ensureContext() || context.state !== 'running') { return; }
+      loadCatalog().then(function () {
+        var name = resolveMaterial(kind, material, size, !!underwater);
+        if (name) { playBase(name, volume); }
+      });
+    }
+
+    function stopLoop(id) {
+      var entry = loops[id];
+      if (!entry) { return; }
+      delete loops[id];
+      if (entry.voice) {
+        var now = context.currentTime;
+        entry.voice.gain.gain.cancelScheduledValues(now);
+        entry.voice.gain.gain.setTargetAtTime(0, now, 0.05);
+        setTimeout(function () { try { entry.voice.source.stop(); } catch (e) {} }, 300);
+      }
+      entry.cancelled = true;
+    }
+
+    function loop(id, base, on, volume) {
+      if (!on) { stopLoop(id); return; }
+      if (!settings.master || !settings.effects || !ensureContext() || context.state !== 'running') { return; }
+      stopLoop(id);
+      var entry = { cancelled: false, voice: null };
+      loops[id] = entry;
+      loadCatalog().then(function () {
+        var variants = catalog.sounds[base];
+        if (!variants || !variants.length) { return; }
+        return loadBuffer(variants[0]);
+      }).then(function (buffer) {
+        if (!buffer || entry.cancelled) { return; }
+        entry.voice = playBuffer(buffer, volume, true);
+        if (entry.rate) { entry.voice.source.playbackRate.value = entry.rate; }
+      });
+    }
+
+    function setLoopRate(id, rate) {
+      var entry = loops[id];
+      if (entry && entry.voice) { entry.voice.source.playbackRate.value = rate; }
+    }
+
+    function engine(id, base, rpm) {
+      if (!rpm) { stopLoop(id); return; }
+      var rate = 0.6 + 0.8 * Math.min(Math.max(rpm, 0), 1.5);
+      var entry = loops[id];
+      if (!entry) {
+        loop(id, base, 1, 0.5);
+        entry = loops[id];
+        if (entry) { entry.rate = rate; }
+        return;
+      }
+      entry.rate = rate;
+      setLoopRate(id, rate);
+    }
+
+    function shipSound(id, base, on) {
+      loop(id, base, on, 0.8);
+    }
+
+    function stopGroup(prefix) {
+      Object.keys(loops).forEach(function (id) {
+        if (id.indexOf(prefix) === 0) { stopLoop(id); }
+      });
+    }
+
+    function nextTrack() {
+      if (!musicElement) { return; }
+      if (!musicQueue.length) {
+        var tracks = [];
+        var groups = catalog.music || {};
+        if (groups.background) { tracks = tracks.concat(groups.background); }
+        for (var i = tracks.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var t = tracks[i]; tracks[i] = tracks[j]; tracks[j] = t;
+        }
+        musicQueue = tracks;
+      }
+      var stem = musicQueue.shift();
+      if (!stem) { return; }
+      musicElement.src = 'Music/' + stem + '.ogg';
+      var promise = musicElement.play();
+      if (promise && promise.catch) { promise.catch(function () {}); }
+    }
+
+    function startMusic() {
+      if (musicStarted) { return; }
+      musicStarted = true;
+      loadCatalog().then(function () {
+        musicElement = new Audio();
+        musicElement.preload = 'auto';
+        musicElement.addEventListener('ended', nextTrack);
+        musicElement.addEventListener('error', function () { setTimeout(nextTrack, 3000); });
+        applyGains();
+        if (settings.music) { nextTrack(); }
+      });
+    }
+
+    function unlock() {
+      var ctx = ensureContext();
+      if (ctx && ctx.state !== 'running') { ctx.resume(); }
+      startMusic();
+    }
+
+    ['pointerdown', 'keydown', 'touchstart'].forEach(function (name) {
+      window.addEventListener(name, unlock, { passive: true });
+    });
+
+    function toggleMusic() {
+      settings.music = !settings.music;
+      save();
+      applyGains();
+      if (settings.music && musicElement && musicElement.paused) { nextTrack(); }
+      if (!settings.music && musicElement) { musicElement.pause(); }
+    }
+
+    return {
+      playBase: playBase,
+      engine: engine,
+      shipSound: shipSound,
+      stopGroup: stopGroup,
+      playUnderwater: playUnderwater,
+      playMaterial: playMaterial,
+      loop: loop,
+      settings: settings,
+      toggleMaster: function () { settings.master = !settings.master; save(); applyGains(); if (musicElement) { if (settings.master && settings.music) { musicElement.play().catch(function () {}); } } },
+      toggleMusic: toggleMusic,
+      toggleEffects: function () { settings.effects = !settings.effects; save(); applyGains(); }
+    };
+  })();
+  window.FSAudio = FSAudio;
+
+  var Module = {
+    canvas: canvas,
+    print: function (text) { console.log(text); },
+    printErr: function (text) { console.warn(text); },
+    setStatus: function (text) {
+      if (isReady) { return; }
+      var match = /(\d+(?:\.\d+)?)\/(\d+)/.exec(text);
+      if (match) {
+        var done = parseFloat(match[1]);
+        var total = parseFloat(match[2]);
+        setProgress(0.5 * (total > 0 ? done / total : 0), 'Downloading game data...');
+      } else if (text) {
+        statusEl.textContent = text;
+      }
+    },
+    onGameProgress: function (fraction) {
+      setProgress(0.5 + 0.5 * fraction, 'Starting the simulation...');
+    },
+    onGameReady: function () {
+      isReady = true;
+      currentShipPath = '/game/Data/Built-in Ships/fallback_ship.shp2';
+      currentShipName = 'Floating Sandbox';
+      overlay.classList.add('hidden');
+      updateStatusBar();
+      fetchManifest();
+    },
+    onGameError: function (message) {
+      console.error(message);
+      showError(message);
+    }
+  };
+
+  window.addEventListener('error', function (event) {
+    showError(String(event.message || event.error || 'Unknown error'));
+  });
+
+  canvas.addEventListener('webglcontextlost', function (event) {
+    event.preventDefault();
+    showError('The WebGL context was lost. Reload the page to continue.');
+  });
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>
