@@ -808,16 +808,22 @@
 			- OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
 				! For "Delete checked"
 				- Remove from DB via ExtractCustomMaterials, and get back SinglePod
-				- Ask controller if any in use, via IsAny[Structural|Electrical|Ropes]MaterialInUse
-					- TODO: controller could return set<TMaterial*> for those used; PalettesController
-					  could then ask if wants to remove them from delenda selection
+				- Ask controller if any in use, via Get[Structural|Electrical|Ropes]MaterialsInUse() -> std::set<XXXMaterial const *>
 				- If at-least-one-in-use:
-					- Ask user if remove from ship or not
-					- If abort => abort
-				- Call PreCustomMaterialDeleted on each pointer
+					- TODO: see if below could be simplified with just 3-way question case and nop when delenda is empty
+					- If returned set is proper subset of delenda:
+						- Ask user if a) Remove from ship, b) Remove from delenda, c) abort
+						- If a: <nop>
+						- If b: prune delenda, zero ship set
+						- If c: abort
+					- Else (only deleting from ship's): 
+						- Ask user if a) Remove from ship, b) abort
+						- If a: <nop>
+						- If b: abort
+				- Call PreCustomMaterialDeleted on each delenda pointer
 					- Like at SetShipCustomMaterials: if currently-picked materials among those being deleted, select null in WorkbenchState and browser
 				- Bake Undo material-specific lambda, moving SinglePod into it
-				- If at-least-one-in-use:					
+				- If ship set not empty:
 					- Remove from ship, via Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials(map with nullptr's, Undo material-specific lambda)
 				- Else:
 					- Controller::PushCustomMaterialUndoAction(Undo material-specific lambda)
@@ -890,7 +896,7 @@
 			- void Controller::PushCustomMaterialUndoAction(lambda &&)
 				! Convenience used by MaterialPalettesController for all undo actions that do not involve executing Controller ops; facilitates dirty state
 				- Copy Undo baking (only) from InternalFlip
-			- bool Controller::IsAny[Structural|Electrical|Ropes]MaterialInUse(std::vector<XXXMaterial const *> materials) const -> bool
+			- std::set<XXXMaterial const *> Controller::Get[Structural|Electrical|Ropes]MaterialsInUse(std::vector<XXXMaterial const *> materials) const -> bool
 				! Used by "delete checked" - ASSUMPTION: "delete checked" only applies to a given Category - and thus to a given LayerType
 			- void Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials:
 				- Args:
@@ -905,6 +911,9 @@
 						- Move material restore call into lambda
 
 	- TODOHERE: master list of all tasks:
+		- Check Discord feedback:
+			- Rusting
+			- ShipBuilder
 		- Edit workflow
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
