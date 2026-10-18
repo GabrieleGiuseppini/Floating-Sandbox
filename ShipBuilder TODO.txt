@@ -714,29 +714,53 @@
 					! Exports all custom materials
 					- TODO
 
-			- Make it dockable
-				- When docked:
+			= Make it dockable
+				! When docked:
 					- Fixed pos and size (based off referenceRect)
 						- Have to store referenceRect in order to dock again
 					- Losing focus (still) closes it
-				- When undocked:
+				! When undocked:
 					- Gains close button, move bar, and resizing controls
 						- Requires Layout()
 					- MainFrame trying to open palette (controller): checks first if already open 
 					- MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
 					- Losing focus never closes it
 
-				- Impl:
-					- Need an icon - or see if can have none
-					- Frame itself (browser) needs to not set max size, a reasonable min size, and the right size (off referenceRect)
-					- @ Open():
-						- Store referenceRect
-						- Begin as docked
-					- Undocking:
+				= Impl:
+					- Need an icon
+					- Docking button: BitmappedCheckbox
+						- Icons: TODO
+						- Handling:
+							- MakeDocked/Undocked()
+							- Refresh()
+					- Frame itself (browser) needs to not set max size, needs to set a reasonable min size, and set the right size (off referenceRect)
+					- Member for tracking current docked state: bool mIsDocked
+					- Close event:
+						- ! docked: if can veto: veto + hide, like @ losing focus
+						- docked: if can veto: veto
+					- KillFocus event:
+						- ! docked: completely ignored
+						- docked: like now
+
+					- MakeDocked():
+						- SetWindowStyle -- like cctor
+							- Use constants for both styles
+						- Dock into docking rect
+						- Set internal state as docked
+					- MakeUndocked():
 						- SetWindowStyle(wxMAXIMIZE_BOX | wxCLOSE_BOX | wxRESIZE_BORDER | wxFRAME_FLOAT_ON_PARENT);
-						- Close event: don't close but hide, like @ losing focus
-
-
+							- Use constants for both styles
+						- Set internal state as non-docked
+					- @ Open():
+						- Store docking rect
+						- Begin as docked: MakeDocked()
+					- MainFrame trying to open palette (controller): checks first if already open 
+					- MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
+						- Expose member tracking docking status
+						- Actually, might expose logic as GetCanLoseFocus:
+							- if docked: return !IsOpen
+							- if undocked: return true
+				- Clear this work item somewhere else in the plan
 
 		= MaterialPalettesController
 			+ Replaces CompositeMaterialPalette
