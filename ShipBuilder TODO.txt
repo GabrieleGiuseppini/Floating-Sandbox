@@ -714,7 +714,7 @@
 					! Exports all custom materials
 					- TODO
 
-			= Make it dockable
+			+ Make it dockable
 				! When docked:
 					- Fixed pos and size (based off referenceRect)
 						- Have to store referenceRect in order to dock again
@@ -725,8 +725,7 @@
 					- MainFrame trying to open palette (controller): checks first if already open 
 					- MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
 					- Losing focus never closes it
-
-				= Impl:
+				+ Impl:
 					+ Need an icon
 					+ Docking button: BitmappedCheckbox
 						+ Icons
@@ -758,18 +757,17 @@
 						+ Begin as docked: MakeDocked()
 						+ Set BimapCheckbox state
 					+ @ Selection: no close/hide if not docked
-
-					- MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
-						- Expose member tracking docking status
-						- Actually, might expose logic as GetCanLoseFocus:
-							- if docked: return !IsOpen
-							- if undocked: return true
-					- TODOHERE MainFrame trying to open palette (controller): checks first if already open
-						- TODOHERE: and if so?
+					+ MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
+						+ Expose member tracking docking status
+						+ Actually, might expose logic as GetCanLoseFocus:
+							+ if docked: return !IsOpen
+							+ if undocked: return true
+					X MainFrame trying to open palette (controller): checks first if already open
+						X TODOHERE: and if so?
 					X At change of plane, need to close palette browser if it's open
 						X See if this is really needed though
-					- At change of layer, need to close palette browser if it's open
-				- Clear this work item somewhere else in the plan
+					+ At change of layer, need to close palette browser if it's open
+				+ Clear this work item somewhere else in the plan
 
 		= MaterialPalettesController
 			+ Replaces CompositeMaterialPalette
@@ -1698,7 +1696,7 @@
 		- Covers: "selectable backgrounds		"
 	- MainFrame: add "export to image" button (in non-layer-specific ribbon) - basically a Screenshot tool
 		- Screenshot for the current visualization(s), i.e. the canvas render buffer as it is
-	- MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
+	+ MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
 
 - Ephemeral visualization rearch:
 	- Current structure:

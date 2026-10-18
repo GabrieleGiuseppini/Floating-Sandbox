@@ -5068,7 +5068,7 @@ void MainFrame::OnWorkCanvasMouseEnteredWindow(wxMouseEvent & /*event*/)
     // Set focus as well, so for example SHIFT presses start getting caught,
     // unless the palette is open - in which case we do not want to catch the focus
     // (to not cause the palette to close)
-    if (!mMaterialPalettesController->IsOpen())
+    if (mMaterialPalettesController->CanLoseFocus())
     {
         mWorkCanvas->SetFocus();
     }
@@ -6568,8 +6568,8 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
     //
 
     bool hasToggledVisualizationModeHeaderPanel = false;
-    bool hasToggledToolPanel = false;
     bool hasToggledLayerVisualizationModePanel = false;
+    bool hasToggledLayerToolPanel = false;
 
     auto const iPrimaryVisualization = static_cast<uint32_t>(primaryVisualization);
     for (uint32_t iVisualization = 0; iVisualization < VisualizationCount; ++iVisualization)
@@ -6614,7 +6614,7 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
         if (mToolbarPanelsSizer->IsShown(mToolbarPanels[iLayer]) != isLayerSelected)
         {
             mToolbarPanelsSizer->Show(mToolbarPanels[iLayer], isLayerSelected);
-            hasToggledToolPanel = true;
+            hasToggledLayerToolPanel = true;
         }
     }
 
@@ -6628,9 +6628,12 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
         mVisualizationModePanelsSizer->Layout();
     }
 
-    if (hasToggledToolPanel)
+    if (hasToggledLayerToolPanel)
     {
         mToolbarPanelsSizer->Layout();
+
+        // Since we have changed layer, close the current palettes browser, if it's open
+        mMaterialPalettesController->Close();
     }
 }
 

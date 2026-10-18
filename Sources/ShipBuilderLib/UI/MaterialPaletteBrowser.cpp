@@ -587,7 +587,7 @@ std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverrid
     typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType const & startingOverrides,
     TMaterial const * baseMaterial)
 {
-    assert(IsOpen());
+    assert(IsShown());
 
     // Do not close ourselves when we'll lose the focus
     mStickAroundOnFocusLoss = true;
@@ -616,7 +616,7 @@ std::optional<typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverrid
     typename MaterialPaletteBrowser<TLayer>::TMaterial::VariantOverridesType const & startingOverrides,
     TMaterial const * baseMaterial)
 {
-    assert(IsOpen());
+    assert(IsShown());
 
     // Do not close ourselves when we'll lose the focus
     mStickAroundOnFocusLoss = true;

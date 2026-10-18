@@ -31,7 +31,6 @@
 namespace ShipBuilder {
 
 class MaterialPalettesController final :
-    public IMaterialPalette,
     public IMaterialPalettesController
 {
 public:
@@ -64,7 +63,7 @@ public:
                 materialPlane,
                 initialMaterial);
 
-            mLastOpenedPalette = mStructuralLayerMaterialPaletteBrowser.get();
+            mLastOpenedPaletteBrowser = mStructuralLayerMaterialPaletteBrowser.get();
         }
         else if constexpr (TLayer == LayerType::Electrical)
         {
@@ -73,7 +72,7 @@ public:
                 materialPlane,
                 initialMaterial);
 
-            mLastOpenedPalette = mElectricalLayerMaterialPaletteBrowser.get();
+            mLastOpenedPaletteBrowser = mElectricalLayerMaterialPaletteBrowser.get();
         }
         else
         {
@@ -84,11 +83,13 @@ public:
                 materialPlane,
                 initialMaterial);
 
-            mLastOpenedPalette = mRopesLayerMaterialPaletteBrowser.get();
+            mLastOpenedPaletteBrowser = mRopesLayerMaterialPaletteBrowser.get();
         }
     }
 
-    bool IsOpen() const override;
+    void Close();
+
+    bool CanLoseFocus() const;
 
     //
     // IMaterialPalettesController
@@ -139,7 +140,7 @@ private:
     std::unique_ptr<MaterialPaletteBrowser<LayerType::Electrical>> mElectricalLayerMaterialPaletteBrowser;
     std::unique_ptr<MaterialPaletteBrowser<LayerType::Ropes>> mRopesLayerMaterialPaletteBrowser;
 
-    IMaterialPalette const * mLastOpenedPalette;
+    IMaterialPalette * mLastOpenedPaletteBrowser;
 };
 
 }

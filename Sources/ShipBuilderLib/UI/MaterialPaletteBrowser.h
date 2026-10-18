@@ -45,7 +45,9 @@ public:
 
     virtual ~IMaterialPalette() = default;
 
-    virtual bool IsOpen() const = 0;
+    virtual void Close() = 0;
+
+    virtual bool CanLoseFocus() const = 0;
 };
 
 template<LayerType TLayer>
@@ -73,11 +75,13 @@ public:
         MaterialPlaneType planeType,
         TMaterial const * initialMaterial);
 
-    void Close();
+    void Close() override;
 
-    bool IsOpen() const override
+    bool CanLoseFocus() const override
     {
-        return IsShown();
+        // Can give focus if palette is open *but undocked*, or if palette is closed
+        return !IsShown()
+            || !mIsDocked;
     }
 
     bool GetIsDocked() const

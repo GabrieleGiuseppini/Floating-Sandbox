@@ -26,7 +26,7 @@ MaterialPalettesController::MaterialPalettesController(
     , mOnStructuralLayerMaterialSelected(std::move(onStructuralLayerMaterialSelected))
     , mOnElectricalLayerMaterialSelected(std::move(onElectricalLayerMaterialSelected))
     , mOnRopeLayerMaterialSelected(std::move(onRopeLayerMaterialSelected))
-    , mLastOpenedPalette(nullptr)
+    , mLastOpenedPaletteBrowser(nullptr)
 {
     // Model
 
@@ -123,15 +123,23 @@ LayersMaterialReplacementMaps MaterialPalettesController::OnShipLoaded(CustomMat
         std::move(ropesLayerMaterialReplacementMap));
 }
 
-bool MaterialPalettesController::IsOpen() const
+void MaterialPalettesController::Close()
 {
-    if (mLastOpenedPalette == nullptr)
+    if (mLastOpenedPaletteBrowser != nullptr)
+    {
+        mLastOpenedPaletteBrowser->Close();
+    }
+}
+
+bool MaterialPalettesController::CanLoseFocus() const
+{
+    if (mLastOpenedPaletteBrowser == nullptr)
     {
         return false;
     }
     else
     {
-        return mLastOpenedPalette->IsOpen();
+        return mLastOpenedPaletteBrowser->CanLoseFocus();
     }
 }
 
