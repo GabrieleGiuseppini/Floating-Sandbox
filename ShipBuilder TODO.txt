@@ -757,18 +757,17 @@
 						+ Store docking rect
 						+ Begin as docked: MakeDocked()
 						+ Set BimapCheckbox state
-					- @ Selection: no close/hide if not docked
-					- TODO:
-						- Icon: darker
+					+ @ Selection: no close/hide if not docked
 
-					- TODOHERE MainFrame trying to open palette (controller): checks first if already open
 					- MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
 						- Expose member tracking docking status
 						- Actually, might expose logic as GetCanLoseFocus:
 							- if docked: return !IsOpen
 							- if undocked: return true
-					- At change of plane, need to close palette browser if it's open
-						- See if this is really needed though
+					- TODOHERE MainFrame trying to open palette (controller): checks first if already open
+						- TODOHERE: and if so?
+					X At change of plane, need to close palette browser if it's open
+						X See if this is really needed though
 					- At change of layer, need to close palette browser if it's open
 				- Clear this work item somewhere else in the plan
 
