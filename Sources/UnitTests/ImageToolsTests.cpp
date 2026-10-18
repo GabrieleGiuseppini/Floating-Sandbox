@@ -3,7 +3,7 @@
 #include "gtest/gtest.h"
 
 // GCC comes up with slightly different roundings
-#ifndef _MSC_VER
+#if defined(__GNUC__) && !defined(__clang__)
 #define _GCC_EXTRA (-0.0001f)
 #else
 #define _GCC_EXTRA 0.0f

@@ -196,3 +196,23 @@ install(FILES "${CMAKE_SOURCE_DIR}/Ships/R.M.S. Titanic (With Power).shp2"
 # License et al
 install(FILES "${CMAKE_SOURCE_DIR}/license.txt" "${CMAKE_SOURCE_DIR}/changes.txt" "${CMAKE_SOURCE_DIR}/README.md"
 	DESTINATION .)
+
+# Personal-use macOS package. Preserve the flat development executable/install.
+if(APPLE)
+    find_package(Python3 3.9 COMPONENTS Interpreter REQUIRED)
+    add_custom_target(macos-app
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/Scripts/package_macos.py"
+            --executable "$<TARGET_FILE:FloatingSandbox>"
+            --source "${CMAKE_SOURCE_DIR}"
+            --output "${CMAKE_BINARY_DIR}/package/Floating Sandbox.app"
+        DEPENDS FloatingSandbox
+        VERBATIM)
+
+    add_custom_target(macos-package
+        COMMAND "${CMAKE_COMMAND}" -E remove -f "${CMAKE_BINARY_DIR}/package/Floating-Sandbox-macOS-arm64.zip"
+        COMMAND /usr/bin/ditto -c -k --norsrc --noextattr --noacl --keepParent
+            "${CMAKE_BINARY_DIR}/package/Floating Sandbox.app"
+            "${CMAKE_BINARY_DIR}/package/Floating-Sandbox-macOS-arm64.zip"
+        DEPENDS macos-app
+        VERBATIM)
+endif()

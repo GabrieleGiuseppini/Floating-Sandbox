@@ -6,6 +6,7 @@
 #include "ShipPreviewWindow.h"
 
 #include <UILib/WxHelpers.h>
+#include <UILib/StandardSystemPaths.h>
 
 #include <Game/ShipDeSerializer.h>
 #include <Game/ShipPreviewDirectoryManager.h>
@@ -15,6 +16,7 @@
 #include <Core/GameExceptions.h>
 #include <Core/ImageTools.h>
 #include <Core/Log.h>
+#include <Core/SysSpecifics.h>
 
 #include <algorithm>
 #include <limits>
@@ -63,6 +65,10 @@ ShipPreviewWindow::ShipPreviewWindow(
     , mThreadToPanelScanInterruptAckMutex()
     , mThreadToPanelScanInterruptAckEvent()
 {
+#if FS_IS_OS_MACOS()
+    // Capture the user path on the UI thread; the preview worker only uses files.
+    mPreviewCacheRoot = StandardSystemPaths::GetInstance().GetUserGameRootFolderPath() / "ShipPreviewCache";
+#endif
     SetScrollRate(0, 20);
 
     // Initialize rendering
@@ -1283,7 +1289,15 @@ void ShipPreviewWindow::ScanDirectorySnapshot(DirectorySnapshot && directorySnap
 {
     LogMessage("PreviewThread::ScanDirectorySnapshot(", directorySnapshot.DirectoryPath.string(), "): processing...");
 
-    auto previewDirectoryManager = ShipPreviewDirectoryManager::Create(directorySnapshot.DirectoryPath);
+    auto databaseDirectory = directorySnapshot.DirectoryPath;
+    if (mPreviewCacheRoot.has_value())
+    {
+        // Keep caches outside signed bundles (and other read-only ship folders).
+        auto const directoryKey = std::to_string(std::hash<std::string>{}(directorySnapshot.DirectoryPath.string()));
+        databaseDirectory = *mPreviewCacheRoot / directoryKey;
+        std::filesystem::create_directories(databaseDirectory);
+    }
+    auto previewDirectoryManager = ShipPreviewDirectoryManager::Create(databaseDirectory);
 
     //
     // Process all files and create previews

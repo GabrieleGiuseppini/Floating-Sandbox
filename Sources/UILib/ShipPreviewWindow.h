@@ -396,6 +396,8 @@ private:
 
     void Render(wxDC & dc);
 
+    std::optional<std::filesystem::path> mPreviewCacheRoot;
+
     wxSize mClientSize;
     int mVirtualHeight;
     int mCols;

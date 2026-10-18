@@ -21,13 +21,20 @@ struct OpenGLContext final
 {
 public:
 
-    OpenGLContext(std::unique_ptr<wxGLContext> glContext)
+    OpenGLContext(std::unique_ptr<wxGLContext> glContext, wxGLCanvas & canvas)
         : mGLContext(std::move(glContext))
+        , mCanvas(canvas)
     {}
+
+    void MakeCurrent()
+    {
+        mGLContext->SetCurrent(mCanvas);
+    }
 
 private:
 
     std::unique_ptr<wxGLContext> mGLContext;
+    wxGLCanvas & mCanvas;
 };
 
 /*
@@ -60,7 +67,7 @@ public:
             mNeedToInitializeOpenGL = false;
         }
 
-        return std::make_unique<OpenGLContext>(std::move(glContext));
+        return std::make_unique<OpenGLContext>(std::move(glContext), mGLCanvas);
     }
 
 private:

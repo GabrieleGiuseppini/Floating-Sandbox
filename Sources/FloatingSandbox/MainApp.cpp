@@ -255,7 +255,7 @@ bool MainApp::OnInit()
         // Load boot settings
         //
 
-        auto const bootSettings = BootSettings::Load(mGameAssetManager->GetBootSettingsFilePath());
+        auto const bootSettings = BootSettings::Load(BootSettings::GetFilePath(*mGameAssetManager));
 
         //
         // Create thread manager

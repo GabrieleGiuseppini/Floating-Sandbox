@@ -202,7 +202,7 @@ BootSettingsDialog::BootSettingsDialog(
         vSizer->Add(hSizer, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 10);
     }
 
-    PopulateCheckboxes(BootSettings::Load(gameAssetManager.GetBootSettingsFilePath()));
+    PopulateCheckboxes(BootSettings::Load(BootSettings::GetFilePath(gameAssetManager)));
 
     {
         this->SetSizerAndFit(vSizer);
@@ -288,13 +288,13 @@ void BootSettingsDialog::OnSaveAndQuitButton(wxCommandEvent & /*event*/)
     {
         BootSettings::Save(
             settings,
-            mGameAssetManager.GetBootSettingsFilePath());
+            BootSettings::GetFilePath(mGameAssetManager));
     }
     else
     {
         try
         {
-            std::filesystem::remove(mGameAssetManager.GetBootSettingsFilePath());
+            std::filesystem::remove(BootSettings::GetFilePath(mGameAssetManager));
         }
         catch (...)
         {

@@ -5305,11 +5305,13 @@ void MainFrame::Quit()
 
 void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath)
 {
+    // Release OpenGL resources while the editor canvas is still visible/current.
+    // Hiding a Cocoa window may change the current context; deleting afterwards
+    // could delete identically-numbered objects belonging to the simulator.
+    mController.reset();
+
     // Hide self
     Show(false);
-
-    // Let go of controller
-    mController.reset();
 
     // Invoke functor to go back
     assert(mReturnToGameFunctor);

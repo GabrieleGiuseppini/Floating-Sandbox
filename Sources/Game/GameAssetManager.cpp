@@ -12,17 +12,35 @@
 #include <Core/Log.h>
 #include <Core/PngTools.h>
 #include <Core/Streams.h>
+#include <Core/SysSpecifics.h>
 #include <Core/Utils.h>
 
 #include <cassert>
 #include <regex>
+
+namespace
+{
+    std::filesystem::path GetGameRoot(std::string const & executablePath)
+    {
+        auto const executableDirectory = std::filesystem::canonical(executablePath).parent_path();
+#if FS_IS_OS_MACOS()
+        // A macOS bundle stores assets alongside MacOS, in Contents/Resources.
+        if (executableDirectory.filename() == "MacOS"
+            && executableDirectory.parent_path().filename() == "Contents")
+        {
+            return executableDirectory.parent_path() / "Resources";
+        }
+#endif
+        return executableDirectory;
+    }
+}
 
  ////////////////////////////////////////////////////////////////////////////////////////////
  // IAssetManager
  ////////////////////////////////////////////////////////////////////////////////////////////
 
 GameAssetManager::GameAssetManager(std::string const && argv0)
-	: mGameRoot(std::filesystem::canonical(std::filesystem::path(argv0)).parent_path())
+	: mGameRoot(GetGameRoot(argv0))
     , mDataRoot(mGameRoot / "Data")
     , mResourcesRoot(mDataRoot / "Resources")
 	, mTextureRoot(mDataRoot / "Textures")

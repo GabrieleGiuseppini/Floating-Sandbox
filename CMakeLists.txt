@@ -22,6 +22,8 @@ endif()
 
 project (FloatingSandbox)
 
+enable_testing()
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(FS_USE_STATIC_LIBS "Force static linking" ON)
@@ -93,7 +95,7 @@ find_package(PNG REQUIRED)
 #
 
 if(APPLE)
-	find_package(iconv REQUIRED)
+	find_package(Iconv REQUIRED)
 endif()
 
 #
@@ -110,7 +112,7 @@ find_package(wxWidgets REQUIRED base core gl html propgrid ribbon)
 
 message(STATUS "SFML_ROOT:" ${SFML_ROOT})
 
-find_package(SFML 2.5 COMPONENTS system audio REQUIRED)
+find_package(SFML 2.5 COMPONENTS system audio network REQUIRED)
 
 if(WIN32)
 
@@ -159,7 +161,11 @@ else()
 	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 endif()
 
-add_subdirectory(${GTEST_DIR} gtest EXCLUDE_FROM_ALL)
+if(GTEST_DIR)
+	add_subdirectory(${GTEST_DIR} gtest EXCLUDE_FROM_ALL)
+else()
+	find_package(GTest CONFIG REQUIRED)
+endif()
 
 ####################################################
 # Flags 
@@ -293,7 +299,9 @@ else()
 endif()
 
 # User-defined
-DefineUserPostInstall()
+if(COMMAND DefineUserPostInstall)
+	DefineUserPostInstall()
+endif()
 
 ####################################################
 # Diagnostics

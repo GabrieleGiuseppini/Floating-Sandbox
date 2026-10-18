@@ -53,6 +53,8 @@ public:
         std::function<void()> swapRenderBuffersFunction,
         GameAssetManager const & gameAssetManager);
 
+    ~View();
+
     ViewModel const & GetViewModel() const
     {
         return mViewModel;
