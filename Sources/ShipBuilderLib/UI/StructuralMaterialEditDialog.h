@@ -31,6 +31,8 @@ private:
 
     std::optional<StructuralMaterial::VariantOverridesType> Run(StructuralMaterial::VariantOverridesType const & startingOverrides, StructuralMaterial const * baseMaterial) override;
 
+    void SetRenderColorButtonColor(rgbaColor const & color);
+
     static wxColor GetOverridesRenderColor(StructuralMaterial::VariantOverridesType const & overrides);
 
 private:

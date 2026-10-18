@@ -906,7 +906,6 @@
 						- Move material restore call into lambda
 
 	- TODOHERE: master list of all tasks:
-		- Opacity slider: reflect in button color
 		= Ropes:
 			+ Complete rope serialization
 			- Test new rope material workflow

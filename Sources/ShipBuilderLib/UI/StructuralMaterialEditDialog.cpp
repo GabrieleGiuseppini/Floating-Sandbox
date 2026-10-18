@@ -64,9 +64,7 @@ void StructuralMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
                             auto const color = dlg.GetColourData().GetColour();
 
                             mOverridesUnderEdit->RenderColor = rgbaColor(color.Red(), color.Green(), color.Blue(), mOverridesUnderEdit->RenderColor.a);
-                            mRenderColorButton->SetForegroundColour(color);
-                            mRenderColorButton->SetBackgroundColour(color);
-                            mRenderColorButton->Refresh();
+                            SetRenderColorButtonColor(mOverridesUnderEdit->RenderColor);
                         }
                     });
 
@@ -86,6 +84,7 @@ void StructuralMaterialEditDialog::LayoutControls(wxBoxSizer * dialogVSizer)
                     {
                         assert(mOverridesUnderEdit.has_value());
                         mOverridesUnderEdit->RenderColor.a = static_cast<typename rgbaColor::data_type>(static_cast<float>(rgbaColor::data_type_max) * value);
+                        SetRenderColorButtonColor(mOverridesUnderEdit->RenderColor);
                     },
                     std::make_unique<LinearSliderCore>(
                         0.2f, // Barely visible
@@ -334,11 +333,7 @@ std::optional<StructuralMaterial::VariantOverridesType> StructuralMaterialEditDi
     mBaseNominalMass = baseMaterial->NominalMass;
     auto const baseOverrideValues = baseMaterial->MakeStartingVariantOverrides();
 
-    wxColor const renderColor = wxColor(mOverridesUnderEdit->RenderColor.r, mOverridesUnderEdit->RenderColor.g, mOverridesUnderEdit->RenderColor.b);
-    mRenderColorButton->SetForegroundColour(renderColor);
-    mRenderColorButton->SetBackgroundColour(renderColor);
-    mRenderColorButton->Refresh();
-
+    SetRenderColorButtonColor(mOverridesUnderEdit->RenderColor);
     mOpacitySlider->SetValue(static_cast<float>(mOverridesUnderEdit->RenderColor.a) / static_cast<float>(rgbaColor::data_type_max));
 
     mNameTextCtrl->ChangeValue(mOverridesUnderEdit->Name);
@@ -381,6 +376,21 @@ std::optional<StructuralMaterial::VariantOverridesType> StructuralMaterialEditDi
     //
 
     return BaseRun();
+}
+
+void StructuralMaterialEditDialog::SetRenderColorButtonColor(rgbaColor const & color)
+{
+    //wxColor const back = GetBackgroundColour();
+    wxColor const back = *wxWHITE;
+    double const a = static_cast<double>(color.a) / static_cast<double>(rgbaColor::data_type_max);
+    wxColor const c(
+        wxColor::AlphaBlend(color.r, back.Red(), a),
+        wxColor::AlphaBlend(color.g, back.Green(), a),
+        wxColor::AlphaBlend(color.b, back.Blue(), a));
+
+    mRenderColorButton->SetForegroundColour(c);
+    mRenderColorButton->SetBackgroundColour(c);
+    mRenderColorButton->Refresh();
 }
 
 wxColor StructuralMaterialEditDialog::GetOverridesRenderColor(StructuralMaterial::VariantOverridesType const & overrides)
