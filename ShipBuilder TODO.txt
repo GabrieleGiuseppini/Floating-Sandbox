@@ -333,10 +333,10 @@
 
 		+ CustomMaterialsPod defined @ own .cc/.h
 
-		= Ship De/Serialize:
+		+ Ship De/Serialize:
 			+ First off, verify current behavior with unrecognized tags
 				+ Worst case we bump file format version (hopefully exists, and check is already done!)
-			= New structural, electrical, rope layer set of tags:
+			+ New structural, electrical, rope layer set of tags:
 				+ CustomMaterialPalette: custom materials used in Buffer
 					+ Ignore ones in definition
 						+ assert empty
@@ -413,22 +413,21 @@
 
 				+ Plug final Save() and Load() for all layers
 
-				= Do E2E test via FloatingSandbox: create material, use in ship, save ship, load ship in game
+				+ Do E2E test via FloatingSandbox: create material, use in ship, save ship, load ship in game
 					+ Structural
 					+ Electrical
-					- Ropes
-
-				- Do E2E test via ShipBuilder: loading ship with new materials altogether
+					+ Ropes
+				+ Do E2E test via ShipBuilder: loading ship with new materials altogether
 					+ Structural
-					- Electrical
-					- Ropes
+					+ Electrical
+					+ Ropes
 
 			+ Deserialize() returns CustomMaterialsPod (3x vector<uq_ptr<TMaterial>> for each TMaterial) in ShipDefinition, just for lifetime extension
 				+ Might group all layers' vectors in a single CustomMaterialsPod, for convenience
 				+ Will be stored by Ship, given by ShipFactory
-			= If no custom materials are present, ships should be loadable by older FS versions; only if custom materials are present, the load should fail with "newer version" error
+			+ If no custom materials are present, ships should be loadable by older FS versions; only if custom materials are present, the load should fail with "newer version" error
 				+ So file format version should be conditional on presence of custom materials
-				- Test: save ship in dev version with no custom materials, and verify it's loadable by released FS
+				+ Test: save ship in dev version with no custom materials, and verify it's loadable by released FS
 			+ Legacy deserializer: empty pod
 
 		+ ShipFactory:
@@ -906,13 +905,7 @@
 						- Move material restore call into lambda
 
 	- TODOHERE: master list of all tasks:
-		= Ropes:
-			+ Complete rope serialization
-			- Test new rope material workflow
-			- Test rope loading from ship
-			- TODO: there's a sin here: we save RenderColor into RopeBuffer @ author time; however, we take it from the material, so should be fine. Test it
-				- Another reason for replacing material altogeher: forces ModelController to replace element altogether
-			- Test transparent ropes
+		- Edit workflow
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 

@@ -304,23 +304,24 @@ void MaterialPalettesController::OnEditCustomMaterial(
     assert(baseMaterial != nullptr);
 
     // Take starting overrides from custom material
-    TVariantOverridesType startingOverrides = customMaterial->MakeStartingVariantOverrides();
+    assert(customMaterial->VariantOverrides.has_value());
+    TVariantOverridesType overrides = *customMaterial->VariantOverrides;
 
     // Run dialog
     std::optional<TVariantOverridesType> resultOverrides;
     if constexpr (TLayerType == LayerType::Structural)
     {
-        resultOverrides = mStructuralLayerMaterialPaletteBrowser->RunEditCustomMaterial(startingOverrides, customMaterial);
+        resultOverrides = mStructuralLayerMaterialPaletteBrowser->RunEditCustomMaterial(overrides, baseMaterial);
     }
     else if constexpr (TLayerType == LayerType::Electrical)
     {
-        resultOverrides = mElectricalLayerMaterialPaletteBrowser->RunEditCustomMaterial(startingOverrides, customMaterial);
+        resultOverrides = mElectricalLayerMaterialPaletteBrowser->RunEditCustomMaterial(overrides, baseMaterial);
     }
     else
     {
         static_assert(TLayerType == LayerType::Ropes);
 
-        resultOverrides = mRopesLayerMaterialPaletteBrowser->RunEditCustomMaterial(startingOverrides, customMaterial);
+        resultOverrides = mRopesLayerMaterialPaletteBrowser->RunEditCustomMaterial(overrides, baseMaterial);
     }
 
     if (resultOverrides.has_value())

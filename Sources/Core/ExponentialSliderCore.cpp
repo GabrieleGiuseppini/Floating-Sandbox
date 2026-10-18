@@ -82,7 +82,9 @@ int ExponentialSliderCore::ValueToTick(float value) const
     else
     {
         // Upper part
-        float x = log(value - mUpperA) / mUpperB + Beta<float> - 1.0f;
+        float x = mUpperB != 0.0f
+            ? log(value - mUpperA) / mUpperB + Beta<float> -1.0f
+            : 0.0f;
         return static_cast<int>(roundf(x));
     }
 }
