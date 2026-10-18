@@ -11,6 +11,7 @@ namespace ShipBuilder {
 
 MaterialPalettesController::MaterialPalettesController(
     wxWindow * parent,
+    wxIcon const & icon,
     std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> onStructuralLayerMaterialSelected,
     std::function<void(ElectricalMaterial const * material, MaterialPlaneType plane)> onElectricalLayerMaterialSelected,
     std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> onRopeLayerMaterialSelected,
@@ -45,6 +46,7 @@ MaterialPalettesController::MaterialPalettesController(
 
     mStructuralLayerMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Structural>>(
         parent,
+        icon,
         *this,
         mDefaultMaterialDatabase.GetStructuralMaterialPalette(),
         mStructuralLayerMaterialDatabase->GetUserCustomMaterials(),
@@ -57,6 +59,7 @@ MaterialPalettesController::MaterialPalettesController(
 
     mElectricalLayerMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Electrical>>(
         parent,
+        icon,
         *this,
         mDefaultMaterialDatabase.GetElectricalMaterialPalette(),
         mElectricalLayerMaterialDatabase->GetUserCustomMaterials(),
@@ -69,6 +72,7 @@ MaterialPalettesController::MaterialPalettesController(
 
     mRopesLayerMaterialPaletteBrowser = std::make_unique<MaterialPaletteBrowser<LayerType::Ropes>>(
         parent,
+        icon,
         *this,
         mDefaultMaterialDatabase.GetRopeMaterialPalette(),
         mRopesLayerMaterialDatabase->GetUserCustomMaterials(),

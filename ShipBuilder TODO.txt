@@ -727,39 +727,49 @@
 					- Losing focus never closes it
 
 				= Impl:
-					- Need an icon
-					- Docking button: BitmappedCheckbox
-						- Icons: TODO
-						- Handling:
-							- MakeDocked/Undocked()
-							- Refresh()
-					- Frame itself (browser) needs to not set max size, needs to set a reasonable min size, and set the right size (off referenceRect)
-					- Member for tracking current docked state: bool mIsDocked
-					- Close event:
-						- ! docked: if can veto: veto + hide, like @ losing focus
-						- docked: if can veto: veto
-					- KillFocus event:
-						- ! docked: completely ignored
-						- docked: like now
+					+ Need an icon
+					+ Docking button: BitmappedCheckbox
+						+ Icons
+						+ Handling:
+							+ SetDocked(true/false)
+							+ Refresh()
+					+ Frame itself (browser) needs to not set max size, needs to set a reasonable min size, and set the right size (off referenceRect)
+					+ Member for tracking current docked state: bool mIsDocked
+					+ Close event:
+						+ ! docked: if can veto: veto + hide, like @ losing focus
+						+ docked: if can veto: veto
+					+ KillFocus event:
+						+ ! docked: completely ignored
+						+ docked: like now
 
-					- MakeDocked():
-						- SetWindowStyle -- like cctor
-							- Use constants for both styles
-						- Dock into docking rect
-						- Set internal state as docked
-					- MakeUndocked():
-						- SetWindowStyle(wxMAXIMIZE_BOX | wxCLOSE_BOX | wxRESIZE_BORDER | wxFRAME_FLOAT_ON_PARENT);
-							- Use constants for both styles
-						- Set internal state as non-docked
-					- @ Open():
-						- Store docking rect
-						- Begin as docked: MakeDocked()
-					- MainFrame trying to open palette (controller): checks first if already open 
+					+ void SetDocked(bool isDocked)
+						+ To-docked:
+							+ SetWindowStyle -- like cctor
+								+ Use constants for both styles
+							+ Dock into docking rect (position, size)
+							+ Set focus
+							+ Set internal state as docked
+						+ To-undocked:
+							+ SetWindowStyle(wxMAXIMIZE_BOX | wxCLOSE_BOX | wxRESIZE_BORDER | wxFRAME_FLOAT_ON_PARENT);
+								+ Use constants for both styles
+							+ Set internal state as non-docked
+					+ @ Open():
+						+ Store docking rect
+						+ Begin as docked: MakeDocked()
+						+ Set BimapCheckbox state
+					- @ Selection: no close/hide if not docked
+					- TODO:
+						- Icon: darker
+
+					- TODOHERE MainFrame trying to open palette (controller): checks first if already open
 					- MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
 						- Expose member tracking docking status
 						- Actually, might expose logic as GetCanLoseFocus:
 							- if docked: return !IsOpen
 							- if undocked: return true
+					- At change of plane, need to close palette browser if it's open
+						- See if this is really needed though
+					- At change of layer, need to close palette browser if it's open
 				- Clear this work item somewhere else in the plan
 
 		= MaterialPalettesController
@@ -899,6 +909,7 @@
 						- Move material restore call into lambda
 
 	- TODOHERE: master list of all tasks:
+		- Opacity slider: reflect in button color
 		= Ropes:
 			+ Complete rope serialization
 			- Test new rope material workflow

@@ -14,6 +14,8 @@ void SharedUIResources::Initialize(GameAssetManager const & gameAssetManager)
 	sInstance = new SharedUIResources();
 	sInstance->mAddNewMaterialPlusIcon = WxHelpers::LoadBitmap("add_new_material_plus_icon", gameAssetManager);
 	sInstance->mCheckboxOnIcon = WxHelpers::LoadBitmap("checkbox_on_small", gameAssetManager);
+	sInstance->mDockIconLarge = WxHelpers::LoadBitmap("dock_undock_dock_icon_large", gameAssetManager);
+	sInstance->mUndockIconLarge = WxHelpers::LoadBitmap("dock_undock_undock_icon_large", gameAssetManager);
 	sInstance->mWhiteSolidBackgroundBrush = wxBrush(*wxWHITE, wxBRUSHSTYLE_SOLID);
 	sInstance->mSeparatorBrush = wxBrush(wxColor(0xa0, 0xa0, 0xa0), wxBRUSHSTYLE_SOLID);
 }

@@ -7,6 +7,7 @@
 
 #include "ElectricalMaterialEditDialog.h"
 
+#include <UILib/SharedUIResources.h>
 #include <UILib/WxHelpers.h>
 
 #include <Core/GameExceptions.h>
@@ -20,13 +21,16 @@
 
 namespace ShipBuilder {
 
+auto constexpr UndockedFrameStyle = wxMAXIMIZE_BOX | wxCLOSE_BOX | wxRESIZE_BORDER | wxCAPTION | wxFRAME_FLOAT_ON_PARENT;
+auto constexpr DockedFrameStyle = wxFRAME_FLOAT_ON_PARENT | wxBORDER_SIMPLE | wxFRAME_NO_TASKBAR;
+
 int constexpr MinCategoryPanelsContainerHeight = 400; // Min height of the scrollable panel that contains the swaths; without a min height, a palette that only has a few categories would be too short
 ImageSize constexpr CategoryButtonSize(80, 60);
-ImageSize constexpr PaletteButtonSize(80, 60);
 
 template<LayerType TLayer>
 MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
     wxWindow * parent,
+    wxIcon const & icon,
     IMaterialPalettesController & materialPalettesController,
     DefaultMaterialDatabase::Palette<TMaterial> const & defaultMaterialPalette,
     std::vector<std::unique_ptr<TMaterial const>> const & initialCustomUserMaterials,
@@ -40,12 +44,14 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
         wxString(),
         wxDefaultPosition,
         wxDefaultSize,
-        wxFRAME_FLOAT_ON_PARENT | wxBORDER_SIMPLE)
+        DockedFrameStyle)
     , mMaterialPalettesController(materialPalettesController)
     , mDefaultMaterialPalette(defaultMaterialPalette)
     , mSoundController(soundController)
     , mCurrentPlane()
+    , mIsDocked(true)
 {
+    SetIcon(icon);
     SetBackgroundColour(*wxWHITE);
 
     {
@@ -320,9 +326,34 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
 
         rVSizer->AddSpacer(5);
 
-        // Material property grid(s) and controls
+        // Docking, material property grid(s), and controls
         {
             wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+            hSizer->AddStretchSpacer(1);
+
+            // Docking
+            {
+                mDockCheckbox = new BitmappedCheckbox(
+                    this,
+                    wxID_ANY,
+                    SharedUIResources::GetInstance().GetDockedIconLarge(),
+                    SharedUIResources::GetInstance().GetUndockedIconLarge(),
+                    "");
+
+                mDockCheckbox->Bind(
+                    wxEVT_CHECKBOX,
+                    [this](wxCommandEvent &)
+                    {
+                        SetDocked(mDockCheckbox->IsChecked());
+                        Refresh();
+
+                        // Make us regain focus, or else we los focus loss notification
+                        this->SetFocus();
+                    });
+
+                hSizer->Add(mDockCheckbox, 0, wxALIGN_CENTRE_VERTICAL);
+            }
 
             hSizer->AddStretchSpacer(1);
 
@@ -474,7 +505,10 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
         [this](wxFocusEvent & focusEvent)
         {
             // Ignore if focus is given to a child
-            if (!IsDescendant(focusEvent.GetWindow()))
+            if (IsDescendant(focusEvent.GetWindow()))
+                return;
+
+            if (mIsDocked)
             {
                 if (!mStickAroundOnFocusLoss)
                 {
@@ -489,9 +523,15 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
         {
             if (event.CanVeto())
             {
-                // User pressed ALT+F4...
+                // User pressed ALT+F4 or clicked CloseBox...
                 // ...do not allow close()
                 event.Veto();
+
+                if (!mIsDocked)
+                {
+                    // Closing by hiding
+                    Hide();
+                }
             }
         });
 }
@@ -505,13 +545,16 @@ void MaterialPaletteBrowser<TLayer>::Open(
     // Remember current plane for this session
     mCurrentPlane = planeType;
 
-    // Position and dimension
-    SetPosition(referenceArea.GetLeftTop());
-    wxSize const size = wxSize(
-        referenceArea.GetSize().GetWidth() * 2 / 3,
-        referenceArea.GetSize().GetHeight());
-    SetSizeHints(size, size);
-    SetSize(size);
+    // Calculate docking rect
+    mDockingRect = wxRect(
+        referenceArea.GetLeftTop(),
+        wxSize(
+            referenceArea.GetSize().GetWidth() * 2 / 3,
+            referenceArea.GetSize().GetHeight()));
+
+    // Start docked
+    SetDocked(true);
+    mDockCheckbox->SetChecked(mIsDocked);
 
     // Clear material properties
     PopulateMaterialProperties(nullptr);
@@ -1326,8 +1369,11 @@ void MaterialPaletteBrowser<TLayer>::OnMaterialClicked(TMaterial const * materia
         mMaterialPalettesController.OnRopesMaterialSelected(material, *mCurrentPlane);
     }
 
-    // Close ourselves
-    Hide();
+    if (mIsDocked)
+    {
+        // Close ourselves
+        Hide();
+    }
 }
 
 template<LayerType TLayer>
@@ -1377,6 +1423,40 @@ void MaterialPaletteBrowser<TLayer>::ReconciliateUIWithPanelCheckedState(Materia
 
     mClearSelectionButton->Enable(panel->IsAnyChecked());
     mDeleteSelectedButton->Enable(panel->IsAnyChecked());
+}
+
+template<LayerType TLayer>
+void MaterialPaletteBrowser<TLayer>::SetDocked(bool isDocked)
+{
+    if (isDocked)
+    {
+        //
+        // Set docked
+        //
+
+        SetWindowStyle(DockedFrameStyle);
+
+        SetPosition(mDockingRect.GetLeftTop());
+
+        SetMinSize(
+            wxSize(
+                CategoryButtonSize.width * 10,
+                CategoryButtonSize.height * 4));
+        SetSize(mDockingRect.GetSize());
+
+        // Get focus, so we may detect focus loss
+        SetFocus();
+    }
+    else
+    {
+        //
+        // Set undocked
+        //
+
+        SetWindowStyle(UndockedFrameStyle);
+    }
+
+    mIsDocked = isDocked;
 }
 
 template<LayerType TLayer>

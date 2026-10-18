@@ -331,6 +331,7 @@ MainFrame::MainFrame(
     {
         mMaterialPalettesController = std::make_unique<MaterialPalettesController>(
             this,
+            this->GetIcon(),
             [this](StructuralMaterial const * material, MaterialPlaneType plane)
             {
                 assert(mController);

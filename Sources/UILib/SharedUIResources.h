@@ -35,6 +35,18 @@ public:
         return mCheckboxOnIcon;
     }
 
+    wxBitmap const & GetDockedIconLarge() const
+    {
+        assert(mDockIconLarge.IsOk());
+        return mDockIconLarge;
+    }
+
+    wxBitmap const & GetUndockedIconLarge() const
+    {
+        assert(mUndockIconLarge.IsOk());
+        return mUndockIconLarge;
+    }
+
     wxBrush const & GetWhiteSolidBackgroundBrush() const
     {
         return mWhiteSolidBackgroundBrush;
@@ -51,6 +63,8 @@ private:
 
     wxBitmap mAddNewMaterialPlusIcon;
     wxBitmap mCheckboxOnIcon;
+    wxBitmap mDockIconLarge;
+    wxBitmap mUndockIconLarge;
     wxBrush mWhiteSolidBackgroundBrush;
     wxBrush mSeparatorBrush;
 };

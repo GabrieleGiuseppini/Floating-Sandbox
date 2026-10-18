@@ -12,6 +12,7 @@
 #include "MaterialPalettePanel.h"
 #include "StructuralMaterialEditDialog.h"
 
+#include <UILib/BitmappedCheckbox.h>
 #include <Game/GameAssetManager.h>
 #include <Game/ISoundController.h>
 
@@ -58,6 +59,7 @@ public:
 
     MaterialPaletteBrowser(
         wxWindow * parent,
+        wxIcon const & icon,
         IMaterialPalettesController & materialPalettesController,
         DefaultMaterialDatabase::Palette<TMaterial> const & defaultMaterialPalette,
         std::vector<std::unique_ptr<TMaterial const>> const & initialCustomUserMaterials,
@@ -76,6 +78,11 @@ public:
     bool IsOpen() const override
     {
         return IsShown();
+    }
+
+    bool GetIsDocked() const
+    {
+        return mIsDocked;
     }
 
     std::optional<typename TMaterial::VariantOverridesType> RunNewCustomMaterial(typename TMaterial::VariantOverridesType const & startingOverrides, TMaterial const * baseMaterial);
@@ -115,6 +122,9 @@ private:
     void ReconciliateUIWithCurrentPanelCheckedState();
     void ReconciliateUIWithPanelCheckedState(MaterialPalettePanel<TLayer> * const panel);
 
+    // After this call, requires Refresh() and syncing button checkbox state
+    void SetDocked(bool isDocked);
+
     MaterialPalettePanel<TLayer> * GetCurrentlyShownPanel();
 
     static bool IsOverridableMaterial(TMaterial const * material);
@@ -153,6 +163,9 @@ private:
     // Own UI
     //
 
+    // Docking
+    BitmappedCheckbox * mDockCheckbox;
+
     // Material properties
     std::array<wxPropertyGrid *, 2> mStructuralMaterialPropertyGrids;
     std::array<wxPropertyGrid *, 2> mElectricalMaterialPropertyGrids;
@@ -167,6 +180,8 @@ private:
     //
 
     std::optional<MaterialPlaneType> mCurrentPlane;
+    wxRect mDockingRect;
+    bool mIsDocked;
 
     bool mStickAroundOnFocusLoss;
 
