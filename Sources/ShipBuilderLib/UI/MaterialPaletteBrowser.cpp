@@ -21,7 +21,7 @@
 
 namespace ShipBuilder {
 
-auto constexpr UndockedFrameStyle = wxMAXIMIZE_BOX | wxCLOSE_BOX | wxRESIZE_BORDER | wxCAPTION | wxFRAME_FLOAT_ON_PARENT;
+auto constexpr UndockedFrameStyle = wxCLOSE_BOX | wxRESIZE_BORDER | wxCAPTION | wxFRAME_FLOAT_ON_PARENT;
 auto constexpr DockedFrameStyle = wxFRAME_FLOAT_ON_PARENT | wxBORDER_SIMPLE | wxFRAME_NO_TASKBAR;
 
 int constexpr MinCategoryPanelsContainerHeight = 400; // Min height of the scrollable panel that contains the swaths; without a min height, a palette that only has a few categories would be too short
