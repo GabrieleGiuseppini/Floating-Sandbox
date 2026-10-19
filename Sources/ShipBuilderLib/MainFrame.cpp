@@ -5307,6 +5307,9 @@ void MainFrame::Quit()
 
 void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath)
 {
+    // Close material palette (if any)
+    mMaterialPalettesController->Close();
+
     // Hide self
     Show(false);
 
