@@ -89,6 +89,39 @@ MaterialReplacementMap<typename MaterialDatabase<TLayer>::TMaterial> MaterialDat
     return replacementMap;
 }
 
+template<LayerType TLayer>
+std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const> typename MaterialDatabase<TLayer>::ReplaceCustomMaterial(
+    TMaterial const * oldMaterial,
+    std::unique_ptr<TMaterial const> && newMaterial)
+{
+    // Find among all
+
+    for (auto & userMaterial : mUserCustomMaterials)
+    {
+        if (userMaterial.get() == oldMaterial)
+        {
+            // Found
+            auto old = std::move(userMaterial);
+            userMaterial = std::move(newMaterial);
+            return old;
+        }
+    }
+
+    for (auto & shipMaterial : mShipCustomMaterials)
+    {
+        if (shipMaterial.get() == oldMaterial)
+        {
+            // Found
+            auto old = std::move(shipMaterial);
+            shipMaterial = std::move(newMaterial);
+            return old;
+        }
+    }
+
+    assert(false);
+    return std::unique_ptr<TMaterial const>();
+}
+
 //////////////////////////////////////////////////
 
 template<LayerType TLayer>

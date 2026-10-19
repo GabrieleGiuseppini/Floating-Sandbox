@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "ModelController.h"
 
+#include <algorithm>
 #include <cassert>
 #include <queue>
 
@@ -1220,6 +1221,29 @@ StructuralMaterial const * ModelController::SampleStructuralMaterialAt(ShipSpace
     return mModel.GetStructuralLayer().Buffer[coords].Material;
 }
 
+std::set<StructuralMaterial const *> ModelController::GetStructuralMaterialsInUse(std::vector<StructuralMaterial const *> const & candidates) const
+{
+    std::set<StructuralMaterial const *> materialsInUse;
+
+    // Make set for faster lookup
+    std::set<StructuralMaterial const *> candidateSet(
+        candidates.cbegin(),
+        candidates.cend());
+
+    // Lookup
+    auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
+    for (size_t i = 0; i < structuralLayerBuffer.GetLinearSize(); ++i)
+    {
+        auto const * layerMaterial = structuralLayerBuffer.Data[i].Material;
+        if (candidateSet.find(layerMaterial) != candidateSet.end())
+        {
+            materialsInUse.insert(layerMaterial);
+        }
+    }
+
+    return materialsInUse;
+}
+
 void ModelController::StructuralRegionFill(
     ShipSpaceRect const & region,
     StructuralMaterial const * material)
@@ -1577,6 +1601,32 @@ ElectricalMaterial const * ModelController::SampleElectricalMaterialAt(ShipSpace
     return mModel.GetElectricalLayer().Buffer[coords].Material;
 }
 
+std::set<ElectricalMaterial const *> ModelController::GetElectricalMaterialsInUse(std::vector<ElectricalMaterial const *> const & candidates) const
+{
+    assert(mModel.HasLayer(LayerType::Electrical));
+    assert(!mIsElectricalLayerInEphemeralVisualization);
+
+    std::set<ElectricalMaterial const *> materialsInUse;
+
+    // Make set for faster lookup
+    std::set<ElectricalMaterial const *> candidateSet(
+        candidates.cbegin(),
+        candidates.cend());
+
+    // Lookup
+    auto const & electricalLayerBuffer = mModel.GetElectricalLayer().Buffer;
+    for (size_t i = 0; i < electricalLayerBuffer.GetLinearSize(); ++i)
+    {
+        auto const * layerMaterial = electricalLayerBuffer.Data[i].Material;
+        if (candidateSet.find(layerMaterial) != candidateSet.end())
+        {
+            materialsInUse.insert(layerMaterial);
+        }
+    }
+
+    return materialsInUse;
+}
+
 bool ModelController::IsElectricalParticleAllowedAt(ShipSpaceCoordinates const & coords) const
 {
     assert(!mIsStructuralLayerInEphemeralVisualization);
@@ -1822,6 +1872,32 @@ StructuralMaterial const * ModelController::SampleRopesMaterialAt(ShipSpaceCoord
     assert(coords.IsInSize(mModel.GetShipSize()));
 
     return mModel.GetRopesLayer().Buffer.SampleMaterialEndpointAt(coords);
+}
+
+std::set<StructuralMaterial const *> ModelController::GetRopesMaterialsInUse(std::vector<StructuralMaterial const *> const & candidates) const
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+    assert(!mIsRopesLayerInEphemeralVisualization);
+
+    std::set<StructuralMaterial const *> materialsInUse;
+
+    // Make set for faster lookup
+    std::set<StructuralMaterial const *> candidateSet(
+        candidates.cbegin(),
+        candidates.cend());
+
+    // Lookup
+    auto const & ropesLayerBuffer = mModel.GetRopesLayer().Buffer;
+    for (size_t i = 0; i < ropesLayerBuffer.GetElementCount(); ++i)
+    {
+        auto const * layerMaterial = ropesLayerBuffer[i].Material;
+        if (candidateSet.find(layerMaterial) != candidateSet.end())
+        {
+            materialsInUse.insert(layerMaterial);
+        }
+    }
+
+    return materialsInUse;
 }
 
 std::optional<size_t> ModelController::GetRopeElementIndexAt(ShipSpaceCoordinates const & coords) const

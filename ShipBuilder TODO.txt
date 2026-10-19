@@ -455,9 +455,9 @@
 				+ SetShipCustomMaterials(vector<uq_ptr<TMaterial const>>):
 					+ Merge and build replacement map
 					+ Return replacement map
-				- ReplaceCustomMaterial(TMaterial const * old, uq_ptr<TMaterial const> && new) -> uq_ptr<TMaterial const>
-					- Find
-					- Just std::swap
+				+ ReplaceCustomMaterial(TMaterial const * old, uq_ptr<TMaterial const> && new) -> uq_ptr<TMaterial const>
+					+ Find
+					+ Just std::swap
 
 			+ Ser/Deset for user custom materials
 				+ parent color_key and VariantOverridesType
@@ -799,7 +799,7 @@
 					- Call (new) PreCustomMaterialUpdated on old pointer
 						- Like PreCustomMaterialDeleted, but also takes new pointer and selects that instead of nullptr
 					- Bake Undo material-specific lambda, moving old material into it
-					- Ask controller if old in use, via IsAny[Structural|Electrical|Ropes]MaterialInUse
+					- Ask controller if old in use, via Get[Structural|Electrical|Ropes]MaterialsInUse
 					- If in-use:
 						- Replace in ship, via Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials(map with old<->new, Undo material-specific lambda)
 					- Else:
@@ -807,7 +807,7 @@
 					- Update material in palette via Browser::UpdateCustomMaterial(...)
 			- OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
 				! For "Delete checked"
-				- Remove from DB via ExtractCustomMaterials, and get back SinglePod
+				- Remove from DB via ExtractCustomMaterials, and get back SinglePod with those
 				- Ask controller if any in use, via Get[Structural|Electrical|Ropes]MaterialsInUse() -> std::set<XXXMaterial const *>
 				- If at-least-one-in-use:
 					- TODO: see if below could be simplified with just 3-way question case and nop when delenda is empty
@@ -896,7 +896,7 @@
 			- void Controller::PushCustomMaterialUndoAction(lambda &&)
 				! Convenience used by MaterialPalettesController for all undo actions that do not involve executing Controller ops; facilitates dirty state
 				- Copy Undo baking (only) from InternalFlip
-			- std::set<XXXMaterial const *> Controller::Get[Structural|Electrical|Ropes]MaterialsInUse(std::vector<XXXMaterial const *> materials) const -> bool
+			+ std::set<XXXMaterial const *> ModelController::Get[Structural|Electrical|Ropes]MaterialsInUse(std::vector<XXXMaterial const *> materials) const 
 				! Used by "delete checked" - ASSUMPTION: "delete checked" only applies to a given Category - and thus to a given LayerType
 			- void Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials:
 				- Args:
@@ -912,8 +912,9 @@
 
 	- TODOHERE: master list of all tasks:
 		- Check Discord feedback:
-			- Rusting
-			- ShipBuilder
+			= Rusting
+				+ Exposure a little bit up
+		- Merge into custom_materials
 		- Edit workflow
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible

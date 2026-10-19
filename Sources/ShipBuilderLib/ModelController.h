@@ -29,6 +29,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <set>
 #include <vector>
 
 namespace ShipBuilder {
@@ -258,6 +259,8 @@ public:
 
     StructuralMaterial const * SampleStructuralMaterialAt(ShipSpaceCoordinates const & coords) const;
 
+    std::set<StructuralMaterial const *> GetStructuralMaterialsInUse(std::vector<StructuralMaterial const *> const & candidates) const;
+
     void StructuralRegionFill(
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
@@ -314,6 +317,8 @@ public:
 
     ElectricalMaterial const * SampleElectricalMaterialAt(ShipSpaceCoordinates const & coords) const;
 
+    std::set<ElectricalMaterial const *> GetElectricalMaterialsInUse(std::vector<ElectricalMaterial const *> const & candidates) const;
+
     bool IsElectricalParticleAllowedAt(ShipSpaceCoordinates const & coords) const;
 
     std::optional<ShipSpaceRect> TrimElectricalParticlesWithoutSubstratum();
@@ -348,6 +353,8 @@ public:
     std::unique_ptr<RopesLayerData> CloneRopesLayer() const;
 
     StructuralMaterial const * SampleRopesMaterialAt(ShipSpaceCoordinates const & coords) const;
+
+    std::set<StructuralMaterial const *> GetRopesMaterialsInUse(std::vector<StructuralMaterial const *> const & candidates) const;
 
     std::optional<size_t> GetRopeElementIndexAt(ShipSpaceCoordinates const & coords) const;
 

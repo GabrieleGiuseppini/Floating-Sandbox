@@ -45,6 +45,10 @@ public:
 
 	MaterialReplacementMap<TMaterial> SetShipCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> && shipMaterials);
 
+	std::unique_ptr<TMaterial const> ReplaceCustomMaterial(
+		TMaterial const * oldMaterial,
+		std::unique_ptr<TMaterial const> && newMaterial);
+
 private:
 
 	using SinglePod = typename std::vector<std::unique_ptr<typename TMaterial const>>;

@@ -330,7 +330,7 @@ void MaterialPalettesController::OnEditCustomMaterial(
         // Make new material
         //
 
-        std::unique_ptr<TMaterial> newCustomMaterial = baseMaterial->MakeCustomMaterial(*resultOverrides);
+        std::unique_ptr<TMaterial const> newCustomMaterial = baseMaterial->MakeCustomMaterial(*resultOverrides);
 
         // TODOHERE:
         // Replace in ship
