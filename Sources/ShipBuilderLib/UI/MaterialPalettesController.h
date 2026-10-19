@@ -119,7 +119,66 @@ private:
     void OnEditCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind);
 
     template<LayerType TLayerType>
+    void PreCustomMaterialUpdated(
+        typename LayerTypeTraits<TLayerType>::material_type const * oldCustomMaterial,
+        typename LayerTypeTraits<TLayerType>::material_type const * newCustomMaterial);
+
+    template<LayerType TLayerType>
     void PreCustomMaterialDeleted(typename LayerTypeTraits<TLayerType>::material_type const * customMaterial);
+
+    template<LayerType TLayerType>
+    MaterialDatabase<TLayerType> const & GetDatabase() const
+    {
+        if constexpr (TLayerType == LayerType::Structural)
+        {
+            return *mStructuralLayerMaterialDatabase;
+        }
+        else if constexpr (TLayerType == LayerType::Electrical)
+        {
+            return *mElectricalLayerMaterialDatabase;
+        }
+        else
+        {
+            static_assert(TLayerType == LayerType::Ropes);
+            return *mRopesLayerMaterialDatabase;
+        }
+    }
+
+    template<LayerType TLayerType>
+    MaterialDatabase<TLayerType> & GetDatabase()
+    {
+        if constexpr (TLayerType == LayerType::Structural)
+        {
+            return *mStructuralLayerMaterialDatabase;
+        }
+        else if constexpr (TLayerType == LayerType::Electrical)
+        {
+            return *mElectricalLayerMaterialDatabase;
+        }
+        else
+        {
+            static_assert(TLayerType == LayerType::Ropes);
+            return *mRopesLayerMaterialDatabase;
+        }
+    }
+
+    template<LayerType TLayerType>
+    MaterialPaletteBrowser<TLayerType> & GetPaletteBrowser()
+    {
+        if constexpr (TLayerType == LayerType::Structural)
+        {
+            return *mStructuralLayerMaterialPaletteBrowser;
+        }
+        else if constexpr (TLayerType == LayerType::Electrical)
+        {
+            return *mElectricalLayerMaterialPaletteBrowser;
+        }
+        else
+        {
+            static_assert(TLayerType == LayerType::Ropes);
+            return *mRopesLayerMaterialPaletteBrowser;
+        }
+    }
 
 private:
 

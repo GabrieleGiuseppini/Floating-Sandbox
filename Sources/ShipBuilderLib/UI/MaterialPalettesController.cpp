@@ -233,22 +233,7 @@ void MaterialPalettesController::OnNewUserCustomMaterial(typename LayerTypeTrait
     TVariantOverridesType startingOverrides = baseMaterial->MakeStartingVariantOverrides();
 
     // Run dialog
-    std::optional<TVariantOverridesType> resultOverrides;
-    if constexpr (TLayerType == LayerType::Structural)
-    {
-        resultOverrides = mStructuralLayerMaterialPaletteBrowser->RunNewCustomMaterial(startingOverrides, baseMaterial);
-    }
-    else if constexpr (TLayerType == LayerType::Electrical)
-    {
-        resultOverrides = mElectricalLayerMaterialPaletteBrowser->RunNewCustomMaterial(startingOverrides, baseMaterial);
-    }
-    else
-    {
-        static_assert(TLayerType == LayerType::Ropes);
-
-        resultOverrides = mRopesLayerMaterialPaletteBrowser->RunNewCustomMaterial(startingOverrides, baseMaterial);
-    }
-
+    std::optional<TVariantOverridesType> const resultOverrides = GetPaletteBrowser<TLayerType>().RunNewCustomMaterial(startingOverrides, baseMaterial);
     if (resultOverrides.has_value())
     {
         //
@@ -261,23 +246,8 @@ void MaterialPalettesController::OnNewUserCustomMaterial(typename LayerTypeTrait
         // Store material in DB and add to palette
         //
 
-        if constexpr (TLayerType == LayerType::Structural)
-        {
-            TMaterial const * customMaterialPtr = mStructuralLayerMaterialDatabase->AddUserCustomMaterial(std::move(customMaterial));
-            mStructuralLayerMaterialPaletteBrowser->AddUserCustomMaterials({ customMaterialPtr });
-        }
-        else if constexpr (TLayerType == LayerType::Electrical)
-        {
-            TMaterial const * customMaterialPtr = mElectricalLayerMaterialDatabase->AddUserCustomMaterial(std::move(customMaterial));
-            mElectricalLayerMaterialPaletteBrowser->AddUserCustomMaterials({ customMaterialPtr });
-        }
-        else
-        {
-            static_assert(TLayerType == LayerType::Ropes);
-
-            TMaterial const * customMaterialPtr = mRopesLayerMaterialDatabase->AddUserCustomMaterial(std::move(customMaterial));
-            mRopesLayerMaterialPaletteBrowser->AddUserCustomMaterials({ customMaterialPtr });
-        }
+        TMaterial const * customMaterialPtr = GetDatabase<TLayerType>().AddUserCustomMaterial(std::move(customMaterial));
+        GetPaletteBrowser<TLayerType>().AddUserCustomMaterials({ customMaterialPtr });
     }
 }
 
@@ -308,22 +278,7 @@ void MaterialPalettesController::OnEditCustomMaterial(
     TVariantOverridesType overrides = *customMaterial->VariantOverrides;
 
     // Run dialog
-    std::optional<TVariantOverridesType> resultOverrides;
-    if constexpr (TLayerType == LayerType::Structural)
-    {
-        resultOverrides = mStructuralLayerMaterialPaletteBrowser->RunEditCustomMaterial(overrides, baseMaterial);
-    }
-    else if constexpr (TLayerType == LayerType::Electrical)
-    {
-        resultOverrides = mElectricalLayerMaterialPaletteBrowser->RunEditCustomMaterial(overrides, baseMaterial);
-    }
-    else
-    {
-        static_assert(TLayerType == LayerType::Ropes);
-
-        resultOverrides = mRopesLayerMaterialPaletteBrowser->RunEditCustomMaterial(overrides, baseMaterial);
-    }
-
+    std::optional<TVariantOverridesType> const resultOverrides = GetPaletteBrowser<TLayerType>().RunEditCustomMaterial(overrides, baseMaterial);
     if (resultOverrides.has_value())
     {
         //
@@ -331,31 +286,57 @@ void MaterialPalettesController::OnEditCustomMaterial(
         //
 
         std::unique_ptr<TMaterial const> newCustomMaterial = baseMaterial->MakeCustomMaterial(*resultOverrides);
+        TMaterial const * newCustomMaterialPtr = newCustomMaterial.get();
+
+        //
+        // Replace material in DB
+        //
+
+        std::unique_ptr<TMaterial const> oldCustomMaterial = GetDatabase<TLayerType>().ReplaceCustomMaterial(customMaterial, std::move(newCustomMaterial));
+        TMaterial const * oldCustomMaterialPtr = oldCustomMaterial.get();
+
+        //
+        // If any of these materials is current in the workbench state, synthesize a toggle to the new material
+        //
+
+        PreCustomMaterialUpdated<TLayerType>(oldCustomMaterialPtr, newCustomMaterialPtr);
+
+        //
+        // Bake Undo action for material
+        //
+
+        auto materialUndoAction = [old = std::move(oldCustomMaterial)]()
+            {
+                // TODOHERE
+            };
 
         // TODOHERE:
-        // Replace in ship
-        // Replace in DB
-        // Update in PaletteBrowser
+        // - Check if it's in-use by ship
+        // - If in-use:
+        //      - Replace in ship, via Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials(map with old < ->new, Undo material - specific lambda)
+        // - Else:
+        //      - Controller::PushCustomMaterialUndoAction(Undo material - specific lambda)
+        // - Update material in palette via Browser::UpdateCustomMaterial(...)
 
         (void)registerKind;
+    }
+}
 
-        //if constexpr (TLayerType == LayerType::Structural)
-        //{
-        //    TMaterial const * customMaterialPtr = mStructuralLayerMaterialDatabase->AddUserCustomMaterial(std::move(customMaterial));
-        //    mStructuralLayerMaterialPaletteBrowser->AddUserCustomMaterials({ customMaterialPtr });
-        //}
-        //else if constexpr (TLayerType == LayerType::Electrical)
-        //{
-        //    TMaterial const * customMaterialPtr = mElectricalLayerMaterialDatabase->AddUserCustomMaterial(std::move(customMaterial));
-        //    mElectricalLayerMaterialPaletteBrowser->AddUserCustomMaterials({ customMaterialPtr });
-        //}
-        //else
-        //{
-        //    static_assert(TLayerType == LayerType::Ropes);
+template<LayerType TLayerType>
+void MaterialPalettesController::PreCustomMaterialUpdated(
+    typename LayerTypeTraits<TLayerType>::material_type const * oldCustomMaterial,
+    typename LayerTypeTraits<TLayerType>::material_type const * newCustomMaterial)
+{
+    // Update workbench material selection if this is a currently-picked material
 
-        //    TMaterial const * customMaterialPtr = mRopesLayerMaterialDatabase->AddUserCustomMaterial(std::move(customMaterial));
-        //    mRopesLayerMaterialPaletteBrowser->AddUserCustomMaterials({ customMaterialPtr });
-        //}
+    if (mWorkbenchState.GetMaterial<TLayerType>(MaterialPlaneType::Foreground) == oldCustomMaterial)
+    {
+        OnMaterialSelected<TLayerType>(newCustomMaterial, MaterialPlaneType::Foreground);
+    }
+
+    if (mWorkbenchState.GetMaterial<TLayerType>(MaterialPlaneType::Background) == oldCustomMaterial)
+    {
+        OnMaterialSelected<TLayerType>(newCustomMaterial, MaterialPlaneType::Background);
     }
 }
 

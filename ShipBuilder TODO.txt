@@ -794,19 +794,26 @@
 				+ Run dialog
 				= If ok:
 					+ Make new material
-					- Replace material in DB, via ReplaceCustomMaterial(move(new material)) -> uq_ptr<old material>
-						- New Replace(), which does std::swap
-					- Call (new) PreCustomMaterialUpdated on old pointer
-						- Like PreCustomMaterialDeleted, but also takes new pointer and selects that instead of nullptr
+					+ Replace material in DB, via ReplaceCustomMaterial(move(new material)) -> uq_ptr<old material>
+					+ Call PreCustomMaterialUpdated on old and new pointers
 					- Bake Undo material-specific lambda, moving old material into it
+						- private MaterialPalettesController::RestoreMaterial(TMaterial const *, uq_ptr<TMaterial const>)
+							- Database::ReplaceCustomMaterial: replace new material with old uq_ptr
+							- PreCustomMaterialUpdated 
+							- Update material in palette via Browser::UpdateCustomMaterial(...)
+
 					- Ask controller if old in use, via Get[Structural|Electrical|Ropes]MaterialsInUse
 					- If in-use:
 						- Replace in ship, via Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials(map with old<->new, Undo material-specific lambda)
 					- Else:
-						- Controller::PushCustomMaterialUndoAction(Undo material-specific lambda)
+						- Controller::PushCustomMaterialUndoAction(Undo material-specific lambda) // Must be templated on functor, cannot pass std::function
 					- Update material in palette via Browser::UpdateCustomMaterial(...)
+
+				- Tests:
+					- Swaths change to new - x2x3
 			- OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
 				! For "Delete checked"
+				- Ask user if sure
 				- Remove from DB via ExtractCustomMaterials, and get back SinglePod with those
 				- Ask controller if any in use, via Get[Structural|Electrical|Ropes]MaterialsInUse() -> std::set<XXXMaterial const *>
 				- If at-least-one-in-use:
