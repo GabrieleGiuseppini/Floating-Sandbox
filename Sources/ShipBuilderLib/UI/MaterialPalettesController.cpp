@@ -358,7 +358,7 @@ void MaterialPalettesController::RestoreCustomMaterialReplacementForUndo(
     // If any of these materials is current in the workbench state, synthesize a toggle to the new material
     //
 
-    PreCustomMaterialUpdated<TLayerType>(oldCustomMaterialPtr, customMaterialToReplace);
+    PreCustomMaterialUpdated<TLayerType>(oldCustomMaterialPtr, newCustomMaterialPtr);
 
     //
     // Update material in palette
