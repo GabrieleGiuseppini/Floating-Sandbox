@@ -147,6 +147,8 @@ public:
     std::any AddCustomMaterial(TMaterial const * material, CustomMaterialRegisterKindType registerKind, std::any layoutSession);
     void EndCustomMaterialsLayout(std::any layoutSession);
 
+    void ReplaceCustomMaterial(TMaterial const * oldMaterial, TMaterial const * newMaterial);
+
     void SetSelected(TMaterial const * material);
 
     void SetAllCustomMaterialsIsChecked(bool value);
@@ -218,11 +220,11 @@ private:
     void RenderCell(Cell const & cell);
     void RenderCell(Cell const & cell, wxDC & dc);
 
-    wxBitmap MakeMaterialSample(
+    void FinalizeMaterialCell(Cell & cell);
+
+    std::tuple<wxBitmap, std::optional<wxRect>, std::optional<wxRect>> MakeMaterialSample(
         TMaterial const * material,
-        std::optional<wxRect> shipOverlayRect,
-        std::optional<wxRect> editButtonRect,
-        std::optional<wxRect> checkboxRect) const;
+        std::optional<CustomMaterialRegisterKindType> customRegisterKind);
 
     size_t FindRowFor(TMaterial const * material) const;
     size_t FindStrideFor(TMaterial const * material, Row const & row) const;

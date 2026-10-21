@@ -721,6 +721,25 @@ void MaterialPaletteBrowser<TLayer>::SetShipCustomMaterials(std::vector<std::uni
 }
 
 template<LayerType TLayer>
+void MaterialPaletteBrowser<TLayer>::ReplaceCustomMaterial(TMaterial const * oldMaterial, TMaterial const * newMaterial)
+{
+    // Find panel for category
+
+    assert(oldMaterial->PaletteCoordinates.has_value());
+    assert(newMaterial->PaletteCoordinates.has_value());
+    assert(oldMaterial->PaletteCoordinates->Category == newMaterial->PaletteCoordinates->Category);
+
+    auto * panel = FindPanelForCategory(oldMaterial->PaletteCoordinates->Category);
+    assert(panel != nullptr);
+
+    // Replace
+
+    panel->ReplaceCustomMaterial(oldMaterial, newMaterial);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+template<LayerType TLayer>
 MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::CreateCategoryPanel(
     wxWindow * parent,
     typename DefaultMaterialDatabase::Palette<TMaterial>::Category const & defaultMaterialCategory,
@@ -1457,6 +1476,19 @@ void MaterialPaletteBrowser<TLayer>::SetDocked(bool isDocked)
     }
 
     mIsDocked = isDocked;
+}
+
+template<LayerType TLayer>
+MaterialPalettePanel<TLayer> * MaterialPaletteBrowser<TLayer>::FindPanelForCategory(std::string const & category)
+{
+    auto srchIt = mCategoryPanelsByCategory.find(category);
+    if (srchIt != mCategoryPanelsByCategory.end())
+    {
+        return srchIt->second;
+    }
+
+    assert(false);
+    return nullptr;
 }
 
 template<LayerType TLayer>

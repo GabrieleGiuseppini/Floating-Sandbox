@@ -544,10 +544,10 @@
 				+ Extract layout to helper on LayoutSession
 					+ Call from EndDefaultMaterialsLayout() with full LayoutSession
 
-				- UpdateCustomMaterial(TMaterial *, User|Ship)
-					- Update material sample in ImageList (wxImageList::Replace)
-					- Render own cell
-					- Refresh(false)
+				+ ReplaceCustomMaterial(TMaterial const *, TMaterial const *)
+					+ Update material sample in ImageList (wxImageList::Replace)
+					+ Render own cell
+					+ Refresh(false)
 
 				= All subsequent ones (custom):
 					+ StartCustomMaterialsLayout() -> LayoutSession
@@ -652,10 +652,10 @@
 							+ FIX: make H scrollbar appear if needed
 						+ Multi stride
 							+ FIX: different spacing between strides makes ugly; either remove it or make same as material
-				- UpdateCustomMaterial(TMaterial, User|Ship)
+				+ ReplaceCustomMaterial(TMaterial const *, TMaterial const *)
 					! No layout guard for this one
-					- Find panel for category
-					- panel-> UpdateCustomMaterial(TMaterial, User|Ship)
+					+ Find panel for category
+					+ panel-> ReplaceCustomMaterial(old, new)
 				+ SetShipCustomMaterials(vector<uq_ptr<>>)
 					+ Organize materials by category
 					+ For each _our_ category:
@@ -792,25 +792,30 @@
 				+ Caller (MainFrame) uses MaterialsReplacementMap to mess with layers in-place within definition, using layers' helpers (or AllLayers/?), before giving definition to new controller
 			= OnEditCustomStructural/Electrical/RopesMaterial(TMaterial const *, registerKind)
 				+ Run dialog
-				= If ok:
+				+ If ok:
 					+ Make new material
 					+ Replace material in DB, via ReplaceCustomMaterial(move(new material)) -> uq_ptr<old material>
 					+ Call PreCustomMaterialUpdated on old and new pointers
-					- Bake Undo material-specific lambda, moving old material into it
-						- private MaterialPalettesController::RestoreMaterial(TMaterial const *, uq_ptr<TMaterial const>)
-							- Database::ReplaceCustomMaterial: replace new material with old uq_ptr
-							- PreCustomMaterialUpdated 
-							- Update material in palette via Browser::UpdateCustomMaterial(...)
-
-					- Ask controller if old in use, via Get[Structural|Electrical|Ropes]MaterialsInUse
-					- If in-use:
-						- Replace in ship, via Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials(map with old<->new, Undo material-specific lambda)
-					- Else:
-						- Controller::PushCustomMaterialUndoAction(Undo material-specific lambda) // Must be templated on functor, cannot pass std::function
-					- Update material in palette via Browser::UpdateCustomMaterial(...)
+					+ Bake Undo material-specific lambda, moving old material into it
+						= private MaterialPalettesController::RestoreMaterial(TMaterial const *, uq_ptr<TMaterial const>)
+							+ Database::ReplaceCustomMaterial: replace new material with old uq_ptr
+							+ PreCustomMaterialUpdated 
+							+ Update material in palette via Browser::UpdateCustomMaterial(...)
+					+ Ask controller if old in use, via Get[Structural|Electrical|Ropes]MaterialsInUse
+					+ If in-use:
+						+ Replace in ship, via Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials(map with old<->new, Undo material-specific lambda)
+					+ Else:
+						+ Controller::StoreUndoAction()
+					+ Update material in palette via Browser::UpdateCustomMaterial(...)
 
 				- Tests:
 					- Swaths change to new - x2x3
+					- Center of mass, total mass changes with material edit
+					- Undo w/no ship:
+						- Swaths change to old - x2x3
+					- Undo w/ship:
+						- Swaths change to old - x2x3
+						- Center of mass, total mass changes with material edit
 			- OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
 				! For "Delete checked"
 				- Ask user if sure
@@ -899,30 +904,34 @@
 
 			+ Disallow empty name
 
-		- Controller/Model/ModelController/Undo:
-			- void Controller::PushCustomMaterialUndoAction(lambda &&)
-				! Convenience used by MaterialPalettesController for all undo actions that do not involve executing Controller ops; facilitates dirty state
-				- Copy Undo baking (only) from InternalFlip
+		= Controller/Model/ModelController/Undo:
 			+ std::set<XXXMaterial const *> ModelController::Get[Structural|Electrical|Ropes]MaterialsInUse(std::vector<XXXMaterial const *> materials) const 
 				! Used by "delete checked" - ASSUMPTION: "delete checked" only applies to a given Category - and thus to a given LayerType
-			- void Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials:
+			= void Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials:
 				- Args:
-					- map: TMaterial * -> TMaterial *|null (for removal)
+					- map: TMaterial const * -> TMaterial const *|null (for removal)
 					- std::function for material restore
 				- Impl:
-					- Not that different than Flood non-contiguous
-						- Watch out: for ropes, we also have to set RopeElement.RenderColor - to material's color
-					- Force ship re-analysis and re-visualization
-					- Mark ship as dirty
+					- ModelController::ReplaceCustom[Structural|Electrical|Ropes]Materials(map) -> AffectedRect
+						- Update model
+							- Using WriteParticle for analysis
+								- Watch out: for ropes, we also have to set RopeElement.RenderColor - to material's color
+						- Update visualization
 					- Undo payload:
 						- Move material restore call into lambda
+					- Mark ship as dirty
+				+ Structural
+				- Electrical
+				- Ropes
 
 	- TODOHERE: master list of all tasks:
 		- Check Discord feedback:
 			= Rusting
 				+ Exposure a little bit up
 		- Merge into custom_materials
-		- Edit workflow
+		= Edit workflow
+			- Finalize:
+				- Clear TODOTEST logs @ Controller.h
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 

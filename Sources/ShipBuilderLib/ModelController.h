@@ -536,6 +536,13 @@ public:
         ImageCoordinates const & targetOrigin);
 
     //
+    // Templated
+    //
+
+    template<LayerType TLayerType>
+    std::optional<ShipSpaceRect> ReplaceCustomMaterials(std::map<typename LayerTypeTraits<TLayerType>::material_type const *, typename LayerTypeTraits<TLayerType>::material_type const *> const & replacementMap);
+
+    //
     // Visualizations
     //
 

@@ -300,16 +300,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
             mEngagementData->OriginalDirtyState,
             [clippedLayerBackup = std::move(clippedLayerBackup), origin = resultantEffectiveRect->origin](Controller & controller) mutable
             {
-                if constexpr (TLayer == LayerType::Structural)
-                {
-                    controller.RestoreStructuralLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
-                }
-                else
-                {
-                    static_assert(TLayer == LayerType::Electrical);
-
-                    controller.RestoreElectricalLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
-                }
+                controller.RestoreLayerRegionBackupForUndo<TLayer>(std::move(clippedLayerBackup), origin);
             });
 
         // Display *new* sampled material (i.e. *after* our edit)

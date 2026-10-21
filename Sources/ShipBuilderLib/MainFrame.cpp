@@ -348,6 +348,11 @@ MainFrame::MainFrame(
                 mController->SetRopeMaterial(material, plane);
             },
             mDefaultMaterialDatabase,
+            [this]() -> Controller &
+            {
+                assert(mController);
+                return *mController;
+            },
             mShipTexturizer,
             mSoundController,
             mWorkbenchState,

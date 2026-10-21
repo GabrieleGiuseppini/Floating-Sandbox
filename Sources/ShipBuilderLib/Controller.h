@@ -25,6 +25,7 @@
 
 #include <Core/Finalizer.h>
 
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -195,6 +196,75 @@ public:
     // Misc editing
     //
 
+    template<LayerType TLayerType, typename TMaterialUndoAction>
+    void ReplaceCustomMaterials(
+        std::map<typename LayerTypeTraits<TLayerType>::material_type const *, typename LayerTypeTraits<TLayerType>::material_type const *> const & replacementMap,
+        TMaterialUndoAction && materialUndoAction,
+        wxString && undoActionName)
+    {
+        //
+        // Take clone of current layer
+        //
+
+        auto layerDirtyStateClone = mModelController->GetDirtyState();
+        auto layerClone = mModelController->CloneExistingLayer<TLayerType>();
+
+        //
+        // Do operation
+        //
+
+        std::optional<ShipSpaceRect> affectedRegion = mModelController->ReplaceCustomMaterials<TLayerType>(replacementMap);
+
+        //
+        // Create undo
+        //
+
+        ShipSpaceCoordinates affectedRegionOrigin(0, 0);
+
+        if (affectedRegion.has_value())
+        {
+            // Clip region
+            layerClone = layerClone.MakeRegionBackup(*affectedRegion);
+            affectedRegionOrigin = affectedRegion->origin;
+
+            // Store
+            auto const undoCost = layerClone.Buffer.GetByteSize();
+            StoreUndoAction(
+                undoActionName,
+                undoCost,
+                layerDirtyStateClone,
+                [layerClone = std::move(layerClone), origin = affectedRegionOrigin, materialUndoAction = std::move(materialUndoAction)](Controller & controller) mutable
+                {
+                    // TODOTEST
+                    LogMessage("Controller::ReplaceCustomMaterials::Undo: Ship+Material");
+
+                    controller.RestoreLayerRegionBackupForUndo<TLayerType>(std::move(layerClone), origin);
+                    materialUndoAction();
+                });
+        }
+        else
+        {
+            // Material not in use, store just material action undo
+            StoreUndoAction(
+                undoActionName,
+                1, // Nominal
+                layerDirtyStateClone,
+                [materialUndoAction = std::move(materialUndoAction)](Controller &) mutable
+                {
+                    // TODOTEST
+                    LogMessage("Controller::ReplaceCustomMaterials::Undo: just Material");
+
+                    materialUndoAction();
+                });
+        }
+
+        //
+        // Finalize
+        //
+
+        LayerChangeEpilog({ TLayerType });
+    }
+
     void RestoreAllLayersForUndo(
         ShipSpaceSize const & shipSize,
         std::unique_ptr<StructuralLayerData> structuralLayer,
@@ -261,6 +331,45 @@ public:
     //
     // Undo
     //
+
+    // Convenience dispatcher
+    template<LayerType TLayerType, typename TShipCoordinates>
+    void RestoreLayerRegionBackupForUndo(
+        typename LayerTypeTraits<TLayerType>::layer_data_type && layerRegionBackup,
+        TShipCoordinates const & origin)
+    {
+        if constexpr (TLayerType == LayerType::Structural)
+        {
+            RestoreStructuralLayerRegionBackupForUndo(
+                std::move(layerRegionBackup),
+                origin);
+        }
+        else if constexpr (TLayerType == LayerType::Electrical)
+        {
+            RestoreElectricalLayerRegionBackupForUndo(
+                std::move(layerRegionBackup),
+                origin);
+        }
+        else if constexpr (TLayerType == LayerType::Ropes)
+        {
+            RestoreRopesLayerRegionBackupForUndo(
+                std::move(layerRegionBackup),
+                origin);
+        }
+        else if constexpr (TLayerType == LayerType::ExteriorTexture)
+        {
+            RestoreExteriorTextureLayerRegionBackupForUndo(
+                std::move(layerRegionBackup),
+                origin);
+        }
+        else
+        {
+            static_assert(TLayerType == LayerType::InteriorTexture);
+            RestoreInteriorTextureLayerRegionBackupForUndo(
+                std::move(layerRegionBackup),
+                origin);
+        }
+    }
 
     template<typename ... TArgs>
     void StoreUndoAction(TArgs&& ... args)

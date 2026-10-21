@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "../Controller.h"
 #include "../ShipBuilderTypes.h"
 #include "../WorkbenchState.h"
 
@@ -42,6 +43,7 @@ public:
         std::function<void(ElectricalMaterial const * material, MaterialPlaneType plane)> onElectricalLayerMaterialSelected,
         std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> onRopeLayerMaterialSelected,
         DefaultMaterialDatabase const & defaultMaterialDatabase,
+        std::function<Controller &()> controllerGetter,
         ShipTexturizer const & shipTexturizer,
         ISoundController * soundController,
         WorkbenchState const & workbenchState,
@@ -103,9 +105,9 @@ public:
     void OnNewUserCustomElectricalMaterial(ElectricalMaterial const * baseMaterial) override;
     void OnNewUserCustomRopesMaterial(StructuralMaterial const * baseMaterial) override;
 
-    void OnEditCustomStructuralMaterial(StructuralMaterial const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind);
-    void OnEditCustomElectricalMaterial(ElectricalMaterial const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind);
-    void OnEditCustomRopesMaterial(StructuralMaterial const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind);
+    void OnEditCustomStructuralMaterial(StructuralMaterial const * customMaterial);
+    void OnEditCustomElectricalMaterial(ElectricalMaterial const * customMaterial);
+    void OnEditCustomRopesMaterial(StructuralMaterial const * customMaterial);
 
 private:
 
@@ -116,7 +118,12 @@ private:
     void OnNewUserCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * baseMaterial);
 
     template<LayerType TLayerType>
-    void OnEditCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * customMaterial, std::optional<CustomMaterialRegisterKindType> registerKind);
+    void OnEditCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * customMaterial);
+
+    template<LayerType TLayerType>
+    void RestoreCustomMaterialReplacementForUndo(
+        typename LayerTypeTraits<TLayerType>::material_type const * customMaterialToReplace,
+        std::unique_ptr<typename LayerTypeTraits<TLayerType>::material_type const> && customMaterialToRestore);
 
     template<LayerType TLayerType>
     void PreCustomMaterialUpdated(
@@ -184,6 +191,7 @@ private:
 
     DefaultMaterialDatabase const & mDefaultMaterialDatabase; // For color_key lookups
     WorkbenchState const & mWorkbenchState; // For discovering which materials are currently-picked
+    std::function<Controller &()> const mControllerGetter;
 
     std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> const mOnStructuralLayerMaterialSelected;
     std::function<void(ElectricalMaterial const * material, MaterialPlaneType plane)> const mOnElectricalLayerMaterialSelected;

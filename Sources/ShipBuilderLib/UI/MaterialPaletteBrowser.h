@@ -100,6 +100,8 @@ public:
 
     void SetShipCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> const & shipCustomMaterials);
 
+    void ReplaceCustomMaterial(TMaterial const * oldMaterial, TMaterial const * newMaterial);
+
 private:
 
     MaterialPalettePanel<TLayer> * CreateCategoryPanel(
@@ -128,6 +130,8 @@ private:
 
     // After this call, requires Refresh() and syncing button checkbox state
     void SetDocked(bool isDocked);
+
+    MaterialPalettePanel<TLayer> * FindPanelForCategory(std::string const & category);
 
     MaterialPalettePanel<TLayer> * GetCurrentlyShownPanel();
 

@@ -310,6 +310,43 @@ void MaterialPalettePanel<TLayer>::EndCustomMaterialsLayout(std::any layoutSessi
 }
 
 template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::ReplaceCustomMaterial(TMaterial const * oldMaterial, TMaterial const * newMaterial)
+{
+    auto * cell = FindCellFor(oldMaterial);
+    assert(cell != nullptr);
+
+    //
+    // Replace material sample image
+    //
+
+    auto [materialSampleBitmap, editButtonRect, checkboxRect] = MakeMaterialSample(newMaterial, cell->CustomRegisterKind);
+
+    mMaterialSampleBitmaps.Replace(cell->MaterialSampleBitmapIndex, materialSampleBitmap);
+
+    //
+    // Reconfigure cell
+    //
+
+    cell->Material = newMaterial;
+    cell->EditButtonRect = editButtonRect;
+    cell->CheckboxRect = checkboxRect;
+
+    //
+    // Finalize
+    //
+
+    FinalizeMaterialCell(*cell);
+
+    //
+    // Render cell
+    //
+
+    RenderCell(*cell);
+
+    Refresh(false);
+}
+
+template<LayerType TLayer>
 void MaterialPalettePanel<TLayer>::SetSelected(TMaterial const * material)
 {
     auto const * cell = FindCellFor(material);
@@ -559,7 +596,6 @@ void MaterialPalettePanel<TLayer>::OnEditButton(Cell & cell)
 {
     assert(cell.Material != nullptr);
     auto const * material = cell.Material;
-    auto const customRegisterKind = cell.CustomRegisterKind;
 
     //
     // From WX: this is useful when processing some events as certain actions typically can't be performed inside their handlers,
@@ -567,21 +603,21 @@ void MaterialPalettePanel<TLayer>::OnEditButton(Cell & cell)
     //
 
     wxTheApp->CallAfter(
-        [material, customRegisterKind, this]
+        [material, this]
         {
             // Call up
             if constexpr (TLayer == LayerType::Structural)
             {
-                mMaterialPalettesController.OnEditCustomStructuralMaterial(material, customRegisterKind);
+                mMaterialPalettesController.OnEditCustomStructuralMaterial(material);
             }
             else if constexpr (TLayer == LayerType::Electrical)
             {
-                mMaterialPalettesController.OnEditCustomElectricalMaterial(material, customRegisterKind);
+                mMaterialPalettesController.OnEditCustomElectricalMaterial(material);
             }
             else
             {
                 static_assert(TLayer == LayerType::Ropes);
-                mMaterialPalettesController.OnEditCustomRopesMaterial(material, customRegisterKind);
+                mMaterialPalettesController.OnEditCustomRopesMaterial(material);
             }
         });
 }
@@ -670,38 +706,7 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
     // Make material sample
     //
 
-    std::optional<wxRect> shipOverlayRect;
-    if (customRegisterKind == CustomMaterialRegisterKindType::Ship)
-    {
-        shipOverlayRect = wxRect(
-            MaterialSampleOverlayMargin,
-            MaterialSampleOverlayMargin,
-            mShipOverlayImage.Size.width,
-            mShipOverlayImage.Size.height);
-    }
-
-    std::optional<wxRect> editButtonRect;
-    std::optional<wxRect> checkboxRect;
-    if (customRegisterKind.has_value())
-    {
-        editButtonRect = wxRect(
-            MaterialSampleSize.width - MaterialSampleOverlayMargin - mEditButtonImage.Size.width,
-            MaterialSampleOverlayMargin,
-            mEditButtonImage.Size.width,
-            mEditButtonImage.Size.height);
-
-        checkboxRect = wxRect(
-            MaterialSampleSize.width - MaterialSampleOverlayMargin - mCheckboxOffImage.Size.width,
-            MaterialSampleSize.height - MaterialSampleOverlayMargin - mCheckboxOffImage.Size.height,
-            mCheckboxOffImage.Size.width,
-            mCheckboxOffImage.Size.height);
-    }
-
-    wxBitmap materialSampleBitmap = MakeMaterialSample(
-        material,
-        shipOverlayRect,
-        editButtonRect,
-        checkboxRect);
+    auto [materialSampleBitmap, editButtonRect, checkboxRect] = MakeMaterialSample(material, customRegisterKind);
 
     //
     // Insert cell
@@ -760,106 +765,10 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
     cell.CheckboxRect = checkboxRect;
 
     //
-    // Layout text
-    //
-    // Assumption: text is normalized (wrt whitespaces, etc.)
+    // Finalize
     //
 
-    int currentTopYOffset =
-        CellInnerMargin
-        + MaterialSampleSize.height
-        + MaterialSampleToNameGapHeight;
-
-    auto const previousFont = GetFont();
-
-
-    // Name
-
-    SetFont(mNameFont);
-
-    auto nameSizeWidth = GetTextExtent(material->Name).GetWidth();
-    if (nameSizeWidth > MaterialSampleSize.width)
-    {
-        int lastSpaceIndex = -1;
-        while (true)
-        {
-            auto const nextSpace = material->Name.find(' ', lastSpaceIndex + 1);
-            if (nextSpace == std::string::npos
-                || GetTextExtent(material->Name.substr(0, nextSpace)).GetWidth() > MaterialSampleSize.width)
-            {
-                // Use up to last space
-                if (lastSpaceIndex > 0)
-                {
-                    cell.Name1 = material->Name.substr(0, lastSpaceIndex);
-                    cell.Name2 = TruncateAsNeeded(material->Name.substr(lastSpaceIndex + 1), MaterialSampleSize.width);
-                }
-                else
-                {
-                    // Single string, too long though
-                    cell.Name1 = TruncateAsNeeded(material->Name, MaterialSampleSize.width);
-                    cell.Name2 = wxEmptyString;
-                }
-
-                break;
-            }
-            else
-            {
-                // Up to this space would be good, continue searching
-                lastSpaceIndex = nextSpace;
-            }
-        }
-    }
-    else
-    {
-        // Fits all
-        cell.Name1 = material->Name;
-        cell.Name2 = wxEmptyString;
-    }
-
-    auto const name1Size = GetTextExtent(cell.Name1);
-    cell.Name1Width = name1Size.GetWidth();
-    cell.Name1YTopOffset = currentTopYOffset;
-
-    currentTopYOffset += NameTextHeight;
-
-    if (!cell.Name2.IsEmpty())
-    {
-        currentTopYOffset += NameToNameGapHeight;
-
-        auto const name2Size = GetTextExtent(cell.Name2);
-        cell.Name2Width = name2Size.GetWidth();
-        cell.Name2YTopOffset = currentTopYOffset;
-
-        currentTopYOffset += NameTextHeight;
-    }
-
-    // Data
-
-    if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
-    {
-        SetFont(mDataFont);
-
-        std::stringstream ss;
-
-        ss << std::fixed << std::setprecision(2)
-            << "M:" << material->GetMass()
-            << "    "
-            << "S:" << material->Strength;
-
-        cell.Data = ss.str();
-
-        currentTopYOffset += NameToDataGapHeight;
-
-        auto const dataSize = GetTextExtent(cell.Data);
-        cell.DataWidth = dataSize.GetWidth();
-        cell.DataYTopOffset = currentTopYOffset;
-
-        currentTopYOffset += DataTextHeight;
-    }
-
-    currentTopYOffset += CellInnerMargin;
-
-    assert(currentTopYOffset <= MaterialCellSize.height);
+    FinalizeMaterialCell(cell);
 
     return cellInsertIndex;
 }
@@ -1254,12 +1163,152 @@ void MaterialPalettePanel<TLayer>::RenderCell(
 }
 
 template<LayerType TLayer>
-wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(
-    TMaterial const * material,
-    std::optional<wxRect> shipOverlayRect,
-    std::optional<wxRect> editButtonRect,
-    std::optional<wxRect> checkboxRect) const
+void MaterialPalettePanel<TLayer>::FinalizeMaterialCell(Cell & cell)
 {
+    assert(cell.Material != nullptr);
+
+    //
+    // Layout text
+    //
+    // Assumption: text is normalized (wrt whitespaces, etc.)
+    //
+
+    int currentTopYOffset =
+        CellInnerMargin
+        + MaterialSampleSize.height
+        + MaterialSampleToNameGapHeight;
+
+    auto const previousFont = GetFont();
+
+    // Name
+
+    SetFont(mNameFont);
+
+    auto nameSizeWidth = GetTextExtent(cell.Material->Name).GetWidth();
+    if (nameSizeWidth > MaterialSampleSize.width)
+    {
+        int lastSpaceIndex = -1;
+        while (true)
+        {
+            auto const nextSpace = cell.Material->Name.find(' ', lastSpaceIndex + 1);
+            if (nextSpace == std::string::npos
+                || GetTextExtent(cell.Material->Name.substr(0, nextSpace)).GetWidth() > MaterialSampleSize.width)
+            {
+                // Use up to last space
+                if (lastSpaceIndex > 0)
+                {
+                    cell.Name1 = cell.Material->Name.substr(0, lastSpaceIndex);
+                    cell.Name2 = TruncateAsNeeded(cell.Material->Name.substr(lastSpaceIndex + 1), MaterialSampleSize.width);
+                }
+                else
+                {
+                    // Single string, too long though
+                    cell.Name1 = TruncateAsNeeded(cell.Material->Name, MaterialSampleSize.width);
+                    cell.Name2 = wxEmptyString;
+                }
+
+                break;
+            }
+            else
+            {
+                // Up to this space would be good, continue searching
+                lastSpaceIndex = nextSpace;
+            }
+        }
+    }
+    else
+    {
+        // Fits all
+        cell.Name1 = cell.Material->Name;
+        cell.Name2 = wxEmptyString;
+    }
+
+    auto const name1Size = GetTextExtent(cell.Name1);
+    cell.Name1Width = name1Size.GetWidth();
+    cell.Name1YTopOffset = currentTopYOffset;
+
+    currentTopYOffset += NameTextHeight;
+
+    if (!cell.Name2.IsEmpty())
+    {
+        currentTopYOffset += NameToNameGapHeight;
+
+        auto const name2Size = GetTextExtent(cell.Name2);
+        cell.Name2Width = name2Size.GetWidth();
+        cell.Name2YTopOffset = currentTopYOffset;
+
+        currentTopYOffset += NameTextHeight;
+    }
+
+    // Data
+
+    if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+    {
+        SetFont(mDataFont);
+
+        std::stringstream ss;
+
+        ss << std::fixed << std::setprecision(2)
+            << "M:" << cell.Material->GetMass()
+            << "    "
+            << "S:" << cell.Material->Strength;
+
+        cell.Data = ss.str();
+
+        currentTopYOffset += NameToDataGapHeight;
+
+        auto const dataSize = GetTextExtent(cell.Data);
+        cell.DataWidth = dataSize.GetWidth();
+        cell.DataYTopOffset = currentTopYOffset;
+
+        currentTopYOffset += DataTextHeight;
+    }
+
+    currentTopYOffset += CellInnerMargin;
+
+    assert(currentTopYOffset <= MaterialCellSize.height);
+}
+
+template<LayerType TLayer>
+std::tuple<wxBitmap, std::optional<wxRect>, std::optional<wxRect>> MaterialPalettePanel<TLayer>::MakeMaterialSample(
+    TMaterial const * material,
+    std::optional<CustomMaterialRegisterKindType> customRegisterKind)
+{
+    //
+    // Calculate overlay rects
+    //
+
+    std::optional<wxRect> shipOverlayRect;
+    if (customRegisterKind == CustomMaterialRegisterKindType::Ship)
+    {
+        shipOverlayRect = wxRect(
+            MaterialSampleOverlayMargin,
+            MaterialSampleOverlayMargin,
+            mShipOverlayImage.Size.width,
+            mShipOverlayImage.Size.height);
+    }
+
+    std::optional<wxRect> editButtonRect;
+    std::optional<wxRect> checkboxRect;
+    if (customRegisterKind.has_value())
+    {
+        editButtonRect = wxRect(
+            MaterialSampleSize.width - MaterialSampleOverlayMargin - mEditButtonImage.Size.width,
+            MaterialSampleOverlayMargin,
+            mEditButtonImage.Size.width,
+            mEditButtonImage.Size.height);
+
+        checkboxRect = wxRect(
+            MaterialSampleSize.width - MaterialSampleOverlayMargin - mCheckboxOffImage.Size.width,
+            MaterialSampleSize.height - MaterialSampleOverlayMargin - mCheckboxOffImage.Size.height,
+            mCheckboxOffImage.Size.width,
+            mCheckboxOffImage.Size.height);
+    }
+
+    //
+    // Make sample material image
+    //
+
     std::unique_ptr<RgbaImageData> sampleImageData;
     if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
     {
@@ -1282,6 +1331,10 @@ wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(
                 rgbaColor(material->RenderColor, 255),
                 MaterialSampleSize));
     }
+
+    //
+    // Apply overlays
+    //
 
     if (shipOverlayRect.has_value())
     {
@@ -1316,7 +1369,10 @@ wxBitmap MaterialPalettePanel<TLayer>::MakeMaterialSample(
     // Apply frame
     ImageTools::OverlayFrame(*sampleImageData, rgbaColor(0, 0, 0, rgbaColor::data_type_max));
 
-    return WxHelpers::MakeBitmap(*sampleImageData);
+    return std::make_tuple(
+        WxHelpers::MakeBitmap(*sampleImageData),
+        editButtonRect,
+        checkboxRect);
 }
 
 template<LayerType TLayer>

@@ -16,6 +16,7 @@ MaterialPalettesController::MaterialPalettesController(
     std::function<void(ElectricalMaterial const * material, MaterialPlaneType plane)> onElectricalLayerMaterialSelected,
     std::function<void(StructuralMaterial const * material, MaterialPlaneType plane)> onRopeLayerMaterialSelected,
     DefaultMaterialDatabase const & defaultMaterialDatabase,
+    std::function<Controller &()> controllerGetter,
     ShipTexturizer const & shipTexturizer,
     ISoundController * soundController,
     WorkbenchState const & workbenchState,
@@ -23,6 +24,7 @@ MaterialPalettesController::MaterialPalettesController(
     ProgressCallback const & progressCallback)
     : mDefaultMaterialDatabase(defaultMaterialDatabase)
     , mWorkbenchState(workbenchState)
+    , mControllerGetter(std::move(controllerGetter))
     , mOnStructuralLayerMaterialSelected(std::move(onStructuralLayerMaterialSelected))
     , mOnElectricalLayerMaterialSelected(std::move(onElectricalLayerMaterialSelected))
     , mOnRopeLayerMaterialSelected(std::move(onRopeLayerMaterialSelected))
@@ -179,25 +181,19 @@ void MaterialPalettesController::OnNewUserCustomRopesMaterial(StructuralMaterial
     OnNewUserCustomMaterial<LayerType::Ropes>(baseMaterial);
 }
 
-void MaterialPalettesController::OnEditCustomStructuralMaterial(
-    StructuralMaterial const * customMaterial,
-    std::optional<CustomMaterialRegisterKindType> registerKind)
+void MaterialPalettesController::OnEditCustomStructuralMaterial(StructuralMaterial const * customMaterial)
 {
-    OnEditCustomMaterial<LayerType::Structural>(customMaterial, registerKind);
+    OnEditCustomMaterial<LayerType::Structural>(customMaterial);
 }
 
-void MaterialPalettesController::OnEditCustomElectricalMaterial(
-    ElectricalMaterial const * customMaterial,
-    std::optional<CustomMaterialRegisterKindType> registerKind)
+void MaterialPalettesController::OnEditCustomElectricalMaterial(ElectricalMaterial const * customMaterial)
 {
-    OnEditCustomMaterial<LayerType::Electrical>(customMaterial, registerKind);
+    OnEditCustomMaterial<LayerType::Electrical>(customMaterial);
 }
 
-void MaterialPalettesController::OnEditCustomRopesMaterial(
-    StructuralMaterial const * customMaterial,
-    std::optional<CustomMaterialRegisterKindType> registerKind)
+void MaterialPalettesController::OnEditCustomRopesMaterial(StructuralMaterial const * customMaterial)
 {
-    OnEditCustomMaterial<LayerType::Ropes>(customMaterial, registerKind);
+    OnEditCustomMaterial<LayerType::Ropes>(customMaterial);
 }
 
 ////////////////////////////////////////////////////////////
@@ -252,9 +248,7 @@ void MaterialPalettesController::OnNewUserCustomMaterial(typename LayerTypeTrait
 }
 
 template<LayerType TLayerType>
-void MaterialPalettesController::OnEditCustomMaterial(
-    typename LayerTypeTraits<TLayerType>::material_type const * customMaterial,
-    std::optional<CustomMaterialRegisterKindType> registerKind)
+void MaterialPalettesController::OnEditCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * customMaterial)
 {
     using TMaterial = typename LayerTypeTraits<TLayerType>::material_type;
     using TVariantOverridesType = typename TMaterial::VariantOverridesType;
@@ -286,14 +280,14 @@ void MaterialPalettesController::OnEditCustomMaterial(
         //
 
         std::unique_ptr<TMaterial const> newCustomMaterial = baseMaterial->MakeCustomMaterial(*resultOverrides);
-        TMaterial const * newCustomMaterialPtr = newCustomMaterial.get();
+        TMaterial const * const newCustomMaterialPtr = newCustomMaterial.get();
 
         //
         // Replace material in DB
         //
 
         std::unique_ptr<TMaterial const> oldCustomMaterial = GetDatabase<TLayerType>().ReplaceCustomMaterial(customMaterial, std::move(newCustomMaterial));
-        TMaterial const * oldCustomMaterialPtr = oldCustomMaterial.get();
+        TMaterial const * const oldCustomMaterialPtr = oldCustomMaterial.get();
 
         //
         // If any of these materials is current in the workbench state, synthesize a toggle to the new material
@@ -305,21 +299,72 @@ void MaterialPalettesController::OnEditCustomMaterial(
         // Bake Undo action for material
         //
 
-        auto materialUndoAction = [old = std::move(oldCustomMaterial)]()
+        auto materialUndoAction = [this, newCustomMaterialPtr, old = std::move(oldCustomMaterial)]() mutable
             {
-                // TODOHERE
+                RestoreCustomMaterialReplacementForUndo<TLayerType>(newCustomMaterialPtr, std::move(old));
             };
 
-        // TODOHERE:
-        // - Check if it's in-use by ship
-        // - If in-use:
-        //      - Replace in ship, via Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials(map with old < ->new, Undo material - specific lambda)
-        // - Else:
-        //      - Controller::PushCustomMaterialUndoAction(Undo material - specific lambda)
-        // - Update material in palette via Browser::UpdateCustomMaterial(...)
+        //
+        // Replace in ship (if exists)
+        //
 
-        (void)registerKind;
+        Controller & controller = mControllerGetter();
+
+        wxString undoTitle;
+        if constexpr (TLayerType == LayerType::Structural)
+        {
+            undoTitle = _T("Structural Material Edit");
+        }
+        else if constexpr (TLayerType == LayerType::Electrical)
+        {
+            undoTitle = _T("Electrical Material Edit");
+        }
+        else
+        {
+            static_assert(TLayerType == LayerType::Ropes);
+            undoTitle = _T("Ropes Material Edit");
+        }
+
+        controller.ReplaceCustomMaterials<TLayerType>(
+            std::map<TMaterial const *, TMaterial const *>({ { oldCustomMaterialPtr, newCustomMaterialPtr } }),
+            std::move(materialUndoAction),
+            std::move(undoTitle));
+
+        //
+        // Update material in palette
+        //
+
+        GetPaletteBrowser<TLayerType>().ReplaceCustomMaterial(oldCustomMaterialPtr, newCustomMaterialPtr);
     }
+}
+
+template<LayerType TLayerType>
+void MaterialPalettesController::RestoreCustomMaterialReplacementForUndo(
+    typename LayerTypeTraits<TLayerType>::material_type const * customMaterialToReplace,
+    std::unique_ptr<typename LayerTypeTraits<TLayerType>::material_type const> && customMaterialToRestore)
+{
+    using TMaterial = typename LayerTypeTraits<TLayerType>::material_type;
+
+    TMaterial const * const newCustomMaterialPtr = customMaterialToRestore.get();
+
+    //
+    // Replace material in DB
+    //
+
+    std::unique_ptr<TMaterial const> oldCustomMaterial = GetDatabase<TLayerType>().ReplaceCustomMaterial(customMaterialToReplace, std::move(customMaterialToRestore));
+    TMaterial const * const oldCustomMaterialPtr = oldCustomMaterial.get();
+
+    //
+    // If any of these materials is current in the workbench state, synthesize a toggle to the new material
+    //
+
+    PreCustomMaterialUpdated<TLayerType>(oldCustomMaterialPtr, customMaterialToReplace);
+
+    //
+    // Update material in palette
+    //
+
+    GetPaletteBrowser<TLayerType>().ReplaceCustomMaterial(oldCustomMaterialPtr, newCustomMaterialPtr);
 }
 
 template<LayerType TLayerType>

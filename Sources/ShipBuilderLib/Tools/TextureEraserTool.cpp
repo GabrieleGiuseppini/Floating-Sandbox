@@ -317,30 +317,14 @@ void TextureEraserTool<TLayerType>::EndEngagement()
         auto clippedLayerBackup = mOriginalLayerClone.MakeRegionBackup(*mEngagementData->EditRegion);
         auto const clipByteSize = clippedLayerBackup.Buffer.GetByteSize();
 
-        if constexpr (TLayerType == LayerType::ExteriorTexture)
-        {
-            mController.StoreUndoAction(
-                _("Eraser Exterior"),
-                clipByteSize,
-                mEngagementData->OriginalDirtyState,
-                [clippedLayerBackup = std::move(clippedLayerBackup), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
-                {
-                    controller.RestoreExteriorTextureLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
-                });
-        }
-        else
-        {
-            static_assert(TLayerType == LayerType::InteriorTexture);
-
-            mController.StoreUndoAction(
-                _("Eraser Interior"),
-                clipByteSize,
-                mEngagementData->OriginalDirtyState,
-                [clippedLayerBackup = std::move(clippedLayerBackup), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
-                {
-                    controller.RestoreInteriorTextureLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
-                });
-        }
+        mController.StoreUndoAction(
+            (TLayerType == LayerType::ExteriorTexture) ? _("Eraser Exterior") : _("Eraser Interior"),
+            clipByteSize,
+            mEngagementData->OriginalDirtyState,
+            [clippedLayerBackup = std::move(clippedLayerBackup), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
+            {
+                controller.RestoreLayerRegionBackupForUndo<TLayerType>(std::move(clippedLayerBackup), origin);
+            });
     }
 
     //
