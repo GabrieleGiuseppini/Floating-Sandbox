@@ -385,6 +385,10 @@ void MaterialPalettesController::OnRemoveCustomMaterials(std::vector<typename La
 
     if (!shipSet.empty())
     {
+        //
+        // Ask user how to proceed
+        //
+
         wxMessageDialog dialog(
             nullptr,
             _T("One or more of the materials you are about to delete are being used in the current ship. Do you want to keep these materials, or would you rather delete the corresponding particles instead?"),
@@ -435,6 +439,12 @@ void MaterialPalettesController::OnRemoveCustomMaterials(std::vector<typename La
         // Nothing left to do
         return;
     }
+
+    //
+    // Remove from DB
+    //
+
+    auto [removedUserMaterials, removedCustomMaterials] = GetDatabase<TLayerType>().ExtractCustomMaterials(customMaterials);
 
     // TODOHERE
 }

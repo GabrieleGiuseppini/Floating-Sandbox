@@ -830,7 +830,7 @@
 					+ If b: prune delenda; zero shipSet; continue
 					+ If c: abort
 				+ If delenda empty: done
-				- Remove from DB via ExtractCustomMaterials, and get back two SinglePod's with those - user and ship
+				+ Remove from DB via ExtractCustomMaterials, and get back two SinglePod's with those - user and ship
 				- Call PreCustomMaterialDeleted on each delenda pointer
 					- Like at SetShipCustomMaterials: if currently-picked materials among those being deleted, select null in WorkbenchState and browser
 				- Bake Undo material-specific lambda, moving SinglePods into it
