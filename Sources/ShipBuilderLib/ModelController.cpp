@@ -2660,9 +2660,50 @@ std::optional<ShipSpaceRect> ModelController::ReplaceCustomMaterials<LayerType::
 template<>
 std::optional<ShipSpaceRect> ModelController::ReplaceCustomMaterials<LayerType::Electrical>(std::map<ElectricalMaterial const *, ElectricalMaterial const *> const & replacementMap)
 {
-    // TODOHERE
-    (void)replacementMap;
-    return std::nullopt;
+    assert(mModel.HasLayer(LayerType::Electrical)); // Assuming caller has checked
+    assert(!mIsElectricalLayerInEphemeralVisualization);
+
+    //
+    // Update model
+    //
+
+    std::optional<ShipSpaceRect> affectedRect;
+
+    auto & layer = mModel.GetElectricalLayer();
+    ShipSpaceSize const shipSize = mModel.GetShipSize();
+    for (int y = 0; y < shipSize.height; ++y)
+    {
+        for (int x = 0; x < shipSize.width; ++x)
+        {
+            ShipSpaceCoordinates const coords(x, y);
+
+            auto const srchIt = replacementMap.find(layer.Buffer[coords].Material);
+            if (srchIt != replacementMap.end())
+            {
+                WriteParticle(coords, srchIt->second);
+
+                if (!affectedRect.has_value())
+                {
+                    affectedRect = ShipSpaceRect(coords);
+                }
+                else
+                {
+                    affectedRect->UnionWith(coords);
+                }
+            }
+        }
+    }
+
+    if (affectedRect.has_value())
+    {
+        //
+        // Update visualization
+        //
+
+        RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(*affectedRect);
+    }
+
+    return affectedRect;
 }
 
 template<>

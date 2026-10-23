@@ -927,10 +927,10 @@
 						- Move material restore call into lambda
 					- Mark ship as dirty
 				+ Structural
-				- Electrical
-					- Test
+				+ Electrical
+					+ Test, incl. Undo
 				- Ropes
-					- Test
+					- Test, incl. Undo
 
 	- TODOHERE: master list of all tasks:
 		- Check Discord feedback:

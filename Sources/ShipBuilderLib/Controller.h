@@ -202,44 +202,69 @@ public:
         TMaterialUndoAction && materialUndoAction,
         wxString && undoActionName)
     {
-        auto const scopedToolResumeState = SuspendTool();
-
-        //
-        // Take clone of current layer
-        //
-
         auto layerDirtyStateClone = mModelController->GetDirtyState();
-        auto layerClone = mModelController->CloneExistingLayer<TLayerType>();
 
-        //
-        // Do operation
-        //
-
-        std::optional<ShipSpaceRect> affectedRegion = mModelController->ReplaceCustomMaterials<TLayerType>(replacementMap);
-
-        //
-        // Create undo
-        //
-
-        ShipSpaceCoordinates affectedRegionOrigin(0, 0);
-
-        if (affectedRegion.has_value())
+        if (mModelController->HasLayer(TLayerType))
         {
-            // Clip region
-            layerClone = layerClone.MakeRegionBackup(*affectedRegion);
-            affectedRegionOrigin = affectedRegion->origin;
+            auto const scopedToolResumeState = SuspendTool();
 
-            // Store
-            auto const undoCost = layerClone.Buffer.GetByteSize();
-            StoreUndoAction(
-                undoActionName,
-                undoCost,
-                layerDirtyStateClone,
-                [layerClone = std::move(layerClone), origin = affectedRegionOrigin, materialUndoAction = std::move(materialUndoAction)](Controller & controller) mutable
-                {
-                    controller.RestoreLayerRegionBackupForUndo<TLayerType>(std::move(layerClone), origin);
-                    materialUndoAction();
-                });
+            //
+            // Take clone of current layer
+            //
+
+            auto layerClone = mModelController->CloneExistingLayer<TLayerType>();
+
+            //
+            // Do operation
+            //
+
+            std::optional<ShipSpaceRect> affectedRegion = mModelController->ReplaceCustomMaterials<TLayerType>(replacementMap);
+
+            //
+            // Create undo
+            //
+
+            ShipSpaceCoordinates affectedRegionOrigin(0, 0);
+
+            if (affectedRegion.has_value())
+            {
+                // Clip region
+                layerClone = layerClone.MakeRegionBackup(*affectedRegion);
+                affectedRegionOrigin = affectedRegion->origin;
+
+                // Store
+                auto const undoCost = layerClone.Buffer.GetByteSize();
+                StoreUndoAction(
+                    undoActionName,
+                    undoCost,
+                    layerDirtyStateClone,
+                    [layerClone = std::move(layerClone), origin = affectedRegionOrigin, materialUndoAction = std::move(materialUndoAction)](Controller & controller) mutable
+                    {
+                        controller.RestoreLayerRegionBackupForUndo<TLayerType>(std::move(layerClone), origin);
+                        materialUndoAction();
+                    });
+            }
+            else
+            {
+                // Material not in use, store just material action undo
+                StoreUndoAction(
+                    undoActionName,
+                    1, // Nominal
+                    layerDirtyStateClone,
+                    [materialUndoAction = std::move(materialUndoAction)](Controller &) mutable
+                    {
+                        materialUndoAction();
+                    });
+            }
+
+            //
+            // Finalize
+            //
+
+            if (affectedRegion.has_value())
+            {
+                LayerChangeEpilog({ TLayerType });
+            }
         }
         else
         {
@@ -253,12 +278,6 @@ public:
                     materialUndoAction();
                 });
         }
-
-        //
-        // Finalize
-        //
-
-        LayerChangeEpilog({ TLayerType });
     }
 
     void RestoreAllLayersForUndo(
