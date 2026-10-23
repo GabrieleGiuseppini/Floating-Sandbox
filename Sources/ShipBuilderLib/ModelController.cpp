@@ -2709,9 +2709,50 @@ std::optional<ShipSpaceRect> ModelController::ReplaceCustomMaterials<LayerType::
 template<>
 std::optional<ShipSpaceRect> ModelController::ReplaceCustomMaterials<LayerType::Ropes>(std::map<StructuralMaterial const *, StructuralMaterial const *> const & replacementMap)
 {
-    // TODOHERE
-    (void)replacementMap;
-    return std::nullopt;
+    assert(mModel.HasLayer(LayerType::Ropes)); // Assuming caller has checked
+    assert(!mIsRopesLayerInEphemeralVisualization);
+
+    //
+    // Update model
+    //
+
+    std::optional<ShipSpaceRect> affectedRect;
+
+    auto & layer = mModel.GetRopesLayer();
+    for (auto ropeElementIt = layer.Buffer.begin(); ropeElementIt != layer.Buffer.end(); /*incremented in loop*/)
+    {
+        auto const srchIt = replacementMap.find(ropeElementIt->Material);
+        if (srchIt != replacementMap.end())
+        {
+            if (srchIt->second != nullptr)
+            {
+                // Update element
+                ropeElementIt->Material = srchIt->second;
+                ropeElementIt->RenderColor = srchIt->second->RenderColor;
+
+                // Advance
+                ++ropeElementIt;
+            }
+            else
+            {
+                // Nuke element
+                layer.Buffer.Erase(ropeElementIt);
+            }
+
+            affectedRect = GetWholeShipRect();
+        }
+    }
+
+    if (affectedRect.has_value())
+    {
+        //
+        // Update visualization
+        //
+
+        RegisterDirtyVisualization<VisualizationType::RopesLayer>(*affectedRect);
+    }
+
+    return affectedRect;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

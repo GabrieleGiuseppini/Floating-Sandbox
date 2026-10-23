@@ -34,6 +34,16 @@ struct RopeBuffer
         return mBuffer.size() * sizeof(RopeElement);
     }
 
+    auto begin()
+    {
+        return mBuffer.begin();
+    }
+
+    auto end()
+    {
+        return mBuffer.end();
+    }
+
     auto begin() const
     {
         return mBuffer.begin();

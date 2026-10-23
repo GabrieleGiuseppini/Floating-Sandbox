@@ -190,19 +190,16 @@
 					+ Save DB
 				+ Update palette
 				X Populate Undo with material
-		- Editing existing user custom material
-			- User clicks on "edit" button
-			- When committed:
-				- Save DB
-				- Update palette
-				- Populate Undo with material
-		- Editing existing ship custom material
-			- User clicks on "edit" button
-			- When committed:
-				- Update palette
-				- Populate Undo with material
-				- Force ship re-analysis and re-visualization
-				- Mark ship as dirty					
+		+ Editing existing user/ship custom material
+			+ User clicks on "edit" button
+			+ When committed:
+				+ Update in DB
+					+ Save DB if it's user's
+				+ Replace in ship (eventually)
+				+ Populate Undo with material and eventually ship's
+				+ Force ship re-analysis and re-visualization
+				+ Mark ship as dirty
+				+ Update palette				
 		- Deleting user's or ship's custom materials
 			! ASSUMPTION: only applies to current Category, thus to current layer
 			- User checks boxes, and then "Delete Selected"
@@ -491,11 +488,7 @@
 				+ If OK:
 					+ Add to user DB
 					+ Add to palette (vector of one)
-			- OnEditCustomXYZMaterial(XYZMaterial * material, RegisterKind)
-				- Get overrides
-				- Run dialog
-				- Remember starting point and do nothing if no real edits
-				- TODOHERE
+			+ OnEditCustomXYZMaterial(XYZMaterial * material, RegisterKind)
 			- TODO: other workflows above
 
 		= MaterialPalettePanel<TLayer>: HEAVY REDESIGN
@@ -791,6 +784,12 @@
 				+ MaterialPaletteBrowser<TLayer X 3>::SetShipCustomMaterials(from DB, result of pruning) [Replace all ship custom [vector]]
 				+ return MaterialsReplacementMap
 				+ Caller (MainFrame) uses MaterialsReplacementMap to mess with layers in-place within definition, using layers' helpers (or AllLayers/?), before giving definition to new controller
+			+ OnNewUserCustomXYZMaterial(XYZMaterial * baseMaterial)
+				+ Create overrides
+				+ Run dialog
+				+ If OK:
+					+ Add to user DB
+					+ Add to palette (vector of one)
 			+ OnEditCustomStructural/Electrical/RopesMaterial(TMaterial const *, registerKind)
 				+ Run dialog
 				+ If ok:
@@ -910,36 +909,33 @@
 
 			+ Disallow empty name
 
-		= Controller/Model/ModelController/Undo:
+		+ Controller/Model/ModelController/Undo:
 			+ std::set<XXXMaterial const *> ModelController::Get[Structural|Electrical|Ropes]MaterialsInUse(std::vector<XXXMaterial const *> materials) const 
 				! Used by "delete checked" - ASSUMPTION: "delete checked" only applies to a given Category - and thus to a given LayerType
-			= void Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials:
-				- Args:
-					- map: TMaterial const * -> TMaterial const *|null (for removal)
-					- std::function for material restore
-				- Impl:
-					- ModelController::ReplaceCustom[Structural|Electrical|Ropes]Materials(map) -> AffectedRect
-						- Update model
-							- Using WriteParticle for analysis
-								- Watch out: for ropes, we also have to set RopeElement.RenderColor - to material's color
-						- Update visualization
-					- Undo payload:
-						- Move material restore call into lambda
-					- Mark ship as dirty
+			+ void Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials:
+				+ Args:
+					+ map: TMaterial const * -> TMaterial const *|null (for removal)
+					+ std::function for material restore
+				+ Impl:
+					+ ModelController::ReplaceCustom[Structural|Electrical|Ropes]Materials(map) -> AffectedRect
+						+ Update model
+							+ Using WriteParticle for analysis
+								+ Watch out: for ropes, we also have to set RopeElement.RenderColor - to material's color
+						+ Update visualization
+					+ Undo payload:
+						+ Move material restore call into lambda
+					+ Mark ship as dirty
 				+ Structural
 				+ Electrical
 					+ Test, incl. Undo
-				- Ropes
-					- Test, incl. Undo
+				+ Ropes
+					+ Test, incl. Undo
 
 	- TODOHERE: master list of all tasks:
 		- Check Discord feedback:
 			= Rusting
 				+ Exposure a little bit up
 		- Merge into custom_materials
-		= Edit workflow
-			- Finalize:
-				+ Clear TODOTEST logs @ Controller.h
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 
