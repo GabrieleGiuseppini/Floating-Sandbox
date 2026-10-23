@@ -235,9 +235,6 @@ public:
                 layerDirtyStateClone,
                 [layerClone = std::move(layerClone), origin = affectedRegionOrigin, materialUndoAction = std::move(materialUndoAction)](Controller & controller) mutable
                 {
-                    // TODOTEST
-                    LogMessage("Controller::ReplaceCustomMaterials::Undo: Ship+Material");
-
                     controller.RestoreLayerRegionBackupForUndo<TLayerType>(std::move(layerClone), origin);
                     materialUndoAction();
                 });
@@ -251,9 +248,6 @@ public:
                 layerDirtyStateClone,
                 [materialUndoAction = std::move(materialUndoAction)](Controller &) mutable
                 {
-                    // TODOTEST
-                    LogMessage("Controller::ReplaceCustomMaterials::Undo: just Material");
-
                     materialUndoAction();
                 });
         }

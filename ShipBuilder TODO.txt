@@ -457,7 +457,9 @@
 					+ Return replacement map
 				+ ReplaceCustomMaterial(TMaterial const * old, uq_ptr<TMaterial const> && new) -> uq_ptr<TMaterial const>
 					+ Find
-					+ Just std::swap
+					+ Swap materials
+					+ Save DB
+					+ Return old
 
 			+ Ser/Deset for user custom materials
 				+ parent color_key and VariantOverridesType
@@ -808,14 +810,18 @@
 						+ Controller::StoreUndoAction()
 					+ Update material in palette via Browser::UpdateCustomMaterial(...)
 
-				- Tests:
-					- Swaths change to new - x2x3
-					- Center of mass, total mass changes with material edit
-					- Undo w/no ship:
-						- Swaths change to old - x2x3
-					- Undo w/ship:
-						- Swaths change to old - x2x3
-						- Center of mass, total mass changes with material edit
+				= Tests:
+					+ Edit is reflected in palette's text
+					+ Swaths change to new - x2x3
+					+ Undo w/no ship:
+						+ Swaths change to old - x2x3
+					+ Undo w/ship:
+						+ Swaths change to old - x2x3
+						+ Center of mass, total mass changes with material edit
+						+ Sampled material under cursor
+					- FIX: we see both materials after editing material in ship
+						- It's the ephemeral; tools have temp viz which is a clone of before
+						- Need to reset tools' state at material amend; assuming not in temp viz
 			- OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
 				! For "Delete checked"
 				- Ask user if sure
@@ -931,7 +937,7 @@
 		- Merge into custom_materials
 		= Edit workflow
 			- Finalize:
-				- Clear TODOTEST logs @ Controller.h
+				+ Clear TODOTEST logs @ Controller.h
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 
