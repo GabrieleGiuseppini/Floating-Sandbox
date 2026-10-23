@@ -105,9 +105,9 @@ struct RopeBuffer
     }
 
     template<typename TIt>
-    void Erase(TIt const & it)
+    auto Erase(TIt const & it)
     {
-        mBuffer.erase(it);
+        return mBuffer.erase(it);
     }
 
     void Clear()

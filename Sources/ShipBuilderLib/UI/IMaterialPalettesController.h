@@ -9,6 +9,8 @@
 
 #include <Simulation/Materials.h>
 
+#include <vector>
+
 namespace ShipBuilder {
 
 /*
@@ -27,6 +29,10 @@ struct IMaterialPalettesController
     virtual void OnEditCustomStructuralMaterial(StructuralMaterial const * customMaterial) = 0;
     virtual void OnEditCustomElectricalMaterial(ElectricalMaterial const * customMaterial) = 0;
     virtual void OnEditCustomRopesMaterial(StructuralMaterial const * customMaterial) = 0;
+
+    virtual void OnRemoveCustomStructuralMaterials(std::vector<StructuralMaterial const *> customMaterials) = 0;
+    virtual void OnRemoveCustomElectricalMaterials(std::vector<ElectricalMaterial const *> customMaterials) = 0;
+    virtual void OnRemoveCustomRopesMaterials(std::vector<StructuralMaterial const *> customMaterials) = 0;
 };
 
 }

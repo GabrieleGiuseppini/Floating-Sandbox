@@ -348,7 +348,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                         SetDocked(mDockCheckbox->IsChecked());
                         Refresh();
 
-                        // Make us regain focus, or else we los focus loss notification
+                        // Make us regain focus, or else we lose focus loss notification
                         this->SetFocus();
                     });
 
@@ -396,7 +396,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                                 panel->SetAllCustomMaterialsIsChecked(true);
                             }
 
-                            // Make us regain focus, or else we los focus loss notification
+                            // Make us regain focus, or else we lose focus loss notification
                             this->SetFocus();
                         });
 
@@ -422,7 +422,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                                 panel->SetAllCustomMaterialsIsChecked(false);
                             }
 
-                            // Make us regain focus, or else we los focus loss notification
+                            // Make us regain focus, or else we lose focus loss notification
                             this->SetFocus();
                         });
 
@@ -442,11 +442,24 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                         {
                             // Deletes only from current Layer, current Category -- otherwise dangerous
 
-                            // TODOHERE
-                            // - Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedMaterials()
-                            // - Call onto controller with that vector
+                            std::vector<TMaterial const *> materialsToRemove = GetCurrentlyShownPanel()->GetCheckedMaterials();
 
-                            // Make us regain focus, or else we los focus loss notification
+                            if constexpr (TLayer == LayerType::Structural)
+                            {
+                                mMaterialPalettesController.OnRemoveCustomStructuralMaterials(std::move(materialsToRemove));
+                            }
+                            else if constexpr (TLayer == LayerType::Electrical)
+                            {
+                                mMaterialPalettesController.OnRemoveCustomElectricalMaterials(std::move(materialsToRemove));
+                            }
+                            else
+                            {
+                                static_assert(TLayer == LayerType::Ropes);
+
+                                mMaterialPalettesController.OnRemoveCustomRopesMaterials(std::move(materialsToRemove));
+                            }
+
+                            // Make us regain focus, or else we lose focus loss notification
                             this->SetFocus();
                         });
 

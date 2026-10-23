@@ -432,7 +432,7 @@
 
 		=== ShipBuilder ===
 
-		= MaterialDatabase<TLayer>
+		+ MaterialDatabase<TLayer>
 			+ Members:
 				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase // for color_hey lookups
 				+ vec<uq> from user
@@ -440,15 +440,15 @@
 			+ cctor:
 				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase
 				+ Loads users's
-			= Ops:
+			+ Ops:
 				+ AddUser
 					+ Store
 					+ Save DB
-				- ExtractCustomMaterials(vector<TMaterial const *>) -> std::tuple<SinglePod, SinglePod> // User's, Ship's
-					- Find among user's and ship's
-					- Extract into respective SinglePod
-					- Save DB
-					- Return SinglePod's
+				+ ExtractCustomMaterials(vector<TMaterial const *>) -> std::tuple<SinglePod, SinglePod> // User's, Ship's
+					+ Find among user's and ship's
+					+ Extract into respective SinglePod
+					+ Save DB for user's
+					+ Return SinglePod's
 				+ SetShipCustomMaterials(vector<uq_ptr<TMaterial const>>):
 					+ Merge and build replacement map
 					+ Return replacement map
@@ -477,7 +477,7 @@
 							+ Load DB.backup
 			+ Deser: only ones that are present
 
-			= Unit tests
+			+ Unit tests
 				+ SetShipCustomMaterials: verify pruned (inside DB) and returned replacement map
 
 		= IMaterialPaletteController<TLayer>: for UI to talk back to controller
@@ -613,8 +613,8 @@
 					+ Render cell
 				+ Refresh(false)
 				+ Fire event for browser, it'll reconciliate via panel::IsAnyChecked()
-			- GetCheckedMaterials() const -> vector<TMaterial *>
-				- Navigate hierarchy and fetch selected ones
+			+ GetCheckedMaterials() const -> vector<TMaterial *>
+				+ Navigate hierarchy and fetch selected ones
 			- FindCellFor: can speedup with lookups
 			- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
 
@@ -690,11 +690,11 @@
 					+ GetCurrentlyShownPanel()->SetAllCustomMaterialsIsChecked(false)
 						+ Will fire event that will recon UI
 					+ Recon: enabled==any checked
-				= Delete Selected
+				+ Delete Selected
 					+ Layout
 					! Deletes only from current Layer, current Category -- otherwise dangerous
-					- Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedMaterials()
-					- Call onto controller with that vector
+					+ Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedMaterials()
+					+ Call onto controller with that vector
 					+ Recon: enabled==any checked
 
 				- TODOHERE: following needs spec refining
@@ -821,10 +821,9 @@
 						+ It's the ephemeral; tools have temp viz which is a clone of before
 						+ Need to reset tools' state at material amend; assuming not in temp viz
 							+ Should SuspendTool before replacing materials
-			- OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
+			= OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
 				! For "Delete checked"
-				- Ask user if sure
-				- Ask controller if any in use, via Get[Structural|Electrical|Ropes]MaterialsInUse(...) -> std::set<XXXMaterial const *> (-> shipSet)
+				+ Ask controller if any in use, via Get[Structural|Electrical|Ropes]MaterialsInUse(...) -> std::set<XXXMaterial const *> (-> shipSet)
 				- If at-least-one-in-use:
 					- Ask user if a) Remove from ship, b) Remove from delenda, c) abort
 					- If a: <nop>; continue
@@ -925,10 +924,9 @@
 					+ Test, incl. Undo
 
 	- TODOHERE: master list of all tasks:
-		- Merge into custom_materials
-		- Send beta
+		= Remove (checked) workflow
 
-		- Remove (checked) workflow
+		- Re-test rope removal after fixing iterator
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 

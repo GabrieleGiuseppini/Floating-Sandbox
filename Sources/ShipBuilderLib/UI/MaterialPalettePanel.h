@@ -153,6 +153,8 @@ public:
 
     void SetAllCustomMaterialsIsChecked(bool value);
 
+    std::vector<TMaterial const *> GetCheckedMaterials() const;
+
 private:
 
     using CellIdType = std::uint64_t;

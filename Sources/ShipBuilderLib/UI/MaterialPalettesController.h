@@ -105,9 +105,13 @@ public:
     void OnNewUserCustomElectricalMaterial(ElectricalMaterial const * baseMaterial) override;
     void OnNewUserCustomRopesMaterial(StructuralMaterial const * baseMaterial) override;
 
-    void OnEditCustomStructuralMaterial(StructuralMaterial const * customMaterial);
-    void OnEditCustomElectricalMaterial(ElectricalMaterial const * customMaterial);
-    void OnEditCustomRopesMaterial(StructuralMaterial const * customMaterial);
+    void OnEditCustomStructuralMaterial(StructuralMaterial const * customMaterial) override;
+    void OnEditCustomElectricalMaterial(ElectricalMaterial const * customMaterial) override;
+    void OnEditCustomRopesMaterial(StructuralMaterial const * customMaterial) override;
+
+    void OnRemoveCustomStructuralMaterials(std::vector<StructuralMaterial const *> customMaterials) override;
+    void OnRemoveCustomElectricalMaterials(std::vector<ElectricalMaterial const *> customMaterials) override;
+    void OnRemoveCustomRopesMaterials(std::vector<StructuralMaterial const *> customMaterials) override;
 
 private:
 
@@ -119,6 +123,9 @@ private:
 
     template<LayerType TLayerType>
     void OnEditCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * customMaterial);
+
+    template<LayerType TLayerType>
+    void OnRemoveCustomMaterials(std::vector<typename LayerTypeTraits<TLayerType>::material_type const *> customMaterials);
 
     template<LayerType TLayerType>
     void RestoreCustomMaterialReplacementForUndo(

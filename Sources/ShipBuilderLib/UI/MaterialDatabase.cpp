@@ -128,6 +128,63 @@ std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const> typename Mat
     return std::unique_ptr<TMaterial const>();
 }
 
+template<LayerType TLayer>
+std::tuple<std::vector<std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const>> &&, std::vector<std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const>> &&> MaterialDatabase<TLayer>::ExtractCustomMaterials(std::vector<TMaterial const *> const & materials)
+{
+    // Find among all
+
+    std::vector<std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const>> extractedUserMaterials;
+    for (auto it = mUserCustomMaterials.begin(); it != mUserCustomMaterials.end(); /*incremented in loop*/)
+    {
+        auto const srchIt = std::find(
+            materials.cbegin(),
+            materials.cend(),
+            it->get());
+
+        if (srchIt != materials.cend())
+        {
+            // Found
+
+            // Extract
+            extractedUserMaterials.emplace_back(std::move(*it));
+            it = mUserCustomMaterials.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    if (!extractedUserMaterials.empty())
+    {
+        SaveDefaultUserDatabase();
+    }
+
+    std::vector<std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const>> extractedShipMaterials;
+    for (auto it = mShipCustomMaterials.begin(); it != mShipCustomMaterials.end(); /*incremented in loop*/)
+    {
+        auto const srchIt = std::find(
+            materials.cbegin(),
+            materials.cend(),
+            it->get());
+
+        if (srchIt != materials.cend())
+        {
+            // Found
+
+            // Extract
+            extractedShipMaterials.emplace_back(std::move(*it));
+            it = mShipCustomMaterials.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    return std::make_tuple(std::move(extractedUserMaterials), std::move(extractedShipMaterials));
+}
+
 //////////////////////////////////////////////////
 
 template<LayerType TLayer>

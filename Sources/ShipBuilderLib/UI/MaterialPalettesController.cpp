@@ -7,6 +7,10 @@
 
 #include <UILib/StandardSystemPaths.h>
 
+#include <wx/msgdlg.h>
+
+#include <set>
+
 namespace ShipBuilder {
 
 MaterialPalettesController::MaterialPalettesController(
@@ -196,6 +200,21 @@ void MaterialPalettesController::OnEditCustomRopesMaterial(StructuralMaterial co
     OnEditCustomMaterial<LayerType::Ropes>(customMaterial);
 }
 
+void MaterialPalettesController::OnRemoveCustomStructuralMaterials(std::vector<StructuralMaterial const *> customMaterials)
+{
+    OnRemoveCustomMaterials<LayerType::Structural>(std::move(customMaterials));
+}
+
+void MaterialPalettesController::OnRemoveCustomElectricalMaterials(std::vector<ElectricalMaterial const *> customMaterials)
+{
+    OnRemoveCustomMaterials<LayerType::Electrical>(std::move(customMaterials));
+}
+
+void MaterialPalettesController::OnRemoveCustomRopesMaterials(std::vector<StructuralMaterial const *> customMaterials)
+{
+    OnRemoveCustomMaterials<LayerType::Ropes>(std::move(customMaterials));
+}
+
 ////////////////////////////////////////////////////////////
 
 template<LayerType TLayerType>
@@ -336,6 +355,45 @@ void MaterialPalettesController::OnEditCustomMaterial(typename LayerTypeTraits<T
 
         GetPaletteBrowser<TLayerType>().ReplaceCustomMaterial(oldCustomMaterialPtr, newCustomMaterialPtr);
     }
+}
+
+template<LayerType TLayerType>
+void MaterialPalettesController::OnRemoveCustomMaterials(std::vector<typename LayerTypeTraits<TLayerType>::material_type const *> customMaterials)
+{
+    using TMaterial = typename LayerTypeTraits<TLayerType>::material_type;
+
+    //
+    // Check if in-use by ship
+    //
+
+    Controller & controller = mControllerGetter();
+
+    std::set<TMaterial const *> shipSet;
+    if constexpr (TLayerType == LayerType::Structural)
+    {
+        shipSet = controller.GetModelController().GetStructuralMaterialsInUse(customMaterials);
+    }
+    else if constexpr (TLayerType == LayerType::Electrical)
+    {
+        shipSet = controller.GetModelController().GetElectricalMaterialsInUse(customMaterials);
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::Ropes);
+        shipSet = controller.GetModelController().GetRopesMaterialsInUse(customMaterials);
+    }
+
+    // TODOHERE
+
+    wxMessageDialog dialog(nullptr,
+        _T("One or more of the materials you are about to delete are being used in the current ship. Do you want to keep these materials, or would you rather delete the corresponding particles instead?"), _T("Materials in-use by Ship"),
+        wxYES_NO | wxCANCEL | wxSTAY_ON_TOP | wxCENTRE);
+    dialog.SetYesNoCancelLabels(
+        _T("Keep the Materials"),
+        _T("Remove Particles from Ship"),
+        _T("Abort"));
+    auto const result = dialog.ShowModal();
+    LogMessage("!!!!! Delete ", customMaterials.size(), " materials: choice=", int(result), " (Keep materials: ", wxID_YES, " Remove particles: ", wxID_NO, " Abort: ", wxID_CANCEL, ")");
 }
 
 template<LayerType TLayerType>

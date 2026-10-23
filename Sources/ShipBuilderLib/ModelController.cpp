@@ -2736,7 +2736,7 @@ std::optional<ShipSpaceRect> ModelController::ReplaceCustomMaterials<LayerType::
             else
             {
                 // Nuke element
-                layer.Buffer.Erase(ropeElementIt);
+                ropeElementIt = layer.Buffer.Erase(ropeElementIt);
             }
 
             affectedRect = GetWholeShipRect();
