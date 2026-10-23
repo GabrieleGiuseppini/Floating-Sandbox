@@ -824,12 +824,12 @@
 			= OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
 				! For "Delete checked"
 				+ Ask controller if any in use, via Get[Structural|Electrical|Ropes]MaterialsInUse(...) -> std::set<XXXMaterial const *> (-> shipSet)
-				- If at-least-one-in-use:
-					- Ask user if a) Remove from ship, b) Remove from delenda, c) abort
-					- If a: <nop>; continue
-					- If b: prune delenda; zero shipSet; continue
-					- If c: abort
-				- If delenda empty: done
+				+ If at-least-one-in-use:
+					+ Ask user if a) Remove from ship, b) Remove from delenda, c) abort
+					+ If a: <nop>; continue
+					+ If b: prune delenda; zero shipSet; continue
+					+ If c: abort
+				+ If delenda empty: done
 				- Remove from DB via ExtractCustomMaterials, and get back two SinglePod's with those - user and ship
 				- Call PreCustomMaterialDeleted on each delenda pointer
 					- Like at SetShipCustomMaterials: if currently-picked materials among those being deleted, select null in WorkbenchState and browser

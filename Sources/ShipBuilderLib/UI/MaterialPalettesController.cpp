@@ -383,17 +383,60 @@ void MaterialPalettesController::OnRemoveCustomMaterials(std::vector<typename La
         shipSet = controller.GetModelController().GetRopesMaterialsInUse(customMaterials);
     }
 
-    // TODOHERE
+    if (!shipSet.empty())
+    {
+        wxMessageDialog dialog(
+            nullptr,
+            _T("One or more of the materials you are about to delete are being used in the current ship. Do you want to keep these materials, or would you rather delete the corresponding particles instead?"),
+            _T("Materials in-use by Ship"),
+            wxYES_NO | wxCANCEL | wxSTAY_ON_TOP | wxCENTRE);
 
-    wxMessageDialog dialog(nullptr,
-        _T("One or more of the materials you are about to delete are being used in the current ship. Do you want to keep these materials, or would you rather delete the corresponding particles instead?"), _T("Materials in-use by Ship"),
-        wxYES_NO | wxCANCEL | wxSTAY_ON_TOP | wxCENTRE);
-    dialog.SetYesNoCancelLabels(
-        _T("Keep the Materials"),
-        _T("Remove Particles from Ship"),
-        _T("Abort"));
-    auto const result = dialog.ShowModal();
-    LogMessage("!!!!! Delete ", customMaterials.size(), " materials: choice=", int(result), " (Keep materials: ", wxID_YES, " Remove particles: ", wxID_NO, " Abort: ", wxID_CANCEL, ")");
+        dialog.SetYesNoCancelLabels(
+            _T("Keep the Materials"),
+            _T("Remove Particles from Ship"),
+            _T("Abort"));
+
+        auto const result = dialog.ShowModal();
+        if (result == wxID_YES)
+        {
+            // Keep materials
+
+            // Prune delenda
+            for (auto delendaIt = customMaterials.begin(); delendaIt != customMaterials.end(); /*incremented in loop*/)
+            {
+                if (shipSet.find(*delendaIt) != shipSet.end())
+                {
+                    delendaIt = customMaterials.erase(delendaIt);
+                }
+                else
+                {
+                    ++delendaIt;
+                }
+            }
+
+            // Empty ship set - so we won't remove these
+            shipSet.clear();
+        }
+        else if (result == wxID_NO)
+        {
+            // Remove particles from ship
+
+            // Nothing here, we'll remove particles and then delete all
+        }
+        else
+        {
+            // Abort
+            return;
+        }
+    }
+
+    if (customMaterials.empty())
+    {
+        // Nothing left to do
+        return;
+    }
+
+    // TODOHERE
 }
 
 template<LayerType TLayerType>
