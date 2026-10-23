@@ -444,11 +444,11 @@
 				+ AddUser
 					+ Store
 					+ Save DB
-				- ExtractCustomMaterials(vector<TMaterial const *>) -> SinglePod:
+				- ExtractCustomMaterials(vector<TMaterial const *>) -> std::tuple<SinglePod, SinglePod> // User's, Ship's
 					- Find among user's and ship's
-					- Extract into SinglePod
+					- Extract into respective SinglePod
 					- Save DB
-					- Return SinglePod
+					- Return SinglePod's
 				+ SetShipCustomMaterials(vector<uq_ptr<TMaterial const>>):
 					+ Merge and build replacement map
 					+ Return replacement map
@@ -797,7 +797,7 @@
 					+ Replace material in DB, via ReplaceCustomMaterial(move(new material)) -> uq_ptr<old material>
 					+ Call PreCustomMaterialUpdated on old and new pointers
 					+ Bake Undo material-specific lambda, moving old material into it
-						= private MaterialPalettesController::RestoreMaterial(TMaterial const *, uq_ptr<TMaterial const>)
+						+ private MaterialPalettesController::RestoreMaterial(TMaterial const *, uq_ptr<TMaterial const>)
 							+ Database::ReplaceCustomMaterial: replace new material with old uq_ptr
 							+ PreCustomMaterialUpdated 
 							+ Update material in palette via Browser::UpdateCustomMaterial(...)
@@ -824,26 +824,19 @@
 			- OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
 				! For "Delete checked"
 				- Ask user if sure
-				- Remove from DB via ExtractCustomMaterials, and get back SinglePod with those
-				- Ask controller if any in use, via Get[Structural|Electrical|Ropes]MaterialsInUse() -> std::set<XXXMaterial const *>
+				- Ask controller if any in use, via Get[Structural|Electrical|Ropes]MaterialsInUse(...) -> std::set<XXXMaterial const *> (-> shipSet)
 				- If at-least-one-in-use:
-					- TODO: see if below could be simplified with just 3-way question case and nop when delenda is empty
-					- If returned set is proper subset of delenda:
-						- Ask user if a) Remove from ship, b) Remove from delenda, c) abort
-						- If a: <nop>
-						- If b: prune delenda, zero ship set
-						- If c: abort
-					- Else (only deleting from ship's): 
-						- Ask user if a) Remove from ship, b) abort
-						- If a: <nop>
-						- If b: abort
+					- Ask user if a) Remove from ship, b) Remove from delenda, c) abort
+					- If a: <nop>; continue
+					- If b: prune delenda; zero shipSet; continue
+					- If c: abort
+				- If delenda empty: done
+				- Remove from DB via ExtractCustomMaterials, and get back two SinglePod's with those - user and ship
 				- Call PreCustomMaterialDeleted on each delenda pointer
 					- Like at SetShipCustomMaterials: if currently-picked materials among those being deleted, select null in WorkbenchState and browser
-				- Bake Undo material-specific lambda, moving SinglePod into it
-				- If ship set not empty:
-					- Remove from ship, via Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials(map with nullptr's, Undo material-specific lambda)
-				- Else:
-					- Controller::PushCustomMaterialUndoAction(Undo material-specific lambda)
+				- Bake Undo material-specific lambda, moving SinglePods into it
+					- TODOHERE: restores user's and ship's
+				- Call Controller.ReplaceMaterials
 				- Update palette, via Browser::RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
 
 		+ MaterialEditDialog: 
@@ -932,10 +925,10 @@
 					+ Test, incl. Undo
 
 	- TODOHERE: master list of all tasks:
-		- Check Discord feedback:
-			= Rusting
-				+ Exposure a little bit up
 		- Merge into custom_materials
+		- Send beta
+
+		- Remove (checked) workflow
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 
@@ -963,10 +956,13 @@
 			2. UndoStack doesn't know what a given (one or sequence of) Undo actions ends up dirtying
 				! Would need to be given a ModelDirtyState telling what would have gotten dirty with that change *in isolation*, which would be guaranteed to reflect
 				  dirtyness when applied backwards
-		- Creators synthesize an ActionDirtyEffect ModelDirtyState at Undo slot creation
-			- TODOHERE: not too easy, sometimes it's deep chained calls where at the bottom we figure out what's really dirty
-		- In MainFrame, when we restart after reloading the ship, we change all Undo actions' OriginalDirtyState to reflect cumulative effect of applying undo
-		  actions *backward* (last, last-1, ..., first)
+		- Option 1: Undo redesign: needs to know index at which we are in-sync with disk
+			- TODOHERE
+		- Option 2:
+			- Creators synthesize an ActionDirtyEffect ModelDirtyState at Undo slot creation
+				- TODOHERE: not too easy, sometimes it's deep chained calls where at the bottom we figure out what's really dirty
+			- In MainFrame, when we restart after reloading the ship, we change all Undo actions' OriginalDirtyState to reflect cumulative effect of applying undo
+			  actions *backward* (last, last-1, ..., first)
 
 
 ================================================================================================================================================================================

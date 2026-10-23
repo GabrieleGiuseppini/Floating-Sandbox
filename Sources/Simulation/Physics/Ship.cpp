@@ -4291,9 +4291,9 @@ void Ship::DecayPoints(
     {
         if (simulationParameters.RustAcceler8r != 0.0f)
         {
-            float constexpr NsExposed = 30.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+            float constexpr NsExposed = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
             mDecayRustExposedDryAlpha = powf(0.85f, simulationParameters.RustAcceler8r / NsExposed);
-            mDecayRustExposedWetAlpha = powf(0.75f, simulationParameters.RustAcceler8r / NsExposed);
+            mDecayRustExposedWetAlpha = powf(0.45f, simulationParameters.RustAcceler8r / NsExposed);
 
             float constexpr NsDamage = 4.25f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
             mDecayRustDamageDryAlpha = powf(0.50f, simulationParameters.RustAcceler8r / NsDamage);
@@ -4416,7 +4416,8 @@ void Ship::DecayPoints(
             * structuralMaterial.RustReceptivity;
         assert(betaRustExposed >= 0.0f && betaRustExposed <= 1.0f);
         // Cap rust - lower if wet
-        float const minRustExposed = 0.5f * (1.0f - isWet * 0.5f);
+        //float const minRustExposed = 0.5f * (1.0f - isWet * 0.5f);
+        float const minRustExposed = 0.0f;
         float const rustExposed = std::max(currentRust * (1.0f - betaRustExposed), minRustExposed);
 
         // 3) Rust by neighbors:

@@ -2179,6 +2179,11 @@
 		- Check Bandit ship for silt clouds
 			- Rusting 500
 
+	= ShipBuilder
+		- Marge it back into master
+
+	- Fork repo and start working on private
+
 	- New electrical elements: 
 		- Electrical material for explosions when powered
 			- TODO
