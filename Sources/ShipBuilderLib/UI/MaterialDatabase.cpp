@@ -101,8 +101,14 @@ std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const> typename Mat
         if (userMaterial.get() == oldMaterial)
         {
             // Found
+
+            // Swap
             auto old = std::move(userMaterial);
             userMaterial = std::move(newMaterial);
+
+            // Save DB
+            SaveDefaultUserDatabase();
+
             return old;
         }
     }
