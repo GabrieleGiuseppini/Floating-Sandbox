@@ -775,9 +775,8 @@
 			+ Replace event-based args in inline callbacks with vals
 				+ mOnXXXLayerMaterialSelected callbacks: take same args as interface
 			+ Implements IMaterialPaletteController
-			= cctor: 
-				- Controller getter [for reaching ship model, e.g. for replacing materials]
-				- UndoStack
+			+ cctor: 
+				+ Controller getter [for reaching ship model, e.g. for replacing materials]
 				+ WorkbenchState const & (for currently-selected materials)
 				+ DefaultMaterialDatabase [to boot 3 MaterialDatabase<T>'s]
 				+ Callback for material selected
@@ -792,7 +791,7 @@
 				+ MaterialPaletteBrowser<TLayer X 3>::SetShipCustomMaterials(from DB, result of pruning) [Replace all ship custom [vector]]
 				+ return MaterialsReplacementMap
 				+ Caller (MainFrame) uses MaterialsReplacementMap to mess with layers in-place within definition, using layers' helpers (or AllLayers/?), before giving definition to new controller
-			= OnEditCustomStructural/Electrical/RopesMaterial(TMaterial const *, registerKind)
+			+ OnEditCustomStructural/Electrical/RopesMaterial(TMaterial const *, registerKind)
 				+ Run dialog
 				+ If ok:
 					+ Make new material
@@ -810,7 +809,7 @@
 						+ Controller::StoreUndoAction()
 					+ Update material in palette via Browser::UpdateCustomMaterial(...)
 
-				= Tests:
+				+ Tests:
 					+ Edit is reflected in palette's text
 					+ Swaths change to new - x2x3
 					+ Undo w/no ship:
@@ -819,9 +818,10 @@
 						+ Swaths change to old - x2x3
 						+ Center of mass, total mass changes with material edit
 						+ Sampled material under cursor
-					- FIX: we see both materials after editing material in ship
-						- It's the ephemeral; tools have temp viz which is a clone of before
-						- Need to reset tools' state at material amend; assuming not in temp viz
+					+ FIX: we see both materials after editing material in ship
+						+ It's the ephemeral; tools have temp viz which is a clone of before
+						+ Need to reset tools' state at material amend; assuming not in temp viz
+							+ Should SuspendTool before replacing materials
 			- OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
 				! For "Delete checked"
 				- Ask user if sure
@@ -928,7 +928,9 @@
 					- Mark ship as dirty
 				+ Structural
 				- Electrical
+					- Test
 				- Ropes
+					- Test
 
 	- TODOHERE: master list of all tasks:
 		- Check Discord feedback:

@@ -202,6 +202,8 @@ public:
         TMaterialUndoAction && materialUndoAction,
         wxString && undoActionName)
     {
+        auto const scopedToolResumeState = SuspendTool();
+
         //
         // Take clone of current layer
         //
