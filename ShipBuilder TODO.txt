@@ -838,6 +838,7 @@
 				+ Call Controller.ReplaceMaterials
 				+ Update palette, via Browser::RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
 
+				- FIX: layout session points to non-existing cell
 				- Tests:
 					- Delete: all rows properly redrawn
 					- Undo w/out ship: 

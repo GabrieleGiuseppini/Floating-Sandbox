@@ -147,7 +147,7 @@ std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const> typename Mat
 }
 
 template<LayerType TLayer>
-std::tuple<std::vector<std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const>> &&, std::vector<std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const>> &&> MaterialDatabase<TLayer>::ExtractCustomMaterials(std::vector<TMaterial const *> const & materials)
+std::tuple<std::vector<std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const>>, std::vector<std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const>>> MaterialDatabase<TLayer>::ExtractCustomMaterials(std::vector<TMaterial const *> const & materials)
 {
     // Find among all
 

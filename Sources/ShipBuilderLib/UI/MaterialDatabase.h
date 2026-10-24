@@ -53,7 +53,7 @@ public:
 		TMaterial const * oldMaterial,
 		std::unique_ptr<TMaterial const> && newMaterial);
 
-	std::tuple<std::vector<std::unique_ptr<typename TMaterial const>> &&, std::vector<std::unique_ptr<typename TMaterial const>> &&> ExtractCustomMaterials(std::vector<TMaterial const *> const & materials);
+	std::tuple<std::vector<std::unique_ptr<typename TMaterial const>>, std::vector<std::unique_ptr<typename TMaterial const>>> ExtractCustomMaterials(std::vector<TMaterial const *> const & materials);
 
 private:
 
