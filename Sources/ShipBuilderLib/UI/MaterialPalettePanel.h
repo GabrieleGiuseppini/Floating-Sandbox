@@ -177,6 +177,7 @@ private:
     struct LayoutSession
     {
         // Row index (Subcategory only) => <Leftmost Stride Index, Leftmost Cell Index in that stride>
+        // Note: cell index points to leftmost cell changed; that cell might also not exist
         std::map<size_t, std::tuple<size_t, size_t>> DirtyBoundaries;
 
         void RecordDirtyBoundary(

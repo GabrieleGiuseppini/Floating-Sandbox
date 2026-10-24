@@ -248,18 +248,29 @@ std::any MaterialPalettePanel<TLayer>::RemoveCustomMaterial(TMaterial const * ma
     size_t const iRow = FindRowFor(material);
     size_t const iStride = FindStrideFor(material, mRows[iRow]);
 
-    auto & cells = mRows[iRow].Strides[iStride].Cells;
-    for (size_t c = 0; c < cells.size(); ++c)
+    auto & stride = mRows[iRow].Strides[iStride];
+    auto & cells = stride.Cells;
+    for (size_t c = 0; c < cells.size(); /*incremented in loop*/)
     {
         if (cells[c].Material == material)
         {
             PreDeleteCustomMaterialCell(cells[c]);
+
+            // Adjust stride's ship start index
+            if (c >= stride.iShipCustomStartIndex)
+            {
+                --stride.iShipCustomStartIndex;
+            }
 
             _layoutSession.RecordDirtyBoundary(iRow, iStride, c);
 
             cells.erase(cells.begin() + c);
 
             break;
+        }
+        else
+        {
+            ++c;
         }
     }
 
@@ -297,7 +308,7 @@ std::any MaterialPalettePanel<TLayer>::RemoveAllShipCustomMaterials(std::any lay
                     }
 
                     // Right after this stride we're dirty
-                    _layoutSession.RecordDirtyBoundary(r, s, stride.Cells.size() - 1);
+                    _layoutSession.RecordDirtyBoundary(r, s, stride.Cells.size());
                 }
             }
         }
@@ -855,7 +866,7 @@ void MaterialPalettePanel<TLayer>::LayoutAndRender(
 
             auto [startStrideIndex, startCellIndex] = layoutSession.DirtyBoundaries.at(iRow);
 
-            // Figure out where to start: points to end of previous cell
+            // Calculate end x of previous cell
             int currentX;
             if (startCellIndex > 0)
             {
@@ -1019,6 +1030,7 @@ void MaterialPalettePanel<TLayer>::RenderPanel(
     auto & dc = *dc_ptr;
 
     // Setup
+    int const dcWidth = dc.GetSize().GetWidth();
     dc.SetTextForeground(mTextForegroundColor);
 
     // Visit all rows
@@ -1037,15 +1049,37 @@ void MaterialPalettePanel<TLayer>::RenderPanel(
             auto [startStrideIndex, startCellIndex] = layoutSession.DirtyBoundaries.at(iRow);
 
             //
+            // Calculate end x of previous cell
+            //
+
+            int currentX;
+            if (startCellIndex > 0)
+            {
+                auto const & prevCell = row.Strides[startStrideIndex].Cells[startCellIndex - 1];
+                currentX = prevCell.Rect.x + prevCell.Rect.width;
+            }
+            else
+            {
+                // Cell is first of a stride
+                if (startStrideIndex == 0)
+                {
+                    currentX = InternalWindowMargin;
+                }
+                else
+                {
+                    auto const & prevCell = row.Strides[startStrideIndex - 1].Cells.back();
+                    currentX = prevCell.Rect.x + prevCell.Rect.width;
+                }
+            }
+
+            //
             // Clear
             //
 
-            Cell const & startCell = row.Strides[startStrideIndex].Cells[startCellIndex];
-
             wxRect const clearRect(
-                startCell.Rect.x,
+                currentX,
                 row.Rect.y,
-                row.Rect.width - startCell.Rect.x,
+                dcWidth - currentX,
                 row.Rect.height);
 
             dc.SetPen(*wxTRANSPARENT_PEN);
@@ -1080,7 +1114,7 @@ void MaterialPalettePanel<TLayer>::RenderPanel(
                 wxRect( // Clear to the end
                     row.Rect.x,
                     row.Rect.y,
-                    dc.GetSize().GetWidth() - row.Rect.x,
+                    dcWidth - row.Rect.x,
                     row.Rect.height));
 
             //

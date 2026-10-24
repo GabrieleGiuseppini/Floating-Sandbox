@@ -838,9 +838,11 @@
 				+ Call Controller.ReplaceMaterials
 				+ Update palette, via Browser::RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
 
-				- FIX: layout session points to non-existing cell
 				- Tests:
-					- Delete: all rows properly redrawn
+					- Layout:
+						- One in-between, different strides
+					- Delete when used by ship
+						- Verify new stride's StartShipIndex
 					- Undo w/out ship: 
 						- User's and ship's reappear in palette & in user DB
 					- Undo w/ ship: 
