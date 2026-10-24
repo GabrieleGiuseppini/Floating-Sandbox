@@ -241,6 +241,32 @@ std::any MaterialPalettePanel<TLayer>::AddCustomMaterial(TMaterial const * mater
 }
 
 template<LayerType TLayer>
+std::any MaterialPalettePanel<TLayer>::RemoveCustomMaterial(TMaterial const * material, std::any layoutSession)
+{
+    LayoutSession _layoutSession = std::any_cast<LayoutSession>(layoutSession);
+
+    size_t const iRow = FindRowFor(material);
+    size_t const iStride = FindStrideFor(material, mRows[iRow]);
+
+    auto & cells = mRows[iRow].Strides[iStride].Cells;
+    for (size_t c = 0; c < cells.size(); ++c)
+    {
+        if (cells[c].Material == material)
+        {
+            PreDeleteCustomMaterialCell(cells[c]);
+
+            _layoutSession.RecordDirtyBoundary(iRow, iStride, c);
+
+            cells.erase(cells.begin() + c);
+
+            break;
+        }
+    }
+
+    return _layoutSession;
+}
+
+template<LayerType TLayer>
 std::any MaterialPalettePanel<TLayer>::RemoveAllShipCustomMaterials(std::any layoutSession)
 {
     LayoutSession _layoutSession = std::any_cast<LayoutSession>(layoutSession);
@@ -265,30 +291,7 @@ std::any MaterialPalettePanel<TLayer>::RemoveAllShipCustomMaterials(std::any lay
 
                         Cell const & delendaCell = stride.Cells.back();
 
-                        assert(delendaCell.Kind == Cell::KindType::Material); // Wouldn't be in the "ship" section otherwise
-                        mFreeMaterialSampleBitmapIndices.push_back(delendaCell.MaterialSampleBitmapIndex);
-
-                        // Maintain selection count
-                        if (delendaCell.IsChecked)
-                        {
-                            if (delendaCell.CustomRegisterKind == CustomMaterialRegisterKindType::User)
-                            {
-                                assert(mCheckedUserCellsCount > 0);
-                                --mCheckedUserCellsCount;
-                            }
-                            else
-                            {
-                                assert(delendaCell.CustomRegisterKind == CustomMaterialRegisterKindType::Ship);
-                                assert(mCheckedShipCellsCount > 0);
-                                --mCheckedShipCellsCount;
-                            }
-                        }
-
-                        // Zero out currently-selected if it was this one
-                        if (mCurrentSelectedCellId == stride.Cells.back().Id)
-                        {
-                            mCurrentSelectedCellId = NoneCellId;
-                        }
+                        PreDeleteCustomMaterialCell(delendaCell);
 
                         stride.Cells.pop_back();
                     }
@@ -793,6 +796,35 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
     FinalizeMaterialCell(cell);
 
     return cellInsertIndex;
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::PreDeleteCustomMaterialCell(Cell const & cell)
+{
+    assert(cell.Kind == Cell::KindType::Material);
+    mFreeMaterialSampleBitmapIndices.push_back(cell.MaterialSampleBitmapIndex);
+
+    // Maintain selection count
+    if (cell.IsChecked)
+    {
+        if (cell.CustomRegisterKind == CustomMaterialRegisterKindType::User)
+        {
+            assert(mCheckedUserCellsCount > 0);
+            --mCheckedUserCellsCount;
+        }
+        else
+        {
+            assert(cell.CustomRegisterKind == CustomMaterialRegisterKindType::Ship);
+            assert(mCheckedShipCellsCount > 0);
+            --mCheckedShipCellsCount;
+        }
+    }
+
+    // Zero out currently-selected if it was this one
+    if (mCurrentSelectedCellId == cell.Id)
+    {
+        mCurrentSelectedCellId = NoneCellId;
+    }
 }
 
 template<LayerType TLayer>

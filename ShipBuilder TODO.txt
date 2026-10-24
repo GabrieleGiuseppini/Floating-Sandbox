@@ -489,12 +489,11 @@
 					+ Add to user DB
 					+ Add to palette (vector of one)
 			+ OnEditCustomXYZMaterial(XYZMaterial * material, RegisterKind)
-			- TODO: other workflows above
+			+ OnRemoveCustomXYZMaterials(...)
 
 		= MaterialPalettePanel<TLayer>: HEAVY REDESIGN
 			+ cctor:
 				+ IMaterialPaletteController<TLayer> (for workflows)
-
 			+ Hierarchy: 
 				+ SubCategoryRow: type=SubCategory|Separator
 					+ Meta:
@@ -518,7 +517,7 @@
 					+ Find SubCategoryRow such that type=MaterialGroups and SubCategory=CustomMaterial->SubCategory
 					+ Find MaterialStride such that SubCategoryBaseMaterialOrdinal=CustomMaterial->PaletteSubCategoryBaseMaterialOrdinal
 					- In stride's User|Ship vector, find cell such that type=Material and Material*=CustomMaterial*
-			= API for layout:
+			+ API for layout:
 				+ Initial:
 					+ StartDefaultMaterialsLayout()
 						+ Cleanup all
@@ -544,11 +543,11 @@
 					+ Render own cell
 					+ Refresh(false)
 
-				= All subsequent ones (custom):
+				+ All subsequent ones (custom):
 					+ StartCustomMaterialsLayout() -> LayoutSession
-					= All atomic ops, taking LayoutSession and returning LayoutSession - naming as "...CustomMaterial..."
+					+ All atomic ops, taking LayoutSession and returning LayoutSession - naming as "...CustomMaterial..."
 						! Op does op on cell, then calcs LayoutSession
-						= Ops (all take lookup args as args)
+						+ Ops (all take lookup args as args)
 							+ Add user/ship custom (one)
 								+ Lookup row, stride
 								+ Add to stride, at end
@@ -564,10 +563,10 @@
 								+ Test:
 									+ Go from ship with many to ship with less - verify layout adjusts
 									+ Go from ship with a few to ship with more - verify layout adjusts
-							- RemoveCustomMaterial(TMaterial const *, [User|Ship], LayoutSession) -> LayoutSession
-								- Remove from stride
-									- Refactor out cell deletion logic (image list index, checked cell count, etc.) from RemoveAllShipCustomMaterials
-								- Update LayoutSession accordingly
+							+ RemoveCustomMaterial(TMaterial const *, [User|Ship], LayoutSession) -> LayoutSession
+								+ Remove from stride
+									+ Refactor out cell deletion logic (image list index, checked cell count, etc.) from RemoveAllShipCustomMaterials
+								+ Update LayoutSession accordingly
 
 					+ EndCustomMaterialsLayout(LayoutSession)
 						+ Do all of the below at new LayoutAndRender(); this one just becomes calling that with LayoutSession
@@ -840,11 +839,12 @@
 				+ Update palette, via Browser::RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
 
 				- Tests:
+					- Delete: all rows properly redrawn
 					- Undo w/out ship: 
 						- User's and ship's reappear in palette & in user DB
 					- Undo w/ ship: 
 						- User's and ship's reappear in palette & in user DB
-						- Ship's deleted reappear in ship
+						- Ship's deleted reappear in ship, properly 
 
 		+ MaterialEditDialog: 
 			+ Two dialogs, two classes, one base with common code

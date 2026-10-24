@@ -210,6 +210,8 @@ private:
         size_t iRow,
         size_t iStride);
 
+    void PreDeleteCustomMaterialCell(Cell const & cell);
+
     void LayoutAndRender(
         LayoutSession const & layoutSession,
         bool doRenderSeparators);
