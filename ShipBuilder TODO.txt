@@ -838,9 +838,10 @@
 				+ Call Controller.ReplaceMaterials
 				+ Update palette, via Browser::RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
 
-				- Tests:
-					- Layout:
-						- One in-between, different strides
+				= Tests:
+					= Layout:
+						+ One in-between
+						- Different strides
 					- Delete when used by ship
 						- Verify new stride's StartShipIndex
 					- Undo w/out ship: 
@@ -940,6 +941,8 @@
 		- Re-test rope removal after fixing iterator
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
+	- Add RGB code to property grid
+		- GEt rid of thermal expansion coefficient
 
 	- Tests:
 

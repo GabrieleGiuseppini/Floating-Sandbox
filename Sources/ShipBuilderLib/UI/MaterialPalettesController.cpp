@@ -7,6 +7,8 @@
 
 #include <UILib/StandardSystemPaths.h>
 
+#include <Game/GameVersion.h>
+
 #include <wx/msgdlg.h>
 
 #include <algorithm>
@@ -393,7 +395,7 @@ void MaterialPalettesController::OnRemoveCustomMaterials(std::vector<typename La
         wxMessageDialog dialog(
             nullptr,
             _T("One or more of the materials you are about to delete are being used in the current ship. Do you want to keep these materials, or would you rather delete the corresponding particles instead?"),
-            _T("Materials in-use by Ship"),
+            ApplicationName,
             wxYES_NO | wxCANCEL | wxSTAY_ON_TOP | wxCENTRE);
 
         dialog.SetYesNoCancelLabels(

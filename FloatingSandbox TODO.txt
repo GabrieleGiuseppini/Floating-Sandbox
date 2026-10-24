@@ -2157,7 +2157,7 @@
 	+ Water-soluble cables	
 
 
-	- Feedback:
+	= Feedback:
 		- Rusting
 			- Hey Gabe, I'm sure your probably tired of hearing about the rusting by now but I do suggest whenever you get back or whenever you have the time to make the exposure rust go a little faster 
 			  then it is currently. It kind of needs that balance to where damage rust is faster then normal exposure rust is and I think the exposure rust should be faster but not as fast as the current public release to floating sandbox exposure rust. Sorry if this doesn't make sense but I just decided to put in my 2 cents after a day of testing it.
@@ -2200,9 +2200,36 @@
 			- Ship::UpdateAirAndWaterInflow:
 				- LeakingComposite maintains one pump power, but gets PumpFluidKindType from material
 				- We then switch on PumpFluidKindType
+		- Blinking lights
+			- Multiple cycle lengths
 
 	- Purge ships
 		- Make pack
+
+
+	- New NPCs from TimCan (cameo)
+		- Cameo category?
+
+	- Fix ScareFish: fishes should move away from locus
+
+	- New ephemeral particle like splashes but for air flying out of submerged parts venting air
+		- Large plumes
+
+
+
+
+
+
+
+
+	- Medium roadmap (before collision detection):
+		- Styles
+		- Optimization
+		- Fireworks
+		- Diver NPC
+		- Community Ships
+		- Interior layer, Floorplan layer
+		- Multiple electrical layers
 
 
 	- Reduce ApplyStaticPressureForces net force complexity
@@ -2212,17 +2239,36 @@
 			- Option 1: better combined score for NetForce and NetTorque
 
 
-	- New NPCs from TimCan (cameo)
-		- Cameo category?
-
-	- Fix ScareFish: fishes should move away from locus
-
-	- New ephemeral particle like splashes but for air flying out of submerged parts venting air
 
 	- When focusing on ship after ship moved in PAUSE, we focus on old position
 
 	- Pixelation/style:
 		- "Vanilla" mode vs "Voxel" mode
+		- Voxel:			
+			- Code things for pixelated:
+				- Tornadoes
+				- Lightning bolts
+				- Laser ray
+				- Ocean water contour
+
+
+
+	- Variable silt height 
+		- With depth, with bumpiness
+		- Shovel tool to change
+	- More variable oceanic waves
+	- Steam from heated material hitting water
+		- Also: steam from whistles
+	- Internal fires
+		- And smoke following air flows
+	- Light green when underwater
+	- New gadget: floaters
+		- Also as furniture item - how though?
+	- Watertight doors should stay put even after unpowered (or new type altogether)
+		- Or non-electric even, automatically without power
+	- Backgrounds; generated mountains
+
+
 
 	- Optimizations:
 		- 1: Split positions, velocities, and [static and/or dynamic] forces into x & y; run spring relaxation (& ocean floor collisions) and lights on it; reassemble
@@ -2353,8 +2399,6 @@
 		- Happens with the FS Birthday ship
 
 	- New materials (*)
-
-	- Watertight doors should stay put even after unpowered (or new type altogether)
 	
 	- Test: underwater lateral forces based on waves (derivative @ surface plus damper for depth)
 		- Just test feasibility
@@ -2793,6 +2837,7 @@
 		- DevIL: so's?
 
 - Marketing:
+	- Post about: https://castle.xyz/d/nLQAHAPd-PVH/floating-sandbox-v1-3
 	- www.floatingsandbox.com:
 		- Embed GameJolt Widget
 		- Talk about builder (w/screenshot) on main page
@@ -2863,8 +2908,6 @@
 	- Can the bubble tool be used to remove water from the ship? that could be pretty cool
 	- I wonder if that's possible to make the UI dark once the brightness of the game gets lower than a specific level just like your make the FPS counter white
 		+ Tools turning white at night
-	- Tornado
-		- Mixes swirl and grab
 	- Meteorites
 	- Earthquake
 	- Add circular zones around bombs when placing showing what the expected blast radius should be. The circle should change in size when settings are tweaked. Much better than crunching numbers to figure out what's gonna happen.
@@ -2908,7 +2951,6 @@
 		-selectable backgrounds
 		-lifeboat layer
 		-Volcanoes
-		-NPCs
 		-time travel
 		-torpedoes
 		-toggle camera to follow a ship with engines
@@ -3136,6 +3178,10 @@
 		- https://stackoverflow.com/questions/589064/how-to-enable-vertical-sync-in-opengl
 		! IS IT GONE BY NOW?
 
+- NPCs:
+	- NPCs playing music
+	- Captain
+
 - Simulation Optimizations:
 
 	= Computer calibration
@@ -3339,7 +3385,6 @@
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
-
 
 - Gfx:
 
