@@ -257,7 +257,7 @@ std::any MaterialPalettePanel<TLayer>::RemoveCustomMaterial(TMaterial const * ma
             PreDeleteCustomMaterialCell(cells[c]);
 
             // Adjust stride's ship start index
-            if (c >= stride.iShipCustomStartIndex)
+            if (c < stride.iShipCustomStartIndex)
             {
                 --stride.iShipCustomStartIndex;
             }
