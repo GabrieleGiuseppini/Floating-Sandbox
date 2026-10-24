@@ -27,13 +27,31 @@ MaterialDatabase<TLayer>::MaterialDatabase(
 }
 
 template<LayerType TLayer>
-typename MaterialDatabase<TLayer>::TMaterial const * MaterialDatabase<TLayer>::AddUserCustomMaterial(std::unique_ptr<TMaterial> && customMaterial)
+typename MaterialDatabase<TLayer>::TMaterial const * MaterialDatabase<TLayer>::AddUserCustomMaterial(std::unique_ptr<TMaterial const> && customMaterial)
 {
     mUserCustomMaterials.emplace_back(std::move(customMaterial));
 
     SaveDefaultUserDatabase();
 
     return mUserCustomMaterials.back().get();
+}
+
+template<LayerType TLayer>
+void MaterialDatabase<TLayer>::AddUserCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> && customMaterials)
+{
+    for (auto & uq : customMaterials)
+    {
+        mUserCustomMaterials.emplace_back(std::move(uq));
+    }
+}
+
+template<LayerType TLayer>
+void MaterialDatabase<TLayer>::AddShipCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> && customMaterials)
+{
+    for (auto & uq : customMaterials)
+    {
+        mShipCustomMaterials.emplace_back(std::move(uq));
+    }
 }
 
 template<LayerType TLayer>

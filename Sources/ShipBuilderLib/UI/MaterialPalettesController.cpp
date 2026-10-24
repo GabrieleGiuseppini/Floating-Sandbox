@@ -9,6 +9,7 @@
 
 #include <wx/msgdlg.h>
 
+#include <algorithm>
 #include <set>
 
 namespace ShipBuilder {
@@ -444,9 +445,61 @@ void MaterialPalettesController::OnRemoveCustomMaterials(std::vector<typename La
     // Remove from DB
     //
 
-    auto [removedUserMaterials, removedCustomMaterials] = GetDatabase<TLayerType>().ExtractCustomMaterials(customMaterials);
+    auto [removedUserMaterials, removedShipMaterials] = GetDatabase<TLayerType>().ExtractCustomMaterials(customMaterials);
 
-    // TODOHERE
+    //
+    // If any of these materials is current in the workbench state, synthesize a toggle to the new material
+    //
+
+    for (TMaterial const * delendumMaterial : customMaterials)
+    {
+        PreCustomMaterialDeleted<TLayerType>(delendumMaterial);
+    }
+
+    //
+    // Bake Undo action for material
+    //
+
+    auto materialUndoAction = [this, removedUserMaterials = std::move(removedUserMaterials), removedShipMaterials = std::move(removedShipMaterials)]() mutable
+        {
+            RestoreCustomMaterialsDeletionForUndo<TLayerType>(std::move(removedUserMaterials), std::move(removedShipMaterials));
+        };
+
+    //
+    // Replace in ship (if any)
+    //
+
+    wxString undoTitle;
+    if constexpr (TLayerType == LayerType::Structural)
+    {
+        undoTitle = _T("Structural Materials Delete");
+    }
+    else if constexpr (TLayerType == LayerType::Electrical)
+    {
+        undoTitle = _T("Electrical Materials Delete");
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::Ropes);
+        undoTitle = _T("Ropes Materials Delete");
+    }
+
+    std::map<TMaterial const *, TMaterial const *> shipMaterialsReplacementMap;
+    for (TMaterial const * sm : shipSet)
+    {
+        shipMaterialsReplacementMap.emplace(sm, nullptr);
+    }
+
+    controller.ReplaceCustomMaterials<TLayerType>(
+        shipMaterialsReplacementMap,
+        std::move(materialUndoAction),
+        std::move(undoTitle));
+
+    //
+    // Remove materials from palette
+    //
+
+    GetPaletteBrowser<TLayerType>().RemoveCustomMaterials(customMaterials);
 }
 
 template<LayerType TLayerType>
@@ -476,6 +529,50 @@ void MaterialPalettesController::RestoreCustomMaterialReplacementForUndo(
     //
 
     GetPaletteBrowser<TLayerType>().ReplaceCustomMaterial(oldCustomMaterialPtr, newCustomMaterialPtr);
+}
+
+template<LayerType TLayerType>
+void MaterialPalettesController::RestoreCustomMaterialsDeletionForUndo(
+    std::vector<std::unique_ptr<typename LayerTypeTraits<TLayerType>::material_type const>> && userCustomMaterials,
+    std::vector<std::unique_ptr<typename LayerTypeTraits<TLayerType>::material_type const>> && shipCustomMaterials)
+{
+    using TMaterial = typename LayerTypeTraits<TLayerType>::material_type;
+
+    // Save pointers
+
+    std::vector<TMaterial const *> userCustomMaterialPtrs;
+    std::transform(
+        userCustomMaterials.cbegin(),
+        userCustomMaterials.cend(),
+        std::back_inserter(userCustomMaterialPtrs),
+        [](auto & uq_ptr) -> TMaterial const *
+        {
+            return uq_ptr.get();
+        });
+
+    std::vector<TMaterial const *> shipCustomMaterialPtrs;
+    std::transform(
+        shipCustomMaterials.cbegin(),
+        shipCustomMaterials.cend(),
+        std::back_inserter(shipCustomMaterialPtrs),
+        [](auto & uq_ptr) -> TMaterial const *
+        {
+            return uq_ptr.get();
+        });
+
+    //
+    // Re-add materials to DB
+    //
+
+    GetDatabase<TLayerType>().AddUserCustomMaterials(std::move(userCustomMaterials));
+    GetDatabase<TLayerType>().AddShipCustomMaterials(std::move(shipCustomMaterials));
+
+    //
+    // Re-add materials to palettes
+    //
+
+    GetPaletteBrowser<TLayerType>().AddUserCustomMaterials(userCustomMaterialPtrs);
+    GetPaletteBrowser<TLayerType>().AddShipCustomMaterials(shipCustomMaterialPtrs);
 }
 
 template<LayerType TLayerType>

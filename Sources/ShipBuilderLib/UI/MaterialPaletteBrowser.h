@@ -98,11 +98,19 @@ public:
 
     void AddUserCustomMaterials(std::vector<TMaterial const *> const & customMaterials);
 
+    void AddShipCustomMaterials(std::vector<TMaterial const *> const & customMaterials);
+
     void SetShipCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> const & shipCustomMaterials);
 
     void ReplaceCustomMaterial(TMaterial const * oldMaterial, TMaterial const * newMaterial);
 
+    void RemoveCustomMaterials(std::vector<TMaterial const *> const & customMaterials);
+
 private:
+
+    void AddCustomMaterials(
+        std::vector<TMaterial const *> const & customMaterials,
+        CustomMaterialRegisterKindType registerKind);
 
     MaterialPalettePanel<TLayer> * CreateCategoryPanel(
         wxWindow * parent,

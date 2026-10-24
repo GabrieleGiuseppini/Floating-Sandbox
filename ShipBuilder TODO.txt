@@ -631,7 +631,7 @@
 			+ Initial layout:
 				+ Kinda as now, using InitialLayout APIs
 
-			= Ops exposed (all forwarded to panel, most with layout guards):
+			+ Ops exposed (all forwarded to panel, most with layout guards):
 				! Browser provides larger ops, as it's browser who orchestrates layout
 				+ AddCustomMaterials(vector<TMaterial*>, RegistryKind)
 					+ Organize materials by category
@@ -660,14 +660,14 @@
 						+ panel-> Add ship one by one, if any
 						+ panel-> End custom layout
 						+ Layout() // for H scrollbar
-				- RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
-					- Organize materials by category
-					- For each _our_ category:
-						- Find panel for category
-						- panel-> Start custom layout
-						- panel-> RemoveCustomMaterial
-						- panel-> End custom layout
-						- Layout() // for H scrollbar
+				+ RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
+					+ Organize materials by category
+					= For each _delenda_ category:
+						+ Find panel for category
+						+ panel-> Start custom layout
+						+ panel-> RemoveCustomMaterial
+						+ panel-> End custom layout
+						+ Layout() // for H scrollbar
 
 			+ Handle events from Panel:
 				+ fsCheckedStateChange
@@ -831,12 +831,20 @@
 					+ If c: abort
 				+ If delenda empty: done
 				+ Remove from DB via ExtractCustomMaterials, and get back two SinglePod's with those - user and ship
-				- Call PreCustomMaterialDeleted on each delenda pointer
-					- Like at SetShipCustomMaterials: if currently-picked materials among those being deleted, select null in WorkbenchState and browser
-				- Bake Undo material-specific lambda, moving SinglePods into it
-					- TODOHERE: restores user's and ship's
-				- Call Controller.ReplaceMaterials
-				- Update palette, via Browser::RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
+				+ Call PreCustomMaterialDeleted on each delenda pointer
+					+ Like at SetShipCustomMaterials: if currently-picked materials among those being deleted, select null in WorkbenchState and browser
+				+ Bake Undo material-specific lambda, moving SinglePods into it
+					+ Add both to DB, user vs ship
+					+ Add both to palette, user vs ship
+				+ Call Controller.ReplaceMaterials
+				+ Update palette, via Browser::RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
+
+				- Tests:
+					- Undo w/out ship: 
+						- User's and ship's reappear in palette & in user DB
+					- Undo w/ ship: 
+						- User's and ship's reappear in palette & in user DB
+						- Ship's deleted reappear in ship
 
 		+ MaterialEditDialog: 
 			+ Two dialogs, two classes, one base with common code

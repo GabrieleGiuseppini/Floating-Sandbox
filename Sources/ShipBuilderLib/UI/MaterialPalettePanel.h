@@ -143,8 +143,9 @@ public:
     void EndDefaultMaterialsLayout();
 
     std::any StartCustomMaterialsLayout();
-    std::any RemoveAllShipCustomMaterials(std::any layoutSession);
     std::any AddCustomMaterial(TMaterial const * material, CustomMaterialRegisterKindType registerKind, std::any layoutSession);
+    std::any RemoveCustomMaterial(TMaterial const * material, std::any layoutSession);
+    std::any RemoveAllShipCustomMaterials(std::any layoutSession);
     void EndCustomMaterialsLayout(std::any layoutSession);
 
     void ReplaceCustomMaterial(TMaterial const * oldMaterial, TMaterial const * newMaterial);

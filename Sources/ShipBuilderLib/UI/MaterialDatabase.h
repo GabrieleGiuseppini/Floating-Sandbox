@@ -36,12 +36,16 @@ public:
 		return mUserCustomMaterials;
 	}
 
-	TMaterial const * AddUserCustomMaterial(std::unique_ptr<TMaterial> && customMaterial);
-
 	std::vector<std::unique_ptr<typename TMaterial const>> const & GetShipCustomMaterials() const
 	{
 		return mShipCustomMaterials;
 	}
+
+	TMaterial const * AddUserCustomMaterial(std::unique_ptr<TMaterial const> && customMaterial);
+
+	void AddUserCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> && customMaterials);
+
+	void AddShipCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> && customMaterials);
 
 	MaterialReplacementMap<TMaterial> SetShipCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> && shipMaterials);
 

@@ -235,6 +235,12 @@ std::any MaterialPalettePanel<TLayer>::StartCustomMaterialsLayout()
 }
 
 template<LayerType TLayer>
+std::any MaterialPalettePanel<TLayer>::AddCustomMaterial(TMaterial const * material, CustomMaterialRegisterKindType registerKind, std::any layoutSession)
+{
+    return AppendCustomMaterial(material, registerKind, std::any_cast<LayoutSession>(layoutSession));
+}
+
+template<LayerType TLayer>
 std::any MaterialPalettePanel<TLayer>::RemoveAllShipCustomMaterials(std::any layoutSession)
 {
     LayoutSession _layoutSession = std::any_cast<LayoutSession>(layoutSession);
@@ -295,12 +301,6 @@ std::any MaterialPalettePanel<TLayer>::RemoveAllShipCustomMaterials(std::any lay
     }
 
     return _layoutSession;
-}
-
-template<LayerType TLayer>
-std::any MaterialPalettePanel<TLayer>::AddCustomMaterial(TMaterial const * material, CustomMaterialRegisterKindType registerKind, std::any layoutSession)
-{
-    return AppendCustomMaterial(material, registerKind, std::any_cast<LayoutSession>(layoutSession));
 }
 
 template<LayerType TLayer>

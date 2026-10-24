@@ -133,6 +133,11 @@ private:
         std::unique_ptr<typename LayerTypeTraits<TLayerType>::material_type const> && customMaterialToRestore);
 
     template<LayerType TLayerType>
+    void RestoreCustomMaterialsDeletionForUndo(
+        std::vector<std::unique_ptr<typename LayerTypeTraits<TLayerType>::material_type const>> && userCustomMaterials,
+        std::vector<std::unique_ptr<typename LayerTypeTraits<TLayerType>::material_type const>> && shipCustomMaterials);
+
+    template<LayerType TLayerType>
     void PreCustomMaterialUpdated(
         typename LayerTypeTraits<TLayerType>::material_type const * oldCustomMaterial,
         typename LayerTypeTraits<TLayerType>::material_type const * newCustomMaterial);
