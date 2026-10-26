@@ -426,6 +426,8 @@ struct SimulationParameters
     static float constexpr MinWaveSmoothnessAdjustment = 0.0f;
     static float constexpr MaxWaveSmoothnessAdjustment = 1.0f;
 
+    static float constexpr WaterPlumeReferenceHeight = 5.0f; // On average
+
     // Storm
 
     std::chrono::minutes StormRate;

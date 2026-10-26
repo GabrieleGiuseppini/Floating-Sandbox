@@ -62,6 +62,7 @@ public:
         Sparkle,
         WakeBubble,
         WaterFoam,
+        WaterPlume,
         WaterSplash
     };
 
@@ -522,6 +523,18 @@ private:
             }
         };
 
+        struct WaterPlumeState
+        {
+            float LifetimeProgress;
+            bool HasEmerged;
+
+            WaterPlumeState()
+                : LifetimeProgress(0.0f)
+                , HasEmerged(false)
+            {
+            }
+        };
+
         struct WaterSplashState
         {
             float MinScale;
@@ -557,6 +570,7 @@ private:
         SparkleState Sparkle;
         WakeBubbleState WakeBubble;
         WaterFoamState WaterFoam;
+        WaterPlumeState WaterPlume;
         WaterSplashState WaterSplash;
 
         EphemeralState(AirBubbleState airBubble)
@@ -590,6 +604,11 @@ private:
         EphemeralState(WaterFoamState waterFoam)
             : WaterFoam(waterFoam)
         {}
+
+        EphemeralState(WaterPlumeState waterPlume)
+            : WaterPlume(waterPlume)
+        {
+        }
 
         EphemeralState(WaterSplashState waterSplash)
             : WaterSplash(waterSplash)
@@ -1124,6 +1143,15 @@ public:
         float maxSimulationLifetime,
         float maxVisibilityAlpha,
         float visibilityHaste,
+        PlaneId planeId,
+        SimulationParameters const & simulationParameters);
+
+    ElementIndex CreateEphemeralParticleWaterPlume(
+        vec2f const & position,
+        float depth,
+        vec2f const & velocity,
+        float currentSimulationTime,
+        float maxSimulationLifetime,
         PlaneId planeId,
         SimulationParameters const & simulationParameters);
 

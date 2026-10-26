@@ -242,6 +242,19 @@
 },
 
 {
+	"group_name": "WaterPlume",
+	"has_own_ambient_light": false,
+	"frames":[
+		{	
+			"world_width": 5.0,
+			"world_height": 5.0,
+			"anchor_offset_y": 190,
+			"frame_name_pattern": "water_plume_\\d+"
+		}
+	]
+},
+
+{
 	"group_name": "WaterSplash",
 	"has_own_ambient_light": false,
 	"frames":[

@@ -883,6 +883,14 @@ private:
         float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
+    void InternalSpawnWaterPlume(
+        vec2f const & position,
+        float depth,
+        float strength, // 0.0 -> 1.0
+        PlaneId planeId,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
+
     inline size_t GetPointConnectedComponentSize(ElementIndex pointIndex) const noexcept
     {
         auto const connCompId = mPoints.GetConnectedComponentId(pointIndex);

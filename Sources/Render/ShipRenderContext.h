@@ -1102,6 +1102,93 @@ public:
             ambientLightSensitivity);
     }
 
+    inline void UploadGenericMipMappedTextureRenderSpecification_HFlip(
+        PlaneId planeId,
+        float personalitySeed,
+        GameTextureDatabases::GenericMipMappedTextureGroups textureGroup,
+        vec2f const & centerPosition,
+        FloatSize scale,
+        float alpha)
+    {
+        // Choose frame
+        size_t const frameCount = mGenericMipMappedTextureAtlasMetadata.GetFrameCount(textureGroup);
+        TextureFrameIndex const frameIndex = std::min(
+            static_cast<TextureFrameIndex>(personalitySeed * static_cast<float>(frameCount)),
+            static_cast<TextureFrameIndex>(frameCount - 1));
+        TextureAtlasFrameMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase> const & frame =
+            mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups>(textureGroup, frameIndex));
+
+        // Choose H flip
+        float const hFlip = (personalitySeed < 0.5f)
+            ? 1.0f
+            : -1.0f;
+
+        //
+        // Populate the texture quad
+        //
+
+        float const hAbove = scale.height * (frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y);
+        float const hBelow = scale.height * (-frame.FrameMetadata.AnchorCenterWorld.y);
+        float const wLeft = scale.width * (-frame.FrameMetadata.AnchorCenterWorld.x) * hFlip;
+        float const wRight = scale.width * (frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x) * hFlip;
+
+        float const ambientLightSensitivity =
+            frame.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
+
+        // Append vertices
+
+        // Get this plane's quad buffer
+        size_t const planeIndex = static_cast<size_t>(planeId);
+        assert(planeIndex < mGenericMipMappedTexturePlaneQuadBuffers.size()); // Pre-sized
+        auto & quad = mGenericMipMappedTexturePlaneQuadBuffers[planeIndex].quadBuffer.emplace_back();
+
+        float const fPlaneId = static_cast<float>(planeId);
+
+        // Top-left
+        quad.topLeft = GenericTextureVertex(
+            centerPosition,
+            vec2f(wLeft, hAbove),
+            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
+            fPlaneId,
+            1.0f,
+            0.0f,
+            alpha,
+            ambientLightSensitivity);
+
+        // Top-Right
+        quad.topRight = GenericTextureVertex(
+            centerPosition,
+            vec2f(wRight, hAbove),
+            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
+            fPlaneId,
+            1.0f,
+            0.0f,
+            alpha,
+            ambientLightSensitivity);
+
+        // Bottom-left
+        quad.bottomLeft = GenericTextureVertex(
+            centerPosition,
+            vec2f(wLeft, hBelow),
+            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
+            fPlaneId,
+            1.0f,
+            0.0f,
+            alpha,
+            ambientLightSensitivity);
+
+        // Bottom-right
+        quad.bottomRight = GenericTextureVertex(
+            centerPosition,
+            vec2f(wRight, hBelow),
+            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
+            fPlaneId,
+            1.0f,
+            0.0f,
+            alpha,
+            ambientLightSensitivity);
+    }
+
     //
     // Highlights
     //
