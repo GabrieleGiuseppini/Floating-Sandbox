@@ -526,10 +526,19 @@ private:
         struct WaterPlumeState
         {
             float LifetimeProgress;
+            vec2f VerticalAxis;
             bool HasEmerged;
 
             WaterPlumeState()
                 : LifetimeProgress(0.0f)
+                , VerticalAxis()
+                , HasEmerged(false)
+            {
+            }
+
+            WaterPlumeState(vec2f const & verticalAxis)
+                : LifetimeProgress(0.0f)
+                , VerticalAxis(verticalAxis)
                 , HasEmerged(false)
             {
             }
@@ -1150,6 +1159,7 @@ public:
         vec2f const & position,
         float depth,
         vec2f const & velocity,
+        vec2f const & verticalAxis,
         float currentSimulationTime,
         float maxSimulationLifetime,
         PlaneId planeId,

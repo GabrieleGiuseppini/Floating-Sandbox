@@ -1107,6 +1107,7 @@ public:
         float personalitySeed,
         GameTextureDatabases::GenericMipMappedTextureGroups textureGroup,
         vec2f const & centerPosition,
+        vec2f const & verticalAxis,
         FloatSize scale,
         float alpha)
     {
@@ -1127,10 +1128,17 @@ public:
         // Populate the texture quad
         //
 
-        float const hAbove = scale.height * (frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y);
-        float const hBelow = scale.height * (-frame.FrameMetadata.AnchorCenterWorld.y);
-        float const wLeft = scale.width * (-frame.FrameMetadata.AnchorCenterWorld.x) * hFlip;
-        float const wRight = scale.width * (frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x) * hFlip;
+        vec2f const horizontalAxisScaled = verticalAxis.to_perpendicular() * scale.width * hFlip; // Points left
+        vec2f const left = horizontalAxisScaled * (-frame.FrameMetadata.AnchorCenterWorld.x);
+        vec2f const right = horizontalAxisScaled * (frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x);
+
+        vec2f const verticalAxisScaled = verticalAxis * scale.height;
+        vec2f const top = verticalAxisScaled * (frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y);
+        vec2f const topLeft = top + left;
+        vec2f const topRight = top + right;
+        vec2f const bottom = verticalAxisScaled * (-frame.FrameMetadata.AnchorCenterWorld.y);
+        vec2f const bottomLeft = bottom + left;
+        vec2f const bottomRight = bottom + right;
 
         float const ambientLightSensitivity =
             frame.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
@@ -1147,7 +1155,7 @@ public:
         // Top-left
         quad.topLeft = GenericTextureVertex(
             centerPosition,
-            vec2f(wLeft, hAbove),
+            topLeft,
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
             fPlaneId,
             1.0f,
@@ -1158,7 +1166,7 @@ public:
         // Top-Right
         quad.topRight = GenericTextureVertex(
             centerPosition,
-            vec2f(wRight, hAbove),
+            topRight,
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
             fPlaneId,
             1.0f,
@@ -1169,7 +1177,7 @@ public:
         // Bottom-left
         quad.bottomLeft = GenericTextureVertex(
             centerPosition,
-            vec2f(wLeft, hBelow),
+            bottomLeft,
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
             fPlaneId,
             1.0f,
@@ -1180,7 +1188,7 @@ public:
         // Bottom-right
         quad.bottomRight = GenericTextureVertex(
             centerPosition,
-            vec2f(wRight, hBelow),
+            bottomRight,
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
             fPlaneId,
             1.0f,

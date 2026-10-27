@@ -2212,10 +2212,10 @@
 
 	- Fix ScareFish: fishes should move away from locus
 
-	- New ephemeral particle like splashes but for air flying out of submerged parts venting air
+	= New ephemeral particle like splashes but for air flying out of submerged parts venting air
 		! Large plumes
 		! Material, velocity dimensioned so that once ejected vertically up, alayws reaches a max altitude
-		- Impl:
+		= Impl:
 			+ SimulationParameter for WaterPlumeReferenceHeight
 			- @ Air egress: if depth between 0.0 and Max (5.0), and outgoing air quantity "sizeable":
 				+ Threshold: measure: 10/9/8
@@ -2226,9 +2226,6 @@
 						+ Vertical direction, up
 						+ Velocity: based off material's mass and gravity, so reaches MaxHeight slightly randomized
 							+ MaxLifetime also from this
-						- TODO: account for drag?
-					- If too many:
-						- Option 1: spawn with random probability
 				- Update side-effect comments at Ship::Update for creating eph particles				
 			= Points: new eph particle: WaterPlume
 				+ State:
@@ -2251,10 +2248,17 @@
 					- TODOHERE: use another accumulation buffer; same mechanics as with air bubbles
 			+ FIX: should die at highest point
 			+ FIX: texture anchor is at bottom, change in DB
+			- FIX: horiz variance given by depth
+				- And angled
+					- Put angle in state
 			- FIX: reduce seeing it underwater
 				- TODO: HOW?
+					- Spawn @ surface or above a certain depth (e.g. 1.0)
+			- FIX: drag?
 
 			- Remove logs @ Ship.cpp::Intake
+			- Take care of all TODO's
+			- Merge back into custom_materials
 
 
 

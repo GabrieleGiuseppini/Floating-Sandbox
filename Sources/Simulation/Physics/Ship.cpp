@@ -2785,7 +2785,7 @@ void Ship::UpdateAirAndWaterInflow(
                             // we can get away with just checking for internal pressure vs external atmospheric
                             //
 
-                            float constexpr MinDeltaPressureForPlumes = 3.5f;
+                            float constexpr MinDeltaPressureForPlumes = 3.0f;
                             float constexpr MaxDeltaPressureForPlumes = 20.0f;
                             float const deltaPressureForPlumes = internalAirPressure - atmosphericPressureAtPoint;
                             if (deltaPressureForPlumes > MinDeltaPressureForPlumes
@@ -2794,7 +2794,7 @@ void Ship::UpdateAirAndWaterInflow(
                                 && pointDepth <= 4.0f
                                 && pointHasSprings
                                 && !isPointRope
-                                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.2f)) // TODOTEST: change to cumulated quantity
+                                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.4f)) // TODOTEST: change to cumulated quantity
                             {
                                 float const strength = 0.05f + 0.95f * LinearStep(MinDeltaPressureForPlumes, MaxDeltaPressureForPlumes, deltaPressureForPlumes);
                                 // TODOTEST
@@ -5287,7 +5287,8 @@ void Ship::InternalSpawnWaterPlume(
     // Decide max height
     // TODOTEST: see if can get rid of SimulationParameters::WaterPlumeReferenceHeight
     //float const maxHeight = strength * SimulationParameters::WaterPlumeReferenceHeight * 2.0f;
-    float const maxHeight = strength * 3.5f;
+    //float const maxHeight = depth + strength * 2.0f;
+    float const maxHeight = depth / 2.0f + strength * 2.0f;
 
     // Calculate initial vertical upward velocity to reach height
     float const v0y = std::sqrtf(2.0f * SimulationParameters::GravityMagnitude * maxHeight);
@@ -5296,16 +5297,26 @@ void Ship::InternalSpawnWaterPlume(
     float const maxLifetime = (3.5f / 4.0f) * 2.0f * v0y / SimulationParameters::GravityMagnitude;
 
     // Randomize position
-    float constexpr RandomPositionRadius = 0.5f;
-    vec2f const plumePosition = vec2f(
-        position.x + GameRandomEngine::GetInstance().GenerateUniformReal(-RandomPositionRadius, RandomPositionRadius),
-        position.y);
+    //float constexpr RandomPositionRadius = 0.5f;
+    //vec2f const plumePosition = vec2f(
+    //    position.x + GameRandomEngine::GetInstance().GenerateUniformReal(-RandomPositionRadius, RandomPositionRadius),
+    //    position.y);
+    vec2f const plumePosition = position;
+
+    // Randomize direction
+    float constexpr MaxRot = Pi<float> / 11.0f;
+    float const directionOffsetAngleCcw = Clamp(
+        GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, MaxRot),
+        -MaxRot,
+        MaxRot);
+    vec2f const particleDirection = vec2f(0.0f, 1.0f).rotate(directionOffsetAngleCcw);
 
     // Spawn
     mPoints.CreateEphemeralParticleWaterPlume(
         plumePosition,
         depth,
-        vec2f(0.0f, v0y),
+        particleDirection * v0y,
+        particleDirection,
         currentSimulationTime,
         maxLifetime,
         planeId,

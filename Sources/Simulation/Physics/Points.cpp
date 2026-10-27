@@ -882,6 +882,7 @@ ElementIndex Points::CreateEphemeralParticleWaterPlume(
     vec2f const & position,
     float depth,
     vec2f const & velocity,
+    vec2f const & verticalAxis,
     float currentSimulationTime,
     float maxSimulationLifetime,
     PlaneId planeId,
@@ -954,7 +955,7 @@ ElementIndex Points::CreateEphemeralParticleWaterPlume(
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].Type = EphemeralType::WaterPlume;
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].StartSimulationTime = currentSimulationTime;
     mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].MaxSimulationLifetime = maxSimulationLifetime;
-    mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].State = EphemeralState::WaterPlumeState();
+    mEphemeralParticleAttributesBuffer[ephemeralParticleIndex].State = EphemeralState::WaterPlumeState(verticalAxis);
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
@@ -3006,9 +3007,9 @@ void Points::UploadEphemeralParticles(
                     //    : 1.0f + (1.0f - LinearStep(0.5f, 1.0f, lifetimeProgress)) * MaxOverheight;
 
                     // Calculate V scale
-                    float const ScaleLifetimePeak1 = 0.5f;
+                    float const ScaleLifetimePeak1 = 0.35f;
                     float const ScaleLifetimePeak2 = 0.6f;
-                    float constexpr MaxOverheight = 0.8f;
+                    float constexpr MaxOverheight = 0.5f;
                     float vScale;
                     if (lifetimeProgress < ScaleLifetimePeak1)
                     {
@@ -3025,7 +3026,7 @@ void Points::UploadEphemeralParticles(
 
                     // Calculate alpha
                     float const AlphaLifetimePeak1 = 0.1f;
-                    float const AlphaLifetimePeak2 = 0.5f;
+                    float const AlphaLifetimePeak2 = 0.6f;
                     float alpha;
                     if (lifetimeProgress < AlphaLifetimePeak1)
                     {
@@ -3046,8 +3047,9 @@ void Points::UploadEphemeralParticles(
                         GetRandomNormalizedUniformPersonalitySeed(pointIndex),
                         GameTextureDatabases::GenericMipMappedTextureGroups::WaterPlume,
                         GetPosition(pointIndex),
+                        state.VerticalAxis,
                         FloatSize(1.0f, vScale),
-                        alpha * 0.2f);
+                        alpha * 0.4f);
 
                     break;
                 }
