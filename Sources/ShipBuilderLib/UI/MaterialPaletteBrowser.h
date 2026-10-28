@@ -89,6 +89,10 @@ public:
         return mIsDocked;
     }
 
+    bool IsAnyCustomMaterialChecked() const;
+
+    std::vector<TMaterial const *> GetAllCustomMaterialsChecked() const;
+
     std::optional<typename TMaterial::VariantOverridesType> RunNewCustomMaterial(typename TMaterial::VariantOverridesType const & startingOverrides, TMaterial const * baseMaterial);
     std::optional<typename TMaterial::VariantOverridesType> RunEditCustomMaterial(typename TMaterial::VariantOverridesType const & startingOverrides, TMaterial const * baseMaterial);
 
@@ -193,6 +197,7 @@ private:
     wxButton * mClearSelectionButton;
     wxButton * mDeleteSelectedButton;
     wxButton * mImportSelectedShipButton;
+    wxButton * mExportAllSelectedButton;
 
     //
     // State

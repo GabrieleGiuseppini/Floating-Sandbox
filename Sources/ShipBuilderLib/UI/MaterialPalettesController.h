@@ -97,6 +97,8 @@ public:
     // IMaterialPalettesController
     //
 
+    bool IsAnyCustomMaterialChecked() const override;
+
     void OnStructuralMaterialSelected(StructuralMaterial const * material, MaterialPlaneType plane) override;
     void OnElectricalMaterialSelected(ElectricalMaterial const * material, MaterialPlaneType plane) override;
     void OnRopesMaterialSelected(StructuralMaterial const * material, MaterialPlaneType plane) override;
@@ -116,6 +118,8 @@ public:
     void OnImportCustomStructuralShipMaterials(std::vector<StructuralMaterial const *> customMaterials) override;
     void OnImportCustomElectricalShipMaterials(std::vector<ElectricalMaterial const *> customMaterials) override;
     void OnImportCustomRopesShipMaterials(std::vector<StructuralMaterial const *> customMaterials) override;
+
+    void OnExportCheckedCustomMaterials() const override;
 
 private:
 
@@ -192,7 +196,7 @@ private:
     }
 
     template<LayerType TLayerType>
-    MaterialPaletteBrowser<TLayerType> & GetPaletteBrowser()
+    MaterialPaletteBrowser<TLayerType> const & GetPaletteBrowser() const
     {
         if constexpr (TLayerType == LayerType::Structural)
         {
@@ -207,6 +211,13 @@ private:
             static_assert(TLayerType == LayerType::Ropes);
             return *mRopesLayerMaterialPaletteBrowser;
         }
+    }
+
+    template<LayerType TLayerType>
+    MaterialPaletteBrowser<TLayerType> & GetPaletteBrowser()
+    {
+        return const_cast<MaterialPaletteBrowser<TLayerType> &>(
+            static_cast<const MaterialPalettesController *>(this)->GetPaletteBrowser<TLayerType>());
     }
 
 private:

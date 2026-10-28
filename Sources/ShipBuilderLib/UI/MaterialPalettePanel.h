@@ -134,6 +134,10 @@ public:
         return mCheckedShipCellsCount > 0;
     }
 
+    std::vector<TMaterial const *> GetCheckedMaterials() const;
+
+    std::vector<TMaterial const *> GetCheckedShipMaterials() const;
+
     void StartDefaultMaterialsLayout();
     void StartNewSubcategoryRow(std::string const & subCategory);
     void StartNewMaterialStride(unsigned int subCategoryBaseMaterialOrdinal);
@@ -153,8 +157,6 @@ public:
     void SetSelected(TMaterial const * material);
 
     void SetAllCustomMaterialsIsChecked(bool value);
-    std::vector<TMaterial const *> GetCheckedMaterials() const;
-    std::vector<TMaterial const *> GetCheckedShipMaterials() const;
 
 private:
 

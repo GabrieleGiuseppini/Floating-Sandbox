@@ -251,6 +251,29 @@ void MaterialDatabase<TLayer>::MoveUserCustomMaterialsToShip(std::vector<TMateri
     }
 }
 
+template<LayerType TLayer>
+void MaterialDatabase<TLayer>::ExportCustomMaterials(
+    std::vector<StructuralMaterial const *> const & customStructuralMaterials,
+    std::vector<ElectricalMaterial const *> const & customElectricalMaterials,
+    std::vector<StructuralMaterial const *> const & customRopesMaterials,
+    std::filesystem::path const & databaseFilepath)
+{
+    picojson::object rootJsonObject;
+
+    // Initialize DB file
+    InitializeDatabaseFile(rootJsonObject);
+
+    // Append materials
+    AppendMaterialsToDatabaseFile<StructuralMaterial const *, LayerType::Structural>(customStructuralMaterials, rootJsonObject);
+    AppendMaterialsToDatabaseFile<ElectricalMaterial const *, LayerType::Electrical>(customElectricalMaterials, rootJsonObject);
+    AppendMaterialsToDatabaseFile<StructuralMaterial const *, LayerType::Ropes>(customRopesMaterials, rootJsonObject);
+
+    // Save
+    GameAssetManager::SaveJson(
+        picojson::value(rootJsonObject),
+        databaseFilepath);
+}
+
 //////////////////////////////////////////////////
 
 template<LayerType TLayer>
@@ -308,7 +331,7 @@ typename MaterialDatabase<TLayer>::SinglePod MaterialDatabase<TLayer>::LoadUserD
 
     SinglePod pod;
 
-    std::optional<picojson::array> const & materialsJsonArray = Utils::GetOptionalJsonArray(rootJsonObject, MakeLayerTypeMaterialsNodeName());
+    std::optional<picojson::array> const & materialsJsonArray = Utils::GetOptionalJsonArray(rootJsonObject, MakeLayerTypeMaterialsNodeName<TLayer>());
     if (materialsJsonArray.has_value())
     {
         for (auto const & materialJsonValue : *materialsJsonArray)
@@ -342,16 +365,37 @@ void MaterialDatabase<TLayer>::SaveUserMaterials(
     SinglePod const & materials,
     std::filesystem::path const & databaseFilepath)
 {
+    // Load existing database, if any
     picojson::object rootJsonObject = LoadUserDatabaseJson(databaseFilepath);
 
+    // Initialize DB file
+    InitializeDatabaseFile(rootJsonObject);
+
+    // Append materials
+    AppendMaterialsToDatabaseFile<std::unique_ptr<TMaterial const>, TLayer>(materials, rootJsonObject);
+
+    // Save
+    GameAssetManager::SaveJson(
+        picojson::value(rootJsonObject),
+        databaseFilepath);
+}
+
+template<LayerType TLayer>
+void MaterialDatabase<TLayer>::InitializeDatabaseFile(picojson::object & rootJsonObject)
+{
     // Set version
     rootJsonObject["_version"] = picojson::value(CurrentGameVersion.ToString());
 
     // Set timestamp
     rootJsonObject["_saved_at"] = picojson::value(Utils::MakeNowDateAndTimeString());
+}
 
-    // Materials
-
+template<LayerType TLayer>
+template<typename TMaterialOrUqPtr, LayerType TLayerSection>
+static void MaterialDatabase<TLayer>::AppendMaterialsToDatabaseFile(
+    std::vector<TMaterialOrUqPtr> const & materials,
+    picojson::object & rootJsonObject)
+{
     picojson::array materialsJsonArray;
     for (auto const & material : materials)
     {
@@ -364,12 +408,9 @@ void MaterialDatabase<TLayer>::SaveUserMaterials(
         materialsJsonArray.push_back(picojson::value(materialJsonObject));
     }
 
-    rootJsonObject[MakeLayerTypeMaterialsNodeName()] = picojson::value(materialsJsonArray);
-
-    GameAssetManager::SaveJson(
-        picojson::value(rootJsonObject),
-        databaseFilepath);
+    rootJsonObject[MakeLayerTypeMaterialsNodeName<TLayerSection>()] = picojson::value(materialsJsonArray);
 }
+
 
 template<LayerType TLayer>
 picojson::object MaterialDatabase<TLayer>::LoadUserDatabaseJson(std::filesystem::path const & databaseFilepath)

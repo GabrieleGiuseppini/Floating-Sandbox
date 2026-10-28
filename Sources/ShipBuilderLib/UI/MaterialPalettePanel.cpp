@@ -8,8 +8,6 @@
 #include <UILib/SharedUIResources.h>
 #include <UILib/WxHelpers.h>
 
-#include <Core/Log.h>
-
 #include <wx/app.h>
 
 #include <cassert>
@@ -124,6 +122,53 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     Connect(this->GetId(), wxEVT_MOTION, (wxObjectEventFunction)&PanelClass::OnMouseMoved);
     Connect(this->GetId(), wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PanelClass::OnMouseLeftDown);
     Connect(this->GetId(), wxEVT_LEFT_UP, (wxObjectEventFunction)&PanelClass::OnMouseLeftUp);
+}
+
+template<LayerType TLayer>
+std::vector<typename MaterialPalettePanel<TLayer>::TMaterial const *> MaterialPalettePanel<TLayer>::GetCheckedMaterials() const
+{
+    std::vector<TMaterial const *> checkedMaterials;
+    for (auto const & row : mRows)
+    {
+        for (auto const & stride : row.Strides)
+        {
+            for (auto const & cell : stride.Cells)
+            {
+                if (cell.Kind == Cell::KindType::Material
+                    && cell.IsChecked)
+                {
+                    assert(cell.Material != nullptr);
+                    checkedMaterials.emplace_back(cell.Material);
+                }
+            }
+        }
+    }
+
+    return checkedMaterials;
+}
+
+template<LayerType TLayer>
+std::vector<typename MaterialPalettePanel<TLayer>::TMaterial const *> MaterialPalettePanel<TLayer>::GetCheckedShipMaterials() const
+{
+    std::vector<TMaterial const *> checkedMaterials;
+    for (auto const & row : mRows)
+    {
+        for (auto const & stride : row.Strides)
+        {
+            for (auto const & cell : stride.Cells)
+            {
+                if (cell.Kind == Cell::KindType::Material
+                    && cell.IsChecked
+                    && cell.CustomRegisterKind == CustomMaterialRegisterKindType::Ship)
+                {
+                    assert(cell.Material != nullptr);
+                    checkedMaterials.emplace_back(cell.Material);
+                }
+            }
+        }
+    }
+
+    return checkedMaterials;
 }
 
 template<LayerType TLayer>
@@ -459,53 +504,6 @@ void MaterialPalettePanel<TLayer>::SetAllCustomMaterialsIsChecked(bool value)
 
         ProcessWindowEvent(eventToFire);
     }
-}
-
-template<LayerType TLayer>
-std::vector<typename MaterialPalettePanel<TLayer>::TMaterial const *> MaterialPalettePanel<TLayer>::GetCheckedMaterials() const
-{
-    std::vector<TMaterial const *> checkedMaterials;
-    for (auto const & row : mRows)
-    {
-        for (auto const & stride : row.Strides)
-        {
-            for (auto const & cell : stride.Cells)
-            {
-                if (cell.Kind == Cell::KindType::Material
-                    && cell.IsChecked)
-                {
-                    assert(cell.Material != nullptr);
-                    checkedMaterials.emplace_back(cell.Material);
-                }
-            }
-        }
-    }
-
-    return checkedMaterials;
-}
-
-template<LayerType TLayer>
-std::vector<typename MaterialPalettePanel<TLayer>::TMaterial const *> MaterialPalettePanel<TLayer>::GetCheckedShipMaterials() const
-{
-    std::vector<TMaterial const *> checkedMaterials;
-    for (auto const & row : mRows)
-    {
-        for (auto const & stride : row.Strides)
-        {
-            for (auto const & cell : stride.Cells)
-            {
-                if (cell.Kind == Cell::KindType::Material
-                    && cell.IsChecked
-                    && cell.CustomRegisterKind == CustomMaterialRegisterKindType::Ship)
-                {
-                    assert(cell.Material != nullptr);
-                    checkedMaterials.emplace_back(cell.Material);
-                }
-            }
-        }
-    }
-
-    return checkedMaterials;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

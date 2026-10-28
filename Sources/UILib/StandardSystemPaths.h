@@ -30,6 +30,8 @@ public:
 
     std::filesystem::path GetUserGameSettingsRootFolderPath() const;
 
+    std::filesystem::path GetUserDesktopFolderPath() const;
+
     std::filesystem::path GetDiagnosticsFolderPath(bool ensureExists = false) const;
 
 private:

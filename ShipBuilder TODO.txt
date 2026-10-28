@@ -236,6 +236,12 @@
 				+ Just set of pointers to be moved back in DB from User to Ship
 					+ Save User DB
 			+ Update palette
+		= Export custom user and/or ship materials to ad-hoc json
+			! Works on all layers, all categories - so enabled iff at least one material checked in in any layer, any category
+			- User checks boxes, and then "Export All Selected"
+			- File SaveAs dialog for .json
+			- If ok:
+				- Call DB::Export(materials, file_path)
 		- Importing custom materials from a json or from a ship into user's
 			- User chooses from list, filtered by distincting with user's
 				- If none available, popup message
@@ -243,14 +249,7 @@
 				- Add to DB
 					- Save DB
 				- Update palette
-				- Populate Undo with materials 
-		- Export custom user and/or ship materials to ad-hoc json
-			- TODO: decide: just all (thus regardless of checks) or only checked?
-			- TODO: decide: user only, or also ship?
-			- OLD:
-			- User checks boxes, and then "Export Selected"
-			- File SaveAs dialog => save
-			
+				- Populate Undo with materials 			
 
 	- Arch:
 		- MaterialDatabase<TLayer>: aggregation of three sets (Default, User, Ship)
@@ -461,6 +460,8 @@
 				+ MoveUserCustomMaterialsToShip(vector<TMaterial const *>)
 					+ Find and move
 					+ Save DB
+				+ ExportCustomMaterials(vector<TMaterial const *> X 3, file_path)
+					+ Make helpers to decompose SaveUserMaterials
 
 			+ Ser/Deset for user custom materials
 				+ parent color_key and VariantOverridesType
@@ -485,6 +486,7 @@
 				+ SetShipCustomMaterials: verify pruned (inside DB) and returned replacement map
 
 		= IMaterialPaletteController<TLayer>: for UI to talk back to controller
+			+ IsAnyCustomMaterialChecked() -> bool
 			+ OnMaterialSelected
 			+ OnNewUserCustomXYZMaterial(XYZMaterial * baseMaterial)
 				+ Create overrides
@@ -495,6 +497,7 @@
 			+ OnEditCustomXYZMaterial(XYZMaterial * material, RegisterKind)
 			+ OnRemoveCustomXYZMaterials(...)
 			+ OnImportCustomXYZShipMaterials(...)
+			+ OnExportCheckedCustomMaterials()
 
 		= MaterialPalettePanel<TLayer>: HEAVY REDESIGN
 			+ cctor:
@@ -633,6 +636,8 @@
 				+ Create default category panel
 				+ Add User's (via existing AddUserCustom[vector])
 
+			+ vector<TMaterial const *> GetAllCustomMaterialsChecked() const
+
 			+ Initial layout:
 				+ Kinda as now, using InitialLayout APIs
 
@@ -688,7 +693,7 @@
 					+ ReconciliateUIWithCheckedItems()
 						+ Check current_panel->IsAnyChecked and reconciliate
 
-			- Multi-element ops:
+			= Multi-element ops:
 				+ Prelim:
 					+ private helper: GetCurrentlyShownPanel() -> panel *
 						+ Goes through mCategoryPanelsContainerSizer and finds the (only) one that's shown
@@ -714,15 +719,14 @@
 					+ Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedShipMaterials()
 					+ Call onto controller with that vector
 					+ Recon: enabled==any *ship* checked
+				+ Export All Selected
+					+ Call onto controller with no args - OnExportCheckedCustomMaterials()
+					+ Recon: enabled iff palettesController::IsAnyCustomMaterialChecked
 
 				- TODOHERE: following needs spec refining
 				- Import [From File - depends on other Import]
 					- Opens dialog for .shp and .json
 					- TODO				
-				- Export
-					- TODO: if we agree with workflow that this is about _all_ materials, regardless of checked state
-					! Exports all custom materials
-					- TODO
 
 			+ Make it dockable
 				! When docked:
@@ -878,6 +882,12 @@
 						+ Save DB
 					+ Update palette: Browser.MoveUserCustomMaterialsToShip(vector<TMaterial const *>)
 				+ Update palette: Browser.MoveShipCustomMaterialsToUser(vector<TMaterial const *>)
+			= OnExportCheckedCustomMaterials()
+				+ Get three vector<TMaterial const *> from three browsers - GetAllCustomMaterialsChecked()
+				- File SaveAs dialog for .json
+				- If ok:
+					- Call DB::ExportCustomMaterials(materials X 3, file_path)
+
 
 		+ MaterialEditDialog: 
 			+ Two dialogs, two classes, one base with common code
@@ -965,6 +975,13 @@
 					+ Test, incl. Undo
 
 	- TODOHERE: master list of all tasks:
+		- Export workflow
+			- Tests
+				- Recon: different layer
+				- DB content
+					- Just current user's (regression test)
+					- One layer, each
+					- All layers
 
 	- Finalize layout of "Checking/Selected" buttons' area in Browser
 

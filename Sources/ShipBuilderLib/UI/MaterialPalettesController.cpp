@@ -9,6 +9,7 @@
 
 #include <Game/GameVersion.h>
 
+#include <wx/filedlg.h>
 #include <wx/msgdlg.h>
 
 #include <algorithm>
@@ -152,6 +153,12 @@ bool MaterialPalettesController::CanLoseFocus() const
     }
 }
 
+bool MaterialPalettesController::IsAnyCustomMaterialChecked() const
+{
+    return GetPaletteBrowser<LayerType::Structural>().IsAnyCustomMaterialChecked()
+        || GetPaletteBrowser<LayerType::Electrical>().IsAnyCustomMaterialChecked()
+        || GetPaletteBrowser<LayerType::Ropes>().IsAnyCustomMaterialChecked();
+}
 void MaterialPalettesController::OnStructuralMaterialSelected(
     StructuralMaterial const * material,
     MaterialPlaneType plane)
@@ -231,6 +238,38 @@ void MaterialPalettesController::OnImportCustomElectricalShipMaterials(std::vect
 void MaterialPalettesController::OnImportCustomRopesShipMaterials(std::vector<StructuralMaterial const *> customMaterials)
 {
     OnImportCustomShipMaterials<LayerType::Ropes>(std::move(customMaterials));
+}
+
+void MaterialPalettesController::OnExportCheckedCustomMaterials() const
+{
+    //
+    // Ask path
+    //
+
+    wxFileDialog saveAsDialog(
+        nullptr,
+        _("Save custom materials"),
+        StandardSystemPaths::GetInstance().GetUserDesktopFolderPath().string()
+            + std::filesystem::path::preferred_separator, // See https://forums.wxwidgets.org/viewtopic.php?t=42293
+        "my_custom_materials.json",
+        _("Custom material files") + wxS(" (*.json"),
+        wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
+        wxDefaultPosition,
+        wxDefaultSize);
+
+    auto const res = saveAsDialog.ShowModal();
+    if (res == wxID_OK)
+    {
+        //
+        // Get checked materials from all layers
+        //
+
+        std::vector<StructuralMaterial const *> structuralMaterials = GetPaletteBrowser<LayerType::Structural>().GetAllCustomMaterialsChecked();
+        std::vector<ElectricalMaterial const *> electricalMaterials = GetPaletteBrowser<LayerType::Electrical>().GetAllCustomMaterialsChecked();
+        std::vector<StructuralMaterial const *> ropesMaterials = GetPaletteBrowser<LayerType::Ropes>().GetAllCustomMaterialsChecked();
+
+        // TODOHERE
+    }
 }
 
 ////////////////////////////////////////////////////////////

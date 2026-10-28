@@ -63,6 +63,11 @@ std::filesystem::path StandardSystemPaths::GetUserGameSettingsRootFolderPath() c
     return GetUserGameRootFolderPath() / "Settings";
 }
 
+std::filesystem::path StandardSystemPaths::GetUserDesktopFolderPath() const
+{
+    return std::filesystem::path(wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir_Desktop).ToStdString());
+}
+
 std::filesystem::path StandardSystemPaths::GetDiagnosticsFolderPath(bool ensureExists) const
 {
     auto const folderPath = GetUserGameRootFolderPath() / "Diagnostics";

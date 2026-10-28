@@ -18,6 +18,8 @@ namespace ShipBuilder {
  */
 struct IMaterialPalettesController
 {
+    virtual bool IsAnyCustomMaterialChecked() const = 0;
+
     virtual void OnStructuralMaterialSelected(StructuralMaterial const * material, MaterialPlaneType plane) = 0;
     virtual void OnElectricalMaterialSelected(ElectricalMaterial const * material, MaterialPlaneType plane) = 0;
     virtual void OnRopesMaterialSelected(StructuralMaterial const * material, MaterialPlaneType plane) = 0;
@@ -37,6 +39,8 @@ struct IMaterialPalettesController
     virtual void OnImportCustomStructuralShipMaterials(std::vector<StructuralMaterial const *> customMaterials) = 0;
     virtual void OnImportCustomElectricalShipMaterials(std::vector<ElectricalMaterial const *> customMaterials) = 0;
     virtual void OnImportCustomRopesShipMaterials(std::vector<StructuralMaterial const *> customMaterials) = 0;
+
+    virtual void OnExportCheckedCustomMaterials() const = 0;
 };
 
 }

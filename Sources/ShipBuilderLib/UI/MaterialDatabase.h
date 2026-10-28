@@ -58,6 +58,12 @@ public:
 	void MoveShipCustomMaterialsToUser(std::vector<TMaterial const *> const & shipMaterials);
 	void MoveUserCustomMaterialsToShip(std::vector<TMaterial const *> const & userMaterials);
 
+	static void ExportCustomMaterials(
+		std::vector<StructuralMaterial const *> const & customStructuralMaterials,
+		std::vector<ElectricalMaterial const *> const & customElectricalMaterials,
+		std::vector<StructuralMaterial const *> const & customRopesMaterials,
+		std::filesystem::path const & databaseFilepath);
+
 private:
 
 	using SinglePod = typename std::vector<std::unique_ptr<TMaterial const>>;
@@ -74,14 +80,22 @@ private:
 		SinglePod const & materials,
 		std::filesystem::path const & databaseFilepath);
 
+	static void InitializeDatabaseFile(picojson::object & rootJsonObject);
+
+	template<typename TMaterialOrUqPtr, LayerType TLayerSection>
+	static void AppendMaterialsToDatabaseFile(
+		std::vector<TMaterialOrUqPtr> const & materials,
+		picojson::object & rootJsonObject);
+
 	static picojson::object LoadUserDatabaseJson(std::filesystem::path const & databaseFilepath);
 
 	std::filesystem::path MakeDefaultUserDatabaseFilePath() const;
 	std::filesystem::path MakeDefaultUserDatabaseBackupFilePath() const;
 
+	template<LayerType TLayerSection>
 	static std::string MakeLayerTypeMaterialsNodeName()
 	{
-		return "custom_" + LayerTypeToStr_snake(TLayer) + "_materials";
+		return "custom_" + LayerTypeToStr_snake(TLayerSection) + "_materials";
 	}
 
 private:

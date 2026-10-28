@@ -509,6 +509,27 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                         wxALIGN_CENTRE);
                 }
 
+                {
+                    mExportAllSelectedButton = new wxButton(this, wxID_ANY, _("Export All Selected"), wxDefaultPosition, wxDefaultSize);
+                    mExportAllSelectedButton->SetToolTip(_("Export all custom materials to a file, so that other users may import them into their ShipBuilder."));
+
+                    mExportAllSelectedButton->Bind(
+                        wxEVT_BUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            mMaterialPalettesController.OnExportCheckedCustomMaterials();
+
+                            // Make us regain focus, or else we lose focus loss notification
+                            this->SetFocus();
+                        });
+
+                    gridSizer->Add(
+                        mExportAllSelectedButton,
+                        wxGBPosition(2, 0),
+                        wxGBSpan(1, 1),
+                        wxALIGN_CENTRE);
+                }
+
                 WxHelpers::MakeAllRowsExpandable(gridSizer);
 
                 hSizer->Add(gridSizer, 0, wxEXPAND);
@@ -632,6 +653,32 @@ template<LayerType TLayer>
 void MaterialPaletteBrowser<TLayer>::Close()
 {
     Hide();
+}
+
+template<LayerType TLayer>
+bool MaterialPaletteBrowser<TLayer>::IsAnyCustomMaterialChecked() const
+{
+    for (auto const & it : mCategoryPanelsByCategory)
+    {
+        if (it.second->IsAnyChecked())
+            return true;
+    }
+
+    return false;
+}
+
+template<LayerType TLayer>
+std::vector<typename MaterialPaletteBrowser<TLayer>::TMaterial const *> MaterialPaletteBrowser<TLayer>::GetAllCustomMaterialsChecked() const
+{
+    std::vector<typename MaterialPaletteBrowser<TLayer>::TMaterial const *> checkedMaterials;
+
+    for (auto const & it : mCategoryPanelsByCategory)
+    {
+        auto panelChecked = it.second->GetCheckedMaterials();
+        checkedMaterials.insert(std::end(checkedMaterials), std::begin(panelChecked), std::end(panelChecked));
+    }
+
+    return checkedMaterials;
 }
 
 template<LayerType TLayer>
@@ -1581,6 +1628,7 @@ void MaterialPaletteBrowser<TLayer>::ReconciliateUIWithPanelCheckedState(Materia
     mClearSelectionButton->Enable(panel->IsAnyChecked());
     mDeleteSelectedButton->Enable(panel->IsAnyChecked());
     mImportSelectedShipButton->Enable(panel->IsAnyShipChecked());
+    mExportAllSelectedButton->Enable(mMaterialPalettesController.IsAnyCustomMaterialChecked());
 }
 
 template<LayerType TLayer>
