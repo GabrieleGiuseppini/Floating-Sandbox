@@ -119,7 +119,7 @@
 		+ Release
 =======
 
-- Custom materials:
+= Custom materials:
 	! Gist:
 		! SB: materials created and their pointers just used in structural layer
 		! Deser: returns custom materials just for lifetime; structural layer populated with pointers to those
@@ -251,8 +251,8 @@
 				- Update palette
 				- Populate Undo with materials 			
 
-	- Arch:
-		- MaterialDatabase<TLayer>: aggregation of three sets (Default, User, Ship)
+	! Arch:
+		+ MaterialDatabase<TLayer>: aggregation of three sets (Default, User, Ship)
 			- Only place where all material uq_ptr's live
 				- Model doesn't have Ship's
 			- Takes care of ser/deser of user custom materials
@@ -260,7 +260,7 @@
 					- Materialization from json takes DefaultMaterialDatabase and produces variants
 			- Takes care of distincting where needed
 			- Unit tests for ops
-		- MVC:
+		+ MVC:
 			- MaterialPalettesController: single controller for all layer types
 				- Owned by MainFrame
 				- Owns 3 MaterialDatabase<TLayer> and 3 MaterialPalette<TLayer>
@@ -890,7 +890,40 @@
 				+ File Open dialog for .json
 					+ Refactor creation of dialog
 				- If ok:
-					- TODOHERE
+					- CustomMaterialsPod loadedPod;
+					- Load
+						- From ship:
+							- Deserializer::Load
+							- If error:
+								- Popup error
+								- return
+							- If loadedPod empty:
+								- Message: "The TODO ship has no custom materials."
+								- return
+							- Steal pod
+						- From DB:
+							- BaseDB::LoadCustomMaterialsFile(filepath) -> CustomMaterialsPod
+							- Steal pod
+					- Filter distinct from DB
+						- TODOHERE: how does caller know which are dupe's, other than subtracting? And need to split pod
+						- Call x3 DB<LayerType>::FilterCustomMaterialsWithUser(single pod) -> single pod
+							- TODO: refactor DB's SetShipCustomMaterials: export equivalency comparison ("IsEquivalentCustomMaterial")
+					- If none after filtering:
+						- Message: "TODO"
+						- return
+					- Create & open dialog for choosing
+						- Dialog has 3 lists, checkboxes with materials, dupes are disabled and say "(DUPLICATED)"
+						- Dialog has OK and Cancel, and Select All and Clear All
+						- Dialog returns TODO for chosen
+					- If aborted:
+						- return
+					- Else:
+						- Add to DB
+							- Save DB
+						- Update palette
+						- Populate Undo with materials
+							- Need just pointers for plain removal
+							- DB: Remove user's
 
 
 		+ MaterialEditDialog: 
@@ -981,7 +1014,6 @@
 	- TODOHERE: master list of all tasks:
 		- Import
 			- Tests:
-				- Button layout
 
 	- Finalize layout of "Checking/Selected" buttons' area in Browser
 		- Grid?
