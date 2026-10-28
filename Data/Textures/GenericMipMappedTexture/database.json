@@ -246,8 +246,8 @@
 	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"world_width": 4.0,
-			"world_height": 4.0,
+			"world_width": 3.0,
+			"world_height": 3.0,
 			"anchor_offset_y": 210,
 			"frame_name_pattern": "water_plume_\\d+"
 		}

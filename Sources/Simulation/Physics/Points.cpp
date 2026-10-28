@@ -82,6 +82,7 @@ void Points::Add(
     mEffectiveAirBuffer.emplace_back(internalAirInEquivalentWaterHeight); // We start at temperature=Temperature0
 
     mCumulatedOutflownUnderwaterAirBuffer.emplace_back(0.0f);
+    mCumulatedEmittedWaterPlumeBuffer.emplace_back(0.0f);
     mLeakingCompositeBuffer.emplace_back(LeakingComposite(isStructurallyLeaking));
     if (isStructurallyLeaking)
         SetStructurallyLeaking(pointIndex);
@@ -3024,32 +3025,36 @@ void Points::UploadEphemeralParticles(
                         vScale = 1.0f + (1.0f - LinearStep(ScaleLifetimePeak2, 1.0f, lifetimeProgress)) * MaxOverheight;
                     }
 
-                    // Calculate alpha
-                    float const AlphaLifetimePeak1 = 0.1f;
-                    float const AlphaLifetimePeak2 = 0.6f;
-                    float alpha;
-                    if (lifetimeProgress < AlphaLifetimePeak1)
-                    {
-                        alpha = LinearStep(0.0f, AlphaLifetimePeak1, lifetimeProgress);
-                    }
-                    else if (lifetimeProgress < AlphaLifetimePeak2)
-                    {
-                        alpha = 1.0f;
-                    }
-                    else
-                    {
-                        alpha = 1.0f - LinearStep(AlphaLifetimePeak2, 1.0f, lifetimeProgress);
-                    }
+                    //// Calculate alpha
+                    //float const AlphaLifetimePeak1 = 0.08f;
+                    //float const AlphaLifetimePeak2 = 0.92f;
+                    //float alpha;
+                    //if (lifetimeProgress < AlphaLifetimePeak1)
+                    //{
+                    //    alpha = LinearStep(0.0f, AlphaLifetimePeak1, lifetimeProgress);
+                    //}
+                    //else if (lifetimeProgress < AlphaLifetimePeak2)
+                    //{
+                    //    alpha = 1.0f;
+                    //}
+                    //else
+                    //{
+                    //    alpha = 1.0f - LinearStep(AlphaLifetimePeak2, 1.0f, lifetimeProgress);
+                    //}
+
+                    // Calculate alpha: ~parabolic with progress
+                    float const alpha =
+                        SmoothStep(0.0f, 0.05f, lifetimeProgress)
+                        - SmoothStep(0.5f, 1.0f, lifetimeProgress);
 
                     // Upload plume
-                    shipRenderContext.UploadGenericMipMappedTextureRenderSpecification_HFlip(
+                    shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                         GetPlaneId(pointIndex),
                         GetRandomNormalizedUniformPersonalitySeed(pointIndex),
                         GameTextureDatabases::GenericMipMappedTextureGroups::WaterPlume,
                         GetPosition(pointIndex),
-                        state.VerticalAxis,
-                        FloatSize(1.0f, vScale),
-                        alpha * 0.4f);
+                        vScale,
+                        alpha * 0.5f);
 
                     break;
                 }

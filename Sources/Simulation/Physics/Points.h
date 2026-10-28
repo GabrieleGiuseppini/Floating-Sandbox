@@ -840,6 +840,7 @@ public:
         , mAirMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mEffectiveAirBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mCumulatedOutflownUnderwaterAirBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mCumulatedEmittedWaterPlumeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mFluidDiffusionAlgorithmVariablesBuffer(mAlignedShipPointCount)
         , mLeakingCompositeBuffer(mBufferElementCount, shipPointCount, LeakingComposite(false))
         , mFactoryIsStructurallyLeakingBuffer(mBufferElementCount, shipPointCount, false)
@@ -1956,6 +1957,16 @@ public:
         mCumulatedOutflownUnderwaterAirBuffer[pointElementIndex] = value;
     }
 
+    float GetCumulatedEmittedWaterPlume(ElementIndex pointElementIndex) const
+    {
+        return mCumulatedEmittedWaterPlumeBuffer[pointElementIndex];
+    }
+
+    void SetCumulatedEmittedWaterPlume(ElementIndex pointElementIndex, float value)
+    {
+        mCumulatedEmittedWaterPlumeBuffer[pointElementIndex] = value;
+    }
+
     FluidDiffusionAlgorithmVariables * ResetFluidDiffusionAlgorithmVariablesBuffer()
     {
         // Dirty...yeah
@@ -2646,12 +2657,20 @@ private:
             cumulatedOutflownUnderwaterAirThresholdForAirBubbles);
     }
 
+    static inline float RandomizeCumulatedEmittedWaterPlume(float cumulatedEmittedWaterPlumeThresholdForWaterPlumes)
+    {
+        return GameRandomEngine::GetInstance().GenerateUniformReal(
+            0.0f,
+            cumulatedEmittedWaterPlumeThresholdForWaterPlumes);
+    }
+
     inline void SetStructurallyLeaking(ElementIndex pointElementIndex)
     {
         mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak = 1.0f;
 
         // Randomize the initial air pressure outflown, so that air bubbles won't come out all at the same moment
         mCumulatedOutflownUnderwaterAirBuffer[pointElementIndex] = RandomizeCumulatedOutflownUnderwaterAir(mCurrentCumulatedOutflownUnderwaterAirThresholdForAirBubbles);
+        mCumulatedEmittedWaterPlumeBuffer[pointElementIndex] = RandomizeCumulatedEmittedWaterPlume(4.0f); // TODOHERE
     }
 
     inline ElementIndex PointIndexToEphemeralParticleIndex(ElementIndex pointElementIndex) const
@@ -2812,6 +2831,7 @@ private:
     // Total amount of air lost when underwater, which has not yet been
     // utilized for air bubbles
     Buffer<float> mCumulatedOutflownUnderwaterAirBuffer;
+    Buffer<float> mCumulatedEmittedWaterPlumeBuffer;
 
     // Work buffer for water and air diffusion algorithms
     Buffer<FluidDiffusionAlgorithmVariables> mFluidDiffusionAlgorithmVariablesBuffer;

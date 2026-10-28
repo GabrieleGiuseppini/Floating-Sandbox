@@ -2793,19 +2793,13 @@ void Ship::UpdateAirAndWaterInflow(
                                 //&& pointDepth <= SimulationParameters::WaterPlumeReferenceHeight
                                 && pointDepth <= 4.0f
                                 && pointHasSprings
-                                && !isPointRope
-                                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.4f)) // TODOTEST: change to cumulated quantity
+                                && !isPointRope)
                             {
                                 float const strength = 0.05f + 0.95f * LinearStep(MinDeltaPressureForPlumes, MaxDeltaPressureForPlumes, deltaPressureForPlumes);
-                                // TODOTEST
-                                LogMessage(deltaPressureForPlumes, " -> ", strength);
-                                InternalSpawnWaterPlume(
-                                    mPoints.GetPosition(pointIndex),
-                                    pointDepth,
-                                    strength,
-                                    mPoints.GetPlaneId(pointIndex),
-                                    currentSimulationTime,
-                                    simulationParameters);
+
+                                mPoints.SetCumulatedEmittedWaterPlume(
+                                    pointIndex,
+                                    mPoints.GetCumulatedEmittedWaterPlume(pointIndex) + strength);
                             }
                         }
 
@@ -2888,6 +2882,37 @@ void Ship::UpdateAirAndWaterInflow(
                 {
                     // No conditions for bubble, reset
                     mPoints.SetCumulatedOutflownUnderwaterAir(
+                        pointIndex,
+                        0.0f);
+                }
+            }
+
+            float constexpr CumulatedOutflownUnderwaterAirThresholdForAirBubbles = 4.0f;
+            auto const currentCumulatedEmittedWaterPlume = mPoints.GetCumulatedEmittedWaterPlume(pointIndex);
+            if (currentCumulatedEmittedWaterPlume > CumulatedOutflownUnderwaterAirThresholdForAirBubbles)
+            {
+                // Generate air bubbles - but not on ropes as that looks awful,
+                // and only when underwater
+                if (!isPointRope
+                    && pointDepth > 0.0f)
+                {
+                    InternalSpawnWaterPlume(
+                        mPoints.GetPosition(pointIndex),
+                        pointDepth,
+                        1.0f,
+                        mPoints.GetPlaneId(pointIndex),
+                        currentSimulationTime,
+                        simulationParameters);
+
+                    // Bubble emitted, consume one threshold quantum
+                    mPoints.SetCumulatedEmittedWaterPlume(
+                        pointIndex,
+                        currentCumulatedEmittedWaterPlume - CumulatedOutflownUnderwaterAirThresholdForAirBubbles);
+                }
+                else
+                {
+                    // No conditions for bubble, reset
+                    mPoints.SetCumulatedEmittedWaterPlume(
                         pointIndex,
                         0.0f);
                 }
@@ -5288,7 +5313,7 @@ void Ship::InternalSpawnWaterPlume(
     // TODOTEST: see if can get rid of SimulationParameters::WaterPlumeReferenceHeight
     //float const maxHeight = strength * SimulationParameters::WaterPlumeReferenceHeight * 2.0f;
     //float const maxHeight = depth + strength * 2.0f;
-    float const maxHeight = depth / 2.0f + strength * 2.0f;
+    float const maxHeight = depth / 2.0f + strength * 2.0f * GameRandomEngine::GetInstance().GenerateUniformReal(1.0f, 2.0f);
 
     // Calculate initial vertical upward velocity to reach height
     float const v0y = std::sqrtf(2.0f * SimulationParameters::GravityMagnitude * maxHeight);
