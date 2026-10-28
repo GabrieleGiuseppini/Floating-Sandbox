@@ -24,6 +24,7 @@
 #include <Core/GameTypes.h>
 #include <Core/ProgressCallback.h>
 
+#include <wx/filedlg.h>
 #include <wx/window.h>
 
 #include <functional>
@@ -120,6 +121,7 @@ public:
     void OnImportCustomRopesShipMaterials(std::vector<StructuralMaterial const *> customMaterials) override;
 
     void OnExportCheckedCustomMaterials() const override;
+    void OnImportExternalCustomMaterials() override;
 
 private:
 
@@ -219,6 +221,8 @@ private:
         return const_cast<MaterialPaletteBrowser<TLayerType> &>(
             static_cast<const MaterialPalettesController *>(this)->GetPaletteBrowser<TLayerType>());
     }
+
+    static wxFileDialog MakeFileDialog(bool forSave);
 
 private:
 

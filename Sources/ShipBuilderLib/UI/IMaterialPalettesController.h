@@ -41,6 +41,7 @@ struct IMaterialPalettesController
     virtual void OnImportCustomRopesShipMaterials(std::vector<StructuralMaterial const *> customMaterials) = 0;
 
     virtual void OnExportCheckedCustomMaterials() const = 0;
+    virtual void OnImportExternalCustomMaterials() = 0;
 };
 
 }

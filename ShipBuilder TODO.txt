@@ -485,7 +485,7 @@
 			+ Unit tests
 				+ SetShipCustomMaterials: verify pruned (inside DB) and returned replacement map
 
-		= IMaterialPaletteController<TLayer>: for UI to talk back to controller
+		+ IMaterialPaletteController<TLayer>: for UI to talk back to controller
 			+ IsAnyCustomMaterialChecked() -> bool
 			+ OnMaterialSelected
 			+ OnNewUserCustomXYZMaterial(XYZMaterial * baseMaterial)
@@ -498,6 +498,7 @@
 			+ OnRemoveCustomXYZMaterials(...)
 			+ OnImportCustomXYZShipMaterials(...)
 			+ OnExportCheckedCustomMaterials()
+			+ OnImportExternalCustomMaterials()
 
 		= MaterialPalettePanel<TLayer>: HEAVY REDESIGN
 			+ cctor:
@@ -693,7 +694,7 @@
 					+ ReconciliateUIWithCheckedItems()
 						+ Check current_panel->IsAnyChecked and reconciliate
 
-			= Multi-element ops:
+			+ Multi-element ops:
 				+ Prelim:
 					+ private helper: GetCurrentlyShownPanel() -> panel *
 						+ Goes through mCategoryPanelsContainerSizer and finds the (only) one that's shown
@@ -722,11 +723,9 @@
 				+ Export All Selected
 					+ Call onto controller with no args - OnExportCheckedCustomMaterials()
 					+ Recon: enabled iff palettesController::IsAnyCustomMaterialChecked
-
-				- TODOHERE: following needs spec refining
-				- Import [From File - depends on other Import]
-					- Opens dialog for .shp and .json
-					- TODO				
+				+ Import:
+					+ Call onto controller with no args - OnImportExternalCustomMaterials()
+					+ Recon: nop
 
 			+ Make it dockable
 				! When docked:
@@ -887,6 +886,11 @@
 				+ File SaveAs dialog for .json
 				+ If ok:
 					+ Call DB::ExportCustomMaterials(materials X 3, file_path)
+			= OnImportExternalCustomMaterials()
+				+ File Open dialog for .json
+					+ Refactor creation of dialog
+				- If ok:
+					- TODOHERE
 
 
 		+ MaterialEditDialog: 
@@ -975,7 +979,9 @@
 					+ Test, incl. Undo
 
 	- TODOHERE: master list of all tasks:
-		- 
+		- Import
+			- Tests:
+				- Button layout
 
 	- Finalize layout of "Checking/Selected" buttons' area in Browser
 		- Grid?

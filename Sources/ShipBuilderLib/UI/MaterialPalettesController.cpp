@@ -8,8 +8,8 @@
 #include <UILib/StandardSystemPaths.h>
 
 #include <Game/GameVersion.h>
+#include <Game/ShipDeSerializer.h>
 
-#include <wx/filedlg.h>
 #include <wx/msgdlg.h>
 
 #include <algorithm>
@@ -246,17 +246,7 @@ void MaterialPalettesController::OnExportCheckedCustomMaterials() const
     // Ask path
     //
 
-    wxFileDialog saveAsDialog(
-        nullptr,
-        _("Save custom materials"),
-        StandardSystemPaths::GetInstance().GetUserDesktopFolderPath().string()
-            + std::filesystem::path::preferred_separator, // See https://forums.wxwidgets.org/viewtopic.php?t=42293
-        "my_custom_materials.json",
-        _("Custom material files") + wxS(" (*.json)|*.json"),
-        wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
-        wxDefaultPosition,
-        wxDefaultSize);
-
+    wxFileDialog saveAsDialog = MakeFileDialog(true);
     auto const res = saveAsDialog.ShowModal();
     if (res == wxID_OK)
     {
@@ -277,6 +267,20 @@ void MaterialPalettesController::OnExportCheckedCustomMaterials() const
             electricalMaterials,
             ropesMaterials,
             std::filesystem::path(saveAsDialog.GetPath().ToStdString()));
+    }
+}
+
+void MaterialPalettesController::OnImportExternalCustomMaterials()
+{
+    //
+    // Ask path
+    //
+
+    wxFileDialog loadDialog = MakeFileDialog(false);
+    auto const res = loadDialog.ShowModal();
+    if (res == wxID_OK)
+    {
+        // TODOHERE
     }
 }
 
@@ -722,6 +726,44 @@ void MaterialPalettesController::PreCustomMaterialDeleted(typename LayerTypeTrai
     {
         OnMaterialSelected<TLayerType>(nullptr, MaterialPlaneType::Background);
     }
+}
+
+wxFileDialog MaterialPalettesController::MakeFileDialog(bool forSave)
+{
+    wxString const message = forSave
+        ? _("Save custom materials")
+        : _("Load custom materials");
+
+    wxString defaultPath = StandardSystemPaths::GetInstance().GetUserDesktopFolderPath().string();
+    if (forSave)
+    {
+        defaultPath += std::filesystem::path::preferred_separator; // See https://forums.wxwidgets.org/viewtopic.php?t=42293
+    }
+
+    wxString const defaultFilename = forSave
+        ? wxString("my_custom_materials.json")
+        : wxString("");
+
+    long const style = forSave
+        ? (wxFD_SAVE | wxFD_OVERWRITE_PROMPT)
+        : (wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+
+    wxString prompt = _("Custom material files") + wxS(" (*.json)|*.json");
+    if (!forSave)
+    {
+        std::string shipFileExtension = ShipDeSerializer::GetShipDefinitionFileExtension();
+        prompt += wxS("|") + _("Ship files") + wxS(" (*") + shipFileExtension + wxS(")|*") + shipFileExtension;
+    }
+
+    return wxFileDialog(
+        nullptr,
+        message,
+        defaultPath,
+        defaultFilename,
+        prompt,
+        style,
+        wxDefaultPosition,
+        wxDefaultSize);
 }
 
 }

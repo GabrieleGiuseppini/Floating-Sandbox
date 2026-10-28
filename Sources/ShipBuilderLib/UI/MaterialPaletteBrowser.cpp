@@ -530,6 +530,28 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                         wxALIGN_CENTRE);
                 }
 
+                {
+                    mImportButton = new wxButton(this, wxID_ANY, _("Import"), wxDefaultPosition, wxDefaultSize);
+                    mImportButton->SetToolTip(_("Import custom materials from a ship or from a custom materials file."));
+
+                    mImportButton->Bind(
+                        wxEVT_BUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            mMaterialPalettesController.OnImportExternalCustomMaterials();
+
+                            // Make us regain focus, or else we lose focus loss notification
+                            this->SetFocus();
+                        });
+
+                    gridSizer->Add(
+                        mImportButton,
+                        wxGBPosition(2, 1),
+                        wxGBSpan(1, 1),
+                        wxALIGN_CENTRE);
+                }
+
+
                 WxHelpers::MakeAllRowsExpandable(gridSizer);
 
                 hSizer->Add(gridSizer, 0, wxEXPAND);

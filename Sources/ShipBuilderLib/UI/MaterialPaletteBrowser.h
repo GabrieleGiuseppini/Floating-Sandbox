@@ -198,6 +198,7 @@ private:
     wxButton * mDeleteSelectedButton;
     wxButton * mImportSelectedShipButton;
     wxButton * mExportAllSelectedButton;
+    wxButton * mImportButton;
 
     //
     // State
