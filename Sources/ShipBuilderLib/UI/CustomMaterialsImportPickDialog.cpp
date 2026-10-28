@@ -5,8 +5,12 @@
  ***************************************************************************************/
 #include "CustomMaterialsImportPickDialog.h"
 
+#include <Core/GameTypes.h>
+
 #include <wx/button.h>
+#include <wx/checkbox.h>
 #include <wx/sizer.h>
+#include <wx/stattext.h>
 
 namespace ShipBuilder {
 
@@ -35,15 +39,86 @@ CustomMaterialsImportPickDialog::CustomMaterialsImportPickDialog(
 
     wxBoxSizer * dialogVSizer = new wxBoxSizer(wxVERTICAL);
 
-    dialogVSizer->AddSpacer(20);
+    // Panels
+    {
+        wxBoxSizer * panelsHSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    // TODOHERE
-    (void)structuralCustomMaterials;
-    (void)duplicateStructuralCustomMaterials;
-    (void)electricalCustomMaterials;
-    (void)duplicateElectricalCustomMaterials;
-    (void)ropesCustomMaterials;
-    (void)duplicateRopesCustomMaterials;
+        panelsHSizer->AddSpacer(10);
+
+        {
+            wxBoxSizer * panelVSizer = new wxBoxSizer(wxVERTICAL);
+
+            auto label = new wxStaticText(this, wxID_ANY, _("Structural Materials"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+
+            panelVSizer->Add(
+                label,
+                0,
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+
+            auto sPanel = MakeSelectionPanel(structuralCustomMaterials, duplicateStructuralCustomMaterials);
+
+            panelVSizer->Add(
+                sPanel,
+                1,
+                wxEXPAND,
+                0);
+
+            panelsHSizer->Add(panelVSizer, 1, wxEXPAND);
+        }
+
+        panelsHSizer->AddSpacer(10);
+
+        {
+            wxBoxSizer * panelVSizer = new wxBoxSizer(wxVERTICAL);
+
+            auto label = new wxStaticText(this, wxID_ANY, _("Electrical Materials"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+
+            panelVSizer->Add(
+                label,
+                0,
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+
+            auto ePanel = MakeSelectionPanel(electricalCustomMaterials, duplicateElectricalCustomMaterials);
+
+            panelVSizer->Add(
+                ePanel,
+                1,
+                wxEXPAND,
+                0);
+
+            panelsHSizer->Add(panelVSizer, 1, wxEXPAND);
+        }
+
+        panelsHSizer->AddSpacer(10);
+
+        {
+            wxBoxSizer * panelVSizer = new wxBoxSizer(wxVERTICAL);
+
+            auto label = new wxStaticText(this, wxID_ANY, _("Ropes Materials"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+
+            panelVSizer->Add(
+                label,
+                0,
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+
+            auto rPanel = MakeSelectionPanel(ropesCustomMaterials, duplicateRopesCustomMaterials);
+
+            panelVSizer->Add(
+                rPanel,
+                1,
+                wxEXPAND,
+                0);
+
+            panelsHSizer->Add(panelVSizer, 1, wxEXPAND);
+        }
+
+        panelsHSizer->AddSpacer(10);
+
+        dialogVSizer->Add(panelsHSizer, 1, wxEXPAND);
+    }
 
     dialogVSizer->AddSpacer(20);
 
@@ -75,6 +150,72 @@ CustomMaterialsImportPickDialog::CustomMaterialsImportPickDialog(
     SetSizerAndFit(dialogVSizer);
 
     Centre(wxCENTER_ON_SCREEN | wxBOTH);
+}
+
+template<typename TMaterial>
+wxScrolled<wxPanel> * CustomMaterialsImportPickDialog::MakeSelectionPanel(
+    std::vector<std::unique_ptr<TMaterial const>> const & customMaterials,
+    std::vector<bool> const & isDuplicate)
+{
+    assert(customMaterials.size() == isDuplicate.size());
+
+    wxScrolled<wxPanel> * panel = new wxScrolled<wxPanel>(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE | wxVSCROLL);
+    panel->SetMinSize(wxSize(400, 400));
+    panel->SetBackgroundColour(*wxWHITE);
+
+    wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+    int constexpr InterRowMargin = 5;
+
+    vSizer->AddSpacer(InterRowMargin);
+
+    for (size_t icm = 0; icm < customMaterials.size(); ++icm)
+    {
+        TMaterial const & material = *customMaterials[icm];
+
+        wxBoxSizer * rowSizer = new wxBoxSizer(wxHORIZONTAL);
+
+        if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
+        {
+            auto renderColorButton = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxSize(20, 20), wxBORDER_SIMPLE);
+            wxColor const c(material.RenderColor.r, material.RenderColor.g, material.RenderColor.b);
+            renderColorButton->SetForegroundColour(c);
+            renderColorButton->SetBackgroundColour(c);
+
+            rowSizer->Add(
+                renderColorButton,
+                0,
+                wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                5);
+        }
+
+        {
+            // TODO: "duplicate"
+            wxCheckBox * chk = new wxCheckBox(panel, wxID_ANY, material.Name, wxDefaultPosition, wxDefaultSize);
+
+            // TODO: enablement
+
+            // TODO: binding
+
+            rowSizer->Add(
+                chk,
+                1,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+        }
+
+        vSizer->Add(
+            rowSizer,
+            0,
+            wxEXPAND,
+            10);
+
+        vSizer->AddSpacer(InterRowMargin);
+    }
+
+    panel->SetSizer(vSizer);
+
+    return panel;
 }
 
 }

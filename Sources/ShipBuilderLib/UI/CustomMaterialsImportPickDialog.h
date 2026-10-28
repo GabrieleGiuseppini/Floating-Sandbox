@@ -5,9 +5,11 @@
  ***************************************************************************************/
 #pragma once
 
+#include <Simulation/Layers.h>
 #include <Simulation/Materials.h>
 
 #include <wx/dialog.h>
+#include <wx/scrolwin.h>
 
 #include <memory>
 #include <vector>
@@ -29,6 +31,14 @@ public:
 
 private:
 
+    template<typename TMaterial>
+    wxScrolled<wxPanel> * MakeSelectionPanel(
+        std::vector<std::unique_ptr<TMaterial const>> const & customMaterials,
+        std::vector<bool> const & isDuplicate);
+
+    wxScrolled<wxPanel> * mStructuralListPanel;
+    wxScrolled<wxPanel> * mElectricalListPanel;
+    wxScrolled<wxPanel> * mRopesListPanel;
 };
 
 }

@@ -380,7 +380,6 @@ std::optional<StructuralMaterial::VariantOverridesType> StructuralMaterialEditDi
 
 void StructuralMaterialEditDialog::SetRenderColorButtonColor(rgbaColor const & color)
 {
-    //wxColor const back = GetBackgroundColour();
     wxColor const back = *wxWHITE;
     double const a = static_cast<double>(color.a) / static_cast<double>(rgbaColor::data_type_max);
     wxColor const c(
