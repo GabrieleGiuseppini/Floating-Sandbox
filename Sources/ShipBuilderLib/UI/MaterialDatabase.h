@@ -67,6 +67,8 @@ public:
 		return mShipCustomMaterials;
 	}
 
+	std::vector<bool> DetectEquivalentUserCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> const & customMaterials) const;
+
 	TMaterial const * AddUserCustomMaterial(std::unique_ptr<TMaterial const> && customMaterial);
 
 	void AddUserCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> && customMaterials);
@@ -85,6 +87,15 @@ public:
 	void MoveUserCustomMaterialsToShip(std::vector<TMaterial const *> const & userMaterials);
 
 private:
+
+	static bool AreCustomMaterialsEquivalent(TMaterial const & material1, TMaterial const & material2)
+	{
+		assert(material1.VariantOverrides.has_value());
+		assert(material2.VariantOverrides.has_value());
+
+		return material1.ColorKey == material2.ColorKey
+			&& material1.VariantOverrides == material2.VariantOverrides;
+	}
 
 	using SinglePod = typename std::vector<std::unique_ptr<TMaterial const>>;
 

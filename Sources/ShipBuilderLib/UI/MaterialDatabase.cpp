@@ -78,6 +78,32 @@ MaterialDatabase<TLayer>::MaterialDatabase(
 }
 
 template<LayerType TLayer>
+std::vector<bool> MaterialDatabase<TLayer>::DetectEquivalentUserCustomMaterials(std::vector<std::unique_ptr<TMaterial const>> const & customMaterials) const
+{
+    std::vector<bool> equivalentMarkers(customMaterials.size(), false);
+
+    for (size_t cm = 0; cm < customMaterials.size(); ++cm)
+    {
+        assert(customMaterials[cm]);
+
+        if (std::find_if(
+            mUserCustomMaterials.cbegin(),
+            mUserCustomMaterials.cend(),
+            [&](auto const & ucm)
+            {
+                assert(ucm);
+                return AreCustomMaterialsEquivalent(*customMaterials[cm], *ucm);
+            }) != mUserCustomMaterials.cend())
+        {
+            equivalentMarkers[cm] = true;
+            break;
+        }
+    }
+
+    return equivalentMarkers;
+}
+
+template<LayerType TLayer>
 typename MaterialDatabase<TLayer>::TMaterial const * MaterialDatabase<TLayer>::AddUserCustomMaterial(std::unique_ptr<TMaterial const> && customMaterial)
 {
     mUserCustomMaterials.emplace_back(std::move(customMaterial));
@@ -129,10 +155,10 @@ MaterialReplacementMap<typename MaterialDatabase<TLayer>::TMaterial> MaterialDat
         TMaterial const * equivalentUserMaterial = nullptr;
         for (auto const & userMaterial : mUserCustomMaterials)
         {
-            assert(userMaterial->VariantOverrides.has_value());
+            assert(userMaterial);
+            assert(shipMaterial);
 
-            if (userMaterial->ColorKey == shipMaterial->ColorKey
-                && userMaterial->VariantOverrides == shipMaterial->VariantOverrides)
+            if (AreCustomMaterialsEquivalent(*userMaterial, *shipMaterial))
             {
                 equivalentUserMaterial = userMaterial.get();
                 break;

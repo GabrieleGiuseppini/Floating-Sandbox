@@ -83,7 +83,7 @@ std::optional<typename TMaterial::VariantOverridesType> BaseMaterialEditDialog<T
     typename TMaterial::VariantOverridesType const & startingOverrides,
     TMaterial const * baseMaterial)
 {
-    SetTitle(_T("Create New Material"));
+    SetTitle(_("Create New Material"));
     return Run(startingOverrides, baseMaterial);
 }
 
@@ -92,7 +92,7 @@ std::optional<typename TMaterial::VariantOverridesType> BaseMaterialEditDialog<T
     typename TMaterial::VariantOverridesType const & startingOverrides,
     TMaterial const * baseMaterial)
 {
-    SetTitle(_T("Edit Material"));
+    SetTitle(_("Edit Material"));
     return Run(startingOverrides, baseMaterial);
 }
 

@@ -172,7 +172,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                     {
                         // Notif dialog
                         {
-                            mPasswordProtectionInfoDialog = new wxDialog(this, wxID_ANY, _T("Info"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP);
+                            mPasswordProtectionInfoDialog = new wxDialog(this, wxID_ANY, _("Info"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP);
 
                             auto * hSizer = new wxBoxSizer(wxHORIZONTAL);
 

@@ -13,6 +13,8 @@
 #include "MaterialDatabase.h"
 #include "MaterialPaletteBrowser.h"
 
+#include <UILib/LocalizationManager.h>
+
 #include <Game/GameAssetManager.h>
 #include <Game/ISoundController.h>
 
@@ -47,6 +49,7 @@ public:
         std::function<Controller &()> controllerGetter,
         ShipTexturizer const & shipTexturizer,
         ISoundController * soundController,
+        LocalizationManager const & localizationManager,
         WorkbenchState const & workbenchState,
         GameAssetManager const & gameAssetManager,
         ProgressCallback const & progressCallback);
@@ -227,6 +230,7 @@ private:
 private:
 
     DefaultMaterialDatabase const & mDefaultMaterialDatabase; // For color_key lookups
+    LocalizationManager const & mLocalizationManager;
     WorkbenchState const & mWorkbenchState; // For discovering which materials are currently-picked
     std::function<Controller &()> const mControllerGetter;
 

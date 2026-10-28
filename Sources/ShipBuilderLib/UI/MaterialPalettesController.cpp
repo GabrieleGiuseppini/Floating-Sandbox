@@ -5,10 +5,14 @@
  ***************************************************************************************/
 #include "MaterialPalettesController.h"
 
+#include "CustomMaterialsImportPickDialog.h"
+
 #include <UILib/StandardSystemPaths.h>
 
 #include <Game/GameVersion.h>
 #include <Game/ShipDeSerializer.h>
+
+#include <Core/UserGameException.h>
 
 #include <wx/msgdlg.h>
 
@@ -27,10 +31,12 @@ MaterialPalettesController::MaterialPalettesController(
     std::function<Controller &()> controllerGetter,
     ShipTexturizer const & shipTexturizer,
     ISoundController * soundController,
+    LocalizationManager const & localizationManager,
     WorkbenchState const & workbenchState,
     GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
     : mDefaultMaterialDatabase(defaultMaterialDatabase)
+    , mLocalizationManager(localizationManager)
     , mWorkbenchState(workbenchState)
     , mControllerGetter(std::move(controllerGetter))
     , mOnStructuralLayerMaterialSelected(std::move(onStructuralLayerMaterialSelected))
@@ -277,11 +283,86 @@ void MaterialPalettesController::OnImportExternalCustomMaterials()
     //
 
     wxFileDialog loadDialog = MakeFileDialog(false);
-    auto const res = loadDialog.ShowModal();
-    if (res == wxID_OK)
+    auto res = loadDialog.ShowModal();
+    if (res != wxID_OK)
     {
-        // TODOHERE
+        return;
     }
+
+    auto const importFilepath = std::filesystem::path(loadDialog.GetPath().ToStdString());
+
+    //
+    // Load materials
+    //
+
+    CustomMaterialsPod customMaterials;
+
+    if (ShipDeSerializer::IsShipDefinitionFile(importFilepath))
+    {
+        try
+        {
+            auto shipDefinition = ShipDeSerializer::LoadShip(importFilepath, mDefaultMaterialDatabase);
+
+            customMaterials = std::move(shipDefinition.CustomMaterials);
+
+            if (customMaterials.IsEmpty())
+            {
+                wxMessageBox(_("The selected ship has no custom materials that may be imported."), ApplicationName, wxICON_INFORMATION);
+                return;
+            }
+        }
+        catch (UserGameException const & exc)
+        {
+            wxMessageBox(mLocalizationManager.MakeErrorMessage(exc), ApplicationName, wxICON_ERROR);
+            return;
+        }
+        catch (std::runtime_error const & exc)
+        {
+            wxMessageBox(exc.what(), ApplicationName, wxICON_ERROR);
+            return;
+        }
+    }
+    else
+    {
+        // TODO: from json
+    }
+
+    //
+    // Detect duplicates
+    //
+
+    auto const duplicateStructuralMaterials = GetDatabase<LayerType::Structural>().DetectEquivalentUserCustomMaterials(customMaterials.CustomStructuralLayerMaterials);
+    auto const duplicateElectricalMaterials = GetDatabase<LayerType::Electrical>().DetectEquivalentUserCustomMaterials(customMaterials.CustomElectricalLayerMaterials);
+    auto const duplicateRopesMaterials = GetDatabase<LayerType::Ropes>().DetectEquivalentUserCustomMaterials(customMaterials.CustomRopesLayerMaterials);
+
+    if (std::all_of(duplicateStructuralMaterials.cbegin(), duplicateStructuralMaterials.cend(), [](bool d) {return d; })
+        && std::all_of(duplicateElectricalMaterials.cbegin(), duplicateElectricalMaterials.cend(), [](bool d) {return d; })
+        && std::all_of(duplicateRopesMaterials.cbegin(), duplicateRopesMaterials.cend(), [](bool d) {return d; }))
+    {
+        wxMessageBox(_("All the custom materials that you are about to import are already among your custom materials; nothing to import."), ApplicationName, wxICON_INFORMATION);
+        return;
+    }
+
+    //
+    // Allow user to choose materials
+    //
+
+    CustomMaterialsImportPickDialog pickDlg(
+        nullptr,
+        customMaterials.CustomStructuralLayerMaterials,
+        duplicateStructuralMaterials,
+        customMaterials.CustomElectricalLayerMaterials,
+        duplicateElectricalMaterials,
+        customMaterials.CustomRopesLayerMaterials,
+        duplicateRopesMaterials);
+
+    res = pickDlg.ShowModal();
+    if (res != wxID_OK)
+    {
+        return;
+    }
+
+    // TODOHERE
 }
 
 ////////////////////////////////////////////////////////////

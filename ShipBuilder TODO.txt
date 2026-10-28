@@ -462,6 +462,8 @@
 					+ Save DB
 				+ ExportCustomMaterials(vector<TMaterial const *> X 3, file_path)
 					+ Make helpers to decompose SaveUserMaterials
+				+ DetectEquivalentUserCustomMaterials(single pod) -> vector<bool>
+					+ Refactor DB's SetShipCustomMaterials: export equivalency comparison ("IsEquivalentCustomMaterial")
 
 			+ Ser/Deset for user custom materials
 				+ parent color_key and VariantOverridesType
@@ -889,41 +891,39 @@
 			= OnImportExternalCustomMaterials()
 				+ File Open dialog for .json
 					+ Refactor creation of dialog
-				- If ok:
-					- CustomMaterialsPod loadedPod;
-					- Load
-						- From ship:
-							- Deserializer::Load
-							- If error:
-								- Popup error
-								- return
-							- If loadedPod empty:
-								- Message: "The TODO ship has no custom materials."
-								- return
-							- Steal pod
+				= If ok:
+					+ CustomMaterialsPod loadedPod;
+					= Load
+						+ From ship:
+							+ Deserializer::Load
+							+ If error:
+								+ Popup error
+									+ See localization
+								+ return
+							+ If loadedPod empty:
+								+ Message: "The TODO ship has no custom materials."
+								+ return
+							+ Steal pod
 						- From DB:
 							- BaseDB::LoadCustomMaterialsFile(filepath) -> CustomMaterialsPod
 							- Steal pod
-					- Filter distinct from DB
-						- TODOHERE: how does caller know which are dupe's, other than subtracting? And need to split pod
-						- Call x3 DB<LayerType>::FilterCustomMaterialsWithUser(single pod) -> single pod
-							- TODO: refactor DB's SetShipCustomMaterials: export equivalency comparison ("IsEquivalentCustomMaterial")
-					- If none after filtering:
-						- Message: "TODO"
-						- return
-					- Create & open dialog for choosing
+					+ Filter distinct from DB
+						+ Call x3 DB<LayerType>::DetectEquivalentUserCustomMaterials(single pod) -> vector<bool>							
+					+ If none after filtering:
+						+ Message: "TODO"
+						+ return
+					= Create & open dialog for choosing
 						- Dialog has 3 lists, checkboxes with materials, dupes are disabled and say "(DUPLICATED)"
 						- Dialog has OK and Cancel, and Select All and Clear All
 						- Dialog returns TODO for chosen
-					- If aborted:
-						- return
-					- Else:
-						- Add to DB
-							- Save DB
-						- Update palette
-						- Populate Undo with materials
-							- Need just pointers for plain removal
-							- DB: Remove user's
+					+ If aborted:
+						+ return
+					- Add to DB
+						- Save DB
+					- Update palette
+					- Populate Undo with materials
+						- Need just pointers for plain removal
+						- DB: Remove user's
 
 
 		+ MaterialEditDialog: 
@@ -1014,6 +1014,10 @@
 	- TODOHERE: master list of all tasks:
 		- Import
 			- Tests:
+				- Import from undeserializable ship
+				- DetectEquivalentUserCustomMaterials:
+					- Some of user's, 2 layers
+				- All materials duplicate
 
 	- Finalize layout of "Checking/Selected" buttons' area in Browser
 		- Grid?

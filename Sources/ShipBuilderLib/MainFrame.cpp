@@ -355,6 +355,7 @@ MainFrame::MainFrame(
             },
             mShipTexturizer,
             mSoundController,
+            mLocalizationManager,
             mWorkbenchState,
             mGameAssetManager,
             progressCallback.MakeSubCallback(0.0f, 0.8f));

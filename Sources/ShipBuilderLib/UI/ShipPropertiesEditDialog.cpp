@@ -339,25 +339,25 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
                 {
                     case ShipCategoryType::Fictional:
                     {
-                        choices.Add(_T("Fictional"));
+                        choices.Add(_("Fictional"));
                         break;
                     }
 
                     case ShipCategoryType::Historical:
                     {
-                        choices.Add(_T("Historical"));
+                        choices.Add(_("Historical"));
                         break;
                     }
 
                     case ShipCategoryType::Physics:
                     {
-                        choices.Add(_T("Physics"));
+                        choices.Add(_("Physics"));
                         break;
                     }
 
                     case ShipCategoryType::Transport:
                     {
-                        choices.Add(_T("Transport"));
+                        choices.Add(_("Transport"));
                         break;
                     }
                 }

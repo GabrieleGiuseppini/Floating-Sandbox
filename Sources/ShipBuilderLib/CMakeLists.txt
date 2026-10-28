@@ -49,6 +49,8 @@ set (UI_SOURCES
 	UI/BaseMaterialEditDialog.h
 	UI/BaseResizeDialog.cpp
 	UI/BaseResizeDialog.h
+	UI/CustomMaterialsImportPickDialog.cpp
+	UI/CustomMaterialsImportPickDialog.h
 	UI/ElectricalMaterialEditDialog.cpp
 	UI/ElectricalMaterialEditDialog.h
 	UI/ElectricalPanelEditDialog.cpp
