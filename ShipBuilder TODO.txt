@@ -200,22 +200,22 @@
 				+ Force ship re-analysis and re-visualization
 				+ Mark ship as dirty
 				+ Update palette				
-		- Deleting user's or ship's custom materials
+		+ Deleting user's or ship's custom materials
 			! ASSUMPTION: only applies to current Category, thus to current layer
-			- User checks boxes, and then "Delete Selected"
-			- Check for in-use by ship; answer is none-in-use_or_at-least-one-in-use
-			- If at-least-one-in-use:
-				- Ask user if remove from ship or not
-				- If abort => abort
-			- If at-least-one-in-use:
-				- Remove from ship
-				- Force ship re-analysis and re-visualization
-				- Mark ship as dirty
-				- Do Undo with material + ship
-			- Else:
-				- Do Undo with just material
-			- Remove from DB // Delayed to here, as to-be-deleted pointer must be addressable
-			- Update palette
+			+ User checks boxes, and then "Delete Selected"
+			+ Check for in-use by ship; answer is none-in-use_or_at-least-one-in-use
+			+ If at-least-one-in-use:
+				+ Ask user if remove from ship or not
+				+ If abort => abort
+			+ If at-least-one-in-use:
+				+ Remove from ship
+				+ Force ship re-analysis and re-visualization
+				+ Mark ship as dirty
+				+ Do Undo with material + ship
+			+ Else:
+				+ Do Undo with just material
+			+ Remove from DB // Delayed to here, as to-be-deleted pointer must be addressable
+			+ Update palette
 		+ Loading ship
 			+ With custom materials:
 				+ Prune set of ship's custom materials with user's custom materials, producing a material replacement map
@@ -820,7 +820,7 @@
 						+ It's the ephemeral; tools have temp viz which is a clone of before
 						+ Need to reset tools' state at material amend; assuming not in temp viz
 							+ Should SuspendTool before replacing materials
-			= OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
+			+ OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
 				! For "Delete checked"
 				+ Ask controller if any in use, via Get[Structural|Electrical|Ropes]MaterialsInUse(...) -> std::set<XXXMaterial const *> (-> shipSet)
 				+ If at-least-one-in-use:
@@ -837,18 +837,21 @@
 					+ Add both to palette, user vs ship
 				+ Call Controller.ReplaceMaterials
 				+ Update palette, via Browser::RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
-
-				= Tests:
-					= Layout:
+				+ Tests:
+					+ Layout:
 						+ One in-between
-						- Different strides
-					- Delete when used by ship
-						- Verify new stride's StartShipIndex
-					- Undo w/out ship: 
-						- User's and ship's reappear in palette & in user DB
-					- Undo w/ ship: 
-						- User's and ship's reappear in palette & in user DB
-						- Ship's deleted reappear in ship, properly 
+						+ Different strides
+					+ Delete when used by ship
+						+ Verify new stride's StartShipIndex
+					+ Undo w/out ship: 
+						+ User's and ship's reappear in palette & in user DB
+					+ Undo w/ ship: 
+						+ User's and ship's reappear in palette & in user DB
+						+ Ship's deleted reappear in ship, properly 
+					+ Both user and ship, but choosing to keep ship:
+						+ Verify just user
+						+ Undo
+			- TODO: import ship->user
 
 		+ MaterialEditDialog: 
 			+ Two dialogs, two classes, one base with common code
@@ -936,9 +939,7 @@
 					+ Test, incl. Undo
 
 	- TODOHERE: master list of all tasks:
-		= Remove (checked) workflow
-
-		- Re-test rope removal after fixing iterator
+		- Import Ship->User
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 	- Add RGB code to property grid

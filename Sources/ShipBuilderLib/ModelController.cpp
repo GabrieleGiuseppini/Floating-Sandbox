@@ -2741,6 +2741,11 @@ std::optional<ShipSpaceRect> ModelController::ReplaceCustomMaterials<LayerType::
 
             affectedRect = GetWholeShipRect();
         }
+        else
+        {
+            // Advance
+            ++ropeElementIt;
+        }
     }
 
     if (affectedRect.has_value())
