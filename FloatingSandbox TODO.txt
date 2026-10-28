@@ -2261,7 +2261,7 @@
 		- Also: steam from whistles
 	- Internal fires
 		- And smoke following air flows
-	- Light green when underwater
+	- Lamps' light green when underwater
 	- New gadget: floaters
 		- Also as furniture item - how though?
 	- Watertight doors should stay put even after unpowered (or new type altogether)

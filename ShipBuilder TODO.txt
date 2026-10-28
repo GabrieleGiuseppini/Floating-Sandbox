@@ -942,8 +942,8 @@
 		- Import Ship->User
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
-	- Add RGB code to property grid
-		- GEt rid of thermal expansion coefficient
+	+ Add RGB code to property grid
+		+ Get rid of thermal expansion coefficient
 
 	- Tests:
 

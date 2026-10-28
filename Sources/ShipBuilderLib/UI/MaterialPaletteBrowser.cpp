@@ -11,6 +11,7 @@
 #include <UILib/WxHelpers.h>
 
 #include <Core/GameExceptions.h>
+#include <Core/Utils.h>
 
 #include <wx/gbsizer.h>
 #include <wx/statline.h>
@@ -974,20 +975,20 @@ std::array<wxPropertyGrid *, 2> MaterialPaletteBrowser<TLayer>::CreateStructural
     pgs[1] = CreatePropertyGrid(parent);
 
     AddStringProperty(pgs[0], "Name", _("Name"));
+    AddStringProperty(pgs[0], "RenderColor", _("Render Color"));
     AddFloatProperty(pgs[0], "Mass", _("Mass (Kg)"));
     AddFloatProperty(pgs[0], "Strength", _("Strength"));
     AddBoolProperty(pgs[0], "IsHull", _("Hull"));
     AddFloatProperty(pgs[0], "BuoyancyVolumeFill", _("Buoyant Volume"));
-    AddFloatProperty(pgs[0], "RustReceptivity", _("Rust Receptivity"));
 
     pgs[0]->FitColumns();
 
+    AddFloatProperty(pgs[1], "RustReceptivity", _("Rust Receptivity"));
     AddStringProperty(pgs[1], "CombustionType", _("Combustion Type"));
     AddFloatProperty(pgs[1], "IgnitionTemperature", _("Ignition Temperature (K)"));
     AddFloatProperty(pgs[1], "MeltingTemperature", _("Melting Temperature (K)"));
     AddFloatProperty(pgs[1], "SpecificHeat", _("Specific Heat (J/(Kg*K))"));
     AddFloatProperty(pgs[1], "ThermalConductivity", _("Thermal Conductivity (W/(m*K))"));
-    AddFloatProperty(pgs[1], "ThermalExpansionCoefficient", _("Thermal Expansion Coefficient (1/MK)"));
 
     pgs[1]->FitColumns();
 
@@ -1038,11 +1039,13 @@ void MaterialPaletteBrowser<TLayer>::PopulateMaterialProperties(TMaterial const 
         else
         {
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Name", wxString(material->Name));
+            mStructuralMaterialPropertyGrids[0]->SetPropertyValue("RenderColor", wxString(Utils::RgbColor2Hex(material->RenderColor.toRgbColor())));
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Mass", material->GetMass());
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Strength", material->Strength);
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("IsHull", material->IsHull);
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("BuoyancyVolumeFill", material->BuoyancyVolumeFill);
-            mStructuralMaterialPropertyGrids[0]->SetPropertyValue("RustReceptivity", material->RustReceptivity);
+
+            mStructuralMaterialPropertyGrids[1]->SetPropertyValue("RustReceptivity", material->RustReceptivity);
 
             switch (material->CombustionType)
             {
@@ -1069,7 +1072,6 @@ void MaterialPaletteBrowser<TLayer>::PopulateMaterialProperties(TMaterial const 
             mStructuralMaterialPropertyGrids[1]->SetPropertyValue("MeltingTemperature", material->MeltingTemperature);
             mStructuralMaterialPropertyGrids[1]->SetPropertyValue("SpecificHeat", material->SpecificHeat);
             mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalConductivity", material->ThermalConductivity);
-            mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalExpansionCoefficient", material->ThermalExpansionCoefficient * 1000'000.0f);
         }
 
         mStructuralMaterialPropertyGrids[0]->Thaw();
