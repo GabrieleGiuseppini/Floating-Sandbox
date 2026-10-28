@@ -236,12 +236,12 @@
 				+ Just set of pointers to be moved back in DB from User to Ship
 					+ Save User DB
 			+ Update palette
-		= Export custom user and/or ship materials to ad-hoc json
+		+ Export custom user and/or ship materials to ad-hoc json
 			! Works on all layers, all categories - so enabled iff at least one material checked in in any layer, any category
-			- User checks boxes, and then "Export All Selected"
-			- File SaveAs dialog for .json
-			- If ok:
-				- Call DB::Export(materials, file_path)
+			+ User checks boxes, and then "Export All Selected"
+			+ File SaveAs dialog for .json
+			+ If ok:
+				+ Call DB::Export(materials, file_path)
 		- Importing custom materials from a json or from a ship into user's
 			- User chooses from list, filtered by distincting with user's
 				- If none available, popup message
@@ -882,11 +882,11 @@
 						+ Save DB
 					+ Update palette: Browser.MoveUserCustomMaterialsToShip(vector<TMaterial const *>)
 				+ Update palette: Browser.MoveShipCustomMaterialsToUser(vector<TMaterial const *>)
-			= OnExportCheckedCustomMaterials()
+			+ OnExportCheckedCustomMaterials()
 				+ Get three vector<TMaterial const *> from three browsers - GetAllCustomMaterialsChecked()
-				- File SaveAs dialog for .json
-				- If ok:
-					- Call DB::ExportCustomMaterials(materials X 3, file_path)
+				+ File SaveAs dialog for .json
+				+ If ok:
+					+ Call DB::ExportCustomMaterials(materials X 3, file_path)
 
 
 		+ MaterialEditDialog: 
@@ -975,15 +975,10 @@
 					+ Test, incl. Undo
 
 	- TODOHERE: master list of all tasks:
-		- Export workflow
-			- Tests
-				- Recon: different layer
-				- DB content
-					- Just current user's (regression test)
-					- One layer, each
-					- All layers
+		- 
 
 	- Finalize layout of "Checking/Selected" buttons' area in Browser
+		- Grid?
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 	+ Add RGB code to property grid

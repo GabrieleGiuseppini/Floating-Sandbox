@@ -252,7 +252,7 @@ void MaterialPalettesController::OnExportCheckedCustomMaterials() const
         StandardSystemPaths::GetInstance().GetUserDesktopFolderPath().string()
             + std::filesystem::path::preferred_separator, // See https://forums.wxwidgets.org/viewtopic.php?t=42293
         "my_custom_materials.json",
-        _("Custom material files") + wxS(" (*.json"),
+        _("Custom material files") + wxS(" (*.json)|*.json"),
         wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
         wxDefaultPosition,
         wxDefaultSize);
@@ -268,7 +268,15 @@ void MaterialPalettesController::OnExportCheckedCustomMaterials() const
         std::vector<ElectricalMaterial const *> electricalMaterials = GetPaletteBrowser<LayerType::Electrical>().GetAllCustomMaterialsChecked();
         std::vector<StructuralMaterial const *> ropesMaterials = GetPaletteBrowser<LayerType::Ropes>().GetAllCustomMaterialsChecked();
 
-        // TODOHERE
+        //
+        // Export
+        //
+
+        BaseMaterialDatabase::ExportCustomMaterials(
+            structuralMaterials,
+            electricalMaterials,
+            ropesMaterials,
+            std::filesystem::path(saveAsDialog.GetPath().ToStdString()));
     }
 }
 
