@@ -226,18 +226,16 @@
 			+ Without custom materials:
 				+ Nuke ship's custom materials in palette
 				+ Re-draw palette
-		- Importing custom materials from ship's into user's
-			- User checks boxes, and then "Import Selected"
-			- Check boxes filtered for ship's only (user might have selected user's as well)
-			- Only distinct are imported; feedback to user with # of "imported ~new"
-					! No need to remove it from ship's afterwards, we can live with dupes among the two custom sets
-					- Though could remove them, making sure original uq_ptr is moved into user's
-			- Add to User DB
-				- Save DB
-			- If we go for removing from ship: Remove from Ship DB
-			- Update palette
-			- Populate Undo with materials 
-				- Needs to put back ship's as well
+		+ Importing custom materials from ship's into user's
+			+ User checks boxes, and then "Import Selected"
+			+ Check boxes filtered for ship's only (user might have selected user's as well); would not continue if no ship's
+			! We keep eventual dupes, to avoid complexity with changing ship
+			+ DB: move materials from Ship DB to User DB
+				+ Save User DB
+			+ Bake Undo
+				+ Just set of pointers to be moved back in DB from User to Ship
+					+ Save User DB
+			+ Update palette
 		- Importing custom materials from a json or from a ship into user's
 			- User chooses from list, filtered by distincting with user's
 				- If none available, popup message
@@ -432,7 +430,7 @@
 
 		=== ShipBuilder ===
 
-		+ MaterialDatabase<TLayer>
+		= MaterialDatabase<TLayer>
 			+ Members:
 				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase // for color_hey lookups
 				+ vec<uq> from user
@@ -440,7 +438,7 @@
 			+ cctor:
 				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase
 				+ Loads users's
-			+ Ops:
+			= Ops:
 				+ AddUser
 					+ Store
 					+ Save DB
@@ -457,6 +455,12 @@
 					+ Swap materials
 					+ Save DB
 					+ Return old
+				+ MoveShipCustomMaterialsToUser(vector<TMaterial const *>)
+					+ Find and move
+					+ Save DB
+				+ MoveUserCustomMaterialsToShip(vector<TMaterial const *>)
+					+ Find and move
+					+ Save DB
 
 			+ Ser/Deset for user custom materials
 				+ parent color_key and VariantOverridesType
@@ -490,6 +494,7 @@
 					+ Add to palette (vector of one)
 			+ OnEditCustomXYZMaterial(XYZMaterial * material, RegisterKind)
 			+ OnRemoveCustomXYZMaterials(...)
+			+ OnImportCustomXYZShipMaterials(...)
 
 		= MaterialPalettePanel<TLayer>: HEAVY REDESIGN
 			+ cctor:
@@ -614,6 +619,7 @@
 				+ Fire event for browser, it'll reconciliate via panel::IsAnyChecked()
 			+ GetCheckedMaterials() const -> vector<TMaterial *>
 				+ Navigate hierarchy and fetch selected ones
+			+ GetCheckedShipMaterials const -> vector<TMaterial *>
 			- FindCellFor: can speedup with lookups
 			- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
 
@@ -661,10 +667,19 @@
 						+ Layout() // for H scrollbar
 				+ RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
 					+ Organize materials by category
-					= For each _delenda_ category:
+					+ For each _delenda_ category:
 						+ Find panel for category
 						+ panel-> Start custom layout
 						+ panel-> RemoveCustomMaterial
+						+ panel-> End custom layout
+						+ Layout() // for H scrollbar
+				+ MoveCustomMaterialsRegister(vector<TMaterial const *>, targetRegister)
+					+ Organize materials by category
+					+ For each _movenda_ category:
+						+ Find panel for category
+						+ panel-> Start custom layout
+						+ panel-> RemoveCustomMaterial
+						+ panel-> AddCustomMaterial(targetRegister)
 						+ panel-> End custom layout
 						+ Layout() // for H scrollbar
 
@@ -695,13 +710,15 @@
 					+ Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedMaterials()
 					+ Call onto controller with that vector
 					+ Recon: enabled==any checked
+				+ Import Selected Ship
+					+ Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedShipMaterials()
+					+ Call onto controller with that vector
+					+ Recon: enabled==any *ship* checked
 
 				- TODOHERE: following needs spec refining
 				- Import [From File - depends on other Import]
 					- Opens dialog for .shp and .json
 					- TODO				
-				- Move Selected to User / Import Selected Into User
-					- TODO: should only be enabled if current panel has Ship materials checked, hence need helper or a rethink of IsAnyChecked
 				- Export
 					- TODO: if we agree with workflow that this is about _all_ materials, regardless of checked state
 					! Exports all custom materials
@@ -851,7 +868,16 @@
 					+ Both user and ship, but choosing to keep ship:
 						+ Verify just user
 						+ Undo
-			- TODO: import ship->user
+			+ OnImportCustom[Structural|Electrical|Ropes]ShipMaterials(vector<TMaterial const *>)
+				+ User checks boxes, and then "Import Selected Ship"
+				! vector<TMaterial const *> guaranteed to be ship's only
+				+ DB: MoveShipCustomMaterialsToUser(vector<TMaterial const *>)
+					+ Save DB
+				+ Bake Undo:
+					+ DB: MoveUserCustomMaterialsToShip(vector<TMaterial const *>)
+						+ Save DB
+					+ Update palette: Browser.MoveUserCustomMaterialsToShip(vector<TMaterial const *>)
+				+ Update palette: Browser.MoveShipCustomMaterialsToUser(vector<TMaterial const *>)
 
 		+ MaterialEditDialog: 
 			+ Two dialogs, two classes, one base with common code
@@ -939,7 +965,8 @@
 					+ Test, incl. Undo
 
 	- TODOHERE: master list of all tasks:
-		- Import Ship->User
+
+	- Finalize layout of "Checking/Selected" buttons' area in Browser
 
 	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 	+ Add RGB code to property grid

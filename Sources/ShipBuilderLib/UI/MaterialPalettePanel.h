@@ -129,9 +129,9 @@ public:
         return mCheckedUserCellsCount + mCheckedShipCellsCount > 0;
     }
 
-    size_t GetCheckedShipCellsCount() const
+    bool IsAnyShipChecked() const
     {
-        return mCheckedShipCellsCount;
+        return mCheckedShipCellsCount > 0;
     }
 
     void StartDefaultMaterialsLayout();
@@ -153,8 +153,8 @@ public:
     void SetSelected(TMaterial const * material);
 
     void SetAllCustomMaterialsIsChecked(bool value);
-
     std::vector<TMaterial const *> GetCheckedMaterials() const;
+    std::vector<TMaterial const *> GetCheckedShipMaterials() const;
 
 private:
 

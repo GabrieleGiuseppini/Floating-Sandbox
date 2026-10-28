@@ -383,7 +383,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                 wxGridBagSizer * gridSizer = new wxGridBagSizer(5, 5);
 
                 {
-                    mSelectAllButton = new wxButton(this, wxID_ANY, _T("Select All"), wxDefaultPosition, wxDefaultSize);
+                    mSelectAllButton = new wxButton(this, wxID_ANY, _("Select All"), wxDefaultPosition, wxDefaultSize);
 
                     mSelectAllButton->Bind(
                         wxEVT_BUTTON,
@@ -409,7 +409,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                 }
 
                 {
-                    mClearSelectionButton = new wxButton(this, wxID_ANY, _T("Clear Selection"), wxDefaultPosition, wxDefaultSize);
+                    mClearSelectionButton = new wxButton(this, wxID_ANY, _("Clear Selection"), wxDefaultPosition, wxDefaultSize);
 
                     mClearSelectionButton->Bind(
                         wxEVT_BUTTON,
@@ -435,7 +435,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                 }
 
                 {
-                    mDeleteSelectedButton = new wxButton(this, wxID_ANY, _T("Delete Selected"), wxDefaultPosition, wxDefaultSize);
+                    mDeleteSelectedButton = new wxButton(this, wxID_ANY, _("Delete Selected"), wxDefaultPosition, wxDefaultSize);
 
                     mDeleteSelectedButton->Bind(
                         wxEVT_BUTTON,
@@ -467,6 +467,44 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                     gridSizer->Add(
                         mDeleteSelectedButton,
                         wxGBPosition(1, 0),
+                        wxGBSpan(1, 1),
+                        wxALIGN_CENTRE);
+                }
+
+                {
+                    mImportSelectedShipButton = new wxButton(this, wxID_ANY, _("Import Selected Ship"), wxDefaultPosition, wxDefaultSize);
+                    mImportSelectedShipButton->SetToolTip(_("Import the selected ship materials into your own materials."));
+
+                    mImportSelectedShipButton->Bind(
+                        wxEVT_BUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            // Only visible ones
+
+                            std::vector<TMaterial const *> materialsToMove = GetCurrentlyShownPanel()->GetCheckedShipMaterials();
+
+                            if constexpr (TLayer == LayerType::Structural)
+                            {
+                                mMaterialPalettesController.OnImportCustomStructuralShipMaterials(std::move(materialsToMove));
+                            }
+                            else if constexpr (TLayer == LayerType::Electrical)
+                            {
+                                mMaterialPalettesController.OnImportCustomElectricalShipMaterials(std::move(materialsToMove));
+                            }
+                            else
+                            {
+                                static_assert(TLayer == LayerType::Ropes);
+
+                                mMaterialPalettesController.OnImportCustomRopesShipMaterials(std::move(materialsToMove));
+                            }
+
+                            // Make us regain focus, or else we lose focus loss notification
+                            this->SetFocus();
+                        });
+
+                    gridSizer->Add(
+                        mImportSelectedShipButton,
+                        wxGBPosition(1, 1),
                         wxGBSpan(1, 1),
                         wxALIGN_CENTRE);
                 }
@@ -753,6 +791,43 @@ void MaterialPaletteBrowser<TLayer>::RemoveCustomMaterials(std::vector<TMaterial
         for (TMaterial const * material : it.second)
         {
             layoutSession = panel->RemoveCustomMaterial(material, layoutSession);
+        }
+
+        // Finish layout
+        panel->EndCustomMaterialsLayout(layoutSession);
+    }
+
+    // Make sure that horizontal scrollbars show/hide for new panel size
+    Layout();
+}
+
+template<LayerType TLayer>
+void MaterialPaletteBrowser<TLayer>::MoveCustomMaterialsRegister(
+    std::vector<TMaterial const *> const & customMaterials,
+    CustomMaterialRegisterKindType targetRegister)
+{
+    // Organize materials into Category->Materials map
+    std::map<std::string, std::vector<TMaterial const *>> customMaterialsByCategory;
+    for (TMaterial const * customMaterial : customMaterials)
+    {
+        assert(customMaterial->PaletteCoordinates.has_value());
+        customMaterialsByCategory[customMaterial->PaletteCoordinates->Category].push_back(customMaterial);
+    }
+
+    // Visit all these categories
+    for (auto const it : customMaterialsByCategory)
+    {
+        // Get this panel
+        auto panel = mCategoryPanelsByCategory.at(it.first);
+
+        // Start layout
+        auto layoutSession = panel->StartCustomMaterialsLayout();
+
+        // Move materials
+        for (TMaterial const * material : it.second)
+        {
+            layoutSession = panel->RemoveCustomMaterial(material, layoutSession);
+            layoutSession = panel->AddCustomMaterial(material, targetRegister, layoutSession);
         }
 
         // Finish layout
@@ -1505,6 +1580,7 @@ void MaterialPaletteBrowser<TLayer>::ReconciliateUIWithPanelCheckedState(Materia
 
     mClearSelectionButton->Enable(panel->IsAnyChecked());
     mDeleteSelectedButton->Enable(panel->IsAnyChecked());
+    mImportSelectedShipButton->Enable(panel->IsAnyShipChecked());
 }
 
 template<LayerType TLayer>

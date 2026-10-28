@@ -113,6 +113,10 @@ public:
     void OnRemoveCustomElectricalMaterials(std::vector<ElectricalMaterial const *> customMaterials) override;
     void OnRemoveCustomRopesMaterials(std::vector<StructuralMaterial const *> customMaterials) override;
 
+    void OnImportCustomStructuralShipMaterials(std::vector<StructuralMaterial const *> customMaterials) override;
+    void OnImportCustomElectricalShipMaterials(std::vector<ElectricalMaterial const *> customMaterials) override;
+    void OnImportCustomRopesShipMaterials(std::vector<StructuralMaterial const *> customMaterials) override;
+
 private:
 
     template<LayerType TLayerType>
@@ -128,6 +132,9 @@ private:
     void OnRemoveCustomMaterials(std::vector<typename LayerTypeTraits<TLayerType>::material_type const *> customMaterials);
 
     template<LayerType TLayerType>
+    void OnImportCustomShipMaterials(std::vector<typename LayerTypeTraits<TLayerType>::material_type const *> customMaterials);
+
+    template<LayerType TLayerType>
     void RestoreCustomMaterialReplacementForUndo(
         typename LayerTypeTraits<TLayerType>::material_type const * customMaterialToReplace,
         std::unique_ptr<typename LayerTypeTraits<TLayerType>::material_type const> && customMaterialToRestore);
@@ -136,6 +143,9 @@ private:
     void RestoreCustomMaterialsDeletionForUndo(
         std::vector<std::unique_ptr<typename LayerTypeTraits<TLayerType>::material_type const>> && userCustomMaterials,
         std::vector<std::unique_ptr<typename LayerTypeTraits<TLayerType>::material_type const>> && shipCustomMaterials);
+
+    template<LayerType TLayerType>
+    void RestoreCustomMaterialsShipToUserMoveForUndo(std::vector<typename LayerTypeTraits<TLayerType>::material_type const *> const & movedMaterials);
 
     template<LayerType TLayerType>
     void PreCustomMaterialUpdated(

@@ -106,6 +106,8 @@ public:
 
     void RemoveCustomMaterials(std::vector<TMaterial const *> const & customMaterials);
 
+    void MoveCustomMaterialsRegister(std::vector<TMaterial const *> const & customMaterials, CustomMaterialRegisterKindType targetRegister);
+
 private:
 
     void AddCustomMaterials(
@@ -190,6 +192,7 @@ private:
     wxButton * mSelectAllButton;
     wxButton * mClearSelectionButton;
     wxButton * mDeleteSelectedButton;
+    wxButton * mImportSelectedShipButton;
 
     //
     // State

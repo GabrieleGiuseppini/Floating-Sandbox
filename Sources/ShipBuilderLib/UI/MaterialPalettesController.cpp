@@ -218,6 +218,21 @@ void MaterialPalettesController::OnRemoveCustomRopesMaterials(std::vector<Struct
     OnRemoveCustomMaterials<LayerType::Ropes>(std::move(customMaterials));
 }
 
+void MaterialPalettesController::OnImportCustomStructuralShipMaterials(std::vector<StructuralMaterial const *> customMaterials)
+{
+    OnImportCustomShipMaterials<LayerType::Structural>(std::move(customMaterials));
+}
+
+void MaterialPalettesController::OnImportCustomElectricalShipMaterials(std::vector<ElectricalMaterial const *> customMaterials)
+{
+    OnImportCustomShipMaterials<LayerType::Electrical>(std::move(customMaterials));
+}
+
+void MaterialPalettesController::OnImportCustomRopesShipMaterials(std::vector<StructuralMaterial const *> customMaterials)
+{
+    OnImportCustomShipMaterials<LayerType::Ropes>(std::move(customMaterials));
+}
+
 ////////////////////////////////////////////////////////////
 
 template<LayerType TLayerType>
@@ -335,16 +350,16 @@ void MaterialPalettesController::OnEditCustomMaterial(typename LayerTypeTraits<T
         wxString undoTitle;
         if constexpr (TLayerType == LayerType::Structural)
         {
-            undoTitle = _T("Structural Material Edit");
+            undoTitle = _("Structural Material Edit");
         }
         else if constexpr (TLayerType == LayerType::Electrical)
         {
-            undoTitle = _T("Electrical Material Edit");
+            undoTitle = _("Electrical Material Edit");
         }
         else
         {
             static_assert(TLayerType == LayerType::Ropes);
-            undoTitle = _T("Ropes Material Edit");
+            undoTitle = _("Ropes Material Edit");
         }
 
         controller.ReplaceCustomMaterials<TLayerType>(
@@ -394,14 +409,14 @@ void MaterialPalettesController::OnRemoveCustomMaterials(std::vector<typename La
 
         wxMessageDialog dialog(
             nullptr,
-            _T("One or more of the materials you are about to delete are being used in the current ship. Do you want to keep these materials, or would you rather delete the corresponding particles instead?"),
+            _("One or more of the materials you are about to delete are being used in the current ship. Do you want to keep these materials, or would you rather delete the corresponding particles instead?"),
             ApplicationName,
             wxYES_NO | wxCANCEL | wxSTAY_ON_TOP | wxCENTRE);
 
         dialog.SetYesNoCancelLabels(
-            _T("Keep the Materials"),
-            _T("Remove Particles from Ship"),
-            _T("Abort"));
+            _("Keep the Materials"),
+            _("Remove Particles from Ship"),
+            _("Abort"));
 
         auto const result = dialog.ShowModal();
         if (result == wxID_YES)
@@ -474,16 +489,16 @@ void MaterialPalettesController::OnRemoveCustomMaterials(std::vector<typename La
     wxString undoTitle;
     if constexpr (TLayerType == LayerType::Structural)
     {
-        undoTitle = _T("Structural Materials Delete");
+        undoTitle = _("Structural Materials Delete");
     }
     else if constexpr (TLayerType == LayerType::Electrical)
     {
-        undoTitle = _T("Electrical Materials Delete");
+        undoTitle = _("Electrical Materials Delete");
     }
     else
     {
         static_assert(TLayerType == LayerType::Ropes);
-        undoTitle = _T("Ropes Materials Delete");
+        undoTitle = _("Ropes Materials Delete");
     }
 
     std::map<TMaterial const *, TMaterial const *> shipMaterialsReplacementMap;
@@ -502,6 +517,41 @@ void MaterialPalettesController::OnRemoveCustomMaterials(std::vector<typename La
     //
 
     GetPaletteBrowser<TLayerType>().RemoveCustomMaterials(customMaterials);
+}
+
+template<LayerType TLayerType>
+void MaterialPalettesController::OnImportCustomShipMaterials(std::vector<typename LayerTypeTraits<TLayerType>::material_type const *> customMaterials)
+{
+    using TMaterial = typename LayerTypeTraits<TLayerType>::material_type;
+
+    //
+    // Move in DB
+    //
+
+    GetDatabase<TLayerType>().MoveShipCustomMaterialsToUser(customMaterials);
+
+    //
+    // Bake Undo action
+    //
+
+    auto materialUndoAction = [this, customMaterials](Controller &)
+        {
+            RestoreCustomMaterialsShipToUserMoveForUndo<TLayerType>(customMaterials);
+        };
+
+    auto & controller = mControllerGetter();
+
+    controller.StoreUndoAction(
+        _("Materials Import"),
+        1, // Nominal
+        controller.GetModelController().GetDirtyState(),
+        std::move(materialUndoAction));
+
+    //
+    // Move in palette
+    //
+
+    GetPaletteBrowser<TLayerType>().MoveCustomMaterialsRegister(customMaterials, CustomMaterialRegisterKindType::User);
 }
 
 template<LayerType TLayerType>
@@ -575,6 +625,22 @@ void MaterialPalettesController::RestoreCustomMaterialsDeletionForUndo(
 
     GetPaletteBrowser<TLayerType>().AddUserCustomMaterials(userCustomMaterialPtrs);
     GetPaletteBrowser<TLayerType>().AddShipCustomMaterials(shipCustomMaterialPtrs);
+}
+
+template<LayerType TLayerType>
+void MaterialPalettesController::RestoreCustomMaterialsShipToUserMoveForUndo(std::vector<typename LayerTypeTraits<TLayerType>::material_type const *> const & movedMaterials)
+{
+    //
+    // Move in DB
+    //
+
+    GetDatabase<TLayerType>().MoveUserCustomMaterialsToShip(movedMaterials);
+
+    //
+    // Move in palette
+    //
+
+    GetPaletteBrowser<TLayerType>().MoveCustomMaterialsRegister(movedMaterials, CustomMaterialRegisterKindType::Ship);
 }
 
 template<LayerType TLayerType>

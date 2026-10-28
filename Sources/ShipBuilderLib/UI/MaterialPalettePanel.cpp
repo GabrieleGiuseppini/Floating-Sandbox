@@ -471,7 +471,32 @@ std::vector<typename MaterialPalettePanel<TLayer>::TMaterial const *> MaterialPa
         {
             for (auto const & cell : stride.Cells)
             {
-                if (cell.Kind == Cell::KindType::Material && cell.IsChecked)
+                if (cell.Kind == Cell::KindType::Material
+                    && cell.IsChecked)
+                {
+                    assert(cell.Material != nullptr);
+                    checkedMaterials.emplace_back(cell.Material);
+                }
+            }
+        }
+    }
+
+    return checkedMaterials;
+}
+
+template<LayerType TLayer>
+std::vector<typename MaterialPalettePanel<TLayer>::TMaterial const *> MaterialPalettePanel<TLayer>::GetCheckedShipMaterials() const
+{
+    std::vector<TMaterial const *> checkedMaterials;
+    for (auto const & row : mRows)
+    {
+        for (auto const & stride : row.Strides)
+        {
+            for (auto const & cell : stride.Cells)
+            {
+                if (cell.Kind == Cell::KindType::Material
+                    && cell.IsChecked
+                    && cell.CustomRegisterKind == CustomMaterialRegisterKindType::Ship)
                 {
                     assert(cell.Material != nullptr);
                     checkedMaterials.emplace_back(cell.Material);

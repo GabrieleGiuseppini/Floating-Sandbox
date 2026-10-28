@@ -31,12 +31,12 @@ public:
 		MaterialColorMap<TMaterial> const & defaultMaterialColorMap,
 		std::filesystem::path userGameRootFolderPath);
 
-	std::vector<std::unique_ptr<typename TMaterial const>> const & GetUserCustomMaterials() const
+	std::vector<std::unique_ptr<TMaterial const>> const & GetUserCustomMaterials() const
 	{
 		return mUserCustomMaterials;
 	}
 
-	std::vector<std::unique_ptr<typename TMaterial const>> const & GetShipCustomMaterials() const
+	std::vector<std::unique_ptr<TMaterial const>> const & GetShipCustomMaterials() const
 	{
 		return mShipCustomMaterials;
 	}
@@ -53,11 +53,14 @@ public:
 		TMaterial const * oldMaterial,
 		std::unique_ptr<TMaterial const> && newMaterial);
 
-	std::tuple<std::vector<std::unique_ptr<typename TMaterial const>>, std::vector<std::unique_ptr<typename TMaterial const>>> ExtractCustomMaterials(std::vector<TMaterial const *> const & materials);
+	std::tuple<std::vector<std::unique_ptr<TMaterial const>>, std::vector<std::unique_ptr<TMaterial const>>> ExtractCustomMaterials(std::vector<TMaterial const *> const & materials);
+
+	void MoveShipCustomMaterialsToUser(std::vector<TMaterial const *> const & shipMaterials);
+	void MoveUserCustomMaterialsToShip(std::vector<TMaterial const *> const & userMaterials);
 
 private:
 
-	using SinglePod = typename std::vector<std::unique_ptr<typename TMaterial const>>;
+	using SinglePod = typename std::vector<std::unique_ptr<TMaterial const>>;
 
 	SinglePod LoadDefaultUserDatabase(MaterialColorMap<TMaterial> const & defaultMaterialColorMap) const;
 

@@ -33,6 +33,10 @@ struct IMaterialPalettesController
     virtual void OnRemoveCustomStructuralMaterials(std::vector<StructuralMaterial const *> customMaterials) = 0;
     virtual void OnRemoveCustomElectricalMaterials(std::vector<ElectricalMaterial const *> customMaterials) = 0;
     virtual void OnRemoveCustomRopesMaterials(std::vector<StructuralMaterial const *> customMaterials) = 0;
+
+    virtual void OnImportCustomStructuralShipMaterials(std::vector<StructuralMaterial const *> customMaterials) = 0;
+    virtual void OnImportCustomElectricalShipMaterials(std::vector<ElectricalMaterial const *> customMaterials) = 0;
+    virtual void OnImportCustomRopesShipMaterials(std::vector<StructuralMaterial const *> customMaterials) = 0;
 };
 
 }

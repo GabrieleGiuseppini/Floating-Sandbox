@@ -203,6 +203,54 @@ std::tuple<std::vector<std::unique_ptr<typename MaterialDatabase<TLayer>::TMater
     return std::make_tuple(std::move(extractedUserMaterials), std::move(extractedShipMaterials));
 }
 
+template<LayerType TLayer>
+void MaterialDatabase<TLayer>::MoveShipCustomMaterialsToUser(std::vector<TMaterial const *> const & shipMaterials)
+{
+    bool isUserDirty = false;
+    for (auto it = mShipCustomMaterials.begin(); it != mShipCustomMaterials.end(); /*incremented in loop*/)
+    {
+        if (std::find(shipMaterials.cbegin(), shipMaterials.cend(), it->get()) != shipMaterials.cend())
+        {
+            mUserCustomMaterials.emplace_back(std::move(*it));
+            it = mShipCustomMaterials.erase(it);
+            isUserDirty = true;
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    if (isUserDirty)
+    {
+        SaveDefaultUserDatabase();
+    }
+}
+
+template<LayerType TLayer>
+void MaterialDatabase<TLayer>::MoveUserCustomMaterialsToShip(std::vector<TMaterial const *> const & userMaterials)
+{
+    bool isUserDirty = false;
+    for (auto it = mUserCustomMaterials.begin(); it != mUserCustomMaterials.end(); /*incremented in loop*/)
+    {
+        if (std::find(userMaterials.cbegin(), userMaterials.cend(), it->get()) != userMaterials.cend())
+        {
+            mShipCustomMaterials.emplace_back(std::move(*it));
+            it = mUserCustomMaterials.erase(it);
+            isUserDirty = true;
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    if (isUserDirty)
+    {
+        SaveDefaultUserDatabase();
+    }
+}
+
 //////////////////////////////////////////////////
 
 template<LayerType TLayer>
