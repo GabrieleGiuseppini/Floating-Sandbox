@@ -187,6 +187,7 @@ wxSizer * CustomMaterialsImportPickDialog::MakeSelectionPanel(
 
     int constexpr HMargin = 5;
     int constexpr InterRowMargin = 5;
+    int constexpr RenderColorButtonSize = 20;
 
     vSizer->AddSpacer(InterRowMargin);
 
@@ -198,7 +199,7 @@ wxSizer * CustomMaterialsImportPickDialog::MakeSelectionPanel(
 
         if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
         {
-            auto renderColorButton = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxSize(20, 20), wxBORDER_SIMPLE);
+            auto renderColorButton = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxSize(RenderColorButtonSize, RenderColorButtonSize), wxBORDER_SIMPLE);
 
             wxColor const back = *wxWHITE;
             double const a = static_cast<double>(material.RenderColor.a) / static_cast<double>(rgbaColor::data_type_max);
@@ -217,10 +218,13 @@ wxSizer * CustomMaterialsImportPickDialog::MakeSelectionPanel(
         }
 
         {
-            // TODO: "duplicate"
             wxCheckBox * chk = new wxCheckBox(panel, wxID_ANY, material.Name, wxDefaultPosition, wxDefaultSize);
 
-            // TODO: enablement
+            if (isDuplicate[icm])
+            {
+                chk->SetLabel(chk->GetLabel() + wxS(" ") + _T("(Duplicated)"));
+                chk->Enable(false);
+            }
 
             chk->Bind(
                 wxEVT_COMMAND_CHECKBOX_CLICKED,
@@ -247,6 +251,8 @@ wxSizer * CustomMaterialsImportPickDialog::MakeSelectionPanel(
 
             mCheckboxes.emplace_back(chk);
         }
+
+        rowSizer->SetMinSize(-1, RenderColorButtonSize);
 
         vSizer->Add(
             rowSizer,
