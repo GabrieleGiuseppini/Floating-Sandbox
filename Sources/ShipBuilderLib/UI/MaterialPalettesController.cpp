@@ -324,7 +324,15 @@ void MaterialPalettesController::OnImportExternalCustomMaterials()
     }
     else
     {
-        // TODO: from json
+        try
+        {
+            customMaterials = BaseMaterialDatabase::LoadCustomMaterialsFile(importFilepath, mDefaultMaterialDatabase);
+        }
+        catch (...)
+        {
+            wxMessageBox(_("The specified file is not a valid custom materials database file."), ApplicationName, wxICON_ERROR);
+            return;
+        }
     }
 
     //

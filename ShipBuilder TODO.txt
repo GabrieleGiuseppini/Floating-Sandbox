@@ -429,7 +429,7 @@
 
 		=== ShipBuilder ===
 
-		= MaterialDatabase<TLayer>
+		+ MaterialDatabase<TLayer>
 			+ Members:
 				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase // for color_hey lookups
 				+ vec<uq> from user
@@ -437,7 +437,7 @@
 			+ cctor:
 				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase
 				+ Loads users's
-			= Ops:
+			+ Ops:
 				+ AddUser
 					+ Store
 					+ Save DB
@@ -464,6 +464,7 @@
 					+ Make helpers to decompose SaveUserMaterials
 				+ DetectEquivalentUserCustomMaterials(single pod) -> vector<bool>
 					+ Refactor DB's SetShipCustomMaterials: export equivalency comparison ("IsEquivalentCustomMaterial")
+				+ Base::CustomMaterialsPod LoadCustomMaterialsFile(filepaht)
 
 			+ Ser/Deset for user custom materials
 				+ parent color_key and VariantOverridesType
@@ -893,7 +894,7 @@
 					+ Refactor creation of dialog
 				= If ok:
 					+ CustomMaterialsPod loadedPod;
-					= Load
+					+ Load
 						+ From ship:
 							+ Deserializer::Load
 							+ If error:
@@ -904,9 +905,9 @@
 								+ Message: "The TODO ship has no custom materials."
 								+ return
 							+ Steal pod
-						- From DB:
-							- BaseDB::LoadCustomMaterialsFile(filepath) -> CustomMaterialsPod
-							- Steal pod
+						+ From DB:
+							+ BaseDB::LoadCustomMaterialsFile(filepath) -> CustomMaterialsPod
+							+ Steal pod
 					+ Filter distinct from DB
 						+ Call x3 DB<LayerType>::DetectEquivalentUserCustomMaterials(single pod) -> vector<bool>							
 					+ If none after filtering:
@@ -916,6 +917,9 @@
 						- Dialog has 3 lists, checkboxes with materials, dupes are disabled and say "(DUPLICATED)"
 						- Dialog has OK and Cancel, and Select All and Clear All
 						- Dialog returns TODO for chosen
+
+						- TODO:
+							- Mix row height (for elec)
 					+ If aborted:
 						+ return
 					- Add to DB

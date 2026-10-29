@@ -160,11 +160,12 @@ wxScrolled<wxPanel> * CustomMaterialsImportPickDialog::MakeSelectionPanel(
     assert(customMaterials.size() == isDuplicate.size());
 
     wxScrolled<wxPanel> * panel = new wxScrolled<wxPanel>(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE | wxVSCROLL);
-    panel->SetMinSize(wxSize(400, 400));
+    panel->SetMinSize(wxSize(300, 400));
     panel->SetBackgroundColour(*wxWHITE);
 
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
+    int constexpr HMargin = 5;
     int constexpr InterRowMargin = 5;
 
     vSizer->AddSpacer(InterRowMargin);
@@ -178,15 +179,21 @@ wxScrolled<wxPanel> * CustomMaterialsImportPickDialog::MakeSelectionPanel(
         if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
         {
             auto renderColorButton = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxSize(20, 20), wxBORDER_SIMPLE);
-            wxColor const c(material.RenderColor.r, material.RenderColor.g, material.RenderColor.b);
+
+            wxColor const back = *wxWHITE;
+            double const a = static_cast<double>(material.RenderColor.a) / static_cast<double>(rgbaColor::data_type_max);
+            wxColor const c(
+                wxColor::AlphaBlend(material.RenderColor.r, back.Red(), a),
+                wxColor::AlphaBlend(material.RenderColor.g, back.Green(), a),
+                wxColor::AlphaBlend(material.RenderColor.b, back.Blue(), a));
             renderColorButton->SetForegroundColour(c);
             renderColorButton->SetBackgroundColour(c);
 
             rowSizer->Add(
                 renderColorButton,
                 0,
-                wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
-                5);
+                wxALIGN_CENTER_VERTICAL | wxLEFT,
+                HMargin);
         }
 
         {
@@ -200,8 +207,8 @@ wxScrolled<wxPanel> * CustomMaterialsImportPickDialog::MakeSelectionPanel(
             rowSizer->Add(
                 chk,
                 1,
-                wxALIGN_CENTER_VERTICAL,
-                0);
+                wxALIGN_CENTER_VERTICAL | wxLEFT,
+                HMargin);
         }
 
         vSizer->Add(

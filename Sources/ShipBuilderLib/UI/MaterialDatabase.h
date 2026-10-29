@@ -7,6 +7,8 @@
 
 #include "../ShipBuilderTypes.h"
 
+#include <Simulation/CustomMaterialsPod.h>
+#include <Simulation/DefaultMaterialDatabase.h>
 #include <Simulation/Layers.h>
 #include <Simulation/Materials.h>
 
@@ -30,6 +32,10 @@ public:
 		std::vector<StructuralMaterial const *> const & customRopesMaterials,
 		std::filesystem::path const & databaseFilepath);
 
+	static CustomMaterialsPod LoadCustomMaterialsFile(
+		std::filesystem::path const & databaseFilepath,
+		DefaultMaterialDatabase const & defaultMaterialDatabase);
+
 protected:
 
 	static void InitializeDatabaseFile(picojson::object & rootJsonObject);
@@ -44,6 +50,13 @@ protected:
 	{
 		return "custom_" + LayerTypeToStr_snake(TLayer) + "_materials";
 	}
+
+	static picojson::object LoadDatabaseJson(std::filesystem::path const & databaseFilepath);
+
+	template<LayerType TLayer>
+	static std::vector<std::unique_ptr<typename LayerTypeTraits<TLayer>::material_type const>> LoadCustomMaterials(
+		picojson::object const & rootJsonObject,
+		MaterialColorMap<typename LayerTypeTraits<TLayer>::material_type> const & defaultMaterialColorMap);
 };
 
 template<LayerType TLayer>
@@ -110,8 +123,6 @@ private:
 	static void SaveUserMaterials(
 		SinglePod const & materials,
 		std::filesystem::path const & databaseFilepath);
-
-	static picojson::object LoadUserDatabaseJson(std::filesystem::path const & databaseFilepath);
 
 	std::filesystem::path MakeDefaultUserDatabaseFilePath() const;
 	std::filesystem::path MakeDefaultUserDatabaseBackupFilePath() const;
