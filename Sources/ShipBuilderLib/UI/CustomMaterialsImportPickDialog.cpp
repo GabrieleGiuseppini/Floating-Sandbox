@@ -7,8 +7,6 @@
 
 #include <Core/GameTypes.h>
 
-#include <wx/button.h>
-#include <wx/checkbox.h>
 #include <wx/scrolwin.h>
 #include <wx/stattext.h>
 
@@ -32,6 +30,15 @@ CustomMaterialsImportPickDialog::CustomMaterialsImportPickDialog(
         wxCAPTION | wxFRAME_SHAPED);
 
     SetBackgroundColour(GetDefaultAttributes().colBg);
+
+    //
+    // State
+    //
+
+    mCheckedMaterialsCount = 0;
+    mCheckedStructuralMaterials = std::vector(structuralCustomMaterials.size(), false);
+    mCheckedElectricalMaterials = std::vector(electricalCustomMaterials.size(), false);
+    mCheckedRopesMaterials = std::vector(ropesCustomMaterials.size(), false);
 
     //
     // Lay out controls
@@ -83,6 +90,51 @@ CustomMaterialsImportPickDialog::CustomMaterialsImportPickDialog(
 
         buttonsSizer->AddStretchSpacer(1);
 
+        auto selectAllButton = new wxButton(this, wxID_ANY, _("Select All"));
+        selectAllButton->Bind(
+            wxEVT_BUTTON,
+            [this](wxCommandEvent &)
+            {
+                mCheckedMaterialsCount = 0;
+                for (auto * chk : mCheckboxes)
+                {
+                    if (chk->IsEnabled())
+                    {
+                        chk->SetValue(true);
+                        ++mCheckedMaterialsCount;
+                        // TODOHERE: set flag
+                    }
+                }
+
+                ReconciliateUIWithSelection();
+            });
+
+        buttonsSizer->Add(selectAllButton, 0, 0, 0);
+
+        buttonsSizer->AddStretchSpacer(1);
+
+        mClearSelectionButton = new wxButton(this, wxID_ANY, _("Clear Selection"));
+        mClearSelectionButton->Bind(
+            wxEVT_BUTTON,
+            [this](wxCommandEvent &)
+            {
+                mCheckedMaterialsCount = 0;
+                for (auto * chk : mCheckboxes)
+                {
+                    if (chk->IsEnabled())
+                    {
+                        chk->SetValue(false);
+                        // TODOHERE: clear flag
+                    }
+                }
+
+                ReconciliateUIWithSelection();
+            });
+
+        buttonsSizer->Add(mClearSelectionButton, 0, 0, 0);
+
+        buttonsSizer->AddStretchSpacer(4);
+
         auto okButton = new wxButton(this, wxID_OK, _("OK"));
         buttonsSizer->Add(okButton, 0, 0, 0);
 
@@ -105,6 +157,8 @@ CustomMaterialsImportPickDialog::CustomMaterialsImportPickDialog(
     SetSizerAndFit(dialogVSizer);
 
     Centre(wxCENTER_ON_SCREEN | wxBOTH);
+
+    ReconciliateUIWithSelection();
 }
 
 template<typename TMaterial>
@@ -168,13 +222,30 @@ wxSizer * CustomMaterialsImportPickDialog::MakeSelectionPanel(
 
             // TODO: enablement
 
-            // TODO: binding
+            chk->Bind(
+                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                [this](wxCommandEvent & event)
+                {
+                    if (event.IsChecked())
+                    {
+                        ++mCheckedMaterialsCount;
+                    }
+                    else
+                    {
+                        assert(mCheckedMaterialsCount > 0);
+                        --mCheckedMaterialsCount;
+                    }
+
+                    ReconciliateUIWithSelection();
+                });
 
             rowSizer->Add(
                 chk,
                 1,
                 wxALIGN_CENTER_VERTICAL | wxLEFT,
                 HMargin);
+
+            mCheckboxes.emplace_back(chk);
         }
 
         vSizer->Add(
@@ -195,6 +266,11 @@ wxSizer * CustomMaterialsImportPickDialog::MakeSelectionPanel(
         0);
 
     return panelVSizer;
+}
+
+void CustomMaterialsImportPickDialog::ReconciliateUIWithSelection()
+{
+    mClearSelectionButton->Enable(mCheckedMaterialsCount > 0);
 }
 
 }

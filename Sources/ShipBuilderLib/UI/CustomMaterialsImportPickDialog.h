@@ -8,6 +8,8 @@
 #include <Simulation/Layers.h>
 #include <Simulation/Materials.h>
 
+#include <wx/button.h>
+#include <wx/checkbox.h>
 #include <wx/dialog.h>
 #include <wx/sizer.h>
 
@@ -36,6 +38,16 @@ private:
         std::vector<std::unique_ptr<TMaterial const>> const & customMaterials,
         std::vector<bool> const & isDuplicate,
         wxString const & title);
+
+    void ReconciliateUIWithSelection();
+
+    wxButton * mClearSelectionButton;
+    std::vector<wxCheckBox *> mCheckboxes;
+
+    int mCheckedMaterialsCount;
+    std::vector<bool> mCheckedStructuralMaterials;
+    std::vector<bool> mCheckedElectricalMaterials;
+    std::vector<bool> mCheckedRopesMaterials;
 };
 
 }
