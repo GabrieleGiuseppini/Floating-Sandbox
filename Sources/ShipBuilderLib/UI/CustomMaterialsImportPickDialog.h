@@ -9,7 +9,7 @@
 #include <Simulation/Materials.h>
 
 #include <wx/dialog.h>
-#include <wx/scrolwin.h>
+#include <wx/sizer.h>
 
 #include <memory>
 #include <vector>
@@ -32,13 +32,10 @@ public:
 private:
 
     template<typename TMaterial>
-    wxScrolled<wxPanel> * MakeSelectionPanel(
+    wxSizer * MakeSelectionPanel(
         std::vector<std::unique_ptr<TMaterial const>> const & customMaterials,
-        std::vector<bool> const & isDuplicate);
-
-    wxScrolled<wxPanel> * mStructuralListPanel;
-    wxScrolled<wxPanel> * mElectricalListPanel;
-    wxScrolled<wxPanel> * mRopesListPanel;
+        std::vector<bool> const & isDuplicate,
+        wxString const & title);
 };
 
 }

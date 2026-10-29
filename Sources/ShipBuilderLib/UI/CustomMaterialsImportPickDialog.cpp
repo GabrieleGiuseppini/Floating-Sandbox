@@ -9,7 +9,7 @@
 
 #include <wx/button.h>
 #include <wx/checkbox.h>
-#include <wx/sizer.h>
+#include <wx/scrolwin.h>
 #include <wx/stattext.h>
 
 namespace ShipBuilder {
@@ -46,73 +46,28 @@ CustomMaterialsImportPickDialog::CustomMaterialsImportPickDialog(
         panelsHSizer->AddSpacer(10);
 
         {
-            wxBoxSizer * panelVSizer = new wxBoxSizer(wxVERTICAL);
-
-            auto label = new wxStaticText(this, wxID_ANY, _("Structural Materials"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
-
-            panelVSizer->Add(
-                label,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-
-            auto sPanel = MakeSelectionPanel(structuralCustomMaterials, duplicateStructuralCustomMaterials);
-
-            panelVSizer->Add(
-                sPanel,
+            panelsHSizer->Add(
+                MakeSelectionPanel(structuralCustomMaterials, duplicateStructuralCustomMaterials, _("Structural Materials")),
                 1,
-                wxEXPAND,
-                0);
-
-            panelsHSizer->Add(panelVSizer, 1, wxEXPAND);
+                wxEXPAND);
         }
 
         panelsHSizer->AddSpacer(10);
 
         {
-            wxBoxSizer * panelVSizer = new wxBoxSizer(wxVERTICAL);
-
-            auto label = new wxStaticText(this, wxID_ANY, _("Electrical Materials"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
-
-            panelVSizer->Add(
-                label,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-
-            auto ePanel = MakeSelectionPanel(electricalCustomMaterials, duplicateElectricalCustomMaterials);
-
-            panelVSizer->Add(
-                ePanel,
+            panelsHSizer->Add(
+                MakeSelectionPanel(electricalCustomMaterials, duplicateElectricalCustomMaterials, _("Electrical Materials")),
                 1,
-                wxEXPAND,
-                0);
-
-            panelsHSizer->Add(panelVSizer, 1, wxEXPAND);
+                wxEXPAND);
         }
 
         panelsHSizer->AddSpacer(10);
 
         {
-            wxBoxSizer * panelVSizer = new wxBoxSizer(wxVERTICAL);
-
-            auto label = new wxStaticText(this, wxID_ANY, _("Ropes Materials"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
-
-            panelVSizer->Add(
-                label,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-
-            auto rPanel = MakeSelectionPanel(ropesCustomMaterials, duplicateRopesCustomMaterials);
-
-            panelVSizer->Add(
-                rPanel,
+            panelsHSizer->Add(
+                MakeSelectionPanel(ropesCustomMaterials, duplicateRopesCustomMaterials, _("Ropes Materials")),
                 1,
-                wxEXPAND,
-                0);
-
-            panelsHSizer->Add(panelVSizer, 1, wxEXPAND);
+                wxEXPAND);
         }
 
         panelsHSizer->AddSpacer(10);
@@ -153,11 +108,22 @@ CustomMaterialsImportPickDialog::CustomMaterialsImportPickDialog(
 }
 
 template<typename TMaterial>
-wxScrolled<wxPanel> * CustomMaterialsImportPickDialog::MakeSelectionPanel(
+wxSizer * CustomMaterialsImportPickDialog::MakeSelectionPanel(
     std::vector<std::unique_ptr<TMaterial const>> const & customMaterials,
-    std::vector<bool> const & isDuplicate)
+    std::vector<bool> const & isDuplicate,
+    wxString const & title)
 {
     assert(customMaterials.size() == isDuplicate.size());
+
+    wxBoxSizer * panelVSizer = new wxBoxSizer(wxVERTICAL);
+
+    auto label = new wxStaticText(this, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+
+    panelVSizer->Add(
+        label,
+        0,
+        wxALIGN_CENTER_HORIZONTAL,
+        0);
 
     wxScrolled<wxPanel> * panel = new wxScrolled<wxPanel>(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE | wxVSCROLL);
     panel->SetMinSize(wxSize(300, 400));
@@ -222,7 +188,13 @@ wxScrolled<wxPanel> * CustomMaterialsImportPickDialog::MakeSelectionPanel(
 
     panel->SetSizer(vSizer);
 
-    return panel;
+    panelVSizer->Add(
+        panel,
+        1,
+        wxEXPAND,
+        0);
+
+    return panelVSizer;
 }
 
 }

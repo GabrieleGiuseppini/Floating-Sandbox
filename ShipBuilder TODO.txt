@@ -916,10 +916,10 @@
 					= Create & open dialog for choosing
 						- Dialog has 3 lists, checkboxes with materials, dupes are disabled and say "(DUPLICATED)"
 						- Dialog has OK and Cancel, and Select All and Clear All
-						- Dialog returns TODO for chosen
+						- Dialog returns vector<bool> with chosen marked
 
 						- TODO:
-							- Mix row height (for elec)
+							- Min row height (for elec)
 					+ If aborted:
 						+ return
 					- Add to DB
