@@ -1018,13 +1018,12 @@
 
 	+ PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 
-	- Finalize layout of "Checking/Selected" buttons' area in Browser
-		- Grid?
+	+ Finalize layout of "Checking/Selected" buttons' area in Browser
 
 	+ Add RGB code to property grid
 		+ Get rid of thermal expansion coefficient
 
-
+	- Merge into TODO
 
 
 - Traslate (aka move)

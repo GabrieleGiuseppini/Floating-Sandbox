@@ -13,7 +13,6 @@
 #include <Core/GameExceptions.h>
 #include <Core/Utils.h>
 
-#include <wx/gbsizer.h>
 #include <wx/statline.h>
 #include <wx/wupdlock.h>
 
@@ -380,7 +379,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
 
             // Controls
             {
-                wxGridBagSizer * gridSizer = new wxGridBagSizer(5, 5);
+                wxGridSizer * gridSizer = new wxGridSizer(3, 2, 5, 5);
 
                 {
                     mSelectAllButton = new wxButton(this, wxID_ANY, _("Select All"), wxDefaultPosition, wxDefaultSize);
@@ -401,11 +400,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                             this->SetFocus();
                         });
 
-                    gridSizer->Add(
-                        mSelectAllButton,
-                        wxGBPosition(0, 0),
-                        wxGBSpan(1, 1),
-                        wxALIGN_CENTRE);
+                    gridSizer->Add(mSelectAllButton, 1, wxEXPAND);
                 }
 
                 {
@@ -427,11 +422,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                             this->SetFocus();
                         });
 
-                    gridSizer->Add(
-                        mClearSelectionButton,
-                        wxGBPosition(0, 1),
-                        wxGBSpan(1, 1),
-                        wxALIGN_CENTRE);
+                    gridSizer->Add(mClearSelectionButton, 1, wxEXPAND);
                 }
 
                 {
@@ -464,11 +455,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                             this->SetFocus();
                         });
 
-                    gridSizer->Add(
-                        mDeleteSelectedButton,
-                        wxGBPosition(1, 0),
-                        wxGBSpan(1, 1),
-                        wxALIGN_CENTRE);
+                    gridSizer->Add(mDeleteSelectedButton, 1, wxEXPAND);
                 }
 
                 {
@@ -502,11 +489,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                             this->SetFocus();
                         });
 
-                    gridSizer->Add(
-                        mImportSelectedShipButton,
-                        wxGBPosition(1, 1),
-                        wxGBSpan(1, 1),
-                        wxALIGN_CENTRE);
+                    gridSizer->Add(mImportSelectedShipButton, 1, wxEXPAND);
                 }
 
                 {
@@ -523,11 +506,7 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                             this->SetFocus();
                         });
 
-                    gridSizer->Add(
-                        mExportAllSelectedButton,
-                        wxGBPosition(2, 0),
-                        wxGBSpan(1, 1),
-                        wxALIGN_CENTRE);
+                    gridSizer->Add(mExportAllSelectedButton, 1, wxEXPAND);
                 }
 
                 {
@@ -544,15 +523,8 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                             this->SetFocus();
                         });
 
-                    gridSizer->Add(
-                        mImportButton,
-                        wxGBPosition(2, 1),
-                        wxGBSpan(1, 1),
-                        wxALIGN_CENTRE);
+                    gridSizer->Add(mImportButton, 1, wxEXPAND);
                 }
-
-
-                WxHelpers::MakeAllRowsExpandable(gridSizer);
 
                 hSizer->Add(gridSizer, 0, wxEXPAND);
             }
@@ -565,6 +537,8 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
                 wxEXPAND, // Expand horizontally
                 0);
         }
+
+        rVSizer->AddSpacer(5);
 
         mRootHSizer->Add(
             rVSizer,
