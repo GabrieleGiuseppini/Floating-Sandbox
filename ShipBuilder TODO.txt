@@ -182,7 +182,7 @@
 
 	====
 
-	= Workflows:
+	+ Workflows:
 		+ Adding new custom material
 			+ User clicks on "+" button
 			+ When committed:
@@ -242,14 +242,14 @@
 			+ File SaveAs dialog for .json
 			+ If ok:
 				+ Call DB::Export(materials, file_path)
-		- Importing custom materials from a json or from a ship into user's
-			- User chooses from list, filtered by distincting with user's
-				- If none available, popup message
-			- When committed:
-				- Add to DB
-					- Save DB
-				- Update palette
-				- Populate Undo with materials 			
+		+ Importing custom materials from a json or from a ship into user's
+			+ User chooses from list, filtered by distincting with user's
+				+ If none available, popup message
+			+ When committed:
+				+ Add to DB
+					+ Save DB
+				+ Update palette
+				+ Populate Undo with materials 			
 
 	! Arch:
 		+ MaterialDatabase<TLayer>: aggregation of three sets (Default, User, Ship)
@@ -273,7 +273,7 @@
 				  takes the pointer of that one
 				- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
 		
-	= Impl:
+	+ Impl:
 		+ Make custom_materials branch
 
 		=== Simulation ===
@@ -504,7 +504,8 @@
 			+ OnExportCheckedCustomMaterials()
 			+ OnImportExternalCustomMaterials()
 
-		= MaterialPalettePanel<TLayer>: HEAVY REDESIGN
+		+ MaterialPalettePanel<TLayer>: HEAVY REDESIGN
+			! Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
 			+ cctor:
 				+ IMaterialPaletteController<TLayer> (for workflows)
 			+ Hierarchy: 
@@ -628,10 +629,9 @@
 			+ GetCheckedMaterials() const -> vector<TMaterial *>
 				+ Navigate hierarchy and fetch selected ones
 			+ GetCheckedShipMaterials const -> vector<TMaterial *>
-			- FindCellFor: can speedup with lookups
-			- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
-
-		= MaterialPaletteBrowser<TLayer> : IMaterialPalette
+			+ FindCellFor: can speedup with lookups
+			
+		+ MaterialPaletteBrowser<TLayer> : IMaterialPalette
 			! Owns only its own tiles
 			+ Replace selected events with calls into IMaterialPaletteController
 			+ cctor:
@@ -1016,34 +1016,13 @@
 				+ Ropes
 					+ Test, incl. Undo
 
-	- TODOHERE: master list of all tasks:
-		= Import
-			- Tests:
-				= DetectEquivalentUserCustomMaterials:
-					- All materials duplicate
-						- FIX: second import doesn't flag as dupes
-					- Some of user's, 2 layers
-
-				- Import from undeserializable ship
-
-
-				+ Import when palette has ship materials: verify slotted at right cells
-
-				+ After import:
-					+ DB
-					+ Palette
-				+ After undo:
-					+ DB
-					+ Palette
+	+ PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 
 	- Finalize layout of "Checking/Selected" buttons' area in Browser
 		- Grid?
 
-	- PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
 	+ Add RGB code to property grid
 		+ Get rid of thermal expansion coefficient
-
-	- Tests:
 
 
 

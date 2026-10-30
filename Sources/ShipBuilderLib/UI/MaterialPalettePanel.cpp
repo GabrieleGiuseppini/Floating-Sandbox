@@ -121,7 +121,6 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     Connect(this->GetId(), wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&PanelClass::OnMouseLeave);
     Connect(this->GetId(), wxEVT_MOTION, (wxObjectEventFunction)&PanelClass::OnMouseMoved);
     Connect(this->GetId(), wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PanelClass::OnMouseLeftDown);
-    Connect(this->GetId(), wxEVT_LEFT_UP, (wxObjectEventFunction)&PanelClass::OnMouseLeftUp);
 }
 
 template<LayerType TLayer>
@@ -406,7 +405,7 @@ void MaterialPalettePanel<TLayer>::ReplaceCustomMaterial(TMaterial const * oldMa
 }
 
 template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::SetSelected(TMaterial const * material)
+std::optional<wxRect> MaterialPalettePanel<TLayer>::SetSelected(TMaterial const * material)
 {
     auto const * cell = FindCellFor(material);
     if (cell != nullptr)
@@ -417,6 +416,8 @@ void MaterialPalettePanel<TLayer>::SetSelected(TMaterial const * material)
 
             Refresh(false);
         }
+
+        return cell->Rect;
     }
     else if (mCurrentSelectedCellId != NoneCellId)
     {
@@ -424,6 +425,8 @@ void MaterialPalettePanel<TLayer>::SetSelected(TMaterial const * material)
 
         Refresh(false);
     }
+
+    return std::nullopt;
 }
 
 template<LayerType TLayer>
@@ -610,13 +613,6 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
             }
         }
     }
-}
-
-template<LayerType TLayer>
-void MaterialPalettePanel<TLayer>::OnMouseLeftUp(wxMouseEvent & event)
-{
-    // TODO: button feedback if any, otherwise nuke
-    (void)event;
 }
 
 template<LayerType TLayer>
@@ -1577,18 +1573,19 @@ typename MaterialPalettePanel<TLayer>::Cell * MaterialPalettePanel<TLayer>::Find
 {
     assert(material != nullptr);
 
-    for (auto & row : mRows)
+    size_t const iRow = FindRowFor(material);
+    if (iRow < mRows.size())
     {
-        if (row.Kind == Row::KindType::SubCategory)
+        Row & row = mRows[iRow];
+        size_t const iStride = FindStrideFor(material, row);
+        if (iStride < row.Strides.size())
         {
-            for (auto & stride : row.Strides)
+            MaterialStride & stride = row.Strides[iStride];
+            for (auto & cell : stride.Cells)
             {
-                for (auto & cell : stride.Cells)
+                if (cell.Kind == Cell::KindType::Material && cell.Material == material)
                 {
-                    if (cell.Kind == Cell::KindType::Material && cell.Material == material)
-                    {
-                        return &cell;
-                    }
+                    return &cell;
                 }
             }
         }

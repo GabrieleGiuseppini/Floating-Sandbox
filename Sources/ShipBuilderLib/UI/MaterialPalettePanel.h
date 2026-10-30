@@ -154,7 +154,7 @@ public:
 
     void ReplaceCustomMaterial(TMaterial const * oldMaterial, TMaterial const * newMaterial);
 
-    void SetSelected(TMaterial const * material);
+    std::optional<wxRect> SetSelected(TMaterial const * material);
 
     void SetAllCustomMaterialsIsChecked(bool value);
 
@@ -170,7 +170,6 @@ private:
     void OnMouseLeave();
     void OnMouseMoved(wxMouseEvent & event);
     void OnMouseLeftDown(wxMouseEvent & event);
-    void OnMouseLeftUp(wxMouseEvent & event);
 
     void OnCreateNewButton(Cell & cell);
     void OnEditButton(Cell & cell);

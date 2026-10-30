@@ -120,10 +120,10 @@ MaterialPaletteBrowser<TLayer>::MaterialPaletteBrowser(
 
                     categoryButton->Bind(
                         wxEVT_LEFT_DOWN,
-                        [this, categoryHeadMaterial](wxMouseEvent & /*event*/)
+                        [this, categoryHeadMaterialPtr = &categoryHeadMaterial](wxMouseEvent & /*event*/)
                         {
                             // Select head material
-                            SetMaterialSelected(&categoryHeadMaterial);
+                            SetMaterialSelected(categoryHeadMaterialPtr);
                         });
 
                     mCategoryListPanelSizer->Add(
@@ -1522,6 +1522,7 @@ void MaterialPaletteBrowser<TLayer>::SetMaterialSelected(TMaterial const * mater
     //
 
     MaterialPalettePanel<TLayer> * selectedCategoryPanel = nullptr;
+    std::optional<wxRect> selectedRect;
 
     for (auto it : mCategoryPanelsByCategory)
     {
@@ -1535,7 +1536,7 @@ void MaterialPaletteBrowser<TLayer>::SetMaterialSelected(TMaterial const * mater
             mCategoryPanelsContainerSizer->Show(selectedCategoryPanel, true);
 
             // Set selection on the material
-            selectedCategoryPanel->SetSelected(material);
+            selectedRect = selectedCategoryPanel->SetSelected(material);
 
             // Reconciliate UI with _this_ panel
             ReconciliateUIWithPanelCheckedState(selectedCategoryPanel);
@@ -1560,6 +1561,24 @@ void MaterialPaletteBrowser<TLayer>::SetMaterialSelected(TMaterial const * mater
 
         // Resize whole window now that category panel has changed its size
         Layout();
+    }
+
+    // Center on the selected material's cell
+    if (selectedRect.has_value())
+    {
+        wxPoint const centerPoint(selectedRect->x + selectedRect->width / 2, selectedRect->y + selectedRect->height / 2);
+
+        // Coords of visible (scrolled) origin
+        wxPoint const so(
+            std::max(centerPoint.x - mCategoryPanelsContainer->GetSize().GetWidth() / 2, 0),
+            std::max(centerPoint.y - mCategoryPanelsContainer->GetSize().GetHeight() / 2, 0));
+
+        int sppx, sppy;
+        mCategoryPanelsContainer->GetScrollPixelsPerUnit(&sppx, &sppy);
+        if (sppx > 0 && sppy > 0)
+        {
+            mCategoryPanelsContainer->Scroll(so.x / sppx, so.y / sppy);
+        }
     }
 }
 

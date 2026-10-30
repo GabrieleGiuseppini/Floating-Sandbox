@@ -166,7 +166,6 @@ std::vector<bool> MaterialDatabase<TLayer>::DetectEquivalentUserCustomMaterials(
             }) != mUserCustomMaterials.cend())
         {
             equivalentMarkers[cm] = true;
-            break;
         }
     }
 
