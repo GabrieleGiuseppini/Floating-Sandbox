@@ -118,6 +118,11 @@ private:
         std::vector<TMaterial const *> const & customMaterials,
         CustomMaterialRegisterKindType registerKind);
 
+    template<typename TFunctor>
+    void ApplyLayoutToCategoryPanels(
+        std::vector<TMaterial const *> const & customMaterials,
+        TFunctor && functor);
+
     MaterialPalettePanel<TLayer> * CreateCategoryPanel(
         wxWindow * parent,
         typename DefaultMaterialDatabase::Palette<TMaterial>::Category const & defaultMaterialCategory,

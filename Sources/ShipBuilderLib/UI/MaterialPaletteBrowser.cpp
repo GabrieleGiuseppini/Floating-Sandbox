@@ -787,7 +787,7 @@ void MaterialPaletteBrowser<TLayer>::SetShipCustomMaterials(std::vector<std::uni
     //
     // Visit all our categories; for each:
     //  - Remove its ship materials
-    //  - Add ship materials
+    //  - Add ship materials for that category, if any
     //
 
     for (auto & entry : mCategoryPanelsByCategory)
@@ -839,35 +839,20 @@ void MaterialPaletteBrowser<TLayer>::ReplaceCustomMaterial(TMaterial const * old
 template<LayerType TLayer>
 void MaterialPaletteBrowser<TLayer>::RemoveCustomMaterials(std::vector<TMaterial const *> const & customMaterials)
 {
-    // Organize materials into Category->Materials map
-    std::map<std::string, std::vector<TMaterial const *>> customMaterialsByCategory;
-    for (TMaterial const * customMaterial : customMaterials)
-    {
-        assert(customMaterial->PaletteCoordinates.has_value());
-        customMaterialsByCategory[customMaterial->PaletteCoordinates->Category].push_back(customMaterial);
-    }
-
-    // Visit all these categories
-    for (auto const it : customMaterialsByCategory)
-    {
-        // Get this panel
-        auto panel = mCategoryPanelsByCategory.at(it.first);
-
-        // Start layout
-        auto layoutSession = panel->StartCustomMaterialsLayout();
-
-        // Remove materials
-        for (TMaterial const * material : it.second)
+    ApplyLayoutToCategoryPanels(
+        customMaterials,
+        [&](std::vector<TMaterial const *> const & materials,
+            MaterialPalettePanel<TLayer> * panel,
+            std::any layoutSession) -> std::any
         {
-            layoutSession = panel->RemoveCustomMaterial(material, layoutSession);
-        }
+            // Remove materials
+            for (TMaterial const * material : materials)
+            {
+                layoutSession = panel->RemoveCustomMaterial(material, layoutSession);
+            }
 
-        // Finish layout
-        panel->EndCustomMaterialsLayout(layoutSession);
-    }
-
-    // Make sure that horizontal scrollbars show/hide for new panel size
-    Layout();
+            return layoutSession;
+        });
 }
 
 template<LayerType TLayer>
@@ -875,36 +860,21 @@ void MaterialPaletteBrowser<TLayer>::MoveCustomMaterialsRegister(
     std::vector<TMaterial const *> const & customMaterials,
     CustomMaterialRegisterKindType targetRegister)
 {
-    // Organize materials into Category->Materials map
-    std::map<std::string, std::vector<TMaterial const *>> customMaterialsByCategory;
-    for (TMaterial const * customMaterial : customMaterials)
-    {
-        assert(customMaterial->PaletteCoordinates.has_value());
-        customMaterialsByCategory[customMaterial->PaletteCoordinates->Category].push_back(customMaterial);
-    }
-
-    // Visit all these categories
-    for (auto const it : customMaterialsByCategory)
-    {
-        // Get this panel
-        auto panel = mCategoryPanelsByCategory.at(it.first);
-
-        // Start layout
-        auto layoutSession = panel->StartCustomMaterialsLayout();
-
-        // Move materials
-        for (TMaterial const * material : it.second)
+    ApplyLayoutToCategoryPanels(
+        customMaterials,
+        [&](std::vector<TMaterial const *> const & materials,
+            MaterialPalettePanel<TLayer> * panel,
+            std::any layoutSession) -> std::any
         {
-            layoutSession = panel->RemoveCustomMaterial(material, layoutSession);
-            layoutSession = panel->AddCustomMaterial(material, targetRegister, layoutSession);
-        }
+            // Move materials
+            for (TMaterial const * material : materials)
+            {
+                layoutSession = panel->RemoveCustomMaterial(material, layoutSession);
+                layoutSession = panel->AddCustomMaterial(material, targetRegister, layoutSession);
+            }
 
-        // Finish layout
-        panel->EndCustomMaterialsLayout(layoutSession);
-    }
-
-    // Make sure that horizontal scrollbars show/hide for new panel size
-    Layout();
+            return layoutSession;
+        });
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -914,6 +884,28 @@ void MaterialPaletteBrowser<TLayer>::AddCustomMaterials(
     std::vector<TMaterial const *> const & customMaterials,
     CustomMaterialRegisterKindType registerKind)
 {
+    ApplyLayoutToCategoryPanels(
+        customMaterials,
+        [&](std::vector<TMaterial const *> const & materials,
+            MaterialPalettePanel<TLayer> * panel,
+            std::any layoutSession) -> std::any
+        {
+            // Add materials
+            for (TMaterial const * material : materials)
+            {
+                layoutSession = panel->AddCustomMaterial(material, registerKind, layoutSession);
+            }
+
+            return layoutSession;
+        });
+}
+
+template<LayerType TLayer>
+template<typename TFunctor>
+void MaterialPaletteBrowser<TLayer>::ApplyLayoutToCategoryPanels(
+    std::vector<TMaterial const *> const & customMaterials,
+    TFunctor && functor)
+{
     // Organize materials into Category->Materials map
     std::map<std::string, std::vector<TMaterial const *>> customMaterialsByCategory;
     for (TMaterial const * customMaterial : customMaterials)
@@ -931,11 +923,8 @@ void MaterialPaletteBrowser<TLayer>::AddCustomMaterials(
         // Start layout
         auto layoutSession = panel->StartCustomMaterialsLayout();
 
-        // Add materials
-        for (TMaterial const * material : it.second)
-        {
-            layoutSession = panel->AddCustomMaterial(material, registerKind, layoutSession);
-        }
+        // Apply
+        layoutSession = functor(it.second, panel, layoutSession);
 
         // Finish layout
         panel->EndCustomMaterialsLayout(layoutSession);

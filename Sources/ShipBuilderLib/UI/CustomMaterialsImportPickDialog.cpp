@@ -96,13 +96,14 @@ CustomMaterialsImportPickDialog::CustomMaterialsImportPickDialog(
             [this](wxCommandEvent &)
             {
                 mCheckedMaterialsCount = 0;
-                for (auto * chk : mCheckboxes)
+                for (size_t iChk = 0; iChk < mCheckboxes.size(); ++iChk)
                 {
+                    auto * chk = mCheckboxes[iChk];
                     if (chk->IsEnabled())
                     {
                         chk->SetValue(true);
                         ++mCheckedMaterialsCount;
-                        // TODOHERE: set flag
+                        *(mCheckboxCheckedFlags[iChk]) = true;
                     }
                 }
 
@@ -118,15 +119,17 @@ CustomMaterialsImportPickDialog::CustomMaterialsImportPickDialog(
             wxEVT_BUTTON,
             [this](wxCommandEvent &)
             {
-                mCheckedMaterialsCount = 0;
-                for (auto * chk : mCheckboxes)
+                for (size_t iChk = 0; iChk < mCheckboxes.size(); ++iChk)
                 {
+                    auto * chk = mCheckboxes[iChk];
                     if (chk->IsEnabled())
                     {
                         chk->SetValue(false);
-                        // TODOHERE: clear flag
+                        *(mCheckboxCheckedFlags[iChk]) = false;
                     }
                 }
+
+                mCheckedMaterialsCount = 0;
 
                 ReconciliateUIWithSelection();
             });
@@ -182,6 +185,7 @@ wxSizer * CustomMaterialsImportPickDialog::MakeSelectionPanel(
 
     wxScrolled<wxPanel> * panel = new wxScrolled<wxPanel>(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE | wxVSCROLL);
     panel->SetMinSize(wxSize(300, 400));
+    panel->SetScrollRate(0, 5);
     panel->SetBackgroundColour(*wxWHITE);
 
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);

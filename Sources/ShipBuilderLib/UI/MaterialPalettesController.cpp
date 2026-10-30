@@ -541,6 +541,20 @@ void MaterialPalettesController::OnRemoveCustomMaterials(std::vector<typename La
     using TMaterial = typename LayerTypeTraits<TLayerType>::material_type;
 
     //
+    // Ask user if sure
+    //
+
+    auto result = wxMessageBox(
+        _T("Are you sure you want to delete the selected custom materials?"),
+        ApplicationName,
+        wxICON_EXCLAMATION | wxOK | wxCANCEL | wxCENTRE);
+
+    if (result != wxOK)
+    {
+        return;
+    }
+
+    //
     // Check if in-use by ship
     //
 
@@ -578,7 +592,7 @@ void MaterialPalettesController::OnRemoveCustomMaterials(std::vector<typename La
             _("Remove Particles from Ship"),
             _("Abort"));
 
-        auto const result = dialog.ShowModal();
+        result = dialog.ShowModal();
         if (result == wxID_YES)
         {
             // Keep materials
