@@ -378,19 +378,80 @@ void MaterialPalettesController::OnImportExternalCustomMaterials()
     auto filteredElectrical = FilterSinglePod(std::move(customMaterials.CustomElectricalLayerMaterials), pickDlg.GetCheckedElectricalMaterials());
     auto filteredRopes = FilterSinglePod(std::move(customMaterials.CustomRopesLayerMaterials), pickDlg.GetCheckedRopesMaterials());
 
-    // TODOHERE
-    for (auto const & x : filteredStructural)
+    if (filteredStructural.empty()
+        && filteredElectrical.empty()
+        && filteredRopes.empty())
     {
-        LogMessage("S: ", x->Name);
+        // Nothing to do!
+        return;
     }
-    for (auto const & x : filteredElectrical)
+
+    //
+    // Add to DBs and palettes, saving pointers first
+    //
+
+    std::vector<StructuralMaterial const *> filteredStructuralPtrs;
+    if (!filteredStructural.empty())
     {
-        LogMessage("E: ", x->Name);
+        std::transform(
+            filteredStructural.cbegin(),
+            filteredStructural.cend(),
+            std::back_inserter(filteredStructuralPtrs),
+            [](auto const & cm) { return cm.get(); });
+
+        GetDatabase<LayerType::Structural>().AddUserCustomMaterials(std::move(filteredStructural));
+        GetPaletteBrowser<LayerType::Structural>().AddUserCustomMaterials(filteredStructuralPtrs);
     }
-    for (auto const & x : filteredRopes)
+
+    std::vector<ElectricalMaterial const *> filteredElectricalPtrs;
+    if (!filteredElectrical.empty())
     {
-        LogMessage("R: ", x->Name);
+        std::transform(
+            filteredElectrical.cbegin(),
+            filteredElectrical.cend(),
+            std::back_inserter(filteredElectricalPtrs),
+            [](auto const & cm) { return cm.get(); });
+
+        GetDatabase<LayerType::Electrical>().AddUserCustomMaterials(std::move(filteredElectrical));
+        GetPaletteBrowser<LayerType::Electrical>().AddUserCustomMaterials(filteredElectricalPtrs);
     }
+
+    std::vector<StructuralMaterial const *> filteredRopesPtrs;
+    if (!filteredRopes.empty())
+    {
+        std::transform(
+            filteredRopes.cbegin(),
+            filteredRopes.cend(),
+            std::back_inserter(filteredRopesPtrs),
+            [](auto const & cm) { return cm.get(); });
+
+        GetDatabase<LayerType::Ropes>().AddUserCustomMaterials(std::move(filteredRopes));
+        GetPaletteBrowser<LayerType::Ropes>().AddUserCustomMaterials(filteredRopesPtrs);
+    }
+
+    //
+    // Prepare undo
+    //
+
+    auto materialUndoAction = [
+        this,
+        filteredStructuralPtrs = std::move(filteredStructuralPtrs),
+        filteredElectricalPtrs = std::move(filteredElectricalPtrs),
+        filteredRopesPtrs = std::move(filteredRopesPtrs)](Controller &) mutable
+        {
+            RestoreCustomMaterialsImportForUndo(
+                std::move(filteredStructuralPtrs),
+                std::move(filteredElectricalPtrs),
+                std::move(filteredRopesPtrs));
+        };
+
+    auto & controller = mControllerGetter();
+
+    controller.StoreUndoAction(
+        _("Materials Import"),
+        1, // Nominal
+        controller.GetModelController().GetDirtyState(),
+        std::move(materialUndoAction));
 }
 
 ////////////////////////////////////////////////////////////
@@ -726,6 +787,34 @@ void MaterialPalettesController::OnImportCustomShipMaterials(std::vector<typenam
     //
 
     GetPaletteBrowser<TLayerType>().MoveCustomMaterialsRegister(customMaterials, CustomMaterialRegisterKindType::User);
+}
+
+void MaterialPalettesController::RestoreCustomMaterialsImportForUndo(
+    std::vector<StructuralMaterial const *> && structuralMaterialsImported,
+    std::vector<ElectricalMaterial const *> && electricalMaterialsImported,
+    std::vector<StructuralMaterial const *> && ropesMaterialsImported)
+{
+    //
+    // Remove from DBs and palettes
+    //
+
+    if (!structuralMaterialsImported.empty())
+    {
+        GetPaletteBrowser<LayerType::Structural>().RemoveCustomMaterials(structuralMaterialsImported);
+        GetDatabase<LayerType::Structural>().RemoveUserCustomMaterials(structuralMaterialsImported);
+    }
+
+    if (!electricalMaterialsImported.empty())
+    {
+        GetPaletteBrowser<LayerType::Electrical>().RemoveCustomMaterials(electricalMaterialsImported);
+        GetDatabase<LayerType::Electrical>().RemoveUserCustomMaterials(electricalMaterialsImported);
+    }
+
+    if (!ropesMaterialsImported.empty())
+    {
+        GetPaletteBrowser<LayerType::Ropes>().RemoveCustomMaterials(ropesMaterialsImported);
+        GetDatabase<LayerType::Ropes>().RemoveUserCustomMaterials(ropesMaterialsImported);
+    }
 }
 
 template<LayerType TLayerType>

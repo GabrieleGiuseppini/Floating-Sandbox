@@ -464,6 +464,7 @@
 					+ Make helpers to decompose SaveUserMaterials
 				+ DetectEquivalentUserCustomMaterials(single pod) -> vector<bool>
 					+ Refactor DB's SetShipCustomMaterials: export equivalency comparison ("IsEquivalentCustomMaterial")
+				+ RemoveUserCustomMaterials(vector<TMaterial const *>)
 				+ Base::CustomMaterialsPod LoadCustomMaterialsFile(filepaht)
 
 			+ Ser/Deset for user custom materials
@@ -785,7 +786,7 @@
 					+ At change of layer, need to close palette browser if it's open
 				+ Clear this work item somewhere else in the plan
 
-		= MaterialPalettesController
+		+ MaterialPalettesController
 			+ Replaces CompositeMaterialPalette
 			+ Replace event-based args in inline callbacks with vals
 				+ mOnXXXLayerMaterialSelected callbacks: take same args as interface
@@ -889,10 +890,10 @@
 				+ File SaveAs dialog for .json
 				+ If ok:
 					+ Call DB::ExportCustomMaterials(materials X 3, file_path)
-			= OnImportExternalCustomMaterials()
+			+ OnImportExternalCustomMaterials()
 				+ File Open dialog for .json
 					+ Refactor creation of dialog
-				= If ok:
+				+ If ok:
 					+ CustomMaterialsPod loadedPod;
 					+ Load
 						+ From ship:
@@ -920,15 +921,15 @@
 						+ Dialog returns vector<bool> with chosen marked
 					+ If aborted:
 						+ return
-					- If none:
-						- return
-					- Add to DB
-						- Save DB
-					- Update palette
-					- Populate Undo with materials
-						- Need just pointers for plain removal
-						- DB: Remove user's
-
+					+ If none:
+						+ return
+					+ Add to DB
+						+ Save DB
+					+ Update palette
+					+ Populate Undo with materials
+						+ Need just pointers for plain removal
+						+ Remove from DB
+						+ Remove from palette
 
 		+ MaterialEditDialog: 
 			+ Two dialogs, two classes, one base with common code
@@ -1016,12 +1017,24 @@
 					+ Test, incl. Undo
 
 	- TODOHERE: master list of all tasks:
-		- Import
+		= Import
 			- Tests:
-				- Import from undeserializable ship
-				- DetectEquivalentUserCustomMaterials:
+				= DetectEquivalentUserCustomMaterials:
+					- All materials duplicate
+						- FIX: second import doesn't flag as dupes
 					- Some of user's, 2 layers
-				- All materials duplicate
+
+				- Import from undeserializable ship
+
+
+				+ Import when palette has ship materials: verify slotted at right cells
+
+				+ After import:
+					+ DB
+					+ Palette
+				+ After undo:
+					+ DB
+					+ Palette
 
 	- Finalize layout of "Checking/Selected" buttons' area in Browser
 		- Grid?

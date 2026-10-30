@@ -190,6 +190,8 @@ void MaterialDatabase<TLayer>::AddUserCustomMaterials(std::vector<std::unique_pt
     {
         mUserCustomMaterials.emplace_back(std::move(uq));
     }
+
+    SaveDefaultUserDatabase();
 }
 
 template<LayerType TLayer>
@@ -291,6 +293,32 @@ std::unique_ptr<typename MaterialDatabase<TLayer>::TMaterial const> typename Mat
 
     assert(false);
     return std::unique_ptr<TMaterial const>();
+}
+
+template<LayerType TLayer>
+void MaterialDatabase<TLayer>::RemoveUserCustomMaterials(std::vector<TMaterial const *> const & customMaterials)
+{
+    // Find among user's
+    for (auto it = mUserCustomMaterials.begin(); it != mUserCustomMaterials.end(); /*incremented in loop*/)
+    {
+        auto const srchIt = std::find(
+            customMaterials.cbegin(),
+            customMaterials.cend(),
+            it->get());
+
+        if (srchIt != customMaterials.cend())
+        {
+            // Found
+
+            it = mUserCustomMaterials.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    SaveDefaultUserDatabase();
 }
 
 template<LayerType TLayer>

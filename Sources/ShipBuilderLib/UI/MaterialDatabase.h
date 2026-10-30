@@ -94,6 +94,8 @@ public:
 		TMaterial const * oldMaterial,
 		std::unique_ptr<TMaterial const> && newMaterial);
 
+	void RemoveUserCustomMaterials(std::vector<TMaterial const *> const & customMaterials);
+
 	std::tuple<std::vector<std::unique_ptr<TMaterial const>>, std::vector<std::unique_ptr<TMaterial const>>> ExtractCustomMaterials(std::vector<TMaterial const *> const & materials);
 
 	void MoveShipCustomMaterialsToUser(std::vector<TMaterial const *> const & shipMaterials);

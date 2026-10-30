@@ -143,6 +143,11 @@ private:
     template<LayerType TLayerType>
     void OnImportCustomShipMaterials(std::vector<typename LayerTypeTraits<TLayerType>::material_type const *> customMaterials);
 
+    void RestoreCustomMaterialsImportForUndo(
+        std::vector<StructuralMaterial const *> && structuralMaterialsImported,
+        std::vector<ElectricalMaterial const *> && electricalMaterialsImported,
+        std::vector<StructuralMaterial const *> && ropesMaterialsImported);
+
     template<LayerType TLayerType>
     void RestoreCustomMaterialReplacementForUndo(
         typename LayerTypeTraits<TLayerType>::material_type const * customMaterialToReplace,
