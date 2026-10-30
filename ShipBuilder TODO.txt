@@ -915,15 +915,20 @@
 						+ return
 					= Create & open dialog for choosing
 						+ Dialog has 3 lists, checkboxes with materials, dupes are disabled and say "(DUPLICATED)"
-						= Dialog has OK and Cancel, and Select All and Clear All
-							- Have a vector of vector iterators next to chk vector
-						- Dialog returns vector<bool> with chosen marked
+						+ Dialog has OK and Cancel, and Select All and Clear All
+							+ Have a vector of vector iterators next to chk vector
+						+ Dialog returns vector<bool> with chosen marked
 
 						- TODO:
 							+ Min row height (for elec)
 							- Test many (make scrollbar appear)
+
+							- Delete: ask use if sure
+							- Browser: make helper for by-cat=>loop
 					+ If aborted:
 						+ return
+					- If none:
+						- return
 					- Add to DB
 						- Save DB
 					- Update palette

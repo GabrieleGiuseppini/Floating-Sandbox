@@ -31,18 +31,36 @@ public:
         std::vector<std::unique_ptr<StructuralMaterial const>> const & ropesCustomMaterials,
         std::vector<bool> const & duplicateRopesCustomMaterials);
 
+    std::vector<bool> const & GetCheckedStructuralMaterials() const
+    {
+        return mCheckedStructuralMaterials;
+    }
+
+    std::vector<bool> GetCheckedElectricalMaterials() const
+    {
+        return mCheckedElectricalMaterials;
+    }
+
+    std::vector<bool> GetCheckedRopesMaterials() const
+    {
+        return mCheckedRopesMaterials;
+    }
+
 private:
 
     template<typename TMaterial>
     wxSizer * MakeSelectionPanel(
         std::vector<std::unique_ptr<TMaterial const>> const & customMaterials,
         std::vector<bool> const & isDuplicate,
-        wxString const & title);
+        wxString const & title,
+        std::vector<bool> & checkedMaterialsVector);
 
     void ReconciliateUIWithSelection();
 
     wxButton * mClearSelectionButton;
+
     std::vector<wxCheckBox *> mCheckboxes;
+    std::vector<std::vector<bool>::iterator> mCheckboxCheckedFlags;
 
     int mCheckedMaterialsCount;
     std::vector<bool> mCheckedStructuralMaterials;

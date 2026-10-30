@@ -370,7 +370,27 @@ void MaterialPalettesController::OnImportExternalCustomMaterials()
         return;
     }
 
+    //
+    // Make pods with chosen materials
+    //
+
+    auto filteredStructural = FilterSinglePod(std::move(customMaterials.CustomStructuralLayerMaterials), pickDlg.GetCheckedStructuralMaterials());
+    auto filteredElectrical = FilterSinglePod(std::move(customMaterials.CustomElectricalLayerMaterials), pickDlg.GetCheckedElectricalMaterials());
+    auto filteredRopes = FilterSinglePod(std::move(customMaterials.CustomRopesLayerMaterials), pickDlg.GetCheckedRopesMaterials());
+
     // TODOHERE
+    for (auto const & x : filteredStructural)
+    {
+        LogMessage("S: ", x->Name);
+    }
+    for (auto const & x : filteredElectrical)
+    {
+        LogMessage("E: ", x->Name);
+    }
+    for (auto const & x : filteredRopes)
+    {
+        LogMessage("R: ", x->Name);
+    }
 }
 
 ////////////////////////////////////////////////////////////
@@ -815,6 +835,25 @@ void MaterialPalettesController::PreCustomMaterialDeleted(typename LayerTypeTrai
     {
         OnMaterialSelected<TLayerType>(nullptr, MaterialPlaneType::Background);
     }
+}
+
+template<typename TMaterial>
+std::vector<std::unique_ptr<TMaterial const>> MaterialPalettesController::FilterSinglePod(
+    std::vector<std::unique_ptr<TMaterial const>> && materials,
+    std::vector<bool> const & selected)
+{
+    assert(materials.size() == selected.size());
+
+    std::vector<std::unique_ptr<TMaterial const>> filtered;
+    for (size_t i = 0; i < materials.size(); ++i)
+    {
+        if (selected[i])
+        {
+            filtered.emplace_back(std::move(materials[i]));
+        }
+    }
+
+    return filtered;
 }
 
 wxFileDialog MaterialPalettesController::MakeFileDialog(bool forSave)

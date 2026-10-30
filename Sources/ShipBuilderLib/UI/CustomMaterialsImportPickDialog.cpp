@@ -54,7 +54,7 @@ CustomMaterialsImportPickDialog::CustomMaterialsImportPickDialog(
 
         {
             panelsHSizer->Add(
-                MakeSelectionPanel(structuralCustomMaterials, duplicateStructuralCustomMaterials, _("Structural Materials")),
+                MakeSelectionPanel(structuralCustomMaterials, duplicateStructuralCustomMaterials, _("Structural Materials"), mCheckedStructuralMaterials),
                 1,
                 wxEXPAND);
         }
@@ -63,7 +63,7 @@ CustomMaterialsImportPickDialog::CustomMaterialsImportPickDialog(
 
         {
             panelsHSizer->Add(
-                MakeSelectionPanel(electricalCustomMaterials, duplicateElectricalCustomMaterials, _("Electrical Materials")),
+                MakeSelectionPanel(electricalCustomMaterials, duplicateElectricalCustomMaterials, _("Electrical Materials"), mCheckedElectricalMaterials),
                 1,
                 wxEXPAND);
         }
@@ -72,7 +72,7 @@ CustomMaterialsImportPickDialog::CustomMaterialsImportPickDialog(
 
         {
             panelsHSizer->Add(
-                MakeSelectionPanel(ropesCustomMaterials, duplicateRopesCustomMaterials, _("Ropes Materials")),
+                MakeSelectionPanel(ropesCustomMaterials, duplicateRopesCustomMaterials, _("Ropes Materials"), mCheckedRopesMaterials),
                 1,
                 wxEXPAND);
         }
@@ -165,7 +165,8 @@ template<typename TMaterial>
 wxSizer * CustomMaterialsImportPickDialog::MakeSelectionPanel(
     std::vector<std::unique_ptr<TMaterial const>> const & customMaterials,
     std::vector<bool> const & isDuplicate,
-    wxString const & title)
+    wxString const & title,
+    std::vector<bool> & checkedMaterialsVector)
 {
     assert(customMaterials.size() == isDuplicate.size());
 
@@ -228,8 +229,12 @@ wxSizer * CustomMaterialsImportPickDialog::MakeSelectionPanel(
 
             chk->Bind(
                 wxEVT_COMMAND_CHECKBOX_CLICKED,
-                [this](wxCommandEvent & event)
+                [this, iChk = mCheckboxes.size()](wxCommandEvent & event)
                 {
+                    // Store flag
+                    *(mCheckboxCheckedFlags[iChk]) = event.IsChecked();
+
+                    // Maintain count
                     if (event.IsChecked())
                     {
                         ++mCheckedMaterialsCount;
@@ -240,6 +245,7 @@ wxSizer * CustomMaterialsImportPickDialog::MakeSelectionPanel(
                         --mCheckedMaterialsCount;
                     }
 
+                    // Reconciliate UI
                     ReconciliateUIWithSelection();
                 });
 
@@ -249,7 +255,10 @@ wxSizer * CustomMaterialsImportPickDialog::MakeSelectionPanel(
                 wxALIGN_CENTER_VERTICAL | wxLEFT,
                 HMargin);
 
+            // Store checkbox and its iterator
             mCheckboxes.emplace_back(chk);
+            auto it = std::next(checkedMaterialsVector.begin(), icm);
+            mCheckboxCheckedFlags.emplace_back(it);
         }
 
         rowSizer->SetMinSize(-1, RenderColorButtonSize);

@@ -164,6 +164,11 @@ private:
     template<LayerType TLayerType>
     void PreCustomMaterialDeleted(typename LayerTypeTraits<TLayerType>::material_type const * customMaterial);
 
+    template<typename TMaterial>
+    std::vector<std::unique_ptr<TMaterial const>> FilterSinglePod(
+        std::vector<std::unique_ptr<TMaterial const>> && materials,
+        std::vector<bool> const & selected);
+
     template<LayerType TLayerType>
     MaterialDatabase<TLayerType> const & GetDatabase() const
     {
