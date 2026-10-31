@@ -1023,12 +1023,16 @@
 	+ Add RGB code to property grid
 		+ Get rid of thermal expansion coefficient
 
-	- Merge into TODO
+	- Merge into master
 
 
 - Traslate (aka move)
-	- Structural, Electrical, Ropes
-	+ External
+	! Structural, Electrical, Ropes, External, Internal
+	! Does not use Selection tool nor SelectionManager: does own overlay, just like selection tool
+	- Tool-specific setting: all layers, all layers except texture, just this layer
+	- Two-state: drawing selection, then translating
+		- Traslating only if second-time click *in* selection; otherwise, restarts selection
+	- Undo strategy: like TextureTranslate: At first move, sets undo and dirties model, then remembers "IsDirty" to prevent if from pushing undo again
 
 
 
