@@ -109,9 +109,6 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
             auto const selectionEndCorner = GetMouseSelectionCoordsClamped();
             UpdateEphemeralSelection(TRect(mEngagementData->SelectionStartCorner, selectionEndCorner));
 
-            // TODOTEST
-            LogMessage("MouseMove@Selecting: Layer=", int(TLayer), " SelectionEnd=", selectionEndCorner);
-
             break;
         }
 
@@ -158,9 +155,6 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
 
         UpdateEphemeralSelection(TRect(mEngagementData->SelectionStartCorner, mEngagementData->SelectionStartCorner));
 
-        // TODOTEST
-        LogMessage("MouseDown@None: Layer=", int(TLayer), " SelectionStart=", mEngagementData->SelectionStartCorner);
-
         return;
     }
 
@@ -195,9 +189,6 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
 
                     UpdateEphemeralSelection(TRect(mEngagementData->SelectionStartCorner, mEngagementData->SelectionStartCorner));
 
-                    // TODOTEST
-                    LogMessage("MouseDown@Selected/Outside: Layer=", int(TLayer), " SelectionStart=", mEngagementData->SelectionStartCorner);
-
                     mEngagementData->State = EngagementData::StateType::Selecting;
 
                     InternalSetCursor(mPointerCursor);
@@ -207,8 +198,14 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
             {
                 // Outside of ship - back to square one from nothing
 
-                mEngagementData.reset();
-                StopEphemeralSelection();
+                auto const newSelectionStartCorner = GetMouseSelectionCoordsClamped();
+
+                // Start selecting
+                mEngagementData.emplace(newSelectionStartCorner);
+
+                UpdateEphemeralSelection(TRect(mEngagementData->SelectionStartCorner, mEngagementData->SelectionStartCorner));
+
+                mEngagementData->State = EngagementData::StateType::Selecting;
 
                 InternalSetCursor(mPointerCursor);
             }
@@ -281,9 +278,6 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseUp()
                     selectionEndCorner);
 
                 UpdateEphemeralSelection(*mEngagementData->SelectionRect);
-
-                // TODOTEST
-                LogMessage("MouseUp@Selecting: Layer=", int(TLayer), " SelectionRect=", *mEngagementData->SelectionRect);
 
                 mEngagementData->State = EngagementData::StateType::Selected;
             }

@@ -1061,8 +1061,6 @@
 			- State:
 				- TODOHERE
 
-				- TODO: Clicking outside of canvas should restart from selecting, using clamped coords as starting point
-
 		+ Icon
 		= MainFrame:
 			+ Tool selection @ each layer tools' panel
@@ -1071,7 +1069,8 @@
 				- Transparent (like Paste)
 
 
-		- Remove log lines
+		= Remove log lines
+			+ Tool
 
 	- Merge into master
 
