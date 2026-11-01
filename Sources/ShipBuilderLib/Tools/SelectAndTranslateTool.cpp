@@ -79,6 +79,7 @@ SelectAndTranslateTool<TLayer, TCoordsTag>::SelectAndTranslateTool(
     , mPointerCursor(WxHelpers::LoadCursorImage("selection_cursor", 11, 11, gameAssetManager))
     , mMoveCursor(WxHelpers::LoadCursorImage("pan_cursor", 15, 15, gameAssetManager))
 {
+    SetCursor(mPointerCursor);
 }
 
 template<LayerType TLayer, typename TCoordsTag>
@@ -133,11 +134,11 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
         // Beginning selection (iff in canvas)
         //
 
-        auto const mouseCoords = GetCurrentMouseCoordinatesIfInWorkCanvas();
-        if (mouseCoords)
+        auto const selectionStartCorner = GetMouseSelectionCoordsIfInSpace();
+        if (selectionStartCorner)
         {
             // Start selecting
-            mEngagementData.emplace(ToSelectionCoords(*mouseCoords));
+            mEngagementData.emplace(*selectionStartCorner);
 
             // TODOTEST
             LogMessage("MouseDown: Layer=", int(TLayer), " SelectionStart=", mEngagementData->SelectionStartCorner);
@@ -272,26 +273,49 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::UpdateEphemeralSelection(ShipSp
 }
 
 template<LayerType TLayer, typename TCoordsTag>
-typename SelectAndTranslateTool<TLayer, TCoordsTag>::TCoords SelectAndTranslateTool<TLayer, TCoordsTag>::ToSelectionCoords(DisplayLogicalCoordinates const & mouseCoordinates) const
+std::optional<typename SelectAndTranslateTool<TLayer, TCoordsTag>::TCoords> SelectAndTranslateTool<TLayer, TCoordsTag>::GetMouseSelectionCoordsIfInSpace() const
 {
+    auto const mouseCoordinates = GetCurrentMouseCoordinates();
+    auto const spaceSize = GetSpaceSize();
+
     if constexpr (TLayer == LayerType::Structural
         || TLayer == LayerType::Electrical
         || TLayer == LayerType::Ropes)
     {
-        return ScreenToShipSpaceNearest(mouseCoordinates);
+        ShipSpaceCoordinates const mouseShipCoordinates = ScreenToShipSpaceNearest(mouseCoordinates);
+        if (mouseShipCoordinates.IsInRect(
+            ShipSpaceRect(
+                ShipSpaceCoordinates(0, 0),
+                ShipSpaceSize(spaceSize.width + 1, spaceSize.height + 1))))
+        {
+            return mouseShipCoordinates;
+        }
+        else
+        {
+            return std::nullopt;
+        }
     }
     else
     {
         static_assert(TLayer == LayerType::ExteriorTexture || TLayer == LayerType::InteriorTexture);
 
-        // The tool's inherent layer dictates which texture space we'll be using
-        return ScreenToTextureSpace(TLayer, mouseCoordinates);
+        ImageCoordinates const mouseImageCoordinates = ScreenToTextureSpace(TLayer, mouseCoordinates);
+        if (mouseImageCoordinates.IsInRect(
+            ImageRect(
+                ImageCoordinates(0, 0),
+                ImageSize(spaceSize.width + 1, spaceSize.height + 1))))
+        {
+            return mouseImageCoordinates;
+        }
+        else
+        {
+            return std::nullopt;
+        }
     }
-
 }
 
 template<LayerType TLayer, typename TCoordsTag>
-typename SelectAndTranslateTool<TLayer, TCoordsTag>::TSize SelectAndTranslateTool<TLayer, TCoordsTag>::GetSize() const
+typename SelectAndTranslateTool<TLayer, TCoordsTag>::TSize SelectAndTranslateTool<TLayer, TCoordsTag>::GetSpaceSize() const
 {
     if constexpr (TLayer == LayerType::Structural
         || TLayer == LayerType::Electrical

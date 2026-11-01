@@ -4069,6 +4069,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // MeasuringTape
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralMeasuringTape,
+                    structuralToolbarPanel,
+                    "measuring_tape_icon",
+                    _("Measure lengths."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(3, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Selection
             {
                 auto button = makeToolButton(
@@ -4454,6 +4470,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 toolsSizer->Add(
                     button,
                     wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Sampler
+            {
+                auto button = makeToolButton(
+                    ToolType::RopeSampler,
+                    ropesToolbarPanel,
+                    "sampler_icon",
+                    _("Sample the material under the cursor."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);

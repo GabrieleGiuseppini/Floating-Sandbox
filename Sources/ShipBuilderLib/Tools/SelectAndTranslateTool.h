@@ -50,9 +50,9 @@ private:
 
     void UpdateEphemeralSelection(ShipSpaceRect const & rect);
 
-    TCoords ToSelectionCoords(DisplayLogicalCoordinates const & mouseCoordinates) const;
+    std::optional<TCoords> GetMouseSelectionCoordsIfInSpace() const;
 
-    TSize GetSize() const;
+    TSize GetSpaceSize() const;
 
 private:
 

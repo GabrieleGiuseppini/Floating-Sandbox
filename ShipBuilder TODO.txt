@@ -1045,13 +1045,12 @@
 		- Phase 1 doesn't care about layers
 		- At beginning of phase 2 (first move), tool takes layers region, exactly like @ Controller::InternalCopySelectionToClipboard(), depending on layer settings from WorkbenchState
 			- Also see Controller::Copy(): if not all layers, it's primary viz -- not the "tool's layer" which is never used for action logic
-
-	- Analysis 2: catering to texture or ship
+	! Analysis 2: catering to texture or ship
 		- Base tool is also templated on coords type - ship or image
 			- Internal, specialized helpers provide coords
 		- S/E/R tools' settings are on Ship coords; if layers include texture layers, they're rounded to ship
 		- E/I tools' settings only allow "This layer" and "All texture layers"
-			- The primay layer dictates how we calc coords for other layer
+			- The primary layer dictates how we calc coords for other layer
 
 	= Impl:
 		+ ShipBuilderTypes: N tool types, one for each layer
@@ -1062,11 +1061,11 @@
 			- State:
 				- TODOHERE
 
-		= Icon
+		+ Icon
 		= MainFrame:
 			+ Tool selection @ each layer tools' panel
 			- Settings for tool:
-				- Layers (enum from ShipBuilderTypes: ThisLayer, AllNonTextureLayers, AllLayers)
+				- TODO: see above: Layers (enum from ShipBuilderTypes: ThisLayer, AllNonTextureLayers, AllLayers)
 				- Transparent (like Paste)
 
 
