@@ -48,6 +48,10 @@ protected:
 
 private:
 
+    void InternalStartMove();
+
+    void InternalDoMove(TSize totalMoveOffset);
+
     void UpdateEphemeralSelection(TRect const & rect);
 
     void StopEphemeralSelection();
@@ -84,8 +88,9 @@ private:
         std::optional<TRect> SelectionRect;
 
         // When moving
-        std::optional<TCoords> MoveStartCoords;        
+        std::optional<TCoords> MoveStartCoords;
         bool HasStartedMove; // To detect first change, at which moment we create Undo action
+        std::optional<TSize> MoveShiftConstraints;
 
         EngagementData(TCoords selectionStartCorner)
             : State(StateType::Selecting)

@@ -143,7 +143,7 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
 
             assert(mEngagementData->MoveStartCoords);
 
-            TSize totalMoveOffset = GetMouseSelectionCoords() - *mEngagementData->MoveStartCoords;
+            TSize const totalMoveOffset = GetMouseSelectionCoords() - *mEngagementData->MoveStartCoords;
             if (!totalMoveOffset.IsEmpty())
             {
                 if (!mEngagementData->HasStartedMove)
@@ -152,42 +152,10 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
                     // First of move - push Undo and take Baseline and selected area
                     //
 
-                    // TODOHERE
-                    LogMessage("Started move!");
-
-
-                    mEngagementData->HasStartedMove = true;
+                    InternalStartMove();
                 }
 
-                //
-                // Apply SHIFT constraints to trajectory
-                //
-
-                if (mIsShiftDown)
-                {
-                    if (std::fabsf(totalMoveOffset.width) >= std::fabsf(totalMoveOffset.height))
-                    {
-                        totalMoveOffset.height = 0;
-                    }
-                    else
-                    {
-                        totalMoveOffset.width = 0;
-                    }
-                }
-
-                //
-                // Move selected area
-                //
-
-                // TODOHERE
-
-                //
-                // Move selection overlay
-                //
-
-                assert(mEngagementData->SelectionRect);
-                mEngagementData->SelectionRect->origin = mEngagementData->SelectionStartCorner + totalMoveOffset;
-                UpdateEphemeralSelection(*mEngagementData->SelectionRect);
+                InternalDoMove(totalMoveOffset);
             }
 
             break;
@@ -236,6 +204,8 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
 
                     mEngagementData->MoveStartCoords = *clickSpaceCoords;
                     mEngagementData->HasStartedMove = false;
+                    mEngagementData->MoveShiftConstraints.reset();
+
                     mEngagementData->State = EngagementData::StateType::Moving;
 
                     InternalSetCursor(mMoveCursor);
@@ -356,14 +326,19 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnShiftKeyDown()
 {
     mIsShiftDown = true;
 
-    // TODO
-    //if (mEngagementData)
-    //{
-    //    if (mEngagementData->IsDirty) // Prevent dirtying if nothing has ever changed (i.e. if mouse hasn't moved)
-    //    {
-    //        DoTranslate(ScreenToTextureSpace(TLayer, GetCurrentMouseCoordinates()));
-    //    }
-    //}
+    if (mEngagementData)
+    {
+        // Restart constraints
+        mEngagementData->MoveShiftConstraints.reset();
+
+        if (mEngagementData->State == EngagementData::StateType::Moving)
+        {
+            // Refresh - and eventually reinstate constraints
+            assert(mEngagementData->MoveStartCoords);
+            TSize const totalMoveOffset = GetMouseSelectionCoords() - *mEngagementData->MoveStartCoords;
+            InternalDoMove(totalMoveOffset);
+        }
+    }
 }
 
 template<LayerType TLayer, typename TCoordsTag>
@@ -371,17 +346,90 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnShiftKeyUp()
 {
     mIsShiftDown = false;
 
-    // TODO
-    //if (mEngagementData)
-    //{
-    //    if (mEngagementData->IsDirty) // Prevent dirtying if nothing has ever changed (i.e. if mouse hasn't moved)
-    //    {
-    //        DoTranslate(ScreenToTextureSpace(TLayer, GetCurrentMouseCoordinates()));
-    //    }
-    //}
+    if (mEngagementData)
+    {
+        // Stop constraints
+        mEngagementData->MoveShiftConstraints.reset();
+
+        if (mEngagementData->State == EngagementData::StateType::Moving)
+        {
+            // Refresh
+            assert(mEngagementData->MoveStartCoords);
+            TSize const totalMoveOffset = GetMouseSelectionCoords() - *mEngagementData->MoveStartCoords;
+            InternalDoMove(totalMoveOffset);
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////
+
+template<LayerType TLayer, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalStartMove()
+{
+    // TODOHERE
+    LogMessage("Started move!");
+
+
+
+
+
+    mEngagementData->HasStartedMove = true;
+}
+
+template<LayerType TLayer, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalDoMove(TSize totalMoveOffset)
+{
+    //
+    // Determine SHIFT constraints, if needed
+    //
+
+    if (!mEngagementData->MoveShiftConstraints)
+    {
+        if (mIsShiftDown)
+        {
+            int constexpr MinOffsetForDeduction = 2;
+
+            if (std::fabsf(totalMoveOffset.width) >= std::fabsf(totalMoveOffset.height) + MinOffsetForDeduction)
+            {
+                mEngagementData->MoveShiftConstraints.emplace(1, 0);
+            }
+            else if (std::fabsf(totalMoveOffset.height) >= std::fabsf(totalMoveOffset.width) + MinOffsetForDeduction)
+            {
+                mEngagementData->MoveShiftConstraints.emplace(0, 1);
+            }
+        }
+    }
+
+    //
+    // Apply SHIFT constraints to trajectory
+    //
+
+    if (mEngagementData->MoveShiftConstraints)
+    {
+        totalMoveOffset.width *= mEngagementData->MoveShiftConstraints->width;
+        totalMoveOffset.height *= mEngagementData->MoveShiftConstraints->height;
+    }
+
+    //
+    // Clamp move offset so that selection rect stays in ship area
+    //
+
+    // TODOHERE
+
+    //
+    // Move selected area
+    //
+
+    // TODOHERE
+
+    //
+    // Move selection overlay
+    //
+
+    assert(mEngagementData->SelectionRect);
+    mEngagementData->SelectionRect->origin = mEngagementData->SelectionStartCorner + totalMoveOffset;
+    UpdateEphemeralSelection(*mEngagementData->SelectionRect);
+}
 
 template<LayerType TLayer, typename TCoordsTag>
 void SelectAndTranslateTool<TLayer, TCoordsTag>::UpdateEphemeralSelection(TRect const & rect)

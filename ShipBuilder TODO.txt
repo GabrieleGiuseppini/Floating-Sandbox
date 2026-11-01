@@ -1059,11 +1059,8 @@
 			- State:
 				+ Selection state machine
 				= Move state machine
-					- SHIFT constraint: once determined in current move session, sticks with the session
 					- Move:
 						- SelectionRect should stay minimally inside ship area
-					- Shift state changes: if in move and has started, call helper which does move
-						- If shift lock not yet determined in session, see if can determine now, based off current mouse pos
 
 		+ Icon
 		= MainFrame:
