@@ -149,7 +149,7 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
                 if (!mEngagementData->HasStartedMove)
                 {
                     //
-                    // First of move - push Undo and take Baseline and selected area
+                    // First of move - push Undo, remove selection from Model, and take Background and Selected areas
                     //
 
                     InternalStartMove();
@@ -299,7 +299,8 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseUp()
 
         case EngagementData::StateType::Selected:
         {
-            // TODO
+            // Unexpected, nop
+            assert(false);
             break;
         }
 
@@ -366,8 +367,11 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnShiftKeyUp()
 template<LayerType TLayer, typename TCoordsTag>
 void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalStartMove()
 {
+    //
+    // Create Undo with all interested layers
+    //
+
     // TODOHERE
-    LogMessage("Started move!");
 
 
 
