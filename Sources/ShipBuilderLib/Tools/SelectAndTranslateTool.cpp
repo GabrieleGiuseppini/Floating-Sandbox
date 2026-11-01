@@ -114,6 +114,10 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
 
         case EngagementData::StateType::Selected:
         {
+            //
+            // Just update cursor
+            //
+
             assert(mEngagementData->SelectionRect.has_value());
 
             auto const mouseSpaceCoords = GetMouseSelectionCoordsIfInSpace();
@@ -133,7 +137,58 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
 
         case EngagementData::StateType::Moving:
         {
-            // TODOHERE
+            //
+            // Move selection
+            //
+
+            assert(mEngagementData->MoveStartCoords);
+
+            TSize totalMoveOffset = GetMouseSelectionCoords() - *mEngagementData->MoveStartCoords;
+            if (!totalMoveOffset.IsEmpty())
+            {
+                if (!mEngagementData->HasStartedMove)
+                {
+                    //
+                    // First of move - push Undo and take Baseline and selected area
+                    //
+
+                    // TODOHERE
+                    LogMessage("Started move!");
+
+
+                    mEngagementData->HasStartedMove = true;
+                }
+
+                //
+                // Apply SHIFT constraints to trajectory
+                //
+
+                if (mIsShiftDown)
+                {
+                    if (std::fabsf(totalMoveOffset.width) >= std::fabsf(totalMoveOffset.height))
+                    {
+                        totalMoveOffset.height = 0;
+                    }
+                    else
+                    {
+                        totalMoveOffset.width = 0;
+                    }
+                }
+
+                //
+                // Move selected area
+                //
+
+                // TODOHERE
+
+                //
+                // Move selection overlay
+                //
+
+                assert(mEngagementData->SelectionRect);
+                mEngagementData->SelectionRect->origin = mEngagementData->SelectionStartCorner + totalMoveOffset;
+                UpdateEphemeralSelection(*mEngagementData->SelectionRect);
+            }
 
             break;
         }
@@ -180,6 +235,7 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
                     // Clicked inside selection: start moving
 
                     mEngagementData->MoveStartCoords = *clickSpaceCoords;
+                    mEngagementData->HasStartedMove = false;
                     mEngagementData->State = EngagementData::StateType::Moving;
 
                     InternalSetCursor(mMoveCursor);
@@ -260,6 +316,9 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseUp()
                     mEngagementData->SelectionStartCorner,
                     selectionEndCorner);
 
+                // Set to real origin
+                mEngagementData->SelectionStartCorner = mEngagementData->SelectionRect->origin;
+
                 UpdateEphemeralSelection(*mEngagementData->SelectionRect);
 
                 mEngagementData->State = EngagementData::StateType::Selected;
@@ -280,6 +339,10 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseUp()
 
             mEngagementData->MoveStartCoords.reset();
             mEngagementData->State = EngagementData::StateType::Selected;
+
+            // Finalize selection start coords to new starting point - which has been translating during move
+            assert(mEngagementData->SelectionRect);
+            mEngagementData->SelectionStartCorner = mEngagementData->SelectionRect->origin;
 
             // Can leave cursor @ Move, pointer should still be on it
 
@@ -361,6 +424,26 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::StopEphemeralSelection()
 
     // Remove measurement
     mController.GetUserInterface().OnMeasuredSelectionSizeChanged();
+}
+
+template<LayerType TLayer, typename TCoordsTag>
+typename SelectAndTranslateTool<TLayer, TCoordsTag>::TCoords SelectAndTranslateTool<TLayer, TCoordsTag>::GetMouseSelectionCoords() const
+{
+    auto const mouseCoordinates = GetCurrentMouseCoordinates();
+    auto const spaceSize = GetSpaceSize();
+
+    if constexpr (TLayer == LayerType::Structural
+        || TLayer == LayerType::Electrical
+        || TLayer == LayerType::Ropes)
+    {
+        return ScreenToShipSpaceNearest(mouseCoordinates);
+    }
+    else
+    {
+        static_assert(TLayer == LayerType::ExteriorTexture || TLayer == LayerType::InteriorTexture);
+
+        return ScreenToTextureSpace(TLayer, mouseCoordinates);
+    }
 }
 
 template<LayerType TLayer, typename TCoordsTag>

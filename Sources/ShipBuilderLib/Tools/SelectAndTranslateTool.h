@@ -52,6 +52,7 @@ private:
 
     void StopEphemeralSelection();
 
+    TCoords GetMouseSelectionCoords() const; // Also outside space
     std::optional<TCoords> GetMouseSelectionCoordsIfInSpace() const;
     TCoords GetMouseSelectionCoordsClamped() const;
 
@@ -83,11 +84,13 @@ private:
         std::optional<TRect> SelectionRect;
 
         // When moving
-        std::optional<TCoords> MoveStartCoords;
+        std::optional<TCoords> MoveStartCoords;        
+        bool HasStartedMove; // To detect first change, at which moment we create Undo action
 
         EngagementData(TCoords selectionStartCorner)
             : State(StateType::Selecting)
             , SelectionStartCorner(selectionStartCorner)
+            , HasStartedMove(false)
         { }
     };
 

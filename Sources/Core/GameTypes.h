@@ -402,6 +402,12 @@ struct _IntegralSize
         , height(_height)
     {}
 
+    bool IsEmpty() const
+    {
+        return width == 0
+            && height == 0;
+    }
+
     static _IntegralSize<TIntegralTag> FromFloatRound(vec2f const & vec)
     {
         return _IntegralSize<TIntegralTag>(

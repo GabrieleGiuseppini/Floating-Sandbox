@@ -1056,9 +1056,14 @@
 		= Tool:
 			+ Copy from TextureTranslateTool, but not templated
 			+ Make N derived
-
 			- State:
-				- TODOHERE
+				+ Selection state machine
+				= Move state machine
+					- SHIFT constraint: once determined in current move session, sticks with the session
+					- Move:
+						- SelectionRect should stay minimally inside ship area
+					- Shift state changes: if in move and has started, call helper which does move
+						- If shift lock not yet determined in session, see if can determine now, based off current mouse pos
 
 		+ Icon
 		= MainFrame:
@@ -1071,7 +1076,7 @@
 		= Cleanup:
 			= Tool:
 				+ Remove log lines
-				- Remove old
+				- Remove old code
 
 	- Merge into master
 
