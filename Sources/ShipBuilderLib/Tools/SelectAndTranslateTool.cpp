@@ -120,18 +120,15 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
             assert(mEngagementData->SelectionRect.has_value());
 
             auto const mouseSpaceCoords = GetMouseSelectionCoordsIfInSpace();
-            if (mouseSpaceCoords)
+            if (mouseSpaceCoords && mEngagementData->SelectionRect->Contains(*mouseSpaceCoords))
             {
-                if (mEngagementData->SelectionRect->Contains(*mouseSpaceCoords))
-                {
-                    // Clicked inside selection: show moving
-                    InternalSetCursor(mMoveCursor);
-                }
-                else
-                {
-                    // Clicked outside selection: show selection
-                    InternalSetCursor(mPointerCursor);
-                }
+                // Moved inside selection: show moving
+                InternalSetCursor(mMoveCursor);
+            }
+            else
+            {
+                // Moved outside selection: show selection
+                InternalSetCursor(mPointerCursor);
             }
 
             break;
@@ -151,20 +148,18 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
     if (!mEngagementData)
     {
         //
-        // Beginning selection (iff in canvas)
+        // Begin selection
         //
 
-        auto const selectionStartCorner = GetMouseSelectionCoordsIfInSpace();
-        if (selectionStartCorner)
-        {
-            // Start selecting
-            mEngagementData.emplace(*selectionStartCorner);
+        auto const selectionStartCorner = GetMouseSelectionCoordsClamped();
 
-            UpdateEphemeralSelection(TRect(mEngagementData->SelectionStartCorner, mEngagementData->SelectionStartCorner));
+        // Start selecting
+        mEngagementData.emplace(selectionStartCorner);
 
-            // TODOTEST
-            LogMessage("MouseDown@None: Layer=", int(TLayer), " SelectionStart=", mEngagementData->SelectionStartCorner);
-        }
+        UpdateEphemeralSelection(TRect(mEngagementData->SelectionStartCorner, mEngagementData->SelectionStartCorner));
+
+        // TODOTEST
+        LogMessage("MouseDown@None: Layer=", int(TLayer), " SelectionStart=", mEngagementData->SelectionStartCorner);
 
         return;
     }
@@ -193,7 +188,7 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
                 }
                 else
                 {
-                    // Clicked outside selection: back to square one
+                    // Clicked outside selection: back to square one from here
 
                     // Start selecting
                     mEngagementData.emplace(*clickSpaceCoords);
@@ -207,6 +202,15 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
 
                     InternalSetCursor(mPointerCursor);
                 }
+            }
+            else
+            {
+                // Outside of ship - back to square one from nothing
+
+                mEngagementData.reset();
+                StopEphemeralSelection();
+
+                InternalSetCursor(mPointerCursor);
             }
 
             break;

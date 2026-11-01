@@ -1061,8 +1061,7 @@
 			- State:
 				- TODOHERE
 
-				- TODO: initiation should allow for clicking outside of ship rect, and should clamp to that corner
-					- Then see if we still need "GetWhateverIfInSpace"
+				- TODO: Clicking outside of canvas should restart from selecting, using clamped coords as starting point
 
 		+ Icon
 		= MainFrame:
