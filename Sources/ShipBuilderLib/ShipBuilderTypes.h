@@ -54,8 +54,13 @@ enum class ToolType : std::uint32_t
     InteriorTexturePaste,
     StructuralRectangle,
     StructureTracer,
+    StructuralSelectAndTranslate,
+    ElectricalSelectAndTranslate,
+    RopeSelectAndTranslate,
+    ExteriorSelectAndTranslate,
+    InteriorSelectAndTranslate,
 
-    _Last = StructureTracer
+    _Last = InteriorSelectAndTranslate
 };
 
 enum class ToolClass

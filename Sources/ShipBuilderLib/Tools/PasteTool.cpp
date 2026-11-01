@@ -91,7 +91,7 @@ PasteTool::PasteTool(
     , mPendingSessionData()
     , mDragSessionData()
 {
-    SetCursor(WxHelpers::LoadCursorImage("pan_cursor", 16, 16, gameAssetManager));
+    SetCursor(WxHelpers::LoadCursorImage("pan_cursor", 15, 15, gameAssetManager));
 
     // Begin pending session
     mPendingSessionData.emplace(

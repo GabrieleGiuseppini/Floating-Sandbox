@@ -13,6 +13,7 @@
 #include "Tools/RopeEraserTool.h"
 #include "Tools/RopePencilTool.h"
 #include "Tools/SamplerTool.h"
+#include "Tools/SelectAndTranslateTool.h"
 #include "Tools/SelectionTool.h"
 #include "Tools/StructuralRectangleTool.h"
 #include "Tools/StructureTracerTool.h"
@@ -2396,6 +2397,41 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::InteriorTextureTranslate:
         {
             return std::make_unique<InteriorTextureTranslateTool>(
+                *this,
+                mGameAssetManager);
+        }
+
+        case ToolType::StructuralSelectAndTranslate:
+        {
+            return std::make_unique<StructuralSelectAndTranslateTool>(
+                *this,
+                mGameAssetManager);
+        }
+
+        case ToolType::ElectricalSelectAndTranslate:
+        {
+            return std::make_unique<ElectricalSelectAndTranslateTool>(
+                *this,
+                mGameAssetManager);
+        }
+
+        case ToolType::RopeSelectAndTranslate:
+        {
+            return std::make_unique<RopeSelectAndTranslateTool>(
+                *this,
+                mGameAssetManager);
+        }
+
+        case ToolType::ExteriorSelectAndTranslate:
+        {
+            return std::make_unique<ExteriorSelectAndTranslateTool>(
+                *this,
+                mGameAssetManager);
+        }
+
+        case ToolType::InteriorSelectAndTranslate:
+        {
+            return std::make_unique<InteriorSelectAndTranslateTool>(
                 *this,
                 mGameAssetManager);
         }

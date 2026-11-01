@@ -7,12 +7,13 @@
 
 #include "Tool.h"
 
-#include "../GenericEphemeralVisualizationRestorePayload.h"
-
 #include <Game/GameAssetManager.h>
+
+#include <Simulation/Layers.h>
 
 #include <Core/GameTypes.h>
 
+#include <memory>
 #include <optional>
 
 namespace ShipBuilder {

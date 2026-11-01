@@ -118,6 +118,8 @@ set (TOOLS_SOURCES
 	Tools/SamplerTool.h
 	Tools/SelectionTool.cpp
 	Tools/SelectionTool.h
+	Tools/SelectAndTranslateTool.cpp
+	Tools/SelectAndTranslateTool.h
 	Tools/StructuralRectangleTool.cpp
 	Tools/StructuralRectangleTool.h
 	Tools/StructureTracerTool.cpp

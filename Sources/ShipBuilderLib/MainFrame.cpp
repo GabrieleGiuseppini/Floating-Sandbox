@@ -4053,6 +4053,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // SelectAndTranslate
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralSelectAndTranslate,
+                    structuralToolbarPanel,
+                    "translate_icon",
+                    _("Move rectangular sections."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(3, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Selection
             {
                 auto button = makeToolButton(
@@ -4063,7 +4079,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(3, 0),
+                    wxGBPosition(4, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -4079,23 +4095,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(3, 1),
-                    wxGBSpan(1, 1),
-                    0,
-                    0);
-            }
-
-            // MeasuringTape
-            {
-                auto button = makeToolButton(
-                    ToolType::StructuralMeasuringTape,
-                    structuralToolbarPanel,
-                    "measuring_tape_icon",
-                    _("Measure lengths."));
-
-                toolsSizer->Add(
-                    button,
-                    wxGBPosition(4, 0),
+                    wxGBPosition(4, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -4264,6 +4264,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // SelectAndTranslate
+            {
+                auto button = makeToolButton(
+                    ToolType::ElectricalSelectAndTranslate,
+                    electricalToolbarPanel,
+                    "translate_icon",
+                    _("Move rectangular sections."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Selection
             {
                 auto button = makeToolButton(
@@ -4274,7 +4290,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(2, 0),
+                    wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -4290,7 +4306,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(2, 1),
+                    wxGBPosition(3, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -4427,6 +4443,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // SelectAndTranslate
+            {
+                auto button = makeToolButton(
+                    ToolType::RopeSelectAndTranslate,
+                    ropesToolbarPanel,
+                    "translate_icon",
+                    _("Move rectangular sections."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Selection
             {
                 auto button = makeToolButton(
@@ -4437,7 +4469,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(1, 0),
+                    wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -4453,23 +4485,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(1, 1),
-                    wxGBSpan(1, 1),
-                    0,
-                    0);
-            }
-
-            // Sampler
-            {
-                auto button = makeToolButton(
-                    ToolType::RopeSampler,
-                    ropesToolbarPanel,
-                    "sampler_icon",
-                    _("Sample the material under the cursor."));
-
-                toolsSizer->Add(
-                    button,
-                    wxGBPosition(2, 0),
+                    wxGBPosition(2, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -4638,6 +4654,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // SelectAndTranslate
+            {
+                auto button = makeToolButton(
+                    ToolType::ExteriorSelectAndTranslate,
+                    exteriorTextureToolbarPanel,
+                    "translate_icon",
+                    _("Move rectangular sections."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Selection
             {
                 auto button = makeToolButton(
@@ -4648,7 +4680,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(2, 0),
+                    wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -4664,7 +4696,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(2, 1),
+                    wxGBPosition(3, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -6417,7 +6449,8 @@ void MainFrame::ReconciliateUIWithSelectedTool(
             || tt == ToolType::InteriorTextureMagicWand
             || tt == ToolType::InteriorTexturePaste
             || tt == ToolType::InteriorTextureSelection
-            || tt == ToolType::InteriorTextureTranslate)
+            || tt == ToolType::InteriorTextureTranslate
+            || tt == ToolType::InteriorSelectAndTranslate)
             continue;
 
         bool const mustBeSelected = (i == static_cast<size_t>(tool));
@@ -6536,6 +6569,16 @@ void MainFrame::ReconciliateUIWithSelectedTool(
             case ToolType::StructuralRectangle:
             {
                 mToolSettingsRibbonPanel->SetLabel("Rectangle");
+                break;
+            }
+
+            case ToolType::StructuralSelectAndTranslate:
+            case ToolType::ElectricalSelectAndTranslate:
+            case ToolType::RopeSelectAndTranslate:
+            case ToolType::ExteriorSelectAndTranslate:
+            case ToolType::InteriorSelectAndTranslate:
+            {
+                mToolSettingsRibbonPanel->SetLabel("Move");
                 break;
             }
 

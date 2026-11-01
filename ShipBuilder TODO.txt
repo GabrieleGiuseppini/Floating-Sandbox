@@ -1029,13 +1029,45 @@
 - Translate (aka move)
 	! Structural, Electrical, Ropes, External, Internal
 	! Does not use Selection tool nor SelectionManager: does own overlay, just like selection tool
-	- Tool-specific setting: all layers, all layers except texture, just this layer
-	- Two-state: drawing selection, then translating
+	! Tool-specific setting: all layers, all layers except texture, just this layer
+	! Two-state: drawing selection, then translating
 		- Traslating only if second-time click *in* selection; otherwise, restarts selection
-	- Undo strategy: like TextureTranslate: At first move, sets undo and dirties model, then remembers "IsDirty" to prevent if from pushing undo again
+	! Shift lock:
+		! Selection phase: constrain to square
+		! Move phase: constrain to straight H or V line from origin
+	! Undo strategy: like TextureTranslate: At first move, sets undo and dirties model, then remembers "IsDirty" to prevent if from pushing undo again
+	! No ephemeral viz; each move is the real thing - like TextureTranslate
 
-	- Impl:
+	! Analysis of current/possible impl:
+		- Tool is single (non-templated) type, just like PasteTool; but there are N derived, each pinning down layer from which tool was selected
+			- Note: we need N derived as it is a constraint in the current framework that each tool must be associated with one layer only
+			- This is where the similarities with PasteTool end; for the rest, it's just like a normal tool
+		- Phase 1 doesn't care about layers
+		- At beginning of phase 2 (first move), tool takes layers region, exactly like @ Controller::InternalCopySelectionToClipboard(), depending on layer settings from WorkbenchState
+			- Also see Controller::Copy(): if not all layers, it's primary viz -- not the "tool's layer" which is never used for action logic
+
+	- Analysis 2: catering to texture or ship
+		- Base tool is also templated on coords type - ship or image
+			- Internal, specialized helpers provide coords
+		- S/E/R tools' settings are on Ship coords; if layers include texture layers, they're rounded to ship
+		- E/I tools' settings only allow "This layer" and "All texture layers"
+			- The primay layer dictates how we calc coords for other layer
+
+	= Impl:
+		+ ShipBuilderTypes: N tool types, one for each layer
+		= Tool:
+			+ Copy from TextureTranslateTool, but not templated
+			+ Make N derived
+
+			- State:
+				- TODOHERE
+
 		= Icon
+		= MainFrame:
+			+ Tool selection @ each layer tools' panel
+			- Settings for tool:
+				- Layers (enum from ShipBuilderTypes: ThisLayer, AllNonTextureLayers, AllLayers)
+				- Transparent (like Paste)
 
 
 
