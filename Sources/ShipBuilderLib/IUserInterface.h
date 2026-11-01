@@ -92,7 +92,9 @@ struct IUserInterface
     virtual void OnMeasuredWorldLengthChanged(std::optional<int> length) = 0;
 
     // Notifies of a change in the measurement of the current selection
-    virtual void OnMeasuredSelectionSizeChanged(std::optional<ShipSpaceSize> selectionSize) = 0;
+    virtual void OnMeasuredSelectionSizeChanged(ShipSpaceSize const & selectionSize) = 0;
+    virtual void OnMeasuredSelectionSizeChanged(ImageSize const & selectionSize) = 0;
+    virtual void OnMeasuredSelectionSizeChanged() = 0;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

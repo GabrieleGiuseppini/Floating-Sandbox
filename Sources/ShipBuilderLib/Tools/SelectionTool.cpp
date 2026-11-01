@@ -96,7 +96,7 @@ SelectionTool::~SelectionTool()
         mController.GetUserInterface().RefreshView();
 
         // Remove measurement
-        mController.GetUserInterface().OnMeasuredSelectionSizeChanged(std::nullopt);
+        mController.GetUserInterface().OnMeasuredSelectionSizeChanged();
     }
 }
 
@@ -212,7 +212,7 @@ void SelectionTool::OnLeftMouseUp()
             mController.GetView().RemoveDashedRectangleOverlay();
 
             // Update measurement
-            mController.GetUserInterface().OnMeasuredSelectionSizeChanged(std::nullopt);
+            mController.GetUserInterface().OnMeasuredSelectionSizeChanged();
         }
 
         // Commit selection
@@ -282,7 +282,7 @@ void SelectionTool::Deselect()
     }
 
     // Update measurement
-    mController.GetUserInterface().OnMeasuredSelectionSizeChanged(std::nullopt);
+    mController.GetUserInterface().OnMeasuredSelectionSizeChanged();
 
     // Commit selection
     mCurrentSelection.reset();

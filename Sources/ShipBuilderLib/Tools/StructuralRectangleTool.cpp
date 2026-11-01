@@ -33,7 +33,7 @@ StructuralRectangleTool::~StructuralRectangleTool()
         mController.LayerChangeEpilog();
 
         // Remove measurement
-        mController.GetUserInterface().OnMeasuredSelectionSizeChanged(std::nullopt);
+        mController.GetUserInterface().OnMeasuredSelectionSizeChanged();
     }
 }
 
@@ -84,7 +84,7 @@ void StructuralRectangleTool::OnLeftMouseUp()
         mController.LayerChangeEpilog({LayerType::Structural});
 
         // Remove measurement
-        mController.GetUserInterface().OnMeasuredSelectionSizeChanged(std::nullopt);
+        mController.GetUserInterface().OnMeasuredSelectionSizeChanged();
 
         // Disengage
         mEngagementData.reset();

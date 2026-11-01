@@ -246,11 +246,11 @@ void StatusBar::SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinat
     }
 }
 
-void StatusBar::SetSelectionSize(std::optional<ShipSpaceSize> selectionSize)
+void StatusBar::SetSelectionSize()
 {
-    if (selectionSize != mSelectionSize)
+    if (mSelectionSize)
     {
-        mSelectionSize = selectionSize;
+        mSelectionSize.reset();
         RefreshSelectionSize();
     }
 }

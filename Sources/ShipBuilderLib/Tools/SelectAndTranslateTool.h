@@ -48,11 +48,16 @@ protected:
 
 private:
 
-    void UpdateEphemeralSelection(ShipSpaceRect const & rect);
+    void UpdateEphemeralSelection(TRect const & rect);
+
+    void StopEphemeralSelection();
 
     std::optional<TCoords> GetMouseSelectionCoordsIfInSpace() const;
+    TCoords GetMouseSelectionCoordsClamped() const;
 
     TSize GetSpaceSize() const;
+
+    void InternalSetCursor(wxImage const & cursorImage);
 
 private:
 
@@ -86,7 +91,7 @@ private:
     std::optional<EngagementData> mEngagementData;
 
     // Whether SHIFT is currently down or not
-    bool mIsShiftDown;
+    bool mIsShiftDown;    
 
     //
     // UI
@@ -95,6 +100,9 @@ private:
     // Cursors
     wxImage const mPointerCursor;
     wxImage const mMoveCursor;
+
+    // Current cursor, for perf
+    wxImage const *mCurrentCursor;
 };
 
 class StructuralSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::Structural, struct ShipSpaceTag>

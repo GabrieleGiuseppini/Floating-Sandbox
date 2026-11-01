@@ -877,6 +877,15 @@ struct _IntegralRect
         return size.width == 0 || size.height == 0;
     }
 
+    // Includes boundary
+    bool Contains(_IntegralCoordinates<TIntegralTag> const & point) const
+    {
+        return point.x >= origin.x
+            && point.y >= origin.y
+            && point.x <= origin.x + size.width
+            && point.y <= origin.y + size.height;
+    }
+
     bool IsContainedInRect(_IntegralRect<TIntegralTag> const & container) const
     {
         return origin.x >= container.origin.x

@@ -1061,6 +1061,9 @@
 			- State:
 				- TODOHERE
 
+				- TODO: initiation should allow for clicking outside of ship rect, and should clamp to that corner
+					- Then see if we still need "GetWhateverIfInSpace"
+
 		+ Icon
 		= MainFrame:
 			+ Tool selection @ each layer tools' panel
@@ -1069,6 +1072,7 @@
 				- Transparent (like Paste)
 
 
+		- Remove log lines
 
 	- Merge into master
 

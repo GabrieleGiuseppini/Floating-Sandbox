@@ -33,7 +33,17 @@ public:
 
     void SetCanvasSize(std::optional<ShipSpaceSize> canvasSize);
     void SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinates);
-    void SetSelectionSize(std::optional<ShipSpaceSize> selectionSize);
+    template<typename TCoords>
+    void SetSelectionSize(TCoords const & selectionSize)
+    {
+        auto const _selectionSize = IntegralRectSize(selectionSize.width, selectionSize.height);
+        if (_selectionSize != mSelectionSize)
+        {
+            mSelectionSize = _selectionSize;
+            RefreshSelectionSize();
+        }
+    }
+    void SetSelectionSize();
     void SetSampledInformation(std::optional<SampledInformation> sampledInformation);
     void SetZoom(std::optional<float> zoom);
     void SetShipMass(std::optional<float> shipMass);
@@ -69,7 +79,7 @@ private:
     UnitsSystem mDisplayUnitsSystem;
     std::optional<ShipSpaceSize> mCanvasSize;
     std::optional<ShipSpaceCoordinates> mToolCoordinates;
-    std::optional<ShipSpaceSize> mSelectionSize;
+    std::optional<IntegralRectSize> mSelectionSize;
     std::optional<SampledInformation> mSampledInformation;
     std::optional<float> mZoom;
     std::optional<float> mShipMass;

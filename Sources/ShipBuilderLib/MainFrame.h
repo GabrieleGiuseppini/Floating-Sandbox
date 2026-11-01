@@ -154,7 +154,9 @@ public:
 
     void OnMeasuredWorldLengthChanged(std::optional<int> length) override;
 
-    void OnMeasuredSelectionSizeChanged(std::optional<ShipSpaceSize> selectionSize) override;
+    void OnMeasuredSelectionSizeChanged(ShipSpaceSize const & selectionSize) override;
+    void OnMeasuredSelectionSizeChanged(ImageSize const & selectionSize) override;
+    void OnMeasuredSelectionSizeChanged() override;
 
     void OnError(wxString const & errorMessage) const override;
 

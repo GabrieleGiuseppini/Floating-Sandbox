@@ -643,9 +643,19 @@ void MainFrame::OnMeasuredWorldLengthChanged(std::optional<int> length)
     mStatusBar->SetMeasuredWorldLength(length);
 }
 
-void MainFrame::OnMeasuredSelectionSizeChanged(std::optional<ShipSpaceSize> selectionSize)
+void MainFrame::OnMeasuredSelectionSizeChanged(ShipSpaceSize const & selectionSize)
 {
     mStatusBar->SetSelectionSize(selectionSize);
+}
+
+void MainFrame::OnMeasuredSelectionSizeChanged(ImageSize const & selectionSize)
+{
+    mStatusBar->SetSelectionSize(selectionSize);
+}
+
+void MainFrame::OnMeasuredSelectionSizeChanged()
+{
+    mStatusBar->SetSelectionSize();
 }
 
 void MainFrame::OnError(wxString const & errorMessage) const
