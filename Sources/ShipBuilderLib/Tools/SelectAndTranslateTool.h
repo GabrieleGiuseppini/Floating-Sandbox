@@ -82,6 +82,9 @@ private:
         // When Selected and onwards; presence of this indicates we are drawing overlays
         std::optional<TRect> SelectionRect;
 
+        // When moving
+        std::optional<TCoords> MoveStartCoords;
+
         EngagementData(TCoords selectionStartCorner)
             : State(StateType::Selecting)
             , SelectionStartCorner(selectionStartCorner)
@@ -91,7 +94,7 @@ private:
     std::optional<EngagementData> mEngagementData;
 
     // Whether SHIFT is currently down or not
-    bool mIsShiftDown;    
+    bool mIsShiftDown;
 
     //
     // UI

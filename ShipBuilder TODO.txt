@@ -1033,7 +1033,6 @@
 	! Two-state: drawing selection, then translating
 		- Traslating only if second-time click *in* selection; otherwise, restarts selection
 	! Shift lock:
-		! Selection phase: constrain to square
 		! Move phase: constrain to straight H or V line from origin
 	! Undo strategy: like TextureTranslate: At first move, sets undo and dirties model, then remembers "IsDirty" to prevent if from pushing undo again
 	! No ephemeral viz; each move is the real thing - like TextureTranslate
@@ -1069,8 +1068,10 @@
 				- Transparent (like Paste)
 
 
-		= Remove log lines
-			+ Tool
+		= Cleanup:
+			= Tool:
+				+ Remove log lines
+				- Remove old
 
 	- Merge into master
 

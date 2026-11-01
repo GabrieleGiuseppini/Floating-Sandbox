@@ -133,7 +133,8 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
 
         case EngagementData::StateType::Moving:
         {
-            // TODO
+            // TODOHERE
+
             break;
         }
     }
@@ -178,7 +179,10 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
                 {
                     // Clicked inside selection: start moving
 
-                    // TODOHERE
+                    mEngagementData->MoveStartCoords = *clickSpaceCoords;
+                    mEngagementData->State = EngagementData::StateType::Moving;
+
+                    InternalSetCursor(mMoveCursor);
                 }
                 else
                 {
@@ -220,27 +224,6 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
             break;
         }
     }
-
-    // TODO
-    //assert(!mEngagementData);
-
-    //auto const textureCoordinates = ScreenToTextureSpace(TLayer, GetCurrentMouseCoordinates());
-
-    //// Engage at start position
-    //if constexpr (TLayer == LayerType::ExteriorTexture)
-    //{
-    //    mEngagementData.emplace(
-    //        textureCoordinates,
-    //        mController.GetModelController().CloneExteriorTextureLayer());
-    //}
-    //else
-    //{
-    //    static_assert(TLayer == LayerType::InteriorTexture);
-
-    //    mEngagementData.emplace(
-    //        textureCoordinates,
-    //        mController.GetModelController().CloneInteriorTextureLayer());
-    //}
 }
 
 template<LayerType TLayer, typename TCoordsTag>
@@ -293,17 +276,16 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseUp()
 
         case EngagementData::StateType::Moving:
         {
-            // TODO
+            // Stop moving, back to Selected
+
+            mEngagementData->MoveStartCoords.reset();
+            mEngagementData->State = EngagementData::StateType::Selected;
+
+            // Can leave cursor @ Move, pointer should still be on it
+
             break;
         }
     }
-
-    // TODO
-    //if (mEngagementData)
-    //{
-    //    // Disengage
-    //    mEngagementData.reset();
-    //}
 }
 
 template<LayerType TLayer, typename TCoordsTag>
