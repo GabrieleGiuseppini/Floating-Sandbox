@@ -81,7 +81,8 @@ private:
 
         StateType State;
 
-        // For Selecting
+        // For Selecting and onwards: origin of selection; finalized with achieved translation
+        // at end of each move session
         TCoords SelectionStartCorner;
 
         // When Selected and onwards; presence of this indicates we are drawing overlays

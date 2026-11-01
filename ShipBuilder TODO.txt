@@ -1056,11 +1056,18 @@
 		= Tool:
 			+ Copy from TextureTranslateTool, but not templated
 			+ Make N derived
-			- State:
+			= State:
 				+ Selection state machine
 				= Move state machine
-					- Move:
-						- SelectionRect should stay minimally inside ship area
+					- Initialization
+						- Push undo with entirety of all interested layers
+						- Take selection for all interested layers, as selection
+							- Reset @ end of move
+						- Cut selection in Model for all interested layers, no undo
+						- Take whole model for all interested layers as background
+							- Reset @ end of move
+					- Move
+						- TODOHERE
 
 		+ Icon
 		= MainFrame:

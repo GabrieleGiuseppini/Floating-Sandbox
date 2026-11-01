@@ -414,7 +414,19 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalDoMove(TSize totalMoveO
     // Clamp move offset so that selection rect stays in ship area
     //
 
-    // TODOHERE
+    auto const spaceSize = GetSpaceSize();
+
+    assert(mEngagementData->SelectionRect);
+
+    totalMoveOffset.width = Clamp(
+        totalMoveOffset.width,
+        -(mEngagementData->SelectionStartCorner.x + mEngagementData->SelectionRect->size.width),
+        spaceSize.width - mEngagementData->SelectionStartCorner.x);
+
+    totalMoveOffset.height = Clamp(
+        totalMoveOffset.height,
+        -(mEngagementData->SelectionStartCorner.y + mEngagementData->SelectionRect->size.height),
+        spaceSize.height - mEngagementData->SelectionStartCorner.y);
 
     //
     // Move selected area
