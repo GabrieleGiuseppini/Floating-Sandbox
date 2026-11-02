@@ -344,6 +344,46 @@ public:
         mPasteIsTransparent = value;
     }
 
+    bool GetSERSelectAndTranslateToolIsAllLayers() const
+    {
+        return mSERSelectAndTranslateToolIsAllLayers;
+    }
+
+    void SetSERSelectAndTranslateToolIsAllLayers(bool value)
+    {
+        mSERSelectAndTranslateToolIsAllLayers = value;
+    }
+
+    bool GetEISelectAndTranslateToolIsAllLayers() const
+    {
+        return mEISelectAndTranslateToolIsAllLayers;
+    }
+
+    void SetEISelectAndTranslateToolIsAllLayers(bool value)
+    {
+        mEISelectAndTranslateToolIsAllLayers = value;
+    }
+
+    bool GetSERSelectAndTranslateToolIsTransparent() const
+    {
+        return mSERSelectAndTranslateToolIsTransparent;
+    }
+
+    void SetSERSelectAndTranslateToolIsTransparent(bool value)
+    {
+        mSERSelectAndTranslateToolIsTransparent = value;
+    }
+
+    bool GetEISelectAndTranslateToolIsTransparent() const
+    {
+        return mEISelectAndTranslateToolIsTransparent;
+    }
+
+    void SetEISelectAndTranslateToolIsTransparent(bool value)
+    {
+        mEISelectAndTranslateToolIsTransparent = value;
+    }
+
     //
     // Visualizations
     //
@@ -551,6 +591,10 @@ private:
     std::uint32_t mTextureEraserToolSize;
     bool mSelectionIsAllLayers;
     bool mPasteIsTransparent;
+    bool mSERSelectAndTranslateToolIsAllLayers;
+    bool mEISelectAndTranslateToolIsAllLayers;
+    bool mSERSelectAndTranslateToolIsTransparent;
+    bool mEISelectAndTranslateToolIsTransparent;
 
     // Visualizations
     rgbColor mCanvasBackgroundColor;

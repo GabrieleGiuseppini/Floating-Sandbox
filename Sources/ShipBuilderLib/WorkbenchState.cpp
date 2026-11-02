@@ -70,6 +70,10 @@ WorkbenchState::WorkbenchState(
     mTextureEraserToolSize = 4;
     mSelectionIsAllLayers = false;
     mPasteIsTransparent = false;
+    mSERSelectAndTranslateToolIsAllLayers = false;
+    mEISelectAndTranslateToolIsAllLayers = false;
+    mSERSelectAndTranslateToolIsTransparent = false;
+    mEISelectAndTranslateToolIsTransparent = false;
 
     //
     // Default visualization settings

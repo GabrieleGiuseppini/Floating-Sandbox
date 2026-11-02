@@ -1067,14 +1067,27 @@
 						- Take whole model for all interested layers as background
 							- Reset @ end of move
 					- Move
+						- Cleanup Moving state: sub-struct, with methods - see code
 						- TODOHERE
 
 		+ Icon
 		= MainFrame:
 			+ Tool selection @ each layer tools' panel
-			- Settings for tool:
-				- TODO: see above: Layers (enum from ShipBuilderTypes: ThisLayer, AllNonTextureLayers, AllLayers)
-				- Transparent (like Paste)
+			= Settings for tool:
+				= SER:
+					+ Layers
+					+ Transparent (like Paste)
+				- EI:
+					- Layers
+					- Transparent (like Paste)
+
+				+ Workbench
+				= Controller=>Tool
+					+ Copy mechanism from other tools - tool class + dynamic cast via GetCurrentToolAs<>(class)
+					- SelectAndTranslateTool: react		
+						- TODO: requires remembering last MoveOffset
+						- Layers
+						- Transparent
 
 
 		= Cleanup:

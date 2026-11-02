@@ -19,12 +19,24 @@
 
 namespace ShipBuilder {
 
+class ISelectAndTranslateTool
+{
+public:
+    virtual void SetIsAllLayers(bool value) = 0;
+    virtual void SetIsTransparent(bool value) = 0;
+};
+
 template<LayerType TLayer, typename TCoordsTag>
-class SelectAndTranslateTool : public Tool
+class SelectAndTranslateTool : public Tool, public ISelectAndTranslateTool
 {
 public:
 
     ~SelectAndTranslateTool();
+
+    ToolClass GetClass() const override
+    {
+        return ToolClass::SelectAndTranslate;
+    }
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;
@@ -35,6 +47,9 @@ public:
     void OnShiftKeyUp() override;
     void OnMouseLeft() override {}
 
+    void SetIsAllLayers(bool value) override;
+    void SetIsTransparent(bool value) override;
+
 protected:
 
     using TCoords = typename _IntegralCoordinates<TCoordsTag>;
@@ -43,6 +58,8 @@ protected:
 
     SelectAndTranslateTool(
         ToolType toolType,
+        bool isAllLayers,
+        bool isTransparent,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
 
@@ -105,6 +122,10 @@ private:
     // Whether SHIFT is currently down or not
     bool mIsShiftDown;
 
+    // From workbench
+    bool mIsAllLayers;
+    bool mIsTransparent;
+
     //
     // UI
     //
@@ -122,6 +143,8 @@ class StructuralSelectAndTranslateTool final : public SelectAndTranslateTool<Lay
 public:
 
     StructuralSelectAndTranslateTool(
+        bool isAllLayers,
+        bool isTransparent,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
 };
@@ -131,6 +154,8 @@ class ElectricalSelectAndTranslateTool final : public SelectAndTranslateTool<Lay
 public:
 
     ElectricalSelectAndTranslateTool(
+        bool isAllLayers,
+        bool isTransparent,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
 };
@@ -140,6 +165,8 @@ class RopeSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType
 public:
 
     RopeSelectAndTranslateTool(
+        bool isAllLayers,
+        bool isTransparent,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
 };
@@ -149,6 +176,8 @@ class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<Layer
 public:
 
     ExteriorSelectAndTranslateTool(
+        bool isAllLayers,
+        bool isTransparent,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
 };
@@ -158,6 +187,8 @@ class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<Layer
 public:
 
     InteriorSelectAndTranslateTool(
+        bool isAllLayers,
+        bool isTransparent,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
 };

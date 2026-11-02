@@ -14,50 +14,70 @@
 namespace ShipBuilder {
 
 StructuralSelectAndTranslateTool::StructuralSelectAndTranslateTool(
+    bool isAllLayers,
+    bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : SelectAndTranslateTool(
         ToolType::StructuralSelectAndTranslate,
+        isAllLayers,
+        isTransparent,
         controller,
         gameAssetManager)
 {
 }
 
 ElectricalSelectAndTranslateTool::ElectricalSelectAndTranslateTool(
+    bool isAllLayers,
+    bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : SelectAndTranslateTool(
         ToolType::ElectricalSelectAndTranslate,
+        isAllLayers,
+        isTransparent,
         controller,
         gameAssetManager)
 {
 }
 
 RopeSelectAndTranslateTool::RopeSelectAndTranslateTool(
+    bool isAllLayers,
+    bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : SelectAndTranslateTool(
         ToolType::RopeSelectAndTranslate,
+        isAllLayers,
+        isTransparent,
         controller,
         gameAssetManager)
 {
 }
 
 ExteriorSelectAndTranslateTool::ExteriorSelectAndTranslateTool(
+    bool isAllLayers,
+    bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : SelectAndTranslateTool(
         ToolType::ExteriorSelectAndTranslate,
+        isAllLayers,
+        isTransparent,
         controller,
         gameAssetManager)
 {
 }
 
 InteriorSelectAndTranslateTool::InteriorSelectAndTranslateTool(
+    bool isAllLayers,
+    bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : SelectAndTranslateTool(
         ToolType::InteriorSelectAndTranslate,
+        isAllLayers,
+        isTransparent,
         controller,
         gameAssetManager)
 {
@@ -67,6 +87,8 @@ InteriorSelectAndTranslateTool::InteriorSelectAndTranslateTool(
 template<LayerType TLayer, typename TCoordsTag>
 SelectAndTranslateTool<TLayer, TCoordsTag>::SelectAndTranslateTool(
     ToolType toolType,
+    bool isAllLayers,
+    bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : Tool(
@@ -75,6 +97,8 @@ SelectAndTranslateTool<TLayer, TCoordsTag>::SelectAndTranslateTool(
     // State
     , mEngagementData()
     , mIsShiftDown(false)
+    , mIsAllLayers(isAllLayers)
+    , mIsTransparent(isTransparent)
     // UI
     , mPointerCursor(WxHelpers::LoadCursorImage("selection_cursor", 11, 11, gameAssetManager))
     , mMoveCursor(WxHelpers::LoadCursorImage("pan_cursor", 15, 15, gameAssetManager))
@@ -360,6 +384,22 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnShiftKeyUp()
             InternalDoMove(totalMoveOffset);
         }
     }
+}
+
+template<LayerType TLayer, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TCoordsTag>::SetIsAllLayers(bool value)
+{
+    mIsAllLayers = value;
+
+    // TODOHERE: react iff we have a LastMoveDestination
+}
+
+template<LayerType TLayer, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TCoordsTag>::SetIsTransparent(bool value)
+{
+    mIsTransparent = value;
+
+    // TODOHERE: react iff we have a LastMoveDestination
 }
 
 //////////////////////////////////////////////////////////////////////////////

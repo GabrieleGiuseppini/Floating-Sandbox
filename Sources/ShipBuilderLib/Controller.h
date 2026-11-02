@@ -297,13 +297,18 @@ public:
 
     void Paste();
 
-    void SetPasteIsTransparent(bool isTransparent);
+    void SetPasteIsTransparent(bool value);
     void PasteRotate90CW();
     void PasteRotate90CCW();
     void PasteFlipH();
     void PasteFlipV();
     void PasteCommit();
     void PasteAbort();
+
+    void SetSERSelectAndTranslateToolIsAllLayers(bool value);
+    void SetEISelectAndTranslateToolIsAllLayers(bool value);
+    void SetSERSelectAndTranslateToolIsTransparent(bool value);
+    void SetEISelectAndTranslateToolIsTransparent(bool value);
 
     void AutoTrim();
 
