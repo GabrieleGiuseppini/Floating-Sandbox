@@ -1059,8 +1059,10 @@
 			= State:
 				+ Selection state machine
 				= Move state machine
-					- FIX: shift & total_move_offset: after releasing shift and re-pressing shift, we pickup total_move already and thus we decide same as before
-						- Need to make it all incremental
+					- FIX: shift & total_move_offset: when pressing shift after having moved already, we pickup total_move already and thus we decide same as before
+						- Could be fixed by "restarting move" @ ShiftDown
+						- OR: by remembering start pos when we reset constraint detection state machine
+							- Which requires InternalMove to take new mouse pos, so it can calc own move offset wrt constraint detection start pos
 					- Initialization
 						- Push undo with entirety of all interested layers
 						- Take selection for all interested layers, as selection

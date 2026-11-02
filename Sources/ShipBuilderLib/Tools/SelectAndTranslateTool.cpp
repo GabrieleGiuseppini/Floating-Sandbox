@@ -177,6 +177,8 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
                     //
 
                     InternalStartMove();
+
+                    mEngagementData->MovingState->HasStartedMove = true;
                 }
 
                 InternalDoMove(totalMoveOffset);
@@ -407,12 +409,6 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalStartMove()
     //
 
     // TODOHERE
-
-
-
-
-    assert(mEngagementData->MovingState);
-    mEngagementData->MovingState->HasStartedMove = true;
 }
 
 template<LayerType TLayer, typename TCoordsTag>
