@@ -165,12 +165,12 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
             // Move selection
             //
 
-            assert(mEngagementData->MoveStartCoords);
+            assert(mEngagementData->MovingState);
 
-            TSize const totalMoveOffset = GetMouseSelectionCoords() - *mEngagementData->MoveStartCoords;
+            TSize const totalMoveOffset = GetMouseSelectionCoords() - mEngagementData->MovingState->MoveStartCoords;
             if (!totalMoveOffset.IsEmpty())
             {
-                if (!mEngagementData->HasStartedMove)
+                if (!mEngagementData->MovingState->HasStartedMove)
                 {
                     //
                     // First of move - push Undo, remove selection from Model, and take Background and Selected areas
@@ -226,10 +226,8 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
                 {
                     // Clicked inside selection: start moving
 
-                    mEngagementData->MoveStartCoords = *clickSpaceCoords;
-                    mEngagementData->HasStartedMove = false;
-                    mEngagementData->MoveShiftConstraints.reset();
-
+                    assert(!mEngagementData->MovingState);
+                    mEngagementData->MovingState.emplace(*clickSpaceCoords);
                     mEngagementData->State = EngagementData::StateType::Moving;
 
                     InternalSetCursor(mMoveCursor);
@@ -332,7 +330,8 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseUp()
         {
             // Stop moving, back to Selected
 
-            mEngagementData->MoveStartCoords.reset();
+            assert(mEngagementData->MovingState);
+            mEngagementData->MovingState.reset();
             mEngagementData->State = EngagementData::StateType::Selected;
 
             // Finalize selection start coords to new starting point - which has been translating during move
@@ -351,18 +350,16 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnShiftKeyDown()
 {
     mIsShiftDown = true;
 
-    if (mEngagementData)
+    if (mEngagementData && mEngagementData->State == EngagementData::StateType::Moving)
     {
-        // Restart constraints
-        mEngagementData->MoveShiftConstraints.reset();
+        assert(mEngagementData->MovingState);
 
-        if (mEngagementData->State == EngagementData::StateType::Moving)
-        {
-            // Refresh - and eventually reinstate constraints
-            assert(mEngagementData->MoveStartCoords);
-            TSize const totalMoveOffset = GetMouseSelectionCoords() - *mEngagementData->MoveStartCoords;
-            InternalDoMove(totalMoveOffset);
-        }
+        // Restart constraints
+        mEngagementData->MovingState->MoveShiftConstraints.reset();
+
+        // Refresh - and eventually reinstate constraints
+        TSize const totalMoveOffset = GetMouseSelectionCoords() - mEngagementData->MovingState->MoveStartCoords;
+        InternalDoMove(totalMoveOffset);
     }
 }
 
@@ -371,18 +368,16 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnShiftKeyUp()
 {
     mIsShiftDown = false;
 
-    if (mEngagementData)
+    if (mEngagementData && mEngagementData->State == EngagementData::StateType::Moving)
     {
-        // Stop constraints
-        mEngagementData->MoveShiftConstraints.reset();
+        assert(mEngagementData->MovingState);
 
-        if (mEngagementData->State == EngagementData::StateType::Moving)
-        {
-            // Refresh
-            assert(mEngagementData->MoveStartCoords);
-            TSize const totalMoveOffset = GetMouseSelectionCoords() - *mEngagementData->MoveStartCoords;
-            InternalDoMove(totalMoveOffset);
-        }
+        // Restart constraints
+        mEngagementData->MovingState->MoveShiftConstraints.reset();
+
+        // Refresh
+        TSize const totalMoveOffset = GetMouseSelectionCoords() - mEngagementData->MovingState->MoveStartCoords;
+        InternalDoMove(totalMoveOffset);
     }
 }
 
@@ -416,18 +411,20 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalStartMove()
 
 
 
-
-    mEngagementData->HasStartedMove = true;
+    assert(mEngagementData->MovingState);
+    mEngagementData->MovingState->HasStartedMove = true;
 }
 
 template<LayerType TLayer, typename TCoordsTag>
 void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalDoMove(TSize totalMoveOffset)
 {
+    assert(mEngagementData->MovingState);
+
     //
     // Determine SHIFT constraints, if needed
     //
 
-    if (!mEngagementData->MoveShiftConstraints)
+    if (!mEngagementData->MovingState->MoveShiftConstraints)
     {
         if (mIsShiftDown)
         {
@@ -435,11 +432,11 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalDoMove(TSize totalMoveO
 
             if (std::fabsf(totalMoveOffset.width) >= std::fabsf(totalMoveOffset.height) + MinOffsetForDeduction)
             {
-                mEngagementData->MoveShiftConstraints.emplace(1, 0);
+                mEngagementData->MovingState->MoveShiftConstraints.emplace(1, 0);
             }
             else if (std::fabsf(totalMoveOffset.height) >= std::fabsf(totalMoveOffset.width) + MinOffsetForDeduction)
             {
-                mEngagementData->MoveShiftConstraints.emplace(0, 1);
+                mEngagementData->MovingState->MoveShiftConstraints.emplace(0, 1);
             }
         }
     }
@@ -448,10 +445,10 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalDoMove(TSize totalMoveO
     // Apply SHIFT constraints to trajectory
     //
 
-    if (mEngagementData->MoveShiftConstraints)
+    if (mEngagementData->MovingState->MoveShiftConstraints)
     {
-        totalMoveOffset.width *= mEngagementData->MoveShiftConstraints->width;
-        totalMoveOffset.height *= mEngagementData->MoveShiftConstraints->height;
+        totalMoveOffset.width *= mEngagementData->MovingState->MoveShiftConstraints->width;
+        totalMoveOffset.height *= mEngagementData->MovingState->MoveShiftConstraints->height;
     }
 
     //

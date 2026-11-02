@@ -1059,6 +1059,8 @@
 			= State:
 				+ Selection state machine
 				= Move state machine
+					- FIX: shift & total_move_offset: after releasing shift and re-pressing shift, we pickup total_move already and thus we decide same as before
+						- Need to make it all incremental
 					- Initialization
 						- Push undo with entirety of all interested layers
 						- Take selection for all interested layers, as selection
@@ -1067,7 +1069,7 @@
 						- Take whole model for all interested layers as background
 							- Reset @ end of move
 					- Move
-						- Cleanup Moving state: sub-struct, with methods - see code
+						+ Cleanup Moving state: sub-struct, with methods - see code
 						- TODOHERE
 
 		+ Icon
@@ -1085,7 +1087,7 @@
 				= Controller=>Tool
 					+ Copy mechanism from other tools - tool class + dynamic cast via GetCurrentToolAs<>(class)
 					- SelectAndTranslateTool: react		
-						- TODO: requires remembering last MoveOffset
+						- TODO: requires remembering last MoveOffset, so that we may redraw exactly as now, but with new settings
 						- Layers
 						- Transparent
 

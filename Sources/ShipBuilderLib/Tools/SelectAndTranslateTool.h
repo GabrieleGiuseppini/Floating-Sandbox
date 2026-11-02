@@ -105,15 +105,24 @@ private:
         // When Selected and onwards; presence of this indicates we are drawing overlays
         std::optional<TRect> SelectionRect;
 
+        struct MovingStateType
+        {
+            TCoords const MoveStartCoords;
+            bool HasStartedMove; // To detect first change, at which moment we create Undo action
+            std::optional<TSize> MoveShiftConstraints; // Empty until detected
+
+            MovingStateType(TCoords const & startCoords)
+                : MoveStartCoords(startCoords)
+                , HasStartedMove(false)
+            { }
+        };
+
         // When moving
-        std::optional<TCoords> MoveStartCoords;
-        bool HasStartedMove; // To detect first change, at which moment we create Undo action
-        std::optional<TSize> MoveShiftConstraints;
+        std::optional<MovingStateType> MovingState;
 
         EngagementData(TCoords selectionStartCorner)
             : State(StateType::Selecting)
             , SelectionStartCorner(selectionStartCorner)
-            , HasStartedMove(false)
         { }
     };
 
