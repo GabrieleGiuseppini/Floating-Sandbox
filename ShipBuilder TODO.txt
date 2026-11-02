@@ -1060,10 +1060,19 @@
 				+ Selection state machine
 				= Move state machine
 					- FIX: shift & total_move_offset: when pressing shift after having moved already, we pickup total_move already and thus we decide same as before
-						- Could be fixed by "restarting move" @ ShiftDown
-						- OR: by remembering start pos when we reset constraint detection state machine
-							- Which requires InternalMove to take new mouse pos, so it can calc own move offset wrt constraint detection start pos
+						- Fixed by remembering start pos (RAW mouse coords) when we reset constraint detection state machine
+							- MovingState has DisplayWhatever StartMouseCoords, passed in cctor
+							- Reset at shift down
+							- InternalMove: @ constraint detection: get mouse pos (raw) and calc own offset wrt constraint detection start pos
+					- TODECIDE: should we reset mHasMoved (aka mHasCreatedUndo) ONLY at new selection creation?
+						- Otherwise multiple moves generate multiple undo's - see Photoshop: in Photoshop it's just one undo, for multiple moves
+						- Check PS, but NO - otherwise we risk user changing isAllLayers, which needs to be taken into account @ undo creation time
+							- But then, if each move generates an undo, we don't need to propagate isAllLayers/isTransparent to tool; tool can snapshot
+							  workbenchState's value at beginning of move
+							  - In this case, undo base tool/class/Controller setters
+
 					- Initialization
+						- TODO: use shared_ptr - rethink it through though
 						- Push undo with entirety of all interested layers
 						- Take selection for all interested layers, as selection
 							- Reset @ end of move
@@ -1072,7 +1081,8 @@
 							- Reset @ end of move
 					- Move
 						+ Cleanup Moving state: sub-struct, with methods - see code
-						- TODOHERE
+						- TODOHERE: ModelController op, erase (old) + erase? (new) + blit?
+							- Try to save ElectricalPanel changes
 
 		+ Icon
 		= MainFrame:
@@ -1092,7 +1102,8 @@
 						- TODO: requires remembering last MoveOffset, so that we may redraw exactly as now, but with new settings
 						- Layers
 						- Transparent
-
+		- Tests:
+			- Undo ONLY appears AFTER sizable move
 
 		= Cleanup:
 			= Tool:
