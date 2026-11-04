@@ -433,6 +433,8 @@ void MaterialPalettesController::OnImportExternalCustomMaterials()
     // Prepare undo
     //
 
+    size_t const totalMaterialsCount = filteredStructuralPtrs.size() + filteredElectricalPtrs.size() + filteredRopesPtrs.size();
+
     auto materialUndoAction = [
         this,
         filteredStructuralPtrs = std::move(filteredStructuralPtrs),
@@ -449,7 +451,7 @@ void MaterialPalettesController::OnImportExternalCustomMaterials()
 
     controller.StoreUndoAction(
         _("Materials Import"),
-        1, // Nominal
+        totalMaterialsCount * sizeof(StructuralMaterial *),
         controller.GetModelController().GetDirtyState(),
         std::move(materialUndoAction));
 }
@@ -778,7 +780,7 @@ void MaterialPalettesController::OnImportCustomShipMaterials(std::vector<typenam
 
     controller.StoreUndoAction(
         _("Materials Import"),
-        1, // Nominal
+        customMaterials.size() * sizeof(StructuralMaterial *),
         controller.GetModelController().GetDirtyState(),
         std::move(materialUndoAction));
 
