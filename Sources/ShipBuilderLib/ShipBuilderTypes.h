@@ -67,7 +67,6 @@ enum class ToolClass
 {
     Selection,
     Paste,
-    SelectAndTranslate,
     Other
 };
 

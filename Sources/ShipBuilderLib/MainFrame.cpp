@@ -2728,11 +2728,6 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 [this, thisLayerRadioButton](wxCommandEvent &)
                 {
                     mWorkbenchState.SetSERSelectAndTranslateToolIsAllLayers(!thisLayerRadioButton->GetValue());
-
-                    if (mController)
-                    {
-                        mController->SetSERSelectAndTranslateToolIsAllLayers(!thisLayerRadioButton->GetValue());
-                    }
                 });
 
             dynamicPanelGridSizer->Add(
@@ -2757,11 +2752,6 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 [this, allLayersRadioButton](wxCommandEvent &)
                 {
                     mWorkbenchState.SetSERSelectAndTranslateToolIsAllLayers(allLayersRadioButton->GetValue());
-
-                    if (mController)
-                    {
-                        mController->SetSERSelectAndTranslateToolIsAllLayers(allLayersRadioButton->GetValue());
-                    }
                 });
 
             dynamicPanelGridSizer->Add(
@@ -2796,11 +2786,6 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 [this](wxCommandEvent & event)
                 {
                     mWorkbenchState.SetSERSelectAndTranslateToolIsTransparent(event.IsChecked());
-
-                    if (mController)
-                    {
-                        mController->SetSERSelectAndTranslateToolIsTransparent(event.IsChecked());
-                    }
                 });
 
             dynamicPanelGridSizer->Add(

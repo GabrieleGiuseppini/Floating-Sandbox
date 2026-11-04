@@ -14,70 +14,50 @@
 namespace ShipBuilder {
 
 StructuralSelectAndTranslateTool::StructuralSelectAndTranslateTool(
-    bool isAllLayers,
-    bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : SelectAndTranslateTool(
         ToolType::StructuralSelectAndTranslate,
-        isAllLayers,
-        isTransparent,
         controller,
         gameAssetManager)
 {
 }
 
 ElectricalSelectAndTranslateTool::ElectricalSelectAndTranslateTool(
-    bool isAllLayers,
-    bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : SelectAndTranslateTool(
         ToolType::ElectricalSelectAndTranslate,
-        isAllLayers,
-        isTransparent,
         controller,
         gameAssetManager)
 {
 }
 
 RopeSelectAndTranslateTool::RopeSelectAndTranslateTool(
-    bool isAllLayers,
-    bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : SelectAndTranslateTool(
         ToolType::RopeSelectAndTranslate,
-        isAllLayers,
-        isTransparent,
         controller,
         gameAssetManager)
 {
 }
 
 ExteriorSelectAndTranslateTool::ExteriorSelectAndTranslateTool(
-    bool isAllLayers,
-    bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : SelectAndTranslateTool(
         ToolType::ExteriorSelectAndTranslate,
-        isAllLayers,
-        isTransparent,
         controller,
         gameAssetManager)
 {
 }
 
 InteriorSelectAndTranslateTool::InteriorSelectAndTranslateTool(
-    bool isAllLayers,
-    bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : SelectAndTranslateTool(
         ToolType::InteriorSelectAndTranslate,
-        isAllLayers,
-        isTransparent,
         controller,
         gameAssetManager)
 {
@@ -87,8 +67,6 @@ InteriorSelectAndTranslateTool::InteriorSelectAndTranslateTool(
 template<LayerType TLayer, typename TCoordsTag>
 SelectAndTranslateTool<TLayer, TCoordsTag>::SelectAndTranslateTool(
     ToolType toolType,
-    bool isAllLayers,
-    bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : Tool(
@@ -97,8 +75,6 @@ SelectAndTranslateTool<TLayer, TCoordsTag>::SelectAndTranslateTool(
     // State
     , mEngagementData()
     , mIsShiftDown(false)
-    , mIsAllLayers(isAllLayers)
-    , mIsTransparent(isTransparent)
     // UI
     , mPointerCursor(WxHelpers::LoadCursorImage("selection_cursor", 11, 11, gameAssetManager))
     , mMoveCursor(WxHelpers::LoadCursorImage("pan_cursor", 15, 15, gameAssetManager))
@@ -109,9 +85,9 @@ SelectAndTranslateTool<TLayer, TCoordsTag>::SelectAndTranslateTool(
 template<LayerType TLayer, typename TCoordsTag>
 SelectAndTranslateTool<TLayer, TCoordsTag>::~SelectAndTranslateTool()
 {
-    if (mEngagementData && mEngagementData->SelectionRect)
+    if (mEngagementData && mEngagementData->CurrentPastedSelectionRect)
     {
-        StopEphemeralSelection();
+        StopSelectionViz();
     }
 }
 
@@ -131,7 +107,7 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
             // Update selection, but don't commit it yet
 
             auto const selectionEndCorner = GetMouseSelectionCoordsClamped();
-            UpdateEphemeralSelection(TRect(mEngagementData->SelectionStartCorner, selectionEndCorner));
+            UpdateSelectionViz(TRect(mEngagementData->SelectionStartCorner, selectionEndCorner));
 
             break;
         }
@@ -142,10 +118,10 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
             // Just update cursor
             //
 
-            assert(mEngagementData->SelectionRect.has_value());
+            assert(mEngagementData->CurrentPastedSelectionRect.has_value());
 
-            auto const mouseSpaceCoords = GetMouseSelectionCoordsIfInSpace();
-            if (mouseSpaceCoords && mEngagementData->SelectionRect->Contains(*mouseSpaceCoords))
+            auto const mouseSpaceCoords = GetMouseSelectionCoords();
+            if (mEngagementData->CurrentPastedSelectionRect->Contains(mouseSpaceCoords))
             {
                 // Moved inside selection: show moving
                 InternalSetCursor(mMoveCursor);
@@ -165,21 +141,62 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnMouseMove(DisplayLogicalCoord
             // Move selection
             //
 
-            assert(mEngagementData->MovingState);
+            assert(mEngagementData->CurrentMoveStartCoords);
 
-            TSize const totalMoveOffset = GetMouseSelectionCoords() - mEngagementData->MovingState->MoveStartCoords;
+            TSize const totalMoveOffset = GetMouseSelectionCoords() - *mEngagementData->CurrentMoveStartCoords;
             if (!totalMoveOffset.IsEmpty())
             {
-                if (!mEngagementData->MovingState->HasStartedMove)
+                if (!mEngagementData->SelectionMoves)
                 {
                     //
-                    // First of move - push Undo, remove selection from Model, and take Background and Selected areas
+                    // First move for this selection
                     //
 
-                    InternalStartMove();
+                    // Take snapshot of settings
+                    bool isAllLayers;
+                    bool isTransparent;
+                    switch (TLayer)
+                    {
+                        case LayerType::Structural:
+                        case LayerType::Electrical:
+                        case LayerType::Ropes:
+                        {
+                            isAllLayers = mController.GetWorkbenchState().GetSERSelectAndTranslateToolIsAllLayers();
+                            isTransparent = mController.GetWorkbenchState().GetSERSelectAndTranslateToolIsTransparent();
+                            break;
+                        }
 
-                    mEngagementData->MovingState->HasStartedMove = true;
+                        case LayerType::ExteriorTexture:
+                        case LayerType::InteriorTexture:
+                        {
+                            isAllLayers = mController.GetWorkbenchState().GetEISelectAndTranslateToolIsAllLayers();
+                            isTransparent = mController.GetWorkbenchState().GetEISelectAndTranslateToolIsTransparent();
+                            break;
+                        }
+                    }
+
+                    // Start moves for this selection
+                    assert(mEngagementData->CurrentPastedSelectionRect);
+                    mEngagementData->SelectionMoves.emplace(
+                        mEngagementData->CurrentPastedSelectionRect->origin, // New current paste position
+                        isAllLayers,
+                        isTransparent);
+
+                    //
+                    // Push Undo, and initialize ingredients for move
+                    //
+
+                    InternalInitSelectionMoves();
                 }
+
+                assert(mEngagementData->SelectionMoves);
+
+                if (!mEngagementData->SelectionMoves->MovingState)
+                {
+                    mEngagementData->SelectionMoves->MovingState.emplace(mEngagementData->SelectionMoves->CurrentSelectionPasteCornerCoords);
+                }
+
+                assert(mEngagementData->SelectionMoves->MovingState);
 
                 InternalDoMove(totalMoveOffset);
             }
@@ -203,7 +220,7 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
         // Start selecting
         mEngagementData.emplace(selectionStartCorner);
 
-        UpdateEphemeralSelection(TRect(mEngagementData->SelectionStartCorner, mEngagementData->SelectionStartCorner));
+        UpdateSelectionViz(TRect(mEngagementData->SelectionStartCorner, mEngagementData->SelectionStartCorner));
 
         return;
     }
@@ -219,45 +236,28 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseDown()
 
         case EngagementData::StateType::Selected:
         {
-            assert(mEngagementData->SelectionRect.has_value());
+            assert(mEngagementData->CurrentPastedSelectionRect.has_value());
 
-            auto const clickSpaceCoords = GetMouseSelectionCoordsIfInSpace();
-            if (clickSpaceCoords)
+            auto const clickSpaceCoords = GetMouseSelectionCoords();
+            if (mEngagementData->CurrentPastedSelectionRect->Contains(clickSpaceCoords))
             {
-                if (mEngagementData->SelectionRect->Contains(*clickSpaceCoords))
-                {
-                    // Clicked inside selection: start moving
+                // Clicked inside selection: start move
 
-                    assert(!mEngagementData->MovingState);
-                    mEngagementData->MovingState.emplace(*clickSpaceCoords);
-                    mEngagementData->State = EngagementData::StateType::Moving;
+                // Remember start coords for this move
+                mEngagementData->CurrentMoveStartCoords = clickSpaceCoords;
 
-                    InternalSetCursor(mMoveCursor);
-                }
-                else
-                {
-                    // Clicked outside selection: back to square one from here
+                mEngagementData->State = EngagementData::StateType::Moving;
 
-                    // Start selecting
-                    mEngagementData.emplace(*clickSpaceCoords);
-
-                    UpdateEphemeralSelection(TRect(mEngagementData->SelectionStartCorner, mEngagementData->SelectionStartCorner));
-
-                    mEngagementData->State = EngagementData::StateType::Selecting;
-
-                    InternalSetCursor(mPointerCursor);
-                }
+                InternalSetCursor(mMoveCursor);
             }
             else
             {
-                // Outside of ship - back to square one from nothing
-
-                auto const newSelectionStartCorner = GetMouseSelectionCoordsClamped();
+                // Clicked outside selection: back to square one from here
 
                 // Start selecting
-                mEngagementData.emplace(newSelectionStartCorner);
+                mEngagementData.emplace(ClampSelectionCoords(clickSpaceCoords));
 
-                UpdateEphemeralSelection(TRect(mEngagementData->SelectionStartCorner, mEngagementData->SelectionStartCorner));
+                UpdateSelectionViz(TRect(mEngagementData->SelectionStartCorner, mEngagementData->SelectionStartCorner));
 
                 mEngagementData->State = EngagementData::StateType::Selecting;
 
@@ -297,7 +297,7 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseUp()
                 // Null rect
 
                 // Stop overlay
-                StopEphemeralSelection();
+                StopSelectionViz();
 
                 // Back to start state
                 mEngagementData.reset();
@@ -306,14 +306,16 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseUp()
             {
                 // Finalize selection
 
-                mEngagementData->SelectionRect.emplace(
+                mEngagementData->OriginalSelectionRect.emplace(
                     mEngagementData->SelectionStartCorner,
                     selectionEndCorner);
 
-                // Set to real origin
-                mEngagementData->SelectionStartCorner = mEngagementData->SelectionRect->origin;
+                mEngagementData->CurrentPastedSelectionRect = mEngagementData->OriginalSelectionRect;
 
-                UpdateEphemeralSelection(*mEngagementData->SelectionRect);
+                // Update real origin
+                mEngagementData->SelectionStartCorner = mEngagementData->OriginalSelectionRect->origin;
+
+                UpdateSelectionViz(*mEngagementData->CurrentPastedSelectionRect);
 
                 mEngagementData->State = EngagementData::StateType::Selected;
             }
@@ -332,13 +334,20 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnLeftMouseUp()
         {
             // Stop moving, back to Selected
 
-            assert(mEngagementData->MovingState);
-            mEngagementData->MovingState.reset();
-            mEngagementData->State = EngagementData::StateType::Selected;
+            assert(mEngagementData->SelectionMoves);
+            assert(mEngagementData->SelectionMoves->MovingState);
 
-            // Finalize selection start coords to new starting point - which has been translating during move
-            assert(mEngagementData->SelectionRect);
-            mEngagementData->SelectionStartCorner = mEngagementData->SelectionRect->origin;
+            // Remember last pasted corner, for next move
+            mEngagementData->SelectionMoves->CurrentSelectionPasteCornerCoords = mEngagementData->SelectionMoves->MovingState->CurrentSelectionPasteCornerCoords;
+
+            // Stop move
+            mEngagementData->SelectionMoves->MovingState.reset();
+
+            // Forget current move start coords
+            assert(mEngagementData->CurrentMoveStartCoords);
+            mEngagementData->CurrentMoveStartCoords.reset();
+
+            mEngagementData->State = EngagementData::StateType::Selected;
 
             // Can leave cursor @ Move, pointer should still be on it
 
@@ -354,14 +363,16 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnShiftKeyDown()
 
     if (mEngagementData && mEngagementData->State == EngagementData::StateType::Moving)
     {
-        assert(mEngagementData->MovingState);
+        if (mEngagementData->SelectionMoves && mEngagementData->SelectionMoves->MovingState)
+        {
+            // Restart constraints
+            mEngagementData->SelectionMoves->MovingState->MoveShiftConstraints.reset();
 
-        // Restart constraints
-        mEngagementData->MovingState->MoveShiftConstraints.reset();
-
-        // Refresh - and eventually reinstate constraints
-        TSize const totalMoveOffset = GetMouseSelectionCoords() - mEngagementData->MovingState->MoveStartCoords;
-        InternalDoMove(totalMoveOffset);
+            // Refresh - and eventually reinstate constraints
+            assert(mEngagementData->CurrentMoveStartCoords);
+            TSize const totalMoveOffset = GetMouseSelectionCoords() - *mEngagementData->CurrentMoveStartCoords;
+            InternalDoMove(totalMoveOffset);
+        }
     }
 }
 
@@ -372,55 +383,51 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::OnShiftKeyUp()
 
     if (mEngagementData && mEngagementData->State == EngagementData::StateType::Moving)
     {
-        assert(mEngagementData->MovingState);
+        if (mEngagementData->SelectionMoves && mEngagementData->SelectionMoves->MovingState)
+        {
+            // Restart constraints
+            mEngagementData->SelectionMoves->MovingState->MoveShiftConstraints.reset();
 
-        // Restart constraints
-        mEngagementData->MovingState->MoveShiftConstraints.reset();
-
-        // Refresh
-        TSize const totalMoveOffset = GetMouseSelectionCoords() - mEngagementData->MovingState->MoveStartCoords;
-        InternalDoMove(totalMoveOffset);
+            // Refresh
+            assert(mEngagementData->CurrentMoveStartCoords);
+            TSize const totalMoveOffset = GetMouseSelectionCoords() - *mEngagementData->CurrentMoveStartCoords;
+            InternalDoMove(totalMoveOffset);
+        }
     }
-}
-
-template<LayerType TLayer, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TCoordsTag>::SetIsAllLayers(bool value)
-{
-    mIsAllLayers = value;
-
-    // TODOHERE: react iff we have a LastMoveDestination
-}
-
-template<LayerType TLayer, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TCoordsTag>::SetIsTransparent(bool value)
-{
-    mIsTransparent = value;
-
-    // TODOHERE: react iff we have a LastMoveDestination
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalStartMove()
+void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalInitSelectionMoves()
 {
     //
     // Create Undo with all interested layers
     //
 
     // TODOHERE
+    LogMessage("InternalStartMove!");
+
+    //
+    // Prepare ingredients
+    //
+
+    assert(mEngagementData->SelectionMoves);
+
+    // TODOHERE: store stuff @ SelectionMoves
 }
 
 template<LayerType TLayer, typename TCoordsTag>
 void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalDoMove(TSize totalMoveOffset)
 {
-    assert(mEngagementData->MovingState);
+    assert(mEngagementData->SelectionMoves);
+    assert(mEngagementData->SelectionMoves->MovingState);
 
     //
     // Determine SHIFT constraints, if needed
     //
 
-    if (!mEngagementData->MovingState->MoveShiftConstraints)
+    if (!mEngagementData->SelectionMoves->MovingState->MoveShiftConstraints)
     {
         if (mIsShiftDown)
         {
@@ -428,11 +435,11 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalDoMove(TSize totalMoveO
 
             if (std::fabsf(totalMoveOffset.width) >= std::fabsf(totalMoveOffset.height) + MinOffsetForDeduction)
             {
-                mEngagementData->MovingState->MoveShiftConstraints.emplace(1, 0);
+                mEngagementData->SelectionMoves->MovingState->MoveShiftConstraints.emplace(1, 0);
             }
             else if (std::fabsf(totalMoveOffset.height) >= std::fabsf(totalMoveOffset.width) + MinOffsetForDeduction)
             {
-                mEngagementData->MovingState->MoveShiftConstraints.emplace(0, 1);
+                mEngagementData->SelectionMoves->MovingState->MoveShiftConstraints.emplace(0, 1);
             }
         }
     }
@@ -441,10 +448,10 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalDoMove(TSize totalMoveO
     // Apply SHIFT constraints to trajectory
     //
 
-    if (mEngagementData->MovingState->MoveShiftConstraints)
+    if (mEngagementData->SelectionMoves->MovingState->MoveShiftConstraints)
     {
-        totalMoveOffset.width *= mEngagementData->MovingState->MoveShiftConstraints->width;
-        totalMoveOffset.height *= mEngagementData->MovingState->MoveShiftConstraints->height;
+        totalMoveOffset.width *= mEngagementData->SelectionMoves->MovingState->MoveShiftConstraints->width;
+        totalMoveOffset.height *= mEngagementData->SelectionMoves->MovingState->MoveShiftConstraints->height;
     }
 
     //
@@ -453,35 +460,40 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::InternalDoMove(TSize totalMoveO
 
     auto const spaceSize = GetSpaceSize();
 
-    assert(mEngagementData->SelectionRect);
+    assert(mEngagementData->CurrentPastedSelectionRect);
 
     totalMoveOffset.width = Clamp(
         totalMoveOffset.width,
-        -(mEngagementData->SelectionStartCorner.x + mEngagementData->SelectionRect->size.width),
+        -(mEngagementData->SelectionStartCorner.x + mEngagementData->CurrentPastedSelectionRect->size.width),
         spaceSize.width - mEngagementData->SelectionStartCorner.x);
 
     totalMoveOffset.height = Clamp(
         totalMoveOffset.height,
-        -(mEngagementData->SelectionStartCorner.y + mEngagementData->SelectionRect->size.height),
+        -(mEngagementData->SelectionStartCorner.y + mEngagementData->CurrentPastedSelectionRect->size.height),
         spaceSize.height - mEngagementData->SelectionStartCorner.y);
 
     //
     // Move selected area
     //
 
+    TCoords const newPasteOrigin = mEngagementData->SelectionMoves->CurrentSelectionPasteCornerCoords + totalMoveOffset;
+
     // TODOHERE
+
+    // Update current move's paste pos
+    mEngagementData->SelectionMoves->MovingState->CurrentSelectionPasteCornerCoords = newPasteOrigin;
 
     //
     // Move selection overlay
     //
 
-    assert(mEngagementData->SelectionRect);
-    mEngagementData->SelectionRect->origin = mEngagementData->SelectionStartCorner + totalMoveOffset;
-    UpdateEphemeralSelection(*mEngagementData->SelectionRect);
+    assert(mEngagementData->CurrentPastedSelectionRect);
+    mEngagementData->CurrentPastedSelectionRect->origin = newPasteOrigin;
+    UpdateSelectionViz(*mEngagementData->CurrentPastedSelectionRect);
 }
 
 template<LayerType TLayer, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TCoordsTag>::UpdateEphemeralSelection(TRect const & rect)
+void SelectAndTranslateTool<TLayer, TCoordsTag>::UpdateSelectionViz(TRect const & rect)
 {
     // Update overlay
 
@@ -513,7 +525,7 @@ void SelectAndTranslateTool<TLayer, TCoordsTag>::UpdateEphemeralSelection(TRect 
 }
 
 template<LayerType TLayer, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TCoordsTag>::StopEphemeralSelection()
+void SelectAndTranslateTool<TLayer, TCoordsTag>::StopSelectionViz()
 {
     // Remove overlay
     mController.GetView().RemoveDashedRectangleOverlay();
@@ -588,23 +600,29 @@ std::optional<typename SelectAndTranslateTool<TLayer, TCoordsTag>::TCoords> Sele
 template<LayerType TLayer, typename TCoordsTag>
 typename SelectAndTranslateTool<TLayer, TCoordsTag>::TCoords SelectAndTranslateTool<TLayer, TCoordsTag>::GetMouseSelectionCoordsClamped() const
 {
-    auto const mouseCoordinates = GetCurrentMouseCoordinates();
-    auto const spaceSize = GetSpaceSize();
+    auto const mouseCoordinates = GetCurrentMouseCoordinates();    
 
     if constexpr (TLayer == LayerType::Structural
         || TLayer == LayerType::Electrical
         || TLayer == LayerType::Ropes)
     {
         ShipSpaceCoordinates const mouseShipCoordinates = ScreenToShipSpaceNearest(mouseCoordinates);
-        return mouseShipCoordinates.Clamp(spaceSize);
+        return ClampSelectionCoords(mouseShipCoordinates);
     }
     else
     {
         static_assert(TLayer == LayerType::ExteriorTexture || TLayer == LayerType::InteriorTexture);
 
         ImageCoordinates const mouseImageCoordinates = ScreenToTextureSpace(TLayer, mouseCoordinates);
-        return mouseImageCoordinates.Clamp(spaceSize);
+        return ClampSelectionCoords(mouseImageCoordinates);
     }
+}
+
+template<LayerType TLayer, typename TCoordsTag>
+typename SelectAndTranslateTool<TLayer, TCoordsTag>::TCoords SelectAndTranslateTool<TLayer, TCoordsTag>::ClampSelectionCoords(TCoords const & coords) const
+{
+    auto const spaceSize = GetSpaceSize();
+    return coords.Clamp(spaceSize);
 }
 
 template<LayerType TLayer, typename TCoordsTag>

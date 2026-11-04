@@ -305,11 +305,6 @@ public:
     void PasteCommit();
     void PasteAbort();
 
-    void SetSERSelectAndTranslateToolIsAllLayers(bool value);
-    void SetEISelectAndTranslateToolIsAllLayers(bool value);
-    void SetSERSelectAndTranslateToolIsTransparent(bool value);
-    void SetEISelectAndTranslateToolIsTransparent(bool value);
-
     void AutoTrim();
 
     void Flip(DirectionType direction);

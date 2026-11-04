@@ -1059,17 +1059,52 @@
 			= State:
 				+ Selection state machine
 				= Move state machine
-					- FIX: shift & total_move_offset: when pressing shift after having moved already, we pickup total_move already and thus we decide same as before
-						- Fixed by remembering start pos (RAW mouse coords) when we reset constraint detection state machine
-							- MovingState has DisplayWhatever StartMouseCoords, passed in cctor
-							- Reset at shift down
-							- InternalMove: @ constraint detection: get mouse pos (raw) and calc own offset wrt constraint detection start pos
-					- TODECIDE: should we reset mHasMoved (aka mHasCreatedUndo) ONLY at new selection creation?
-						- Otherwise multiple moves generate multiple undo's - see Photoshop: in Photoshop it's just one undo, for multiple moves
-						- Check PS, but NO - otherwise we risk user changing isAllLayers, which needs to be taken into account @ undo creation time
-							- But then, if each move generates an undo, we don't need to propagate isAllLayers/isTransparent to tool; tool can snapshot
-							  workbenchState's value at beginning of move
-							  - In this case, undo base tool/class/Controller setters
+					X FIX: shift & total_move_offset: when pressing shift after having moved already, we pickup total_move already and thus we decide same as before
+						= Fixed by remembering start pos (RAW mouse coords) when we reset constraint detection state machine
+							+ MovingState has DisplayWhatever StartMouseCoords, passed in cctor
+							+ Reset at shift down
+							+ InternalMove: @ constraint detection: get mouse pos (raw) and calc own offset wrt constraint detection start pos
+					+ Restructure state machine
+						! Goals:
+							! Undo only created at beginning of first ever move for a given selection; subsequent moves do not create undo
+							! At that same time, we take snapshot of tool settings - which are in fact used for undo
+							! At beginning of each move after "that time", and at shift down/up, we reset Shift constraints
+							! SelectionMoves remembers last pasted selection corner pos
+								! Init when we create SelectionMoves @ start move with current selection corner pos
+								! Updated at end of each move with final paste corner pos
+						+ Do:
+							+ EngagementData has opt PreliminaryMoveStartCoords
+								+ Init'd @ MouseDown @ Selected (when in), i.e. @ -> Moving
+								+ DeInit @ MouseUp @ Moving, i.e. @ Moving -> Selected
+									+ @ same time we nuke SelectionMoves->MoveState (if any)
+									+ Remember last pasted selection corner pos @ SelectionMoves
+							+ MouseDown @ Selected:
+								+ Remember start coords @ EngagementData
+								+ -> Moving
+							+ MouseMove @ Moving:
+								+ If non-empty move offset wrt EngagementData:
+									+ If no SelectionMoves:									
+										+ Create SelectionMoves w/ tool settings & copy of SelectionCorner from EngagementData
+											+ Move code from MouseDown
+										+ InitMove() (->"InitSelectionMoves")
+											+ Store stuff @ SelectionMoves
+									+ If no MoveState inside SelectionMoves:
+										+ Create MoveState()
+									+ Do move
+							+ Moving:
+								+ Update MovingState->CurrentSelectionPasteCornerCoords										
+						+ Undo base tool/tool class/Controller setters
+
+						+ Change for selectionrect/overlay:
+							+ EngagementData has:
+								+ opt<TRect> OriginalSelectionRect
+									+ Set once and for all @ -> Selected
+								+ opt<TRect> CurrentPastedSelectionRect;
+									+ Set @ -> Selected
+									+ Updated @ each move
+
+					- TODECIDE: eph viz for move
+						- See if ok to commit when mouse leaves canvas
 
 					- Initialization
 						- TODO: use shared_ptr - rethink it through though
@@ -1081,8 +1116,9 @@
 							- Reset @ end of move
 					- Move
 						+ Cleanup Moving state: sub-struct, with methods - see code
-						- TODOHERE: ModelController op, erase (old) + erase? (new) + blit?
-							- Try to save ElectricalPanel changes
+						- TODOHERE: ModelController op: erase (old) + blit (covering, thus eventually erasing and changing panel)
+							- Trying to save ElectricalPanel changes, other than those due to eventually erasing with blit
+						
 
 		+ Icon
 		= MainFrame:

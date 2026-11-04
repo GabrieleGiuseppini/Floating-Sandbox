@@ -1043,34 +1043,6 @@ void Controller::PasteAbort()
     InternalSetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))], true);
 }
 
-void Controller::SetSERSelectAndTranslateToolIsAllLayers(bool value)
-{
-    // Note: guaranteed to be S/E/R only, otherwise we wouldn't be able to change this setting
-    ISelectAndTranslateTool & selectAndTranslateTool = GetCurrentToolAs<ISelectAndTranslateTool>(ToolClass::SelectAndTranslate);
-    selectAndTranslateTool.SetIsAllLayers(value);
-}
-
-void Controller::SetEISelectAndTranslateToolIsAllLayers(bool value)
-{
-    // Note: guaranteed to be E/I only, otherwise we wouldn't be able to change this setting
-    ISelectAndTranslateTool & selectAndTranslateTool = GetCurrentToolAs<ISelectAndTranslateTool>(ToolClass::SelectAndTranslate);
-    selectAndTranslateTool.SetIsAllLayers(value);
-}
-
-void Controller::SetSERSelectAndTranslateToolIsTransparent(bool value)
-{
-    // Note: guaranteed to be S/E/R only, otherwise we wouldn't be able to change this setting
-    ISelectAndTranslateTool & selectAndTranslateTool = GetCurrentToolAs<ISelectAndTranslateTool>(ToolClass::SelectAndTranslate);
-    selectAndTranslateTool.SetIsTransparent(value);
-}
-
-void Controller::SetEISelectAndTranslateToolIsTransparent(bool value)
-{
-    // Note: guaranteed to be E/I only, otherwise we wouldn't be able to change this setting
-    ISelectAndTranslateTool & selectAndTranslateTool = GetCurrentToolAs<ISelectAndTranslateTool>(ToolClass::SelectAndTranslate);
-    selectAndTranslateTool.SetIsTransparent(value);
-}
-
 void Controller::AutoTrim()
 {
     auto const scopedToolResumeState = SuspendTool();
@@ -2432,8 +2404,6 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::StructuralSelectAndTranslate:
         {
             return std::make_unique<StructuralSelectAndTranslateTool>(
-                mWorkbenchState.GetSERSelectAndTranslateToolIsAllLayers(),
-                mWorkbenchState.GetSERSelectAndTranslateToolIsTransparent(),
                 *this,
                 mGameAssetManager);
         }
@@ -2441,8 +2411,6 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::ElectricalSelectAndTranslate:
         {
             return std::make_unique<ElectricalSelectAndTranslateTool>(
-                mWorkbenchState.GetSERSelectAndTranslateToolIsAllLayers(),
-                mWorkbenchState.GetSERSelectAndTranslateToolIsTransparent(),
                 *this,
                 mGameAssetManager);
         }
@@ -2450,8 +2418,6 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::RopeSelectAndTranslate:
         {
             return std::make_unique<RopeSelectAndTranslateTool>(
-                mWorkbenchState.GetSERSelectAndTranslateToolIsAllLayers(),
-                mWorkbenchState.GetSERSelectAndTranslateToolIsTransparent(),
                 *this,
                 mGameAssetManager);
         }
@@ -2459,8 +2425,6 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::ExteriorSelectAndTranslate:
         {
             return std::make_unique<ExteriorSelectAndTranslateTool>(
-                mWorkbenchState.GetEISelectAndTranslateToolIsAllLayers(),
-                mWorkbenchState.GetEISelectAndTranslateToolIsTransparent(),
                 *this,
                 mGameAssetManager);
         }
@@ -2468,8 +2432,6 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::InteriorSelectAndTranslate:
         {
             return std::make_unique<InteriorSelectAndTranslateTool>(
-                mWorkbenchState.GetEISelectAndTranslateToolIsAllLayers(),
-                mWorkbenchState.GetEISelectAndTranslateToolIsTransparent(),
                 *this,
                 mGameAssetManager);
         }
