@@ -1187,9 +1187,9 @@ std::vector<LayerType> ModelController::CalculateAffectedLayers(std::optional<La
 StructuralLayerData const & ModelController::GetStructuralLayer() const
 {
     // This is used, among others, by WaterlineAnalyzer - at this moment
-    // we require the structural alyer to be always present
+    // we require the structural layer to be always present
     assert(mModel.HasLayer(LayerType::Structural));
-    assert(!mIsStructuralLayerInEphemeralVisualization);
+    assert(!mIsStructuralLayerInEphemeralVisualization); // BUGBUG: if we are in a paste and have not yet committed when WaterlineAnalyzer runs, this would fire
 
     return mModel.GetStructuralLayer();
 }

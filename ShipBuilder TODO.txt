@@ -1103,8 +1103,33 @@
 									+ Set @ -> Selected
 									+ Updated @ each move
 
+					- TODOHERE: following design to be finalized
+
+					- Dynamics for elec panel:
+						- ElecRegionFill, Erase: forget panel elements
+
 					- TODECIDE: eph viz for move
-						- See if ok to commit when mouse leaves canvas
+						- Dynamics of eph viz:
+							- At each change:
+								- If have eph viz:
+									- Undo eph viz
+										- ModelController::RestoreEphemeralVisualization
+											- Forget layer::isInEph
+										- Forget we are in eph viz
+									- mController.LayerChangeEpilog()
+								- Draw eph viz
+									- Get eph viz restore payload from ModelController
+									- ModelController::DoThingForEphemeralVisualization
+										- Remember layer::isInEph
+									- Store eph viz restore payload , remembering we are in eph viz
+								- mController.LayerChangeEpilog()
+							- At commit (also @ leave):
+								- If have eph viz:
+									- Undo eph viz
+										- ...
+								- ModelController::DoThing
+								- mController.LayerChangeEpilog(affectedLayers);
+
 
 					- Initialization
 						- TODO: use shared_ptr - rethink it through though

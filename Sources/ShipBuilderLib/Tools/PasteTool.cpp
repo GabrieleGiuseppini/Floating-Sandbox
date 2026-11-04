@@ -344,7 +344,7 @@ void PasteTool::UpdateEphemeralVisualization(ShipSpaceCoordinates const & mouseC
         mPendingSessionData->MousePasteCoords + (newMouseCoordinates - mDragSessionData->LastMousePosition),
         mPendingSessionData->PasteRegion.Size);
 
-    // Draw eph vix
+    // Draw eph viz
     DrawEphemeralVisualization();
 
     mController.LayerChangeEpilog();
