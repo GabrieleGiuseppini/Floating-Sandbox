@@ -1103,6 +1103,8 @@
 									+ Set @ -> Selected
 									+ Updated @ each move
 
+					= Refeactor tool hierarchy: SER vs EI
+
 					- TODOHERE: following design to be finalized
 
 					- Dynamics for elec panel:
@@ -1140,6 +1142,7 @@
 										- TODO: this one not good enough - GenericUndoPayload only has origin in ship space coords;
 										  might need to change it and make it templated on two kinds: SER(+EI) (ship space) or EI only (texture space)
 											- OR: a separate RestoreEphemeralVisualization/etc. for "Texture" layers only, and tool class also templated on payload
+												- TODO: we need two, one External and one Internal, for coords' translations
 										- Forget layer::isInEph
 									- Forget we are in eph viz
 								- mController.LayerChangeEpilog()

@@ -16,7 +16,7 @@ namespace ShipBuilder {
 StructuralSelectAndTranslateTool::StructuralSelectAndTranslateTool(
     Controller & controller,
     GameAssetManager const & gameAssetManager)
-    : SelectAndTranslateTool(
+    : SelectAndTranslateTool_SER(
         ToolType::StructuralSelectAndTranslate,
         controller,
         gameAssetManager)
@@ -26,7 +26,7 @@ StructuralSelectAndTranslateTool::StructuralSelectAndTranslateTool(
 ElectricalSelectAndTranslateTool::ElectricalSelectAndTranslateTool(
     Controller & controller,
     GameAssetManager const & gameAssetManager)
-    : SelectAndTranslateTool(
+    : SelectAndTranslateTool_SER(
         ToolType::ElectricalSelectAndTranslate,
         controller,
         gameAssetManager)
@@ -36,7 +36,7 @@ ElectricalSelectAndTranslateTool::ElectricalSelectAndTranslateTool(
 RopeSelectAndTranslateTool::RopeSelectAndTranslateTool(
     Controller & controller,
     GameAssetManager const & gameAssetManager)
-    : SelectAndTranslateTool(
+    : SelectAndTranslateTool_SER(
         ToolType::RopeSelectAndTranslate,
         controller,
         gameAssetManager)
@@ -63,6 +63,18 @@ InteriorSelectAndTranslateTool::InteriorSelectAndTranslateTool(
 {
 }
 
+template<LayerType TLayer>
+SelectAndTranslateTool_SER<TLayer>::SelectAndTranslateTool_SER(
+    ToolType toolType,
+    Controller & controller,
+    GameAssetManager const & gameAssetManager)
+    : SelectAndTranslateTool<TLayer, struct ShipSpaceTag>(
+        toolType,
+        controller,
+        gameAssetManager)
+{
+    static_assert(TLayer == LayerType::Structural || TLayer == LayerType::Electrical || TLayer == LayerType::Ropes);
+}
 
 template<LayerType TLayer, typename TCoordsTag>
 SelectAndTranslateTool<TLayer, TCoordsTag>::SelectAndTranslateTool(
@@ -600,7 +612,7 @@ std::optional<typename SelectAndTranslateTool<TLayer, TCoordsTag>::TCoords> Sele
 template<LayerType TLayer, typename TCoordsTag>
 typename SelectAndTranslateTool<TLayer, TCoordsTag>::TCoords SelectAndTranslateTool<TLayer, TCoordsTag>::GetMouseSelectionCoordsClamped() const
 {
-    auto const mouseCoordinates = GetCurrentMouseCoordinates();    
+    auto const mouseCoordinates = GetCurrentMouseCoordinates();
 
     if constexpr (TLayer == LayerType::Structural
         || TLayer == LayerType::Electrical
@@ -625,25 +637,20 @@ typename SelectAndTranslateTool<TLayer, TCoordsTag>::TCoords SelectAndTranslateT
     return coords.Clamp(spaceSize);
 }
 
-template<LayerType TLayer, typename TCoordsTag>
-typename SelectAndTranslateTool<TLayer, TCoordsTag>::TSize SelectAndTranslateTool<TLayer, TCoordsTag>::GetSpaceSize() const
+template<LayerType TLayer>
+ShipSpaceSize SelectAndTranslateTool_SER<TLayer>::GetSpaceSize() const
 {
-    if constexpr (TLayer == LayerType::Structural
-        || TLayer == LayerType::Electrical
-        || TLayer == LayerType::Ropes)
-    {
-        return mController.GetModelController().GetShipSize();
-    }
-    else if constexpr (TLayer == LayerType::ExteriorTexture)
-    {
-        return mController.GetModelController().GetExteriorTextureSize();
-    }
-    else
-    {
-        static_assert(TLayer == LayerType::InteriorTexture);
+    return this->mController.GetModelController().GetShipSize();
+}
 
-        return mController.GetModelController().GetInteriorTextureSize();
-    }
+ImageSize ExteriorSelectAndTranslateTool::GetSpaceSize() const
+{
+    return mController.GetModelController().GetExteriorTextureSize();
+}
+
+ImageSize InteriorSelectAndTranslateTool::GetSpaceSize() const
+{
+    return mController.GetModelController().GetInteriorTextureSize();
 }
 
 template<LayerType TLayer, typename TCoordsTag>

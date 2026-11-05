@@ -61,7 +61,7 @@ private:
     TCoords GetMouseSelectionCoordsClamped() const;
     TCoords ClampSelectionCoords(TCoords const & coords) const;
 
-    TSize GetSpaceSize() const;
+    virtual TSize GetSpaceSize() const = 0;
 
     void InternalSetCursor(wxImage const & cursorImage);
 
@@ -151,7 +151,21 @@ private:
     wxImage const *mCurrentCursor;
 };
 
-class StructuralSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::Structural, struct ShipSpaceTag>
+// Specialization for Structural/Electrical/Ropes layers, which work on ship space coords
+template<LayerType TLayer>
+class SelectAndTranslateTool_SER : public SelectAndTranslateTool<TLayer, struct ShipSpaceTag>
+{
+protected:
+
+    SelectAndTranslateTool_SER(
+        ToolType toolType,
+        Controller & controller,
+        GameAssetManager const & gameAssetManager);
+
+    ShipSpaceSize GetSpaceSize() const override;
+};
+
+class StructuralSelectAndTranslateTool final : public SelectAndTranslateTool_SER<LayerType::Structural>
 {
 public:
 
@@ -160,7 +174,7 @@ public:
         GameAssetManager const & gameAssetManager);
 };
 
-class ElectricalSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::Electrical, struct ShipSpaceTag>
+class ElectricalSelectAndTranslateTool final : public SelectAndTranslateTool_SER<LayerType::Electrical>
 {
 public:
 
@@ -169,7 +183,7 @@ public:
         GameAssetManager const & gameAssetManager);
 };
 
-class RopeSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::Ropes, struct ShipSpaceTag>
+class RopeSelectAndTranslateTool final : public SelectAndTranslateTool_SER<LayerType::Ropes>
 {
 public:
 
@@ -185,6 +199,10 @@ public:
     ExteriorSelectAndTranslateTool(
         Controller & controller,
         GameAssetManager const & gameAssetManager);
+
+protected:
+
+    ImageSize GetSpaceSize() const override;
 };
 
 class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, struct ImageTag>
@@ -194,6 +212,10 @@ public:
     InteriorSelectAndTranslateTool(
         Controller & controller,
         GameAssetManager const & gameAssetManager);
+
+protected:
+
+    ImageSize GetSpaceSize() const override;
 };
 
 }
