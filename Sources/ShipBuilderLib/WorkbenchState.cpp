@@ -72,8 +72,8 @@ WorkbenchState::WorkbenchState(
     mPasteIsTransparent = false;
     mSERSelectAndTranslateToolIsAllLayers = false;
     mEISelectAndTranslateToolIsAllLayers = false;
-    mSERSelectAndTranslateToolIsTransparent = false;
-    mEISelectAndTranslateToolIsTransparent = false;
+    mSERSelectAndTranslateToolIsTransparent = true;
+    mEISelectAndTranslateToolIsTransparent = true;
 
     //
     // Default visualization settings

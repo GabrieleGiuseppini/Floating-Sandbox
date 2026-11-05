@@ -1121,14 +1121,50 @@
 									- Get eph viz restore payload from ModelController
 									- ModelController::DoThingForEphemeralVisualization
 										- Remember layer::isInEph
-									- Store eph viz restore payload , remembering we are in eph viz
+									- Store eph viz restore payload, remembering we are in eph viz
 								- mController.LayerChangeEpilog()
 							- At commit (also @ leave):
 								- If have eph viz:
 									- Undo eph viz
 										- ...
 								- ModelController::DoThing
+								- Store undo
 								- mController.LayerChangeEpilog(affectedLayers);
+
+					- Option 1: eph viz and final commit doing thing for real (repeating last eph viz)
+						- @ InitSelectionMoves: TODO: depends on undo decision
+						- @ each move:
+							- If have eph viz:
+								- Undo eph viz
+									- ModelController::RestoreEphemeralVisualization
+										- TODO: this one not good enough - GenericUndoPayload only has origin in ship space coords;
+										  might need to change it and make it templated on two kinds: SER(+EI) (ship space) or EI only (texture space)
+											- OR: a separate RestoreEphemeralVisualization/etc. for "Texture" layers only, and tool class also templated on payload
+										- Forget layer::isInEph
+									- Forget we are in eph viz
+								- mController.LayerChangeEpilog()
+							- Draw eph viz:
+								- ModelController::RegionTransferForEphViz -> RestoreEphVizPayload
+									- EraseForEphViz (new)
+										- See if can refactor Erase so to reuse code
+									- PasteForEphViz (existing)
+								- Store eph viz restore payload, remembering we are in eph viz
+							- mController.LayerChangeEpilog()
+						- @ new selection, and @ ~dctor(): commit
+							- If have eph viz:
+								- Undo eph viz
+									- ...
+							- ModelController::RegionTransfer
+								- TODO: do we still need, or want, to do Undo immediately? Vs. at commit. Otherwise returns undo payload
+								- Erase -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
+								  as undo payload should also include pasted-to region
+								- Paste -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
+								  as undo payload should also include pasted-to region
+							- TODO: store undo depending on decision
+								- BUT: GenericUndoPayload is not good enough, we need ImageCoords/Size for texture-only select-and-translate
+
+
+
 
 
 					- Initialization
