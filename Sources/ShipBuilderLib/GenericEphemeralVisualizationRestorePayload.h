@@ -15,7 +15,7 @@
 namespace ShipBuilder {
 
 /*
- * Generic backup data to restore an ephemeral visualization.
+ * Generic backup data to restore an ephemeral visualization, in ship space.
  */
 class GenericEphemeralVisualizationRestorePayload final
 {
@@ -66,6 +66,56 @@ public:
 		{
 			affectedLayers.emplace_back(LayerType::Ropes);
 		}
+
+		if (ExteriorTextureLayerBufferRegion.has_value())
+		{
+			affectedLayers.emplace_back(LayerType::ExteriorTexture);
+		}
+
+		if (InteriorTextureLayerBufferRegion.has_value())
+		{
+			affectedLayers.emplace_back(LayerType::InteriorTexture);
+		}
+
+		return affectedLayers;
+	}
+
+};
+
+/*
+ * Generic backup data to restore an ephemeral visualization, in texture space.
+ *
+ * The template parameter indicates which texture layer Origin is relative to.
+ */
+template<LayerType TPrimaryTextureLayer>
+class GenericTextureEphemeralVisualizationRestorePayload final
+{
+public:
+
+	ImageCoordinates Origin; // In TPrimaryTextureLayer's space
+
+	std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> ExteriorTextureLayerBufferRegion;
+	std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> InteriorTextureLayerBufferRegion;
+
+	GenericTextureEphemeralVisualizationRestorePayload(ImageCoordinates const & origin)
+		: Origin(origin)
+	{
+		static_assert(TPrimaryTextureLayer == LayerType::ExteriorTexture || TPrimaryTextureLayer == LayerType::InteriorTexture);
+	}
+
+	GenericTextureEphemeralVisualizationRestorePayload(
+		ImageCoordinates const & origin,
+		std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> && exteriorTextureLayerBufferRegion,
+		std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> && interiorTextureLayerBufferRegion)
+		: Origin(origin)
+		, ExteriorTextureLayerBufferRegion(std::move(exteriorTextureLayerBufferRegion))
+		, InteriorTextureLayerBufferRegion(std::move(interiorTextureLayerBufferRegion))
+	{
+	}
+
+	std::vector<LayerType> GetAffectedLayers() const
+	{
+		std::vector<LayerType> affectedLayers;
 
 		if (ExteriorTextureLayerBufferRegion.has_value())
 		{

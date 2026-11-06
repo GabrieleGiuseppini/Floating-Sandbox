@@ -22,6 +22,7 @@ set (SHIPBUILDER_LIB_SOURCES
 	ModelValidationSession.cpp
 	ModelValidationSession.h
 	OpenGLManager.h
+	RegionCombiner.h
 	SelectionManager.h
 	ShipBuilderShaderSets.cpp
 	ShipBuilderShaderSets.h

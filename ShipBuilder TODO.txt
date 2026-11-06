@@ -1058,7 +1058,7 @@
 			+ Make N derived
 			= State:
 				+ Selection state machine
-				= Move state machine
+				+ Move state machine
 					X FIX: shift & total_move_offset: when pressing shift after having moved already, we pickup total_move already and thus we decide same as before
 						= Fixed by remembering start pos (RAW mouse coords) when we reset constraint detection state machine
 							+ MovingState has DisplayWhatever StartMouseCoords, passed in cctor
@@ -1103,14 +1103,16 @@
 									+ Set @ -> Selected
 									+ Updated @ each move
 
-					= Refeactor tool hierarchy: SER vs EI
+				= Eph viz and final commit doing thing for real (repeating last eph viz); undo @ end
+					! Rationale:
+						! We do want eph viz, otherwise perf sucks
+						! We do want undo @ end, to limit memory
+							! Hence, we need pristine conditions before end
 
-					- TODOHERE: following design to be finalized
+					! Current dynamics:
+						- Dynamics for elec panel:
+							- ElecRegionFill, Erase: forget panel elements
 
-					- Dynamics for elec panel:
-						- ElecRegionFill, Erase: forget panel elements
-
-					- TODECIDE: eph viz for move
 						- Dynamics of eph viz:
 							- At each change:
 								- If have eph viz:
@@ -1133,43 +1135,57 @@
 								- Store undo
 								- mController.LayerChangeEpilog(affectedLayers);
 
-					- Option 1: eph viz and final commit doing thing for real (repeating last eph viz)
-						- @ InitSelectionMoves: TODO: depends on undo decision
-						- @ each move:
-							- If have eph viz:
-								- Undo eph viz
-									- ModelController::RestoreEphemeralVisualization
-										- TODO: this one not good enough - GenericUndoPayload only has origin in ship space coords;
-										  might need to change it and make it templated on two kinds: SER(+EI) (ship space) or EI only (texture space)
-											- OR: a separate RestoreEphemeralVisualization/etc. for "Texture" layers only, and tool class also templated on payload
-												- TODO: we need two, one External and one Internal, for coords' translations
-										- Forget layer::isInEph
-									- Forget we are in eph viz
-								- mController.LayerChangeEpilog()
-							- Draw eph viz:
-								- ModelController::RegionTransferForEphViz -> RestoreEphVizPayload
-									- EraseForEphViz (new)
-										- See if can refactor Erase so to reuse code
-									- PasteForEphViz (existing)
-								- Store eph viz restore payload, remembering we are in eph viz
-							- mController.LayerChangeEpilog()
-						- @ new selection, and @ ~dctor(): commit
-							- If have eph viz:
-								- Undo eph viz
-									- ...
-							- ModelController::RegionTransfer
-								- TODO: do we still need, or want, to do Undo immediately? Vs. at commit. Otherwise returns undo payload
-								- Erase -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
-								  as undo payload should also include pasted-to region
-								- Paste -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
-								  as undo payload should also include pasted-to region
-							- TODO: store undo depending on decision
-								- BUT: GenericUndoPayload is not good enough, we need ImageCoords/Size for texture-only select-and-translate
+					+ ShipBuilder::RegionCombiner
+						+ Templated
+							+ See if can do that "struct ShipSpaceTag" once and for all
+						+ Unit tests
+
+					- Make multi-region GenericUndoPayload<T>
+						- Replace GenericUndoPayload<T> altogether
+						- Current GenericUndoPayloadX2 becomes private element
+						- Restore API: code runs in loop
+
+					- Might also need multi-region dirty viz tracking, for perf
+						- If we do this, nuke redundant LayerChangeEpilog's at tools when we undo eph viz and redo it
+
+					= Call InternalCommit @:
+						+ dctor - iff needs to commit
+						+ Creation of new selection
+					- @ InitSelectionMoves: TODO: depends on undo decision
+					= @ each move (for eph viz):
+						= If have eph viz:
+							= Undo eph viz
+								- ModelController::RestoreEphemeralVisualization
+									- TODO: this one not good enough - GenericUndoPayload only has origin in ship space coords;
+									  might need to change it and make it templated on two kinds: SER(+EI) (ship space) or EI only (texture space)
+										- OR: a separate RestoreEphemeralVisualization/etc. for "Texture" layers only, and tool class also templated on payload
+											- TODO: we need two, one External and one Internal, for coords' translations
+									- Forget layer::isInEph
+								- Forget we are in eph viz
+							+ mController.LayerChangeEpilog()
+						+ Change coords
+						= Draw eph viz:
+							- ModelController::RegionTransferForEphViz -> RestoreEphVizPayload
+								- EraseForEphViz (new)
+									- See if can refactor Erase so to reuse code
+								- PasteForEphViz (existing)
+							- Store eph viz restore payload, remembering we are in eph viz
+						+ mController.LayerChangeEpilog()
+					= @ new selection, and @ ~dctor(): commit
+						+ If have eph viz:
+							+ Undo eph viz
+								+ ...
+						- TODOHERE: massage below to make RegionTransfer return multi-region undp
+						- ModelController::RegionTransfer
+							- TODO: do we still need, or want, to do Undo immediately? Vs. at commit. Otherwise returns undo payload
+							- Erase -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
+							  as undo payload should also include pasted-to region
+							- Paste -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
+							  as undo payload should also include pasted-to region
 
 
 
-
-
+					- TODOOLD
 					- Initialization
 						- TODO: use shared_ptr - rethink it through though
 						- Push undo with entirety of all interested layers

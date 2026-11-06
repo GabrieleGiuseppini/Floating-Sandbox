@@ -7,6 +7,8 @@
 
 #include "Tool.h"
 
+#include "../GenericEphemeralVisualizationRestorePayload.h"
+
 #include <Simulation/Layers.h>
 
 #include <Game/GameAssetManager.h>
@@ -19,7 +21,7 @@
 
 namespace ShipBuilder {
 
-template<LayerType TLayer, typename TCoordsTag>
+template<LayerType TLayer, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
 class SelectAndTranslateTool : public Tool
 {
 public:
@@ -50,10 +52,14 @@ private:
 
     void InternalInitSelectionMoves();
 
-    void InternalDoMove(TSize totalMoveOffset);
+    void InternalDoMoveForEphemeralVisualization(TSize totalMoveOffset);
+
+    void InternalCommit();
+
+    void DrawEphemeralVisualization();
+    void UndoEphemeralVisualization();
 
     void UpdateSelectionViz(TRect const & rect);
-
     void StopSelectionViz();
 
     TCoords GetMouseSelectionCoords() const; // Also outside space
@@ -115,6 +121,9 @@ private:
             bool const IsAllLayers;
             bool const IsTransparent;
 
+            // When set we have an ephemeral visualization
+            std::optional<TEphemeralVisualizationRestorePayload> EphemeralVisualization;
+
             SelectionMovesType(
                 TCoords const & startSelectionPasteCornerCoords,
                 bool isAllLayers,
@@ -125,7 +134,8 @@ private:
             { }
         };
 
-        // When set, we have started moving for this selection - which also means having done Undo
+        // When set, we have started moving for this selection - which also means having done Undo;
+        // also, means we still need to commit move - we are in eph viz
         std::optional<SelectionMovesType> SelectionMoves;
 
         EngagementData(TCoords selectionStartCorner)
@@ -153,7 +163,7 @@ private:
 
 // Specialization for Structural/Electrical/Ropes layers, which work on ship space coords
 template<LayerType TLayer>
-class SelectAndTranslateTool_SER : public SelectAndTranslateTool<TLayer, struct ShipSpaceTag>
+class SelectAndTranslateTool_SER : public SelectAndTranslateTool<TLayer, GenericEphemeralVisualizationRestorePayload, struct ShipSpaceTag>
 {
 protected:
 
@@ -192,7 +202,7 @@ public:
         GameAssetManager const & gameAssetManager);
 };
 
-class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, struct ImageTag>
+class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, GenericTextureEphemeralVisualizationRestorePayload<LayerType::ExteriorTexture>, struct ImageTag>
 {
 public:
 
@@ -205,7 +215,7 @@ protected:
     ImageSize GetSpaceSize() const override;
 };
 
-class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, struct ImageTag>
+class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, GenericTextureEphemeralVisualizationRestorePayload<LayerType::InteriorTexture>, struct ImageTag>
 {
 public:
 

@@ -51,6 +51,7 @@ set (UNIT_TEST_SOURCES
 	PortableTimepointTests.cpp
 	PrecalculatedFunctionTests.cpp
 	ProgressCallbackTests.cpp
+	RegionCombinerTests.cpp
 	RopeBufferTests.cpp
 	SettingsTests.cpp
 	ShaderManagerTests.cpp

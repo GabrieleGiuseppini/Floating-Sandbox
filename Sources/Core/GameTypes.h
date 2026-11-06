@@ -460,6 +460,11 @@ struct _IntegralSize
             static_cast<int>(std::roundf(static_cast<float>(this->height) * factor)));
     }
 
+    auto CalculateArea() const
+    {
+        return this->width * this->height;
+    }
+
     float CalculateAspectRatio() const
     {
         return static_cast<float>(this->width) / static_cast<float>(this->height);
@@ -883,6 +888,11 @@ struct _IntegralRect
         return size.width == 0 || size.height == 0;
     }
 
+    auto CalculateArea() const
+    {
+        return size.CalculateArea();
+    }
+
     // Includes boundary
     bool Contains(_IntegralCoordinates<TIntegralTag> const & point) const
     {
@@ -932,6 +942,14 @@ struct _IntegralRect
         size = newSize;
     }
 
+    _IntegralRect<TIntegralTag> MakeUnionWith(_IntegralRect<TIntegralTag> const & other) const
+    {
+        _IntegralRect<TIntegralTag> newRect = *this;
+        newRect.UnionWith(other);
+        return newRect;
+    }
+
+    // Never returns an empty rect
     std::optional<_IntegralRect<TIntegralTag>> MakeIntersectionWith(_IntegralRect<TIntegralTag> const & other) const
     {
         auto const newOrigin = _IntegralCoordinates<TIntegralTag>(
