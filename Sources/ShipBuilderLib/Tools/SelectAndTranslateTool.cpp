@@ -16,7 +16,7 @@ namespace ShipBuilder {
 StructuralSelectAndTranslateTool::StructuralSelectAndTranslateTool(
     Controller & controller,
     GameAssetManager const & gameAssetManager)
-    : SelectAndTranslateTool_SER(
+    : SelectAndTranslateTool_ShipSpace(
         ToolType::StructuralSelectAndTranslate,
         controller,
         gameAssetManager)
@@ -26,7 +26,7 @@ StructuralSelectAndTranslateTool::StructuralSelectAndTranslateTool(
 ElectricalSelectAndTranslateTool::ElectricalSelectAndTranslateTool(
     Controller & controller,
     GameAssetManager const & gameAssetManager)
-    : SelectAndTranslateTool_SER(
+    : SelectAndTranslateTool_ShipSpace(
         ToolType::ElectricalSelectAndTranslate,
         controller,
         gameAssetManager)
@@ -36,7 +36,7 @@ ElectricalSelectAndTranslateTool::ElectricalSelectAndTranslateTool(
 RopeSelectAndTranslateTool::RopeSelectAndTranslateTool(
     Controller & controller,
     GameAssetManager const & gameAssetManager)
-    : SelectAndTranslateTool_SER(
+    : SelectAndTranslateTool_ShipSpace(
         ToolType::RopeSelectAndTranslate,
         controller,
         gameAssetManager)
@@ -64,11 +64,11 @@ InteriorSelectAndTranslateTool::InteriorSelectAndTranslateTool(
 }
 
 template<LayerType TLayer>
-SelectAndTranslateTool_SER<TLayer>::SelectAndTranslateTool_SER(
+SelectAndTranslateTool_ShipSpace<TLayer>::SelectAndTranslateTool_ShipSpace(
     ToolType toolType,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
-    : SelectAndTranslateTool<TLayer, GenericEphemeralVisualizationRestorePayload, struct ShipSpaceTag>(
+    : SelectAndTranslateTool<TLayer, GenericShipSpaceEphemeralVisualizationRestorePayload, struct ShipSpaceTag>(
         toolType,
         controller,
         gameAssetManager)
@@ -703,7 +703,7 @@ typename SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, T
 }
 
 template<LayerType TLayer>
-ShipSpaceSize SelectAndTranslateTool_SER<TLayer>::GetSpaceSize() const
+ShipSpaceSize SelectAndTranslateTool_ShipSpace<TLayer>::GetSpaceSize() const
 {
     return this->mController.GetModelController().GetShipSize();
 }

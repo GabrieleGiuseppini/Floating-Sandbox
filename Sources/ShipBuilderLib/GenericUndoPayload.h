@@ -11,7 +11,6 @@
 
 #include <Core/GameTypes.h>
 
-#include <cassert>
 #include <numeric>
 #include <optional>
 #include <vector>
@@ -27,7 +26,7 @@ namespace ShipBuilder {
 template<CoordinatesSpaceType TCoordinatesSpace>
 class GenericUndoPayload final
 {
-public:
+private:
 
 	class ShipSpaceRegionPayload final
 	{
@@ -169,17 +168,13 @@ public:
 
 public:
 
-	// TODO
-	//size_t GetRegionCount() const
-	//{
-	//	return mPayloads.size();
-	//}
-
-	//TPayload GetPayloadAt(size_t index)
-	//{
-	//	assert(index < mPayloads.size());
-	//	auto TPayload = std::move(mPayloads[index]);
-	//}
+	template<typename... TArgs>
+	static GenericUndoPayload Make(TArgs &&... args)
+	{
+		GenericUndoPayload payload;
+		payload.AddRegion(std::forward<TArgs>(args)...);
+		return payload;
+	}
 
 	template <typename TFunctor>
 	void ConsumeAll(TFunctor f)

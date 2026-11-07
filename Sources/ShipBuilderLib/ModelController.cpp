@@ -792,16 +792,13 @@ GenericShipSpaceUndoPayload ModelController::Paste(
         }
     }
 
-    GenericShipSpaceUndoPayload undoPayload;
-    undoPayload.AddRegion(
+    return GenericShipSpaceUndoPayload::Make(
         actualPasteOriginShip,
         std::move(structuralLayerRegionBackup),
         std::move(electricalLayerRegionBackup),
         std::move(ropesLayerRegionBackup),
         std::move(exteriorTextureLayerRegionBackup),
         std::move(interiorTextureLayerRegionBackup));
-
-    return undoPayload;
 }
 
 void ModelController::Restore(GenericShipSpaceUndoPayload && undoPayload)
@@ -910,7 +907,7 @@ void ModelController::Restore(GenericInteriorTextureSpaceUndoPayload && undoPayl
         });
 }
 
-GenericEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVisualization(
+GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVisualization(
     ShipLayers const & sourcePayload,
     ShipSpaceCoordinates const & pasteOrigin,
     bool isTransparent)
@@ -1104,7 +1101,7 @@ GenericEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVi
         }
     }
 
-    return GenericEphemeralVisualizationRestorePayload(
+    return GenericShipSpaceEphemeralVisualizationRestorePayload::Make(
         actualPasteOriginShip,
         std::move(structuralLayerUndoBufferRegion),
         std::move(electricalLayerUndoBufferRegion),
@@ -1113,60 +1110,110 @@ GenericEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVi
         std::move(interiorTextureLayerUndoBufferRegion));
 }
 
-void ModelController::RestoreEphemeralVisualization(GenericEphemeralVisualizationRestorePayload && restorePayload)
+void ModelController::RestoreEphemeralVisualization(GenericShipSpaceEphemeralVisualizationRestorePayload && restorePayload)
 {
-    for (LayerType const affectedLayerType : restorePayload.GetAffectedLayers())
-    {
-        switch (affectedLayerType)
+    restorePayload.ConsumeAll(
+        [this](auto && regionPayload)
         {
-            case LayerType::Structural:
+            for (LayerType const affectedLayerType : regionPayload.GetAffectedLayers())
             {
-                RestoreStructuralLayerRegionEphemeralVisualization(
-                    *restorePayload.StructuralLayerBufferRegion,
-                    ShipSpaceRect(restorePayload.StructuralLayerBufferRegion->Size), // Whole backup
-                    restorePayload.Origin);
+                switch (affectedLayerType)
+                {
+                    case LayerType::Structural:
+                    {
+                        RestoreStructuralLayerRegionEphemeralVisualization(
+                            *regionPayload.StructuralLayerBufferRegion,
+                            ShipSpaceRect(regionPayload.StructuralLayerBufferRegion->Size), // Whole backup
+                            regionPayload.Origin);
 
-                break;
+                        break;
+                    }
+
+                    case LayerType::Electrical:
+                    {
+                        RestoreElectricalLayerRegionEphemeralVisualization(
+                            *regionPayload.ElectricalLayerBufferRegion,
+                            ShipSpaceRect(regionPayload.ElectricalLayerBufferRegion->Size), // Whole backup
+                            regionPayload.Origin);
+
+                        break;
+                    }
+
+                    case LayerType::Ropes:
+                    {
+                        RestoreRopesLayerEphemeralVisualization(*regionPayload.RopesLayerBuffer);
+
+                        break;
+                    }
+
+                    case LayerType::ExteriorTexture:
+                    {
+                        RestoreExteriorTextureLayerRegionEphemeralVisualization(
+                            *regionPayload.ExteriorTextureLayerBufferRegion,
+                            ImageRect(regionPayload.ExteriorTextureLayerBufferRegion->Size), // Whole backup
+                            ShipSpaceToExteriorTextureSpace(regionPayload.Origin));
+
+                        break;
+                    }
+
+                    case LayerType::InteriorTexture:
+                    {
+                        RestoreInteriorTextureLayerRegionEphemeralVisualization(
+                            *regionPayload.InteriorTextureLayerBufferRegion,
+                            ImageRect(regionPayload.InteriorTextureLayerBufferRegion->Size), // Whole backup
+                            ShipSpaceToInteriorTextureSpace(regionPayload.Origin));
+
+                        break;
+                    }
+                }
             }
+        });
+}
 
-            case LayerType::Electrical:
-            {
-                RestoreElectricalLayerRegionEphemeralVisualization(
-                    *restorePayload.ElectricalLayerBufferRegion,
-                    ShipSpaceRect(restorePayload.ElectricalLayerBufferRegion->Size), // Whole backup
-                    restorePayload.Origin);
-
-                break;
-            }
-
-            case LayerType::Ropes:
-            {
-                RestoreRopesLayerEphemeralVisualization(*restorePayload.RopesLayerBuffer);
-
-                break;
-            }
-
-            case LayerType::ExteriorTexture:
+void ModelController::RestoreEphemeralVisualization(GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload && restorePayload)
+{
+    restorePayload.ConsumeAll(
+        [this](auto && regionPayload)
+        {
+            if (regionPayload.ExteriorTextureLayerBufferRegion)
             {
                 RestoreExteriorTextureLayerRegionEphemeralVisualization(
-                    *restorePayload.ExteriorTextureLayerBufferRegion,
-                    ImageRect(restorePayload.ExteriorTextureLayerBufferRegion->Size), // Whole backup
-                    ShipSpaceToExteriorTextureSpace(restorePayload.Origin));
-
-                break;
+                    *regionPayload.ExteriorTextureLayerBufferRegion,
+                    ImageRect(regionPayload.ExteriorTextureLayerBufferRegion->Size), // Whole backup
+                    regionPayload.Origin);
             }
 
-            case LayerType::InteriorTexture:
+            if (regionPayload.InteriorTextureLayerBufferRegion)
             {
                 RestoreInteriorTextureLayerRegionEphemeralVisualization(
-                    *restorePayload.InteriorTextureLayerBufferRegion,
-                    ImageRect(restorePayload.InteriorTextureLayerBufferRegion->Size), // Whole backup
-                    ShipSpaceToInteriorTextureSpace(restorePayload.Origin));
-
-                break;
+                    *regionPayload.InteriorTextureLayerBufferRegion,
+                    ImageRect(regionPayload.InteriorTextureLayerBufferRegion->Size), // Whole backup
+                    ExteriorTextureSpaceToInteriorTextureSpace(regionPayload.Origin));
             }
-        }
-    }
+        });
+}
+
+void ModelController::RestoreEphemeralVisualization(GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload && restorePayload)
+{
+    restorePayload.ConsumeAll(
+        [this](auto && regionPayload)
+        {
+            if (regionPayload.ExteriorTextureLayerBufferRegion)
+            {
+                RestoreExteriorTextureLayerRegionEphemeralVisualization(
+                    *regionPayload.ExteriorTextureLayerBufferRegion,
+                    ImageRect(regionPayload.ExteriorTextureLayerBufferRegion->Size), // Whole backup
+                    InteriorTextureSpaceToExteriorTextureSpace(regionPayload.Origin));
+            }
+
+            if (regionPayload.InteriorTextureLayerBufferRegion)
+            {
+                RestoreInteriorTextureLayerRegionEphemeralVisualization(
+                    *regionPayload.InteriorTextureLayerBufferRegion,
+                    ImageRect(regionPayload.InteriorTextureLayerBufferRegion->Size), // Whole backup
+                    regionPayload.Origin);
+            }
+        });
 }
 
 std::vector<LayerType> ModelController::CalculateAffectedLayers(ShipLayers const & otherSource) const
@@ -1356,16 +1403,13 @@ GenericShipSpaceUndoPayload ModelController::StructuralRectangle(
     RegisterDirtyVisualization<VisualizationType::Game>(rect);
     RegisterDirtyVisualization<VisualizationType::StructuralLayer>(rect);
 
-    GenericShipSpaceUndoPayload undoPayload;
-    undoPayload.AddRegion(
+    return GenericShipSpaceUndoPayload::Make(
         rect.origin,
         std::move(structuralLayerRegionBackup),
         std::nullopt,
         std::nullopt,
         std::nullopt,
         std::nullopt);
-
-    return undoPayload;
 }
 
 GenericShipSpaceUndoPayload ModelController::StructureTrace(
@@ -1416,16 +1460,13 @@ GenericShipSpaceUndoPayload ModelController::StructureTrace(
 
     // Note: DoStructuralRegionBufferPaste also updates viz
 
-    GenericShipSpaceUndoPayload undoPayload;
-    undoPayload.AddRegion(
+    return GenericShipSpaceUndoPayload::Make(
         shipRect.origin,
         std::move(structuralLayerRegionBackup),
         std::nullopt,
         std::nullopt,
         std::nullopt,
         std::nullopt);
-
-    return undoPayload;
 }
 
 std::optional<ShipSpaceRect> ModelController::StructuralFlood(
@@ -1550,7 +1591,7 @@ void ModelController::StructuralRegionFillForEphemeralVisualization(
     mIsStructuralLayerInEphemeralVisualization = true;
 }
 
-GenericEphemeralVisualizationRestorePayload ModelController::StructuralRectangleForEphemeralVisualization(
+GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::StructuralRectangleForEphemeralVisualization(
     ShipSpaceRect const & rect,
     std::uint32_t lineSize,
     StructuralMaterial const * lineMaterial,
@@ -1584,7 +1625,7 @@ GenericEphemeralVisualizationRestorePayload ModelController::StructuralRectangle
     // Remember we are in temp visualization now
     mIsStructuralLayerInEphemeralVisualization = true;
 
-    return GenericEphemeralVisualizationRestorePayload(
+    return GenericShipSpaceEphemeralVisualizationRestorePayload::Make(
         rect.origin,
         std::move(structuralLayerUndoBufferRegion),
         std::nullopt,
@@ -4061,19 +4102,16 @@ GenericShipSpaceUndoPayload ModelController::MakeGenericShipSpaceUndoPayload(
         interiorTextureLayerRegionBackup = mModel.GetInteriorTextureLayer().MakeRegionBackup(actualTextureRegion);
     }
 
-    GenericShipSpaceUndoPayload undoPayload;
-    undoPayload.AddRegion(
+    return GenericShipSpaceUndoPayload::Make(
         actualRegion.origin,
         std::move(structuralLayerRegionBackup),
         std::move(electricalLayerRegionBackup),
         std::move(ropesLayerRegionBackup),
         std::move(exteriorTextureLayerRegionBackup),
         std::move(interiorTextureLayerRegionBackup));
-
-    return undoPayload;
 }
 
-GenericEphemeralVisualizationRestorePayload ModelController::MakeGenericEphemeralVisualizationRestorePayload(
+GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::MakeGenericShipSpaceEphemeralVisualizationRestorePayload(
     ShipSpaceRect const & region,
     bool doStructuralLayer,
     bool doElectricalLayer,
@@ -4121,7 +4159,7 @@ GenericEphemeralVisualizationRestorePayload ModelController::MakeGenericEphemera
         interiorTextureLayerBufferRegion = mModel.GetInteriorTextureLayer().Buffer.CloneRegion(ShipSpaceToInteriorTextureSpace(region));
     }
 
-    return GenericEphemeralVisualizationRestorePayload(
+    return GenericShipSpaceEphemeralVisualizationRestorePayload::Make(
         region.origin,
         std::move(structuralLayerBufferRegion),
         std::move(electricalLayerBufferRegion),

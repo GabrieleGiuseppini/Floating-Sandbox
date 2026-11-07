@@ -153,7 +153,7 @@ ShipSpaceRect StructuralRectangleTool::CalculateRect(ShipSpaceCoordinates const 
     return rect;
 }
 
-GenericEphemeralVisualizationRestorePayload StructuralRectangleTool::DrawEphemeralRectangle(ShipSpaceRect const & rect)
+GenericShipSpaceEphemeralVisualizationRestorePayload StructuralRectangleTool::DrawEphemeralRectangle(ShipSpaceRect const & rect)
 {
     auto const [lineMaterial, fillMaterial] = GetMaterials();
 

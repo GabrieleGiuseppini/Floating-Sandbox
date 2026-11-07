@@ -1166,16 +1166,29 @@
 							+ paste all layers
 
 
-					- Same for GenericEphemeralVisualizationRestorePayload
+					+ Same for GenericEphemeralVisualizationRestorePayload
+						+ Tests: 
+							+ TextureTranslateTool
+							+ structural rectangle
+							+ paste all layers
+							+ line
 
 					- Might also need multi-region dirty viz tracking, for perf
-						- Pre-perf for line
-						- If we do this, nuke redundant LayerChangeEpilog's at tools when we undo eph viz and redo it
+						+ Pre-perf for line
+						- Change dirty region to RegionCombiner
+						- RegionCombiner improvements:
+							- TODOHERE
 						- Post-perf for line
+
+						- If we do this, nuke redundant LayerChangeEpilog's at tools when we undo eph viz and redo it
+
+
+
 
 					= Call InternalCommit @:
 						+ dctor - iff needs to commit
 						+ Creation of new selection
+						- Do we need also @ OnMouseLeft?
 					- @ InitSelectionMoves: TODO: depends on undo decision
 					= @ each move (for eph viz):
 						= If have eph viz:
@@ -1200,13 +1213,14 @@
 						+ If have eph viz:
 							+ Undo eph viz
 								+ ...
-						- TODOHERE: massage below to make RegionTransfer return multi-region undo
-						- ModelController::RegionTransfer
-							- TODO: do we still need, or want, to do Undo immediately? Vs. at commit. Otherwise returns undo payload
-							- Erase -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
-							  as undo payload should also include pasted-to region
-							- Paste -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
-							  as undo payload should also include pasted-to region
+						- If not empty move:
+							- TODOHERE: massage below to make RegionTransfer return multi-region undo
+							- ModelController::RegionTransfer
+								- TODO: do we still need, or want, to do Undo immediately? Vs. at commit. Otherwise returns undo payload
+								- Erase -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
+								  as undo payload should also include pasted-to region
+								- Paste -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
+								  as undo payload should also include pasted-to region
 
 
 
@@ -1245,6 +1259,7 @@
 						- Transparent
 		- Tests:
 			- Undo ONLY appears AFTER sizable move
+			- Undo ONLY appears if move ended up not being a zero move
 
 		= Cleanup:
 			= Tool:

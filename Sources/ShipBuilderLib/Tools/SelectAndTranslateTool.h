@@ -163,11 +163,11 @@ private:
 
 // Specialization for Structural/Electrical/Ropes layers, which work on ship space coords
 template<LayerType TLayer>
-class SelectAndTranslateTool_SER : public SelectAndTranslateTool<TLayer, GenericEphemeralVisualizationRestorePayload, struct ShipSpaceTag>
+class SelectAndTranslateTool_ShipSpace : public SelectAndTranslateTool<TLayer, GenericShipSpaceEphemeralVisualizationRestorePayload, struct ShipSpaceTag>
 {
 protected:
 
-    SelectAndTranslateTool_SER(
+    SelectAndTranslateTool_ShipSpace(
         ToolType toolType,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
@@ -175,7 +175,7 @@ protected:
     ShipSpaceSize GetSpaceSize() const override;
 };
 
-class StructuralSelectAndTranslateTool final : public SelectAndTranslateTool_SER<LayerType::Structural>
+class StructuralSelectAndTranslateTool final : public SelectAndTranslateTool_ShipSpace<LayerType::Structural>
 {
 public:
 
@@ -184,7 +184,7 @@ public:
         GameAssetManager const & gameAssetManager);
 };
 
-class ElectricalSelectAndTranslateTool final : public SelectAndTranslateTool_SER<LayerType::Electrical>
+class ElectricalSelectAndTranslateTool final : public SelectAndTranslateTool_ShipSpace<LayerType::Electrical>
 {
 public:
 
@@ -193,7 +193,7 @@ public:
         GameAssetManager const & gameAssetManager);
 };
 
-class RopeSelectAndTranslateTool final : public SelectAndTranslateTool_SER<LayerType::Ropes>
+class RopeSelectAndTranslateTool final : public SelectAndTranslateTool_ShipSpace<LayerType::Ropes>
 {
 public:
 
@@ -202,7 +202,7 @@ public:
         GameAssetManager const & gameAssetManager);
 };
 
-class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, GenericTextureEphemeralVisualizationRestorePayload<LayerType::ExteriorTexture>, struct ImageTag>
+class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload, struct ImageTag>
 {
 public:
 
@@ -215,7 +215,7 @@ protected:
     ImageSize GetSpaceSize() const override;
 };
 
-class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, GenericTextureEphemeralVisualizationRestorePayload<LayerType::InteriorTexture>, struct ImageTag>
+class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload, struct ImageTag>
 {
 public:
 

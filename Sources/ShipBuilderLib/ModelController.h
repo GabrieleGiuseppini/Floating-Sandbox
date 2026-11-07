@@ -238,12 +238,14 @@ public:
     void Restore(GenericExteriorTextureSpaceUndoPayload && undoPayload);
     void Restore(GenericInteriorTextureSpaceUndoPayload && undoPayload);
 
-    GenericEphemeralVisualizationRestorePayload PasteForEphemeralVisualization(
+    GenericShipSpaceEphemeralVisualizationRestorePayload PasteForEphemeralVisualization(
         ShipLayers const & sourcePayload,
         ShipSpaceCoordinates const & pasteOrigin,
         bool isTransparent);
 
-    void RestoreEphemeralVisualization(GenericEphemeralVisualizationRestorePayload && restorePayload);
+    void RestoreEphemeralVisualization(GenericShipSpaceEphemeralVisualizationRestorePayload && restorePayload);
+    void RestoreEphemeralVisualization(GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload && restorePayload);
+    void RestoreEphemeralVisualization(GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload && restorePayload);
 
     std::vector<LayerType> CalculateAffectedLayers(ShipLayers const & otherSource) const;
 
@@ -294,7 +296,7 @@ public:
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
 
-    GenericEphemeralVisualizationRestorePayload StructuralRectangleForEphemeralVisualization(
+    GenericShipSpaceEphemeralVisualizationRestorePayload StructuralRectangleForEphemeralVisualization(
         ShipSpaceRect const & rect,
         std::uint32_t lineSize,
         StructuralMaterial const * lineMaterial,
@@ -686,7 +688,7 @@ private:
         bool doExteriorTextureLayer,
         bool doInteriorTextureLayer) const;
 
-    GenericEphemeralVisualizationRestorePayload MakeGenericEphemeralVisualizationRestorePayload(
+    GenericShipSpaceEphemeralVisualizationRestorePayload MakeGenericShipSpaceEphemeralVisualizationRestorePayload(
         ShipSpaceRect const & region,
         bool doStructuralLayer,
         bool doElectricalLayer,
