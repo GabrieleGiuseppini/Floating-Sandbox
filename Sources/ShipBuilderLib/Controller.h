@@ -289,7 +289,19 @@ public:
         std::optional<std::string> originalExteriorTextureArtCredits,
         std::unique_ptr<TextureLayerData> interiorTextureLayer);
 
-    void Restore(GenericUndoPayload && undoPayload);
+    template<typename TUndoPayload>
+    void Restore(TUndoPayload && undoPayload)
+    {
+        // No layer-presence changing operations
+        mModelController->Restore(std::move(undoPayload));
+
+        // Notify macro properties
+        NotifyModelMacroPropertiesUpdated();
+
+        // Refresh model visualizations
+        mModelController->UpdateVisualizations(*mView, mGameAssetManager);
+        mUserInterface.RefreshView();
+    }
 
     void Copy() const;
 

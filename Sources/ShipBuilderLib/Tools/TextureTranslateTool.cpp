@@ -118,7 +118,6 @@ void TextureTranslateTool<TLayer>::OnShiftKeyUp()
 
 //////////////////////////////////////////////////////////////////////////////
 
-
 template<LayerType TLayer>
 void TextureTranslateTool<TLayer>::DoTranslate(ImageCoordinates const & endPosition)
 {
@@ -215,27 +214,25 @@ void TextureTranslateTool<TLayer>::DoTranslate(ImageCoordinates const & endPosit
                 {
                     if constexpr (TLayer == LayerType::ExteriorTexture)
                     {
-                        controller.Restore(
-                            GenericUndoPayload(
-                                { 0, 0 },
-                                std::nullopt,
-                                std::nullopt,
-                                std::nullopt,
-                                std::move(sourceLayerData),
-                                std::nullopt));
+                        GenericExteriorTextureSpaceUndoPayload undoPayload;
+                        undoPayload.AddRegion(
+                            ImageCoordinates(0, 0),
+                            std::move(sourceLayerData),
+                            std::nullopt);
+
+                        controller.Restore(std::move(undoPayload));
                     }
                     else
                     {
                         static_assert(TLayer == LayerType::InteriorTexture);
 
-                        controller.Restore(
-                            GenericUndoPayload(
-                                { 0, 0 },
-                                std::nullopt,
-                                std::nullopt,
-                                std::nullopt,
-                                std::nullopt,
-                                std::move(sourceLayerData)));
+                        GenericInteriorTextureSpaceUndoPayload undoPayload;
+                        undoPayload.AddRegion(
+                            ImageCoordinates(0, 0),
+                            std::nullopt,
+                            std::move(sourceLayerData));
+
+                        controller.Restore(std::move(undoPayload));
                     }
                 });
 

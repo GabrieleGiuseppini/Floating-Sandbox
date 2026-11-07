@@ -755,19 +755,6 @@ void Controller::RestoreAllLayersForUndo(
     mUserInterface.RefreshView();
 }
 
-void Controller::Restore(GenericUndoPayload && undoPayload)
-{
-    // No layer-presence changing operations
-    mModelController->Restore(std::move(undoPayload));
-
-    // Notify macro properties
-    NotifyModelMacroPropertiesUpdated();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
-    mUserInterface.RefreshView();
-}
-
 void Controller::Copy() const
 {
     // Note: no need to suspend tool, as Selection tool has no eph viz

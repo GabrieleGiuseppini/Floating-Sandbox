@@ -1140,13 +1140,38 @@
 							+ See if can do that "struct ShipSpaceTag" once and for all
 						+ Unit tests
 
-					- Make multi-region GenericUndoPayload<T>
-						- Replace GenericUndoPayload<T> altogether
-						- Current GenericUndoPayloadX2 becomes private element
-						- Restore API: code runs in loop
+					+ Make multi-region GenericUndoPayload<T>, and make it coords-free
+						+ New enum @ GameTypes (CoordinatesSpaceType) and templated on that
+							+ Enum:
+								+ ShipSpace
+								+ ExteriorTextureSpace
+								+ InteriorTextureSpace
+							+ Traits
+						+ Replace GenericUndoPayload<T> altogether
+						+ Current GenericUndoPayloadX2 becomes public element
+						+ Visitor API and Add API
+						+ Make 3 explicit classes using enum naming
+						+ Uses:
+							+ All methods that return or take, return or take one of the three explicit classes
+								+ And at this moment return one single region
+								+ TextureTranslateTool
+							+ Restore API is overloaded for three types, and code runs in loop
+								+ ExteriorTextureSpaceToInteriorTextureSpace/other
+								+ Do we need "AffectedLayers" - can just check for presence? so no switches
+									+ remove from @ texture payloads only
+
+						+ Tests: 
+							+ TextureTranslateTool
+							+ structural rectangle
+							+ paste all layers
+
+
+					- Same for GenericEphemeralVisualizationRestorePayload
 
 					- Might also need multi-region dirty viz tracking, for perf
+						- Pre-perf for line
 						- If we do this, nuke redundant LayerChangeEpilog's at tools when we undo eph viz and redo it
+						- Post-perf for line
 
 					= Call InternalCommit @:
 						+ dctor - iff needs to commit
@@ -1175,7 +1200,7 @@
 						+ If have eph viz:
 							+ Undo eph viz
 								+ ...
-						- TODOHERE: massage below to make RegionTransfer return multi-region undp
+						- TODOHERE: massage below to make RegionTransfer return multi-region undo
 						- ModelController::RegionTransfer
 							- TODO: do we still need, or want, to do Undo immediately? Vs. at commit. Otherwise returns undo payload
 							- Erase -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,

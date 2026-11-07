@@ -225,16 +225,18 @@ public:
         ShipSpaceRect const & region,
         std::optional<LayerType> layerSelection) const;
 
-    GenericUndoPayload EraseRegion(
+    GenericShipSpaceUndoPayload EraseRegion(
         ShipSpaceRect const & region,
         std::optional<LayerType> const & layerSelection);
 
-    GenericUndoPayload Paste(
+    GenericShipSpaceUndoPayload Paste(
         ShipLayers const & sourcePayload,
         ShipSpaceCoordinates const & pasteOrigin,
         bool isTransparent);
 
-    void Restore(GenericUndoPayload && undoPayload);
+    void Restore(GenericShipSpaceUndoPayload && undoPayload);
+    void Restore(GenericExteriorTextureSpaceUndoPayload && undoPayload);
+    void Restore(GenericInteriorTextureSpaceUndoPayload && undoPayload);
 
     GenericEphemeralVisualizationRestorePayload PasteForEphemeralVisualization(
         ShipLayers const & sourcePayload,
@@ -265,13 +267,13 @@ public:
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
 
-    GenericUndoPayload StructuralRectangle(
+    GenericShipSpaceUndoPayload StructuralRectangle(
         ShipSpaceRect const & rect,
         std::uint32_t lineSize,
         StructuralMaterial const * lineMaterial,
         std::optional<StructuralMaterial const *> fillMaterial);
 
-    GenericUndoPayload StructureTrace(
+    GenericShipSpaceUndoPayload StructureTrace(
         ImageRect const & textureRect,
         StructuralMaterial const * edgeMaterial,
         StructuralMaterial const * fillMaterial,
@@ -426,6 +428,13 @@ public:
         return ShipSpaceCoordinates::FromFloatFloor(imageCoordinates.ToFloat().scale(textureToShip));
     }
 
+    ImageCoordinates ExteriorTextureSpaceToInteriorTextureSpace(ImageCoordinates const & imageCoordinates) const
+    {
+        vec2f const externalToInteral = GetTextureSpaceToTextureSpaceFactor(GetExteriorTextureSize(), GetInteriorTextureSize());
+
+        return ImageCoordinates::FromFloatFloor(imageCoordinates.ToFloat().scale(externalToInteral));
+    }
+
     ShipSpaceRect ExteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const
     {
         return ImageRectToContainingShipSpaceRect(
@@ -495,6 +504,13 @@ public:
         return ImageRect(
             ImageCoordinates::FromFloatFloor(shipRect.origin.ToFloat().scale(shipToTexture)),
             ImageSize::FromFloatFloor(shipRect.size.ToFloat<vec2f>().scale(shipToTexture)));
+    }
+
+    ImageCoordinates InteriorTextureSpaceToExteriorTextureSpace(ImageCoordinates const & imageCoordinates) const
+    {
+        vec2f const internalToExteral = GetTextureSpaceToTextureSpaceFactor(GetInteriorTextureSize(), GetExteriorTextureSize());
+
+        return ImageCoordinates::FromFloatFloor(imageCoordinates.ToFloat().scale(internalToExteral));
     }
 
     ShipSpaceRect InteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const
@@ -579,6 +595,10 @@ public:
         ImageSize const & textureSize,
         ShipSpaceSize const & shipSize);
 
+    static vec2f GetTextureSpaceToTextureSpaceFactor(
+        ImageSize const & sourceTextureSize,
+        ImageSize const & targetTextureSize);
+
 private:
 
     ModelController(
@@ -658,7 +678,7 @@ private:
         bool doContiguousOnly,
         TextureLayerData & layer);
 
-    GenericUndoPayload MakeGenericUndoPayload(
+    GenericShipSpaceUndoPayload MakeGenericShipSpaceUndoPayload(
         std::optional<ShipSpaceRect> const & region,
         bool doStructuralLayer,
         bool doElectricalLayer,

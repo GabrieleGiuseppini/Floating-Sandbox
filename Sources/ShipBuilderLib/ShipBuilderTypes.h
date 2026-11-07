@@ -111,6 +111,17 @@ enum class FillMode
 };
 
 //
+// Coordinates space
+//
+
+enum class CoordinatesSpaceType
+{
+    Ship,
+    ExteriorTexture,
+    InteriorTexture
+};
+
+//
 // Visualization
 //
 
