@@ -28,15 +28,23 @@ public:
 		InternalAddRegion(region, 0);
 	}
 
+	template <typename TFunctor>
+	void Apply(TFunctor f) const
+	{
+		for (size_t i = 0; i < mRegionInfos.size(); ++i)
+		{
+			f(mRegionInfos[i].Region);
+		}
+	}
+
 	size_t GetRegionCount() const
 	{
 		return mRegionInfos.size();
 	}
 
-	TRect const & GetRegionAt(size_t index) const
+	void Reset()
 	{
-		assert(index < mRegionInfos.size());
-		return mRegionInfos[index].Region;
+		mRegionInfos.clear();
 	}
 
 private:

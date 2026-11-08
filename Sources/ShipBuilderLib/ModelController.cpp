@@ -3043,34 +3043,38 @@ void ModelController::UpdateVisualizations(
             mGameVisualizationAutoTexturizationTexture = std::make_unique<RgbaImageData>(mGameVisualizationTexture->Size);
         }
 
-        if (mDirtyGameVisualizationRegion.has_value())
-        {
-            // Update visualization
-            ImageRect const dirtyTextureRegion = UpdateGameVisualization(*mDirtyGameVisualizationRegion, gameAssetManager);
+        // TODOTEST
+        LogMessage("Dirty regions: ", mDirtyGameVisualizationRegions.GetRegionCount());
 
-            // Upload visualization
-            if (dirtyTextureRegion != ImageRect(mGameVisualizationTexture->Size))
+        mDirtyGameVisualizationRegions.Apply(
+            [&](ShipSpaceRect const & region)
             {
-                //
-                // For better performance, we only upload the dirty sub-texture
-                //
+                // Update visualization
+                ImageRect const dirtyTextureRegion = UpdateGameVisualization(region, gameAssetManager);
 
-                auto subTexture = RgbaImageData(dirtyTextureRegion.size);
-                subTexture.BlitFromRegion(
-                    *mGameVisualizationTexture,
-                    dirtyTextureRegion,
-                    { 0, 0 });
+                // Upload visualization
+                if (dirtyTextureRegion != ImageRect(mGameVisualizationTexture->Size))
+                {
+                    //
+                    // For better performance, we only upload the dirty sub-texture
+                    //
 
-                view.UpdateGameVisualization(
-                    subTexture,
-                    dirtyTextureRegion.origin);
-            }
-            else
-            {
-                // Upload whole texture
-                view.UploadGameVisualization(*mGameVisualizationTexture);
-            }
-        }
+                    auto subTexture = RgbaImageData(dirtyTextureRegion.size);
+                    subTexture.BlitFromRegion(
+                        *mGameVisualizationTexture,
+                        dirtyTextureRegion,
+                        { 0, 0 });
+
+                    view.UpdateGameVisualization(
+                        subTexture,
+                        dirtyTextureRegion.origin);
+                }
+                else
+                {
+                    // Upload whole texture
+                    view.UploadGameVisualization(*mGameVisualizationTexture);
+                }
+            });
     }
     else
     {
@@ -3082,7 +3086,7 @@ void ModelController::UpdateVisualizations(
         }
     }
 
-    mDirtyGameVisualizationRegion.reset();
+    mDirtyGameVisualizationRegions.Reset();
 
     // Structural
 
@@ -3094,45 +3098,49 @@ void ModelController::UpdateVisualizations(
             mStructuralLayerVisualizationTexture = std::make_unique<RgbaImageData>(ImageSize(mModel.GetShipSize().width, mModel.GetShipSize().height));
         }
 
-        if (mDirtyStructuralLayerVisualizationRegion.has_value())
-        {
-            // Refresh viz mode
-            if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::MeshMode)
-            {
-                view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::MeshMode);
-            }
-            else
-            {
-                assert(mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::PixelMode);
-                view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::PixelMode);
-            }
+        // TODOTEST
+        LogMessage("Dirty regions: ", mDirtyGameVisualizationRegions.GetRegionCount());
 
-            // Update visualization
-            ImageRect const dirtyTextureRegion = UpdateStructuralLayerVisualization(*mDirtyStructuralLayerVisualizationRegion);
-
-            // Upload visualization
-            if (dirtyTextureRegion != ImageRect(mStructuralLayerVisualizationTexture->Size))
+        mDirtyStructuralLayerVisualizationRegions.Apply(
+            [&](ShipSpaceRect const & region)
             {
-                //
-                // For better performance, we only upload the dirty sub-texture
-                //
+                // Refresh viz mode
+                if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::MeshMode)
+                {
+                    view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::MeshMode);
+                }
+                else
+                {
+                    assert(mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::PixelMode);
+                    view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::PixelMode);
+                }
 
-                auto subTexture = RgbaImageData(dirtyTextureRegion.size);
-                subTexture.BlitFromRegion(
-                    *mStructuralLayerVisualizationTexture,
-                    dirtyTextureRegion,
-                    { 0, 0 });
+                // Update visualization
+                ImageRect const dirtyTextureRegion = UpdateStructuralLayerVisualization(region);
 
-                view.UpdateStructuralLayerVisualization(
-                    subTexture,
-                    dirtyTextureRegion.origin);
-            }
-            else
-            {
-                // Upload whole texture
-                view.UploadStructuralLayerVisualization(*mStructuralLayerVisualizationTexture);
-            }
-        }
+                // Upload visualization
+                if (dirtyTextureRegion != ImageRect(mStructuralLayerVisualizationTexture->Size))
+                {
+                    //
+                    // For better performance, we only upload the dirty sub-texture
+                    //
+
+                    auto subTexture = RgbaImageData(dirtyTextureRegion.size);
+                    subTexture.BlitFromRegion(
+                        *mStructuralLayerVisualizationTexture,
+                        dirtyTextureRegion,
+                        { 0, 0 });
+
+                    view.UpdateStructuralLayerVisualization(
+                        subTexture,
+                        dirtyTextureRegion.origin);
+                }
+                else
+                {
+                    // Upload whole texture
+                    view.UploadStructuralLayerVisualization(*mStructuralLayerVisualizationTexture);
+                }
+            });
     }
     else
     {
@@ -3144,7 +3152,7 @@ void ModelController::UpdateVisualizations(
         }
     }
 
-    mDirtyStructuralLayerVisualizationRegion.reset();
+    mDirtyStructuralLayerVisualizationRegions.Reset();
 
     // Electrical
 
@@ -3156,14 +3164,15 @@ void ModelController::UpdateVisualizations(
             mElectricalLayerVisualizationTexture = std::make_unique<RgbaImageData>(mModel.GetShipSize().width, mModel.GetShipSize().height);
         }
 
-        if (mDirtyElectricalLayerVisualizationRegion.has_value())
-        {
-            // Update visualization
-            UpdateElectricalLayerVisualization(*mDirtyElectricalLayerVisualizationRegion);
+        mDirtyElectricalLayerVisualizationRegions.Apply(
+            [&](ShipSpaceRect const & region)
+            {
+                // Update visualization
+                UpdateElectricalLayerVisualization(region);
 
-            // Upload visualization
-            view.UploadElectricalLayerVisualization(*mElectricalLayerVisualizationTexture);
-        }
+                // Upload visualization
+                view.UploadElectricalLayerVisualization(*mElectricalLayerVisualizationTexture);
+            });
     }
     else
     {
@@ -3175,7 +3184,7 @@ void ModelController::UpdateVisualizations(
         }
     }
 
-    mDirtyElectricalLayerVisualizationRegion.reset();
+    mDirtyElectricalLayerVisualizationRegions.Reset();
 
     // Ropes
 
@@ -3183,14 +3192,15 @@ void ModelController::UpdateVisualizations(
     {
         assert(mModel.HasLayer(LayerType::Ropes));
 
-        if (mDirtyRopesLayerVisualizationRegion.has_value())
-        {
-            // Update visualization
-            UpdateRopesLayerVisualization(); // Dirty region not needed in this implementation
+        mDirtyRopesLayerVisualizationRegions.Apply(
+            [&](ShipSpaceRect const &)
+            {
+                // Update visualization
+                UpdateRopesLayerVisualization(); // Dirty region not needed in this implementation
 
-            // Upload visualization
-            view.UploadRopesLayerVisualization(mModel.GetRopesLayer().Buffer);
-        }
+                // Upload visualization
+                view.UploadRopesLayerVisualization(mModel.GetRopesLayer().Buffer);
+            });
     }
     else
     {
@@ -3200,7 +3210,7 @@ void ModelController::UpdateVisualizations(
         }
     }
 
-    mDirtyRopesLayerVisualizationRegion.reset();
+    mDirtyRopesLayerVisualizationRegions.Reset();
 
     // Exterior Texture
 
@@ -3208,34 +3218,35 @@ void ModelController::UpdateVisualizations(
     {
         assert(mModel.HasLayer(LayerType::ExteriorTexture));
 
-        if (mDirtyExteriorTextureLayerVisualizationRegion.has_value())
-        {
-            // Update visualization
-            UpdateExteriorTextureLayerVisualization(); // Dirty region not needed for updating viz in this implementation
-
-            // Upload visualization
-            if (*mDirtyExteriorTextureLayerVisualizationRegion != ImageRect(mModel.GetExteriorTextureLayer().Buffer.Size))
+        mDirtyExteriorTextureLayerVisualizationRegions.Apply(
+            [&](ImageRect const & region)
             {
-                //
-                // For better performance, we only upload the dirty sub-texture
-                //
+                // Update visualization
+                UpdateExteriorTextureLayerVisualization(); // Dirty region not needed for updating viz in this implementation
 
-                auto subTexture = RgbaImageData(mDirtyExteriorTextureLayerVisualizationRegion->size);
-                subTexture.BlitFromRegion(
-                    mModel.GetExteriorTextureLayer().Buffer,
-                    *mDirtyExteriorTextureLayerVisualizationRegion,
-                    { 0, 0 });
+                // Upload visualization
+                if (region != ImageRect(mModel.GetExteriorTextureLayer().Buffer.Size))
+                {
+                    //
+                    // For better performance, we only upload the dirty sub-texture
+                    //
 
-                view.UpdateExteriorTextureLayerVisualization(
-                    subTexture,
-                    mDirtyExteriorTextureLayerVisualizationRegion->origin);
-            }
-            else
-            {
-                // Upload whole texture
-                view.UploadExteriorTextureLayerVisualization(mModel.GetExteriorTextureLayer().Buffer);
-            }
-        }
+                    auto subTexture = RgbaImageData(region.size);
+                    subTexture.BlitFromRegion(
+                        mModel.GetExteriorTextureLayer().Buffer,
+                        region,
+                        { 0, 0 });
+
+                    view.UpdateExteriorTextureLayerVisualization(
+                        subTexture,
+                        region.origin);
+                }
+                else
+                {
+                    // Upload whole texture
+                    view.UploadExteriorTextureLayerVisualization(mModel.GetExteriorTextureLayer().Buffer);
+                }
+            });
     }
     else
     {
@@ -3245,7 +3256,7 @@ void ModelController::UpdateVisualizations(
         }
     }
 
-    mDirtyExteriorTextureLayerVisualizationRegion.reset();
+    mDirtyExteriorTextureLayerVisualizationRegions.Reset();
 
     // Interior Texture
 
@@ -3253,34 +3264,35 @@ void ModelController::UpdateVisualizations(
     {
         assert(mModel.HasLayer(LayerType::InteriorTexture));
 
-        if (mDirtyInteriorTextureLayerVisualizationRegion.has_value())
-        {
-            // Update visualization
-            UpdateInteriorTextureLayerVisualization(); // Dirty region not needed for updating viz in this implementation
-
-            // Upload visualization
-            if (*mDirtyInteriorTextureLayerVisualizationRegion != ImageRect(mModel.GetInteriorTextureLayer().Buffer.Size))
+        mDirtyInteriorTextureLayerVisualizationRegions.Apply(
+            [&](ImageRect const & region)
             {
-                //
-                // For better performance, we only upload the dirty sub-texture
-                //
+                // Update visualization
+                UpdateInteriorTextureLayerVisualization(); // Dirty region not needed for updating viz in this implementation
 
-                auto subTexture = RgbaImageData(mDirtyInteriorTextureLayerVisualizationRegion->size);
-                subTexture.BlitFromRegion(
-                    mModel.GetInteriorTextureLayer().Buffer,
-                    *mDirtyInteriorTextureLayerVisualizationRegion,
-                    { 0, 0 });
+                // Upload visualization
+                if (region != ImageRect(mModel.GetInteriorTextureLayer().Buffer.Size))
+                {
+                    //
+                    // For better performance, we only upload the dirty sub-texture
+                    //
 
-                view.UpdateInteriorTextureLayerVisualization(
-                    subTexture,
-                    mDirtyInteriorTextureLayerVisualizationRegion->origin);
-            }
-            else
-            {
-                // Upload whole texture
-                view.UploadInteriorTextureLayerVisualization(mModel.GetInteriorTextureLayer().Buffer);
-            }
-        }
+                    auto subTexture = RgbaImageData(region.size);
+                    subTexture.BlitFromRegion(
+                        mModel.GetInteriorTextureLayer().Buffer,
+                        region,
+                        { 0, 0 });
+
+                    view.UpdateInteriorTextureLayerVisualization(
+                        subTexture,
+                        region.origin);
+                }
+                else
+                {
+                    // Upload whole texture
+                    view.UploadInteriorTextureLayerVisualization(mModel.GetInteriorTextureLayer().Buffer);
+                }
+            });
     }
     else
     {
@@ -3290,7 +3302,7 @@ void ModelController::UpdateVisualizations(
         }
     }
 
-    mDirtyInteriorTextureLayerVisualizationRegion.reset();
+    mDirtyInteriorTextureLayerVisualizationRegions.Reset();
 }
 
 ShipSpaceRect ModelController::ImageRectToContainingShipSpaceRect(
@@ -4372,71 +4384,29 @@ void ModelController::RegisterDirtyVisualization(TRect const & region)
 {
     if constexpr (TVisualization == VisualizationType::Game)
     {
-        if (!mDirtyGameVisualizationRegion.has_value())
-        {
-            mDirtyGameVisualizationRegion = region;
-        }
-        else
-        {
-            mDirtyGameVisualizationRegion->UnionWith(region);
-        }
+        mDirtyGameVisualizationRegions.AddRegion(region);
     }
     else if constexpr (TVisualization == VisualizationType::StructuralLayer)
     {
-        if (!mDirtyStructuralLayerVisualizationRegion.has_value())
-        {
-            mDirtyStructuralLayerVisualizationRegion = region;
-        }
-        else
-        {
-            mDirtyStructuralLayerVisualizationRegion->UnionWith(region);
-        }
+        mDirtyStructuralLayerVisualizationRegions.AddRegion(region);
     }
     else if constexpr (TVisualization == VisualizationType::ElectricalLayer)
     {
-        if (!mDirtyElectricalLayerVisualizationRegion.has_value())
-        {
-            mDirtyElectricalLayerVisualizationRegion = region;
-        }
-        else
-        {
-            mDirtyElectricalLayerVisualizationRegion->UnionWith(region);
-        }
+        mDirtyElectricalLayerVisualizationRegions.AddRegion(region);
     }
     else if constexpr (TVisualization == VisualizationType::RopesLayer)
     {
-        if (!mDirtyRopesLayerVisualizationRegion.has_value())
-        {
-            mDirtyRopesLayerVisualizationRegion = region;
-        }
-        else
-        {
-            mDirtyRopesLayerVisualizationRegion->UnionWith(region);
-        }
+        mDirtyRopesLayerVisualizationRegions.AddRegion(region);
     }
     else if constexpr (TVisualization == VisualizationType::ExteriorTextureLayer)
     {
-        if (!mDirtyExteriorTextureLayerVisualizationRegion.has_value())
-        {
-            mDirtyExteriorTextureLayerVisualizationRegion = region;
-        }
-        else
-        {
-            mDirtyExteriorTextureLayerVisualizationRegion->UnionWith(region);
-        }
+        mDirtyExteriorTextureLayerVisualizationRegions.AddRegion(region);
     }
     else
     {
         static_assert(TVisualization == VisualizationType::InteriorTextureLayer);
 
-        if (!mDirtyInteriorTextureLayerVisualizationRegion.has_value())
-        {
-            mDirtyInteriorTextureLayerVisualizationRegion = region;
-        }
-        else
-        {
-            mDirtyInteriorTextureLayerVisualizationRegion->UnionWith(region);
-        }
+        mDirtyInteriorTextureLayerVisualizationRegions.AddRegion(region);
     }
 }
 

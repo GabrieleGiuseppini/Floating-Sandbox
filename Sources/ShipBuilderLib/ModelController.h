@@ -11,6 +11,7 @@
 #include "InstancedElectricalElementSet.h"
 #include "Model.h"
 #include "ModelValidationSession.h"
+#include "RegionCombiner.h"
 #include "ShipBuilderTypes.h"
 #include "View.h"
 
@@ -802,13 +803,13 @@ private:
 
     InteriorTextureLayerVisualizationModeType mInteriorTextureLayerVisualizationMode;
 
-    // Regions whose visualization needs to be *updated* and *uploaded*
-    std::optional<ShipSpaceRect> mDirtyGameVisualizationRegion;
-    std::optional<ShipSpaceRect> mDirtyStructuralLayerVisualizationRegion;
-    std::optional<ShipSpaceRect> mDirtyElectricalLayerVisualizationRegion;
-    std::optional<ShipSpaceRect> mDirtyRopesLayerVisualizationRegion;
-    std::optional<ImageRect> mDirtyExteriorTextureLayerVisualizationRegion;
-    std::optional<ImageRect> mDirtyInteriorTextureLayerVisualizationRegion;
+    // Regions whose visualizations need to be *updated* and *uploaded*
+    RegionCombiner<struct ShipSpaceTag> mDirtyGameVisualizationRegions;
+    RegionCombiner<struct ShipSpaceTag> mDirtyStructuralLayerVisualizationRegions;
+    RegionCombiner<struct ShipSpaceTag> mDirtyElectricalLayerVisualizationRegions;
+    RegionCombiner<struct ShipSpaceTag> mDirtyRopesLayerVisualizationRegions;
+    RegionCombiner<struct ImageTag> mDirtyExteriorTextureLayerVisualizationRegions;
+    RegionCombiner<struct ImageTag> mDirtyInteriorTextureLayerVisualizationRegions;
 
     //
     // Debugging
