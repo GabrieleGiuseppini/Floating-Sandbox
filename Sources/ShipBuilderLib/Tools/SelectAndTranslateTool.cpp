@@ -456,8 +456,6 @@ void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoor
     {
         UndoEphemeralVisualization();
         assert(!mEngagementData->SelectionMoves->EphemeralVisualization);
-
-        mController.LayerChangeEpilog(); // Since we're moving, it's likely that 2xregion is less expensive than union of two regions
     }
 
     //
@@ -549,8 +547,6 @@ void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoor
     {
         UndoEphemeralVisualization();
         assert(!mEngagementData->SelectionMoves->EphemeralVisualization);
-
-        mController.LayerChangeEpilog(); // Since we're moving, it's likely that 2xregion is less expensive than union of two regions
     }
 
     // TODOHERE

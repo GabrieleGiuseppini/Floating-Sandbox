@@ -321,8 +321,6 @@ void PasteTool::UpdateEphemeralVisualization(ShipSpaceCoordinates const & mouseC
     {
         UndoEphemeralVisualization();
         assert(!mPendingSessionData->EphemeralVisualization);
-
-        mController.LayerChangeEpilog(); // Since we're moving, it's likely that 2xregion is less expensive than union of two regions
     }
 
     // Calc new mouse coords

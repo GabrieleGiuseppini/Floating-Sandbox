@@ -1173,7 +1173,7 @@
 							+ paste all layers
 							+ line
 
-					= Might also need multi-region dirty viz tracking, for perf
+					+ Might also need multi-region dirty viz tracking, for perf
 						+ Pre-perf for line
 						+ Change dirty region to RegionCombiner
 						+ Line improvements:
@@ -1181,8 +1181,7 @@
 						+ Post-perf for line
 						+ Nuke logs
 						+ Cleanup RegionCombiner
-
-						- If we do this, nuke redundant LayerChangeEpilog's at tools when we undo eph viz and redo it
+						+ If we do this, nuke redundant LayerChangeEpilog's at tools when we undo eph viz and redo it
 
 					- See if can get rid of those "struct ShipSpaceTag" and define struct one
 
