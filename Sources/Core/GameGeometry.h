@@ -198,10 +198,10 @@ enum class IntegralLineType
     WithAdjacentSteps
 };
 
-template<IntegralLineType TType, typename _TIntegralTag, typename TVisitor>
+template<IntegralLineType TType, typename _TIntegralSpaceTag, typename TVisitor>
 inline void GenerateIntegralLinePath(
-    _IntegralCoordinates<_TIntegralTag> const & startPoint,
-    _IntegralCoordinates<_TIntegralTag> const & endPoint,
+    _IntegralCoordinates<_TIntegralSpaceTag> const & startPoint,
+    _IntegralCoordinates<_TIntegralSpaceTag> const & endPoint,
     TVisitor const & visitor)
 {
     //
@@ -253,7 +253,7 @@ inline void GenerateIntegralLinePath(
     float curW = startW;
     float curN = startN;
 
-    auto const makePosition = [&]() ->_IntegralCoordinates<_TIntegralTag>
+    auto const makePosition = [&]() ->_IntegralCoordinates<_TIntegralSpaceTag>
     {
         vec2f newPosition;
         if (widestIsX)
@@ -265,16 +265,16 @@ inline void GenerateIntegralLinePath(
             newPosition = vec2f(curN, curW);
         }
 
-        return _IntegralCoordinates<_TIntegralTag>(
-            static_cast<typename _IntegralCoordinates<_TIntegralTag>::integral_type>(std::round(newPosition.x)),
-            static_cast<typename _IntegralCoordinates<_TIntegralTag>::integral_type>(std::round(newPosition.y)));
+        return _IntegralCoordinates<_TIntegralSpaceTag>(
+            static_cast<typename _IntegralCoordinates<_TIntegralSpaceTag>::integral_type>(std::round(newPosition.x)),
+            static_cast<typename _IntegralCoordinates<_TIntegralSpaceTag>::integral_type>(std::round(newPosition.y)));
     };
 
     //
     // Visit all other points
     //
 
-    _IntegralCoordinates<_TIntegralTag> oldPosition = startPoint;
+    _IntegralCoordinates<_TIntegralSpaceTag> oldPosition = startPoint;
 
     while (true)
     {

@@ -107,7 +107,7 @@ private:
         TFrameSpecification const & dependentOceanTextureFrameSpecification,
         std::function<rgbaColor(rgbaColor const &, ImageCoordinates const &, ImageSize const &)> functor);
 
-    static std::unique_ptr<Buffer2D<float, struct IntegralTag>> MakePerlinNoise(
+    static std::unique_ptr<Buffer2D<float, IntegralSpaceTag>> MakePerlinNoise(
         IntegralRectSize const & size,
         int firstGridDensity,
         int lastGridDensity,
@@ -144,6 +144,6 @@ private:
     FloatSize mShipEnchancementsWorldDimensions;
 
     UploadedTextureManager<NoiseType> mUploadedNoiseTexturesManager;
-    std::unique_ptr<Buffer2D<float, struct IntegralTag>> mPerlinNoise_4_32_043_ToUpload; // When set, will be uploaded in rendering thread
-    std::unique_ptr<Buffer2D<float, struct IntegralTag>> mPerlinNoise_8_1024_073_ToUpload; // When set, will be uploaded in rendering thread
+    std::unique_ptr<Buffer2D<float, IntegralSpaceTag>> mPerlinNoise_4_32_043_ToUpload; // When set, will be uploaded in rendering thread
+    std::unique_ptr<Buffer2D<float, IntegralSpaceTag>> mPerlinNoise_8_1024_073_ToUpload; // When set, will be uploaded in rendering thread
 };

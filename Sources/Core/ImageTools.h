@@ -287,13 +287,13 @@ private:
     }
 
     template<typename TImageData>
-    static Buffer2D<typename TImageData::element_type::f_vector_type, ImageTag> InternalToFloat(TImageData const & imageData);
+    static Buffer2D<typename TImageData::element_type::f_vector_type, ImageSpaceTag> InternalToFloat(TImageData const & imageData);
 
     template<typename TImageData>
-    static TImageData InternalFromFloat(Buffer2D<typename TImageData::element_type::f_vector_type, ImageTag> const & imageData);
+    static TImageData InternalFromFloat(Buffer2D<typename TImageData::element_type::f_vector_type, ImageSpaceTag> const & imageData);
 
     template<typename TImageData>
     static TImageData InternalFromFloat(
-        Buffer2D<typename TImageData::element_type::f_vector_type, ImageTag> const & imageData,
+        Buffer2D<typename TImageData::element_type::f_vector_type, ImageSpaceTag> const & imageData,
         ImageSize const & trimmedSize);
 };

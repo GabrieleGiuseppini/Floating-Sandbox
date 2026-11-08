@@ -38,7 +38,7 @@ TImageData ImageTools::Resize(
     //
 
     using f_color_type = typename TImageData::element_type::f_vector_type;
-    using image_data_f = Buffer2D<typename TImageData::element_type::f_vector_type, ImageTag>;
+    using image_data_f = Buffer2D<typename TImageData::element_type::f_vector_type, ImageSpaceTag>;
 
     assert(image.Size.width > 0 && image.Size.height > 0);
     assert(newSize.width > 0 && newSize.height > 0);
@@ -652,9 +652,9 @@ template RgbaImageData ImageTools::InternalResizeNearest(RgbaImageData const & i
 template RgbImageData ImageTools::InternalResizeNearest(RgbImageData const & image, ImageSize const & newSize);
 
 template<typename TImageData>
-Buffer2D<typename TImageData::element_type::f_vector_type, ImageTag> ImageTools::InternalToFloat(TImageData const & imageData)
+Buffer2D<typename TImageData::element_type::f_vector_type, ImageSpaceTag> ImageTools::InternalToFloat(TImageData const & imageData)
 {
-    Buffer2D<typename TImageData::element_type::f_vector_type, ImageTag> result(imageData.Size);
+    Buffer2D<typename TImageData::element_type::f_vector_type, ImageSpaceTag> result(imageData.Size);
 
     typename TImageData::element_type const * const restrict src = imageData.Data.get();
     typename TImageData::element_type::f_vector_type * const restrict trg = result.Data.get();
@@ -668,7 +668,7 @@ Buffer2D<typename TImageData::element_type::f_vector_type, ImageTag> ImageTools:
 }
 
 template<typename TImageData>
-TImageData ImageTools::InternalFromFloat(Buffer2D<typename TImageData::element_type::f_vector_type, ImageTag> const & imageData)
+TImageData ImageTools::InternalFromFloat(Buffer2D<typename TImageData::element_type::f_vector_type, ImageSpaceTag> const & imageData)
 {
     TImageData result(imageData.Size);
 
@@ -685,7 +685,7 @@ TImageData ImageTools::InternalFromFloat(Buffer2D<typename TImageData::element_t
 
 template<typename TImageData>
 TImageData ImageTools::InternalFromFloat(
-    Buffer2D<typename TImageData::element_type::f_vector_type, ImageTag> const & imageData,
+    Buffer2D<typename TImageData::element_type::f_vector_type, ImageSpaceTag> const & imageData,
     ImageSize const & trimmedSize)
 {
     TImageData result(trimmedSize);

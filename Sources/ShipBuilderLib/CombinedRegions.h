@@ -114,6 +114,6 @@ private:
 };
 
 using CombinedShipSpaceRegions = CombinedRegions<ShipSpaceTag>;
-using CombinedTextureSpaceRegions = CombinedRegions<ImageTag>;
+using CombinedTextureSpaceRegions = CombinedRegions<ImageSpaceTag>;
 
 }

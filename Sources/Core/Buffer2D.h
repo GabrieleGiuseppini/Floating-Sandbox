@@ -11,14 +11,14 @@
 #include <cstring>
 #include <memory>
 
-template <typename TElement, typename TIntegralTag>
+template <typename TElement, typename TIntegralSpaceTag>
 struct Buffer2D
 {
 public:
 
     using element_type = TElement;
-    using coordinates_type = _IntegralCoordinates<TIntegralTag>;
-    using size_type = _IntegralSize<TIntegralTag>;
+    using coordinates_type = _IntegralCoordinates<TIntegralSpaceTag>;
+    using size_type = _IntegralSize<TIntegralSpaceTag>;
 
 public:
 
@@ -162,10 +162,10 @@ public:
         std::memcpy(Data.get(), other.Data.get(), mLinearSize * sizeof(TElement));
     }
 
-    Buffer2D CloneRegion(_IntegralRect<TIntegralTag> const & regionRect) const
+    Buffer2D CloneRegion(_IntegralRect<TIntegralSpaceTag> const & regionRect) const
     {
         // The requested region is entirely within this buffer
-        assert(regionRect.IsContainedInRect(_IntegralRect<TIntegralTag>(_IntegralCoordinates<TIntegralTag>(0, 0), Size)));
+        assert(regionRect.IsContainedInRect(_IntegralRect<TIntegralSpaceTag>(_IntegralCoordinates<TIntegralSpaceTag>(0, 0), Size)));
 
         auto newData = std::make_unique<TElement[]>(regionRect.size.width * regionRect.size.height);
 
@@ -196,10 +196,10 @@ public:
     /*
      * In-place shrinking.
      */
-    void Trim(_IntegralRect<TIntegralTag> const & rect)
+    void Trim(_IntegralRect<TIntegralSpaceTag> const & rect)
     {
         // The requested region is entirely within this buffer
-        assert(rect.IsContainedInRect(_IntegralRect<TIntegralTag>(_IntegralCoordinates<TIntegralTag>(0, 0), Size)));
+        assert(rect.IsContainedInRect(_IntegralRect<TIntegralSpaceTag>(_IntegralCoordinates<TIntegralSpaceTag>(0, 0), Size)));
 
         if (rect.size != Size)
         {
@@ -219,14 +219,14 @@ public:
         }
         else
         {
-            assert (rect.origin == _IntegralCoordinates<TIntegralTag>(0, 0));
+            assert (rect.origin == _IntegralCoordinates<TIntegralSpaceTag>(0, 0));
         }
     }
 
     void BlitFromRegion(
         Buffer2D const & source,
-        _IntegralRect<TIntegralTag> const & sourceRegion, // Expected to be contained in source buffer
-        _IntegralCoordinates<TIntegralTag> const & targetPos) // Might be anywhere
+        _IntegralRect<TIntegralSpaceTag> const & sourceRegion, // Expected to be contained in source buffer
+        _IntegralCoordinates<TIntegralSpaceTag> const & targetPos) // Might be anywhere
     {
         BlitFromRegion(
             source,
@@ -241,8 +241,8 @@ public:
     template<typename TOperator>
     void BlitFromRegion(
         Buffer2D const & source,
-        _IntegralRect<TIntegralTag> const & sourceRegion, // Expected to be contained in source buffer
-        _IntegralCoordinates<TIntegralTag> const & targetPos, // Might be anywhere
+        _IntegralRect<TIntegralSpaceTag> const & sourceRegion, // Expected to be contained in source buffer
+        _IntegralCoordinates<TIntegralSpaceTag> const & targetPos, // Might be anywhere
         TOperator const & elementOperator)
     {
         // The source region is completely contained in the source buffer
@@ -280,8 +280,8 @@ public:
     }
 
     Buffer2D MakeReframed(
-        _IntegralSize<TIntegralTag> const & newSize, // Final size
-        _IntegralCoordinates<TIntegralTag> const & originOffset, // Position in final buffer of original {0, 0}
+        _IntegralSize<TIntegralSpaceTag> const & newSize, // Final size
+        _IntegralCoordinates<TIntegralSpaceTag> const & originOffset, // Position in final buffer of original {0, 0}
         TElement const & fillerValue) const
     {
         auto newData = std::make_unique<TElement[]>(newSize.width * newSize.height);
@@ -299,7 +299,7 @@ public:
 
             for (int nx = 0; nx < newSize.width; ++nx)
             {
-                _IntegralCoordinates<TIntegralTag> const coords(nx, ny);
+                _IntegralCoordinates<TIntegralSpaceTag> const coords(nx, ny);
                 if (nx < leftFillerWRange || nx >= rightFillerWRange
                     || ny < leftFillerHRange || ny >= rightFillerHRange)
                 {
@@ -352,7 +352,7 @@ public:
     }
 
     template<typename TNewElement, typename TFunctor>
-    Buffer2D<TNewElement, TIntegralTag> Transform(TFunctor const & elementOperator) const
+    Buffer2D<TNewElement, TIntegralSpaceTag> Transform(TFunctor const & elementOperator) const
     {
         auto newData = std::make_unique<TNewElement[]>(mLinearSize);
 
@@ -361,19 +361,19 @@ public:
             newData[i] = elementOperator(Data[i]);
         }
 
-        return Buffer2D<TNewElement, TIntegralTag>(
+        return Buffer2D<TNewElement, TIntegralSpaceTag>(
             Size,
             std::move(newData));
     }
 
     template<typename TFunctor>
-    static void Transform(Buffer2D<TElement, TIntegralTag> & buffer, TFunctor const & elementOperator)
+    static void Transform(Buffer2D<TElement, TIntegralSpaceTag> & buffer, TFunctor const & elementOperator)
     {
         for (int y = 0; y < buffer.Size.height; ++y)
         {
             for (int x = 0; x < buffer.Size.width; ++x)
             {
-                _IntegralCoordinates<TIntegralTag> coords(x, y);
+                _IntegralCoordinates<TIntegralSpaceTag> coords(x, y);
                 buffer[coords] = elementOperator(buffer[coords], coords);
             }
         }

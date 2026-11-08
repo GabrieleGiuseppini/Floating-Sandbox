@@ -3981,7 +3981,7 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
     float const maxColorDistance = static_cast<float>(tolerance) / 100.0f;
 
     // Save original alpha mask for neighbors
-    Buffer2D<typename rgbaColor::data_type, ImageTag> originalAlphaMask = layer.Buffer.Transform<typename rgbaColor::data_type>(
+    Buffer2D<typename rgbaColor::data_type, ImageSpaceTag> originalAlphaMask = layer.Buffer.Transform<typename rgbaColor::data_type>(
         [](rgbaColor const & color) -> typename rgbaColor::data_type
         {
             return color.a;

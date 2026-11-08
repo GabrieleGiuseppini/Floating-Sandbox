@@ -137,14 +137,14 @@ private:
 	template <>
 	struct CoordinatesSpaceTraits<CoordinatesSpaceType::ExteriorTexture>
 	{
-		using integral_coords_tag = ImageTag;
+		using integral_coords_tag = ImageSpaceTag;
 		using payload_type = TextureSpaceRegionPayload;
 	};
 
 	template <>
 	struct CoordinatesSpaceTraits<CoordinatesSpaceType::InteriorTexture>
 	{
-		using integral_coords_tag = ImageTag;
+		using integral_coords_tag = ImageSpaceTag;
 		using payload_type = TextureSpaceRegionPayload;
 	};
 

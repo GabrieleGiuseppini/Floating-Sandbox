@@ -4,7 +4,7 @@
 
 TEST(Buffer2DTests, FillCctor_Size)
 {
-    Buffer2D<int, struct IntegralTag> buffer(IntegralRectSize(10, 20), 242);
+    Buffer2D<int, IntegralSpaceTag> buffer(IntegralRectSize(10, 20), 242);
 
     EXPECT_EQ(buffer.Size.width, 10);
     EXPECT_EQ(buffer.Size.height, 20);
@@ -15,7 +15,7 @@ TEST(Buffer2DTests, FillCctor_Size)
 
 TEST(Buffer2DTests, FillCctor_Dimensions)
 {
-    Buffer2D<int, struct IntegralTag> buffer(10, 20, 242);
+    Buffer2D<int, IntegralSpaceTag> buffer(10, 20, 242);
 
     EXPECT_EQ(buffer.Size.width, 10);
     EXPECT_EQ(buffer.Size.height, 20);
@@ -26,7 +26,7 @@ TEST(Buffer2DTests, FillCctor_Dimensions)
 
 TEST(Buffer2DTests, Indexing_WithCoordinates)
 {
-    Buffer2D<int, struct IntegralTag> buffer(10, 20, 242);
+    Buffer2D<int, IntegralSpaceTag> buffer(10, 20, 242);
 
     buffer[IntegralCoordinates(7, 9)] = 42;
 
@@ -37,7 +37,7 @@ TEST(Buffer2DTests, Indexing_WithCoordinates)
 
 TEST(Buffer2DTests, Clone)
 {
-    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+    Buffer2D<int, IntegralSpaceTag> buffer(4, 4, 0);
 
     int iVal = 100;
     for (int y = 0; y < 4; ++y)
@@ -62,7 +62,7 @@ TEST(Buffer2DTests, Clone)
 
 TEST(Buffer2DTests, CloneRegion_Smaller)
 {
-    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+    Buffer2D<int, IntegralSpaceTag> buffer(4, 4, 0);
 
     int iVal = 100;
     for (int y = 0; y < 4; ++y)
@@ -93,7 +93,7 @@ TEST(Buffer2DTests, CloneRegion_Smaller)
 
 TEST(Buffer2DTests, CloneRegion_Equal)
 {
-    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+    Buffer2D<int, IntegralSpaceTag> buffer(4, 4, 0);
 
     int iVal = 100;
     for (int y = 0; y < 4; ++y)
@@ -124,7 +124,7 @@ TEST(Buffer2DTests, CloneRegion_Equal)
 
 TEST(Buffer2DTests, Trim_Equal)
 {
-    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+    Buffer2D<int, IntegralSpaceTag> buffer(4, 4, 0);
 
     int iVal = 100;
     for (int y = 0; y < 4; ++y)
@@ -158,7 +158,7 @@ TEST(Buffer2DTests, Trim_Equal)
 
 TEST(Buffer2DTests, Trim_Smaller_SameOrigin)
 {
-    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+    Buffer2D<int, IntegralSpaceTag> buffer(4, 4, 0);
 
     int iVal = 100;
     for (int y = 0; y < 4; ++y)
@@ -192,7 +192,7 @@ TEST(Buffer2DTests, Trim_Smaller_SameOrigin)
 
 TEST(Buffer2DTests, Trim_Smaller_SameSize)
 {
-    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+    Buffer2D<int, IntegralSpaceTag> buffer(4, 4, 0);
 
     int iVal = 100;
     for (int y = 0; y < 4; ++y)
@@ -226,7 +226,7 @@ TEST(Buffer2DTests, Trim_Smaller_SameSize)
 
 TEST(Buffer2DTests, Trim_ProperInside)
 {
-    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+    Buffer2D<int, IntegralSpaceTag> buffer(4, 4, 0);
 
     int iVal = 100;
     for (int y = 0; y < 4; ++y)
@@ -260,7 +260,7 @@ TEST(Buffer2DTests, Trim_ProperInside)
 
 TEST(Buffer2DTests, Clone_Trim_Equivalence)
 {
-    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+    Buffer2D<int, IntegralSpaceTag> buffer(4, 4, 0);
 
     int iVal = 100;
     for (int y = 0; y < 4; ++y)
@@ -294,7 +294,7 @@ TEST(Buffer2DTests, Clone_Trim_Equivalence)
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -305,7 +305,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToOrigin)
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -327,7 +327,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToOrigin)
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -338,7 +338,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToBeforeOrigin)
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -367,7 +367,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToBeforeOrigin)
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -378,7 +378,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToAfterOrigin)
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -407,7 +407,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToAfterOrigin)
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToOutside_BeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -418,7 +418,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToOutside_Befor
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -439,7 +439,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToOutside_Befor
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToOutside_AfterOppositeCorner)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -450,7 +450,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToOutside_After
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -471,7 +471,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToOutside_After
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -482,7 +482,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToOri
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -511,7 +511,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToOri
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -522,7 +522,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToBef
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -551,7 +551,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToBef
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -562,7 +562,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToAft
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -591,7 +591,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToAft
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToOutside_BeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -602,7 +602,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToOut
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -623,7 +623,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToOut
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToOutside_AfterOppositeCorner)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -634,7 +634,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToOut
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -655,7 +655,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToOut
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorner_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -666,7 +666,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorn
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -695,7 +695,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorn
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorner_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -706,7 +706,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorn
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -735,7 +735,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorn
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorner_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -746,7 +746,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorn
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -775,7 +775,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorn
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorner_ToOutside_BeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -786,7 +786,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorn
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -807,7 +807,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorn
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorner_ToOutside_AfterOppositeCorner)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -818,7 +818,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorn
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -839,7 +839,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorn
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -850,7 +850,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -879,7 +879,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -890,7 +890,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -919,7 +919,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -930,7 +930,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -959,7 +959,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside_ToOutside_BeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -970,7 +970,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -991,7 +991,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside
 TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside_ToOutside_AfterOppositeCorner)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(4, 8);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1002,7 +1002,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1023,7 +1023,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1034,7 +1034,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToOrigin)
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1063,7 +1063,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToOrigin)
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1074,7 +1074,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToBeforeO
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1103,7 +1103,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToBeforeO
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToBeforeMinMax)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1114,7 +1114,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToBeforeM
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1143,7 +1143,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToBeforeM
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1154,7 +1154,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToAfterOr
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1183,7 +1183,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToAfterOr
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToAfterMaxMin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1194,7 +1194,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToAfterMa
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1223,7 +1223,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToAfterMa
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToOutside_BeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1234,7 +1234,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToOutside
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1255,7 +1255,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToOutside
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToOutside_AfterOppositeCorner)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1266,7 +1266,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToOutside
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1287,7 +1287,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToOutside
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1298,7 +1298,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1327,7 +1327,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1338,7 +1338,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1367,7 +1367,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1378,7 +1378,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1407,7 +1407,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin_ToOutside_BeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1418,7 +1418,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1439,7 +1439,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin_ToOutside_AfterOppositeCorner)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1450,7 +1450,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1471,7 +1471,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOppositeCorner_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1482,7 +1482,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOpposi
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1511,7 +1511,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOpposi
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOppositeCorner_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1522,7 +1522,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOpposi
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1551,7 +1551,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOpposi
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOppositeCorner_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1562,7 +1562,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOpposi
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1591,7 +1591,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOpposi
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOppositeCorner_ToOutside_BeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1602,7 +1602,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOpposi
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1623,7 +1623,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOpposi
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOppositeCorner_ToOutside_AfterOppositeCorner)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(2, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1634,7 +1634,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOpposi
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1655,7 +1655,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOpposi
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperlyInside_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(3, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(3, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1666,7 +1666,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperly
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1695,7 +1695,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperly
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperlyInside_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(3, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(3, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1706,7 +1706,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperly
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1735,7 +1735,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperly
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperlyInside_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(3, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(3, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1746,7 +1746,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperly
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1775,7 +1775,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperly
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperlyInside_ToOutside_BeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(3, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(3, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1786,7 +1786,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperly
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1807,7 +1807,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperly
 TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperlyInside_ToOutside_AfterOppositeCorner)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(3, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(3, 6);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1818,7 +1818,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperly
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1839,7 +1839,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionProperly
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 10);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 10);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1850,7 +1850,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToOrigin)
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1872,7 +1872,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToOrigin)
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 10);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 10);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1883,7 +1883,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToBeforeOr
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1905,7 +1905,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToBeforeOr
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 10);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 10);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1916,7 +1916,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToAfterOri
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1945,7 +1945,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToAfterOri
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToOutside_BeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 10);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 10);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1956,7 +1956,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToOutside_
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -1977,7 +1977,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToOutside_
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToOutside_AfterOppositeCorner)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 10);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 10);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -1988,7 +1988,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToOutside_
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2009,7 +2009,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_WholeSource_ToOutside_
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 10);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 10);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2020,7 +2020,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2042,7 +2042,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 10);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 10);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2053,7 +2053,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2082,7 +2082,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 10);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 10);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2093,7 +2093,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2122,7 +2122,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_ToOutside_BeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 10);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 10);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2133,7 +2133,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2154,7 +2154,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_ToOutside_AfterOppositeCorner)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 10);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 10);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2165,7 +2165,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2186,7 +2186,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOrigin_
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOppositeCorner_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 11);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 11);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2197,7 +2197,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOpposit
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2219,7 +2219,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOpposit
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOppositeCorner_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 11);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 11);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2230,7 +2230,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOpposit
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2259,7 +2259,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOpposit
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOppositeCorner_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 11);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 11);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2270,7 +2270,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOpposit
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2299,7 +2299,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOpposit
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOppositeCorner_ToOutside_BeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 11);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 11);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2310,7 +2310,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOpposit
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2331,7 +2331,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOpposit
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOppositeCorner_ToOutside_AfterOppositeCorner)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 11);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 11);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2342,7 +2342,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOpposit
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2363,7 +2363,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionAtOpposit
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyInside_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 11);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 11);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2374,7 +2374,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyI
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2403,7 +2403,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyI
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyInside_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 11);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 11);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2414,7 +2414,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyI
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2443,7 +2443,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyI
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyInside_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 11);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 11);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2454,7 +2454,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyI
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2483,7 +2483,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyI
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyInside_ToOutside_BeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 11);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 11);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2494,7 +2494,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyI
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2515,7 +2515,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyI
 TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyInside_ToOutside_AfterOppositeCorner)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 11);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 11);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2526,7 +2526,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyI
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2547,7 +2547,7 @@ TEST(Buffer2DTests, BlitFromRegion_SourceLargerThanTarget_SourcePortionProperlyI
 TEST(Buffer2DTests, BlitFromRegion_Operator)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(6, 11);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(6, 11);
     int valS = 0;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
@@ -2558,7 +2558,7 @@ TEST(Buffer2DTests, BlitFromRegion_Operator)
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+    Buffer2D<int, IntegralSpaceTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -2583,7 +2583,7 @@ TEST(Buffer2DTests, BlitFromRegion_Operator)
 
 TEST(Buffer2DTests, Flip_Horizontal)
 {
-    Buffer2D<int, struct IntegralTag> buffer(8, 8);
+    Buffer2D<int, IntegralSpaceTag> buffer(8, 8);
 
     int iVal = 100;
     for (int y = 0; y < buffer.Size.height; ++y)
@@ -2609,7 +2609,7 @@ TEST(Buffer2DTests, Flip_Horizontal)
 
 TEST(Buffer2DTests, Flip_Vertical)
 {
-    Buffer2D<int, struct IntegralTag> buffer(8, 8);
+    Buffer2D<int, IntegralSpaceTag> buffer(8, 8);
 
     int iVal = 100;
     for (int y = 0; y < buffer.Size.height; ++y)
@@ -2635,7 +2635,7 @@ TEST(Buffer2DTests, Flip_Vertical)
 
 TEST(Buffer2DTests, Flip_HorizontalAndVertical)
 {
-    Buffer2D<int, struct IntegralTag> buffer(8, 8);
+    Buffer2D<int, IntegralSpaceTag> buffer(8, 8);
 
     int iVal = 100;
     for (int y = 0; y < buffer.Size.height; ++y)
@@ -2661,7 +2661,7 @@ TEST(Buffer2DTests, Flip_HorizontalAndVertical)
 
 TEST(Buffer2DTests, MakeReframed_SameRect)
 {
-    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(8, 8);
 
     int iVal = 100;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -2690,7 +2690,7 @@ TEST(Buffer2DTests, MakeReframed_SameRect)
 
 TEST(Buffer2DTests, MakeReframed_SameOrigin_SmallerSize)
 {
-    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 8);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(8, 8);
 
     int iVal = 100;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -2719,7 +2719,7 @@ TEST(Buffer2DTests, MakeReframed_SameOrigin_SmallerSize)
 
 TEST(Buffer2DTests, MakeReframed_SameOrigin_LargerSize)
 {
-    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 7);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(8, 7);
 
     int iVal = 100;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -2755,7 +2755,7 @@ TEST(Buffer2DTests, MakeReframed_SameOrigin_LargerSize)
 
 TEST(Buffer2DTests, MakeReframed_DifferentOrigin_OutOrigin_SameSize)
 {
-    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(8, 6);
 
     int iVal = 100;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -2784,7 +2784,7 @@ TEST(Buffer2DTests, MakeReframed_DifferentOrigin_OutOrigin_SameSize)
 
 TEST(Buffer2DTests, MakeReframed_DifferentOrigin_OutOrigin_SmallerSize)
 {
-    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(8, 6);
 
     int iVal = 100;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -2813,7 +2813,7 @@ TEST(Buffer2DTests, MakeReframed_DifferentOrigin_OutOrigin_SmallerSize)
 
 TEST(Buffer2DTests, MakeReframed_DifferentOrigin_OutOrigin_LargerSize)
 {
-    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(8, 6);
 
     int iVal = 100;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -2849,7 +2849,7 @@ TEST(Buffer2DTests, MakeReframed_DifferentOrigin_OutOrigin_LargerSize)
 
 TEST(Buffer2DTests, MakeReframed_DifferentOrigin_InOrigin_SameSize)
 {
-    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(8, 6);
 
     int iVal = 100;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -2885,7 +2885,7 @@ TEST(Buffer2DTests, MakeReframed_DifferentOrigin_InOrigin_SameSize)
 
 TEST(Buffer2DTests, MakeReframed_DifferentOrigin_InOrigin_SmallerSize)
 {
-    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(8, 6);
 
     int iVal = 100;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -2921,7 +2921,7 @@ TEST(Buffer2DTests, MakeReframed_DifferentOrigin_InOrigin_SmallerSize)
 
 TEST(Buffer2DTests, MakeReframed_DifferentOrigin_InOrigin_LargerSize)
 {
-    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(8, 6);
 
     int iVal = 100;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -2957,7 +2957,7 @@ TEST(Buffer2DTests, MakeReframed_DifferentOrigin_InOrigin_LargerSize)
 
 TEST(Buffer2DTests, MakeReframed_BecomesEmpty)
 {
-    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(8, 6);
 
     int iVal = 100;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -3013,7 +3013,7 @@ TEST_P(Rotate90CWTest, Rotate90CWTest)
     // Prepare source buffer
     //
 
-    Buffer2D<int, struct IntegralTag> buffer(originalWidth, originalHeight);
+    Buffer2D<int, IntegralSpaceTag> buffer(originalWidth, originalHeight);
 
     int iVal = 0;
     for (int y = 0; y < originalHeight; ++y)
@@ -3082,7 +3082,7 @@ TEST_P(Rotate90CCWTest, Rotate90CCWTest)
     // Prepare source buffer
     //
 
-    Buffer2D<int, struct IntegralTag> buffer(originalWidth, originalHeight);
+    Buffer2D<int, IntegralSpaceTag> buffer(originalWidth, originalHeight);
 
     int iVal = 0;
     for (int y = 0; y < originalHeight; ++y)
@@ -3124,7 +3124,7 @@ TEST_P(Rotate90CCWTest, Rotate90CCWTest)
 
 TEST(Buffer2DTests, MakeTransformed)
 {
-    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+    Buffer2D<int, IntegralSpaceTag> sourceBuffer(8, 6);
 
     int iVal = 100;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)

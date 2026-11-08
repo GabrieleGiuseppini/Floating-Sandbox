@@ -386,15 +386,15 @@ enum class DepthKindType
  */
 
 // Dummy types for strong-typing
-struct IntegralTag {};
-struct ImageTag {};
+struct IntegralSpaceTag {};
+struct ImageSpaceTag {};
 struct ShipSpaceTag {};
-struct DisplayLogicalTag {};
-struct DisplayPhysicalTag {};
+struct DisplayLogicalSpaceTag {};
+struct DisplayPhysicalSpaceTag {};
 
 #pragma pack(push, 1)
 
-template<typename TIntegralTag>
+template<typename TIntegralSpaceTag>
 struct _IntegralSize
 {
     using integral_type = int;
@@ -415,54 +415,54 @@ struct _IntegralSize
             && height == 0;
     }
 
-    static _IntegralSize<TIntegralTag> FromFloatRound(vec2f const & vec)
+    static _IntegralSize<TIntegralSpaceTag> FromFloatRound(vec2f const & vec)
     {
-        return _IntegralSize<TIntegralTag>(
+        return _IntegralSize<TIntegralSpaceTag>(
             static_cast<integral_type>(std::round(vec.x)),
             static_cast<integral_type>(std::round(vec.y)));
     }
 
-    static _IntegralSize<TIntegralTag> FromFloatFloor(vec2f const & vec)
+    static _IntegralSize<TIntegralSpaceTag> FromFloatFloor(vec2f const & vec)
     {
-        return _IntegralSize<TIntegralTag>(
+        return _IntegralSize<TIntegralSpaceTag>(
             static_cast<integral_type>(std::floor(vec.x)),
             static_cast<integral_type>(std::floor(vec.y)));
     }
 
-    inline bool operator==(_IntegralSize<TIntegralTag> const & other) const
+    inline bool operator==(_IntegralSize<TIntegralSpaceTag> const & other) const
     {
         return this->width == other.width
             && this->height == other.height;
     }
 
-    inline bool operator!=(_IntegralSize<TIntegralTag> const & other) const
+    inline bool operator!=(_IntegralSize<TIntegralSpaceTag> const & other) const
     {
         return !(*this == other);
     }
 
-    inline _IntegralSize<TIntegralTag> operator+(_IntegralSize<TIntegralTag> const & sz) const
+    inline _IntegralSize<TIntegralSpaceTag> operator+(_IntegralSize<TIntegralSpaceTag> const & sz) const
     {
-        return _IntegralSize<TIntegralTag>(
+        return _IntegralSize<TIntegralSpaceTag>(
             this->width + sz.width,
             this->height + sz.height);
     }
 
-    inline void operator+=(_IntegralSize<TIntegralTag> const & sz)
+    inline void operator+=(_IntegralSize<TIntegralSpaceTag> const & sz)
     {
         this->width += sz.width;
         this->height += sz.height;
     }
 
-    inline _IntegralSize<TIntegralTag> operator*(integral_type factor) const
+    inline _IntegralSize<TIntegralSpaceTag> operator*(integral_type factor) const
     {
-        return _IntegralSize<TIntegralTag>(
+        return _IntegralSize<TIntegralSpaceTag>(
             this->width * factor,
             this->height * factor);
     }
 
-    inline _IntegralSize<TIntegralTag> operator*(float factor) const
+    inline _IntegralSize<TIntegralSpaceTag> operator*(float factor) const
     {
-        return _IntegralSize<TIntegralTag>(
+        return _IntegralSize<TIntegralSpaceTag>(
             static_cast<int>(std::roundf(static_cast<float>(this->width) * factor)),
             static_cast<int>(std::roundf(static_cast<float>(this->height) * factor)));
     }
@@ -487,23 +487,23 @@ struct _IntegralSize
         std::swap(width, height);
     }
 
-    inline _IntegralSize<TIntegralTag> Union(_IntegralSize<TIntegralTag> const & other) const
+    inline _IntegralSize<TIntegralSpaceTag> Union(_IntegralSize<TIntegralSpaceTag> const & other) const
     {
-        return _IntegralSize<TIntegralTag>(
+        return _IntegralSize<TIntegralSpaceTag>(
             std::max(this->width, other.width),
             std::max(this->height, other.height));
     }
 
-    inline _IntegralSize<TIntegralTag> Intersection(_IntegralSize<TIntegralTag> const & other) const
+    inline _IntegralSize<TIntegralSpaceTag> Intersection(_IntegralSize<TIntegralSpaceTag> const & other) const
     {
-        return _IntegralSize<TIntegralTag>(
+        return _IntegralSize<TIntegralSpaceTag>(
             std::min(this->width, other.width),
             std::min(this->height, other.height));
     }
 
-    inline _IntegralSize<TIntegralTag> ScaleToWidth(int finalWidth) const
+    inline _IntegralSize<TIntegralSpaceTag> ScaleToWidth(int finalWidth) const
     {
-        return _IntegralSize<TIntegralTag>(
+        return _IntegralSize<TIntegralSpaceTag>(
             finalWidth,
             static_cast<int>(
                 std::roundf(
@@ -513,50 +513,50 @@ struct _IntegralSize
     }
 
     // Returns the size that fits inside the specified size; one dimension (at least) is guaranteed to match the outer size.
-    template<typename TOtherIntegralTag>
-    inline _IntegralSize<TIntegralTag> Fit(_IntegralSize<TOtherIntegralTag> const & outerSize) const
+    template<typename TOtherIntegralSpaceTag>
+    inline _IntegralSize<TIntegralSpaceTag> Fit(_IntegralSize<TOtherIntegralSpaceTag> const & outerSize) const
     {
         float const outerAspectRatio = static_cast<float>(outerSize.width) / static_cast<float>(outerSize.height);
         float const ourAspectRatio = static_cast<float>(this->width) / static_cast<float>(this->height);
 
         if (outerAspectRatio >= ourAspectRatio) // Outer is more tall than we are, so we have to resize width
         {
-            return _IntegralSize<TIntegralTag>(
+            return _IntegralSize<TIntegralSpaceTag>(
                 static_cast<integral_type>(std::roundf(static_cast<float>(outerSize.height) * ourAspectRatio)),
                 outerSize.height);
         }
         else
         {
-            return _IntegralSize<TIntegralTag>(
+            return _IntegralSize<TIntegralSpaceTag>(
                 outerSize.width,
                 static_cast<integral_type>(std::roundf(static_cast<float>(outerSize.width) / ourAspectRatio)));
         }
     }
 
     // Returns this size resized to match the aspect ratio of the specified size; one dimension (at least) is guaranteed to match the original size.
-    template<typename TOtherIntegralTag>
-    inline _IntegralSize<TIntegralTag> ResizeToAspectRatioOf(_IntegralSize<TOtherIntegralTag> const & other) const
+    template<typename TOtherIntegralSpaceTag>
+    inline _IntegralSize<TIntegralSpaceTag> ResizeToAspectRatioOf(_IntegralSize<TOtherIntegralSpaceTag> const & other) const
     {
         float const otherAspectRatio = static_cast<float>(other.width) / static_cast<float>(other.height);
         float const ourAspectRatio = static_cast<float>(this->width) / static_cast<float>(this->height);
 
         if (otherAspectRatio >= ourAspectRatio) // Other is more tall than we are, so we have to resize width
         {
-            return _IntegralSize<TIntegralTag>(
+            return _IntegralSize<TIntegralSpaceTag>(
                 static_cast<integral_type>(std::roundf(static_cast<float>(this->height) * otherAspectRatio)),
                 this->height);
         }
         else
         {
-            return _IntegralSize<TIntegralTag>(
+            return _IntegralSize<TIntegralSpaceTag>(
                 this->width,
                 static_cast<integral_type>(std::roundf(static_cast<float>(this->width) / otherAspectRatio)));
         }
     }
 
     // Returns the size that ensures this size fits inside the specified size, without growing if we are fully contained.
-    template<typename TOtherIntegralTag>
-    inline _IntegralSize<TIntegralTag> ShrinkToFit(_IntegralSize<TOtherIntegralTag> const & maxSize) const
+    template<typename TOtherIntegralSpaceTag>
+    inline _IntegralSize<TIntegralSpaceTag> ShrinkToFit(_IntegralSize<TOtherIntegralSpaceTag> const & maxSize) const
     {
         float wShrinkFactor = static_cast<float>(maxSize.width) / static_cast<float>(this->width);
         float hShrinkFactor = static_cast<float>(maxSize.height) / static_cast<float>(this->height);
@@ -564,7 +564,7 @@ struct _IntegralSize
             std::min(wShrinkFactor, hShrinkFactor),
             1.0f);
 
-        return _IntegralSize<TIntegralTag>(
+        return _IntegralSize<TIntegralSpaceTag>(
             static_cast<int>(std::roundf(static_cast<float>(this->width) * shrinkFactor)),
             static_cast<int>(std::roundf(static_cast<float>(this->height) * shrinkFactor)));
     }
@@ -604,15 +604,15 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _Int
     return os;
 }
 
-using IntegralRectSize = _IntegralSize<IntegralTag>;
-using ImageSize = _IntegralSize<ImageTag>;
+using IntegralRectSize = _IntegralSize<IntegralSpaceTag>;
+using ImageSize = _IntegralSize<ImageSpaceTag>;
 using ShipSpaceSize = _IntegralSize<ShipSpaceTag>;
-using DisplayLogicalSize = _IntegralSize<DisplayLogicalTag>;
-using DisplayPhysicalSize = _IntegralSize<DisplayPhysicalTag>;
+using DisplayLogicalSize = _IntegralSize<DisplayLogicalSpaceTag>;
+using DisplayPhysicalSize = _IntegralSize<DisplayPhysicalSpaceTag>;
 
 #pragma pack(push, 1)
 
-template<typename TIntegralTag>
+template<typename TIntegralSpaceTag>
 struct _IntegralCoordinates
 {
     using integral_type = int;
@@ -627,75 +627,75 @@ struct _IntegralCoordinates
         , y(_y)
     {}
 
-    static _IntegralCoordinates<TIntegralTag> FromFloatRound(vec2f const & vec)
+    static _IntegralCoordinates<TIntegralSpaceTag> FromFloatRound(vec2f const & vec)
     {
-        return _IntegralCoordinates<TIntegralTag>(
+        return _IntegralCoordinates<TIntegralSpaceTag>(
             static_cast<integral_type>(std::round(vec.x)),
             static_cast<integral_type>(std::round(vec.y)));
     }
 
-    static _IntegralCoordinates<TIntegralTag> FromFloatFloor(vec2f const & vec)
+    static _IntegralCoordinates<TIntegralSpaceTag> FromFloatFloor(vec2f const & vec)
     {
-        return _IntegralCoordinates<TIntegralTag>(
+        return _IntegralCoordinates<TIntegralSpaceTag>(
             static_cast<integral_type>(std::floor(vec.x)),
             static_cast<integral_type>(std::floor(vec.y)));
     }
 
-    inline bool operator==(_IntegralCoordinates<TIntegralTag> const & other) const
+    inline bool operator==(_IntegralCoordinates<TIntegralSpaceTag> const & other) const
     {
         return this->x == other.x
             && this->y == other.y;
     }
 
-    inline bool operator!=(_IntegralCoordinates<TIntegralTag> const & other) const
+    inline bool operator!=(_IntegralCoordinates<TIntegralSpaceTag> const & other) const
     {
         return !(*this == other);
     }
 
-    inline _IntegralCoordinates<TIntegralTag> operator+(_IntegralSize<TIntegralTag> const & sz) const
+    inline _IntegralCoordinates<TIntegralSpaceTag> operator+(_IntegralSize<TIntegralSpaceTag> const & sz) const
     {
-        return _IntegralCoordinates<TIntegralTag>(
+        return _IntegralCoordinates<TIntegralSpaceTag>(
             this->x + sz.width,
             this->y + sz.height);
     }
 
-    inline void operator+=(_IntegralSize<TIntegralTag> const & sz)
+    inline void operator+=(_IntegralSize<TIntegralSpaceTag> const & sz)
     {
         this->x += sz.width;
         this->y += sz.height;
     }
 
-    inline _IntegralCoordinates<TIntegralTag> operator-() const
+    inline _IntegralCoordinates<TIntegralSpaceTag> operator-() const
     {
-        return _IntegralCoordinates<TIntegralTag>(
+        return _IntegralCoordinates<TIntegralSpaceTag>(
             -this->x,
             -this->y);
     }
 
-    inline _IntegralSize<TIntegralTag> operator-(_IntegralCoordinates<TIntegralTag> const & other) const
+    inline _IntegralSize<TIntegralSpaceTag> operator-(_IntegralCoordinates<TIntegralSpaceTag> const & other) const
     {
-        return _IntegralSize<TIntegralTag>(
+        return _IntegralSize<TIntegralSpaceTag>(
             this->x - other.x,
             this->y - other.y);
     }
 
-    inline _IntegralCoordinates<TIntegralTag> operator-(_IntegralSize<TIntegralTag> const & offset) const
+    inline _IntegralCoordinates<TIntegralSpaceTag> operator-(_IntegralSize<TIntegralSpaceTag> const & offset) const
     {
-        return _IntegralCoordinates<TIntegralTag>(
+        return _IntegralCoordinates<TIntegralSpaceTag>(
             this->x - offset.width,
             this->y - offset.height);
     }
 
-    inline _IntegralCoordinates<TIntegralTag> operator*(float factor) const
+    inline _IntegralCoordinates<TIntegralSpaceTag> operator*(float factor) const
     {
-        return _IntegralCoordinates<TIntegralTag>(
+        return _IntegralCoordinates<TIntegralSpaceTag>(
             static_cast<int>(std::roundf(static_cast<float>(this->x) * factor)),
             static_cast<int>(std::roundf(static_cast<float>(this->y) * factor)));
     }
 
-    inline _IntegralCoordinates<TIntegralTag> scale(_IntegralCoordinates<TIntegralTag> const & multiplier) const
+    inline _IntegralCoordinates<TIntegralSpaceTag> scale(_IntegralCoordinates<TIntegralSpaceTag> const & multiplier) const
     {
-        return _IntegralCoordinates<TIntegralTag>(
+        return _IntegralCoordinates<TIntegralSpaceTag>(
             this->x * multiplier.x,
             this->y * multiplier.y);
     }
@@ -714,33 +714,33 @@ struct _IntegralCoordinates
     }
 
     template<typename TSize>
-    _IntegralCoordinates<TIntegralTag> Clamp(TSize const & size) const
+    _IntegralCoordinates<TIntegralSpaceTag> Clamp(TSize const & size) const
     {
-        return _IntegralCoordinates<TIntegralTag>(
+        return _IntegralCoordinates<TIntegralSpaceTag>(
             ::Clamp(x, 0, size.width),
             ::Clamp(y, 0, size.height));
     }
 
-    _IntegralCoordinates<TIntegralTag> FlipX(integral_type width) const
+    _IntegralCoordinates<TIntegralSpaceTag> FlipX(integral_type width) const
     {
         assert(width > x);
-        return _IntegralCoordinates<TIntegralTag>(width - 1 - x, y);
+        return _IntegralCoordinates<TIntegralSpaceTag>(width - 1 - x, y);
     }
 
-    _IntegralCoordinates<TIntegralTag> FlipY(integral_type height) const
+    _IntegralCoordinates<TIntegralSpaceTag> FlipY(integral_type height) const
     {
         assert(height > y);
-        return _IntegralCoordinates<TIntegralTag>(x, height - 1 - y);
+        return _IntegralCoordinates<TIntegralSpaceTag>(x, height - 1 - y);
     }
 
     // Returns coords of this point after being rotated (and assuming
     // the size will also get rotated).
     template<RotationDirectionType TDirection>
-    _IntegralCoordinates<TIntegralTag> Rotate90(_IntegralSize<TIntegralTag> const & sz) const
+    _IntegralCoordinates<TIntegralSpaceTag> Rotate90(_IntegralSize<TIntegralSpaceTag> const & sz) const
     {
         if constexpr (TDirection == RotationDirectionType::Clockwise)
         {
-            return _IntegralCoordinates<TIntegralTag>(
+            return _IntegralCoordinates<TIntegralSpaceTag>(
                 this->y,
                 sz.width - 1 - this->x);
         }
@@ -748,7 +748,7 @@ struct _IntegralCoordinates
         {
             static_assert(TDirection == RotationDirectionType::CounterClockwise);
 
-            return _IntegralCoordinates<TIntegralTag>(
+            return _IntegralCoordinates<TIntegralSpaceTag>(
                 sz.height - 1 - this->y,
                 this->x);
         }
@@ -795,19 +795,19 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _Int
     return os;
 }
 
-using IntegralCoordinates = _IntegralCoordinates<IntegralTag>; // Generic integer
-using ImageCoordinates = _IntegralCoordinates<ImageTag>; // Image
+using IntegralCoordinates = _IntegralCoordinates<IntegralSpaceTag>; // Generic integer
+using ImageCoordinates = _IntegralCoordinates<ImageSpaceTag>; // Image
 using ShipSpaceCoordinates = _IntegralCoordinates<ShipSpaceTag>; // Y=0 at bottom
-using DisplayLogicalCoordinates = _IntegralCoordinates<DisplayLogicalTag>; // Y=0 at top
-using DisplayPhysicalCoordinates = _IntegralCoordinates<DisplayPhysicalTag>; // Y=0 at top
+using DisplayLogicalCoordinates = _IntegralCoordinates<DisplayLogicalSpaceTag>; // Y=0 at top
+using DisplayPhysicalCoordinates = _IntegralCoordinates<DisplayPhysicalSpaceTag>; // Y=0 at top
 
 #pragma pack(push)
 
-template<typename TIntegralTag>
+template<typename TIntegralSpaceTag>
 struct _IntegralRect
 {
-    _IntegralCoordinates<TIntegralTag> origin;
-    _IntegralSize<TIntegralTag> size;
+    _IntegralCoordinates<TIntegralSpaceTag> origin;
+    _IntegralSize<TIntegralSpaceTag> size;
 
     constexpr _IntegralRect()
         : origin(0,0 )
@@ -815,20 +815,20 @@ struct _IntegralRect
     {}
 
     constexpr _IntegralRect(
-        _IntegralCoordinates<TIntegralTag> const & _origin,
-        _IntegralSize<TIntegralTag> const & _size)
+        _IntegralCoordinates<TIntegralSpaceTag> const & _origin,
+        _IntegralSize<TIntegralSpaceTag> const & _size)
         : origin(_origin)
         , size(_size)
     {}
 
-    explicit constexpr _IntegralRect(_IntegralCoordinates<TIntegralTag> const & _origin)
+    explicit constexpr _IntegralRect(_IntegralCoordinates<TIntegralSpaceTag> const & _origin)
         : origin(_origin)
         , size(1, 1)
     {}
 
     constexpr _IntegralRect(
-        _IntegralCoordinates<TIntegralTag> const & _origin,
-        _IntegralCoordinates<TIntegralTag> const & _oppositeCorner)
+        _IntegralCoordinates<TIntegralSpaceTag> const & _origin,
+        _IntegralCoordinates<TIntegralSpaceTag> const & _oppositeCorner)
         : origin(
             std::min(_origin.x, _oppositeCorner.x),
             std::min(_origin.y, _oppositeCorner.y))
@@ -841,51 +841,51 @@ struct _IntegralRect
     /*
      * Makes a rectangle from {0, 0} of the specified size.
      */
-    explicit constexpr _IntegralRect(_IntegralSize<TIntegralTag> const & _size)
+    explicit constexpr _IntegralRect(_IntegralSize<TIntegralSpaceTag> const & _size)
         : origin(0, 0)
         , size(_size)
     {}
 
-    _IntegralCoordinates<TIntegralTag> MinMin() const
+    _IntegralCoordinates<TIntegralSpaceTag> MinMin() const
     {
         return origin;
     }
 
-    _IntegralCoordinates<TIntegralTag> MaxMin() const
+    _IntegralCoordinates<TIntegralSpaceTag> MaxMin() const
     {
-        return _IntegralCoordinates<TIntegralTag>(
+        return _IntegralCoordinates<TIntegralSpaceTag>(
             origin.x + size.width,
             origin.y);
     }
 
-    _IntegralCoordinates<TIntegralTag> MaxMax() const
+    _IntegralCoordinates<TIntegralSpaceTag> MaxMax() const
     {
-        return _IntegralCoordinates<TIntegralTag>(
+        return _IntegralCoordinates<TIntegralSpaceTag>(
             origin.x + size.width,
             origin.y + size.height);
     }
 
-    _IntegralCoordinates<TIntegralTag> MinMax() const
+    _IntegralCoordinates<TIntegralSpaceTag> MinMax() const
     {
-        return _IntegralCoordinates<TIntegralTag>(
+        return _IntegralCoordinates<TIntegralSpaceTag>(
             origin.x,
             origin.y + size.height);
     }
 
-    _IntegralCoordinates<TIntegralTag> Center() const
+    _IntegralCoordinates<TIntegralSpaceTag> Center() const
     {
-        return _IntegralCoordinates<TIntegralTag>(
+        return _IntegralCoordinates<TIntegralSpaceTag>(
             origin.x + size.width / 2,
             origin.y + size.height / 2);
     }
 
-    inline bool operator==(_IntegralRect<TIntegralTag> const & other) const
+    inline bool operator==(_IntegralRect<TIntegralSpaceTag> const & other) const
     {
         return origin == other.origin
             && size == other.size;
     }
 
-    inline bool operator!=(_IntegralRect<TIntegralTag> const & other) const
+    inline bool operator!=(_IntegralRect<TIntegralSpaceTag> const & other) const
     {
         return !(*this == other);
     }
@@ -901,7 +901,7 @@ struct _IntegralRect
     }
 
     // Includes boundary
-    bool Contains(_IntegralCoordinates<TIntegralTag> const & point) const
+    bool Contains(_IntegralCoordinates<TIntegralSpaceTag> const & point) const
     {
         return point.x >= origin.x
             && point.y >= origin.y
@@ -909,7 +909,7 @@ struct _IntegralRect
             && point.y <= origin.y + size.height;
     }
 
-    bool IsContainedInRect(_IntegralRect<TIntegralTag> const & container) const
+    bool IsContainedInRect(_IntegralRect<TIntegralSpaceTag> const & container) const
     {
         return origin.x >= container.origin.x
             && origin.y >= container.origin.y
@@ -917,13 +917,13 @@ struct _IntegralRect
             && origin.y + size.height <= container.origin.y + container.size.height;
     }
 
-    void UnionWith(_IntegralCoordinates<TIntegralTag> const & other)
+    void UnionWith(_IntegralCoordinates<TIntegralSpaceTag> const & other)
     {
-        auto const newOrigin = _IntegralCoordinates<TIntegralTag>(
+        auto const newOrigin = _IntegralCoordinates<TIntegralSpaceTag>(
             std::min(origin.x, other.x),
             std::min(origin.y, other.y));
 
-        auto const newSize = _IntegralSize<TIntegralTag>(
+        auto const newSize = _IntegralSize<TIntegralSpaceTag>(
             std::max(origin.x + size.width, other.x + 1) - newOrigin.x,
             std::max(origin.y + size.height, other.y + 1) - newOrigin.y);
 
@@ -933,13 +933,13 @@ struct _IntegralRect
         size = newSize;
     }
 
-    void UnionWith(_IntegralRect<TIntegralTag> const & other)
+    void UnionWith(_IntegralRect<TIntegralSpaceTag> const & other)
     {
-        auto const newOrigin = _IntegralCoordinates<TIntegralTag>(
+        auto const newOrigin = _IntegralCoordinates<TIntegralSpaceTag>(
             std::min(origin.x, other.origin.x),
             std::min(origin.y, other.origin.y));
 
-        auto const newSize = _IntegralSize<TIntegralTag>(
+        auto const newSize = _IntegralSize<TIntegralSpaceTag>(
             std::max(origin.x + size.width, other.origin.x + other.size.width) - newOrigin.x,
             std::max(origin.y + size.height, other.origin.y + other.size.height) - newOrigin.y);
 
@@ -949,21 +949,21 @@ struct _IntegralRect
         size = newSize;
     }
 
-    _IntegralRect<TIntegralTag> MakeUnionWith(_IntegralRect<TIntegralTag> const & other) const
+    _IntegralRect<TIntegralSpaceTag> MakeUnionWith(_IntegralRect<TIntegralSpaceTag> const & other) const
     {
-        _IntegralRect<TIntegralTag> newRect = *this;
+        _IntegralRect<TIntegralSpaceTag> newRect = *this;
         newRect.UnionWith(other);
         return newRect;
     }
 
     // Never returns an empty rect
-    std::optional<_IntegralRect<TIntegralTag>> MakeIntersectionWith(_IntegralRect<TIntegralTag> const & other) const
+    std::optional<_IntegralRect<TIntegralSpaceTag>> MakeIntersectionWith(_IntegralRect<TIntegralSpaceTag> const & other) const
     {
-        auto const newOrigin = _IntegralCoordinates<TIntegralTag>(
+        auto const newOrigin = _IntegralCoordinates<TIntegralSpaceTag>(
             std::max(origin.x, other.origin.x),
             std::max(origin.y, other.origin.y));
 
-        auto const newSize = _IntegralSize<TIntegralTag>(
+        auto const newSize = _IntegralSize<TIntegralSpaceTag>(
             std::min(size.width - (newOrigin.x - origin.x), other.size.width - (newOrigin.x - other.origin.x)),
             std::min(size.height - (newOrigin.y - origin.y), other.size.height - (newOrigin.y - other.origin.y)));
 
@@ -973,7 +973,7 @@ struct _IntegralRect
         }
         else
         {
-            return _IntegralRect<TIntegralTag>(
+            return _IntegralRect<TIntegralSpaceTag>(
                 newOrigin,
                 newSize);
         }
@@ -996,12 +996,12 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _Int
     return os;
 }
 
-using IntegralRect = _IntegralRect<IntegralTag>;
-using ImageRect = _IntegralRect<ImageTag>;
+using IntegralRect = _IntegralRect<IntegralSpaceTag>;
+using ImageRect = _IntegralRect<ImageSpaceTag>;
 using ShipSpaceRect = _IntegralRect<ShipSpaceTag>;
-using DisplayPhysicalRect = _IntegralRect<DisplayPhysicalTag>; // Y=0 at top
+using DisplayPhysicalRect = _IntegralRect<DisplayPhysicalSpaceTag>; // Y=0 at top
 
-template<typename TIntegralTag>
+template<typename TIntegralSpaceTag>
 struct _IntegralCoordsRatio
 {
     float inputUnits; // i.e. how many integral units
@@ -1014,13 +1014,13 @@ struct _IntegralCoordsRatio
         , outputUnits(_outputUnits)
     {}
 
-    inline bool operator==(_IntegralCoordsRatio<TIntegralTag> const & other) const
+    inline bool operator==(_IntegralCoordsRatio<TIntegralSpaceTag> const & other) const
     {
         return inputUnits == other.inputUnits
             && outputUnits == other.outputUnits;
     }
 
-    inline bool operator!=(_IntegralCoordsRatio<TIntegralTag> const & other) const
+    inline bool operator!=(_IntegralCoordsRatio<TIntegralSpaceTag> const & other) const
     {
         return !(*this == other);
     }

@@ -13,7 +13,7 @@ class Noise final
 {
 public:
 
-	static Buffer2D<float, struct IntegralTag> CreateRepeatableFractal2DPerlinNoise(
+	static Buffer2D<float, IntegralSpaceTag> CreateRepeatableFractal2DPerlinNoise(
 		IntegralRectSize const & size,
 		int firstGridDensity, // Number of cells
 		int lastGridDensity, // Number of cells
@@ -21,10 +21,10 @@ public:
 
 private:
 
-	static Buffer2D<vec2f, struct IntegralTag> MakePerlinVectorGrid(IntegralRectSize const & size);
+	static Buffer2D<vec2f, IntegralSpaceTag> MakePerlinVectorGrid(IntegralRectSize const & size);
 
 	static void AddRepeatableUnscaledPerlinNoise(
-		Buffer2D<float, struct IntegralTag> & buffer,
+		Buffer2D<float, IntegralSpaceTag> & buffer,
 		int gridDensity, // Number of cells
 		float amplitude);
 };

@@ -1183,17 +1183,16 @@
 						+ Cleanup RegionCombiner
 						+ If we do this, nuke redundant LayerChangeEpilog's at tools when we undo eph viz and redo it
 
-					= See if can get rid of those "struct ShipSpaceTag" and define structs once
-						- Also other tags: "space"
+					+ See if can get rid of those "struct ShipSpaceTag" and define structs once
+						+ Also other tags: "space"
 
 
 
 
 
-					= Call InternalCommit @:
+					+ Call InternalCommit @:
 						+ dctor - iff needs to commit
 						+ Creation of new selection
-						- Do we need it also @ OnMouseLeft?
 					- @ InitSelectionMoves: TODO: depends on undo decision
 					- TODO: in the below, decide if want to use finalizer for eph viz
 					= @ each move (for eph viz):

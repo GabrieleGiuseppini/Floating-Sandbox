@@ -913,7 +913,7 @@ TEST(LayerTests, TextureLayer_Reframe_Smaller)
     // Create source layer
     //
 
-    Buffer2D<rgbaColor, ImageTag> sourceBuffer(8, 6);
+    Buffer2D<rgbaColor, ImageSpaceTag> sourceBuffer(8, 6);
 
     uint8_t iVal = 2;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -964,7 +964,7 @@ TEST(LayerTests, TextureLayer_Reframe_Larger)
     // Create source layer
     //
 
-    Buffer2D<rgbaColor, ImageTag> sourceBuffer(4, 4);
+    Buffer2D<rgbaColor, ImageSpaceTag> sourceBuffer(4, 4);
 
     uint8_t iVal = 2;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -1015,7 +1015,7 @@ TEST(LayerTests, TextureLayer_Reframe_Same)
     // Create source layer
     //
 
-    Buffer2D<rgbaColor, ImageTag> sourceBuffer(8, 8);
+    Buffer2D<rgbaColor, ImageSpaceTag> sourceBuffer(8, 8);
 
     uint8_t iVal = 2;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -1108,7 +1108,7 @@ TEST(LayerTests, ShipLayers_FlipH)
             rgbaColor(1, 2, 3, 4));
     }
 
-    Buffer2D<rgbaColor, ImageTag> sourceExteriorTextureLayerBuffer(80, 60);
+    Buffer2D<rgbaColor, ImageSpaceTag> sourceExteriorTextureLayerBuffer(80, 60);
 
     iVal = 0;
     for (int y = 0; y < sourceExteriorTextureLayerBuffer.Size.height; ++y)
@@ -1121,7 +1121,7 @@ TEST(LayerTests, ShipLayers_FlipH)
         }
     }
 
-    Buffer2D<rgbaColor, ImageTag> sourceInteriorTextureLayerBuffer(180, 160);
+    Buffer2D<rgbaColor, ImageSpaceTag> sourceInteriorTextureLayerBuffer(180, 160);
 
     iVal = 100;
     for (int y = 0; y < sourceInteriorTextureLayerBuffer.Size.height; ++y)
@@ -1280,7 +1280,7 @@ TEST(LayerTests, ShipLayers_Rotate)
             rgbaColor(1, 2, 3, 4));
     }
 
-    Buffer2D<rgbaColor, ImageTag> sourceExteriorTextureLayerBuffer(80, 60);
+    Buffer2D<rgbaColor, ImageSpaceTag> sourceExteriorTextureLayerBuffer(80, 60);
 
     iVal = 0;
     for (int y = 0; y < sourceExteriorTextureLayerBuffer.Size.height; ++y)
@@ -1293,7 +1293,7 @@ TEST(LayerTests, ShipLayers_Rotate)
         }
     }
 
-    Buffer2D<rgbaColor, ImageTag> sourceInteriorTextureLayerBuffer(180, 160);
+    Buffer2D<rgbaColor, ImageSpaceTag> sourceInteriorTextureLayerBuffer(180, 160);
 
     iVal = 100;
     for (int y = 0; y < sourceInteriorTextureLayerBuffer.Size.height; ++y)
@@ -1430,9 +1430,9 @@ TEST(LayerTests, ShipLayers_Clone_Full)
             rgbaColor(1, 2, 3, 4));
     }
 
-    Buffer2D<rgbaColor, ImageTag> sourceExteriorTextureLayerBuffer(80, 60);
+    Buffer2D<rgbaColor, ImageSpaceTag> sourceExteriorTextureLayerBuffer(80, 60);
 
-    Buffer2D<rgbaColor, ImageTag> sourceInteriorTextureLayerBuffer(180, 160);
+    Buffer2D<rgbaColor, ImageSpaceTag> sourceInteriorTextureLayerBuffer(180, 160);
 
     ShipLayers layers(
         shipSize,

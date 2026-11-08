@@ -202,7 +202,7 @@ public:
         GameAssetManager const & gameAssetManager);
 };
 
-class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageTag>
+class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageSpaceTag>
 {
 public:
 
@@ -215,7 +215,7 @@ protected:
     ImageSize GetSpaceSize() const override;
 };
 
-class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageTag>
+class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageSpaceTag>
 {
 public:
 

@@ -491,13 +491,13 @@ void GlobalRenderContext::ReshadeDependentOceanTexture(
         });
 }
 
-std::unique_ptr<Buffer2D<float, struct IntegralTag>> GlobalRenderContext::MakePerlinNoise(
+std::unique_ptr<Buffer2D<float, IntegralSpaceTag>> GlobalRenderContext::MakePerlinNoise(
     IntegralRectSize const & size,
     int firstGridDensity,
     int lastGridDensity,
     float persistence)
 {
-    auto buf = std::make_unique<Buffer2D<float, struct IntegralTag>>(
+    auto buf = std::make_unique<Buffer2D<float, IntegralSpaceTag>>(
         Noise::CreateRepeatableFractal2DPerlinNoise(
             size,
             firstGridDensity,

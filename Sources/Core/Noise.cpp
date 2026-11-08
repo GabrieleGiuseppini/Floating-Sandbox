@@ -10,7 +10,7 @@
 
 #include <cassert>
 
-Buffer2D<float, struct IntegralTag> Noise::CreateRepeatableFractal2DPerlinNoise(
+Buffer2D<float, IntegralSpaceTag> Noise::CreateRepeatableFractal2DPerlinNoise(
 	IntegralRectSize const & size,
 	int firstGridDensity, // Number of cells
 	int lastGridDensity, // Number of cells; expected to be a (positive or negative) power-of-two of firstGridDensity
@@ -20,7 +20,7 @@ Buffer2D<float, struct IntegralTag> Noise::CreateRepeatableFractal2DPerlinNoise(
 	// Create float buf
 	//
 
-	auto floatBuf = Buffer2D<float, struct IntegralTag>(size);
+	auto floatBuf = Buffer2D<float, IntegralSpaceTag>(size);
 	floatBuf.Fill(0.0f);
 
 	//
@@ -61,9 +61,9 @@ Buffer2D<float, struct IntegralTag> Noise::CreateRepeatableFractal2DPerlinNoise(
 	return floatBuf;
 }
 
-Buffer2D<vec2f, struct IntegralTag> Noise::MakePerlinVectorGrid(IntegralRectSize const & size)
+Buffer2D<vec2f, IntegralSpaceTag> Noise::MakePerlinVectorGrid(IntegralRectSize const & size)
 {
-	auto grid = Buffer2D<vec2f, struct IntegralTag>(size);
+	auto grid = Buffer2D<vec2f, IntegralSpaceTag>(size);
 
 	for (int y = 0; y < size.height; ++y)
 	{
@@ -80,7 +80,7 @@ Buffer2D<vec2f, struct IntegralTag> Noise::MakePerlinVectorGrid(IntegralRectSize
 }
 
 void Noise::AddRepeatableUnscaledPerlinNoise(
-	Buffer2D<float, struct IntegralTag> & buffer,
+	Buffer2D<float, IntegralSpaceTag> & buffer,
 	int gridDensity, // Number of cells
 	float amplitude)
 {
