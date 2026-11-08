@@ -5,6 +5,7 @@
 
 set (SHIPBUILDER_LIB_SOURCES
 	ClipboardManager.h
+	CombinedRegions.h
 	Controller.cpp
 	Controller.h
 	GenericEphemeralVisualizationRestorePayload.h
@@ -21,8 +22,7 @@ set (SHIPBUILDER_LIB_SOURCES
 	ModelValidationResults.h
 	ModelValidationSession.cpp
 	ModelValidationSession.h
-	OpenGLManager.h
-	RegionCombiner.h
+	OpenGLManager.h	
 	SelectionManager.h
 	ShipBuilderShaderSets.cpp
 	ShipBuilderShaderSets.h

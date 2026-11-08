@@ -1651,6 +1651,26 @@ void ModelController::RestoreStructuralLayerRegionEphemeralVisualization(
     mIsStructuralLayerInEphemeralVisualization = false;
 }
 
+void ModelController::RestoreStructuralLayerRegionEphemeralVisualization(
+    typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
+    CombinedShipSpaceRegions const & regions)
+{
+    assert(mIsStructuralLayerInEphemeralVisualization);
+
+    regions.Apply(
+        [&](ShipSpaceRect const & region)
+        {
+            DoStructuralRegionBufferPaste(
+                backupBuffer,
+                region,
+                region.origin,
+                false);
+        });
+
+    // Remember we are not anymore in temp visualization
+    mIsStructuralLayerInEphemeralVisualization = false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Electrical
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1925,6 +1945,29 @@ void ModelController::RestoreElectricalLayerRegionEphemeralVisualization(
         [](ElectricalElement const & src, ElectricalElement const &) -> ElectricalElement const &
         {
             return src;
+        });
+
+    // Remember we are not anymore in temp visualization
+    mIsElectricalLayerInEphemeralVisualization = false;
+}
+
+void ModelController::RestoreElectricalLayerRegionEphemeralVisualization(
+    typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
+    CombinedShipSpaceRegions const & regions)
+{
+    assert(mIsElectricalLayerInEphemeralVisualization);
+
+    regions.Apply(
+        [&](ShipSpaceRect const & region)
+        {
+            DoElectricalRegionBufferPaste(
+                backupBuffer,
+                region,
+                region.origin,
+                [](ElectricalElement const & src, ElectricalElement const &) -> ElectricalElement const &
+                {
+                    return src;
+                });
         });
 
     // Remember we are not anymore in temp visualization
@@ -3043,9 +3086,6 @@ void ModelController::UpdateVisualizations(
             mGameVisualizationAutoTexturizationTexture = std::make_unique<RgbaImageData>(mGameVisualizationTexture->Size);
         }
 
-        // TODOTEST
-        LogMessage("Dirty regions: ", mDirtyGameVisualizationRegions.GetRegionCount());
-
         mDirtyGameVisualizationRegions.Apply(
             [&](ShipSpaceRect const & region)
             {
@@ -3097,9 +3137,6 @@ void ModelController::UpdateVisualizations(
             // Initialize structural visualization
             mStructuralLayerVisualizationTexture = std::make_unique<RgbaImageData>(ImageSize(mModel.GetShipSize().width, mModel.GetShipSize().height));
         }
-
-        // TODOTEST
-        LogMessage("Dirty regions: ", mDirtyGameVisualizationRegions.GetRegionCount());
 
         mDirtyStructuralLayerVisualizationRegions.Apply(
             [&](ShipSpaceRect const & region)

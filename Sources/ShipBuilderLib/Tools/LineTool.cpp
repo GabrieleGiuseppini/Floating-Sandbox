@@ -334,7 +334,7 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
 
         LayerMaterialType const * fillMaterial = GetFillMaterial(mEngagementData->Plane);
 
-        std::optional<ShipSpaceRect> resultantEffectiveRect;
+        CombinedShipSpaceRegions dirtyRegions;
         View::OverlayMode resultantOverlayMode = View::OverlayMode::Default;
 
         DoLine(
@@ -348,14 +348,7 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                 {
                     if (hasEdited)
                     {
-                        if (!resultantEffectiveRect)
-                        {
-                            resultantEffectiveRect = *effectiveRect;
-                        }
-                        else
-                        {
-                            resultantEffectiveRect->UnionWith(*effectiveRect);
-                        }
+                        dirtyRegions.AddRegion(*effectiveRect);
                     }
                     else
                     {
@@ -373,30 +366,26 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
 
         // Schedule cleanup
         mEphemeralVisualization.emplace(
-            [this, resultantEffectiveRect]()
+            [this, dirtyRegions = std::move(dirtyRegions)]()
             {
-                if (resultantEffectiveRect.has_value())
+                if constexpr (TLayer == LayerType::Structural)
                 {
-                    if constexpr (TLayer == LayerType::Structural)
-                    {
-                        mController.GetModelController().RestoreStructuralLayerRegionEphemeralVisualization(
-                            mOriginalLayerClone.Buffer,
-                            *resultantEffectiveRect,
-                            resultantEffectiveRect->origin);
-                    }
-                    else
-                    {
-                        static_assert(TLayer == LayerType::Electrical);
+                    mController.GetModelController().RestoreStructuralLayerRegionEphemeralVisualization(
+                        mOriginalLayerClone.Buffer,
+                        dirtyRegions);
+                }
+                else
+                {
+                    static_assert(TLayer == LayerType::Electrical);
 
-                        mController.GetModelController().RestoreElectricalLayerRegionEphemeralVisualization(
-                            mOriginalLayerClone.Buffer,
-                            *resultantEffectiveRect,
-                            resultantEffectiveRect->origin);
-                    }
+                    mController.GetModelController().RestoreElectricalLayerRegionEphemeralVisualization(
+                        mOriginalLayerClone.Buffer,
+                        dirtyRegions);
                 }
 
                 mController.GetView().RemoveDashedLineOverlay();
             });
+
     }
     else
     {

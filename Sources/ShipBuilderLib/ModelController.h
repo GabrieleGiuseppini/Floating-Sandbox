@@ -11,7 +11,7 @@
 #include "InstancedElectricalElementSet.h"
 #include "Model.h"
 #include "ModelValidationSession.h"
-#include "RegionCombiner.h"
+#include "CombinedRegions.h"
 #include "ShipBuilderTypes.h"
 #include "View.h"
 
@@ -308,6 +308,10 @@ public:
         ShipSpaceRect const & backupBufferRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
+    void RestoreStructuralLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
+        CombinedShipSpaceRegions const & regions);
+
     //
     // Electrical
     //
@@ -346,6 +350,10 @@ public:
         typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
         ShipSpaceRect const & backupBufferRegion,
         ShipSpaceCoordinates const & targetOrigin);
+
+    void RestoreElectricalLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
+        CombinedShipSpaceRegions const & regions);
 
     //
     // Ropes
@@ -804,12 +812,12 @@ private:
     InteriorTextureLayerVisualizationModeType mInteriorTextureLayerVisualizationMode;
 
     // Regions whose visualizations need to be *updated* and *uploaded*
-    RegionCombiner<struct ShipSpaceTag> mDirtyGameVisualizationRegions;
-    RegionCombiner<struct ShipSpaceTag> mDirtyStructuralLayerVisualizationRegions;
-    RegionCombiner<struct ShipSpaceTag> mDirtyElectricalLayerVisualizationRegions;
-    RegionCombiner<struct ShipSpaceTag> mDirtyRopesLayerVisualizationRegions;
-    RegionCombiner<struct ImageTag> mDirtyExteriorTextureLayerVisualizationRegions;
-    RegionCombiner<struct ImageTag> mDirtyInteriorTextureLayerVisualizationRegions;
+    CombinedShipSpaceRegions mDirtyGameVisualizationRegions;
+    CombinedShipSpaceRegions mDirtyStructuralLayerVisualizationRegions;
+    CombinedShipSpaceRegions mDirtyElectricalLayerVisualizationRegions;
+    CombinedShipSpaceRegions mDirtyRopesLayerVisualizationRegions;
+    CombinedTextureSpaceRegions mDirtyExteriorTextureLayerVisualizationRegions;
+    CombinedTextureSpaceRegions mDirtyInteriorTextureLayerVisualizationRegions;
 
     //
     // Debugging

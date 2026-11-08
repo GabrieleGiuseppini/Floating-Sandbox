@@ -1173,14 +1173,13 @@
 							+ paste all layers
 							+ line
 
-					- Might also need multi-region dirty viz tracking, for perf
+					= Might also need multi-region dirty viz tracking, for perf
 						+ Pre-perf for line
 						+ Change dirty region to RegionCombiner
-						- RegionCombiner improvements:
-							- TODOHERE
-						- Post-perf for line
-
-						- Nuke logs
+						+ Line improvements:
+							+ FIX: Undo of eph dirties whole region
+						+ Post-perf for line
+						+ Nuke logs
 						+ Cleanup RegionCombiner
 
 						- If we do this, nuke redundant LayerChangeEpilog's at tools when we undo eph viz and redo it

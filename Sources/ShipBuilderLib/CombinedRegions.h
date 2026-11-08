@@ -16,7 +16,7 @@ namespace ShipBuilder {
  * Guarantees non-overlapping regions, trying to minimize waste.
  */
 template<typename TCoordsTag>
-class RegionCombiner final
+class CombinedRegions final
 {
 public:
 
@@ -51,7 +51,9 @@ private:
 
 	void InternalAddRegion(TRect const & region, typename TCoords::integral_type preWastedArea)
 	{
-		// Check whether it overlaps with any
+		// Check whether it overlaps with any - if so, force combining,
+		// and recursively add back to ensure new combined region
+		// does not overlap with other already-existing regions
 		for (auto it = mRegionInfos.begin(); it != mRegionInfos.end(); ++it)
 		{
 			auto intersection = it->Region.MakeIntersectionWith(region);
@@ -105,5 +107,8 @@ private:
 
 	std::vector<RegionInfo> mRegionInfos;
 };
+
+using CombinedShipSpaceRegions = CombinedRegions<struct ShipSpaceTag>;
+using CombinedTextureSpaceRegions = CombinedRegions<struct ImageTag>;
 
 }
