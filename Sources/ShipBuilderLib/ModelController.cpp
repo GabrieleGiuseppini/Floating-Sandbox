@@ -3189,6 +3189,11 @@ void ModelController::UpdateVisualizations(
         }
     }
 
+    if (mDirtyStructuralLayerVisualizationRegions.GetRegionCount() >= 32)
+    {
+        LogMessage("ModelController::UpdateVisualizations: # of dirty regions: ", mDirtyStructuralLayerVisualizationRegions.GetRegionCount());
+    }
+
     mDirtyStructuralLayerVisualizationRegions.Reset();
 
     // Electrical
