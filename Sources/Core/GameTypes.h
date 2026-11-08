@@ -385,6 +385,13 @@ enum class DepthKindType
  * Integral system
  */
 
+// Dummy types for strong-typing
+struct IntegralTag {};
+struct ImageTag {};
+struct ShipSpaceTag {};
+struct DisplayLogicalTag {};
+struct DisplayPhysicalTag {};
+
 #pragma pack(push, 1)
 
 template<typename TIntegralTag>
@@ -597,11 +604,11 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _Int
     return os;
 }
 
-using IntegralRectSize = _IntegralSize<struct IntegralTag>;
-using ImageSize = _IntegralSize<struct ImageTag>;
-using ShipSpaceSize = _IntegralSize<struct ShipSpaceTag>;
-using DisplayLogicalSize = _IntegralSize<struct DisplayLogicalTag>;
-using DisplayPhysicalSize = _IntegralSize<struct DisplayPhysicalTag>;
+using IntegralRectSize = _IntegralSize<IntegralTag>;
+using ImageSize = _IntegralSize<ImageTag>;
+using ShipSpaceSize = _IntegralSize<ShipSpaceTag>;
+using DisplayLogicalSize = _IntegralSize<DisplayLogicalTag>;
+using DisplayPhysicalSize = _IntegralSize<DisplayPhysicalTag>;
 
 #pragma pack(push, 1)
 
@@ -788,11 +795,11 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _Int
     return os;
 }
 
-using IntegralCoordinates = _IntegralCoordinates<struct IntegralTag>; // Generic integer
-using ImageCoordinates = _IntegralCoordinates<struct ImageTag>; // Image
-using ShipSpaceCoordinates = _IntegralCoordinates<struct ShipSpaceTag>; // Y=0 at bottom
-using DisplayLogicalCoordinates = _IntegralCoordinates<struct DisplayLogicalTag>; // Y=0 at top
-using DisplayPhysicalCoordinates = _IntegralCoordinates<struct DisplayPhysicalTag>; // Y=0 at top
+using IntegralCoordinates = _IntegralCoordinates<IntegralTag>; // Generic integer
+using ImageCoordinates = _IntegralCoordinates<ImageTag>; // Image
+using ShipSpaceCoordinates = _IntegralCoordinates<ShipSpaceTag>; // Y=0 at bottom
+using DisplayLogicalCoordinates = _IntegralCoordinates<DisplayLogicalTag>; // Y=0 at top
+using DisplayPhysicalCoordinates = _IntegralCoordinates<DisplayPhysicalTag>; // Y=0 at top
 
 #pragma pack(push)
 
@@ -989,10 +996,10 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _Int
     return os;
 }
 
-using IntegralRect = _IntegralRect<struct IntegralTag>;
-using ImageRect = _IntegralRect<struct ImageTag>;
-using ShipSpaceRect = _IntegralRect<struct ShipSpaceTag>;
-using DisplayPhysicalRect = _IntegralRect<struct DisplayPhysicalTag>; // Y=0 at top
+using IntegralRect = _IntegralRect<IntegralTag>;
+using ImageRect = _IntegralRect<ImageTag>;
+using ShipSpaceRect = _IntegralRect<ShipSpaceTag>;
+using DisplayPhysicalRect = _IntegralRect<DisplayPhysicalTag>; // Y=0 at top
 
 template<typename TIntegralTag>
 struct _IntegralCoordsRatio
@@ -1019,7 +1026,7 @@ struct _IntegralCoordsRatio
     }
 };
 
-using ShipSpaceToWorldSpaceCoordsRatio = _IntegralCoordsRatio<struct ShipSpaceTag>;
+using ShipSpaceToWorldSpaceCoordsRatio = _IntegralCoordsRatio<ShipSpaceTag>;
 
 /*
  * Generic quad (not necessarily square), intrinsics-friendly

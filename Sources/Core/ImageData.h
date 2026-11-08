@@ -10,7 +10,7 @@
 #include "GameTypes.h"
 
 template <typename TColor>
-using ImageData = Buffer2D<TColor, struct ImageTag>;
+using ImageData = Buffer2D<TColor, ImageTag>;
 
 using RgbImageData = ImageData<rgbColor>;
 using RgbaImageData = ImageData<rgbaColor>;

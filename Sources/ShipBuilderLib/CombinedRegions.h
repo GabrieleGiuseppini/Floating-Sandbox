@@ -42,6 +42,11 @@ public:
 		return mRegionInfos.size();
 	}
 
+	TRect const & GetRegionAt(size_t index) const
+	{
+		return mRegionInfos[index].Region;
+	}
+
 	void Reset()
 	{
 		mRegionInfos.clear();
@@ -108,7 +113,7 @@ private:
 	std::vector<RegionInfo> mRegionInfos;
 };
 
-using CombinedShipSpaceRegions = CombinedRegions<struct ShipSpaceTag>;
-using CombinedTextureSpaceRegions = CombinedRegions<struct ImageTag>;
+using CombinedShipSpaceRegions = CombinedRegions<ShipSpaceTag>;
+using CombinedTextureSpaceRegions = CombinedRegions<ImageTag>;
 
 }

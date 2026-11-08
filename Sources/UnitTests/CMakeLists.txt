@@ -24,6 +24,7 @@ set (UNIT_TEST_SOURCES
 	Buffer2DTests.cpp
 	CircularListTests.cpp
 	ColorsTests.cpp
+	CombinedRegionsTests.cpp
 	DeSerializationBufferTests.cpp
 	ElectricalPanelTests.cpp
 	EndianTests.cpp
@@ -51,7 +52,6 @@ set (UNIT_TEST_SOURCES
 	PortableTimepointTests.cpp
 	PrecalculatedFunctionTests.cpp
 	ProgressCallbackTests.cpp
-	RegionCombinerTests.cpp
 	RopeBufferTests.cpp
 	SettingsTests.cpp
 	ShaderManagerTests.cpp

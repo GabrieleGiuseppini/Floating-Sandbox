@@ -1,10 +1,10 @@
-#include <ShipBuilderLib/RegionCombiner.h>
+#include <ShipBuilderLib/CombinedRegions.h>
 
 #include "gtest/gtest.h"
 
-TEST(RegionCombinerTests, One)
+TEST(CombinedRegionsTests, One)
 {
-	ShipBuilder::RegionCombiner<struct ShipSpaceTag> combiner;
+	ShipBuilder::CombinedRegions<ShipSpaceTag> combiner;
 
 	combiner.AddRegion(
 		ShipSpaceRect(
@@ -19,9 +19,9 @@ TEST(RegionCombinerTests, One)
 			ShipSpaceSize(20, 30)));
 }
 
-TEST(RegionCombinerTests, Two_Disjoint)
+TEST(CombinedRegionsTests, Two_Disjoint)
 {
-	ShipBuilder::RegionCombiner<struct ShipSpaceTag> combiner;
+	ShipBuilder::CombinedRegions<ShipSpaceTag> combiner;
 
 	combiner.AddRegion(
 		ShipSpaceRect(
@@ -46,9 +46,9 @@ TEST(RegionCombinerTests, Two_Disjoint)
 			ShipSpaceSize(30, 20)));
 }
 
-TEST(RegionCombinerTests, Two_OneIncludedInOther)
+TEST(CombinedRegionsTests, Two_OneIncludedInOther)
 {
-	ShipBuilder::RegionCombiner<struct ShipSpaceTag> combiner;
+	ShipBuilder::CombinedRegions<ShipSpaceTag> combiner;
 
 	combiner.AddRegion(
 		ShipSpaceRect(
@@ -68,9 +68,9 @@ TEST(RegionCombinerTests, Two_OneIncludedInOther)
 			ShipSpaceSize(20, 30)));
 }
 
-TEST(RegionCombinerTests, Two_Overlapping)
+TEST(CombinedRegionsTests, Two_Overlapping)
 {
-	ShipBuilder::RegionCombiner<struct ShipSpaceTag> combiner;
+	ShipBuilder::CombinedRegions<ShipSpaceTag> combiner;
 
 	combiner.AddRegion(
 		ShipSpaceRect(
@@ -90,9 +90,9 @@ TEST(RegionCombinerTests, Two_Overlapping)
 			ShipSpaceSize(30, 30)));
 }
 
-TEST(RegionCombinerTests, Three_ThirdOverlappingWithSecond)
+TEST(CombinedRegionsTests, Three_ThirdOverlappingWithSecond)
 {
-	ShipBuilder::RegionCombiner<struct ShipSpaceTag> combiner;
+	ShipBuilder::CombinedRegions<ShipSpaceTag> combiner;
 
 	combiner.AddRegion(
 		ShipSpaceRect(
@@ -122,9 +122,9 @@ TEST(RegionCombinerTests, Three_ThirdOverlappingWithSecond)
 			ShipSpaceSize(30, 30)));
 }
 
-TEST(RegionCombinerTests, Three_ThirdOverlappingWithBoth)
+TEST(CombinedRegionsTests, Three_ThirdOverlappingWithBoth)
 {
-	ShipBuilder::RegionCombiner<struct ShipSpaceTag> combiner;
+	ShipBuilder::CombinedRegions<ShipSpaceTag> combiner;
 
 	combiner.AddRegion(
 		ShipSpaceRect(
@@ -151,9 +151,9 @@ TEST(RegionCombinerTests, Three_ThirdOverlappingWithBoth)
 
 // Optimizations
 
-TEST(RegionCombinerTests, Two_TouchingCorners)
+TEST(CombinedRegionsTests, Two_TouchingCorners)
 {
-	ShipBuilder::RegionCombiner<struct ShipSpaceTag> combiner;
+	ShipBuilder::CombinedRegions<ShipSpaceTag> combiner;
 
 	combiner.AddRegion(
 		ShipSpaceRect(
@@ -175,9 +175,9 @@ TEST(RegionCombinerTests, Two_TouchingCorners)
 			ShipSpaceSize(20, 20)));
 }
 
-TEST(RegionCombinerTests, Three_TouchingCorners)
+TEST(CombinedRegionsTests, Three_TouchingCorners)
 {
-	ShipBuilder::RegionCombiner<struct ShipSpaceTag> combiner;
+	ShipBuilder::CombinedRegions<ShipSpaceTag> combiner;
 
 	combiner.AddRegion(
 		ShipSpaceRect(

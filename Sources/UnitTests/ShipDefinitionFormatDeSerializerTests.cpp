@@ -343,7 +343,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerV1Tests, VariousSizes_Uni
     for (int iParam = 1; iParam < 16384 * 2 + 1;)
     {
         StructuralLayerData sourceStructuralLayer(
-            Buffer2D<StructuralElement, struct ShipSpaceTag>(
+            Buffer2D<StructuralElement, ShipSpaceTag>(
                 ShipSpaceSize(iParam, 1),
                 StructuralElement(nullptr))); // Empty
 

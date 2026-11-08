@@ -130,21 +130,21 @@ private:
 	template <>
 	struct CoordinatesSpaceTraits<CoordinatesSpaceType::Ship>
 	{
-		using integral_coords_tag = struct ShipSpaceTag;
+		using integral_coords_tag = ShipSpaceTag;
 		using payload_type = ShipSpaceRegionPayload;
 	};
 
 	template <>
 	struct CoordinatesSpaceTraits<CoordinatesSpaceType::ExteriorTexture>
 	{
-		using integral_coords_tag = struct ImageTag;
+		using integral_coords_tag = ImageTag;
 		using payload_type = TextureSpaceRegionPayload;
 	};
 
 	template <>
 	struct CoordinatesSpaceTraits<CoordinatesSpaceType::InteriorTexture>
 	{
-		using integral_coords_tag = struct ImageTag;
+		using integral_coords_tag = ImageTag;
 		using payload_type = TextureSpaceRegionPayload;
 	};
 

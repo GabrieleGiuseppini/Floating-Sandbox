@@ -28,13 +28,13 @@ struct LayerTypeTraits
 
 struct StructuralLayerData
 {
-    Buffer2D<StructuralElement, struct ShipSpaceTag> Buffer;
+    Buffer2D<StructuralElement, ShipSpaceTag> Buffer;
 
     explicit StructuralLayerData(ShipSpaceSize shipSize)
         : Buffer(shipSize)
     {}
 
-    explicit StructuralLayerData(Buffer2D<StructuralElement, struct ShipSpaceTag> && buffer)
+    explicit StructuralLayerData(Buffer2D<StructuralElement, ShipSpaceTag> && buffer)
         : Buffer(std::move(buffer))
     {}
 
@@ -88,7 +88,7 @@ template <>
 struct LayerTypeTraits<LayerType::Structural>
 {
     using material_type = StructuralMaterial;
-    using buffer_type = Buffer2D<StructuralElement, struct ShipSpaceTag>;
+    using buffer_type = Buffer2D<StructuralElement, ShipSpaceTag>;
     using layer_data_type = StructuralLayerData;
 };
 
@@ -98,7 +98,7 @@ struct LayerTypeTraits<LayerType::Structural>
 
 struct ElectricalLayerData
 {
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> Buffer;
+    Buffer2D<ElectricalElement, ShipSpaceTag> Buffer;
     ElectricalPanel Panel;
 
     explicit ElectricalLayerData(ShipSpaceSize shipSize)
@@ -114,7 +114,7 @@ struct ElectricalLayerData
     {}
 
     ElectricalLayerData(
-        Buffer2D<ElectricalElement, struct ShipSpaceTag> && buffer,
+        Buffer2D<ElectricalElement, ShipSpaceTag> && buffer,
         ElectricalPanel && panel)
         : Buffer(std::move(buffer))
         , Panel(std::move(panel))
@@ -190,7 +190,7 @@ template <>
 struct LayerTypeTraits<LayerType::Electrical>
 {
     using material_type = ElectricalMaterial;
-    using buffer_type = Buffer2D<ElectricalElement, struct ShipSpaceTag>;
+    using buffer_type = Buffer2D<ElectricalElement, ShipSpaceTag>;
     using layer_data_type = ElectricalLayerData;
 };
 

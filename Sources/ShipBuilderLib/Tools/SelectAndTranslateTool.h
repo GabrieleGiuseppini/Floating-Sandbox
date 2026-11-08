@@ -163,7 +163,7 @@ private:
 
 // Specialization for Structural/Electrical/Ropes layers, which work on ship space coords
 template<LayerType TLayer>
-class SelectAndTranslateTool_ShipSpace : public SelectAndTranslateTool<TLayer, GenericShipSpaceEphemeralVisualizationRestorePayload, struct ShipSpaceTag>
+class SelectAndTranslateTool_ShipSpace : public SelectAndTranslateTool<TLayer, GenericShipSpaceEphemeralVisualizationRestorePayload, ShipSpaceTag>
 {
 protected:
 
@@ -202,7 +202,7 @@ public:
         GameAssetManager const & gameAssetManager);
 };
 
-class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload, struct ImageTag>
+class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageTag>
 {
 public:
 
@@ -215,7 +215,7 @@ protected:
     ImageSize GetSpaceSize() const override;
 };
 
-class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload, struct ImageTag>
+class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageTag>
 {
 public:
 

@@ -1230,7 +1230,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V1(
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayerBuffer_V1(
-    Buffer2D<StructuralElement, struct ShipSpaceTag> const & structuralLayerBuffer,
+    Buffer2D<StructuralElement, ShipSpaceTag> const & structuralLayerBuffer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     size_t subSectionBodySize = 0;
@@ -1341,7 +1341,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer_V2(
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayerBuffer_V2(
-    Buffer2D<StructuralElement, struct ShipSpaceTag> const & structuralLayerBuffer,
+    Buffer2D<StructuralElement, ShipSpaceTag> const & structuralLayerBuffer,
     CustomMaterialOverridesMap<StructuralMaterial> const & customMaterialOverridesMap,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
@@ -1476,7 +1476,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V1(
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerBuffer_V1(
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> const & electricalLayerBuffer,
+    Buffer2D<ElectricalElement, ShipSpaceTag> const & electricalLayerBuffer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     size_t subSectionBodySize = 0;
@@ -1617,7 +1617,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer_V2(
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerBuffer_V2(
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> const & electricalLayerBuffer,
+    Buffer2D<ElectricalElement, ShipSpaceTag> const & electricalLayerBuffer,
     CustomMaterialOverridesMap<ElectricalMaterial> const & customMaterialOverridesMap,
     DeSerializationBuffer<BigEndianess> & buffer)
 {

@@ -10,7 +10,7 @@ TEST(LayerTests, StructuralLayer_Trim)
     // Create source layer
     //
 
-    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceBuffer(8, 6);
+    Buffer2D<StructuralElement, ShipSpaceTag> sourceBuffer(8, 6);
 
     std::vector<std::unique_ptr<StructuralMaterial>> materials;
 
@@ -65,7 +65,7 @@ TEST(LayerTests, StructuralLayer_Reframe_Smaller)
     // Create source layer
     //
 
-    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceBuffer(8, 6);
+    Buffer2D<StructuralElement, ShipSpaceTag> sourceBuffer(8, 6);
 
     std::vector<std::unique_ptr<StructuralMaterial>> materials;
 
@@ -119,7 +119,7 @@ TEST(LayerTests, StructuralLayer_Reframe_Larger)
     // Create source layer
     //
 
-    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceBuffer(4, 4);
+    Buffer2D<StructuralElement, ShipSpaceTag> sourceBuffer(4, 4);
 
     std::vector<std::unique_ptr<StructuralMaterial>> materials;
 
@@ -173,7 +173,7 @@ TEST(LayerTests, StructuralLayer_Reframe_Same)
     // Create source layer
     //
 
-    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceBuffer(8, 8);
+    Buffer2D<StructuralElement, ShipSpaceTag> sourceBuffer(8, 8);
 
     std::vector<std::unique_ptr<StructuralMaterial>> materials;
 
@@ -220,7 +220,7 @@ TEST(LayerTests, ElectricalLayer_CloneRegion_Smaller)
     // Create source layer
     //
 
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 6);
+    Buffer2D<ElectricalElement, ShipSpaceTag> sourceBuffer(8, 6);
     ElectricalPanel sourcePanel;
 
     std::vector<std::unique_ptr<ElectricalMaterial>> materials;
@@ -303,7 +303,7 @@ TEST(LayerTests, ElectricalLayer_Trim)
     // Create source layer
     //
 
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 6);
+    Buffer2D<ElectricalElement, ShipSpaceTag> sourceBuffer(8, 6);
     ElectricalPanel sourcePanel;
 
     std::vector<std::unique_ptr<ElectricalMaterial>> materials;
@@ -387,7 +387,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Smaller)
     // Create source layer
     //
 
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 6);
+    Buffer2D<ElectricalElement, ShipSpaceTag> sourceBuffer(8, 6);
     ElectricalPanel sourcePanel;
 
     std::vector<std::unique_ptr<ElectricalMaterial>> materials;
@@ -491,7 +491,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Larger)
     // Create source layer
     //
 
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(4, 4);
+    Buffer2D<ElectricalElement, ShipSpaceTag> sourceBuffer(4, 4);
     ElectricalPanel sourcePanel;
 
     std::vector<std::unique_ptr<ElectricalMaterial>> materials;
@@ -578,7 +578,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Same)
     // Create source layer
     //
 
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 8);
+    Buffer2D<ElectricalElement, ShipSpaceTag> sourceBuffer(8, 8);
     ElectricalPanel sourcePanel;
 
     std::vector<std::unique_ptr<ElectricalMaterial>> materials;
@@ -913,7 +913,7 @@ TEST(LayerTests, TextureLayer_Reframe_Smaller)
     // Create source layer
     //
 
-    Buffer2D<rgbaColor, struct ImageTag> sourceBuffer(8, 6);
+    Buffer2D<rgbaColor, ImageTag> sourceBuffer(8, 6);
 
     uint8_t iVal = 2;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -964,7 +964,7 @@ TEST(LayerTests, TextureLayer_Reframe_Larger)
     // Create source layer
     //
 
-    Buffer2D<rgbaColor, struct ImageTag> sourceBuffer(4, 4);
+    Buffer2D<rgbaColor, ImageTag> sourceBuffer(4, 4);
 
     uint8_t iVal = 2;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -1015,7 +1015,7 @@ TEST(LayerTests, TextureLayer_Reframe_Same)
     // Create source layer
     //
 
-    Buffer2D<rgbaColor, struct ImageTag> sourceBuffer(8, 8);
+    Buffer2D<rgbaColor, ImageTag> sourceBuffer(8, 8);
 
     uint8_t iVal = 2;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
@@ -1064,7 +1064,7 @@ TEST(LayerTests, ShipLayers_FlipH)
 
     ShipSpaceSize const shipSize(8, 6);
 
-    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceStructuralLayerBuffer(shipSize);
+    Buffer2D<StructuralElement, ShipSpaceTag> sourceStructuralLayerBuffer(shipSize);
     uint8_t iVal = 0;
     for (int y = 0; y < sourceStructuralLayerBuffer.Size.height; ++y)
     {
@@ -1077,7 +1077,7 @@ TEST(LayerTests, ShipLayers_FlipH)
         }
     }
 
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceElectricalLayerBuffer(shipSize);
+    Buffer2D<ElectricalElement, ShipSpaceTag> sourceElectricalLayerBuffer(shipSize);
     iVal = 0;
     for (int y = 0; y < sourceElectricalLayerBuffer.Size.height; ++y)
     {
@@ -1108,7 +1108,7 @@ TEST(LayerTests, ShipLayers_FlipH)
             rgbaColor(1, 2, 3, 4));
     }
 
-    Buffer2D<rgbaColor, struct ImageTag> sourceExteriorTextureLayerBuffer(80, 60);
+    Buffer2D<rgbaColor, ImageTag> sourceExteriorTextureLayerBuffer(80, 60);
 
     iVal = 0;
     for (int y = 0; y < sourceExteriorTextureLayerBuffer.Size.height; ++y)
@@ -1121,7 +1121,7 @@ TEST(LayerTests, ShipLayers_FlipH)
         }
     }
 
-    Buffer2D<rgbaColor, struct ImageTag> sourceInteriorTextureLayerBuffer(180, 160);
+    Buffer2D<rgbaColor, ImageTag> sourceInteriorTextureLayerBuffer(180, 160);
 
     iVal = 100;
     for (int y = 0; y < sourceInteriorTextureLayerBuffer.Size.height; ++y)
@@ -1236,7 +1236,7 @@ TEST(LayerTests, ShipLayers_Rotate)
 
     ShipSpaceSize const shipSize(8, 6);
 
-    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceStructuralLayerBuffer(shipSize);
+    Buffer2D<StructuralElement, ShipSpaceTag> sourceStructuralLayerBuffer(shipSize);
     uint8_t iVal = 0;
     for (int y = 0; y < sourceStructuralLayerBuffer.Size.height; ++y)
     {
@@ -1249,7 +1249,7 @@ TEST(LayerTests, ShipLayers_Rotate)
         }
     }
 
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceElectricalLayerBuffer(shipSize);
+    Buffer2D<ElectricalElement, ShipSpaceTag> sourceElectricalLayerBuffer(shipSize);
     iVal = 0;
     for (int y = 0; y < sourceElectricalLayerBuffer.Size.height; ++y)
     {
@@ -1280,7 +1280,7 @@ TEST(LayerTests, ShipLayers_Rotate)
             rgbaColor(1, 2, 3, 4));
     }
 
-    Buffer2D<rgbaColor, struct ImageTag> sourceExteriorTextureLayerBuffer(80, 60);
+    Buffer2D<rgbaColor, ImageTag> sourceExteriorTextureLayerBuffer(80, 60);
 
     iVal = 0;
     for (int y = 0; y < sourceExteriorTextureLayerBuffer.Size.height; ++y)
@@ -1293,7 +1293,7 @@ TEST(LayerTests, ShipLayers_Rotate)
         }
     }
 
-    Buffer2D<rgbaColor, struct ImageTag> sourceInteriorTextureLayerBuffer(180, 160);
+    Buffer2D<rgbaColor, ImageTag> sourceInteriorTextureLayerBuffer(180, 160);
 
     iVal = 100;
     for (int y = 0; y < sourceInteriorTextureLayerBuffer.Size.height; ++y)
@@ -1405,9 +1405,9 @@ TEST(LayerTests, ShipLayers_Clone_Full)
 
     ShipSpaceSize const shipSize(8, 6);
 
-    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceStructuralLayerBuffer(shipSize);
+    Buffer2D<StructuralElement, ShipSpaceTag> sourceStructuralLayerBuffer(shipSize);
 
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceElectricalLayerBuffer(shipSize);
+    Buffer2D<ElectricalElement, ShipSpaceTag> sourceElectricalLayerBuffer(shipSize);
 
     ElectricalPanel sourcePanel;
     sourcePanel.Add(
@@ -1430,9 +1430,9 @@ TEST(LayerTests, ShipLayers_Clone_Full)
             rgbaColor(1, 2, 3, 4));
     }
 
-    Buffer2D<rgbaColor, struct ImageTag> sourceExteriorTextureLayerBuffer(80, 60);
+    Buffer2D<rgbaColor, ImageTag> sourceExteriorTextureLayerBuffer(80, 60);
 
-    Buffer2D<rgbaColor, struct ImageTag> sourceInteriorTextureLayerBuffer(180, 160);
+    Buffer2D<rgbaColor, ImageTag> sourceInteriorTextureLayerBuffer(180, 160);
 
     ShipLayers layers(
         shipSize,

@@ -68,7 +68,7 @@ SelectAndTranslateTool_ShipSpace<TLayer>::SelectAndTranslateTool_ShipSpace(
     ToolType toolType,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
-    : SelectAndTranslateTool<TLayer, GenericShipSpaceEphemeralVisualizationRestorePayload, struct ShipSpaceTag>(
+    : SelectAndTranslateTool<TLayer, GenericShipSpaceEphemeralVisualizationRestorePayload, ShipSpaceTag>(
         toolType,
         controller,
         gameAssetManager)
