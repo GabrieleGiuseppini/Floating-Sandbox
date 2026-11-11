@@ -13,6 +13,7 @@
 
 #include <Game/GameAssetManager.h>
 
+#include <Core/Finalizer.h>
 #include <Core/GameTypes.h>
 
 #include <optional>
@@ -50,14 +51,11 @@ protected:
 
 private:
 
-    void InternalInitSelectionMoves();
-
     void InternalDoMoveForEphemeralVisualization(TSize totalMoveOffset);
 
     void InternalCommit();
 
     void DrawEphemeralVisualization();
-    void UndoEphemeralVisualization();
 
     void UpdateSelectionViz(TRect const & rect);
     void StopSelectionViz();
@@ -121,9 +119,6 @@ private:
             bool const IsAllLayers;
             bool const IsTransparent;
 
-            // When set we have an ephemeral visualization
-            std::optional<TEphemeralVisualizationRestorePayload> EphemeralVisualization;
-
             SelectionMovesType(
                 TCoords const & startSelectionPasteCornerCoords,
                 bool isAllLayers,
@@ -145,6 +140,9 @@ private:
     };
 
     std::optional<EngagementData> mEngagementData;
+
+    // When set we have an ephemeral visualization
+    std::optional<Finalizer> mEphemeralVisualization;
 
     // Whether SHIFT is currently down or not
     bool mIsShiftDown;

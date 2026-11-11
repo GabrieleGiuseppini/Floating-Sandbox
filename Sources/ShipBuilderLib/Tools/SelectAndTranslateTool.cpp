@@ -97,11 +97,16 @@ SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoordsTag
 template<LayerType TLayer, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
 SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoordsTag>::~SelectAndTranslateTool()
 {
+    // Undo eph viz, if any
+    mEphemeralVisualization.reset();
+
+    // Finalize, if we've been working
     if (mEngagementData && mEngagementData->SelectionMoves)
     {
         InternalCommit();
     }
 
+    // Remove selection viz
     if (mEngagementData && mEngagementData->CurrentPastedSelectionRect)
     {
         StopSelectionViz();
@@ -198,12 +203,6 @@ void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoor
                         mEngagementData->CurrentPastedSelectionRect->origin, // New current paste position
                         isAllLayers,
                         isTransparent);
-
-                    //
-                    // Push Undo, and initialize ingredients for move
-                    //
-
-                    InternalInitSelectionMoves();
                 }
 
                 assert(mEngagementData->SelectionMoves);
@@ -423,25 +422,6 @@ void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoor
 //////////////////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoordsTag>::InternalInitSelectionMoves()
-{
-    //
-    // Create Undo with all interested layers
-    //
-
-    // TODOHERE
-    LogMessage("InternalStartMove!");
-
-    //
-    // Prepare ingredients
-    //
-
-    assert(mEngagementData->SelectionMoves);
-
-    // TODOHERE: store stuff @ SelectionMoves
-}
-
-template<LayerType TLayer, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
 void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoordsTag>::InternalDoMoveForEphemeralVisualization(TSize totalMoveOffset)
 {
     assert(mEngagementData);
@@ -452,11 +432,7 @@ void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoor
     // Undo ephemeral viz, if any
     //
 
-    if (mEngagementData->SelectionMoves->EphemeralVisualization)
-    {
-        UndoEphemeralVisualization();
-        assert(!mEngagementData->SelectionMoves->EphemeralVisualization);
-    }
+    mEphemeralVisualization.reset();
 
     //
     // Determine SHIFT constraints, if needed
@@ -543,11 +519,8 @@ void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoor
     // Undo ephemeral viz, if any
     //
 
-    if (mEngagementData->SelectionMoves->EphemeralVisualization)
-    {
-        UndoEphemeralVisualization();
-        assert(!mEngagementData->SelectionMoves->EphemeralVisualization);
-    }
+    mEphemeralVisualization.reset();
+
 
     // TODOHERE
     LogMessage("InternalCommit");
@@ -556,12 +529,8 @@ void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoor
 template<LayerType TLayer, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
 void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoordsTag>::DrawEphemeralVisualization()
 {
-    // TODOHERE: just call into ModelController, and maintain moves::ephviz
-}
+    // Assumption: NOT in eph viz
 
-template<LayerType TLayer, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoordsTag>::UndoEphemeralVisualization()
-{
     // TODOHERE: just call into ModelController, and maintain moves::ephviz
 }
 
