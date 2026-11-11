@@ -1238,12 +1238,7 @@
 											+ Remember layer is in eph viz
 
 											= Do for:
-												= S
-													= Test
-														+ FIX: Finalizer: dctor is called on moved-out instances
-														- FIX: Geometry is broken
-														+ FIX: RestoreMultiRegionForEphViz: clear flag only at end
-															+ Option 1: Encapsulate eph viz state in new class, and use that in body
+												+ S
 												- E
 												- R
 												- ET

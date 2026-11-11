@@ -1036,9 +1036,9 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
         //
 
         // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-        // TODOHERE: broken
+        // TODOHERE: origin broken
         ShipSpaceRect const adjustedPasteSourceRegion(
-            ShipSpaceCoordinates(0, 0),
+            ShipSpaceCoordinates(0, 0) + (adjustedDestinationRegion->origin - destinationPos),
             adjustedDestinationRegion->size);
 
         if (CheckLayerSelectionApplicability(layerSelection, LayerType::Structural))
@@ -1275,48 +1275,60 @@ void ModelController::RestoreEphemeralVisualization(GenericShipSpaceEphemeralVis
 
 void ModelController::RestoreEphemeralVisualization(GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload && restorePayload)
 {
+    EphemeralVisualizationLayerState newEphVizState = mEphemeralVisualizationLayerState;
+
     restorePayload.ConsumeAll(
-        [this](auto && regionPayload)
+        [&](auto && regionPayload)
         {
             if (regionPayload.ExteriorTextureLayerBufferRegion)
             {
-                RestoreExteriorTextureLayerRegionEphemeralVisualization(
+                InternalRestoreExteriorTextureLayerRegionEphemeralVisualization(
                     *regionPayload.ExteriorTextureLayerBufferRegion,
                     ImageRect(regionPayload.ExteriorTextureLayerBufferRegion->Size), // Whole backup
-                    regionPayload.Origin);
+                    regionPayload.Origin,
+                    newEphVizState);
             }
 
             if (regionPayload.InteriorTextureLayerBufferRegion)
             {
-                RestoreInteriorTextureLayerRegionEphemeralVisualization(
+                InternalRestoreInteriorTextureLayerRegionEphemeralVisualization(
                     *regionPayload.InteriorTextureLayerBufferRegion,
                     ImageRect(regionPayload.InteriorTextureLayerBufferRegion->Size), // Whole backup
-                    ExteriorTextureSpaceToInteriorTextureSpace(regionPayload.Origin));
+                    ExteriorTextureSpaceToInteriorTextureSpace(regionPayload.Origin),
+                    newEphVizState);
             }
         });
+
+    mEphemeralVisualizationLayerState = newEphVizState;
 }
 
 void ModelController::RestoreEphemeralVisualization(GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload && restorePayload)
 {
+    EphemeralVisualizationLayerState newEphVizState = mEphemeralVisualizationLayerState;
+
     restorePayload.ConsumeAll(
-        [this](auto && regionPayload)
+        [&](auto && regionPayload)
         {
             if (regionPayload.ExteriorTextureLayerBufferRegion)
             {
-                RestoreExteriorTextureLayerRegionEphemeralVisualization(
+                InternalRestoreExteriorTextureLayerRegionEphemeralVisualization(
                     *regionPayload.ExteriorTextureLayerBufferRegion,
                     ImageRect(regionPayload.ExteriorTextureLayerBufferRegion->Size), // Whole backup
-                    InteriorTextureSpaceToExteriorTextureSpace(regionPayload.Origin));
+                    InteriorTextureSpaceToExteriorTextureSpace(regionPayload.Origin),
+                    newEphVizState);
             }
 
             if (regionPayload.InteriorTextureLayerBufferRegion)
             {
-                RestoreInteriorTextureLayerRegionEphemeralVisualization(
+                InternalRestoreInteriorTextureLayerRegionEphemeralVisualization(
                     *regionPayload.InteriorTextureLayerBufferRegion,
                     ImageRect(regionPayload.InteriorTextureLayerBufferRegion->Size), // Whole backup
-                    regionPayload.Origin);
+                    regionPayload.Origin,
+                    newEphVizState);
             }
         });
+
+    mEphemeralVisualizationLayerState = newEphVizState;
 }
 
 std::set<LayerType> ModelController::IntersectLayerPresence(ShipLayers const & otherSource) const
