@@ -2694,7 +2694,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         }
     }
 
-    // Structural/Electrical/Ropes select-and-translate
+    // Ship space select-and-translate
     {
         wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
         wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
@@ -2721,13 +2721,13 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 wxDefaultSize,
                 wxRB_GROUP);
 
-            thisLayerRadioButton->SetValue(!mWorkbenchState.GetSERSelectAndTranslateToolIsAllLayers());
+            thisLayerRadioButton->SetValue(!mWorkbenchState.GetShipSpaceSelectAndTranslateToolIsAllLayers());
 
             thisLayerRadioButton->Bind(
                 wxEVT_RADIOBUTTON,
                 [this, thisLayerRadioButton](wxCommandEvent &)
                 {
-                    mWorkbenchState.SetSERSelectAndTranslateToolIsAllLayers(!thisLayerRadioButton->GetValue());
+                    mWorkbenchState.SetShipSpaceSelectAndTranslateToolIsAllLayers(!thisLayerRadioButton->GetValue());
                 });
 
             dynamicPanelGridSizer->Add(
@@ -2745,13 +2745,13 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 wxDefaultPosition,
                 wxDefaultSize);
 
-            allLayersRadioButton->SetValue(mWorkbenchState.GetSERSelectAndTranslateToolIsAllLayers());
+            allLayersRadioButton->SetValue(mWorkbenchState.GetShipSpaceSelectAndTranslateToolIsAllLayers());
 
             allLayersRadioButton->Bind(
                 wxEVT_RADIOBUTTON,
                 [this, allLayersRadioButton](wxCommandEvent &)
                 {
-                    mWorkbenchState.SetSERSelectAndTranslateToolIsAllLayers(allLayersRadioButton->GetValue());
+                    mWorkbenchState.SetShipSpaceSelectAndTranslateToolIsAllLayers(allLayersRadioButton->GetValue());
                 });
 
             dynamicPanelGridSizer->Add(
@@ -2779,13 +2779,13 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
             chkBox->SetToolTip(_("When enabled, empty regions are pasted as transparent; otherwise, empty regions are pasted as opaque and will erase anything on the background."));
 
-            chkBox->SetValue(mWorkbenchState.GetSERSelectAndTranslateToolIsTransparent());
+            chkBox->SetValue(mWorkbenchState.GetShipSpaceSelectAndTranslateToolIsTransparent());
 
             chkBox->Bind(
                 wxEVT_CHECKBOX,
                 [this](wxCommandEvent & event)
                 {
-                    mWorkbenchState.SetSERSelectAndTranslateToolIsTransparent(event.IsChecked());
+                    mWorkbenchState.SetShipSpaceSelectAndTranslateToolIsTransparent(event.IsChecked());
                 });
 
             dynamicPanelGridSizer->Add(
@@ -2812,7 +2812,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         }
     }
 
-    // Exterior/Interior select-and-translate
+    // Texture space select-and-translate
     {
         // TODOHERE
     }

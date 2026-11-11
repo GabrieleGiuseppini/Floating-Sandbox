@@ -344,44 +344,44 @@ public:
         mPasteIsTransparent = value;
     }
 
-    bool GetSERSelectAndTranslateToolIsAllLayers() const
+    bool GetShipSpaceSelectAndTranslateToolIsAllLayers() const
     {
-        return mSERSelectAndTranslateToolIsAllLayers;
+        return mShipSpaceSelectAndTranslateToolIsAllLayers;
     }
 
-    void SetSERSelectAndTranslateToolIsAllLayers(bool value)
+    void SetShipSpaceSelectAndTranslateToolIsAllLayers(bool value)
     {
-        mSERSelectAndTranslateToolIsAllLayers = value;
+        mShipSpaceSelectAndTranslateToolIsAllLayers = value;
     }
 
-    bool GetEISelectAndTranslateToolIsAllLayers() const
+    bool GetTextureSpaceSelectAndTranslateToolIsAllLayers() const
     {
-        return mEISelectAndTranslateToolIsAllLayers;
+        return mTextureSpaceSelectAndTranslateToolIsAllLayers;
     }
 
-    void SetEISelectAndTranslateToolIsAllLayers(bool value)
+    void SetTextureSpaceSelectAndTranslateToolIsAllLayers(bool value)
     {
-        mEISelectAndTranslateToolIsAllLayers = value;
+        mTextureSpaceSelectAndTranslateToolIsAllLayers = value;
     }
 
-    bool GetSERSelectAndTranslateToolIsTransparent() const
+    bool GetShipSpaceSelectAndTranslateToolIsTransparent() const
     {
-        return mSERSelectAndTranslateToolIsTransparent;
+        return mShipSpaceSelectAndTranslateToolIsTransparent;
     }
 
-    void SetSERSelectAndTranslateToolIsTransparent(bool value)
+    void SetShipSpaceSelectAndTranslateToolIsTransparent(bool value)
     {
-        mSERSelectAndTranslateToolIsTransparent = value;
+        mShipSpaceSelectAndTranslateToolIsTransparent = value;
     }
 
-    bool GetEISelectAndTranslateToolIsTransparent() const
+    bool GetTextureSpaceSelectAndTranslateToolIsTransparent() const
     {
-        return mEISelectAndTranslateToolIsTransparent;
+        return mTextureSpaceSelectAndTranslateToolIsTransparent;
     }
 
-    void SetEISelectAndTranslateToolIsTransparent(bool value)
+    void SetTextureSpaceSelectAndTranslateToolIsTransparent(bool value)
     {
-        mEISelectAndTranslateToolIsTransparent = value;
+        mTextureSpaceSelectAndTranslateToolIsTransparent = value;
     }
 
     //
@@ -591,10 +591,10 @@ private:
     std::uint32_t mTextureEraserToolSize;
     bool mSelectionIsAllLayers;
     bool mPasteIsTransparent;
-    bool mSERSelectAndTranslateToolIsAllLayers;
-    bool mEISelectAndTranslateToolIsAllLayers;
-    bool mSERSelectAndTranslateToolIsTransparent;
-    bool mEISelectAndTranslateToolIsTransparent;
+    bool mShipSpaceSelectAndTranslateToolIsAllLayers;
+    bool mTextureSpaceSelectAndTranslateToolIsAllLayers;
+    bool mShipSpaceSelectAndTranslateToolIsTransparent;
+    bool mTextureSpaceSelectAndTranslateToolIsTransparent;
 
     // Visualizations
     rgbColor mCanvasBackgroundColor;

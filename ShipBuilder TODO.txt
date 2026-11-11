@@ -1279,6 +1279,8 @@
 						- TODOHERE: ModelController op: erase (old) + blit (covering, thus eventually erasing and changing panel)
 							- Trying to save ElectricalPanel changes, other than those due to eventually erasing with blit
 						
+		- See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
+			- Also optimize - we do some things multiple times, once per region
 
 		+ Icon
 		= MainFrame:

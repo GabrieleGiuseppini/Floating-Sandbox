@@ -181,16 +181,16 @@ void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoor
                         case LayerType::Electrical:
                         case LayerType::Ropes:
                         {
-                            isAllLayers = mController.GetWorkbenchState().GetSERSelectAndTranslateToolIsAllLayers();
-                            isTransparent = mController.GetWorkbenchState().GetSERSelectAndTranslateToolIsTransparent();
+                            isAllLayers = mController.GetWorkbenchState().GetShipSpaceSelectAndTranslateToolIsAllLayers();
+                            isTransparent = mController.GetWorkbenchState().GetShipSpaceSelectAndTranslateToolIsTransparent();
                             break;
                         }
 
                         case LayerType::ExteriorTexture:
                         case LayerType::InteriorTexture:
                         {
-                            isAllLayers = mController.GetWorkbenchState().GetEISelectAndTranslateToolIsAllLayers();
-                            isTransparent = mController.GetWorkbenchState().GetEISelectAndTranslateToolIsTransparent();
+                            isAllLayers = mController.GetWorkbenchState().GetTextureSpaceSelectAndTranslateToolIsAllLayers();
+                            isTransparent = mController.GetWorkbenchState().GetTextureSpaceSelectAndTranslateToolIsTransparent();
                             break;
                         }
                     }
