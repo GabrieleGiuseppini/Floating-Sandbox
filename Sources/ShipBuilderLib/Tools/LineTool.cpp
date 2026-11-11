@@ -385,7 +385,6 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
 
                 mController.GetView().RemoveDashedLineOverlay();
             });
-
     }
     else
     {

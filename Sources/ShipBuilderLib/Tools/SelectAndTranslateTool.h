@@ -57,6 +57,11 @@ private:
     void InternalCommit();
 
     void DrawEphemeralVisualization();
+    virtual TEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
+        TRect const & sourceRegion,
+        TCoords const & targetPos,
+        std::set<LayerType> const & layerSelection,
+        bool isTransparent) = 0;
 
     void UpdateSelectionViz(TRect const & rect);
     void StopSelectionViz();
@@ -173,6 +178,12 @@ protected:
         Controller & controller,
         GameAssetManager const & gameAssetManager);
 
+    GenericShipSpaceEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
+        ShipSpaceRect const & sourceRegion,
+        ShipSpaceCoordinates const & targetPos,
+        std::set<LayerType> const & layerSelection,
+        bool isTransparent) override;
+
     std::set<LayerType> CalculateLayerSelection(bool isAllLayers) const override;
 
     ShipSpaceSize GetSpaceSize() const override;
@@ -215,6 +226,12 @@ public:
 
 protected:
 
+    GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
+        ImageRect const & sourceRegion,
+        ImageCoordinates const & targetPos,
+        std::set<LayerType> const & layerSelection,
+        bool isTransparent) override;
+
     std::set<LayerType> CalculateLayerSelection(bool isAllLayers) const override;
 
     ImageSize GetSpaceSize() const override;
@@ -229,6 +246,12 @@ public:
         GameAssetManager const & gameAssetManager);
 
 protected:
+
+    GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
+        ImageRect const & sourceRegion,
+        ImageCoordinates const & targetPos,
+        std::set<LayerType> const & layerSelection,
+        bool isTransparent) override;
 
     std::set<LayerType> CalculateLayerSelection(bool isAllLayers) const override;
 

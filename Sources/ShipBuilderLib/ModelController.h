@@ -125,11 +125,11 @@ public:
 #ifdef _DEBUG
     bool IsInEphemeralVisualization() const
     {
-        return mIsStructuralLayerInEphemeralVisualization
-            || mIsElectricalLayerInEphemeralVisualization
-            || mIsRopesLayerInEphemeralVisualization
-            || mIsExteriorTextureLayerInEphemeralVisualization
-            || mIsInteriorTextureLayerInEphemeralVisualization;
+        return mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization
+            || mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization
+            || mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization
+            || mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization
+            || mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization;
     }
 #endif
 
@@ -190,31 +190,31 @@ public:
         {
             case LayerType::Electrical:
             {
-                assert(!mIsElectricalLayerInEphemeralVisualization);
+                assert(!mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization);
                 break;
             }
 
             case LayerType::Ropes:
             {
-                assert(!mIsRopesLayerInEphemeralVisualization);
+                assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
                 break;
             }
 
             case LayerType::Structural:
             {
-                assert(!mIsStructuralLayerInEphemeralVisualization);
+                assert(!mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization);
                 break;
             }
 
             case LayerType::ExteriorTexture:
             {
-                assert(!mIsExteriorTextureLayerInEphemeralVisualization);
+                assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
                 break;
             }
 
             case LayerType::InteriorTexture:
             {
-                assert(!mIsInteriorTextureLayerInEphemeralVisualization);
+                assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
                 break;
             }
 
@@ -245,10 +245,19 @@ public:
 
     GenericShipSpaceEphemeralVisualizationRestorePayload ShipSpaceRegionTransferForEphemeralVisualization(
         ShipSpaceRect const & sourceRegion, // In current model
-        ShipSpaceCoordinates const & targetPos,
+        ShipSpaceCoordinates const & destinationPos,
         std::set<LayerType> const & layerSelection,
         bool isTransparent);
-    // TODO: other two spaces
+    GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ExteriorTextureSpaceRegionTransferForEphemeralVisualization(
+        ImageRect const & sourceRegion, // In current model
+        ImageCoordinates const & destinationPos,
+        std::set<LayerType> const & layerSelection,
+        bool isTransparent);
+    GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload InteriorTextureSpaceRegionTransferForEphemeralVisualization(
+        ImageRect const & sourceRegion, // In current model
+        ImageCoordinates const & destinationPos,
+        std::set<LayerType> const & layerSelection,
+        bool isTransparent);
 
     void Restore(GenericShipSpaceUndoPayload && undoPayload);
     void Restore(GenericExteriorTextureSpaceUndoPayload && undoPayload);
@@ -747,6 +756,41 @@ private:
         return false;
     }
 
+    struct EphemeralVisualizationLayerState;
+
+    void InternalRestoreStructuralLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
+        ShipSpaceRect const & backupBufferRegion,
+        ShipSpaceCoordinates const & targetOrigin,
+        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
+
+    void InternalRestoreElectricalLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
+        ShipSpaceRect const & backupBufferRegion,
+        ShipSpaceCoordinates const & targetOrigin,
+        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
+
+    void InternalRestoreRopesLayerEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer,
+        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
+
+    void InternalRestoreExteriorTextureLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & backupBuffer,
+        ImageRect const & backupBufferRegion,
+        ImageCoordinates const & targetOrigin,
+        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
+
+    void InternalRestoreInteriorTextureLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & backupBuffer,
+        ImageRect const & backupBufferRegion,
+        ImageCoordinates const & targetOrigin,
+        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
+
+    void DoStructuralRegionFill(
+        ShipSpaceRect const & region,
+        StructuralMaterial const * material);
+    // TODOHERE: DoXXXRegionFill x 5
+
     void DoStructuralRegionBufferPaste(
         typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceBuffer,
         ShipSpaceRect const & sourceRegion,
@@ -857,11 +901,24 @@ private:
     // Debugging
     //
 
-    bool mIsStructuralLayerInEphemeralVisualization;
-    bool mIsElectricalLayerInEphemeralVisualization;
-    bool mIsRopesLayerInEphemeralVisualization;
-    bool mIsExteriorTextureLayerInEphemeralVisualization;
-    bool mIsInteriorTextureLayerInEphemeralVisualization;
+    struct EphemeralVisualizationLayerState
+    {
+        bool IsStructuralLayerInEphemeralVisualization;
+        bool IsElectricalLayerInEphemeralVisualization;
+        bool IsRopesLayerInEphemeralVisualization;
+        bool IsExteriorTextureLayerInEphemeralVisualization;
+        bool IsInteriorTextureLayerInEphemeralVisualization;
+
+        EphemeralVisualizationLayerState()
+            : IsStructuralLayerInEphemeralVisualization(false)
+            , IsElectricalLayerInEphemeralVisualization(false)
+            , IsRopesLayerInEphemeralVisualization(false)
+            , IsExteriorTextureLayerInEphemeralVisualization(false)
+            , IsInteriorTextureLayerInEphemeralVisualization(false)
+        { }
+    };
+
+    EphemeralVisualizationLayerState mEphemeralVisualizationLayerState;
 };
 
 }

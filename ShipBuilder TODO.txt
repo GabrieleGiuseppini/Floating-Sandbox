@@ -1203,17 +1203,17 @@
 						+ Change coords
 						= Draw eph viz:
 							- ModelController::ShipSpaceRegionTransferForEphViz -> GenericEphemeralVisualizationRestorePayload
-								- This one called by base, as one of three ModelController overloads (SER, Ext, Int)
+								+ This one called by base, as one of three ModelController overloads (SER, Ext, Int)
 								+ Args:
 									+ SourceRegion
 									+ TargetPos
 									+ set<LayerType>
 										+ Replaces bool in SelectionMoves -- calcd at SelectionMoves creation time
 									+ IsTransparent
-								- Impl: (trace PasteForEphemeralVisualization)
-									- Calc affected source and target rect in ShipSpace
-									- If region ! empty:
-										+ This @ MakeGenericShipSpaceEphemeralVisualizationRestorePayload
+								= Impl: (trace PasteForEphemeralVisualization)
+									+ Calc affected source and target rect in ShipSpace
+									= If region ! empty:
+										+ Call new MakeGenericShipSpaceEphemeralVisualizationRestorePayload
 											+ Returns ShipSpaceRegionPayload
 												+ make public
 											+ Takes set<LayerType> instead of bools
@@ -1223,21 +1223,38 @@
 												+ Take backup for payload
 													+ All applicable layers
 													+ Repeat math for texture layers
-										+ Test: Paste w/different layers combos
-										+ Do also other two spaces
-										- Call it
+											+ Test: Paste w/different layers combos
+											+ Do also other two spaces
+											+ Call it
 
-										- For each selected layer:
-											- Erase
-											- Paste
-											- Remember layer is in eph viz
-									- Calc affected source and target rect in ExternalSpace
-									- ...
-									- Return payload
+										= For each selected layer:
+											+ Erase
+												+ DoStructuralRegionFill
+													+ Factor out code from StructuralRegionFillForEphemeralVisualization
+													+ Takes care of viz dirty region
+											+ Paste
+												+ DoStructuralRegionBufferPaste
+													+ Takes care of viz dirty region
+											+ Remember layer is in eph viz
+
+											= Do for:
+												= S
+													= Test
+														+ FIX: Finalizer: dctor is called on moved-out instances
+														- FIX: Geometry is broken
+														+ FIX: RestoreMultiRegionForEphViz: clear flag only at end
+															+ Option 1: Encapsulate eph viz state in new class, and use that in body
+												- E
+												- R
+												- ET
+												- IT
+									+ Return payload
 
 									- Rewrite PastForEphViz as the above
-							- Store eph viz restore payload in finalizer, remembering we are in eph viz
-								- ModelController::RestoreEphemeralVisualization (one of 3)
+										- At this moment, new assumption: if ship space rect ! empty, texture space rects are also ! empty
+							- Do other two texture ones 
+							+ Store eph viz restore payload in finalizer, remembering we are in eph viz
+								+ ModelController::RestoreEphemeralVisualization (one of 3)
 						+ mController.LayerChangeEpilog()
 					= @ new selection, and @ ~dctor(): commit
 						+ If have eph viz:

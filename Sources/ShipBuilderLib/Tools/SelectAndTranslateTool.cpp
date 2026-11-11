@@ -97,10 +97,8 @@ SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoordsTag
 template<LayerType TLayer, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
 SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoordsTag>::~SelectAndTranslateTool()
 {
-    // Undo eph viz, if any
-    mEphemeralVisualization.reset();
-
     // Finalize, if we've been working
+    // - Will undo eph viz if any
     if (mEngagementData && mEngagementData->SelectionMoves)
     {
         InternalCommit();
@@ -524,14 +522,35 @@ void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoor
 
     // TODOHERE
     LogMessage("InternalCommit");
+
+
+    mController.LayerChangeEpilog(mEngagementData->SelectionMoves->LayerSelection);
 }
 
 template<LayerType TLayer, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
 void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoordsTag>::DrawEphemeralVisualization()
 {
     // Assumption: NOT in eph viz
+    assert(!mEphemeralVisualization);
 
-    // TODOHERE: just call into ModelController, and maintain moves::ephviz
+    assert(mEngagementData);
+    assert(mEngagementData->OriginalSelectionRect);
+    assert(mEngagementData->SelectionMoves);
+    assert(mEngagementData->SelectionMoves->MovingState);
+
+    auto payload = std::make_shared<TEphemeralVisualizationRestorePayload>(
+        InternalDrawEphemeralVisualization(
+            *mEngagementData->OriginalSelectionRect,
+            mEngagementData->SelectionMoves->MovingState->CurrentSelectionPasteCornerCoords,
+            mEngagementData->SelectionMoves->LayerSelection,
+            mEngagementData->SelectionMoves->IsTransparent));
+
+    // Schedule cleanup
+    mEphemeralVisualization.emplace(
+        [this, payload = std::move(payload)]() mutable
+        {
+            mController.GetModelController().RestoreEphemeralVisualization(std::move(*payload));
+        });
 }
 
 template<LayerType TLayer, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
@@ -552,7 +571,7 @@ void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoor
     else
     {
         static_assert(TLayer == LayerType::InteriorTexture);
-        // TODO: not supported yet
+        // TODO: interior layer not supported yet
         //mController.GetView().UploadDashedRectangleOverlay_Interior(rect.MinMin(), rect.MaxMax());
     }
 
@@ -668,6 +687,20 @@ typename SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, T
 }
 
 template<LayerType TLayer>
+GenericShipSpaceEphemeralVisualizationRestorePayload SelectAndTranslateTool_ShipSpace<TLayer>::InternalDrawEphemeralVisualization(
+    ShipSpaceRect const & sourceRegion,
+    ShipSpaceCoordinates const & targetPos,
+    std::set<LayerType> const & layerSelection,
+    bool isTransparent)
+{
+    return this->mController.GetModelController().ShipSpaceRegionTransferForEphemeralVisualization(
+        sourceRegion,
+        targetPos,
+        layerSelection,
+        isTransparent);
+}
+
+template<LayerType TLayer>
 std::set<LayerType> SelectAndTranslateTool_ShipSpace<TLayer>::CalculateLayerSelection(bool isAllLayers) const
 {
     return isAllLayers ?
@@ -679,6 +712,19 @@ template<LayerType TLayer>
 ShipSpaceSize SelectAndTranslateTool_ShipSpace<TLayer>::GetSpaceSize() const
 {
     return this->mController.GetModelController().GetShipSize();
+}
+
+GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ExteriorSelectAndTranslateTool::InternalDrawEphemeralVisualization(
+    ImageRect const & sourceRegion,
+    ImageCoordinates const & targetPos,
+    std::set<LayerType> const & layerSelection,
+    bool isTransparent)
+{
+    return this->mController.GetModelController().ExteriorTextureSpaceRegionTransferForEphemeralVisualization(
+        sourceRegion,
+        targetPos,
+        layerSelection,
+        isTransparent);
 }
 
 std::set<LayerType> ExteriorSelectAndTranslateTool::CalculateLayerSelection(bool isAllLayers) const
@@ -695,6 +741,19 @@ std::set<LayerType> ExteriorSelectAndTranslateTool::CalculateLayerSelection(bool
 ImageSize ExteriorSelectAndTranslateTool::GetSpaceSize() const
 {
     return mController.GetModelController().GetExteriorTextureSize();
+}
+
+GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload InteriorSelectAndTranslateTool::InternalDrawEphemeralVisualization(
+    ImageRect const & sourceRegion,
+    ImageCoordinates const & targetPos,
+    std::set<LayerType> const & layerSelection,
+    bool isTransparent)
+{
+    return this->mController.GetModelController().InteriorTextureSpaceRegionTransferForEphemeralVisualization(
+        sourceRegion,
+        targetPos,
+        layerSelection,
+        isTransparent);
 }
 
 std::set<LayerType> InteriorSelectAndTranslateTool::CalculateLayerSelection(bool isAllLayers) const
