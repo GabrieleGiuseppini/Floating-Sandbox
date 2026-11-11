@@ -6,7 +6,6 @@
 #include "ModelController.h"
 
 #include <algorithm>
-#include <cassert>
 #include <queue>
 
 namespace ShipBuilder {
@@ -461,7 +460,7 @@ void ModelController::ResizeShip(
 
 ShipLayers ModelController::Copy(
     ShipSpaceRect const & region,
-    std::optional<LayerType> layerSelection) const
+    std::set<LayerType> layerSelection) const
 {
     // Structural
     std::unique_ptr<StructuralLayerData> structuralLayerCopy;
@@ -509,7 +508,7 @@ ShipLayers ModelController::Copy(
 
 GenericShipSpaceUndoPayload ModelController::EraseRegion(
     ShipSpaceRect const & region,
-    std::optional<LayerType> const & layerSelection)
+    std::set<LayerType> const & layerSelection)
 {
     //
     // Prepare undo
@@ -801,112 +800,6 @@ GenericShipSpaceUndoPayload ModelController::Paste(
         std::move(interiorTextureLayerRegionBackup));
 }
 
-void ModelController::Restore(GenericShipSpaceUndoPayload && undoPayload)
-{
-    // Note: no layer presence nor size changes
-
-    undoPayload.ConsumeAll(
-        [this](auto && regionPayload)
-        {
-            for (LayerType const affectedLayerType : regionPayload.GetAffectedLayers())
-            {
-                switch (affectedLayerType)
-                {
-                    case LayerType::Structural:
-                    {
-                        RestoreStructuralLayerRegionBackup(
-                            std::move(*regionPayload.StructuralLayerRegionBackup),
-                            regionPayload.Origin);
-
-                        break;
-                    }
-
-                    case LayerType::Electrical:
-                    {
-                        RestoreElectricalLayerRegionBackup(
-                            std::move(*regionPayload.ElectricalLayerRegionBackup),
-                            regionPayload.Origin);
-
-                        break;
-                    }
-
-                    case LayerType::Ropes:
-                    {
-                        RestoreRopesLayerRegionBackup(
-                            std::move(*regionPayload.RopesLayerRegionBackup),
-                            regionPayload.Origin);
-
-                        break;
-                    }
-
-                    case LayerType::ExteriorTexture:
-                    {
-                        RestoreExteriorTextureLayerRegionBackup(
-                            std::move(*regionPayload.ExteriorTextureLayerRegionBackup),
-                            ShipSpaceToExteriorTextureSpace(regionPayload.Origin));
-
-                        break;
-                    }
-
-                    case LayerType::InteriorTexture:
-                    {
-                        RestoreInteriorTextureLayerRegionBackup(
-                            std::move(*regionPayload.InteriorTextureLayerRegionBackup),
-                            ShipSpaceToInteriorTextureSpace(regionPayload.Origin));
-
-                        break;
-                    }
-                }
-            }
-        });
-}
-
-void ModelController::Restore(GenericExteriorTextureSpaceUndoPayload && undoPayload)
-{
-    // Note: no layer presence nor size changes
-
-    undoPayload.ConsumeAll(
-        [this](auto && regionPayload)
-        {
-            if (regionPayload.ExteriorTextureLayerRegionBackup)
-            {
-                RestoreExteriorTextureLayerRegionBackup(
-                    std::move(*regionPayload.ExteriorTextureLayerRegionBackup),
-                    regionPayload.Origin);
-            }
-
-            if (regionPayload.InteriorTextureLayerRegionBackup)
-            {
-                RestoreInteriorTextureLayerRegionBackup(
-                    std::move(*regionPayload.InteriorTextureLayerRegionBackup),
-                    ExteriorTextureSpaceToInteriorTextureSpace(regionPayload.Origin));
-            }
-        });
-}
-
-void ModelController::Restore(GenericInteriorTextureSpaceUndoPayload && undoPayload)
-{
-    // Note: no layer presence nor size changes
-
-    undoPayload.ConsumeAll(
-        [this](auto && regionPayload)
-        {
-            if (regionPayload.ExteriorTextureLayerRegionBackup)
-            {
-                RestoreExteriorTextureLayerRegionBackup(
-                    std::move(*regionPayload.ExteriorTextureLayerRegionBackup),
-                    InteriorTextureSpaceToExteriorTextureSpace(regionPayload.Origin));
-            }
-
-            if (regionPayload.InteriorTextureLayerRegionBackup)
-            {
-                RestoreInteriorTextureLayerRegionBackup(
-                    std::move(*regionPayload.InteriorTextureLayerRegionBackup),
-                    regionPayload.Origin);
-            }
-        });
-}
-
 GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVisualization(
     ShipLayers const & sourcePayload,
     ShipSpaceCoordinates const & pasteOrigin,
@@ -1110,6 +1003,123 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
         std::move(interiorTextureLayerUndoBufferRegion));
 }
 
+// TODO: committed transfer here, X 3
+
+GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceRegionTransferForEphemeralVisualization(
+    ShipSpaceRect const & sourceRegion, // In current model
+    ShipSpaceCoordinates const & targetPos,
+    std::set<LayerType> const & layerSelection,
+    bool isTransparent)
+{
+    // TODOHERE
+}
+
+void ModelController::Restore(GenericShipSpaceUndoPayload && undoPayload)
+{
+    // Note: no layer presence nor size changes
+
+    undoPayload.ConsumeAll(
+        [this](auto && regionPayload)
+        {
+            for (LayerType const affectedLayerType : regionPayload.GetAffectedLayers())
+            {
+                switch (affectedLayerType)
+                {
+                    case LayerType::Structural:
+                    {
+                        RestoreStructuralLayerRegionBackup(
+                            std::move(*regionPayload.StructuralLayerRegionBackup),
+                            regionPayload.Origin);
+
+                        break;
+                    }
+
+                    case LayerType::Electrical:
+                    {
+                        RestoreElectricalLayerRegionBackup(
+                            std::move(*regionPayload.ElectricalLayerRegionBackup),
+                            regionPayload.Origin);
+
+                        break;
+                    }
+
+                    case LayerType::Ropes:
+                    {
+                        RestoreRopesLayerRegionBackup(
+                            std::move(*regionPayload.RopesLayerRegionBackup),
+                            regionPayload.Origin);
+
+                        break;
+                    }
+
+                    case LayerType::ExteriorTexture:
+                    {
+                        RestoreExteriorTextureLayerRegionBackup(
+                            std::move(*regionPayload.ExteriorTextureLayerRegionBackup),
+                            ShipSpaceToExteriorTextureSpace(regionPayload.Origin));
+
+                        break;
+                    }
+
+                    case LayerType::InteriorTexture:
+                    {
+                        RestoreInteriorTextureLayerRegionBackup(
+                            std::move(*regionPayload.InteriorTextureLayerRegionBackup),
+                            ShipSpaceToInteriorTextureSpace(regionPayload.Origin));
+
+                        break;
+                    }
+                }
+            }
+        });
+}
+
+void ModelController::Restore(GenericExteriorTextureSpaceUndoPayload && undoPayload)
+{
+    // Note: no layer presence nor size changes
+
+    undoPayload.ConsumeAll(
+        [this](auto && regionPayload)
+        {
+            if (regionPayload.ExteriorTextureLayerRegionBackup)
+            {
+                RestoreExteriorTextureLayerRegionBackup(
+                    std::move(*regionPayload.ExteriorTextureLayerRegionBackup),
+                    regionPayload.Origin);
+            }
+
+            if (regionPayload.InteriorTextureLayerRegionBackup)
+            {
+                RestoreInteriorTextureLayerRegionBackup(
+                    std::move(*regionPayload.InteriorTextureLayerRegionBackup),
+                    ExteriorTextureSpaceToInteriorTextureSpace(regionPayload.Origin));
+            }
+        });
+}
+
+void ModelController::Restore(GenericInteriorTextureSpaceUndoPayload && undoPayload)
+{
+    // Note: no layer presence nor size changes
+
+    undoPayload.ConsumeAll(
+        [this](auto && regionPayload)
+        {
+            if (regionPayload.ExteriorTextureLayerRegionBackup)
+            {
+                RestoreExteriorTextureLayerRegionBackup(
+                    std::move(*regionPayload.ExteriorTextureLayerRegionBackup),
+                    InteriorTextureSpaceToExteriorTextureSpace(regionPayload.Origin));
+            }
+
+            if (regionPayload.InteriorTextureLayerRegionBackup)
+            {
+                RestoreInteriorTextureLayerRegionBackup(
+                    std::move(*regionPayload.InteriorTextureLayerRegionBackup),
+                    regionPayload.Origin);
+            }
+        });
+}
+
 void ModelController::RestoreEphemeralVisualization(GenericShipSpaceEphemeralVisualizationRestorePayload && restorePayload)
 {
     restorePayload.ConsumeAll(
@@ -1216,68 +1226,36 @@ void ModelController::RestoreEphemeralVisualization(GenericInteriorTextureSpaceE
         });
 }
 
-std::vector<LayerType> ModelController::CalculateAffectedLayers(ShipLayers const & otherSource) const
+std::set<LayerType> ModelController::IntersectLayerPresence(ShipLayers const & otherSource) const
 {
-    std::vector<LayerType> affectedLayers;
+    std::set<LayerType> layers;
 
     if (otherSource.StructuralLayer && mModel.HasLayer(LayerType::Structural))
     {
-        affectedLayers.emplace_back(LayerType::Structural);
+        layers.emplace(LayerType::Structural);
     }
 
     if (otherSource.ElectricalLayer && mModel.HasLayer(LayerType::Electrical))
     {
-        affectedLayers.emplace_back(LayerType::Electrical);
+        layers.emplace(LayerType::Electrical);
     }
 
     if (otherSource.RopesLayer && mModel.HasLayer(LayerType::Ropes))
     {
-        affectedLayers.emplace_back(LayerType::Ropes);
+        layers.emplace(LayerType::Ropes);
     }
 
     if (otherSource.ExteriorTextureLayer && mModel.HasLayer(LayerType::ExteriorTexture))
     {
-        affectedLayers.emplace_back(LayerType::ExteriorTexture);
+        layers.emplace(LayerType::ExteriorTexture);
     }
 
     if (otherSource.InteriorTextureLayer && mModel.HasLayer(LayerType::InteriorTexture))
     {
-        affectedLayers.emplace_back(LayerType::InteriorTexture);
+        layers.emplace(LayerType::InteriorTexture);
     }
 
-    return affectedLayers;
-}
-
-std::vector<LayerType> ModelController::CalculateAffectedLayers(std::optional<LayerType> const & layerSelection) const
-{
-    std::vector<LayerType> affectedLayers;
-
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Structural))
-    {
-        affectedLayers.emplace_back(LayerType::Structural);
-    }
-
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Electrical))
-    {
-        affectedLayers.emplace_back(LayerType::Electrical);
-    }
-
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Ropes))
-    {
-        affectedLayers.emplace_back(LayerType::Ropes);
-    }
-
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::ExteriorTexture))
-    {
-        affectedLayers.emplace_back(LayerType::ExteriorTexture);
-    }
-
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::InteriorTexture))
-    {
-        affectedLayers.emplace_back(LayerType::InteriorTexture);
-    }
-
-    return affectedLayers;
+    return layers;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4165,13 +4143,9 @@ GenericShipSpaceUndoPayload ModelController::MakeGenericShipSpaceUndoPayload(
         std::move(interiorTextureLayerRegionBackup));
 }
 
-GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::MakeGenericShipSpaceEphemeralVisualizationRestorePayload(
+GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type ModelController::MakeGenericShipSpaceEphemeralVisualizationRestorePayload(
     ShipSpaceRect const & region,
-    bool doStructuralLayer,
-    bool doElectricalLayer,
-    bool doRopesLayer,
-    bool doExteriorTextureLayer,
-    bool doInteriorTextureLayer) const
+    std::set<LayerType> const & layerSelection) const
 {
     // The requested region is entirely within the ship
     assert(region.IsContainedInRect(GetWholeShipRect()));
@@ -4182,22 +4156,22 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::MakeGeneri
     std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> exteriorTextureLayerBufferRegion;
     std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> interiorTextureLayerBufferRegion;
 
-    if (doStructuralLayer)
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Structural))
     {
         structuralLayerBufferRegion = mModel.GetStructuralLayer().Buffer.CloneRegion(region);
     }
 
-    if (doElectricalLayer)
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Electrical))
     {
         electricalLayerBufferRegion = mModel.GetElectricalLayer().Buffer.CloneRegion(region);
     }
 
-    if (doRopesLayer)
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Ropes))
     {
         ropesLayerBuffer = mModel.GetRopesLayer().Buffer.Clone();
     }
 
-    if (doExteriorTextureLayer)
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::ExteriorTexture))
     {
         // The requested region is entirely within the ship
         assert(ShipSpaceToExteriorTextureSpace(region).IsContainedInRect(GetWholeExteriorTextureRect()));
@@ -4205,7 +4179,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::MakeGeneri
         exteriorTextureLayerBufferRegion = mModel.GetExteriorTextureLayer().Buffer.CloneRegion(ShipSpaceToExteriorTextureSpace(region));
     }
 
-    if (doInteriorTextureLayer)
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::InteriorTexture))
     {
         // The requested region is entirely within the ship
         assert(ShipSpaceToInteriorTextureSpace(region).IsContainedInRect(GetWholeInteriorTextureRect()));
@@ -4213,11 +4187,69 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::MakeGeneri
         interiorTextureLayerBufferRegion = mModel.GetInteriorTextureLayer().Buffer.CloneRegion(ShipSpaceToInteriorTextureSpace(region));
     }
 
-    return GenericShipSpaceEphemeralVisualizationRestorePayload::Make(
+    return GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type(
         region.origin,
         std::move(structuralLayerBufferRegion),
         std::move(electricalLayerBufferRegion),
         std::move(ropesLayerBuffer),
+        std::move(exteriorTextureLayerBufferRegion),
+        std::move(interiorTextureLayerBufferRegion));
+}
+
+GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type ModelController::MakeGenericExteriorTextureSpaceEphemeralVisualizationRestorePayload(
+    ImageRect const & region,
+    std::set<LayerType> const & layerSelection) const
+{
+    // The requested region is entirely within the exterior textire
+    assert(region.IsContainedInRect(GetWholeExteriorTextureRect()));
+
+    std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> exteriorTextureLayerBufferRegion;
+    std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> interiorTextureLayerBufferRegion;
+
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::ExteriorTexture))
+    {
+        exteriorTextureLayerBufferRegion = mModel.GetExteriorTextureLayer().Buffer.CloneRegion(region);
+    }
+
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::InteriorTexture))
+    {
+        // The requested region is entirely within the ship
+        assert(ExteriorTextureSpaceToInteriorTextureSpace(region).IsContainedInRect(GetWholeInteriorTextureRect()));
+
+        interiorTextureLayerBufferRegion = mModel.GetInteriorTextureLayer().Buffer.CloneRegion(ExteriorTextureSpaceToInteriorTextureSpace(region));
+    }
+
+    return GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type(
+        region.origin,
+        std::move(exteriorTextureLayerBufferRegion),
+        std::move(interiorTextureLayerBufferRegion));
+}
+
+GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type ModelController::MakeGenericInteriorTextureSpaceEphemeralVisualizationRestorePayload(
+    ImageRect const & region,
+    std::set<LayerType> const & layerSelection) const
+{
+    // The requested region is entirely within the interior textire
+    assert(region.IsContainedInRect(GetWholeInteriorTextureRect()));
+
+    std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> exteriorTextureLayerBufferRegion;
+    std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> interiorTextureLayerBufferRegion;
+
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::ExteriorTexture))
+    {
+        // The requested region is entirely within the ship
+        assert(InteriorTextureSpaceToExteriorTextureSpace(region).IsContainedInRect(GetWholeExteriorTextureRect()));
+
+        exteriorTextureLayerBufferRegion = mModel.GetExteriorTextureLayer().Buffer.CloneRegion(InteriorTextureSpaceToExteriorTextureSpace(region));
+    }
+
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::InteriorTexture))
+    {
+        interiorTextureLayerBufferRegion = mModel.GetInteriorTextureLayer().Buffer.CloneRegion(region);
+    }
+
+    return GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type(
+        region.origin,
         std::move(exteriorTextureLayerBufferRegion),
         std::move(interiorTextureLayerBufferRegion));
 }

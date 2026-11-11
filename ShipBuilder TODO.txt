@@ -1202,24 +1202,30 @@
 							+ Undo eph viz - via finalizer
 						+ Change coords
 						= Draw eph viz:
-							- ModelController::RegionTransferForEphViz -> GenericEphemeralVisualizationRestorePayload
+							- ModelController::ShipSpaceRegionTransferForEphViz -> GenericEphemeralVisualizationRestorePayload
 								- This one called by base, as one of three ModelController overloads (SER, Ext, Int)
-								- Args:
-									- SourceRegion
-									- TargetPos
-									- set<LayerType>
-									- IsTransparent
+								+ Args:
+									+ SourceRegion
+									+ TargetPos
+									+ set<LayerType>
+										+ Replaces bool in SelectionMoves -- calcd at SelectionMoves creation time
+									+ IsTransparent
 								- Impl: (trace PasteForEphemeralVisualization)
 									- Calc affected source and target rect in ShipSpace
 									- If region ! empty:
-										- This @ MakeEphVizRestorePayload - see if existing one may become this one
-										- Returns EphVizPayload - make public
-
-										- For each selected layer:
-											! Selected layers guaranteed to be consistent with present layers
-											- Take backup for payload
-												- All applicable layers
-												- Repeat math for texture layers
+										+ This @ MakeGenericShipSpaceEphemeralVisualizationRestorePayload
+											+ Returns ShipSpaceRegionPayload
+												+ make public
+											+ Takes set<LayerType> instead of bools
+												+ Replace args of CheckLayerSelectionApplicability everywhere
+											+ For each selected layer:
+												! Selected layers guaranteed to be consistent with present layers
+												+ Take backup for payload
+													+ All applicable layers
+													+ Repeat math for texture layers
+										+ Test: Paste w/different layers combos
+										+ Do also other two spaces
+										- Call it
 
 										- For each selected layer:
 											- Erase

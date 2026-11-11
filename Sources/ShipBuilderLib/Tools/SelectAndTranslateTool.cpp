@@ -175,8 +175,8 @@ void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoor
                     //
 
                     // Take snapshot of settings
-                    bool isAllLayers;
-                    bool isTransparent;
+                    bool isAllLayers = false;
+                    bool isTransparent = false;
                     switch (TLayer)
                     {
                         case LayerType::Structural:
@@ -201,7 +201,7 @@ void SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, TCoor
                     assert(mEngagementData->CurrentPastedSelectionRect);
                     mEngagementData->SelectionMoves.emplace(
                         mEngagementData->CurrentPastedSelectionRect->origin, // New current paste position
-                        isAllLayers,
+                        CalculateLayerSelection(isAllLayers),
                         isTransparent);
                 }
 
@@ -668,14 +668,44 @@ typename SelectAndTranslateTool<TLayer, TEphemeralVisualizationRestorePayload, T
 }
 
 template<LayerType TLayer>
+std::set<LayerType> SelectAndTranslateTool_ShipSpace<TLayer>::CalculateLayerSelection(bool isAllLayers) const
+{
+    return isAllLayers ?
+        this->mController.GetModelController().GetAllPresentLayers()
+        : std::set<LayerType>({TLayer});
+}
+
+template<LayerType TLayer>
 ShipSpaceSize SelectAndTranslateTool_ShipSpace<TLayer>::GetSpaceSize() const
 {
     return this->mController.GetModelController().GetShipSize();
 }
 
+std::set<LayerType> ExteriorSelectAndTranslateTool::CalculateLayerSelection(bool isAllLayers) const
+{
+    auto layers = std::set<LayerType>({ LayerType::ExteriorTexture });
+    if (isAllLayers && this->mController.GetModelController().HasLayer(LayerType::InteriorTexture))
+    {
+        layers.emplace(LayerType::InteriorTexture);
+    }
+
+    return layers;
+}
+
 ImageSize ExteriorSelectAndTranslateTool::GetSpaceSize() const
 {
     return mController.GetModelController().GetExteriorTextureSize();
+}
+
+std::set<LayerType> InteriorSelectAndTranslateTool::CalculateLayerSelection(bool isAllLayers) const
+{
+    auto layers = std::set<LayerType>({ LayerType::InteriorTexture });
+    if (isAllLayers && this->mController.GetModelController().HasLayer(LayerType::ExteriorTexture))
+    {
+        layers.emplace(LayerType::ExteriorTexture);
+    }
+
+    return layers;
 }
 
 ImageSize InteriorSelectAndTranslateTool::GetSpaceSize() const

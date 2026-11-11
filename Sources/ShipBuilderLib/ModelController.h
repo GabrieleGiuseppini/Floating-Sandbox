@@ -27,6 +27,7 @@
 #include <Core/ImageData.h>
 
 #include <array>
+#include <cassert>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -84,7 +85,7 @@ public:
         return mModel.HasLayer(layer);
     }
 
-    std::vector<LayerType> GetAllPresentLayers() const
+    std::set<LayerType> GetAllPresentLayers() const
     {
         return mModel.GetAllPresentLayers();
     }
@@ -224,33 +225,40 @@ public:
 
     ShipLayers Copy(
         ShipSpaceRect const & region,
-        std::optional<LayerType> layerSelection) const;
+        std::set<LayerType> layerSelection) const;
 
     GenericShipSpaceUndoPayload EraseRegion(
         ShipSpaceRect const & region,
-        std::optional<LayerType> const & layerSelection);
+        std::set<LayerType> const & layerSelection);
 
     GenericShipSpaceUndoPayload Paste(
         ShipLayers const & sourcePayload,
         ShipSpaceCoordinates const & pasteOrigin,
         bool isTransparent);
 
-    void Restore(GenericShipSpaceUndoPayload && undoPayload);
-    void Restore(GenericExteriorTextureSpaceUndoPayload && undoPayload);
-    void Restore(GenericInteriorTextureSpaceUndoPayload && undoPayload);
-
     GenericShipSpaceEphemeralVisualizationRestorePayload PasteForEphemeralVisualization(
         ShipLayers const & sourcePayload,
         ShipSpaceCoordinates const & pasteOrigin,
         bool isTransparent);
 
+    // TODO: committed transfer here, X 3
+
+    GenericShipSpaceEphemeralVisualizationRestorePayload ShipSpaceRegionTransferForEphemeralVisualization(
+        ShipSpaceRect const & sourceRegion, // In current model
+        ShipSpaceCoordinates const & targetPos,
+        std::set<LayerType> const & layerSelection,
+        bool isTransparent);
+    // TODO: other two spaces
+
+    void Restore(GenericShipSpaceUndoPayload && undoPayload);
+    void Restore(GenericExteriorTextureSpaceUndoPayload && undoPayload);
+    void Restore(GenericInteriorTextureSpaceUndoPayload && undoPayload);
+
     void RestoreEphemeralVisualization(GenericShipSpaceEphemeralVisualizationRestorePayload && restorePayload);
     void RestoreEphemeralVisualization(GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload && restorePayload);
     void RestoreEphemeralVisualization(GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload && restorePayload);
 
-    std::vector<LayerType> CalculateAffectedLayers(ShipLayers const & otherSource) const;
-
-    std::vector<LayerType> CalculateAffectedLayers(std::optional<LayerType> const & layerSelection) const;
+    std::set<LayerType> IntersectLayerPresence(ShipLayers const & otherSource) const;
 
     //
     // Structural
@@ -446,6 +454,15 @@ public:
         return ImageCoordinates::FromFloatFloor(imageCoordinates.ToFloat().scale(externalToInteral));
     }
 
+    ImageRect ExteriorTextureSpaceToInteriorTextureSpace(ImageRect const & imageRect) const
+    {
+        vec2f const externalToInteral = GetTextureSpaceToTextureSpaceFactor(GetExteriorTextureSize(), GetInteriorTextureSize());
+
+        return ImageRect(
+            ImageCoordinates::FromFloatFloor(imageRect.origin.ToFloat().scale(externalToInteral)),
+            ImageSize::FromFloatFloor(imageRect.size.ToFloat<vec2f>().scale(externalToInteral)));
+    }
+
     ShipSpaceRect ExteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const
     {
         return ImageRectToContainingShipSpaceRect(
@@ -522,6 +539,15 @@ public:
         vec2f const internalToExteral = GetTextureSpaceToTextureSpaceFactor(GetInteriorTextureSize(), GetExteriorTextureSize());
 
         return ImageCoordinates::FromFloatFloor(imageCoordinates.ToFloat().scale(internalToExteral));
+    }
+
+    ImageRect InteriorTextureSpaceToExteriorTextureSpace(ImageRect const & imageRect) const
+    {
+        vec2f const internalToExteral = GetTextureSpaceToTextureSpaceFactor(GetInteriorTextureSize(), GetExteriorTextureSize());
+
+        return ImageRect(
+            ImageCoordinates::FromFloatFloor(imageRect.origin.ToFloat().scale(internalToExteral)),
+            ImageSize::FromFloatFloor(imageRect.size.ToFloat<vec2f>().scale(internalToExteral)));
     }
 
     ShipSpaceRect InteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const
@@ -697,20 +723,28 @@ private:
         bool doExteriorTextureLayer,
         bool doInteriorTextureLayer) const;
 
-    GenericShipSpaceEphemeralVisualizationRestorePayload MakeGenericShipSpaceEphemeralVisualizationRestorePayload(
+    GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type MakeGenericShipSpaceEphemeralVisualizationRestorePayload(
         ShipSpaceRect const & region,
-        bool doStructuralLayer,
-        bool doElectricalLayer,
-        bool doRopesLayer,
-        bool doExteriorTextureLayer,
-        bool doInteriorTextureLayer) const;
+        std::set<LayerType> const & layerSelection) const;
+    GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type MakeGenericExteriorTextureSpaceEphemeralVisualizationRestorePayload(
+        ImageRect const & region,
+        std::set<LayerType> const & layerSelection) const;
+    GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type MakeGenericInteriorTextureSpaceEphemeralVisualizationRestorePayload(
+        ImageRect const & region,
+        std::set<LayerType> const & layerSelection) const;
 
+    // Expecting selection to be consistent with layer presence
     bool CheckLayerSelectionApplicability(
-        std::optional<LayerType> layerSelection,
+        std::set<LayerType> const & layerSelection,
         LayerType layer) const
     {
-        return (!layerSelection.has_value() || layerSelection == layer)
-            && HasLayer(layer);
+        if (layerSelection.count(layer) != 0)
+        {
+            assert(HasLayer(layer));
+            return true;
+        }
+
+        return false;
     }
 
     void DoStructuralRegionBufferPaste(

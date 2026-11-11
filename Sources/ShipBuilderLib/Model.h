@@ -16,8 +16,8 @@
 #include <cassert>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
-#include <vector>
 
 namespace ShipBuilder {
 
@@ -126,15 +126,15 @@ public:
         return false;
     }
 
-    std::vector<LayerType> GetAllPresentLayers() const
+    std::set<LayerType> GetAllPresentLayers() const
     {
-        std::vector<LayerType> layers;
+        std::set<LayerType> layers;
 
         for (size_t l = 0; l < LayerCount; ++l)
         {
             if (HasLayer(static_cast<LayerType>(l)))
             {
-                layers.push_back(static_cast<LayerType>(l));
+                layers.emplace(static_cast<LayerType>(l));
             }
         }
 

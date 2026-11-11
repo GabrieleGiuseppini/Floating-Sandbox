@@ -28,6 +28,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 
 namespace ShipBuilder {
@@ -331,7 +332,7 @@ public:
 
     // Invoked for changes to any layer, including ephemeral viz changes (in which case
     // no layer gets dirty)
-    void LayerChangeEpilog(std::vector<LayerType> dirtyLayers = {});
+    void LayerChangeEpilog(std::set<LayerType> const & dirtyLayers = {}); // Empty when for eph viz
 
     void SelectAll();
 
@@ -515,7 +516,7 @@ private:
 
     void InternalCopySelectionToClipboard(
         ShipSpaceRect const & selectionRegion,
-        std::optional<LayerType> const & layerSelection) const;
+        std::set<LayerType> const & layerSelection) const;
 
     void NotifyModelMacroPropertiesUpdated();
 

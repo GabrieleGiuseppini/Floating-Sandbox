@@ -16,9 +16,10 @@
 #include <Core/Finalizer.h>
 #include <Core/GameTypes.h>
 
-#include <optional>
-
 #include <wx/image.h>
+
+#include <optional>
+#include <set>
 
 namespace ShipBuilder {
 
@@ -59,6 +60,8 @@ private:
 
     void UpdateSelectionViz(TRect const & rect);
     void StopSelectionViz();
+
+    virtual std::set<LayerType> CalculateLayerSelection(bool isAllLayers) const = 0;
 
     TCoords GetMouseSelectionCoords() const; // Also outside space
     std::optional<TCoords> GetMouseSelectionCoordsIfInSpace() const;
@@ -116,15 +119,15 @@ private:
             std::optional<MovingStateType> MovingState;
 
             // Frozen tool settings - these affect Undo, thus we freeze them when we start undo
-            bool const IsAllLayers;
+            std::set<LayerType> LayerSelection;
             bool const IsTransparent;
 
             SelectionMovesType(
                 TCoords const & startSelectionPasteCornerCoords,
-                bool isAllLayers,
+                std::set<LayerType> && layerSelection,
                 bool isTransparent)
                 : CurrentSelectionPasteCornerCoords(startSelectionPasteCornerCoords)
-                , IsAllLayers(isAllLayers)
+                , LayerSelection(std::move(layerSelection))
                 , IsTransparent(isTransparent)
             { }
         };
@@ -170,6 +173,8 @@ protected:
         Controller & controller,
         GameAssetManager const & gameAssetManager);
 
+    std::set<LayerType> CalculateLayerSelection(bool isAllLayers) const override;
+
     ShipSpaceSize GetSpaceSize() const override;
 };
 
@@ -210,6 +215,8 @@ public:
 
 protected:
 
+    std::set<LayerType> CalculateLayerSelection(bool isAllLayers) const override;
+
     ImageSize GetSpaceSize() const override;
 };
 
@@ -222,6 +229,8 @@ public:
         GameAssetManager const & gameAssetManager);
 
 protected:
+
+    std::set<LayerType> CalculateLayerSelection(bool isAllLayers) const override;
 
     ImageSize GetSpaceSize() const override;
 };

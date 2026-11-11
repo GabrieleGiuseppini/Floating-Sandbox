@@ -763,9 +763,9 @@ void Controller::Copy() const
     assert(mSelectionManager.GetSelection().has_value());
     auto const selectionRegion = *(mSelectionManager.GetSelection());
 
-    std::optional<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
-        ? std::nullopt // All layers
-        : std::optional<LayerType>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization())); // Currently-selected layer
+    std::set<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
+        ? mModelController->GetAllPresentLayers()
+        : std::set<LayerType>({ VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) }); // Currently-selected layer
 
     InternalCopySelectionToClipboard(selectionRegion, layerSelection);
 }
@@ -777,9 +777,9 @@ void Controller::Cut()
 
     auto const scopedToolResumeState = SuspendTool();
 
-    std::optional<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
-        ? std::nullopt // All layers
-        : std::optional<LayerType>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization())); // Currently-selected layer
+    std::set<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
+        ? mModelController->GetAllPresentLayers()
+        : std::set<LayerType>({ VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) }); // Currently-selected layer
 
     // Copy to clipboard
     InternalCopySelectionToClipboard(selectionRegion, layerSelection);
@@ -800,7 +800,7 @@ void Controller::Cut()
 
     mUserInterface.OnUndoStackStateChanged(mUndoStack);
 
-    LayerChangeEpilog(mModelController->CalculateAffectedLayers(layerSelection));
+    LayerChangeEpilog(layerSelection);
 }
 
 void Controller::Paste()
@@ -1090,7 +1090,7 @@ void Controller::ResizeShip(
         _("Resize Ship"));
 }
 
-void Controller::LayerChangeEpilog(std::vector<LayerType> dirtyLayers)
+void Controller::LayerChangeEpilog(std::set<LayerType> const & dirtyLayers)
 {
     if (!dirtyLayers.empty())
     {
@@ -2540,7 +2540,7 @@ void Controller::InternalFlip(DirectionType direction)
     mModelController->Flip(direction);
 
     LayerChangeEpilog(IsForUndo
-        ? std::vector<LayerType>()
+        ? std::set<LayerType>()
         : mModelController->GetAllPresentLayers());
 }
 
@@ -2593,13 +2593,13 @@ void Controller::InternalRotate90(RotationDirectionType direction)
     mUserInterface.OnShipSizeChanged(mModelController->GetShipSize());
 
     LayerChangeEpilog(IsForUndo
-        ? std::vector<LayerType>()
+        ? std::set<LayerType>()
         : mModelController->GetAllPresentLayers());
 }
 
 void Controller::InternalCopySelectionToClipboard(
     ShipSpaceRect const & selectionRegion,
-    std::optional<LayerType> const & layerSelection) const
+    std::set<LayerType> const & layerSelection) const
 {
     // Get region from model controller
     ShipLayers layersRegion = mModelController->Copy(

@@ -173,7 +173,7 @@ void PasteTool::Commit()
 
     // Calculate affected layers
 
-    auto const affectedLayers = mController.GetModelController().CalculateAffectedLayers(mPendingSessionData->PasteRegion);
+    auto const affectedLayers = mController.GetModelController().IntersectLayerPresence(mPendingSessionData->PasteRegion);
     if (!affectedLayers.empty())
     {
         // Commit
