@@ -13,6 +13,7 @@ set (SHIPBUILDER_LIB_SOURCES
 	IModelObservable.h
 	InstancedElectricalElementSet.h
 	IUserInterface.h
+	LayerSelector.h
 	MainFrame.cpp
 	MainFrame.h
 	Model.cpp

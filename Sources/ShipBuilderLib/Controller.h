@@ -7,6 +7,7 @@
 
 #include "GenericUndoPayload.h"
 #include "IUserInterface.h"
+#include "LayerSelector.h"
 #include "ModelController.h"
 #include "ModelValidationSession.h"
 #include "OpenGLManager.h"
@@ -28,7 +29,6 @@
 #include <map>
 #include <memory>
 #include <optional>
-#include <set>
 #include <string>
 
 namespace ShipBuilder {
@@ -332,7 +332,7 @@ public:
 
     // Invoked for changes to any layer, including ephemeral viz changes (in which case
     // no layer gets dirty)
-    void LayerChangeEpilog(std::set<LayerType> const & dirtyLayers = {}); // Empty when for eph viz
+    void LayerChangeEpilog(LayerSelector const & dirtyLayers = {}); // Empty when for eph viz
 
     void SelectAll();
 
@@ -516,7 +516,7 @@ private:
 
     void InternalCopySelectionToClipboard(
         ShipSpaceRect const & selectionRegion,
-        std::set<LayerType> const & layerSelection) const;
+        LayerSelector const & layerSelection) const;
 
     void NotifyModelMacroPropertiesUpdated();
 

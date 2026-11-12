@@ -763,9 +763,9 @@ void Controller::Copy() const
     assert(mSelectionManager.GetSelection().has_value());
     auto const selectionRegion = *(mSelectionManager.GetSelection());
 
-    std::set<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
+    LayerSelector const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
         ? mModelController->GetAllPresentLayers()
-        : std::set<LayerType>({ VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) }); // Currently-selected layer
+        : LayerSelector({ VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) }); // Currently-selected layer
 
     InternalCopySelectionToClipboard(selectionRegion, layerSelection);
 }
@@ -777,9 +777,9 @@ void Controller::Cut()
 
     auto const scopedToolResumeState = SuspendTool();
 
-    std::set<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
+    LayerSelector const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
         ? mModelController->GetAllPresentLayers()
-        : std::set<LayerType>({ VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) }); // Currently-selected layer
+        : LayerSelector({ VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) }); // Currently-selected layer
 
     // Copy to clipboard
     InternalCopySelectionToClipboard(selectionRegion, layerSelection);
@@ -1090,24 +1090,45 @@ void Controller::ResizeShip(
         _("Resize Ship"));
 }
 
-void Controller::LayerChangeEpilog(std::set<LayerType> const & dirtyLayers)
+void Controller::LayerChangeEpilog(LayerSelector const & dirtyLayers)
 {
-    if (!dirtyLayers.empty())
+    if (!dirtyLayers.IsEmpty())
     {
         //
         // This change is final (as opposed to ephemeral)
         //
 
-        for (LayerType const dirtyLayer : dirtyLayers)
+        if (dirtyLayers.IsSet(LayerType::Structural))
         {
             // Mark layer as dirty
-            mModelController->SetLayerDirty(dirtyLayer);
+            mModelController->SetLayerDirty(LayerType::Structural);
+        }
 
-            if (dirtyLayer == LayerType::Electrical)
-            {
-                // Notify of (possible) change in electrical panel
-                mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
-            }
+        if (dirtyLayers.IsSet(LayerType::Electrical))
+        {
+            // Mark layer as dirty
+            mModelController->SetLayerDirty(LayerType::Electrical);
+
+            // Notify of (possible) change in electrical panel
+            mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
+        }
+
+        if (dirtyLayers.IsSet(LayerType::Ropes))
+        {
+            // Mark layer as dirty
+            mModelController->SetLayerDirty(LayerType::Ropes);
+        }
+
+        if (dirtyLayers.IsSet(LayerType::ExteriorTexture))
+        {
+            // Mark layer as dirty
+            mModelController->SetLayerDirty(LayerType::ExteriorTexture);
+        }
+
+        if (dirtyLayers.IsSet(LayerType::InteriorTexture))
+        {
+            // Mark layer as dirty
+            mModelController->SetLayerDirty(LayerType::InteriorTexture);
         }
 
         // Notify dirty changes
@@ -2540,7 +2561,7 @@ void Controller::InternalFlip(DirectionType direction)
     mModelController->Flip(direction);
 
     LayerChangeEpilog(IsForUndo
-        ? std::set<LayerType>()
+        ? LayerSelector()
         : mModelController->GetAllPresentLayers());
 }
 
@@ -2593,13 +2614,13 @@ void Controller::InternalRotate90(RotationDirectionType direction)
     mUserInterface.OnShipSizeChanged(mModelController->GetShipSize());
 
     LayerChangeEpilog(IsForUndo
-        ? std::set<LayerType>()
+        ? LayerSelector()
         : mModelController->GetAllPresentLayers());
 }
 
 void Controller::InternalCopySelectionToClipboard(
     ShipSpaceRect const & selectionRegion,
-    std::set<LayerType> const & layerSelection) const
+    LayerSelector const & layerSelection) const
 {
     // Get region from model controller
     ShipLayers layersRegion = mModelController->Copy(

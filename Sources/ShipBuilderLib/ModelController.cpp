@@ -456,39 +456,39 @@ void ModelController::ResizeShip(
 
 ShipLayers ModelController::Copy(
     ShipSpaceRect const & region,
-    std::set<LayerType> layerSelection) const
+    LayerSelector const & layerSelection) const
 {
     // Structural
     std::unique_ptr<StructuralLayerData> structuralLayerCopy;
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Structural))
+    if (layerSelection.IsSet(LayerType::Structural))
     {
         structuralLayerCopy = std::make_unique<StructuralLayerData>(mModel.GetStructuralLayer().CloneRegion(region));
     }
 
     // Electrical
     std::unique_ptr<ElectricalLayerData> electricalLayerCopy;
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Electrical))
+    if (layerSelection.IsSet(LayerType::Electrical))
     {
         electricalLayerCopy = std::make_unique<ElectricalLayerData>(mModel.GetElectricalLayer().CloneRegion(region));
     }
 
     // Ropes
     std::unique_ptr<RopesLayerData> ropesLayerCopy;
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Ropes))
+    if (layerSelection.IsSet(LayerType::Ropes))
     {
         ropesLayerCopy = std::make_unique<RopesLayerData>(mModel.GetRopesLayer().Buffer.CopyRegion(region));
     }
 
     // Exterior Texture
     std::unique_ptr<TextureLayerData> exteriorTextureLayerCopy;
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::ExteriorTexture))
+    if (layerSelection.IsSet(LayerType::ExteriorTexture))
     {
         exteriorTextureLayerCopy = std::make_unique<TextureLayerData>(mModel.GetExteriorTextureLayer().CloneRegion(ShipSpaceToExteriorTextureSpace(region)));
     }
 
     // Interior Texture
     std::unique_ptr<TextureLayerData> interiorTextureLayerCopy;
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::InteriorTexture))
+    if (layerSelection.IsSet(LayerType::InteriorTexture))
     {
         interiorTextureLayerCopy = std::make_unique<TextureLayerData>(mModel.GetInteriorTextureLayer().CloneRegion(ShipSpaceToInteriorTextureSpace(region)));
     }
@@ -504,7 +504,7 @@ ShipLayers ModelController::Copy(
 
 GenericShipSpaceUndoPayload ModelController::EraseRegion(
     ShipSpaceRect const & region,
-    std::set<LayerType> const & layerSelection)
+    LayerSelector const & layerSelection)
 {
     //
     // Prepare undo
@@ -512,37 +512,37 @@ GenericShipSpaceUndoPayload ModelController::EraseRegion(
 
     GenericShipSpaceUndoPayload undoPayload = MakeGenericShipSpaceUndoPayload(
         region,
-        CheckLayerSelectionApplicability(layerSelection, LayerType::Structural),
-        CheckLayerSelectionApplicability(layerSelection, LayerType::Electrical),
-        CheckLayerSelectionApplicability(layerSelection, LayerType::Ropes),
-        CheckLayerSelectionApplicability(layerSelection, LayerType::ExteriorTexture),
-        CheckLayerSelectionApplicability(layerSelection, LayerType::InteriorTexture));
+        layerSelection.IsSet(LayerType::Structural),
+        layerSelection.IsSet(LayerType::Electrical),
+        layerSelection.IsSet(LayerType::Ropes),
+        layerSelection.IsSet(LayerType::ExteriorTexture),
+        layerSelection.IsSet(LayerType::InteriorTexture));
 
     //
     // Erase
     //
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Structural))
+    if (layerSelection.IsSet(LayerType::Structural))
     {
         StructuralRegionFill(region, nullptr);
     }
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Electrical))
+    if (layerSelection.IsSet(LayerType::Electrical))
     {
         ElectricalRegionFill(region, nullptr);
     }
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Ropes))
+    if (layerSelection.IsSet(LayerType::Ropes))
     {
         EraseRopesRegion(region);
     }
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::ExteriorTexture))
+    if (layerSelection.IsSet(LayerType::ExteriorTexture))
     {
         EraseExteriorTextureRegion(ShipSpaceToExteriorTextureSpace(region));
     }
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::InteriorTexture))
+    if (layerSelection.IsSet(LayerType::InteriorTexture))
     {
         EraseInteriorTextureRegion(ShipSpaceToInteriorTextureSpace(region));
     }
@@ -1004,7 +1004,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
 GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceRegionTransferForEphemeralVisualization(
     ShipSpaceRect const & sourceRegion, // In current model
     ShipSpaceCoordinates const & destinationPos,
-    std::set<LayerType> const & layerSelection,
+    LayerSelector const & layerSelection,
     bool isTransparent)
 {
     GenericShipSpaceEphemeralVisualizationRestorePayload restorePayload;
@@ -1036,12 +1036,11 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
         //
 
         // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-        // TODOHERE: origin broken
         ShipSpaceRect const adjustedPasteSourceRegion(
             ShipSpaceCoordinates(0, 0) + (adjustedDestinationRegion->origin - destinationPos),
             adjustedDestinationRegion->size);
 
-        if (CheckLayerSelectionApplicability(layerSelection, LayerType::Structural))
+        if (layerSelection.IsSet(LayerType::Structural))
         {
             assert(!mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization);
 
@@ -1072,7 +1071,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
 GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController::ExteriorTextureSpaceRegionTransferForEphemeralVisualization(
     ImageRect const & sourceRegion, // In current model
     ImageCoordinates const & destinationPos,
-    std::set<LayerType> const & layerSelection,
+    LayerSelector const & layerSelection,
     bool isTransparent)
 {
     // TODOHERE
@@ -1086,7 +1085,7 @@ GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
 GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController::InteriorTextureSpaceRegionTransferForEphemeralVisualization(
     ImageRect const & sourceRegion, // In current model
     ImageCoordinates const & destinationPos,
-    std::set<LayerType> const & layerSelection,
+    LayerSelector const & layerSelection,
     bool isTransparent)
 {
     // TODOHERE
@@ -1331,33 +1330,33 @@ void ModelController::RestoreEphemeralVisualization(GenericInteriorTextureSpaceE
     mEphemeralVisualizationLayerState = newEphVizState;
 }
 
-std::set<LayerType> ModelController::IntersectLayerPresence(ShipLayers const & otherSource) const
+LayerSelector ModelController::IntersectLayerPresence(ShipLayers const & otherSource) const
 {
-    std::set<LayerType> layers;
+    LayerSelector layers;
 
     if (otherSource.StructuralLayer && mModel.HasLayer(LayerType::Structural))
     {
-        layers.emplace(LayerType::Structural);
+        layers.Add(LayerType::Structural);
     }
 
     if (otherSource.ElectricalLayer && mModel.HasLayer(LayerType::Electrical))
     {
-        layers.emplace(LayerType::Electrical);
+        layers.Add(LayerType::Electrical);
     }
 
     if (otherSource.RopesLayer && mModel.HasLayer(LayerType::Ropes))
     {
-        layers.emplace(LayerType::Ropes);
+        layers.Add(LayerType::Ropes);
     }
 
     if (otherSource.ExteriorTextureLayer && mModel.HasLayer(LayerType::ExteriorTexture))
     {
-        layers.emplace(LayerType::ExteriorTexture);
+        layers.Add(LayerType::ExteriorTexture);
     }
 
     if (otherSource.InteriorTextureLayer && mModel.HasLayer(LayerType::InteriorTexture))
     {
-        layers.emplace(LayerType::InteriorTexture);
+        layers.Add(LayerType::InteriorTexture);
     }
 
     return layers;
@@ -4190,7 +4189,7 @@ GenericShipSpaceUndoPayload ModelController::MakeGenericShipSpaceUndoPayload(
 
 GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type ModelController::MakeGenericShipSpaceEphemeralVisualizationRestorePayload(
     ShipSpaceRect const & region,
-    std::set<LayerType> const & layerSelection) const
+    LayerSelector const & layerSelection) const
 {
     // The requested region is entirely within the ship
     assert(region.IsContainedInRect(GetWholeShipRect()));
@@ -4201,22 +4200,22 @@ GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type ModelControll
     std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> exteriorTextureLayerBufferRegion;
     std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> interiorTextureLayerBufferRegion;
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Structural))
+    if (layerSelection.IsSet(LayerType::Structural))
     {
         structuralLayerBufferRegion = mModel.GetStructuralLayer().Buffer.CloneRegion(region);
     }
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Electrical))
+    if (layerSelection.IsSet(LayerType::Electrical))
     {
         electricalLayerBufferRegion = mModel.GetElectricalLayer().Buffer.CloneRegion(region);
     }
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Ropes))
+    if (layerSelection.IsSet(LayerType::Ropes))
     {
         ropesLayerBuffer = mModel.GetRopesLayer().Buffer.Clone();
     }
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::ExteriorTexture))
+    if (layerSelection.IsSet(LayerType::ExteriorTexture))
     {
         // The requested region is entirely within the ship
         assert(ShipSpaceToExteriorTextureSpace(region).IsContainedInRect(GetWholeExteriorTextureRect()));
@@ -4224,7 +4223,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type ModelControll
         exteriorTextureLayerBufferRegion = mModel.GetExteriorTextureLayer().Buffer.CloneRegion(ShipSpaceToExteriorTextureSpace(region));
     }
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::InteriorTexture))
+    if (layerSelection.IsSet(LayerType::InteriorTexture))
     {
         // The requested region is entirely within the ship
         assert(ShipSpaceToInteriorTextureSpace(region).IsContainedInRect(GetWholeInteriorTextureRect()));
@@ -4243,7 +4242,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type ModelControll
 
 GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type ModelController::MakeGenericExteriorTextureSpaceEphemeralVisualizationRestorePayload(
     ImageRect const & region,
-    std::set<LayerType> const & layerSelection) const
+    LayerSelector const & layerSelection) const
 {
     // The requested region is entirely within the exterior textire
     assert(region.IsContainedInRect(GetWholeExteriorTextureRect()));
@@ -4251,12 +4250,12 @@ GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type Mo
     std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> exteriorTextureLayerBufferRegion;
     std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> interiorTextureLayerBufferRegion;
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::ExteriorTexture))
+    if (layerSelection.IsSet(LayerType::ExteriorTexture))
     {
         exteriorTextureLayerBufferRegion = mModel.GetExteriorTextureLayer().Buffer.CloneRegion(region);
     }
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::InteriorTexture))
+    if (layerSelection.IsSet(LayerType::InteriorTexture))
     {
         // The requested region is entirely within the ship
         assert(ExteriorTextureSpaceToInteriorTextureSpace(region).IsContainedInRect(GetWholeInteriorTextureRect()));
@@ -4272,7 +4271,7 @@ GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type Mo
 
 GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type ModelController::MakeGenericInteriorTextureSpaceEphemeralVisualizationRestorePayload(
     ImageRect const & region,
-    std::set<LayerType> const & layerSelection) const
+    LayerSelector const & layerSelection) const
 {
     // The requested region is entirely within the interior textire
     assert(region.IsContainedInRect(GetWholeInteriorTextureRect()));
@@ -4280,7 +4279,7 @@ GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type Mo
     std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> exteriorTextureLayerBufferRegion;
     std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> interiorTextureLayerBufferRegion;
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::ExteriorTexture))
+    if (layerSelection.IsSet(LayerType::ExteriorTexture))
     {
         // The requested region is entirely within the ship
         assert(InteriorTextureSpaceToExteriorTextureSpace(region).IsContainedInRect(GetWholeExteriorTextureRect()));
@@ -4288,7 +4287,7 @@ GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type Mo
         exteriorTextureLayerBufferRegion = mModel.GetExteriorTextureLayer().Buffer.CloneRegion(InteriorTextureSpaceToExteriorTextureSpace(region));
     }
 
-    if (CheckLayerSelectionApplicability(layerSelection, LayerType::InteriorTexture))
+    if (layerSelection.IsSet(LayerType::InteriorTexture))
     {
         interiorTextureLayerBufferRegion = mModel.GetInteriorTextureLayer().Buffer.CloneRegion(region);
     }

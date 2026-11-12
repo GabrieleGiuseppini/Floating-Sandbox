@@ -690,7 +690,7 @@ template<LayerType TLayer>
 GenericShipSpaceEphemeralVisualizationRestorePayload SelectAndTranslateTool_ShipSpace<TLayer>::InternalDrawEphemeralVisualization(
     ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetPos,
-    std::set<LayerType> const & layerSelection,
+    LayerSelector const & layerSelection,
     bool isTransparent)
 {
     return this->mController.GetModelController().ShipSpaceRegionTransferForEphemeralVisualization(
@@ -701,11 +701,11 @@ GenericShipSpaceEphemeralVisualizationRestorePayload SelectAndTranslateTool_Ship
 }
 
 template<LayerType TLayer>
-std::set<LayerType> SelectAndTranslateTool_ShipSpace<TLayer>::CalculateLayerSelection(bool isAllLayers) const
+LayerSelector SelectAndTranslateTool_ShipSpace<TLayer>::CalculateLayerSelection(bool isAllLayers) const
 {
     return isAllLayers ?
         this->mController.GetModelController().GetAllPresentLayers()
-        : std::set<LayerType>({TLayer});
+        : LayerSelector({TLayer});
 }
 
 template<LayerType TLayer>
@@ -717,7 +717,7 @@ ShipSpaceSize SelectAndTranslateTool_ShipSpace<TLayer>::GetSpaceSize() const
 GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ExteriorSelectAndTranslateTool::InternalDrawEphemeralVisualization(
     ImageRect const & sourceRegion,
     ImageCoordinates const & targetPos,
-    std::set<LayerType> const & layerSelection,
+    LayerSelector const & layerSelection,
     bool isTransparent)
 {
     return this->mController.GetModelController().ExteriorTextureSpaceRegionTransferForEphemeralVisualization(
@@ -727,12 +727,12 @@ GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ExteriorSelectAn
         isTransparent);
 }
 
-std::set<LayerType> ExteriorSelectAndTranslateTool::CalculateLayerSelection(bool isAllLayers) const
+LayerSelector ExteriorSelectAndTranslateTool::CalculateLayerSelection(bool isAllLayers) const
 {
-    auto layers = std::set<LayerType>({ LayerType::ExteriorTexture });
+    auto layers = LayerSelector({ LayerType::ExteriorTexture });
     if (isAllLayers && this->mController.GetModelController().HasLayer(LayerType::InteriorTexture))
     {
-        layers.emplace(LayerType::InteriorTexture);
+        layers.Add(LayerType::InteriorTexture);
     }
 
     return layers;
@@ -746,7 +746,7 @@ ImageSize ExteriorSelectAndTranslateTool::GetSpaceSize() const
 GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload InteriorSelectAndTranslateTool::InternalDrawEphemeralVisualization(
     ImageRect const & sourceRegion,
     ImageCoordinates const & targetPos,
-    std::set<LayerType> const & layerSelection,
+    LayerSelector const & layerSelection,
     bool isTransparent)
 {
     return this->mController.GetModelController().InteriorTextureSpaceRegionTransferForEphemeralVisualization(
@@ -756,12 +756,12 @@ GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload InteriorSelectAn
         isTransparent);
 }
 
-std::set<LayerType> InteriorSelectAndTranslateTool::CalculateLayerSelection(bool isAllLayers) const
+LayerSelector InteriorSelectAndTranslateTool::CalculateLayerSelection(bool isAllLayers) const
 {
-    auto layers = std::set<LayerType>({ LayerType::InteriorTexture });
+    auto layers = LayerSelector({ LayerType::InteriorTexture });
     if (isAllLayers && this->mController.GetModelController().HasLayer(LayerType::ExteriorTexture))
     {
-        layers.emplace(LayerType::ExteriorTexture);
+        layers.Add(LayerType::ExteriorTexture);
     }
 
     return layers;

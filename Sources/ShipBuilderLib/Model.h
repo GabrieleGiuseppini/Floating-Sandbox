@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "LayerSelector.h"
 #include "ShipBuilderTypes.h"
 
 #include <Simulation/Layers.h>
@@ -16,7 +17,6 @@
 #include <cassert>
 #include <memory>
 #include <optional>
-#include <set>
 #include <string>
 
 namespace ShipBuilder {
@@ -126,15 +126,15 @@ public:
         return false;
     }
 
-    std::set<LayerType> GetAllPresentLayers() const
+    LayerSelector GetAllPresentLayers() const
     {
-        std::set<LayerType> layers;
+        LayerSelector layers;
 
         for (size_t l = 0; l < LayerCount; ++l)
         {
             if (HasLayer(static_cast<LayerType>(l)))
             {
-                layers.emplace(static_cast<LayerType>(l));
+                layers.Add(static_cast<LayerType>(l));
             }
         }
 

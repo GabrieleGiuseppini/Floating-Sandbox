@@ -8,6 +8,7 @@
 #include "Tool.h"
 
 #include "../GenericEphemeralVisualizationRestorePayload.h"
+#include "../LayerSelector.h"
 
 #include <Simulation/Layers.h>
 
@@ -19,7 +20,6 @@
 #include <wx/image.h>
 
 #include <optional>
-#include <set>
 
 namespace ShipBuilder {
 
@@ -60,13 +60,13 @@ private:
     virtual TEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
         TRect const & sourceRegion,
         TCoords const & targetPos,
-        std::set<LayerType> const & layerSelection,
+        LayerSelector const & layerSelection,
         bool isTransparent) = 0;
 
     void UpdateSelectionViz(TRect const & rect);
     void StopSelectionViz();
 
-    virtual std::set<LayerType> CalculateLayerSelection(bool isAllLayers) const = 0;
+    virtual LayerSelector CalculateLayerSelection(bool isAllLayers) const = 0;
 
     TCoords GetMouseSelectionCoords() const; // Also outside space
     std::optional<TCoords> GetMouseSelectionCoordsIfInSpace() const;
@@ -124,15 +124,15 @@ private:
             std::optional<MovingStateType> MovingState;
 
             // Frozen tool settings - these affect Undo, thus we freeze them when we start undo
-            std::set<LayerType> LayerSelection;
+            LayerSelector LayerSelection;
             bool const IsTransparent;
 
             SelectionMovesType(
                 TCoords const & startSelectionPasteCornerCoords,
-                std::set<LayerType> && layerSelection,
+                LayerSelector const & layerSelection,
                 bool isTransparent)
                 : CurrentSelectionPasteCornerCoords(startSelectionPasteCornerCoords)
-                , LayerSelection(std::move(layerSelection))
+                , LayerSelection(layerSelection)
                 , IsTransparent(isTransparent)
             { }
         };
@@ -181,10 +181,10 @@ protected:
     GenericShipSpaceEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetPos,
-        std::set<LayerType> const & layerSelection,
+        LayerSelector const & layerSelection,
         bool isTransparent) override;
 
-    std::set<LayerType> CalculateLayerSelection(bool isAllLayers) const override;
+    LayerSelector CalculateLayerSelection(bool isAllLayers) const override;
 
     ShipSpaceSize GetSpaceSize() const override;
 };
@@ -229,10 +229,10 @@ protected:
     GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
         ImageRect const & sourceRegion,
         ImageCoordinates const & targetPos,
-        std::set<LayerType> const & layerSelection,
+        LayerSelector const & layerSelection,
         bool isTransparent) override;
 
-    std::set<LayerType> CalculateLayerSelection(bool isAllLayers) const override;
+    LayerSelector CalculateLayerSelection(bool isAllLayers) const override;
 
     ImageSize GetSpaceSize() const override;
 };
@@ -250,10 +250,10 @@ protected:
     GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
         ImageRect const & sourceRegion,
         ImageCoordinates const & targetPos,
-        std::set<LayerType> const & layerSelection,
+        LayerSelector const & layerSelection,
         bool isTransparent) override;
 
-    std::set<LayerType> CalculateLayerSelection(bool isAllLayers) const override;
+    LayerSelector CalculateLayerSelection(bool isAllLayers) const override;
 
     ImageSize GetSpaceSize() const override;
 };

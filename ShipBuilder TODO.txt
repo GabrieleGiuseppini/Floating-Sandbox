@@ -1252,6 +1252,17 @@
 								+ ModelController::RestoreEphemeralVisualization (one of 3)
 						+ mController.LayerChangeEpilog()
 					= @ new selection, and @ ~dctor(): commit
+						- TODO: also @ MouseLeave? NOTE: we don't want selection to disappear on mouse moving out
+							- Most call Leave() @ ~dctor and @ MouseLeave, but only commit @ MouseLeave if not committed yet; 
+								- Common structure:
+									- dctor: Leave(false)
+									- OnMouseLeft: Leave(true)
+									- OnXYZCommittingMouseEvent: Commit
+									- Leave:
+										- Mend eph viz
+										- If engaged and true: Commit
+										- Reset engagement -- NOTE: does not apply to us, we don't want selection to disappear on mouse moving out
+										- LayerChangeEpilog
 						+ If have eph viz:
 							+ Undo eph viz - via finalizer
 						- If not empty move:
@@ -1262,22 +1273,6 @@
 								  as undo payload should also include pasted-to region
 								- Paste -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
 								  as undo payload should also include pasted-to region
-
-
-
-					- TODOOLD
-					- Initialization
-						- TODO: use shared_ptr - rethink it through though
-						- Push undo with entirety of all interested layers
-						- Take selection for all interested layers, as selection
-							- Reset @ end of move
-						- Cut selection in Model for all interested layers, no undo
-						- Take whole model for all interested layers as background
-							- Reset @ end of move
-					- Move
-						+ Cleanup Moving state: sub-struct, with methods - see code
-						- TODOHERE: ModelController op: erase (old) + blit (covering, thus eventually erasing and changing panel)
-							- Trying to save ElectricalPanel changes, other than those due to eventually erasing with blit
 						
 		- See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
 			- Also optimize - we do some things multiple times, once per region
@@ -1286,20 +1281,15 @@
 		= MainFrame:
 			+ Tool selection @ each layer tools' panel
 			= Settings for tool:
-				= SER:
+				+ ShipSpace:
 					+ Layers
 					+ Transparent (like Paste)
-				- EI:
+				- TextureSpace:
 					- Layers
 					- Transparent (like Paste)
 
 				+ Workbench
-				= Controller=>Tool
-					+ Copy mechanism from other tools - tool class + dynamic cast via GetCurrentToolAs<>(class)
-					- SelectAndTranslateTool: react		
-						- TODO: requires remembering last MoveOffset, so that we may redraw exactly as now, but with new settings
-						- Layers
-						- Transparent
+
 		- Tests:
 			- Undo ONLY appears AFTER sizable move
 			- Undo ONLY appears if move ended up not being a zero move

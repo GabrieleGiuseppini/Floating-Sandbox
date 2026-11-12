@@ -9,6 +9,7 @@
 #include "GenericUndoPayload.h"
 #include "IModelObservable.h"
 #include "InstancedElectricalElementSet.h"
+#include "LayerSelector.h"
 #include "Model.h"
 #include "ModelValidationSession.h"
 #include "CombinedRegions.h"
@@ -85,7 +86,7 @@ public:
         return mModel.HasLayer(layer);
     }
 
-    std::set<LayerType> GetAllPresentLayers() const
+    LayerSelector GetAllPresentLayers() const
     {
         return mModel.GetAllPresentLayers();
     }
@@ -225,11 +226,11 @@ public:
 
     ShipLayers Copy(
         ShipSpaceRect const & region,
-        std::set<LayerType> layerSelection) const;
+        LayerSelector const & layerSelection) const;
 
     GenericShipSpaceUndoPayload EraseRegion(
         ShipSpaceRect const & region,
-        std::set<LayerType> const & layerSelection);
+        LayerSelector const & layerSelection);
 
     GenericShipSpaceUndoPayload Paste(
         ShipLayers const & sourcePayload,
@@ -246,17 +247,17 @@ public:
     GenericShipSpaceEphemeralVisualizationRestorePayload ShipSpaceRegionTransferForEphemeralVisualization(
         ShipSpaceRect const & sourceRegion, // In current model
         ShipSpaceCoordinates const & destinationPos,
-        std::set<LayerType> const & layerSelection,
+        LayerSelector const & layerSelection,
         bool isTransparent);
     GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ExteriorTextureSpaceRegionTransferForEphemeralVisualization(
         ImageRect const & sourceRegion, // In current model
         ImageCoordinates const & destinationPos,
-        std::set<LayerType> const & layerSelection,
+        LayerSelector const & layerSelection,
         bool isTransparent);
     GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload InteriorTextureSpaceRegionTransferForEphemeralVisualization(
         ImageRect const & sourceRegion, // In current model
         ImageCoordinates const & destinationPos,
-        std::set<LayerType> const & layerSelection,
+        LayerSelector const & layerSelection,
         bool isTransparent);
 
     void Restore(GenericShipSpaceUndoPayload && undoPayload);
@@ -267,7 +268,7 @@ public:
     void RestoreEphemeralVisualization(GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload && restorePayload);
     void RestoreEphemeralVisualization(GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload && restorePayload);
 
-    std::set<LayerType> IntersectLayerPresence(ShipLayers const & otherSource) const;
+    LayerSelector IntersectLayerPresence(ShipLayers const & otherSource) const;
 
     //
     // Structural
@@ -734,27 +735,13 @@ private:
 
     GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type MakeGenericShipSpaceEphemeralVisualizationRestorePayload(
         ShipSpaceRect const & region,
-        std::set<LayerType> const & layerSelection) const;
+        LayerSelector const & layerSelection) const;
     GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type MakeGenericExteriorTextureSpaceEphemeralVisualizationRestorePayload(
         ImageRect const & region,
-        std::set<LayerType> const & layerSelection) const;
+        LayerSelector const & layerSelection) const;
     GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type MakeGenericInteriorTextureSpaceEphemeralVisualizationRestorePayload(
         ImageRect const & region,
-        std::set<LayerType> const & layerSelection) const;
-
-    // Expecting selection to be consistent with layer presence
-    bool CheckLayerSelectionApplicability(
-        std::set<LayerType> const & layerSelection,
-        LayerType layer) const
-    {
-        if (layerSelection.count(layer) != 0)
-        {
-            assert(HasLayer(layer));
-            return true;
-        }
-
-        return false;
-    }
+        LayerSelector const & layerSelection) const;
 
     struct EphemeralVisualizationLayerState;
 
