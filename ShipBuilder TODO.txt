@@ -1239,17 +1239,22 @@
 
 											= Do for:
 												+ S
-												= E
+												+ E
 													+ DoElectricalRegionFill
 														+ Refactor like we did for S
-													- Test
+													+ Test
 												= R
 													+ DoEraseRopesRegion
 														+ Refactor like we did for S
+													- TODOHERE: rethink ropes when region "cuts" a rope
 													- Test
-												- ET
-												- IT
+												+ ET
+													+ Erase: refactor EraseExteriorTextureRegion: DoEraseExteriorTextureRegion, does assert hasLayer + model + register dirty
+												+ IT
+													+ Erase: refactor EraseInteriorTextureRegion: DoEraseInteriorTextureRegion, does assert hasLayer + model + register dirty
 									+ Return payload
+
+									- FIX: when intersection of target area is zero, we do not erase
 
 									- Rewrite PastForEphViz as the above
 										- At this moment, new assumption: if ship space rect ! empty, texture space rects are also ! empty; verify mathematically

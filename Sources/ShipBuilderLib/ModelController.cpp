@@ -573,12 +573,9 @@ GenericShipSpaceUndoPayload ModelController::Paste(
     {
         assert(!affectedTargetRectShip->IsEmpty());
 
-        // Adjust paste origin
-        actualPasteOriginShip = affectedTargetRectShip->origin;
-
         // Calculate affected source region
         ShipSpaceRect const affectedSourceRegion(
-            ShipSpaceCoordinates(0, 0) + (actualPasteOriginShip - pasteOrigin),
+            ShipSpaceCoordinates(0, 0) + (affectedTargetRectShip->origin - pasteOrigin),
             affectedTargetRectShip->size);
 
         if (sourcePayload.StructuralLayer && mModel.HasLayer(LayerType::Structural))
@@ -592,7 +589,7 @@ GenericShipSpaceUndoPayload ModelController::Paste(
             DoStructuralRegionBufferPaste(
                 sourcePayload.StructuralLayer->Buffer,
                 affectedSourceRegion,
-                actualPasteOriginShip,
+                affectedTargetRectShip->origin,
                 isTransparent);
 
             // Re-initialize layer analysis
@@ -715,12 +712,9 @@ GenericShipSpaceUndoPayload ModelController::Paste(
         {
             assert(!affectedTargetRectTexture->IsEmpty());
 
-            // Adjust paste origin
-            actualPasteOriginTexture = affectedTargetRectTexture->origin;
-
             // Calculate affected source region
             ImageRect const affectedSourceRegion(
-                ImageCoordinates(0, 0) + (actualPasteOriginTexture - pasteOriginTexture),
+                ImageCoordinates(0, 0) + (affectedTargetRectTexture->origin - pasteOriginTexture),
                 affectedTargetRectTexture->size);
 
             if (sourcePayload.ExteriorTextureLayer && mModel.HasLayer(LayerType::ExteriorTexture)) // Rotfl - just for code structure symmetry
@@ -735,7 +729,6 @@ GenericShipSpaceUndoPayload ModelController::Paste(
                     sourcePayload.ExteriorTextureLayer->Buffer,
                     affectedSourceRegion,
                     *affectedTargetRectTexture,
-                    actualPasteOriginTexture,
                     isTransparent);
             }
         }
@@ -761,12 +754,9 @@ GenericShipSpaceUndoPayload ModelController::Paste(
         {
             assert(!affectedTargetRectTexture->IsEmpty());
 
-            // Adjust paste origin
-            actualPasteOriginTexture = affectedTargetRectTexture->origin;
-
             // Calculate affected source region
             ImageRect const affectedSourceRegion(
-                ImageCoordinates(0, 0) + (actualPasteOriginTexture - pasteOriginTexture),
+                ImageCoordinates(0, 0) + (affectedTargetRectTexture->origin - pasteOriginTexture),
                 affectedTargetRectTexture->size);
 
             if (sourcePayload.InteriorTextureLayer && mModel.HasLayer(LayerType::InteriorTexture)) // Rotfl - just for code structure symmetry
@@ -781,7 +771,6 @@ GenericShipSpaceUndoPayload ModelController::Paste(
                     sourcePayload.InteriorTextureLayer->Buffer,
                     affectedSourceRegion,
                     *affectedTargetRectTexture,
-                    actualPasteOriginTexture,
                     isTransparent);
             }
         }
@@ -912,12 +901,9 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
         {
             assert(!affectedTargetRectTexture->IsEmpty());
 
-            // Adjust paste origin
-            actualPasteOriginTexture = affectedTargetRectTexture->origin;
-
             // Calculate affected source region
             ImageRect const affectedSourceRegion(
-                ImageCoordinates(0, 0) + (actualPasteOriginTexture - pasteOriginTexture),
+                ImageCoordinates(0, 0) + (affectedTargetRectTexture->origin - pasteOriginTexture),
                 affectedTargetRectTexture->size);
 
             if (sourcePayload.ExteriorTextureLayer && mModel.HasLayer(LayerType::ExteriorTexture)) // Rotfl - just for code structure symmetry
@@ -932,7 +918,6 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
                     sourcePayload.ExteriorTextureLayer->Buffer,
                     affectedSourceRegion,
                     *affectedTargetRectTexture,
-                    actualPasteOriginTexture,
                     isTransparent);
 
                 // Remember we are in temp visualization now
@@ -961,12 +946,9 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
         {
             assert(!affectedTargetRectTexture->IsEmpty());
 
-            // Adjust paste origin
-            actualPasteOriginTexture = affectedTargetRectTexture->origin;
-
             // Calculate affected source region
             ImageRect const affectedSourceRegion(
-                ImageCoordinates(0, 0) + (actualPasteOriginTexture - pasteOriginTexture),
+                ImageCoordinates(0, 0) + (affectedTargetRectTexture->origin - pasteOriginTexture),
                 affectedTargetRectTexture->size);
 
             if (sourcePayload.InteriorTextureLayer && mModel.HasLayer(LayerType::InteriorTexture)) // Rotfl - just for code structure symmetry
@@ -981,7 +963,6 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
                     sourcePayload.InteriorTextureLayer->Buffer,
                     affectedSourceRegion,
                     *affectedTargetRectTexture,
-                    actualPasteOriginTexture,
                     isTransparent);
 
                 // Remember we are in temp visualization now
@@ -1112,53 +1093,75 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
             assert(mModel.HasLayer(LayerType::ExteriorTexture));
             assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
 
-            // TODOHERE
-            ImageCoordinates const destinationPosTexture = ShipSpaceToExteriorTextureSpace(destinationPos);
+            ImageRect const sourceRegionTexture = ImageRect(
+                ShipSpaceToExteriorTextureSpace(sourceRegion.origin),
+                sourceRestorePayload.ExteriorTextureLayerBufferRegion->Size);
 
-            ImageCoordinates actualPasteOriginTexture = destinationPosTexture;
+            ImageCoordinates const destinationPosTexture = ShipSpaceToExteriorTextureSpace(destinationPos);
 
             std::optional<ImageRect> const adjustedDestinationRegionTexture =
                 ImageRect(destinationPosTexture, sourceRestorePayload.ExteriorTextureLayerBufferRegion->Size)
                 .MakeIntersectionWith(GetWholeExteriorTextureRect());
 
+            if (!adjustedDestinationRegionTexture->IsEmpty())
+            {
+                // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
+                ImageRect const adjustedPasteSourceRegionTexture(
+                    ImageCoordinates(0, 0) + (adjustedDestinationRegionTexture->origin - destinationPosTexture),
+                    adjustedDestinationRegionTexture->size);
 
-            assert(!adjustedDestinationRegionTexture->IsEmpty());
+                // Erase
+                DoExteriorTextureRegionErase(sourceRegionTexture);
 
-            // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-            ImageRect const adjustedPasteSourceRegionTexture(
-                ImageCoordinates(0, 0) + (adjustedDestinationRegionTexture->origin - destinationPosTexture),
-                adjustedDestinationRegionTexture->size);
+                // Paste
+                assert(sourceRestorePayload.ExteriorTextureLayerBufferRegion);
+                DoExteriorTextureRegionBufferPaste(
+                    *sourceRestorePayload.ExteriorTextureLayerBufferRegion,
+                    adjustedPasteSourceRegionTexture,
+                    *adjustedDestinationRegionTexture,
+                    isTransparent);
 
-
-
-
-            // Erase
-            // TODO
-
-
-
-
-            // Paste
-            assert(sourceRestorePayload.ExteriorTextureLayerBufferRegion);
-            DoExteriorTextureRegionBufferPaste(
-                *sourceRestorePayload.ExteriorTextureLayerBufferRegion,
-                adjustedPasteSourceRegionTexture,
-                *adjustedDestinationRegionTexture,
-                adjustedDestinationRegionTexture->origin,
-                isTransparent);
-
-            // Remember we are in temp visualization now
-            mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization = true;
+                // Remember we are in temp visualization now
+                mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization = true;
+            }
         }
 
         if (layerSelection.IsSet(LayerType::InteriorTexture))
         {
+            assert(mModel.HasLayer(LayerType::InteriorTexture));
             assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
 
-            // TODOHERE
+            ImageRect const sourceRegionTexture = ImageRect(
+                ShipSpaceToInteriorTextureSpace(sourceRegion.origin),
+                sourceRestorePayload.InteriorTextureLayerBufferRegion->Size);
 
-            // Remember we are in temp visualization now
-            mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization = true;
+            ImageCoordinates const destinationPosTexture = ShipSpaceToInteriorTextureSpace(destinationPos);
+
+            std::optional<ImageRect> const adjustedDestinationRegionTexture =
+                ImageRect(destinationPosTexture, sourceRestorePayload.InteriorTextureLayerBufferRegion->Size)
+                .MakeIntersectionWith(GetWholeInteriorTextureRect());
+
+            if (!adjustedDestinationRegionTexture->IsEmpty())
+            {
+                // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
+                ImageRect const adjustedPasteSourceRegionTexture(
+                    ImageCoordinates(0, 0) + (adjustedDestinationRegionTexture->origin - destinationPosTexture),
+                    adjustedDestinationRegionTexture->size);
+
+                // Erase
+                DoInteriorTextureRegionErase(sourceRegionTexture);
+
+                // Paste
+                assert(sourceRestorePayload.InteriorTextureLayerBufferRegion);
+                DoInteriorTextureRegionBufferPaste(
+                    *sourceRestorePayload.InteriorTextureLayerBufferRegion,
+                    adjustedPasteSourceRegionTexture,
+                    *adjustedDestinationRegionTexture,
+                    isTransparent);
+
+                // Remember we are in temp visualization now
+                mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization = true;
+            }
         }
 
         //
@@ -2449,28 +2452,7 @@ void ModelController::EraseExteriorTextureRegion(ImageRect const & region)
 
     assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
 
-    assert(region.IsContainedInRect(ImageRect(mModel.GetExteriorTextureLayer().Buffer.Size)));
-
-    //
-    // Update model
-    //
-
-    auto & textureLayerBuffer = mModel.GetExteriorTextureLayer().Buffer;
-
-    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
-    {
-        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
-        {
-            textureLayerBuffer[{x, y}].a = 0;
-        }
-    }
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::Game>(ExteriorImageRectToContainingShipSpaceRect(region));
-    RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(region);
+    DoExteriorTextureRegionErase(region);
 }
 
 std::optional<ImageRect> ModelController::ExteriorTextureMagicWandEraseBackground(
@@ -2675,27 +2657,7 @@ void ModelController::EraseInteriorTextureRegion(ImageRect const & region)
 
     assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
 
-    assert(region.IsContainedInRect(ImageRect(mModel.GetInteriorTextureLayer().Buffer.Size)));
-
-    //
-    // Update model
-    //
-
-    auto & textureLayerBuffer = mModel.GetInteriorTextureLayer().Buffer;
-
-    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
-    {
-        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
-        {
-            textureLayerBuffer[{x, y}].a = 0;
-        }
-    }
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(region);
+    DoInteriorTextureRegionErase(region);
 }
 
 std::optional<ImageRect> ModelController::InteriorTextureMagicWandEraseBackground(
@@ -4456,7 +4418,6 @@ void ModelController::InternalRestoreExteriorTextureLayerRegionEphemeralVisualiz
         backupBuffer,
         backupBufferRegion,
         ImageRect(targetOrigin, backupBufferRegion.size),
-        targetOrigin,
         false);
 
     // Remember we are not anymore in temp visualization
@@ -4477,7 +4438,6 @@ void ModelController::InternalRestoreInteriorTextureLayerRegionEphemeralVisualiz
         backupBuffer,
         backupBufferRegion,
         ImageRect(targetOrigin, backupBufferRegion.size),
-        targetOrigin,
         false);
 
     // Remember we are not anymore in temp visualization
@@ -4495,6 +4455,8 @@ void ModelController::DoStructuralRegionFill(
     //
 
     auto & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
+
+    assert(region.IsContainedInRect(ShipSpaceRect(structuralLayerBuffer.Size)));
 
     for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
     {
@@ -4524,6 +4486,8 @@ void ModelController::DoElectricalRegionFill(
 
     auto & electricalLayerBuffer = mModel.GetElectricalLayer().Buffer;
 
+    assert(region.IsContainedInRect(ShipSpaceRect(electricalLayerBuffer.Size)));
+
     for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
     {
         for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
@@ -4552,6 +4516,63 @@ void ModelController::DoRopesRegionErase(
 
     // Update visualization
     RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+}
+
+void ModelController::DoExteriorTextureRegionErase(
+    ImageRect const & region)
+{
+    assert(mModel.HasLayer(LayerType::ExteriorTexture));
+
+    //
+    // Update model
+    //
+
+    auto & textureLayerBuffer = mModel.GetExteriorTextureLayer().Buffer;
+
+    assert(region.IsContainedInRect(ImageRect(textureLayerBuffer.Size)));
+
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    {
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+        {
+            textureLayerBuffer[{x, y}].a = 0;
+        }
+    }
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::Game>(ExteriorImageRectToContainingShipSpaceRect(region));
+    RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(region);
+}
+
+void ModelController::DoInteriorTextureRegionErase(
+    ImageRect const & region)
+{
+    assert(mModel.HasLayer(LayerType::InteriorTexture));
+
+    //
+    // Update model
+    //
+
+    auto & textureLayerBuffer = mModel.GetInteriorTextureLayer().Buffer;
+
+    assert(region.IsContainedInRect(ImageRect(textureLayerBuffer.Size)));
+
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    {
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+        {
+            textureLayerBuffer[{x, y}].a = 0;
+        }
+    }
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(region);
 }
 
 void ModelController::DoStructuralRegionBufferPaste(
@@ -4661,7 +4682,6 @@ void ModelController::DoExteriorTextureRegionBufferPaste(
     typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & sourceBuffer,
     ImageRect const & sourceRegion,
     ImageRect const & targetRegion,
-    ImageCoordinates const & targetCoordinates,
     bool isTransparent)
 {
     assert(mModel.HasLayer(LayerType::ExteriorTexture));
@@ -4685,7 +4705,7 @@ void ModelController::DoExteriorTextureRegionBufferPaste(
     mModel.GetExteriorTextureLayer().Buffer.BlitFromRegion(
         sourceBuffer,
         sourceRegion,
-        targetCoordinates,
+        targetRegion.origin,
         elementOperator);
 
     //
@@ -4700,7 +4720,6 @@ void ModelController::DoInteriorTextureRegionBufferPaste(
     typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & sourceBuffer,
     ImageRect const & sourceRegion,
     ImageRect const & targetRegion,
-    ImageCoordinates const & targetCoordinates,
     bool isTransparent)
 {
     assert(mModel.HasLayer(LayerType::InteriorTexture));
@@ -4724,7 +4743,7 @@ void ModelController::DoInteriorTextureRegionBufferPaste(
     mModel.GetInteriorTextureLayer().Buffer.BlitFromRegion(
         sourceBuffer,
         sourceRegion,
-        targetCoordinates,
+        targetRegion.origin,
         elementOperator);
 
     //

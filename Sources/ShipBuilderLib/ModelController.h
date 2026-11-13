@@ -784,7 +784,11 @@ private:
     void DoRopesRegionErase(
         ShipSpaceRect const & region);
 
-    // TODOHERE: DoXXXRegionFill x 2
+    void DoExteriorTextureRegionErase(
+        ImageRect const & region);
+
+    void DoInteriorTextureRegionErase(
+        ImageRect const & region);
 
     void DoStructuralRegionBufferPaste(
         typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceBuffer,
@@ -808,14 +812,12 @@ private:
         typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & sourceBuffer,
         ImageRect const & sourceRegion,
         ImageRect const & targetRegion,
-        ImageCoordinates const & targetCoordinates,
         bool isTransparent);
 
     void DoInteriorTextureRegionBufferPaste(
         typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & sourceBuffer,
         ImageRect const & sourceRegion,
         ImageRect const & targetRegion,
-        ImageCoordinates const & targetCoordinates,
         bool isTransparent);
 
     TextureLayerData MakeTextureLayerFromImage(
