@@ -776,7 +776,15 @@ private:
     void DoStructuralRegionFill(
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
-    // TODOHERE: DoXXXRegionFill x 5
+
+    void DoElectricalRegionFill(
+        ShipSpaceRect const & region,
+        ElectricalMaterial const * material);
+
+    void DoRopesRegionErase(
+        ShipSpaceRect const & region);
+
+    // TODOHERE: DoXXXRegionFill x 2
 
     void DoStructuralRegionBufferPaste(
         typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceBuffer,

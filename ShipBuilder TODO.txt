@@ -1239,15 +1239,21 @@
 
 											= Do for:
 												+ S
-												- E
-												- R
+												= E
+													+ DoElectricalRegionFill
+														+ Refactor like we did for S
+													- Test
+												= R
+													+ DoEraseRopesRegion
+														+ Refactor like we did for S
+													- Test
 												- ET
 												- IT
 									+ Return payload
 
 									- Rewrite PastForEphViz as the above
-										- At this moment, new assumption: if ship space rect ! empty, texture space rects are also ! empty
-							- Do other two texture ones 
+										- At this moment, new assumption: if ship space rect ! empty, texture space rects are also ! empty; verify mathematically
+							- Do other two texture ones -- Exterior/InteriorTextureSpaceRegionTransferForEphViz
 							+ Store eph viz restore payload in finalizer, remembering we are in eph viz
 								+ ModelController::RestoreEphemeralVisualization (one of 3)
 						+ mController.LayerChangeEpilog()

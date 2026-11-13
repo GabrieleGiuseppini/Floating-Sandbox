@@ -1059,7 +1059,111 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
             mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization = true;
         }
 
-        // TODOHERE: other 4
+        if (layerSelection.IsSet(LayerType::Electrical))
+        {
+            assert(!mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization);
+
+            // Erase
+            DoElectricalRegionFill(sourceRegion, nullptr);
+
+            // Paste
+            assert(sourceRestorePayload.ElectricalLayerBufferRegion);
+            DoElectricalRegionBufferPaste(
+                *sourceRestorePayload.ElectricalLayerBufferRegion,
+                adjustedPasteSourceRegion,
+                adjustedDestinationRegion->origin,
+                isTransparent
+                ? [](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement const &
+                {
+                    return src.Material
+                        ? src
+                        : dst;
+                }
+                : [](ElectricalElement const & src, ElectricalElement const &) -> ElectricalElement const &
+                {
+                    return src;
+                });
+
+            // Remember we are in temp visualization now
+            mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization = true;
+        }
+
+        if (layerSelection.IsSet(LayerType::Ropes))
+        {
+            assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
+
+            // Erase
+            DoRopesRegionErase(sourceRegion);
+
+            // Paste
+            assert(sourceRestorePayload.RopesLayerBuffer);
+            DoRopesRegionBufferPaste(
+                *sourceRestorePayload.RopesLayerBuffer,
+                adjustedPasteSourceRegion,
+                adjustedDestinationRegion->origin,
+                isTransparent);
+
+            // Remember we are in temp visualization now
+            mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization = true;
+        }
+
+        if (layerSelection.IsSet(LayerType::ExteriorTexture))
+        {
+            assert(mModel.HasLayer(LayerType::ExteriorTexture));
+            assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
+
+            // TODOHERE
+            ImageCoordinates const destinationPosTexture = ShipSpaceToExteriorTextureSpace(destinationPos);
+
+            ImageCoordinates actualPasteOriginTexture = destinationPosTexture;
+
+            std::optional<ImageRect> const adjustedDestinationRegionTexture =
+                ImageRect(destinationPosTexture, sourceRestorePayload.ExteriorTextureLayerBufferRegion->Size)
+                .MakeIntersectionWith(GetWholeExteriorTextureRect());
+
+
+            assert(!adjustedDestinationRegionTexture->IsEmpty());
+
+            // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
+            ImageRect const adjustedPasteSourceRegionTexture(
+                ImageCoordinates(0, 0) + (adjustedDestinationRegionTexture->origin - destinationPosTexture),
+                adjustedDestinationRegionTexture->size);
+
+
+
+
+            // Erase
+            // TODO
+
+
+
+
+            // Paste
+            assert(sourceRestorePayload.ExteriorTextureLayerBufferRegion);
+            DoExteriorTextureRegionBufferPaste(
+                *sourceRestorePayload.ExteriorTextureLayerBufferRegion,
+                adjustedPasteSourceRegionTexture,
+                *adjustedDestinationRegionTexture,
+                adjustedDestinationRegionTexture->origin,
+                isTransparent);
+
+            // Remember we are in temp visualization now
+            mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization = true;
+        }
+
+        if (layerSelection.IsSet(LayerType::InteriorTexture))
+        {
+            assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
+
+            // TODOHERE
+
+            // Remember we are in temp visualization now
+            mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization = true;
+        }
+
+        //
+        // Finalize payload
+        //
 
         restorePayload.AddRegion(std::move(sourceRestorePayload));
         restorePayload.AddRegion(std::move(destinationRestorePayload));
@@ -1961,27 +2065,7 @@ void ModelController::ElectricalRegionFillForEphemeralVisualization(
     ShipSpaceRect const & region,
     ElectricalMaterial const * material)
 {
-    assert(mModel.HasLayer(LayerType::Electrical));
-
-    //
-    // Update model just with material - no instance ID, no analyses, no panel
-    //
-
-    auto & electricalLayerBuffer = mModel.GetElectricalLayer().Buffer;
-
-    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
-    {
-        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
-        {
-            electricalLayerBuffer[ShipSpaceCoordinates(x, y)].Material = material;
-        }
-    }
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(region);
+    DoElectricalRegionFill(region, material);
 
     // Remember we are in temp visualization now
     mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization = true;
@@ -2199,14 +2283,7 @@ void ModelController::EraseRopesRegion(ShipSpaceRect const & region)
 
     assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
 
-    //
-    // Update model
-    //
-
-    mModel.GetRopesLayer().Buffer.EraseRegion(region);
-
-    // Update visualization
-    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+    DoRopesRegionErase(region);
 }
 
 void ModelController::RestoreRopesLayerRegionBackup(
@@ -4433,6 +4510,48 @@ void ModelController::DoStructuralRegionFill(
 
     RegisterDirtyVisualization<VisualizationType::Game>(region);
     RegisterDirtyVisualization<VisualizationType::StructuralLayer>(region);
+}
+
+void ModelController::DoElectricalRegionFill(
+    ShipSpaceRect const & region,
+    ElectricalMaterial const * material)
+{
+    assert(mModel.HasLayer(LayerType::Electrical));
+
+    //
+    // Update model just with material - no instance ID, no analyses, no panel
+    //
+
+    auto & electricalLayerBuffer = mModel.GetElectricalLayer().Buffer;
+
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    {
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+        {
+            electricalLayerBuffer[ShipSpaceCoordinates(x, y)].Material = material;
+        }
+    }
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(region);
+}
+
+void ModelController::DoRopesRegionErase(
+    ShipSpaceRect const & region)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    //
+    // Update model
+    //
+
+    mModel.GetRopesLayer().Buffer.EraseRegion(region);
+
+    // Update visualization
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 }
 
 void ModelController::DoStructuralRegionBufferPaste(
