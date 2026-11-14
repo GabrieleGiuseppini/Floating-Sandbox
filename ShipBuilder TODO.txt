@@ -1202,7 +1202,7 @@
 							+ Undo eph viz - via finalizer
 						+ Change coords
 						= Draw eph viz:
-							- ModelController::ShipSpaceRegionTransferForEphViz -> GenericEphemeralVisualizationRestorePayload
+							+ ModelController::ShipSpaceRegionTransferForEphViz -> GenericEphemeralVisualizationRestorePayload
 								+ This one called by base, as one of three ModelController overloads (SER, Ext, Int)
 								+ Args:
 									+ SourceRegion
@@ -1210,9 +1210,9 @@
 									+ set<LayerType>
 										+ Replaces bool in SelectionMoves -- calcd at SelectionMoves creation time
 									+ IsTransparent
-								= Impl: (trace PasteForEphemeralVisualization)
+								+ Impl: (trace PasteForEphemeralVisualization)
 									+ Calc affected source and target rect in ShipSpace
-									= If region ! empty:
+									+ If region ! empty:
 										+ Call new MakeGenericShipSpaceEphemeralVisualizationRestorePayload
 											+ Returns ShipSpaceRegionPayload
 												+ make public
@@ -1226,8 +1226,7 @@
 											+ Test: Paste w/different layers combos
 											+ Do also other two spaces
 											+ Call it
-
-										= For each selected layer:
+										+ For each selected layer:
 											+ Erase
 												+ DoStructuralRegionFill
 													+ Factor out code from StructuralRegionFillForEphemeralVisualization
@@ -1237,16 +1236,16 @@
 													+ Takes care of viz dirty region
 											+ Remember layer is in eph viz
 
-											= Do for:
+											+ Do for:
 												+ S
 												+ E
 													+ DoElectricalRegionFill
 														+ Refactor like we did for S
 													+ Test
-												= R
+												+ R
 													+ DoEraseRopesRegion
 														+ Refactor like we did for S
-													= TODOHERE: rethink ropes when region "cuts" a rope
+													+ Rethink ropes when region "cuts" a rope
 														! Current behaviors:
 															- Erase: if at least one endpoint in region
 															- Copy(Region): if at least one endpoint in region; offsets their coords afterwards
@@ -1277,20 +1276,19 @@
 																+ PasteTool
 															+ This
 
-														- RopesLayer:
+														+ RopesLayer changes:
 															+ Make CloneRegion behave like CopyRegion
 																+ Then nuke CopyRegion and replace with CloneRegion
-															- Allow rope endpoint to stay anchored
-																- RopeBuffer:
-																	- CopyRegion: don't offset endpoint that is out of region
-																	- BlitFromRegion: don't offset endpoint that is out of region
-
-																- Test:
-																	- RopePencilTool
-																	- Copy->Paste X 2
-																	- Cut->Paste X 2
-																	- Outs X 2
-															- UnitTests
+															+ Allow rope endpoint to stay anchored
+																+ RopeBuffer:
+																	+ CopyRegion: don't offset endpoint that is out of region
+																	+ BlitFromRegion: don't offset endpoint that is out of region
+																+ Test:
+																	+ RopePencilTool
+																	+ Copy->Paste X 2
+																	+ Cut->Paste X 2
+																	+ Ours X 2
+															+ UnitTests
 															
 												+ ET
 													+ Erase: refactor EraseExteriorTextureRegion: DoEraseExteriorTextureRegion, does assert hasLayer + model + register dirty

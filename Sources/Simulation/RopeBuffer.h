@@ -121,7 +121,9 @@ struct RopeBuffer
     }
 
     /*
-     * Copies ropes that have *at least* one endpoint in the specified region.
+     * Copies ropes that have *at least* one endpoint in the specified region,
+     * re-origing coords of endpoints within the region.
+     * Endpoints outside the region are mainted on their original coords.
      */
     RopeBuffer CloneRegion(ShipSpaceRect const & region) const
     {
@@ -134,8 +136,8 @@ struct RopeBuffer
             if (r.StartCoords.IsInRect(region) || r.EndCoords.IsInRect(region))
             {
                 newBuffer.EmplaceBack(
-                    r.StartCoords - offset,
-                    r.EndCoords - offset,
+                    r.StartCoords.IsInRect(region) ? r.StartCoords - offset : r.StartCoords,
+                    r.EndCoords.IsInRect(region) ? r.EndCoords - offset : r.EndCoords,
                     r.Material,
                     r.RenderColor);
             }
@@ -144,6 +146,9 @@ struct RopeBuffer
         return newBuffer;
     }
 
+    /*
+     * Maintains coords of endpoints outside the blitted region.
+     */
     void BlitFromRegion(
         RopeBuffer const & source,
         ShipSpaceRect const & sourceRegion,
@@ -177,8 +182,12 @@ struct RopeBuffer
             if (r.StartCoords.IsInRect(sourceRegion) || r.EndCoords.IsInRect(sourceRegion))
             {
                 // Translate coords
-                ShipSpaceCoordinates startCoordsInTarget = targetPos + (r.StartCoords - sourceRegion.origin);
-                ShipSpaceCoordinates endCoordsInTarget = targetPos + (r.EndCoords - sourceRegion.origin);
+                ShipSpaceCoordinates const startCoordsInTarget = r.StartCoords.IsInRect(sourceRegion)
+                    ? targetPos + (r.StartCoords - sourceRegion.origin)
+                    : r.StartCoords;
+                ShipSpaceCoordinates const endCoordsInTarget = r.EndCoords.IsInRect(sourceRegion)
+                    ? targetPos + (r.EndCoords - sourceRegion.origin)
+                    : r.EndCoords;
 
                 // Make sure translated coords are inside our size
                 if (startCoordsInTarget.IsInSize(mSize) && endCoordsInTarget.IsInSize(mSize))
