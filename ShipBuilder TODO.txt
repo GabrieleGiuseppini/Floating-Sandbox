@@ -1188,8 +1188,6 @@
 
 
 
-
-
 					+ Call InternalCommit @:
 						+ dctor - iff needs to commit
 						+ Creation of new selection
@@ -1197,11 +1195,11 @@
 						+ Nuke
 					+ Use finalizer for eph viz
 						+ No need for UndoEphViz; shove in finalizer
-					= @ each move (for eph viz):
+					+ @ each move (for eph viz):
 						+ If have eph viz:
 							+ Undo eph viz - via finalizer
 						+ Change coords
-						= Draw eph viz:
+						+ Draw eph viz:
 							+ ModelController::ShipSpaceRegionTransferForEphViz -> GenericEphemeralVisualizationRestorePayload
 								+ This one called by base, as one of three ModelController overloads (SER, Ext, Int)
 								+ Args:
@@ -1297,24 +1295,12 @@
 									+ Return payload
 
 									+ FIX: when intersection of target area is zero, we do not erase
-
-							- Do other two texture ones -- Exterior/InteriorTextureSpaceRegionTransferForEphViz
-								- Test
+							+ Do other two texture ones -- Exterior/InteriorTextureSpaceRegionTransferForEphViz
+								+ Test
 							+ Store eph viz restore payload in finalizer, remembering we are in eph viz
 								+ ModelController::RestoreEphemeralVisualization (one of 3)
 						+ mController.LayerChangeEpilog()
 					= @ new selection, and @ ~dctor(): commit
-						- TODO: also @ MouseLeave? NOTE: we don't want selection to disappear on mouse moving out
-							- Most call Leave() @ ~dctor and @ MouseLeave, but only commit @ MouseLeave if not committed yet; 
-								- Common structure:
-									- dctor: Leave(false)
-									- OnMouseLeft: Leave(true)
-									- OnXYZCommittingMouseEvent: Commit
-									- Leave:
-										- Mend eph viz
-										- If engaged and true: Commit
-										- Reset engagement -- NOTE: does not apply to us, we don't want selection to disappear on mouse moving out
-										- LayerChangeEpilog
 						+ If have eph viz:
 							+ Undo eph viz - via finalizer
 						- If not empty move:
