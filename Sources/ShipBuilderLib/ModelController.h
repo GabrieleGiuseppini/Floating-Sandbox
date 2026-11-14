@@ -419,7 +419,10 @@ public:
         ShipSpaceCoordinates const & oldCoords,
         ShipSpaceCoordinates const & newCoords);
 
-    void RestoreRopesLayerEphemeralVisualization(typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer);
+    void RestoreRopesLayerEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer,
+        ShipSpaceRect const & backupBufferRegion,
+        ShipSpaceCoordinates const & targetOrigin);
 
     //
     // Exterior Texture
@@ -759,6 +762,8 @@ private:
 
     void InternalRestoreRopesLayerEphemeralVisualization(
         typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer,
+        ShipSpaceRect const & backupBufferRegion,
+        ShipSpaceCoordinates const & targetOrigin,
         EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
 
     void InternalRestoreExteriorTextureLayerRegionEphemeralVisualization(

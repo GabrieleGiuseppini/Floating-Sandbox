@@ -32,7 +32,7 @@ public:
 
 		std::optional<typename LayerTypeTraits<LayerType::Structural>::buffer_type> StructuralLayerBufferRegion;
 		std::optional<typename LayerTypeTraits<LayerType::Electrical>::buffer_type> ElectricalLayerBufferRegion;
-		std::optional<typename LayerTypeTraits<LayerType::Ropes>::buffer_type> RopesLayerBuffer; // Whole buffer
+		std::optional<typename LayerTypeTraits<LayerType::Ropes>::buffer_type> RopesLayerBufferRegion;
 		std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> ExteriorTextureLayerBufferRegion;
 		std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> InteriorTextureLayerBufferRegion;
 
@@ -45,13 +45,13 @@ public:
 			ShipSpaceCoordinates const & origin,
 			std::optional<typename LayerTypeTraits<LayerType::Structural>::buffer_type> && structuralLayerBufferRegion,
 			std::optional<typename LayerTypeTraits<LayerType::Electrical>::buffer_type > && electricalLayerBufferRegion,
-			std::optional<typename LayerTypeTraits<LayerType::Ropes>::buffer_type> && ropesLayerBuffer,
+			std::optional<typename LayerTypeTraits<LayerType::Ropes>::buffer_type> && ropesLayerBufferRegion,
 			std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> && exteriorTextureLayerBufferRegion,
 			std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> && interiorTextureLayerBufferRegion)
 			: Origin(origin)
 			, StructuralLayerBufferRegion(std::move(structuralLayerBufferRegion))
 			, ElectricalLayerBufferRegion(std::move(electricalLayerBufferRegion))
-			, RopesLayerBuffer(std::move(ropesLayerBuffer))
+			, RopesLayerBufferRegion(std::move(ropesLayerBufferRegion))
 			, ExteriorTextureLayerBufferRegion(std::move(exteriorTextureLayerBufferRegion))
 			, InteriorTextureLayerBufferRegion(std::move(interiorTextureLayerBufferRegion))
 		{
@@ -71,7 +71,7 @@ public:
 				affectedLayers.emplace_back(LayerType::Electrical);
 			}
 
-			if (RopesLayerBuffer.has_value())
+			if (RopesLayerBufferRegion.has_value())
 			{
 				affectedLayers.emplace_back(LayerType::Ropes);
 			}

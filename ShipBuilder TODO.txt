@@ -1246,14 +1246,38 @@
 												= R
 													+ DoEraseRopesRegion
 														+ Refactor like we did for S
-													- TODOHERE: rethink ropes when region "cuts" a rope
-														- Current behaviors:
+													= TODOHERE: rethink ropes when region "cuts" a rope
+														! Current behaviors:
 															- Erase: if at least one endpoint in region
 															- Copy(Region): if at least one endpoint in region; offsets their coords afterwards
 															- BlitFromRegion (i.e. Paste): copy ropes with at least one endpoint in region; 
 															  un-offsets their coords afterwards, and deletes ropes with at least one endpoint at same places
-														- Should match, test it - AND NOT!
+														+ Should match, test it - AND NOT!
+															+ Restore build up: it's in SourceRestorePayload
+															+ Paste: neither endpoint is in rect
+																+ Because we're using sourceRestorePayload (whole), which was built with RopesBuffer::Clone(), not CloneRegion() which is not offseted
+																	! What do we do at Copy()? CopyRegion
+																	+ Use CopyRegion() @ MakeGenericShipSpaceEphemeralVisualizationRestorePayload
+																		+ Check callers of MakeGenericShipSpaceEphemeralVisualizationRestorePayload, they're impacted
+																	+ Then deal with buffer being region at RestoreEphemeralVisualization
+																		+ InternalRestoreRopesLayerEphemeralVisualization
+																		+ Called also by:
+																			+ RestoreRopesLayerEphemeralVisualization:
+																				+ Called also by:
+																					+ RopePencilTool::MendTempVisualization
+																		+ Check anywhere else we use RopeBuffer::Clone() instead of CloneRegion()?
+																			+ MakeGenericShipSpaceUndoPayload: calls RopesLayerBuffer MakeRegionBackup() which calls Clone(), but also restore expects it, so okay
+																	+ Then deal with callers of RestoreEphemeralVisualization
+																		+ PasteTool, i.e. ModelController::PasteForEphemeralVisualization
+																		+ SelectAndTranslateTool
+																		X StructuralRectangleTool
+														+ Test:
+															+ Others:
+																+ RopePencilTool
+																+ PasteTool
+															+ This
 
+														- Allow rope endpoint to stay anchored
 
 													- Test
 														- Both endpoints inside
@@ -1265,7 +1289,6 @@
 									+ Return payload
 
 									+ FIX: when intersection of target area is zero, we do not erase
-									- FIX (possibly): LayerChangeEpilog between restoring ephviz and redrawing it?
 
 									- Rewrite PastForEphViz as the above
 										- At this moment, new assumption: if ship space rect ! empty, texture space rects are also ! empty; verify mathematically
@@ -1291,7 +1314,8 @@
 						- If not empty move:
 							- ModelController::RegionTransfer -> multi-region undo
 								- Refactor various Paste for Electricals: into helpers that provide operators
-								- TODO: need convoluted electrical panel handling
+								- TODO: Electricals: need convoluted electrical panel handling
+								- TODO: Ropes: also careful here about which source region we use for pasting
 						
 		- See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
 			- Also optimize - we do some things multiple times, once per region
