@@ -26,7 +26,7 @@ namespace ShipBuilder {
 template<CoordinatesSpaceType TCoordinatesSpace>
 class GenericUndoPayload final
 {
-private:
+public:
 
 	class ShipSpaceRegionPayload final
 	{
@@ -165,6 +165,7 @@ private:
 	};
 
 	using TPayload = typename CoordinatesSpaceTraits<TCoordinatesSpace>::payload_type;
+	using payload_type = TPayload;
 
 public:
 

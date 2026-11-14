@@ -242,7 +242,21 @@ public:
         ShipSpaceCoordinates const & pasteOrigin,
         bool isTransparent);
 
-    // TODO: committed transfer here, X 3
+    GenericShipSpaceUndoPayload ShipSpaceRegionTransfer(
+        ShipSpaceRect const & sourceRegion, // In current model
+        ShipSpaceCoordinates const & destinationPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent);
+    GenericExteriorTextureSpaceUndoPayload ExteriorTextureSpaceRegionTransfer(
+        ImageRect const & sourceRegion, // In current model
+        ImageCoordinates const & destinationPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent);
+    GenericInteriorTextureSpaceUndoPayload InteriorTextureSpaceRegionTransfer(
+        ImageRect const & sourceRegion, // In current model
+        ImageCoordinates const & destinationPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent);
 
     GenericShipSpaceEphemeralVisualizationRestorePayload ShipSpaceRegionTransferForEphemeralVisualization(
         ShipSpaceRect const & sourceRegion, // In current model
@@ -728,13 +742,9 @@ private:
         bool doContiguousOnly,
         TextureLayerData & layer);
 
-    GenericShipSpaceUndoPayload MakeGenericShipSpaceUndoPayload(
+    GenericShipSpaceUndoPayload::payload_type MakeGenericShipSpaceUndoPayload(
         std::optional<ShipSpaceRect> const & region,
-        bool doStructuralLayer,
-        bool doElectricalLayer,
-        bool doRopesLayer,
-        bool doExteriorTextureLayer,
-        bool doInteriorTextureLayer) const;
+        LayerSelector const & layerSelection) const;
 
     GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type MakeGenericShipSpaceEphemeralVisualizationRestorePayload(
         ShipSpaceRect const & region,

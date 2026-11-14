@@ -8,6 +8,7 @@
 #include "Tool.h"
 
 #include "../GenericEphemeralVisualizationRestorePayload.h"
+#include "../GenericUndoPayload.h"
 #include "../LayerSelector.h"
 
 #include <Simulation/Layers.h>
@@ -23,7 +24,7 @@
 
 namespace ShipBuilder {
 
-template<LayerType TLayer, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
 class SelectAndTranslateTool : public Tool
 {
 public:
@@ -54,7 +55,12 @@ private:
 
     void InternalDoMoveForEphemeralVisualization(TSize totalMoveOffset);
 
-    void InternalCommit();
+    void Commit();
+    virtual TUndoPayload InternalCommit(
+        TRect const & sourceRegion,
+        TCoords const & targetPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent) = 0;
 
     void DrawEphemeralVisualization();
     virtual TEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
@@ -169,7 +175,7 @@ private:
 
 // Specialization for Structural/Electrical/Ropes layers, which work on ship space coords
 template<LayerType TLayer>
-class SelectAndTranslateTool_ShipSpace : public SelectAndTranslateTool<TLayer, GenericShipSpaceEphemeralVisualizationRestorePayload, ShipSpaceTag>
+class SelectAndTranslateTool_ShipSpace : public SelectAndTranslateTool<TLayer, GenericShipSpaceUndoPayload, GenericShipSpaceEphemeralVisualizationRestorePayload, ShipSpaceTag>
 {
 protected:
 
@@ -177,6 +183,12 @@ protected:
         ToolType toolType,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
+
+    GenericShipSpaceUndoPayload InternalCommit(
+        ShipSpaceRect const & sourceRegion,
+        ShipSpaceCoordinates const & targetPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent) override;
 
     GenericShipSpaceEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
         ShipSpaceRect const & sourceRegion,
@@ -216,7 +228,7 @@ public:
         GameAssetManager const & gameAssetManager);
 };
 
-class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageSpaceTag>
+class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, GenericExteriorTextureSpaceUndoPayload, GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageSpaceTag>
 {
 public:
 
@@ -225,6 +237,12 @@ public:
         GameAssetManager const & gameAssetManager);
 
 protected:
+
+    GenericExteriorTextureSpaceUndoPayload InternalCommit(
+        ImageRect const & sourceRegion,
+        ImageCoordinates const & targetPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent) override;
 
     GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
         ImageRect const & sourceRegion,
@@ -237,7 +255,7 @@ protected:
     ImageSize GetSpaceSize() const override;
 };
 
-class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageSpaceTag>
+class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, GenericInteriorTextureSpaceUndoPayload, GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageSpaceTag>
 {
 public:
 
@@ -246,6 +264,12 @@ public:
         GameAssetManager const & gameAssetManager);
 
 protected:
+
+    GenericInteriorTextureSpaceUndoPayload InternalCommit(
+        ImageRect const & sourceRegion,
+        ImageCoordinates const & targetPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent) override;
 
     GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
         ImageRect const & sourceRegion,

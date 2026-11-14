@@ -510,13 +510,10 @@ GenericShipSpaceUndoPayload ModelController::EraseRegion(
     // Prepare undo
     //
 
-    GenericShipSpaceUndoPayload undoPayload = MakeGenericShipSpaceUndoPayload(
-        region,
-        layerSelection.IsSet(LayerType::Structural),
-        layerSelection.IsSet(LayerType::Electrical),
-        layerSelection.IsSet(LayerType::Ropes),
-        layerSelection.IsSet(LayerType::ExteriorTexture),
-        layerSelection.IsSet(LayerType::InteriorTexture));
+    GenericShipSpaceUndoPayload undoPayload = GenericShipSpaceUndoPayload::Make(
+        MakeGenericShipSpaceUndoPayload(
+            region,
+            layerSelection));
 
     //
     // Erase
@@ -980,7 +977,132 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
         std::move(interiorTextureLayerRestoreBufferRegion));
 }
 
-// TODO: committed transfer here, X 3
+GenericShipSpaceUndoPayload ModelController::ShipSpaceRegionTransfer(
+    ShipSpaceRect const & sourceRegion, // In current model
+    ShipSpaceCoordinates const & destinationPos,
+    LayerSelector const & layerSelection,
+    bool isTransparent)
+{
+    // Source region expected to be in ship
+    assert(sourceRegion.IsContainedInRect(GetWholeShipRect()));
+
+    // Prepare undo for erase
+    auto sourceUndoPayload = MakeGenericShipSpaceUndoPayload(sourceRegion, layerSelection);
+
+    // Calculate destination region - won't have one if target outside
+    // of ship
+    std::optional<ShipSpaceRect> const adjustedDestinationRegion =
+        ShipSpaceRect(destinationPos, sourceRegion.size)
+        .MakeIntersectionWith(GetWholeShipRect());
+
+    assert(!adjustedDestinationRegion.has_value() || !adjustedDestinationRegion->IsEmpty());
+
+    std::optional<ShipSpaceRect> adjustedPasteSourceRegion;
+    std::optional<GenericShipSpaceUndoPayload::payload_type> destinationUndoPayload;
+    if (adjustedDestinationRegion.has_value())
+    {
+        // Prepare paste undo
+        destinationUndoPayload = MakeGenericShipSpaceUndoPayload(*adjustedDestinationRegion, layerSelection);
+
+        // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
+        adjustedPasteSourceRegion = ShipSpaceRect(
+            ShipSpaceCoordinates(0, 0) + (adjustedDestinationRegion->origin - destinationPos),
+            adjustedDestinationRegion->size);
+    }
+
+    if (layerSelection.IsSet(LayerType::Structural))
+    {
+        assert(!mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization);
+
+        // Erase - no analyses
+        DoStructuralRegionFill(sourceRegion, nullptr);
+
+        if (adjustedDestinationRegion.has_value())
+        {
+            // Paste
+            assert(sourceUndoPayload.StructuralLayerRegionBackup);
+            DoStructuralRegionBufferPaste(
+                sourceUndoPayload.StructuralLayerRegionBackup->Buffer,
+                *adjustedPasteSourceRegion,
+                adjustedDestinationRegion->origin,
+                isTransparent);
+        }
+
+        // Re-initialize layer analysis
+        InitializeStructuralLayerAnalysis();
+    }
+
+    if (layerSelection.IsSet(LayerType::Electrical))
+    {
+        assert(!mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization);
+
+        // TODOHERE
+    }
+
+    if (layerSelection.IsSet(LayerType::Ropes))
+    {
+        assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
+
+        // TODOHERE
+    }
+
+    if (layerSelection.IsSet(LayerType::ExteriorTexture))
+    {
+        assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
+
+        // TODOHERE
+    }
+
+    if (layerSelection.IsSet(LayerType::InteriorTexture))
+    {
+        assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
+
+        // TODOHERE
+    }
+
+    //
+    // Finalize undo
+    //
+
+    GenericShipSpaceUndoPayload undoPayload;
+
+    undoPayload.AddRegion(std::move(sourceUndoPayload));
+
+    if (destinationUndoPayload)
+    {
+        undoPayload.AddRegion(std::move(*destinationUndoPayload));
+    }
+
+    return undoPayload;
+}
+
+GenericExteriorTextureSpaceUndoPayload ModelController::ExteriorTextureSpaceRegionTransfer(
+    ImageRect const & sourceRegion, // In current model
+    ImageCoordinates const & destinationPos,
+    LayerSelector const & layerSelection,
+    bool isTransparent)
+{
+    // TODOHERE
+    (void)sourceRegion;
+    (void)destinationPos;
+    (void)layerSelection;
+    (void)isTransparent;
+    return GenericExteriorTextureSpaceUndoPayload();
+}
+
+GenericInteriorTextureSpaceUndoPayload ModelController::InteriorTextureSpaceRegionTransfer(
+    ImageRect const & sourceRegion, // In current model
+    ImageCoordinates const & destinationPos,
+    LayerSelector const & layerSelection,
+    bool isTransparent)
+{
+    // TODOHERE
+    (void)sourceRegion;
+    (void)destinationPos;
+    (void)layerSelection;
+    (void)isTransparent;
+    return GenericInteriorTextureSpaceUndoPayload();
+}
 
 GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceRegionTransferForEphemeralVisualization(
     ShipSpaceRect const & sourceRegion, // In current model
@@ -988,8 +1110,6 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
     LayerSelector const & layerSelection,
     bool isTransparent)
 {
-    GenericShipSpaceEphemeralVisualizationRestorePayload restorePayload;
-
     // Source region expected to be in ship
     assert(sourceRegion.IsContainedInRect(GetWholeShipRect()));
 
@@ -1095,7 +1215,6 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
 
     if (layerSelection.IsSet(LayerType::ExteriorTexture))
     {
-        assert(mModel.HasLayer(LayerType::ExteriorTexture));
         assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
 
         ImageRect const sourceRegionTexture = ImageRect(
@@ -1133,7 +1252,6 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
 
     if (layerSelection.IsSet(LayerType::InteriorTexture))
     {
-        assert(mModel.HasLayer(LayerType::InteriorTexture));
         assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
 
         ImageRect const sourceRegionTexture = ImageRect(
@@ -1170,10 +1288,13 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
     }
 
     //
-    // Finalize payload
+    // Finalize restore
     //
 
+    GenericShipSpaceEphemeralVisualizationRestorePayload restorePayload;
+
     restorePayload.AddRegion(std::move(sourceRestorePayload));
+
     if (destinationRestorePayload)
     {
         restorePayload.AddRegion(std::move(*destinationRestorePayload));
@@ -1188,8 +1309,6 @@ GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
     LayerSelector const & layerSelection,
     bool isTransparent)
 {
-    GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload restorePayload;
-
     // Source region expected to be in ship
     assert(sourceRegion.IsContainedInRect(GetWholeExteriorTextureRect()));
 
@@ -1279,10 +1398,13 @@ GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
     }
 
     //
-    // Finalize payload
+    // Finalize restore
     //
 
+    GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload restorePayload;
+
     restorePayload.AddRegion(std::move(sourceRestorePayload));
+
     if (destinationRestorePayload)
     {
         restorePayload.AddRegion(std::move(*destinationRestorePayload));
@@ -1297,8 +1419,6 @@ GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
     LayerSelector const & layerSelection,
     bool isTransparent)
 {
-    GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload restorePayload;
-
     // Source region expected to be in ship
     assert(sourceRegion.IsContainedInRect(GetWholeInteriorTextureRect()));
 
@@ -1388,10 +1508,13 @@ GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
     }
 
     //
-    // Finalize payload
+    // Finalize restore
     //
 
+    GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload restorePayload;
+
     restorePayload.AddRegion(std::move(sourceRestorePayload));
+
     if (destinationRestorePayload)
     {
         restorePayload.AddRegion(std::move(*destinationRestorePayload));
@@ -4363,13 +4486,9 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
     return affectedRegion;
 }
 
-GenericShipSpaceUndoPayload ModelController::MakeGenericShipSpaceUndoPayload(
+GenericShipSpaceUndoPayload::payload_type ModelController::MakeGenericShipSpaceUndoPayload(
     std::optional<ShipSpaceRect> const & region,
-    bool doStructuralLayer,
-    bool doElectricalLayer,
-    bool doRopesLayer,
-    bool doExteriorTextureLayer,
-    bool doInteriorTextureLayer) const
+    LayerSelector const & layerSelection) const
 {
     ShipSpaceRect actualRegion = region.value_or(GetWholeShipRect());
 
@@ -4382,22 +4501,22 @@ GenericShipSpaceUndoPayload ModelController::MakeGenericShipSpaceUndoPayload(
     std::optional<TextureLayerData> exteriorTextureLayerRegionBackup;
     std::optional<TextureLayerData> interiorTextureLayerRegionBackup;
 
-    if (doStructuralLayer)
+    if (layerSelection.IsSet(LayerType::Structural))
     {
         structuralLayerRegionBackup = mModel.GetStructuralLayer().MakeRegionBackup(actualRegion);
     }
 
-    if (doElectricalLayer)
+    if (layerSelection.IsSet(LayerType::Electrical))
     {
         electricalLayerRegionBackup = mModel.GetElectricalLayer().MakeRegionBackup(actualRegion);
     }
 
-    if (doRopesLayer)
+    if (layerSelection.IsSet(LayerType::Ropes))
     {
         ropesLayerRegionBackup = mModel.GetRopesLayer().MakeRegionBackup(actualRegion);
     }
 
-    if (doExteriorTextureLayer)
+    if (layerSelection.IsSet(LayerType::ExteriorTexture))
     {
         // The requested region - if any - is entirely within the ship
         assert(!region.has_value() || ShipSpaceToExteriorTextureSpace(*region).IsContainedInRect(GetWholeExteriorTextureRect()));
@@ -4409,7 +4528,7 @@ GenericShipSpaceUndoPayload ModelController::MakeGenericShipSpaceUndoPayload(
         exteriorTextureLayerRegionBackup = mModel.GetExteriorTextureLayer().MakeRegionBackup(actualTextureRegion);
     }
 
-    if (doInteriorTextureLayer)
+    if (layerSelection.IsSet(LayerType::InteriorTexture))
     {
         // The requested region - if any - is entirely within the ship
         assert(!region.has_value() || ShipSpaceToInteriorTextureSpace(*region).IsContainedInRect(GetWholeInteriorTextureRect()));
@@ -4421,7 +4540,7 @@ GenericShipSpaceUndoPayload ModelController::MakeGenericShipSpaceUndoPayload(
         interiorTextureLayerRegionBackup = mModel.GetInteriorTextureLayer().MakeRegionBackup(actualTextureRegion);
     }
 
-    return GenericShipSpaceUndoPayload::Make(
+    return GenericShipSpaceUndoPayload::payload_type(
         actualRegion.origin,
         std::move(structuralLayerRegionBackup),
         std::move(electricalLayerRegionBackup),
