@@ -1247,18 +1247,30 @@
 													+ DoEraseRopesRegion
 														+ Refactor like we did for S
 													- TODOHERE: rethink ropes when region "cuts" a rope
+														- Current behaviors:
+															- Erase: if at least one endpoint in region
+															- Copy(Region): if at least one endpoint in region; offsets their coords afterwards
+															- BlitFromRegion (i.e. Paste): copy ropes with at least one endpoint in region; 
+															  un-offsets their coords afterwards, and deletes ropes with at least one endpoint at same places
+														- Should match, test it - AND NOT!
+
+
 													- Test
+														- Both endpoints inside
+														- One endpoint inside, one outside
 												+ ET
 													+ Erase: refactor EraseExteriorTextureRegion: DoEraseExteriorTextureRegion, does assert hasLayer + model + register dirty
 												+ IT
 													+ Erase: refactor EraseInteriorTextureRegion: DoEraseInteriorTextureRegion, does assert hasLayer + model + register dirty
 									+ Return payload
 
-									- FIX: when intersection of target area is zero, we do not erase
+									+ FIX: when intersection of target area is zero, we do not erase
+									- FIX (possibly): LayerChangeEpilog between restoring ephviz and redrawing it?
 
 									- Rewrite PastForEphViz as the above
 										- At this moment, new assumption: if ship space rect ! empty, texture space rects are also ! empty; verify mathematically
 							- Do other two texture ones -- Exterior/InteriorTextureSpaceRegionTransferForEphViz
+								- Test
 							+ Store eph viz restore payload in finalizer, remembering we are in eph viz
 								+ ModelController::RestoreEphemeralVisualization (one of 3)
 						+ mController.LayerChangeEpilog()
@@ -1277,13 +1289,9 @@
 						+ If have eph viz:
 							+ Undo eph viz - via finalizer
 						- If not empty move:
-							- TODOHERE: massage below to make RegionTransfer return multi-region undo
-							- ModelController::RegionTransfer
-								- TODO: do we still need, or want, to do Undo immediately? Vs. at commit. Otherwise returns undo payload
-								- Erase -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
-								  as undo payload should also include pasted-to region
-								- Paste -- but without making undo payload, even if we decide ModelController::RegionTransfer returns it,
-								  as undo payload should also include pasted-to region
+							- ModelController::RegionTransfer -> multi-region undo
+								- Refactor various Paste for Electricals: into helpers that provide operators
+								- TODO: need convoluted electrical panel handling
 						
 		- See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
 			- Also optimize - we do some things multiple times, once per region

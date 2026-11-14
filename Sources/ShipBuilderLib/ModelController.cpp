@@ -993,65 +993,66 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
     // Source region expected to be in ship
     assert(sourceRegion.IsContainedInRect(GetWholeShipRect()));
 
-    // Calculate destination region
+    // Prepare restore for erase
+    auto sourceRestorePayload = MakeGenericShipSpaceEphemeralVisualizationRestorePayload(sourceRegion, layerSelection);
+
+    // Calculate destination region - won't have one if target outside
+    // of ship
     std::optional<ShipSpaceRect> const adjustedDestinationRegion =
         ShipSpaceRect(destinationPos, sourceRegion.size)
         .MakeIntersectionWith(GetWholeShipRect());
 
+    assert(!adjustedDestinationRegion.has_value() || !adjustedDestinationRegion->IsEmpty());
+
+    std::optional<ShipSpaceRect> adjustedPasteSourceRegion;
+    std::optional<GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type> destinationRestorePayload;
     if (adjustedDestinationRegion.has_value())
     {
-        assert(!adjustedDestinationRegion->IsEmpty());
-
-        //
-        // Prepare restore
-        //
-
-        // Erase
-        auto sourceRestorePayload = MakeGenericShipSpaceEphemeralVisualizationRestorePayload(sourceRegion, layerSelection);
-
-        // Paste
-        auto destinationRestorePayload = MakeGenericShipSpaceEphemeralVisualizationRestorePayload(*adjustedDestinationRegion, layerSelection);
-
-        //
-        // Do action
-        //
+        // Prepare paste restore
+        destinationRestorePayload = MakeGenericShipSpaceEphemeralVisualizationRestorePayload(*adjustedDestinationRegion, layerSelection);
 
         // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-        ShipSpaceRect const adjustedPasteSourceRegion(
+        adjustedPasteSourceRegion = ShipSpaceRect(
             ShipSpaceCoordinates(0, 0) + (adjustedDestinationRegion->origin - destinationPos),
             adjustedDestinationRegion->size);
+    }
 
-        if (layerSelection.IsSet(LayerType::Structural))
+    if (layerSelection.IsSet(LayerType::Structural))
+    {
+        assert(!mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization);
+
+        // Erase
+        DoStructuralRegionFill(sourceRegion, nullptr);
+
+        if (adjustedDestinationRegion.has_value())
         {
-            assert(!mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization);
-
-            // Erase
-            DoStructuralRegionFill(sourceRegion, nullptr);
-
             // Paste
             assert(sourceRestorePayload.StructuralLayerBufferRegion);
             DoStructuralRegionBufferPaste(
                 *sourceRestorePayload.StructuralLayerBufferRegion,
-                adjustedPasteSourceRegion,
+                *adjustedPasteSourceRegion,
                 adjustedDestinationRegion->origin,
                 isTransparent);
-
-            // Remember we are in temp visualization now
-            mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization = true;
         }
 
-        if (layerSelection.IsSet(LayerType::Electrical))
+        // Remember we are in temp visualization now
+        mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization = true;
+    }
+
+    if (layerSelection.IsSet(LayerType::Electrical))
+    {
+        assert(!mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization);
+
+        // Erase
+        DoElectricalRegionFill(sourceRegion, nullptr);
+
+        if (adjustedDestinationRegion.has_value())
         {
-            assert(!mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization);
-
-            // Erase
-            DoElectricalRegionFill(sourceRegion, nullptr);
-
             // Paste
             assert(sourceRestorePayload.ElectricalLayerBufferRegion);
             DoElectricalRegionBufferPaste(
                 *sourceRestorePayload.ElectricalLayerBufferRegion,
-                adjustedPasteSourceRegion,
+                *adjustedPasteSourceRegion,
                 adjustedDestinationRegion->origin,
                 isTransparent
                 ? [](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement const &
@@ -1064,112 +1065,118 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
                 {
                     return src;
                 });
-
-            // Remember we are in temp visualization now
-            mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization = true;
         }
 
-        if (layerSelection.IsSet(LayerType::Ropes))
+        // Remember we are in temp visualization now
+        mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization = true;
+    }
+
+    if (layerSelection.IsSet(LayerType::Ropes))
+    {
+        assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
+
+        // Erase
+        DoRopesRegionErase(sourceRegion);
+
+        if (adjustedDestinationRegion.has_value())
         {
-            assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
-
-            // Erase
-            DoRopesRegionErase(sourceRegion);
-
             // Paste
             assert(sourceRestorePayload.RopesLayerBuffer);
             DoRopesRegionBufferPaste(
                 *sourceRestorePayload.RopesLayerBuffer,
-                adjustedPasteSourceRegion,
+                *adjustedPasteSourceRegion,
                 adjustedDestinationRegion->origin,
                 isTransparent);
-
-            // Remember we are in temp visualization now
-            mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization = true;
         }
 
-        if (layerSelection.IsSet(LayerType::ExteriorTexture))
+        // Remember we are in temp visualization now
+        mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization = true;
+    }
+
+    if (layerSelection.IsSet(LayerType::ExteriorTexture))
+    {
+        assert(mModel.HasLayer(LayerType::ExteriorTexture));
+        assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
+
+        ImageRect const sourceRegionTexture = ImageRect(
+            ShipSpaceToExteriorTextureSpace(sourceRegion.origin),
+            sourceRestorePayload.ExteriorTextureLayerBufferRegion->Size);
+
+        // Erase
+        DoExteriorTextureRegionErase(sourceRegionTexture);
+
+        ImageCoordinates const destinationPosTexture = ShipSpaceToExteriorTextureSpace(destinationPos);
+
+        std::optional<ImageRect> const adjustedDestinationRegionTexture =
+            ImageRect(destinationPosTexture, sourceRestorePayload.ExteriorTextureLayerBufferRegion->Size)
+            .MakeIntersectionWith(GetWholeExteriorTextureRect());
+
+        if (adjustedDestinationRegionTexture.has_value())
         {
-            assert(mModel.HasLayer(LayerType::ExteriorTexture));
-            assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
+            // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
+            ImageRect const adjustedPasteSourceRegionTexture(
+                ImageCoordinates(0, 0) + (adjustedDestinationRegionTexture->origin - destinationPosTexture),
+                adjustedDestinationRegionTexture->size);
 
-            ImageRect const sourceRegionTexture = ImageRect(
-                ShipSpaceToExteriorTextureSpace(sourceRegion.origin),
-                sourceRestorePayload.ExteriorTextureLayerBufferRegion->Size);
-
-            ImageCoordinates const destinationPosTexture = ShipSpaceToExteriorTextureSpace(destinationPos);
-
-            std::optional<ImageRect> const adjustedDestinationRegionTexture =
-                ImageRect(destinationPosTexture, sourceRestorePayload.ExteriorTextureLayerBufferRegion->Size)
-                .MakeIntersectionWith(GetWholeExteriorTextureRect());
-
-            if (!adjustedDestinationRegionTexture->IsEmpty())
-            {
-                // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-                ImageRect const adjustedPasteSourceRegionTexture(
-                    ImageCoordinates(0, 0) + (adjustedDestinationRegionTexture->origin - destinationPosTexture),
-                    adjustedDestinationRegionTexture->size);
-
-                // Erase
-                DoExteriorTextureRegionErase(sourceRegionTexture);
-
-                // Paste
-                assert(sourceRestorePayload.ExteriorTextureLayerBufferRegion);
-                DoExteriorTextureRegionBufferPaste(
-                    *sourceRestorePayload.ExteriorTextureLayerBufferRegion,
-                    adjustedPasteSourceRegionTexture,
-                    *adjustedDestinationRegionTexture,
-                    isTransparent);
-
-                // Remember we are in temp visualization now
-                mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization = true;
-            }
+            // Paste
+            assert(sourceRestorePayload.ExteriorTextureLayerBufferRegion);
+            DoExteriorTextureRegionBufferPaste(
+                *sourceRestorePayload.ExteriorTextureLayerBufferRegion,
+                adjustedPasteSourceRegionTexture,
+                *adjustedDestinationRegionTexture,
+                isTransparent);
         }
 
-        if (layerSelection.IsSet(LayerType::InteriorTexture))
+        // Remember we are in temp visualization now
+        mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization = true;
+    }
+
+    if (layerSelection.IsSet(LayerType::InteriorTexture))
+    {
+        assert(mModel.HasLayer(LayerType::InteriorTexture));
+        assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
+
+        ImageRect const sourceRegionTexture = ImageRect(
+            ShipSpaceToInteriorTextureSpace(sourceRegion.origin),
+            sourceRestorePayload.InteriorTextureLayerBufferRegion->Size);
+
+        // Erase
+        DoInteriorTextureRegionErase(sourceRegionTexture);
+
+        ImageCoordinates const destinationPosTexture = ShipSpaceToInteriorTextureSpace(destinationPos);
+
+        std::optional<ImageRect> const adjustedDestinationRegionTexture =
+            ImageRect(destinationPosTexture, sourceRestorePayload.InteriorTextureLayerBufferRegion->Size)
+            .MakeIntersectionWith(GetWholeInteriorTextureRect());
+
+        if (adjustedDestinationRegionTexture.has_value())
         {
-            assert(mModel.HasLayer(LayerType::InteriorTexture));
-            assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
+            // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
+            ImageRect const adjustedPasteSourceRegionTexture(
+                ImageCoordinates(0, 0) + (adjustedDestinationRegionTexture->origin - destinationPosTexture),
+                adjustedDestinationRegionTexture->size);
 
-            ImageRect const sourceRegionTexture = ImageRect(
-                ShipSpaceToInteriorTextureSpace(sourceRegion.origin),
-                sourceRestorePayload.InteriorTextureLayerBufferRegion->Size);
-
-            ImageCoordinates const destinationPosTexture = ShipSpaceToInteriorTextureSpace(destinationPos);
-
-            std::optional<ImageRect> const adjustedDestinationRegionTexture =
-                ImageRect(destinationPosTexture, sourceRestorePayload.InteriorTextureLayerBufferRegion->Size)
-                .MakeIntersectionWith(GetWholeInteriorTextureRect());
-
-            if (!adjustedDestinationRegionTexture->IsEmpty())
-            {
-                // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-                ImageRect const adjustedPasteSourceRegionTexture(
-                    ImageCoordinates(0, 0) + (adjustedDestinationRegionTexture->origin - destinationPosTexture),
-                    adjustedDestinationRegionTexture->size);
-
-                // Erase
-                DoInteriorTextureRegionErase(sourceRegionTexture);
-
-                // Paste
-                assert(sourceRestorePayload.InteriorTextureLayerBufferRegion);
-                DoInteriorTextureRegionBufferPaste(
-                    *sourceRestorePayload.InteriorTextureLayerBufferRegion,
-                    adjustedPasteSourceRegionTexture,
-                    *adjustedDestinationRegionTexture,
-                    isTransparent);
-
-                // Remember we are in temp visualization now
-                mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization = true;
-            }
+            // Paste
+            assert(sourceRestorePayload.InteriorTextureLayerBufferRegion);
+            DoInteriorTextureRegionBufferPaste(
+                *sourceRestorePayload.InteriorTextureLayerBufferRegion,
+                adjustedPasteSourceRegionTexture,
+                *adjustedDestinationRegionTexture,
+                isTransparent);
         }
 
-        //
-        // Finalize payload
-        //
+        // Remember we are in temp visualization now
+        mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization = true;
+    }
 
-        restorePayload.AddRegion(std::move(sourceRestorePayload));
-        restorePayload.AddRegion(std::move(destinationRestorePayload));
+    //
+    // Finalize payload
+    //
+
+    restorePayload.AddRegion(std::move(sourceRestorePayload));
+    if (destinationRestorePayload)
+    {
+        restorePayload.AddRegion(std::move(*destinationRestorePayload));
     }
 
     return restorePayload;
