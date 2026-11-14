@@ -476,7 +476,7 @@ ShipLayers ModelController::Copy(
     std::unique_ptr<RopesLayerData> ropesLayerCopy;
     if (layerSelection.IsSet(LayerType::Ropes))
     {
-        ropesLayerCopy = std::make_unique<RopesLayerData>(mModel.GetRopesLayer().Buffer.CopyRegion(region));
+        ropesLayerCopy = std::make_unique<RopesLayerData>(mModel.GetRopesLayer().Buffer.CloneRegion(region));
     }
 
     // Exterior Texture
@@ -867,7 +867,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
             assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
 
             // Prepare restore
-            ropesLayerRestoreBuffer = mModel.GetRopesLayer().Buffer.CopyRegion(*affectedTargetRectShip);
+            ropesLayerRestoreBuffer = mModel.GetRopesLayer().Buffer.CloneRegion(*affectedTargetRectShip);
 
             // Paste
             DoRopesRegionBufferPaste(
@@ -4265,7 +4265,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type ModelControll
 
     if (layerSelection.IsSet(LayerType::Ropes))
     {
-        ropesLayerBuffer = mModel.GetRopesLayer().Buffer.CopyRegion(region);
+        ropesLayerBuffer = mModel.GetRopesLayer().Buffer.CloneRegion(region);
     }
 
     if (layerSelection.IsSet(LayerType::ExteriorTexture))

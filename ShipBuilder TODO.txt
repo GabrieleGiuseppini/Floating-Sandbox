@@ -1277,11 +1277,21 @@
 																+ PasteTool
 															+ This
 
-														- Allow rope endpoint to stay anchored
+														- RopesLayer:
+															+ Make CloneRegion behave like CopyRegion
+																+ Then nuke CopyRegion and replace with CloneRegion
+															- Allow rope endpoint to stay anchored
+																- RopeBuffer:
+																	- CopyRegion: don't offset endpoint that is out of region
+																	- BlitFromRegion: don't offset endpoint that is out of region
 
-													- Test
-														- Both endpoints inside
-														- One endpoint inside, one outside
+																- Test:
+																	- RopePencilTool
+																	- Copy->Paste X 2
+																	- Cut->Paste X 2
+																	- Outs X 2
+															- UnitTests
+															
 												+ ET
 													+ Erase: refactor EraseExteriorTextureRegion: DoEraseExteriorTextureRegion, does assert hasLayer + model + register dirty
 												+ IT
@@ -1290,8 +1300,6 @@
 
 									+ FIX: when intersection of target area is zero, we do not erase
 
-									- Rewrite PastForEphViz as the above
-										- At this moment, new assumption: if ship space rect ! empty, texture space rects are also ! empty; verify mathematically
 							- Do other two texture ones -- Exterior/InteriorTextureSpaceRegionTransferForEphViz
 								- Test
 							+ Store eph viz restore payload in finalizer, remembering we are in eph viz
@@ -1319,6 +1327,11 @@
 						
 		- See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
 			- Also optimize - we do some things multiple times, once per region
+
+		- Deep regression test:
+			- Rope-affecting tools, incl. copy/cut/paste:
+				- EphViz
+				- Tool
 
 		+ Icon
 		= MainFrame:

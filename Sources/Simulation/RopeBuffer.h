@@ -121,24 +121,9 @@ struct RopeBuffer
     }
 
     /*
-     * Copies ropes that have *both* endpoints in the specified region.
-     */
-    RopeBuffer CloneRegion(ShipSpaceRect const & region) const
-    {
-        RopeBuffer newBuffer(mSize, mBuffer);
-        newBuffer.Reframe(
-            region.size,
-            ShipSpaceCoordinates(
-                -region.origin.x,
-                -region.origin.y));
-
-        return newBuffer;
-    }
-
-    /*
      * Copies ropes that have *at least* one endpoint in the specified region.
      */
-    RopeBuffer CopyRegion(ShipSpaceRect const & region) const
+    RopeBuffer CloneRegion(ShipSpaceRect const & region) const
     {
         RopeBuffer newBuffer(region.size);
 

@@ -73,39 +73,6 @@ TEST(RopeBufferTests, Clone)
 
 TEST(RopeBufferTests, CloneRegion)
 {
-    RopeBuffer buffer({ 400, 300 });
-
-    buffer.EmplaceBack(
-        ShipSpaceCoordinates(4, 5),
-        ShipSpaceCoordinates(10, 10),
-        nullptr,
-        rgbaColor(1, 1, 1, 1));
-
-    buffer.EmplaceBack(
-        ShipSpaceCoordinates(5, 6),
-        ShipSpaceCoordinates(6, 7),
-        nullptr,
-        rgbaColor(2, 2, 2, 2));
-
-    buffer.EmplaceBack(
-        ShipSpaceCoordinates(1, 1),
-        ShipSpaceCoordinates(11, 11),
-        nullptr,
-        rgbaColor(3, 3, 3, 3));
-
-    RopeBuffer clone = buffer.CloneRegion(ShipSpaceRect(ShipSpaceCoordinates(3, 4), ShipSpaceSize(4, 4)));
-
-    EXPECT_EQ(ShipSpaceSize(4, 4), clone.GetSize());
-    ASSERT_EQ(1u, clone.GetElementCount());
-
-    EXPECT_EQ(ShipSpaceCoordinates(2, 2), clone[0].StartCoords);
-    EXPECT_EQ(ShipSpaceCoordinates(3, 3), clone[0].EndCoords);
-    EXPECT_EQ(nullptr, clone[0].Material);
-    EXPECT_EQ(rgbaColor(2, 2, 2, 2), clone[0].RenderColor);
-}
-
-TEST(RopeBufferTests, CopyRegion)
-{
     RopeBuffer buffer({ 400, 400 });
 
     buffer.EmplaceBack(
@@ -126,7 +93,7 @@ TEST(RopeBufferTests, CopyRegion)
         nullptr,
         rgbaColor(3, 3, 3, 3));
 
-    RopeBuffer clone = buffer.CopyRegion(ShipSpaceRect(ShipSpaceCoordinates(3, 4), ShipSpaceSize(4, 4)));
+    RopeBuffer clone = buffer.CloneRegion(ShipSpaceRect(ShipSpaceCoordinates(3, 4), ShipSpaceSize(4, 4)));
 
     EXPECT_EQ(ShipSpaceSize(4, 4), clone.GetSize());
     ASSERT_EQ(2u, clone.GetElementCount());
