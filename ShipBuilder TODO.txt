@@ -1303,8 +1303,8 @@
 					= @ new selection, and @ ~dctor(): commit
 						+ If have eph viz:
 							+ Undo eph viz - via finalizer
-						- If not empty move:
-							- ModelController::RegionTransfer -> multi-region undo
+						= If not empty move:
+							= ModelController::RegionTransfer -> multi-region undo
 								= S
 								- E
 									- TODO: need convoluted electrical panel handling
@@ -1317,6 +1317,8 @@
 								- ET
 								- IT
 						
+		- OnMouseMove: only do eph viz if translated cood != last, to save on refreshes
+
 		- See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
 			- Also optimize - we do some things multiple times, once per region
 

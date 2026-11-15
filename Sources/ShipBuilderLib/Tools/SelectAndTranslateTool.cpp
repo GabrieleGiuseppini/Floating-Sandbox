@@ -511,6 +511,7 @@ template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizati
 void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::Commit()
 {
     assert(mEngagementData);
+    assert(mEngagementData->OriginalSelectionRect);
     assert(mEngagementData->SelectionMoves);
 
     //
@@ -519,28 +520,31 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
 
     mEphemeralVisualization.reset();
 
-    //
-    // Transfer
-    //
+    if (mEngagementData->SelectionMoves->CurrentSelectionPasteCornerCoords != mEngagementData->OriginalSelectionRect->origin)
+    {
+        //
+        // Transfer
+        //
 
-    auto undoPayload = InternalCommit(
-        *mEngagementData->OriginalSelectionRect,
-        mEngagementData->SelectionMoves->CurrentSelectionPasteCornerCoords,
-        mEngagementData->SelectionMoves->LayerSelection,
-        mEngagementData->SelectionMoves->IsTransparent);
+        auto undoPayload = InternalCommit(
+            *mEngagementData->OriginalSelectionRect,
+            mEngagementData->SelectionMoves->CurrentSelectionPasteCornerCoords,
+            mEngagementData->SelectionMoves->LayerSelection,
+            mEngagementData->SelectionMoves->IsTransparent);
 
-    // Store undo
+        // Store undo
 
-    size_t const undoPayloadCost = undoPayload.GetTotalCost();
+        size_t const undoPayloadCost = undoPayload.GetTotalCost();
 
-    mController.StoreUndoAction(
-        _("Translate"),
-        undoPayloadCost,
-        mController.GetModelController().GetDirtyState(),
-        [undoPayload = std::move(undoPayload)](Controller & controller) mutable
-        {
-            controller.Restore(std::move(undoPayload));
-        });
+        mController.StoreUndoAction(
+            _("Translate"),
+            undoPayloadCost,
+            mController.GetModelController().GetDirtyState(),
+            [undoPayload = std::move(undoPayload)](Controller & controller) mutable
+            {
+                controller.Restore(std::move(undoPayload));
+            });
+    }
 
     // Finalize
 
