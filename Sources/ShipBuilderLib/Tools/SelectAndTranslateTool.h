@@ -55,7 +55,7 @@ protected:
 
 private:
 
-    void InternalDoMoveForEphemeralVisualization(TSize totalMoveOffset);
+    void InternalDoMoveForEphemeralVisualization(TCoords const & newPasteCoords);
 
     void Commit();
     virtual TUndoPayload InternalCommit(
@@ -71,10 +71,12 @@ private:
         LayerSelector const & layerSelection,
         bool isTransparent) = 0;
 
-    void UpdateSelectionViz(TRect const & rect);
+    void UpdateSelectionViz();
     void StopSelectionViz();
 
-    virtual LayerSelector CalculateLayerSelection(bool isAllLayers) const = 0;
+    // Uses current WorkbenchState
+    virtual LayerSelector MakeLayerSelection() const = 0;
+    virtual bool MakeIsTransparent() const = 0;
 
     TCoords GetMouseSelectionCoords() const; // Also outside space
     std::optional<TCoords> GetMouseSelectionCoordsIfInSpace() const;
@@ -102,56 +104,35 @@ private:
 
         StateType State;
 
-        // For Selecting: origin of selection
-        TCoords SelectionStartCorner;
+        TCoords const SelectionStartCorner;
+        TRect SourceRect; // Changes during Selecting; properly origined
 
-        // When Selected and onwards; model region for current selection
-        std::optional<TRect> OriginalSelectionRect;
-
-        // When Selected and onwards; pasted position for current selection, when set we have overlay;
-        // updated at each move
-        std::optional<TRect> CurrentPastedSelectionRect;
-
-        std::optional<TCoords> CurrentMoveStartCoords; // Upon click in selection and transitioning to Moving
-
-        struct SelectionMovesType
+        struct MovingStateType
         {
-            TCoords CurrentSelectionPasteCornerCoords; // Current coords of pasted selection; updated at each move end with final coords, from that move's final CurrentSelectionPasteCornerCoords
+            TCoords const MoveStartCoords;
+            std::optional<TSize> MoveShiftConstraints; // Empty until detected
 
-            struct MovingStateType
+            TCoords const SelectionRectStartOrigin; // The origin of the selection coords at move start
+
+            MovingStateType(
+                TCoords const & moveStartCoords,
+                TCoords const & selectionRectStartOrigin)
+                : MoveStartCoords(moveStartCoords)
+                , SelectionRectStartOrigin(selectionRectStartOrigin)
             {
-                TCoords CurrentSelectionPasteCornerCoords; // Current coords of pasted selection; updated at each move
-                std::optional<TSize> MoveShiftConstraints; // Empty until detected
-
-                MovingStateType(TCoords const & currentSelectionPasteCornerCoords)
-                    : CurrentSelectionPasteCornerCoords(currentSelectionPasteCornerCoords)
-                { }
-            };
-
-            // Current move - only set when move has begun
-            std::optional<MovingStateType> MovingState;
-
-            // Frozen tool settings - these affect Undo, thus we freeze them when we start undo
-            LayerSelector LayerSelection;
-            bool const IsTransparent;
-
-            SelectionMovesType(
-                TCoords const & startSelectionPasteCornerCoords,
-                LayerSelector const & layerSelection,
-                bool isTransparent)
-                : CurrentSelectionPasteCornerCoords(startSelectionPasteCornerCoords)
-                , LayerSelection(layerSelection)
-                , IsTransparent(isTransparent)
-            { }
+            }
         };
 
-        // When set, we have started moving for this selection - which also means having done Undo;
-        // also, means we still need to commit move - we are in eph viz
-        std::optional<SelectionMovesType> SelectionMoves;
+        // Current move
+        std::optional<MovingStateType> CurrentMoveState;
+
+        TRect PasteRect; // Changes during Selecting and Moving; not clamped to space; properly origined
 
         EngagementData(TCoords selectionStartCorner)
             : State(StateType::Selecting)
             , SelectionStartCorner(selectionStartCorner)
+            , SourceRect(selectionStartCorner, TSize(0, 0))
+            , PasteRect(selectionStartCorner, TSize(0, 0))
         { }
     };
 
@@ -198,7 +179,8 @@ protected:
         LayerSelector const & layerSelection,
         bool isTransparent) override;
 
-    LayerSelector CalculateLayerSelection(bool isAllLayers) const override;
+    LayerSelector MakeLayerSelection() const override;
+    bool MakeIsTransparent() const override;
 
     ShipSpaceSize GetSpaceSize() const override;
 };
@@ -272,7 +254,8 @@ protected:
         LayerSelector const & layerSelection,
         bool isTransparent) override;
 
-    LayerSelector CalculateLayerSelection(bool isAllLayers) const override;
+    LayerSelector MakeLayerSelection() const override;
+    bool MakeIsTransparent() const override;
 
     ImageSize GetSpaceSize() const override;
 };
@@ -304,7 +287,8 @@ protected:
         LayerSelector const & layerSelection,
         bool isTransparent) override;
 
-    LayerSelector CalculateLayerSelection(bool isAllLayers) const override;
+    LayerSelector MakeLayerSelection() const override;
+    bool MakeIsTransparent() const override;
 
     ImageSize GetSpaceSize() const override;
 };

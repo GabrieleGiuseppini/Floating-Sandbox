@@ -1304,13 +1304,19 @@
 						+ If have eph viz:
 							+ Undo eph viz - via finalizer
 						= If not empty move:
-							- FIX: cannot move back to orig, as we check against start move
-								- TODOHERE: should we just simplify trigger of SelectionMoves? Any move starts moving
-								- Couple with fix for not doing eph viz with no-change moves (*): need to use current target pos @ current move, but we have no move
-								- Impl:
-									- EngagementData has opt CurrentMoveCandidatePastePos, in TSpace -- sibling of CurrentMoveStartPos
-										- Set at each MouseDown and and at each MouseMove that moves it
-										- Reset at end of MouseUp
+							= FIX: cannot move back to orig, as we check against start move
+								= Refactor
+									+ New state
+									+ Ensure SourceRect and PasteRect are correctly origin'ed
+										+ Also InternalDoMoveForEphemeralVisualization
+									+ InternalDoMoveForEphemeralVisualization: move change detection here, undo eph viz only afterwards
+									+ UpdateSelectionViz: uses PasteRect
+									+ Commit:
+										+ Careful for no-size region
+									+ Commit broken wrt coords
+									- Changes to workbench state after engagement: tool not notified
+										- Freeze vals @ TODO
+
 							= ModelController::RegionTransfer -> multi-region undo
 								+ S
 								- E
