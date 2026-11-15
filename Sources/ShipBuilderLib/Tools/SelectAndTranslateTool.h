@@ -128,11 +128,20 @@ private:
 
         TRect PasteRect; // Changes during Selecting and Moving; not clamped to space; properly origined
 
-        EngagementData(TCoords selectionStartCorner)
+        // Frozen options - we freeze them here to avoid having to route notifications of their changes in order to refresh eph viz
+        LayerSelector const LayerSelection;
+        bool const IsTransparent;
+
+        EngagementData(
+            TCoords selectionStartCorner,
+            LayerSelector const & layerSelection,
+            bool isTransparent)
             : State(StateType::Selecting)
             , SelectionStartCorner(selectionStartCorner)
             , SourceRect(selectionStartCorner, TSize(0, 0))
             , PasteRect(selectionStartCorner, TSize(0, 0))
+            , LayerSelection(layerSelection)
+            , IsTransparent(isTransparent)
         { }
     };
 

@@ -182,7 +182,10 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
 
         // Start selecting
         // - Changes state -> Selecting
-        mEngagementData.emplace(ClampSelectionCoords(clickSpaceCoords));
+        mEngagementData.emplace(
+            ClampSelectionCoords(clickSpaceCoords),
+            MakeLayerSelection(),
+            MakeIsTransparent());
 
         UpdateSelectionViz();
         mController.GetUserInterface().RefreshView();
@@ -222,7 +225,10 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
 
                 // Start selecting
                 // - Changes state -> Selecting
-                mEngagementData.emplace(ClampSelectionCoords(clickSpaceCoords));
+                mEngagementData.emplace(
+                    ClampSelectionCoords(clickSpaceCoords),
+                    MakeLayerSelection(),
+                    MakeIsTransparent());
 
                 UpdateSelectionViz();
                 mController.GetUserInterface().RefreshView();
@@ -460,13 +466,13 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
     if (mEngagementData->PasteRect.origin != mEngagementData->SourceRect.origin
         && !mEngagementData->SourceRect.IsEmpty())
     {
-        layerSelection = MakeLayerSelection();
+        layerSelection = mEngagementData->LayerSelection;
 
         auto undoPayload = InternalCommit(
             mEngagementData->SourceRect,
             mEngagementData->PasteRect.origin,
             layerSelection,
-            MakeIsTransparent());
+            mEngagementData->IsTransparent);
 
         // Store undo
 
@@ -499,8 +505,8 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
         InternalDrawEphemeralVisualization(
             mEngagementData->SourceRect,
             mEngagementData->PasteRect.origin,
-            MakeLayerSelection(),
-            MakeIsTransparent()));
+            mEngagementData->LayerSelection,
+            mEngagementData->IsTransparent));
 
     // Schedule cleanup
     mEphemeralVisualization.emplace(

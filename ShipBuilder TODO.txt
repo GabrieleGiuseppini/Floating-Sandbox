@@ -1304,8 +1304,8 @@
 						+ If have eph viz:
 							+ Undo eph viz - via finalizer
 						= If not empty move:
-							= FIX: cannot move back to orig, as we check against start move
-								= Refactor
+							+ FIX: cannot move back to orig, as we check against start move
+								+ Refactor
 									+ New state
 									+ Ensure SourceRect and PasteRect are correctly origin'ed
 										+ Also InternalDoMoveForEphemeralVisualization
@@ -1314,8 +1314,8 @@
 									+ Commit:
 										+ Careful for no-size region
 									+ Commit broken wrt coords
-									- Changes to workbench state after engagement: tool not notified
-										- Freeze vals @ TODO
+									+ Changes to workbench state after engagement: tool not notified
+										+ Freeze vals @ Engagement
 
 							= ModelController::RegionTransfer -> multi-region undo
 								+ S
