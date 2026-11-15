@@ -38,7 +38,7 @@ public:
         assert(material->IsInstanced);
 
         // Assign instance index
-        ElectricalElementInstanceIndex newIndex = mFirstFreeInstanceIndex;
+        ElectricalElementInstanceIndex const newIndex = mFirstFreeInstanceIndex;
 
         // Store instance
         assert(mInstanceMap.count(newIndex) == 0);

@@ -788,14 +788,17 @@ private:
         ImageCoordinates const & targetOrigin,
         EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
 
+    // Raw
     void DoStructuralRegionFill(
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
 
+    // Raw
     void DoElectricalRegionFill(
         ShipSpaceRect const & region,
         ElectricalMaterial const * material);
 
+    // All ropes with at least one endpoint in region
     void DoRopesRegionErase(
         ShipSpaceRect const & region);
 
