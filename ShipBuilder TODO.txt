@@ -1304,8 +1304,15 @@
 						+ If have eph viz:
 							+ Undo eph viz - via finalizer
 						= If not empty move:
+							- FIX: cannot move back to orig, as we check against start move
+								- TODOHERE: should we just simplify trigger of SelectionMoves? Any move starts moving
+								- Couple with fix for not doing eph viz with no-change moves (*): need to use current target pos @ current move, but we have no move
+								- Impl:
+									- EngagementData has opt CurrentMoveCandidatePastePos, in TSpace -- sibling of CurrentMoveStartPos
+										- Set at each MouseDown and and at each MouseMove that moves it
+										- Reset at end of MouseUp
 							= ModelController::RegionTransfer -> multi-region undo
-								= S
+								+ S
 								- E
 									- TODO: need convoluted electrical panel handling
 										- Refactor various Paste for Electricals: into helpers that provide operators
@@ -1317,7 +1324,7 @@
 								- ET
 								- IT
 						
-		- OnMouseMove: only do eph viz if translated cood != last, to save on refreshes
+		- OnMouseMove: only do eph viz if translated cood != last, to save on refreshes (*)
 
 		- See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
 			- Also optimize - we do some things multiple times, once per region
@@ -1325,8 +1332,12 @@
 		- Deep regression test:
 			- Rope-affecting tools, incl. copy/cut/paste:
 				- EphViz
-				- Tool
+				- Commit
+				- Undo
 			- TextureTranslate
+				- EphViz
+				- Commit
+				- Undo
 
 		+ Icon
 		= MainFrame:

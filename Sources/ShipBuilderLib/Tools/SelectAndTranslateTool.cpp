@@ -163,6 +163,7 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
 
             assert(mEngagementData->CurrentMoveStartCoords);
 
+            // TODOHERE: broken: can never move back to original
             TSize const totalMoveOffset = GetMouseSelectionCoords() - *mEngagementData->CurrentMoveStartCoords;
             if (!totalMoveOffset.IsEmpty())
             {
@@ -520,12 +521,13 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
 
     mEphemeralVisualization.reset();
 
+    //
+    // Transfer
+    //
+
+    // Avoid creating undo for no-op transfer
     if (mEngagementData->SelectionMoves->CurrentSelectionPasteCornerCoords != mEngagementData->OriginalSelectionRect->origin)
     {
-        //
-        // Transfer
-        //
-
         auto undoPayload = InternalCommit(
             *mEngagementData->OriginalSelectionRect,
             mEngagementData->SelectionMoves->CurrentSelectionPasteCornerCoords,
