@@ -95,7 +95,7 @@ SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePaylo
 }
 
 template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::~SelectAndTranslateTool()
+void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnDestroy()
 {
     // Finalize, if we've been working
     // - Will undo eph viz if any

@@ -1303,7 +1303,6 @@
 					= @ new selection, and @ ~dctor(): commit
 						+ If have eph viz:
 							+ Undo eph viz - via finalizer
-						- FIX: ~dctor crash - there's no derived anymore by then
 						- If not empty move:
 							- ModelController::RegionTransfer -> multi-region undo
 								= S

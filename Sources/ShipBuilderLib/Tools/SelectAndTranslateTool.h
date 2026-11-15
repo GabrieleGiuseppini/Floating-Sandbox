@@ -29,7 +29,7 @@ class SelectAndTranslateTool : public Tool
 {
 public:
 
-    ~SelectAndTranslateTool();
+    virtual ~SelectAndTranslateTool() = default;
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;
@@ -50,6 +50,8 @@ protected:
         ToolType toolType,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
+
+    void OnDestroy();
 
 private:
 
@@ -208,6 +210,11 @@ public:
     StructuralSelectAndTranslateTool(
         Controller & controller,
         GameAssetManager const & gameAssetManager);
+
+    ~StructuralSelectAndTranslateTool()
+    {
+        OnDestroy();
+    }
 };
 
 class ElectricalSelectAndTranslateTool final : public SelectAndTranslateTool_ShipSpace<LayerType::Electrical>
@@ -217,6 +224,11 @@ public:
     ElectricalSelectAndTranslateTool(
         Controller & controller,
         GameAssetManager const & gameAssetManager);
+
+    ~ElectricalSelectAndTranslateTool()
+    {
+        OnDestroy();
+    }
 };
 
 class RopeSelectAndTranslateTool final : public SelectAndTranslateTool_ShipSpace<LayerType::Ropes>
@@ -226,6 +238,11 @@ public:
     RopeSelectAndTranslateTool(
         Controller & controller,
         GameAssetManager const & gameAssetManager);
+
+    ~RopeSelectAndTranslateTool()
+    {
+        OnDestroy();
+    }
 };
 
 class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, GenericExteriorTextureSpaceUndoPayload, GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageSpaceTag>
@@ -235,6 +252,11 @@ public:
     ExteriorSelectAndTranslateTool(
         Controller & controller,
         GameAssetManager const & gameAssetManager);
+
+    ~ExteriorSelectAndTranslateTool()
+    {
+        OnDestroy();
+    }
 
 protected:
 
@@ -262,6 +284,11 @@ public:
     InteriorSelectAndTranslateTool(
         Controller & controller,
         GameAssetManager const & gameAssetManager);
+
+    ~InteriorSelectAndTranslateTool()
+    {
+        OnDestroy();
+    }
 
 protected:
 
