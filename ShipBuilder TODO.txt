@@ -1051,7 +1051,7 @@
 		- E/I tools' settings only allow "This layer" and "All texture layers"
 			- The primary layer dictates how we calc coords for other layer
 
-	= Impl:
+	+ Impl:
 		+ ShipBuilderTypes: N tool types, one for each layer
 		+ Tool:
 			+ Copy from TextureTranslateTool, but not templated
@@ -1358,7 +1358,7 @@
 		+ See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
 			+ Also optimize - we do some things multiple times, once per region
 
-		= Deep regression test:
+		+ Deep regression test:
 			+ Rope-affecting tools, incl. copy/cut/paste:
 				+ TODO: FIX: copy whole rope, paste, translate outside of ship: endpoint that's out goes random
 					! Same with SelectAndTranslate
@@ -1383,19 +1383,19 @@
 				+ EphViz
 				+ Commit
 				+ Undo
-			- TextureTranslate
-				- EphViz
-					- Also spring viz
-				- Commit
-					- Also spring viz
-				- Undo
-					- Also spring viz
-				- Macro properties (center of mass) updates at:
-					- Commit
-					- Undo
-				- Elec panel updates at:
-					- Commit
-					- Undo
+			+ TextureTranslate
+				+ EphViz
+					+ Also spring viz
+				+ Commit
+					+ Also spring viz
+				+ Undo
+					+ Also spring viz
+				+ Macro properties (center of mass) updates at:
+					+ Commit
+					+ Undo
+				+ Elec panel updates at:
+					+ Commit
+					+ Undo
 
 		+ Icon
 		+ MainFrame:
