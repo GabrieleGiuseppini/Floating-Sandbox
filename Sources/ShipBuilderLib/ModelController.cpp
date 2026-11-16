@@ -850,7 +850,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
             assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
 
             // Prepare restore
-            ropesLayerRestoreBuffer = mModel.GetRopesLayer().Buffer.CloneRegion(*affectedTargetRectShip);
+            ropesLayerRestoreBuffer = mModel.GetRopesLayer().Buffer.Clone(); // Whole buffer
 
             // Paste
             DoRopesRegionBufferPaste(
@@ -1459,7 +1459,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
             // Paste
             assert(sourceRestorePayload.RopesLayerBufferRegion);
             DoRopesRegionBufferPaste(
-                *sourceRestorePayload.RopesLayerBufferRegion,
+                sourceRestorePayload.RopesLayerBufferRegion->CloneRegion(sourceRegion), // Source restore payload is _whole_ ropes buffer, thus endpoints are not shifted; we shift them here
                 destinationPos,
                 isTransparent);
         }
@@ -1962,7 +1962,6 @@ void ModelController::RestoreEphemeralVisualization(GenericShipSpaceEphemeralVis
                     {
                         InternalRestoreRopesLayerEphemeralVisualization(
                             *regionPayload.RopesLayerBufferRegion,
-                            regionPayload.Origin,
                             newEphVizState);
 
                         break;
@@ -2956,12 +2955,10 @@ void ModelController::ModelController::MoveRopeEndpointForEphemeralVisualization
 }
 
 void ModelController::RestoreRopesLayerEphemeralVisualization(
-    typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer,
-    ShipSpaceCoordinates const & targetOrigin)
+    typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer)
 {
     InternalRestoreRopesLayerEphemeralVisualization(
         backupBuffer,
-        targetOrigin,
         mEphemeralVisualizationLayerState);
 }
 
@@ -4949,7 +4946,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type ModelControll
 
     if (layerSelection.IsSet(LayerType::Ropes))
     {
-        ropesLayerBuffer = mModel.GetRopesLayer().Buffer.CloneRegion(region);
+        ropesLayerBuffer = mModel.GetRopesLayer().Buffer.Clone(); // Whole buffer
     }
 
     if (layerSelection.IsSet(LayerType::ExteriorTexture))
@@ -5080,17 +5077,17 @@ void ModelController::InternalRestoreElectricalLayerRegionEphemeralVisualization
 
 void ModelController::InternalRestoreRopesLayerEphemeralVisualization(
     typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer,
-    ShipSpaceCoordinates const & targetOrigin,
     EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState)
 {
     assert(mModel.HasLayer(LayerType::Ropes));
 
     assert(mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
 
-    DoRopesRegionBufferPaste(
-        backupBuffer,
-        targetOrigin,
-        false);
+    // Backup buffer is the whole buffer
+    mModel.GetRopesLayer().Buffer = backupBuffer.Clone();
+
+    // Update visualization
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
     // Remember we are not anymore in temp visualization
     finalEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization = false;

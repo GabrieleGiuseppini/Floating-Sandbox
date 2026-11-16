@@ -1359,7 +1359,7 @@
 			+ Also optimize - we do some things multiple times, once per region
 
 		= Deep regression test:
-			= Rope-affecting tools, incl. copy/cut/paste:
+			+ Rope-affecting tools, incl. copy/cut/paste:
 				+ TODO: FIX: copy whole rope, paste, translate outside of ship: endpoint that's out goes random
 					! Same with SelectAndTranslate
 					! SourceRegion: contains both endpoints, offseted
@@ -1369,13 +1369,20 @@
 					  + Then need unclipped paste coords
 					  + See all callers to BlitFromRegion
 				+ TODO: FIX: Paste with paste origin outside of ship, left/bottom
-				- TODO: FIX: copy of one endpoint, paste, then undo or abort - ropes disappear
-					- When we paste we delete old rope, then somehow we don't get it in restore nor undo buffers
-						- We don't as target region (pasted to and overwritten) does not have rope endpoints
-							- Is it a problem only with eph viz? Try with also backing up and restoring whole buffer @ eph viz
-				- EphViz
-				- Commit
-				- Undo
+				+ TODO: FIX: copy of one endpoint, paste, then undo or abort - ropes disappear
+					+ When we paste we delete old rope, then somehow we don't get it in restore nor undo buffers
+						+ We don't as target region (pasted to and overwritten) does not have rope endpoints
+							+ Is it a problem only with eph viz? 
+								+ Try with also backing up and restoring whole buffer @ eph viz
+									+ PasteForEphViz
+									+ SelectAndTranslateForViz: watch out buffer, do as with non-ephviz (full undo)
+									+ Their restore
+									+ Anything else using RopesLayerBuffer::CloneRegion
+									+ Any more users of DoRopesRegionBufferPaste?
+				+ Test cut
+				+ EphViz
+				+ Commit
+				+ Undo
 			- TextureTranslate
 				- EphViz
 					- Also spring viz
