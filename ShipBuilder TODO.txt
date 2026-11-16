@@ -1319,13 +1319,31 @@
 
 							= ModelController::RegionTransfer -> multi-region undo
 								+ S
-								- E
-									- TODO: need convoluted electrical panel handling
-										- Refactor various Paste for Electricals: into helpers that provide operators
+								= E
+									= Need convoluted electrical panel handling:
+										+ Erase: leave elec panel elements behind
+										+ Paste: 
+											+ Can keep all insatance IDs, as they're gone (were from erased region)
+											+ It might resuscitate 1..N of the erased ones
+											+ It might kill overwritten ones
+										- FIX: crashes after transfer
+											- Problem is at ModelController::Restore multi-region-ness: when restoring erase we have dupes
+												- Need to delay all re-initializations (and verification) only after all regions
+										= Final: trim panel for those from Erase that might be gone (not pasted, i.e. not resuscitated)
+											- Verify diagnostics would fire if we nuked an instanced, and verify both fixed after trimming
+												= From erased region (paste outside)
+												= From paste (overwritten)
+										= Add elec layer diagnostics
+											- Test:
+												- Paste
+												- Undo
+												- Ours -- verify fails until we uncomment trimming orphans
+
 								- R
 									- TODO: also careful here about which source region we use for pasting
 								- ET
 								- IT
+							- TODO: commit/abort buttons?
 							- Other 2 RegionTransfer in texture space
 								- ET
 								- IT

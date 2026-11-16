@@ -635,8 +635,8 @@ GenericShipSpaceUndoPayload ModelController::Paste(
                         {
                             // Source is instanced
 
-                            // Register new instance ID
-                            auto newInstanceIndex = mInstancedElectricalElementSet.IsRegistered(src.InstanceIndex)
+                            // Register new instance index
+                            auto const newInstanceIndex = mInstancedElectricalElementSet.IsRegistered(src.InstanceIndex)
                                 ? mInstancedElectricalElementSet.Add(src.Material) // Rename
                                 : mInstancedElectricalElementSet.Register(src.InstanceIndex, src.Material); // Reuse
 
@@ -664,13 +664,7 @@ GenericShipSpaceUndoPayload ModelController::Paste(
                     }
                 });
 
-            assert(static_cast<size_t>(std::count_if(
-                mModel.GetElectricalLayer().Buffer.Data.get(),
-                &(mModel.GetElectricalLayer().Buffer.Data.get()[mModel.GetElectricalLayer().Buffer.Size.GetLinearSize()]),
-                [](ElectricalElement const & elem) -> bool
-                {
-                    return elem.Material != nullptr;
-                })) == mElectricalParticleCount);
+            VerifyElectricalLayerInvariants();
         }
 
         if (sourcePayload.RopesLayer && mModel.HasLayer(LayerType::Ropes))
@@ -839,21 +833,11 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
             electricalLayerRestoreBufferRegion = mModel.GetElectricalLayer().Buffer.CloneRegion(*affectedTargetRectShip);
 
             // Paste
-            DoElectricalRegionBufferPaste(
+            DoElectricalRegionBufferPaste_Raw(
                 sourcePayload.ElectricalLayer->Buffer,
                 affectedSourceRegion,
                 actualPasteOriginShip,
-                isTransparent
-                    ? [](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement const &
-                    {
-                        return src.Material
-                            ? src
-                            : dst;
-                    }
-                    : [](ElectricalElement const & src, ElectricalElement const &) -> ElectricalElement const &
-                    {
-                        return src;
-                    });
+                isTransparent);
 
             // Remember we are in temp visualization now
             mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization = true;
@@ -1036,7 +1020,40 @@ GenericShipSpaceUndoPayload ModelController::ShipSpaceRegionTransfer(
     {
         assert(!mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization);
 
-        // TODOHERE
+        //
+        // Plan:
+        //  - Erase: leave elec panel elements behind
+        //  - Paste:
+        //      - Can keep all pasted instance IDs, as they're gone (were from erased region)
+        //          - It might resuscitate 1..N of the erased ones
+        //      - It might kill overwritten ones
+        //  - Final:
+        //      - Redo elec layer analysis
+        //      - Trim panel for those from Erase that might be gone (not pasted, i.e. not resuscitated)
+        //
+
+        // Erase - raw (no instance IDs, no panel, etc.)
+        DoElectricalRegionFill(sourceRegion, nullptr);
+
+        if (adjustedDestinationRegion.has_value())
+        {
+            // Paste - raw (no instance IDs, no panel, etc.)
+            assert(sourceUndoPayload.ElectricalLayerRegionBackup);
+            DoElectricalRegionBufferPaste_Raw(
+                sourceUndoPayload.ElectricalLayerRegionBackup->Buffer,
+                *adjustedPasteSourceRegion,
+                adjustedDestinationRegion->origin,
+                isTransparent);
+        }
+
+        // Re-initialize electrical analysis
+        InitializeElectricalLayerAnalysis();
+
+        // Trim panel for orphaned elements (i.e. the erased ones which were not pasted, i.e. not resuscitated)
+        // TODOTEST
+        //mModel.GetElectricalLayer().Panel.RemoveAbsentFrom(mInstancedElectricalElementSet.GetElements());
+
+        VerifyElectricalLayerInvariants();
     }
 
     if (layerSelection.IsSet(LayerType::Ropes))
@@ -1170,21 +1187,11 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
         {
             // Paste
             assert(sourceRestorePayload.ElectricalLayerBufferRegion);
-            DoElectricalRegionBufferPaste(
+            DoElectricalRegionBufferPaste_Raw(
                 *sourceRestorePayload.ElectricalLayerBufferRegion,
                 *adjustedPasteSourceRegion,
                 adjustedDestinationRegion->origin,
-                isTransparent
-                ? [](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement const &
-                {
-                    return src.Material
-                        ? src
-                        : dst;
-                }
-                : [](ElectricalElement const & src, ElectricalElement const &) -> ElectricalElement const &
-                {
-                    return src;
-                });
+                isTransparent);
         }
 
         // Remember we are in temp visualization now
@@ -2354,6 +2361,8 @@ void ModelController::RestoreElectricalLayerRegionBackup(
     //
 
     InitializeElectricalLayerAnalysis();
+
+    VerifyElectricalLayerInvariants();
 
     //
     // Update visualization
@@ -5353,6 +5362,56 @@ void ModelController::UpdateInteriorTextureLayerVisualization()
             return;
         }
     }
+}
+
+void ModelController::VerifyElectricalLayerInvariants() const
+{
+#ifdef _DEBUG
+
+    assert(HasLayer(LayerType::Electrical));
+
+    auto const & layer = mModel.GetElectricalLayer();
+
+    std::set<ElectricalElementInstanceIndex> presentElectricalElementInstanceIndices;
+    size_t electricalParticleCount = 0;
+    for (size_t i = 0; i < layer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        auto const & element = layer.Buffer.Data.get()[i];
+        if (element.Material != nullptr)
+        {
+            assert((element.InstanceIndex != NoneElectricalElementInstanceIndex && element.Material->IsInstanced)
+                || (element.InstanceIndex == NoneElectricalElementInstanceIndex && !element.Material->IsInstanced));
+
+            if (element.Material->IsInstanced)
+            {
+                auto [_, isInserted] = presentElectricalElementInstanceIndices.emplace(element.InstanceIndex);
+
+                // Not dupe
+                assert(isInserted);
+
+                // Exists in instance set
+                assert(mInstancedElectricalElementSet.IsRegistered(element.InstanceIndex));
+            }
+
+            ++electricalParticleCount;
+        }
+    }
+
+    assert(electricalParticleCount == mElectricalParticleCount);
+
+    // InstanceSet has no extra's
+    for (auto const & entry : mInstancedElectricalElementSet.GetElements())
+    {
+        assert(presentElectricalElementInstanceIndices.find(entry.first) != presentElectricalElementInstanceIndices.end());
+    }
+
+    // Panel has no foreigners
+    for (auto it = layer.Panel.begin(); it != layer.Panel.end(); ++it)
+    {
+        assert(presentElectricalElementInstanceIndices.find(it->first) != presentElectricalElementInstanceIndices.end());
+    }
+
+#endif
 }
 
 }

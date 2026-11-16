@@ -996,7 +996,7 @@ public:
 private:
 
 #ifdef _DEBUG
-    void VerifyInvariants();
+    void VerifyInvariants() const;
 #endif
 
 private:

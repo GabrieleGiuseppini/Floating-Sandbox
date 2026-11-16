@@ -6042,7 +6042,7 @@ void Ship::HandleElectricSpark(
 }
 
 #ifdef _DEBUG
-void Ship::VerifyInvariants()
+void Ship::VerifyInvariants() const
 {
     //
     // Points

@@ -122,6 +122,23 @@ public:
 		Add(instanceIndex, std::move(metadata));
 	}
 
+	template<typename TLookup>
+	void RemoveAbsentFrom(TLookup const & instanceIndexLookup)
+	{
+		for (auto it = mMap.begin(); it != mMap.end(); /* incremented in loop*/)
+		{
+			if (instanceIndexLookup.find(it->first) == instanceIndexLookup.end())
+			{
+				// Absent
+				it = mMap.erase(it);
+			}
+			else
+			{
+				++it;
+			}
+		}
+	}
+
 	void TryRemove(ElectricalElementInstanceIndex instanceIndex)
 	{
 		auto const it = mMap.find(instanceIndex);

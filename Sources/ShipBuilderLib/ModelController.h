@@ -808,11 +808,36 @@ private:
     void DoInteriorTextureRegionErase(
         ImageRect const & region);
 
+    // Raw
     void DoStructuralRegionBufferPaste(
         typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceBuffer,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetCoordinates,
         bool isTransparent);
+
+    // Raw
+    void DoElectricalRegionBufferPaste_Raw(
+        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
+        ShipSpaceRect const & sourceRegion,
+        ShipSpaceCoordinates const & targetCoordinates,
+        bool isTransparent)
+    {
+        DoElectricalRegionBufferPaste(
+            sourceBuffer,
+            sourceRegion,
+            targetCoordinates,
+            isTransparent
+            ? [](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement const &
+            {
+                return src.Material
+                    ? src
+                    : dst;
+            }
+            : [](ElectricalElement const & src, ElectricalElement const &) -> ElectricalElement const &
+            {
+                return src;
+            });
+    }
 
     void DoElectricalRegionBufferPaste(
         typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
@@ -865,6 +890,12 @@ private:
     void UpdateExteriorTextureLayerVisualization();
 
     void UpdateInteriorTextureLayerVisualization();
+
+    // Debugging
+
+#ifdef _DEBUG
+    void VerifyElectricalLayerInvariants() const;
+#endif
 
 private:
 
