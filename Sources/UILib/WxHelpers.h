@@ -38,6 +38,7 @@ namespace WxHelpers
     wxBitmap MakeBitmap(RgbaImageData const & imageData);
 
     wxBitmap MakeBaseButtonBitmap(std::filesystem::path const & bitmapFilePath);
+
     wxBitmap MakeSelectedButtonBitmap(std::filesystem::path const & bitmapFilePath);
 
     wxBitmap MakeMatteBitmap(

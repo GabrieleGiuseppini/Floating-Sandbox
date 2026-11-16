@@ -176,7 +176,7 @@ wxBitmap WxHelpers::MakeBaseButtonBitmap(std::filesystem::path const & bitmapFil
 
 wxBitmap WxHelpers::MakeSelectedButtonBitmap(std::filesystem::path const & bitmapFilePath)
 {
-    rgbaColor const bgColor = rgbaColor(Style::ButtonSelectedBgColor, 255);
+    rgbaColor constexpr BgColor = rgbaColor(Style::ButtonSelectedBgColor, 255);
 
     wxBitmap baseBitmap = WxHelpers::LoadBitmap(bitmapFilePath);
     auto const baseWidth = baseBitmap.GetWidth();
@@ -235,7 +235,7 @@ wxBitmap WxHelpers::MakeSelectedButtonBitmap(std::filesystem::path const & bitma
             else
             {
                 // Copy, blending
-                newColor = bgColor.blend(
+                newColor = BgColor.blend(
                     rgbaColor(
                         readIt.Red(),
                         readIt.Green(),

@@ -28,6 +28,21 @@ public:
         std::filesystem::path const & bitmapFilePath,
         std::function<void()> onClickHandler,
         wxString const & toolTipLabel = "")
+        : BitmapRadioButton(
+            parent,
+            WxHelpers::MakeBaseButtonBitmap(bitmapFilePath),
+            WxHelpers::MakeSelectedButtonBitmap(bitmapFilePath),
+            onClickHandler,
+            toolTipLabel)
+    {
+    }
+
+    BitmapRadioButton(
+        wxWindow * parent,
+        wxBitmap const & baseButtonBitmap,
+        wxBitmap const & selectedButtonBitmap,
+        std::function<void()> onClickHandler,
+        wxString const & toolTipLabel = "")
         : wxToggleButton(
             parent,
             wxID_ANY,
@@ -36,8 +51,8 @@ public:
             wxDefaultSize,
             wxBU_EXACTFIT)
     {
-        SetBitmapLabel(WxHelpers::MakeBaseButtonBitmap(bitmapFilePath));
-        SetBitmapPressed(WxHelpers::MakeSelectedButtonBitmap(bitmapFilePath));
+        SetBitmapLabel(baseButtonBitmap);
+        SetBitmapPressed(selectedButtonBitmap);
 
         if (!toolTipLabel.empty())
         {

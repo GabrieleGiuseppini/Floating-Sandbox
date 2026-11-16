@@ -1350,9 +1350,9 @@
 								+ IT
 
 		- MainFrame: reduce GDI objects via button icons
-			- BitmapRadioButton: overload with wxBitmap
-			- Use it via SharedUIResources
-			- 651/656 -> 
+			+ BitmapRadioButton: overload with wxBitmap
+			+ Use it via SharedUIResources
+			- 651/656 -> 621
 		+ OnMouseMove: only do eph viz if translated coord != last, to save on refreshes (*)
 
 		+ See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces

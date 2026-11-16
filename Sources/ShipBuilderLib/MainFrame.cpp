@@ -15,6 +15,7 @@
 #include <UILib/ImageLoadDialog.h>
 #include <UILib/ImageSaveDialog.h>
 #include <UILib/ImageLoader.h>
+#include <UILib/SharedUIResources.h>
 #include <UILib/UnderConstructionDialog.h>
 #include <UILib/WxHelpers.h>
 
@@ -4172,12 +4173,14 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
     auto const makeToolButton = [this](
         ToolType tool,
         wxPanel * toolbarPanel,
-        std::string iconName,
+        wxBitmap const & baseBitmap,
+        wxBitmap const & selectedBitmap,
         wxString tooltip) -> BitmapRadioButton *
     {
         auto button = new BitmapRadioButton(
             toolbarPanel,
-            mGameAssetManager.GetIconFilePath(iconName),
+            baseBitmap,
+            selectedBitmap,
             [this, tool]()
             {
                 mController->SetCurrentTool(tool);
@@ -4188,6 +4191,20 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
         return button;
     };
+
+    auto const makeToolButton_2 = [&](
+        ToolType tool,
+        wxPanel * toolbarPanel,
+        std::string iconName,
+        wxString tooltip) -> BitmapRadioButton *
+        {
+            return makeToolButton(
+                tool,
+                toolbarPanel,
+                WxHelpers::MakeBaseButtonBitmap(mGameAssetManager.GetIconFilePath(iconName)),
+                WxHelpers::MakeSelectedButtonBitmap(mGameAssetManager.GetIconFilePath(iconName)),
+                tooltip);
+        };
 
     //
     // Structural toolbar
@@ -4208,7 +4225,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::StructuralPencil,
                     structuralToolbarPanel,
-                    "pencil_icon",
+                    SharedUIResources::GetInstance().GetPencilIconBase(),
+                    SharedUIResources::GetInstance().GetPencilIconSelected(),
                     _("Draw individual structure particles."));
 
                 toolsSizer->Add(
@@ -4224,7 +4242,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::StructuralEraser,
                     structuralToolbarPanel,
-                    "eraser_icon",
+                    SharedUIResources::GetInstance().GetEraserIconBase(),
+                    SharedUIResources::GetInstance().GetEraserIconSelected(),
                     _("Erase individual structure particles."));
 
                 toolsSizer->Add(
@@ -4240,7 +4259,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::StructuralLine,
                     structuralToolbarPanel,
-                    "line_icon",
+                    SharedUIResources::GetInstance().GetLineIconBase(),
+                    SharedUIResources::GetInstance().GetLineIconSelected(),
                     _("Draw particles in lines."));
 
                 toolsSizer->Add(
@@ -4253,7 +4273,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // Rectangle
             {
-                auto button = makeToolButton(
+                auto button = makeToolButton_2(
                     ToolType::StructuralRectangle,
                     structuralToolbarPanel,
                     "rectangles_icon",
@@ -4269,7 +4289,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // Flood
             {
-                auto button = makeToolButton(
+                auto button = makeToolButton_2(
                     ToolType::StructuralFlood,
                     structuralToolbarPanel,
                     "flood_tool_icon",
@@ -4288,7 +4308,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::StructuralSampler,
                     structuralToolbarPanel,
-                    "sampler_icon",
+                    SharedUIResources::GetInstance().GetSamplerIconBase(),
+                    SharedUIResources::GetInstance().GetSamplerIconSelected(),
                     _("Sample the material under the cursor."));
 
                 toolsSizer->Add(
@@ -4304,7 +4325,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::StructuralSelectAndTranslate,
                     structuralToolbarPanel,
-                    "translate_icon",
+                    SharedUIResources::GetInstance().GetTranslateIconBase(),
+                    SharedUIResources::GetInstance().GetTranslateIconSelected(),
                     _("Move rectangular sections."));
 
                 toolsSizer->Add(
@@ -4317,7 +4339,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // MeasuringTape
             {
-                auto button = makeToolButton(
+                auto button = makeToolButton_2(
                     ToolType::StructuralMeasuringTape,
                     structuralToolbarPanel,
                     "measuring_tape_icon",
@@ -4336,7 +4358,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::StructuralSelection,
                     structuralToolbarPanel,
-                    "selection_icon",
+                    SharedUIResources::GetInstance().GetSelectionIconBase(),
+                    SharedUIResources::GetInstance().GetSelectionIconSelected(),
                     _("Select an area for copying and/or cutting."));
 
                 toolsSizer->Add(
@@ -4352,7 +4375,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::StructuralPaste,
                     structuralToolbarPanel,
-                    "paste_icon",
+                    SharedUIResources::GetInstance().GetPasteIconBase(),
+                    SharedUIResources::GetInstance().GetPasteIconSelected(),
                     _("Paste clipboard."));
 
                 toolsSizer->Add(
@@ -4467,7 +4491,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::ElectricalPencil,
                     electricalToolbarPanel,
-                    "pencil_icon",
+                    SharedUIResources::GetInstance().GetPencilIconBase(),
+                    SharedUIResources::GetInstance().GetPencilIconSelected(),
                     _("Draw individual electrical elements."));
 
                 toolsSizer->Add(
@@ -4483,7 +4508,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::ElectricalEraser,
                     electricalToolbarPanel,
-                    "eraser_icon",
+                    SharedUIResources::GetInstance().GetEraserIconBase(),
+                    SharedUIResources::GetInstance().GetEraserIconSelected(),
                     _("Erase individual electrical elements."));
 
                 toolsSizer->Add(
@@ -4499,7 +4525,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::ElectricalLine,
                     electricalToolbarPanel,
-                    "line_icon",
+                    SharedUIResources::GetInstance().GetLineIconBase(),
+                    SharedUIResources::GetInstance().GetLineIconSelected(),
                     _("Draw electrical elements in lines."));
 
                 toolsSizer->Add(
@@ -4515,7 +4542,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::ElectricalSampler,
                     electricalToolbarPanel,
-                    "sampler_icon",
+                    SharedUIResources::GetInstance().GetSamplerIconBase(),
+                    SharedUIResources::GetInstance().GetSamplerIconSelected(),
                     _("Sample the material under the cursor."));
 
                 toolsSizer->Add(
@@ -4531,7 +4559,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::ElectricalSelectAndTranslate,
                     electricalToolbarPanel,
-                    "translate_icon",
+                    SharedUIResources::GetInstance().GetTranslateIconBase(),
+                    SharedUIResources::GetInstance().GetTranslateIconSelected(),
                     _("Move rectangular sections."));
 
                 toolsSizer->Add(
@@ -4547,7 +4576,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::ElectricalSelection,
                     electricalToolbarPanel,
-                    "selection_icon",
+                    SharedUIResources::GetInstance().GetSelectionIconBase(),
+                    SharedUIResources::GetInstance().GetSelectionIconSelected(),
                     _("Select an area for copying and/or cutting."));
 
                 toolsSizer->Add(
@@ -4563,7 +4593,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::ElectricalPaste,
                     electricalToolbarPanel,
-                    "paste_icon",
+                    SharedUIResources::GetInstance().GetPasteIconBase(),
+                    SharedUIResources::GetInstance().GetPasteIconSelected(),
                     _("Paste clipboard."));
 
                 toolsSizer->Add(
@@ -4678,7 +4709,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::RopePencil,
                     ropesToolbarPanel,
-                    "pencil_icon",
+                    SharedUIResources::GetInstance().GetPencilIconBase(),
+                    SharedUIResources::GetInstance().GetPencilIconSelected(),
                     _("Draw a rope between two endpoints."));
 
                 toolsSizer->Add(
@@ -4694,7 +4726,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::RopeEraser,
                     ropesToolbarPanel,
-                    "eraser_icon",
+                    SharedUIResources::GetInstance().GetEraserIconBase(),
+                    SharedUIResources::GetInstance().GetEraserIconSelected(),
                     _("Erase rope endpoints."));
 
                 toolsSizer->Add(
@@ -4710,7 +4743,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::RopeSelectAndTranslate,
                     ropesToolbarPanel,
-                    "translate_icon",
+                    SharedUIResources::GetInstance().GetTranslateIconBase(),
+                    SharedUIResources::GetInstance().GetTranslateIconSelected(),
                     _("Move rectangular sections."));
 
                 toolsSizer->Add(
@@ -4726,7 +4760,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::RopeSampler,
                     ropesToolbarPanel,
-                    "sampler_icon",
+                    SharedUIResources::GetInstance().GetSamplerIconBase(),
+                    SharedUIResources::GetInstance().GetSamplerIconSelected(),
                     _("Sample the material under the cursor."));
 
                 toolsSizer->Add(
@@ -4742,7 +4777,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::RopeSelection,
                     ropesToolbarPanel,
-                    "selection_icon",
+                    SharedUIResources::GetInstance().GetSelectionIconBase(),
+                    SharedUIResources::GetInstance().GetSelectionIconSelected(),
                     _("Select an area for copying and/or cutting."));
 
                 toolsSizer->Add(
@@ -4758,7 +4794,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::RopePaste,
                     ropesToolbarPanel,
-                    "paste_icon",
+                    SharedUIResources::GetInstance().GetPasteIconBase(),
+                    SharedUIResources::GetInstance().GetPasteIconSelected(),
                     _("Paste clipboard."));
 
                 toolsSizer->Add(
@@ -4870,7 +4907,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // StructureTracer
             {
-                auto button = makeToolButton(
+                auto button = makeToolButton_2(
                     ToolType::StructureTracer,
                     exteriorTextureToolbarPanel,
                     "structure_tracer_button",
@@ -4886,7 +4923,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // Translate
             {
-                auto button = makeToolButton(
+                auto button = makeToolButton_2(
                     ToolType::ExteriorTextureTranslate,
                     exteriorTextureToolbarPanel,
                     "pan_icon",
@@ -4905,7 +4942,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::ExteriorTextureEraser,
                     exteriorTextureToolbarPanel,
-                    "eraser_icon",
+                    SharedUIResources::GetInstance().GetEraserIconBase(),
+                    SharedUIResources::GetInstance().GetEraserIconSelected(),
                     _("Erase individual texture pixels."));
 
                 toolsSizer->Add(
@@ -4918,7 +4956,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // Magic wand
             {
-                auto button = makeToolButton(
+                auto button = makeToolButton_2(
                     ToolType::ExteriorTextureMagicWand,
                     exteriorTextureToolbarPanel,
                     "magic_wand_icon",
@@ -4937,7 +4975,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::ExteriorSelectAndTranslate,
                     exteriorTextureToolbarPanel,
-                    "translate_icon",
+                    SharedUIResources::GetInstance().GetTranslateIconBase(),
+                    SharedUIResources::GetInstance().GetTranslateIconSelected(),
                     _("Move rectangular sections."));
 
                 toolsSizer->Add(
@@ -4953,7 +4992,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::ExteriorTextureSelection,
                     exteriorTextureToolbarPanel,
-                    "selection_icon",
+                    SharedUIResources::GetInstance().GetSelectionIconBase(),
+                    SharedUIResources::GetInstance().GetSelectionIconSelected(),
                     _("Select an area for copying and/or cutting."));
 
                 toolsSizer->Add(
@@ -4969,7 +5009,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 auto button = makeToolButton(
                     ToolType::ExteriorTexturePaste,
                     exteriorTextureToolbarPanel,
-                    "paste_icon",
+                    SharedUIResources::GetInstance().GetPasteIconBase(),
+                    SharedUIResources::GetInstance().GetPasteIconSelected(),
                     _("Paste clipboard."));
 
                 toolsSizer->Add(
