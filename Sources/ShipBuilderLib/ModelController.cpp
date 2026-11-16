@@ -570,6 +570,9 @@ GenericShipSpaceUndoPayload ModelController::Paste(
     {
         assert(!affectedTargetRectShip->IsEmpty());
 
+        // Adjust paste origin
+        actualPasteOriginShip = affectedTargetRectShip->origin;
+
         // Calculate affected source region
         ShipSpaceRect const affectedSourceRegion(
             ShipSpaceCoordinates(0, 0) + (affectedTargetRectShip->origin - pasteOrigin),

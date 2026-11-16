@@ -1349,10 +1349,10 @@
 									+ Test
 								+ IT
 
-		- MainFrame: reduce GDI objects via button icons
+		+ MainFrame: reduce GDI objects via button icons
 			+ BitmapRadioButton: overload with wxBitmap
 			+ Use it via SharedUIResources
-			- 651/656 -> 621
+			+ 651/656 -> 621
 		+ OnMouseMove: only do eph viz if translated coord != last, to save on refreshes (*)
 
 		+ See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
@@ -1360,13 +1360,24 @@
 
 		- Deep regression test:
 			- Rope-affecting tools, incl. copy/cut/paste:
+				- TODO: FIX: copy whole rope, paste, translate outside of ship: endpoint that's out goes random
+					! Same with SelectAndTranslate
+					! SourceRegion: contains both endpoints, offseted
+					! Then BlitFromRegion(sourceRegion): broken endpoint is out of source region, thus we keep it offseted
+					= Fix: we currently use "endpoint in source region" to remember whether we've offseted it or not, but we're
+					  using truncated source region; should use un-truncated region
+				- TODO: FIX: Paste with paste origin outside of ship, left/bottom
+				- TODO: FIX: copy of one endpoint, paste, then undo or abort - ropes disappear
 				- EphViz
 				- Commit
 				- Undo
 			- TextureTranslate
 				- EphViz
+					- Also spring viz
 				- Commit
+					- Also spring viz
 				- Undo
+					- Also spring viz
 				- Macro properties (center of mass) updates at:
 					- Commit
 					- Undo
@@ -1395,7 +1406,11 @@
 				+ Remove log lines
 				+ Remove old code
 
-	- Merge into master
+	- Perf test
+		- Copy old release ShipBuilder.exe first
+
+	- Merge into master with PR
+	- Changelist
 
 
 
