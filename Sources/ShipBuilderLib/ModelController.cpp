@@ -3766,20 +3766,23 @@ void ModelController::UpdateVisualizations(
             mStructuralLayerVisualizationTexture = std::make_unique<RgbaImageData>(ImageSize(mModel.GetShipSize().width, mModel.GetShipSize().height));
         }
 
+        if (!mDirtyStructuralLayerVisualizationRegions.IsEmpty()) // Needs only be done once
+        {
+            // Refresh viz mode
+            if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::MeshMode)
+            {
+                view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::MeshMode);
+            }
+            else
+            {
+                assert(mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::PixelMode);
+                view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::PixelMode);
+            }
+        }
+
         mDirtyStructuralLayerVisualizationRegions.Apply(
             [&](ShipSpaceRect const & region)
             {
-                // Refresh viz mode
-                if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::MeshMode)
-                {
-                    view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::MeshMode);
-                }
-                else
-                {
-                    assert(mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::PixelMode);
-                    view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::PixelMode);
-                }
-
                 // Update visualization
                 ImageRect const dirtyTextureRegion = UpdateStructuralLayerVisualization(region);
 
@@ -3862,15 +3865,15 @@ void ModelController::UpdateVisualizations(
     {
         assert(mModel.HasLayer(LayerType::Ropes));
 
-        mDirtyRopesLayerVisualizationRegions.Apply(
-            [&](ShipSpaceRect const &)
-            {
-                // Update visualization
-                UpdateRopesLayerVisualization(); // Dirty region not needed in this implementation
+        // Ropes viz is whole buffer, just do it if we have at least one region
+        if (!mDirtyRopesLayerVisualizationRegions.IsEmpty())
+        {
+            // Update visualization
+            UpdateRopesLayerVisualization(); // Dirty region not needed in this implementation
 
-                // Upload visualization
-                view.UploadRopesLayerVisualization(mModel.GetRopesLayer().Buffer);
-            });
+            // Upload visualization
+            view.UploadRopesLayerVisualization(mModel.GetRopesLayer().Buffer);
+        }
     }
     else
     {

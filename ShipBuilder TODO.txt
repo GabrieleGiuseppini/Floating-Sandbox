@@ -1349,11 +1349,14 @@
 									+ Test
 								+ IT
 
-		- TODO: commit/abort buttons? Problem: need base class
+		- MainFrame: reduce GDI objects via button icons
+			- BitmapRadioButton: overload with wxBitmap
+			- Use it via SharedUIResources
+			- 651/656 -> 
 		+ OnMouseMove: only do eph viz if translated coord != last, to save on refreshes (*)
 
-		- See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
-			- Also optimize - we do some things multiple times, once per region
+		+ See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
+			+ Also optimize - we do some things multiple times, once per region
 
 		- Deep regression test:
 			- Rope-affecting tools, incl. copy/cut/paste:
@@ -1387,10 +1390,10 @@
 			+ Undo ONLY appears AFTER sizable move
 			+ Undo ONLY appears if move ended up not being a zero move
 
-		= Cleanup:
-			= Tool:
+		+ Cleanup:
+			+ Tool:
 				+ Remove log lines
-				- Remove old code
+				+ Remove old code
 
 	- Merge into master
 

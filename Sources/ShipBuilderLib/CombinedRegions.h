@@ -37,6 +37,11 @@ public:
 		}
 	}
 
+	bool IsEmpty() const
+	{
+		return mRegionInfos.empty();
+	}
+
 	size_t GetRegionCount() const
 	{
 		return mRegionInfos.size();
