@@ -1316,8 +1316,7 @@
 									+ Commit broken wrt coords
 									+ Changes to workbench state after engagement: tool not notified
 										+ Freeze vals @ Engagement
-
-							= ModelController::RegionTransfer -> multi-region undo
+							+ ShipSpace ModelController::RegionTransfer -> multi-region undo
 								+ S
 								+ E: Need convoluted electrical panel handling:
 									+ Erase: leave elec panel elements behind
@@ -1343,14 +1342,14 @@
 										+ Straddle rope
 										+ Whole rope
 										+ No rope
-								- ET
-								- IT
-							- TODO: commit/abort buttons?
+								+ ET
+								+ IT							
 							- Other 2 RegionTransfer in texture space
 								- ET
 								- IT
 
 		- Check icon
+		- TODO: commit/abort buttons?
 		+ OnMouseMove: only do eph viz if translated coord != last, to save on refreshes (*)
 
 		- See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
