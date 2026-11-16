@@ -1326,9 +1326,9 @@
 											+ Can keep all insatance IDs, as they're gone (were from erased region)
 											+ It might resuscitate 1..N of the erased ones
 											+ It might kill overwritten ones
-										- FIX: crashes after transfer
-											- Problem is at ModelController::Restore multi-region-ness: when restoring erase we have dupes
-												- Need to delay all re-initializations (and verification) only after all regions
+										+ FIX: crashes after transfer
+											+ Problem is at ModelController::Restore multi-region-ness: when restoring erase we have dupes
+												+ Need to delay all re-initializations (and verification) only after all regions
 										= Final: trim panel for those from Erase that might be gone (not pasted, i.e. not resuscitated)
 											- Verify diagnostics would fire if we nuked an instanced, and verify both fixed after trimming
 												= From erased region (paste outside)
@@ -1347,8 +1347,8 @@
 							- Other 2 RegionTransfer in texture space
 								- ET
 								- IT
-						
-		- OnMouseMove: only do eph viz if translated cood != last, to save on refreshes (*)
+
+		+ OnMouseMove: only do eph viz if translated coord != last, to save on refreshes (*)
 
 		- See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
 			- Also optimize - we do some things multiple times, once per region
@@ -1362,6 +1362,12 @@
 				- EphViz
 				- Commit
 				- Undo
+				- Macro properties (center of mass) updates at:
+					- Commit
+					- Undo
+				- Elec panel updates at:
+					- Commit
+					- Undo
 
 		+ Icon
 		= MainFrame:

@@ -1534,8 +1534,12 @@ void ModelController::Restore(GenericShipSpaceUndoPayload && undoPayload)
 {
     // Note: no layer presence nor size changes
 
+    bool hasStructuralLayerBeenUpdated = false;
+    bool hasElectricalLayerBeenUpdated = false;
+    bool hasRopesLayerBeenUpdated = false;
+
     undoPayload.ConsumeAll(
-        [this](auto && regionPayload)
+        [&](auto && regionPayload)
         {
             for (LayerType const affectedLayerType : regionPayload.GetAffectedLayers())
             {
@@ -1543,27 +1547,33 @@ void ModelController::Restore(GenericShipSpaceUndoPayload && undoPayload)
                 {
                     case LayerType::Structural:
                     {
-                        RestoreStructuralLayerRegionBackup(
+                        InternalRestoreStructuralLayerRegionBackup(
                             std::move(*regionPayload.StructuralLayerRegionBackup),
                             regionPayload.Origin);
+
+                        hasStructuralLayerBeenUpdated = true;
 
                         break;
                     }
 
                     case LayerType::Electrical:
                     {
-                        RestoreElectricalLayerRegionBackup(
+                        InternalRestoreElectricalLayerRegionBackup(
                             std::move(*regionPayload.ElectricalLayerRegionBackup),
                             regionPayload.Origin);
+
+                        hasElectricalLayerBeenUpdated = true;
 
                         break;
                     }
 
                     case LayerType::Ropes:
                     {
-                        RestoreRopesLayerRegionBackup(
+                        InternalRestoreRopesLayerRegionBackup(
                             std::move(*regionPayload.RopesLayerRegionBackup),
                             regionPayload.Origin);
+
+                        hasRopesLayerBeenUpdated = true;
 
                         break;
                     }
@@ -1588,6 +1598,37 @@ void ModelController::Restore(GenericShipSpaceUndoPayload && undoPayload)
                 }
             }
         });
+
+    if (hasStructuralLayerBeenUpdated)
+    {
+        //
+        // Re-initialize layer analysis
+        //
+
+        InitializeStructuralLayerAnalysis();
+    }
+
+    if (hasElectricalLayerBeenUpdated)
+    {
+        //
+        // Re-initialize layer analysis (and instance IDs)
+        //
+        // Note: panel doesn't require massaging, it's been restored as a whole
+        //
+
+        InitializeElectricalLayerAnalysis();
+
+        VerifyElectricalLayerInvariants();
+    }
+
+    if (hasRopesLayerBeenUpdated)
+    {
+        //
+        // Re-initialize layer analysis
+        //
+
+        InitializeRopesLayerAnalysis();
+    }
 }
 
 void ModelController::Restore(GenericExteriorTextureSpaceUndoPayload && undoPayload)
@@ -2023,32 +2064,11 @@ void ModelController::RestoreStructuralLayerRegionBackup(
     StructuralLayerData && sourceLayerRegionBackup,
     ShipSpaceCoordinates const & targetOrigin)
 {
-    assert(mModel.HasLayer(LayerType::Structural));
-
-    assert(!mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization);
-
-    //
-    // Restore model
-    //
-
-    ShipSpaceSize const regionSize = sourceLayerRegionBackup.Buffer.Size;
-
-    mModel.GetStructuralLayer().RestoreRegionBackup(
+    InternalRestoreStructuralLayerRegionBackup(
         std::move(sourceLayerRegionBackup),
         targetOrigin);
 
-    //
-    // Re-initialize layer analysis
-    //
-
     InitializeStructuralLayerAnalysis();
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::Game>(ShipSpaceRect(targetOrigin, regionSize));
-    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(ShipSpaceRect(targetOrigin, regionSize));
 }
 
 void ModelController::RestoreStructuralLayer(std::unique_ptr<StructuralLayerData> sourceLayer)
@@ -2342,33 +2362,13 @@ void ModelController::RestoreElectricalLayerRegionBackup(
     ElectricalLayerData && sourceLayerRegionBackup,
     ShipSpaceCoordinates const & targetOrigin)
 {
-    assert(mModel.HasLayer(LayerType::Electrical));
-
-    assert(!mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization);
-
-    //
-    // Restore model
-    //
-
-    ShipSpaceSize const regionSize = sourceLayerRegionBackup.Buffer.Size;
-
-    mModel.GetElectricalLayer().RestoreRegionBackup(
+    InternalRestoreElectricalLayerRegionBackup(
         std::move(sourceLayerRegionBackup),
         targetOrigin);
-
-    //
-    // Re-initialize layer analysis (and instance IDs)
-    //
 
     InitializeElectricalLayerAnalysis();
 
     VerifyElectricalLayerInvariants();
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(ShipSpaceRect(targetOrigin, regionSize));
 }
 
 void ModelController::RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData> sourceLayer)
@@ -2624,29 +2624,11 @@ void ModelController::RestoreRopesLayerRegionBackup(
     RopesLayerData && sourceLayerRegionBackup,
     ShipSpaceCoordinates const & targetOrigin)
 {
-    assert(mModel.HasLayer(LayerType::Ropes));
-
-    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
-
-    //
-    // Restore model
-    //
-
-    mModel.GetRopesLayer().RestoreRegionBackup(
+    InternalRestoreRopesLayerRegionBackup(
         std::move(sourceLayerRegionBackup),
         targetOrigin);
 
-    //
-    // Re-initialize layer analysis
-    //
-
     InitializeRopesLayerAnalysis();
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 }
 
 void ModelController::RestoreRopesLayer(std::unique_ptr<RopesLayerData> sourceLayer)
@@ -4556,6 +4538,80 @@ GenericShipSpaceUndoPayload::payload_type ModelController::MakeGenericShipSpaceU
         std::move(ropesLayerRegionBackup),
         std::move(exteriorTextureLayerRegionBackup),
         std::move(interiorTextureLayerRegionBackup));
+}
+
+void ModelController::InternalRestoreStructuralLayerRegionBackup(
+    StructuralLayerData && sourceLayerRegionBackup,
+    ShipSpaceCoordinates const & targetOrigin)
+{
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    assert(!mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization);
+
+    //
+    // Restore model
+    //
+
+    ShipSpaceSize const regionSize = sourceLayerRegionBackup.Buffer.Size;
+
+    mModel.GetStructuralLayer().RestoreRegionBackup(
+        std::move(sourceLayerRegionBackup),
+        targetOrigin);
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::Game>(ShipSpaceRect(targetOrigin, regionSize));
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(ShipSpaceRect(targetOrigin, regionSize));
+}
+
+void ModelController::InternalRestoreElectricalLayerRegionBackup(
+    ElectricalLayerData && sourceLayerRegionBackup,
+    ShipSpaceCoordinates const & targetOrigin)
+{
+    assert(mModel.HasLayer(LayerType::Electrical));
+
+    assert(!mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization);
+
+    //
+    // Restore model
+    //
+
+    ShipSpaceSize const regionSize = sourceLayerRegionBackup.Buffer.Size;
+
+    mModel.GetElectricalLayer().RestoreRegionBackup(
+        std::move(sourceLayerRegionBackup),
+        targetOrigin);
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(ShipSpaceRect(targetOrigin, regionSize));
+}
+
+void ModelController::InternalRestoreRopesLayerRegionBackup(
+    RopesLayerData && sourceLayerRegionBackup,
+    ShipSpaceCoordinates const & targetOrigin)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
+
+    //
+    // Restore model
+    //
+
+    mModel.GetRopesLayer().RestoreRegionBackup(
+        std::move(sourceLayerRegionBackup),
+        targetOrigin);
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 }
 
 GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type ModelController::MakeGenericShipSpaceEphemeralVisualizationRestorePayload(

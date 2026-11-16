@@ -746,6 +746,21 @@ private:
         std::optional<ShipSpaceRect> const & region,
         LayerSelector const & layerSelection) const;
 
+    // No post-restore analysis
+    void InternalRestoreStructuralLayerRegionBackup(
+        StructuralLayerData && sourceLayerRegionBackup,
+        ShipSpaceCoordinates const & targetOrigin);
+
+    // No post-restore analysis/cleanup
+    void InternalRestoreElectricalLayerRegionBackup(
+        ElectricalLayerData && sourceLayerRegionBackup,
+        ShipSpaceCoordinates const & targetOrigin);
+
+    // No post-restore analysis/cleanup
+    void InternalRestoreRopesLayerRegionBackup(
+        RopesLayerData && sourceLayerRegionBackup,
+        ShipSpaceCoordinates const & targetOrigin);
+
     GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type MakeGenericShipSpaceEphemeralVisualizationRestorePayload(
         ShipSpaceRect const & region,
         LayerSelector const & layerSelection) const;
