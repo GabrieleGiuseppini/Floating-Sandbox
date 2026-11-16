@@ -435,7 +435,6 @@ public:
 
     void RestoreRopesLayerEphemeralVisualization(
         typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer,
-        ShipSpaceRect const & backupBufferRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
     //
@@ -795,7 +794,6 @@ private:
 
     void InternalRestoreRopesLayerEphemeralVisualization(
         typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer,
-        ShipSpaceRect const & backupBufferRegion,
         ShipSpaceCoordinates const & targetOrigin,
         EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
 
@@ -870,8 +868,7 @@ private:
 
     void DoRopesRegionBufferPaste(
         typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceBuffer,
-        ShipSpaceRect const & sourceRegion,
-        ShipSpaceCoordinates const & targetCoordinates,
+        ShipSpaceCoordinates const & targetCoordinates, // Unclipped
         bool isTransparent);
 
     void DoExteriorTextureRegionBufferPaste(

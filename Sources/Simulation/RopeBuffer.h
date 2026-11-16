@@ -150,27 +150,31 @@ struct RopeBuffer
      * Maintains coords of endpoints outside the blitted region.
      */
     void BlitFromRegion(
-        RopeBuffer const & source,
-        ShipSpaceRect const & sourceRegion,
-        ShipSpaceCoordinates const & targetPos,
+        RopeBuffer const & source, // Might lay outside of ship space
+        ShipSpaceCoordinates const & targetPos, // Might lay outside of ship space
         bool isTransparent)
     {
         // Clear affected region first, if requested
         if (!isTransparent)
         {
-            ShipSpaceRect const targetPasteRegion(
-                targetPos,
-                sourceRegion.size);
+            auto const targetPasteRegion =
+                ShipSpaceRect(
+                    targetPos,
+                    source.GetSize())
+                .MakeIntersectionWith(ShipSpaceRect(mSize));
 
-            for (auto tgtIt = mBuffer.begin(); tgtIt != mBuffer.end(); )
+            if (targetPasteRegion)
             {
-                if (tgtIt->StartCoords.IsInRect(targetPasteRegion) || tgtIt->EndCoords.IsInRect(targetPasteRegion))
+                for (auto tgtIt = mBuffer.begin(); tgtIt != mBuffer.end(); )
                 {
-                    tgtIt = mBuffer.erase(tgtIt);
-                }
-                else
-                {
-                    ++tgtIt;
+                    if (tgtIt->StartCoords.IsInRect(*targetPasteRegion) || tgtIt->EndCoords.IsInRect(*targetPasteRegion))
+                    {
+                        tgtIt = mBuffer.erase(tgtIt);
+                    }
+                    else
+                    {
+                        ++tgtIt;
+                    }
                 }
             }
         }
@@ -179,14 +183,14 @@ struct RopeBuffer
         for (auto const & r : source.mBuffer)
         {
             // Only copy source ropes that have at least one endpoint in source region
-            if (r.StartCoords.IsInRect(sourceRegion) || r.EndCoords.IsInRect(sourceRegion))
+            if (r.StartCoords.IsInSize(source.GetSize()) || r.EndCoords.IsInSize(source.GetSize()))
             {
                 // Translate coords
-                ShipSpaceCoordinates const startCoordsInTarget = r.StartCoords.IsInRect(sourceRegion)
-                    ? targetPos + (r.StartCoords - sourceRegion.origin)
+                ShipSpaceCoordinates const startCoordsInTarget = r.StartCoords.IsInSize(source.GetSize())
+                    ? r.StartCoords + ShipSpaceSize(targetPos.x, targetPos.y)
                     : r.StartCoords;
-                ShipSpaceCoordinates const endCoordsInTarget = r.EndCoords.IsInRect(sourceRegion)
-                    ? targetPos + (r.EndCoords - sourceRegion.origin)
+                ShipSpaceCoordinates const endCoordsInTarget = r.EndCoords.IsInSize(source.GetSize())
+                    ? r.EndCoords + ShipSpaceSize(targetPos.x, targetPos.y)
                     : r.EndCoords;
 
                 // Make sure translated coords are inside our size

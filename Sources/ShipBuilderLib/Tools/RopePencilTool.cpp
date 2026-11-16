@@ -294,7 +294,6 @@ void RopePencilTool::MendTempVisualization()
 
     mController.GetModelController().RestoreRopesLayerEphemeralVisualization(
         mEngagementData->OriginalLayerClone.Buffer,
-        ShipSpaceRect(mEngagementData->OriginalLayerClone.Buffer.GetSize()),
         ShipSpaceCoordinates(0, 0));
 
     mHasTempVisualization = false;

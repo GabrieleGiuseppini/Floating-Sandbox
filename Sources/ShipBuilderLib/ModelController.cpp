@@ -556,7 +556,7 @@ GenericShipSpaceUndoPayload ModelController::Paste(
     // Structural, Electrical, Ropes
     //
 
-    ShipSpaceCoordinates actualPasteOriginShip = pasteOrigin;
+    ShipSpaceCoordinates actualPasteOrigin = pasteOrigin;
 
     std::optional<StructuralLayerData> structuralLayerRegionBackup;
     std::optional<ElectricalLayerData> electricalLayerRegionBackup;
@@ -571,7 +571,7 @@ GenericShipSpaceUndoPayload ModelController::Paste(
         assert(!affectedTargetRectShip->IsEmpty());
 
         // Adjust paste origin
-        actualPasteOriginShip = affectedTargetRectShip->origin;
+        actualPasteOrigin = affectedTargetRectShip->origin;
 
         // Calculate affected source region
         ShipSpaceRect const affectedSourceRegion(
@@ -589,7 +589,7 @@ GenericShipSpaceUndoPayload ModelController::Paste(
             DoStructuralRegionBufferPaste(
                 sourcePayload.StructuralLayer->Buffer,
                 affectedSourceRegion,
-                affectedTargetRectShip->origin,
+                actualPasteOrigin,
                 isTransparent);
 
             // Re-initialize layer analysis
@@ -607,7 +607,7 @@ GenericShipSpaceUndoPayload ModelController::Paste(
             DoElectricalRegionBufferPaste(
                 sourcePayload.ElectricalLayer->Buffer,
                 affectedSourceRegion,
-                actualPasteOriginShip,
+                actualPasteOrigin,
                 [isTransparent, this, &sourcePayload](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement
                 {
                     // Take care of deletion of old
@@ -680,8 +680,7 @@ GenericShipSpaceUndoPayload ModelController::Paste(
             // Paste
             DoRopesRegionBufferPaste(
                 sourcePayload.RopesLayer->Buffer,
-                affectedSourceRegion,
-                actualPasteOriginShip,
+                pasteOrigin,
                 isTransparent);
         }
     }
@@ -771,7 +770,7 @@ GenericShipSpaceUndoPayload ModelController::Paste(
     }
 
     return GenericShipSpaceUndoPayload::Make(
-        actualPasteOriginShip,
+        actualPasteOrigin,
         std::move(structuralLayerRegionBackup),
         std::move(electricalLayerRegionBackup),
         std::move(ropesLayerRegionBackup),
@@ -788,7 +787,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
     // Structural, Electrical, Ropes
     //
 
-    ShipSpaceCoordinates actualPasteOriginShip = pasteOrigin;
+    ShipSpaceCoordinates actualPasteOrigin = pasteOrigin;
 
     std::optional<typename LayerTypeTraits<LayerType::Structural>::buffer_type> structuralLayerRestoreBufferRegion;
     std::optional<typename LayerTypeTraits<LayerType::Electrical>::buffer_type> electricalLayerRestoreBufferRegion;
@@ -803,11 +802,11 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
         assert(!affectedTargetRectShip->IsEmpty());
 
         // Adjust paste origin
-        actualPasteOriginShip = affectedTargetRectShip->origin;
+        actualPasteOrigin = affectedTargetRectShip->origin;
 
         // Calculate affected source region
         ShipSpaceRect const affectedSourceRegion(
-            ShipSpaceCoordinates(0, 0) + (actualPasteOriginShip - pasteOrigin),
+            ShipSpaceCoordinates(0, 0) + (actualPasteOrigin - pasteOrigin),
             affectedTargetRectShip->size);
 
         if (sourcePayload.StructuralLayer && mModel.HasLayer(LayerType::Structural))
@@ -821,7 +820,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
             DoStructuralRegionBufferPaste(
                 sourcePayload.StructuralLayer->Buffer,
                 affectedSourceRegion,
-                actualPasteOriginShip,
+                actualPasteOrigin,
                 isTransparent);
 
             // Remember we are in temp visualization now
@@ -839,7 +838,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
             DoElectricalRegionBufferPaste_Raw(
                 sourcePayload.ElectricalLayer->Buffer,
                 affectedSourceRegion,
-                actualPasteOriginShip,
+                actualPasteOrigin,
                 isTransparent);
 
             // Remember we are in temp visualization now
@@ -856,8 +855,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
             // Paste
             DoRopesRegionBufferPaste(
                 sourcePayload.RopesLayer->Buffer,
-                affectedSourceRegion,
-                actualPasteOriginShip,
+                pasteOrigin,
                 isTransparent);
 
             // Remember we are in temp visualization now
@@ -956,7 +954,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::PasteForEp
     }
 
     return GenericShipSpaceEphemeralVisualizationRestorePayload::Make(
-        actualPasteOriginShip,
+        actualPasteOrigin,
         std::move(structuralLayerRestoreBufferRegion),
         std::move(electricalLayerRestoreBufferRegion),
         std::move(ropesLayerRestoreBuffer),
@@ -1072,8 +1070,7 @@ GenericShipSpaceUndoPayload ModelController::ShipSpaceRegionTransfer(
             assert(sourceUndoPayload.RopesLayerRegionBackup);
             DoRopesRegionBufferPaste(
                 sourceUndoPayload.RopesLayerRegionBackup->Buffer.CloneRegion(sourceRegion), // Source undo payload is _whole_ ropes buffer, thus endpoints are not shifted; we shift them here
-                *adjustedPasteSourceRegion,
-                adjustedDestinationRegion->origin,
+                destinationPos,
                 isTransparent);
         }
 
@@ -1463,8 +1460,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
             assert(sourceRestorePayload.RopesLayerBufferRegion);
             DoRopesRegionBufferPaste(
                 *sourceRestorePayload.RopesLayerBufferRegion,
-                *adjustedPasteSourceRegion,
-                adjustedDestinationRegion->origin,
+                destinationPos,
                 isTransparent);
         }
 
@@ -1966,7 +1962,6 @@ void ModelController::RestoreEphemeralVisualization(GenericShipSpaceEphemeralVis
                     {
                         InternalRestoreRopesLayerEphemeralVisualization(
                             *regionPayload.RopesLayerBufferRegion,
-                            ShipSpaceRect(regionPayload.RopesLayerBufferRegion->GetSize()), // Whole backup
                             regionPayload.Origin,
                             newEphVizState);
 
@@ -2962,12 +2957,10 @@ void ModelController::ModelController::MoveRopeEndpointForEphemeralVisualization
 
 void ModelController::RestoreRopesLayerEphemeralVisualization(
     typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer,
-    ShipSpaceRect const & backupBufferRegion,
     ShipSpaceCoordinates const & targetOrigin)
 {
     InternalRestoreRopesLayerEphemeralVisualization(
         backupBuffer,
-        backupBufferRegion,
         targetOrigin,
         mEphemeralVisualizationLayerState);
 }
@@ -5087,7 +5080,6 @@ void ModelController::InternalRestoreElectricalLayerRegionEphemeralVisualization
 
 void ModelController::InternalRestoreRopesLayerEphemeralVisualization(
     typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer,
-    ShipSpaceRect const & backupBufferRegion,
     ShipSpaceCoordinates const & targetOrigin,
     EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState)
 {
@@ -5097,7 +5089,6 @@ void ModelController::InternalRestoreRopesLayerEphemeralVisualization(
 
     DoRopesRegionBufferPaste(
         backupBuffer,
-        backupBufferRegion,
         targetOrigin,
         false);
 
@@ -5351,24 +5342,13 @@ void ModelController::DoElectricalRegionBufferPaste(
 
 void ModelController::DoRopesRegionBufferPaste(
     typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceBuffer,
-    ShipSpaceRect const & sourceRegion,
-    ShipSpaceCoordinates const & targetCoordinates,
+    ShipSpaceCoordinates const & targetCoordinates, // Unclipped
     bool isTransparent)
 {
     assert(mModel.HasLayer(LayerType::Ropes));
 
-    // Rect in the ship that will be affected by this operation
-    ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size);
-
-    // The affected region is entirely contained in this ship
-    assert(affectedRegion.IsContainedInRect(GetWholeShipRect()));
-
-    // The source region is entirely contained in the source buffer
-    assert(sourceRegion.IsContainedInRect(ShipSpaceRect(sourceBuffer.GetSize())));
-
     mModel.GetRopesLayer().Buffer.BlitFromRegion(
         sourceBuffer,
-        sourceRegion,
         targetCoordinates,
         isTransparent);
 
