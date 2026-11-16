@@ -1337,9 +1337,12 @@
 											+ Paste
 											+ Undo
 											+ Ours -- verify fails until we uncomment trimming orphans
-
-								- R
-									- TODO: also careful here about which source region we use for pasting
+								+ R
+									+ Also careful here about which source region we use for pasting
+									+ Test:
+										+ Straddle rope
+										+ Whole rope
+										+ No rope
 								- ET
 								- IT
 							- TODO: commit/abort buttons?
@@ -1347,6 +1350,7 @@
 								- ET
 								- IT
 
+		- Check icon
 		+ OnMouseMove: only do eph viz if translated coord != last, to save on refreshes (*)
 
 		- See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces

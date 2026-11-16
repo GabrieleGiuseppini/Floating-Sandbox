@@ -1046,7 +1046,7 @@ GenericShipSpaceUndoPayload ModelController::ShipSpaceRegionTransfer(
                 isTransparent);
         }
 
-        // Re-initialize electrical analysis
+        // Re-initialize layer analysis
         InitializeElectricalLayerAnalysis();
 
         // Trim panel for orphaned elements (i.e. the erased ones which were not pasted, i.e. not resuscitated)
@@ -1059,7 +1059,23 @@ GenericShipSpaceUndoPayload ModelController::ShipSpaceRegionTransfer(
     {
         assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
 
-        // TODOHERE
+        // Erase - all ropes with at least one endpoint in region
+        DoRopesRegionErase(sourceRegion);
+
+        if (adjustedDestinationRegion.has_value())
+        {
+            // Paste - including ropes with endpoints outside of copied region
+            //
+            assert(sourceUndoPayload.RopesLayerRegionBackup);
+            DoRopesRegionBufferPaste(
+                sourceUndoPayload.RopesLayerRegionBackup->Buffer.CloneRegion(sourceRegion), // Source undo payload is _whole_ ropes buffer, thus endpoints are not shifted; we shift them here
+                *adjustedPasteSourceRegion,
+                adjustedDestinationRegion->origin,
+                isTransparent);
+        }
+
+        // Re-initialize layer analysis
+        InitializeRopesLayerAnalysis();
     }
 
     if (layerSelection.IsSet(LayerType::ExteriorTexture))
