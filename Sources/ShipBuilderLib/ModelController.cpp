@@ -1050,8 +1050,7 @@ GenericShipSpaceUndoPayload ModelController::ShipSpaceRegionTransfer(
         InitializeElectricalLayerAnalysis();
 
         // Trim panel for orphaned elements (i.e. the erased ones which were not pasted, i.e. not resuscitated)
-        // TODOTEST
-        //mModel.GetElectricalLayer().Panel.RemoveAbsentFrom(mInstancedElectricalElementSet.GetElements());
+        mModel.GetElectricalLayer().Panel.RemoveAbsentFrom(mInstancedElectricalElementSet.GetElements());
 
         VerifyElectricalLayerInvariants();
     }
