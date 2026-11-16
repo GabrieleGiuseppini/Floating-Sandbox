@@ -2814,7 +2814,120 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
     // Texture space select-and-translate
     {
-        // TODOHERE
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Layers Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Layers:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(2, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Layers Radioboxes
+        {
+            wxRadioButton * thisLayerRadioButton = new wxRadioButton(
+                dynamicPanel,
+                wxID_ANY,
+                _("This Layer Only"),
+                wxDefaultPosition,
+                wxDefaultSize,
+                wxRB_GROUP);
+
+            thisLayerRadioButton->SetValue(!mWorkbenchState.GetTextureSpaceSelectAndTranslateToolIsAllLayers());
+
+            thisLayerRadioButton->Bind(
+                wxEVT_RADIOBUTTON,
+                [this, thisLayerRadioButton](wxCommandEvent &)
+                {
+                    mWorkbenchState.SetTextureSpaceSelectAndTranslateToolIsAllLayers(!thisLayerRadioButton->GetValue());
+                });
+
+            dynamicPanelGridSizer->Add(
+                thisLayerRadioButton,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+
+            //
+
+            wxRadioButton * allTextureLayersRadioButton = new wxRadioButton(
+                dynamicPanel,
+                wxID_ANY,
+                _("All Texture Layers"),
+                wxDefaultPosition,
+                wxDefaultSize);
+
+            allTextureLayersRadioButton->SetValue(mWorkbenchState.GetTextureSpaceSelectAndTranslateToolIsAllLayers());
+
+            allTextureLayersRadioButton->Bind(
+                wxEVT_RADIOBUTTON,
+                [this, allTextureLayersRadioButton](wxCommandEvent &)
+                {
+                    mWorkbenchState.SetTextureSpaceSelectAndTranslateToolIsAllLayers(allTextureLayersRadioButton->GetValue());
+                });
+
+            dynamicPanelGridSizer->Add(
+                allTextureLayersRadioButton,
+                wxGBPosition(1, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Transparent Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Transparent:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(2, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Transparent Checkbox
+        {
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
+
+            chkBox->SetToolTip(_("When enabled, empty regions are pasted as transparent; otherwise, empty regions are pasted as opaque and will erase anything on the background."));
+
+            chkBox->SetValue(mWorkbenchState.GetTextureSpaceSelectAndTranslateToolIsTransparent());
+
+            chkBox->Bind(
+                wxEVT_CHECKBOX,
+                [this](wxCommandEvent & event)
+                {
+                    mWorkbenchState.SetTextureSpaceSelectAndTranslateToolIsTransparent(event.IsChecked());
+                });
+
+            dynamicPanelGridSizer->Add(
+                chkBox,
+                wxGBPosition(2, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in place
+        {
+            mToolSettingsPanelsSizer->Add(
+                dynamicPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanels.emplace_back(
+                std::vector<ToolType>{ ToolType::ExteriorSelectAndTranslate, ToolType::InteriorSelectAndTranslate },
+                dynamicPanel);
+        }
     }
 
     // Selection

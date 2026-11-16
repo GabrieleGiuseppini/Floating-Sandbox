@@ -1053,10 +1053,10 @@
 
 	= Impl:
 		+ ShipBuilderTypes: N tool types, one for each layer
-		= Tool:
+		+ Tool:
 			+ Copy from TextureTranslateTool, but not templated
 			+ Make N derived
-			= State:
+			+ State:
 				+ Selection state machine
 				+ Move state machine
 					X FIX: shift & total_move_offset: when pressing shift after having moved already, we pickup total_move already and thus we decide same as before
@@ -1103,7 +1103,7 @@
 									+ Set @ -> Selected
 									+ Updated @ each move
 
-				= Eph viz and final commit doing thing for real (repeating last eph viz); undo @ end
+				+ Eph viz and final commit doing thing for real (repeating last eph viz); undo @ end
 					! Rationale:
 						! We do want eph viz, otherwise perf sucks
 						! We do want undo @ end, to limit memory
@@ -1300,10 +1300,10 @@
 							+ Store eph viz restore payload in finalizer, remembering we are in eph viz
 								+ ModelController::RestoreEphemeralVisualization (one of 3)
 						+ mController.LayerChangeEpilog()
-					= @ new selection, and @ ~dctor(): commit
+					+ @ new selection, and @ ~dctor(): commit
 						+ If have eph viz:
 							+ Undo eph viz - via finalizer
-						= If not empty move:
+						+ If not empty move:
 							+ FIX: cannot move back to orig, as we check against start move
 								+ Refactor
 									+ New state
@@ -1344,12 +1344,12 @@
 										+ No rope
 								+ ET
 								+ IT							
-							- Other 2 RegionTransfer in texture space
-								- ET
-								- IT
+							+ Other 2 RegionTransfer in texture space
+								+ ET
+									+ Test
+								+ IT
 
-		- Check icon
-		- TODO: commit/abort buttons?
+		- TODO: commit/abort buttons? Problem: need base class
 		+ OnMouseMove: only do eph viz if translated coord != last, to save on refreshes (*)
 
 		- See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
@@ -1372,21 +1372,20 @@
 					- Undo
 
 		+ Icon
-		= MainFrame:
+		+ MainFrame:
 			+ Tool selection @ each layer tools' panel
-			= Settings for tool:
+			+ Settings for tool:
 				+ ShipSpace:
 					+ Layers
 					+ Transparent (like Paste)
-				- TextureSpace:
-					- Layers
-					- Transparent (like Paste)
-
+				+ TextureSpace:
+					+ Layers
+					+ Transparent (like Paste)
 				+ Workbench
 
-		- Tests:
-			- Undo ONLY appears AFTER sizable move
-			- Undo ONLY appears if move ended up not being a zero move
+		+ Tests:
+			+ Undo ONLY appears AFTER sizable move
+			+ Undo ONLY appears if move ended up not being a zero move
 
 		= Cleanup:
 			= Tool:

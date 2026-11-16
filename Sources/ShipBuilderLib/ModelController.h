@@ -746,6 +746,14 @@ private:
         std::optional<ShipSpaceRect> const & region,
         LayerSelector const & layerSelection) const;
 
+    GenericExteriorTextureSpaceUndoPayload::payload_type MakeGenericExteriorTextureSpaceUndoPayload(
+        std::optional<ImageRect> const & region,
+        LayerSelector const & layerSelection) const;
+
+    GenericInteriorTextureSpaceUndoPayload::payload_type MakeGenericInteriorTextureSpaceUndoPayload(
+        std::optional<ImageRect> const & region,
+        LayerSelector const & layerSelection) const;
+
     // No post-restore analysis
     void InternalRestoreStructuralLayerRegionBackup(
         StructuralLayerData && sourceLayerRegionBackup,
