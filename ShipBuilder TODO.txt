@@ -1418,20 +1418,28 @@
 				+ Remove log lines
 				+ Remove old code
 
-	- TODO: rethink: fixing bug with unoffseted coords becoming "in size":
+	= TODO: rethink: fixing bug with unoffseted coords becoming "in size":
 
 		! Gist:
+			! ShipBodyRegion:
+				! Whole ElecPanel, whole RopesLayer
+				! Created via XYZLayers::MakeRegionBackup
+				! Restored via XYZLayers::RestoreRegionBackup
 
-		- Impl:
+		= Impl:
 
-			- Undo all current uncommitted changes, once we're sure we're doing this
+			+ Undo all current uncommitted changes, once we're sure we're doing this
 
-			- GenericUndoPayload => ShipBodyRegion - TODOHERE
-				- Also contains SourceRegion, whose origin replaces current Origin
-				- RopesBuffer is whole
-					- Comments, naming
+			= GenericUndoPayload => ShipBodyRegion
+				+ Also contains OriginatingRegion, whose origin replaces current Origin
+				+ RopesBuffer is whole
+					+ Comments, naming
+				! Naming:
+					! UndoPayload methods: make "backup"
+					! Restore methods: take "backup"
 				- Creators:
 					- MC::MakeGenericShipSpaceUndoPayload (*1)
+						- Rename: MakeShipBodyRegion
 						- Uses XYZLayer::MakeRegionBackup X N
 					- MC::Paste
 						- Uses XYZLayer::MakeRegionBackup X N 
@@ -1446,6 +1454,75 @@
 				- Consumers:
 					- MC::Restore(XYZ)
 						- Uses MC::InternalRestoreXYZLayerRegionBackup
+							- Must use XYZLayer::RestoreRegionBackup
+							+ See callers - will all they pass OriginatingRegion and not misuse it for glorified paste/transfer? Y
+						- See callers; if only callers are for Undo, rename as RestoreForUndo
+						- See if can then call MC::RestoreXYZLayerRegionBackup
+
+			- Backup/Restore chains rearc:
+				! Wanted gist:
+					
+
+			- Chains:
+
+				- Various tools (Paste/SelectAndTranslate/StructuralRectangle/StructureTracer/TextureTranslate): Undo
+					- C::Restore: callees:
+						- MC::Restore: callees:
+							- InternalRestoreXYZStructuralLayer[Region]Backup
+							- RestoreExteriorTextureLayerRegionBackup
+							- RestoreInteriorTextureLayerRegionBackup
+				- Others tools (Flood/Line/Pencil/TextureEraser): Undo
+					- C::RestoreLayerRegionBackupForUndo<TLayer>
+						- C::RestoreXYZLayer[Region]BackupForUndo
+				- Tools: RopeEraser, RopePencil: Undo
+					- C::RestoreRopesLayerForUndo
+				- Tools: TextureMagicWand: Undo
+					- C::Restore[Exterior|Interior]TextureLayerRegionBackupForUndo
+				- Cut: Undo
+					- C::Restore
+
+
+
+
+				- C::RestoreStructuralLayerRegionBackupForUndo: callees
+					- MC::RestoreStructuralLayerRegionBackup (above is only caller)
+						- MC::InternalRestoreStructuralLayerRegionBackup
+				- C::RestoreElectricalLayerRegionBackupForUndo: callees
+					- MC::RestoreElectricalLayerRegionBackup (above is only caller)
+						- MC::InternalRestoreElectricalLayerRegionBackup
+				- C::RestoreRopesLayerBackupForUndo: callees
+					- MC::RestoreRopesLayerBackup (above is only caller)
+						- MC::InternalRestoreRopesLayerBackup
+				- C::RestoreExteriorTextureLayerRegionBackup: callees
+					- MC::RestoreExteriorTextureLayerRegionBackup
+
+				- MC::RestoreExteriorTextureLayerRegionBackup: callers:
+					- C::RestoreExteriorTextureLayerRegionBackupForUndo
+					- MC::Restore X 3
+
+
+				- MC::InternalRestoreStructuralLayerRegionBackup: callers:
+					- MC::Restore
+					- MC::RestoreStructuralLayerRegionBackup
+				- MC::InternalRestoreElectricalLayerRegionBackup: callers:
+					- MC::Restore
+					- MC::RestoreElectricalLayerRegionBackup
+				- MC::InternalRestoreRopesLayerBackup: callers:
+					- MC::Restore
+					- MC::RestoreRopesLayerBackup
+
+				- Responsibilities:
+
+					- MC::RestoreXYZLayer[Region]Backup:
+						- InternalRestoreXYZLayer[Region]Backup
+						- Analysis
+					
+					- MC::InternalRestoreXYZLayer[Region]Backup:
+						- LayerXYZ::RestoreRegionBackup
+						- Update dirty viz
+
+
+
 
 			- ModelController::Copy(region): returns ShipBodyRegion instead of ShipLayers
 				! Only affects Copy and Cut => InternalCopySelectionToClipboard => ModelController::Copy(region)
