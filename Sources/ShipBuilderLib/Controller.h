@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GenericUndoPayload.h"
 #include "IUserInterface.h"
 #include "LayerSelector.h"
 #include "ModelController.h"

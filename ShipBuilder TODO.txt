@@ -1418,6 +1418,97 @@
 				+ Remove log lines
 				+ Remove old code
 
+	- TODO: rethink: fixing bug with unoffseted coords becoming "in size":
+
+		! Gist:
+
+		- Impl:
+
+			- Undo all current uncommitted changes, once we're sure we're doing this
+
+			- GenericUndoPayload => ShipBodyRegion - TODOHERE
+				- Also contains SourceRegion, whose origin replaces current Origin
+				- RopesBuffer is whole
+					- Comments, naming
+				- Creators:
+					- MC::MakeGenericShipSpaceUndoPayload (*1)
+						- Uses XYZLayer::MakeRegionBackup X N
+					- MC::Paste
+						- Uses XYZLayer::MakeRegionBackup X N 
+							- See if can be replaced by new (*1)
+					- MC::XYZSpaceRegionTransfer
+						- Uses MC::MakeGenericXYZSpaceUndoPayload (*1)
+					- MC::StructuralRectangle, StructureTrace
+						- Uses XYZLayer::MakeRegionBackup
+							- See if can be replaced by new (*1)
+					- MC::MakeGenericXYZSpaceUndoPayload
+						- Uses XYZLayer::MakeRegionBackup X N
+				- Consumers:
+					- MC::Restore(XYZ)
+						- Uses MC::InternalRestoreXYZLayerRegionBackup
+
+			- ModelController::Copy(region): returns ShipBodyRegion instead of ShipLayers
+				! Only affects Copy and Cut => InternalCopySelectionToClipboard => ModelController::Copy(region)
+				- Does whole RopesBuffer
+					
+
+			- TODOHERE: can we replace ModelController::Copy(region) with new version of MC::MakeGenericShipSpaceUndoPayload(.) (*1)?
+
+			- ClipboardManager:
+				- Takes ShipBodyRegion
+				- MC::Copy, Cut: makes ShipBodyRegion for ClipboardManager, from (*1)
+				- MC::Paste, etc.: tales ShipBodyRegion from ClipboardManager
+
+			- RopesBuffer::BlitFromRegion
+				- Args:
+					- source: takes whole RopesBuffer
+					- sourceRegion (rect): in source rect; contained in it
+					- targetPos (coods): absolute, possibly outside of source rect
+				- Impl:
+					- Erase target
+					- Blit
+						- Clamp coords that end up outside
+				! Can repurpose existing one, callers all want new behavior:
+					- Callers:
+						- MC::DoRopesRegionBufferPaste
+							- MC::Paste
+							- MC::PasteForEphemeralVisualization
+							- MC::ShipSpaceRegionTransfer
+							- MC::ShipSpaceRegionTransferForEphemeralVisualization
+				- Unit tests
+
+			- All users - direct and indirect - of RopesBuffer::BlitFromRegion:
+						- MC::DoRopesRegionBufferPaste
+							- MC::Paste
+							- MC::PasteForEphemeralVisualization
+							- MC::ShipSpaceRegionTransfer
+							- MC::ShipSpaceRegionTransferForEphemeralVisualization
+
+		- TODOOLD
+		- SelectionManager can keep whole RopeBuffer
+			! SelectionManager only holds ShipSpaceRect
+			! Then Controller copies Layers into Clipboard, via ModelController::Copy(region) => various CopyRegion
+			- Change ModelController::Copy(region) to do full RopesBuffer
+				! Only affects Copy and Cut => InternalCopySelectionToClipboard => ModelController::Copy(region)
+		- BlitFrom becomes again BlitFromRegion, taking whatever buffer, and a source region in it
+			- TODOHERE: do geometry math; do we need to carry rect of copy/cut? Yes...
+				- Can carry it in ClipboardManager, and make it travel to PasteTool
+				- SelectAndTranslate, instead, has source region by default
+			- BlitFromRegion args:
+				- source: takes whole RopesBuffer
+				- sourceRegion (rect): in source rect; contained in it
+				- targetPos (coods): absolute, possibly outside of source rect
+				- TODO: see if need to add a new overload for this, or all uses are ok with changes -- NO, can repurpose existing one, callers all want new behavior:
+					- Callers:
+						- MC::DoRopesRegionBufferPaste
+							- MC::Paste
+							- MC::PasteForEphemeralVisualization
+							- MC::ShipSpaceRegionTransfer
+							- MC::ShipSpaceRegionTransferForEphemeralVisualization
+
+	- RopesBufferTests
+		- TODO: do we need to exclude endpoints outside source size? 
+			- If we remove the exclusion, fix unit tests
 	- Perf test
 		- Copy old release ShipBuilder.exe first
 
