@@ -7,6 +7,8 @@
 
 #include "Tool.h"
 
+#include "../ShipBodyRegions.h"
+
 #include <Game/GameAssetManager.h>
 
 #include <Simulation/Layers.h>
@@ -69,10 +71,12 @@ private:
 
     inline LayerMaterialType const * GetFillMaterial(MaterialPlaneType plane) const;
 
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion MakeWholeLayerClone() const;
+
 private:
 
     // Original layer
-    typename LayerTypeTraits<TLayer>::layer_data_type mOriginalLayerClone;
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion mOriginalLayerClone;
 
     // Ship region dirtied so far with temporary visualization
     std::optional<ShipSpaceRect> mTempVisualizationDirtyShipRegion;

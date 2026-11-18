@@ -1471,7 +1471,7 @@
 					+ Comments, naming
 				+ Rename to "EphemeralVisualizationRestorePayload" (-Generic) 
 					
-			- Backup/Restore chains rearc:
+			= Backup/Restore chains rearc:
 
 				! Current chains:
 
@@ -1531,7 +1531,7 @@
 							- LayerXYZ::RestoreRegionBackup
 							- Update dirty viz
 
-				- New:
+				= New:
 					! Gist:
 						! Tools's undo's guidelines (not necessarily all of them):
 							- Make Undo via (new) MC::MakeXYZSpaceBodyRegion(region, ...) -> SingleBodyRegion or via MC::<Operation> -> BodyRegions
@@ -1547,29 +1547,32 @@
 						- TODO: RestoreXXX method names: (*2)
 						- TODO: RestoreXXX arg names: (*2)
 
-					- Impl:
+					= Impl:
 						+ Branch: shipbuilder_translate_tool__undo_rearc
 
 						+ Rename ephviz payload above
 						+ Layers: Ropes: backup/restore methods: remove "region"
 
-						- ShipBodyRegion: members are ShipLayers
-							- Allows for using pre-baked ops on all layers
-								- Then, use its size in PasteTool
+						+ ShipBodyRegion: members are ShipLayers
+							+ Allows for using pre-baked ops on all layers, e.g. for Paste tool
+								+ Then, use its size in PasteTool
 
 						+ Do all .h first
 						= Do tools
 							+ FloodTool
-							- LineTool
+							+ LineTool
 								! Old pattern: 1
 									- Cctor - and after each commit - takes full layer clone
-									- Undo restore: via C::RestoreLayer[Region]BackupForUndo, after clipping on whole rect
+									- Undo restore: via C::RestoreLayer[Region]BackupForUndo, after clipping on affected rect
 									- EphViz restore: via MC::RestoreStructuralLayer[Region]EphemeralVisualization, passing whole clone and dirty regions
-								- New pattern 1:
-									- Cctor - and after each commit - takes full layer clone via MC::MakeXYZSpaceBodyRegion(whole ship) -> SingleRegion
-									- Undo restore: via clipping of a ShipBodyRegion region, via XYZSpaceBodyRegion::MakeClip(region) -> XYZSpaceBodyRegion, and C::RestoreForUndo making whole ShipBodyRegion
-									- EphViz restore: via MC::RestoreXYZLayerRegionsForEphemeralVisualization, passing whole clone member and dirty regions
-										- Finalize signature for MC::RestoreXYZLayerRegionsForEphemeralVisualization
+								+ New pattern 1:
+									+ Cctor - and after each commit - takes full layer clone via MC::CopyRegion(whole ship) -> SingleRegion
+									+ Undo restore: via clipping of a ShipBodyRegion region, via XYZSpaceBodyRegion::MakeClip(region) -> XYZSpaceBodyRegion, and C::RestoreForUndo making container XYZSpaceShipBodyRegions
+										+ FIX: problem: for Erase, we need to convert ShipSpaceCoords to Ext and Int Texture ImageCoords
+											+ Move Clip to static MC::Clip(ShipSpaceBodyRegion) -> ShipSpaceBodyRegion
+												+ Don't touch own coord transformation factors?
+									+ EphViz restore: via MC::RestoreXYZLayerRegionsEphemeralVisualization, passing whole cloned layer buffer and dirty regions
+										+ Finalize signature for MC::RestoreXYZLayerRegionsEphemeralVisualization (*4)
 							+ PasteTool
 								+ Given ShipSpaceBodyRegions (don't need texture spaces nnow)
 								! Old pattern/new pattern:
@@ -1577,9 +1580,9 @@
 									- Undo restore: via C::RestoreForUndo
 									- EphViz do: does eph viz op and gets back ShipSpaceEphemeralVisualizationRestoreRegions, storing in mEphViz
 									- EphViz restore: MC::RestoreEphemeralVisualization
-							- PencilTool
+							+ PencilTool
 								! Old pattern: 1
-								- Follow new pattern 1
+								+ Follow new pattern 1
 							- RopeEraseTool
 								! Old pattern: 1b
 									- Cctor - and after each commit - takes full layer clone, as whole RopesLayerData
@@ -1620,29 +1623,31 @@
 									- Undo restore: RestoreExteriorTextureLayerRegionBackupForUndo
 									- No eph viz
 								- New pattern 1c:
-									- TODOHERE
+									- MC::Op returning UndoPayload directly, like others
 							- TextureTranslateTool
 								! Old pattern:
 									- At beginning of op: take full layer clone
-									- At commit: store (copy) full layer clone into Undo lambda
+									- At commit: do op (MC::MakeExteriorLayerFromImage, only caller), store (copy) full layer clone into Undo lambda
 									- Undo restore: via C::Restore(synthetic undo payload built on clone)
 									- No eph viz
 								- New pattern:
-									- TODO
+									- MC::Op returning UndoPayload directly, like others
 
 
-						- Finalize .h
+						- Finalize .h, removing obsolete public's
 							- ModelController
 							- Controller							
 						- Do .cpp, reordering for new .h ordering and fixing arguments
-							- Controller
 							- ModelController
+								- Also remove obsolete private's 
 
 
 						= ModelController:
-							- MakeXYZSpaceBodyRegion(region, layers) (*1)
-								- assert not in eph viz for any layer
+							- Copy(region, layers)X3 (*1) - WAS: MakeGenericShipSpaceUndoPayload
+								- Asserts not in eph viz for any layer
+								- IntersectWithLayerPresence
 								- Uses XYZLayer::Make[Region]Backup X N
+									- Does whole elec panel, whole ropes buffer
 							- RestoreXYZLayer(layer): stays as-is, where it is
 								- Used by C::RestoreAllLayersForUndo, special
 							= Undo (code area) interface to Controller:
@@ -1650,7 +1655,7 @@
 								- RestoreXYZLayer[Region]BackupForUndo (was: RestoreXYZLayer[Region]Backup)
 							= EphViz Undo (code area) interface to Tools
 								- RestoreEphemeralVisualization(X 3)
-								- RestoreXYZLayerRegionsForEphemeralVisualization(layer_buffer "source", regions): LineTool, PencilTool, RopePencilTool, TextureEraserTool (was: RestoreXYZLayer[Region]EphemeralVisualization)
+								- RestoreXYZLayerRegionsEphemeralVisualization(layer_buffer "source", regions): LineTool, PencilTool, RopePencilTool, TextureEraserTool (was: RestoreXYZLayer[Region]EphemeralVisualization) (*4)
 									- buffer assumed to contain all regions; regions assumed to be relative to buffer
 
 
@@ -1669,12 +1674,6 @@
 								- RestoreXYZLayer[Region]Backup(LayerData &&) -- TODO: if needed, if not all tools converted to one standard form
 
 
-
-
-			= ModelController::Copy(region): returns ShipBodyRegion instead of ShipLayers
-				! Only affects Copy and Cut => InternalCopySelectionToClipboard => ModelController::Copy(region)
-				- Does whole RopesBuffer					
-				- TODOHERE: can we replace ModelController::Copy(region) with new version of MC::MakeGenericShipSpaceUndoPayload(.) (*1), i.e. MC::MakeXYZSpaceBodyRegion?
 
 			- ClipboardManager:
 				- Takes ShipBodyRegions::Region

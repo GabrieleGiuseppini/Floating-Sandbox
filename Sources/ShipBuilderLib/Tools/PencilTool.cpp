@@ -59,7 +59,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
     : Tool(
         toolType,
         controller)
-    , mOriginalLayerClone(mController.GetModelController().template CloneExistingLayer<TLayer>())
+    , mOriginalLayerClone(MakeWholeLayerClone())
     , mTempVisualizationDirtyShipRegion()
     , mEngagementData()
     , mIsShiftDown(false)
@@ -439,18 +439,19 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
         // Create undo action
         //
 
-        auto clippedLayerBackup = mOriginalLayerClone.MakeRegionBackup(*mEngagementData->EditRegion);
-        auto const clipByteSize = clippedLayerBackup.Buffer.GetByteSize();
+        auto clippedLayerBackup = ModelController::MakeShipBodyRegionClip(
+            mOriginalLayerClone,
+            *mEngagementData->EditRegion);
 
         mController.StoreUndoAction(
             IsEraser
             ? (TLayer == LayerType::Structural ? _("Eraser Structural") : _("Eraser Electrical"))
             : (TLayer == LayerType::Structural ? _("Pencil Structural") : _("Pencil Electrical")),
-            clipByteSize,
+            clippedLayerBackup.GetTotalCost(),
             mEngagementData->OriginalDirtyState,
-            [clippedLayerBackup = std::move(clippedLayerBackup), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
+            [clippedLayerBackup = std::move(clippedLayerBackup)](Controller & controller) mutable
             {
-                controller.RestoreLayerRegionBackupForUndo<TLayer>(std::move(clippedLayerBackup), origin);
+                controller.RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(clippedLayerBackup)));
             });
     }
 
@@ -467,7 +468,7 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
     assert(!mTempVisualizationDirtyShipRegion);
 
     // Re-take original layer clone
-    mOriginalLayerClone = mController.GetModelController().template CloneExistingLayer<TLayer>();
+    mOriginalLayerClone = MakeWholeLayerClone();
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -512,21 +513,25 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
 {
     assert(mTempVisualizationDirtyShipRegion);
 
+    CombinedShipSpaceRegions dirtyRegions;
+    dirtyRegions.AddRegion(*mTempVisualizationDirtyShipRegion);
+
     if constexpr (TLayer == LayerType::Structural)
     {
-        mController.GetModelController().RestoreStructuralLayerRegionEphemeralVisualization(
-            mOriginalLayerClone.Buffer,
-            *mTempVisualizationDirtyShipRegion,
-            mTempVisualizationDirtyShipRegion->origin);
+        assert(mOriginalLayerClone.LayerRegions.StructuralLayer);
+
+        mController.GetModelController().RestoreStructuralLayerRegionsEphemeralVisualization(
+            mOriginalLayerClone.LayerRegions.StructuralLayer->Buffer,
+            dirtyRegions);
     }
     else
     {
         static_assert(TLayer == LayerType::Electrical);
+        assert(mOriginalLayerClone.LayerRegions.ElectricalLayer);
 
-        mController.GetModelController().RestoreElectricalLayerRegionEphemeralVisualization(
-            mOriginalLayerClone.Buffer,
-            *mTempVisualizationDirtyShipRegion,
-            mTempVisualizationDirtyShipRegion->origin);
+        mController.GetModelController().RestoreElectricalLayerRegionsEphemeralVisualization(
+            mOriginalLayerClone.LayerRegions.ElectricalLayer->Buffer,
+            dirtyRegions);
     }
 
     mController.GetView().RemoveRectOverlay();
@@ -618,6 +623,14 @@ typename PencilTool<TLayer, IsEraser>::LayerMaterialType const * PencilTool<TLay
     {
         return nullptr;
     }
+}
+
+template<LayerType TLayer, bool IsEraser>
+ShipSpaceBodyRegions::ShipSpaceBodyRegion PencilTool<TLayer, IsEraser>::MakeWholeLayerClone() const
+{
+    return mController.GetModelController().CopyRegion(
+        ShipSpaceRect(mController.GetModelController().GetShipSize()), // Whole rect
+        LayerSelector({ TLayer }));
 }
 
 }

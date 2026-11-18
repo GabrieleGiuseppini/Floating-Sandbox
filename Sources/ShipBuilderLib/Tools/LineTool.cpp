@@ -39,7 +39,7 @@ LineTool<TLayer>::LineTool(
     : Tool(
         toolType,
         controller)
-    , mOriginalLayerClone(mController.GetModelController().template CloneExistingLayer<TLayer>())
+    , mOriginalLayerClone(MakeWholeLayerClone())
     , mEphemeralVisualization()
     , mEngagementData()
     , mIsShiftDown(false)
@@ -291,16 +291,17 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
         // Create undo action
         //
 
-        auto clippedLayerBackup = mOriginalLayerClone.MakeRegionBackup(*resultantEffectiveRect);
-        auto const clipByteSize = clippedLayerBackup.Buffer.GetByteSize();
+        auto clippedLayerBackup = ModelController::MakeShipBodyRegionClip(
+            mOriginalLayerClone,
+            *resultantEffectiveRect);
 
         mController.StoreUndoAction(
             TLayer == LayerType::Structural ? _("Line Structural") : _("Line Electrical"),
-            clipByteSize,
+            clippedLayerBackup.GetTotalCost(),
             mEngagementData->OriginalDirtyState,
             [clippedLayerBackup = std::move(clippedLayerBackup), origin = resultantEffectiveRect->origin](Controller & controller) mutable
             {
-                controller.RestoreLayerRegionBackupForUndo<TLayer>(std::move(clippedLayerBackup), origin);
+                controller.RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(clippedLayerBackup)));
             });
 
         // Display *new* sampled material (i.e. *after* our edit)
@@ -320,7 +321,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
     // Re-take original layer clone
     //
 
-    mOriginalLayerClone = mController.GetModelController().template CloneExistingLayer<TLayer>();
+    mOriginalLayerClone = MakeWholeLayerClone();
 }
 
 template<LayerType TLayer>
@@ -370,16 +371,19 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
             {
                 if constexpr (TLayer == LayerType::Structural)
                 {
-                    mController.GetModelController().RestoreStructuralLayerRegionEphemeralVisualization(
-                        mOriginalLayerClone.Buffer,
+                    assert(mOriginalLayerClone.LayerRegions.StructuralLayer);
+
+                    mController.GetModelController().RestoreStructuralLayerRegionsEphemeralVisualization(
+                        mOriginalLayerClone.LayerRegions.StructuralLayer->Buffer,
                         dirtyRegions);
                 }
                 else
                 {
                     static_assert(TLayer == LayerType::Electrical);
+                    assert(mOriginalLayerClone.LayerRegions.ElectricalLayer);
 
-                    mController.GetModelController().RestoreElectricalLayerRegionEphemeralVisualization(
-                        mOriginalLayerClone.Buffer,
+                    mController.GetModelController().RestoreElectricalLayerRegionsEphemeralVisualization(
+                        mOriginalLayerClone.LayerRegions.ElectricalLayer->Buffer,
                         dirtyRegions);
                 }
 
@@ -409,21 +413,25 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                 {
                     if (hasEdited)
                     {
+                        CombinedShipSpaceRegions dirtyRegions;
+                        dirtyRegions.AddRegion(*effectiveRect);
+
                         if constexpr (TLayer == LayerType::Structural)
                         {
-                            mController.GetModelController().RestoreStructuralLayerRegionEphemeralVisualization(
-                                mOriginalLayerClone.Buffer,
-                                *effectiveRect,
-                                effectiveRect->origin);
+                            assert(mOriginalLayerClone.LayerRegions.StructuralLayer);
+
+                            mController.GetModelController().RestoreStructuralLayerRegionsEphemeralVisualization(
+                                mOriginalLayerClone.LayerRegions.StructuralLayer->Buffer,
+                                dirtyRegions);
                         }
                         else
                         {
                             static_assert(TLayer == LayerType::Electrical);
+                            assert(mOriginalLayerClone.LayerRegions.ElectricalLayer);
 
-                            mController.GetModelController().RestoreElectricalLayerRegionEphemeralVisualization(
-                                mOriginalLayerClone.Buffer,
-                                *effectiveRect,
-                                effectiveRect->origin);
+                            mController.GetModelController().RestoreElectricalLayerRegionsEphemeralVisualization(
+                                mOriginalLayerClone.LayerRegions.ElectricalLayer->Buffer,
+                                dirtyRegions);
                         }
                     }
 
@@ -584,6 +592,14 @@ typename LineTool<TLayer>::LayerMaterialType const * LineTool<TLayer>::GetFillMa
             return mController.GetWorkbenchState().GetElectricalBackgroundMaterial();
         }
     }
+}
+
+template<LayerType TLayer>
+ShipSpaceBodyRegions::ShipSpaceBodyRegion LineTool<TLayer>::MakeWholeLayerClone() const
+{
+    return mController.GetModelController().CopyRegion(
+        ShipSpaceRect(mController.GetModelController().GetShipSize()), // Whole rect
+        LayerSelector({ TLayer }));
 }
 
 }
