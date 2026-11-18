@@ -6,6 +6,7 @@
 #include "TextureTranslateTool.h"
 
 #include "../Controller.h"
+#include "../ShipBodyRegions.h"
 
 #include <UILib/WxHelpers.h>
 
@@ -204,35 +205,33 @@ void TextureTranslateTool<TLayer>::DoTranslate(ImageCoordinates const & endPosit
 
         if (!mEngagementData->IsDirty)
         {
-            size_t const undoPayloadCost = mEngagementData->OriginalTextureLayerData->Buffer.GetByteSize();
-
             mController.StoreUndoAction(
                 _("Translate"),
-                undoPayloadCost,
+                mEngagementData->OriginalTextureLayerData->Buffer.GetByteSize(),
                 mController.GetModelController().GetDirtyState(),
                 [sourceLayerData = mEngagementData->OriginalTextureLayerData->Clone()](Controller & controller) mutable
                 {
                     if constexpr (TLayer == LayerType::ExteriorTexture)
                     {
-                        GenericExteriorTextureSpaceUndoPayload undoPayload;
+                        ExteriorTextureSpaceBodyRegions undoPayload;
                         undoPayload.AddRegion(
-                            ImageCoordinates(0, 0),
+                            ImageRect(sourceLayerData.Buffer.Size),
                             std::move(sourceLayerData),
                             std::nullopt);
 
-                        controller.Restore(std::move(undoPayload));
+                        controller.RestoreForUndo(std::move(undoPayload));
                     }
                     else
                     {
                         static_assert(TLayer == LayerType::InteriorTexture);
 
-                        GenericInteriorTextureSpaceUndoPayload undoPayload;
+                        InteriorTextureSpaceBodyRegions undoPayload;
                         undoPayload.AddRegion(
-                            ImageCoordinates(0, 0),
+                            ImageRect(sourceLayerData.Buffer.Size),
                             std::nullopt,
                             std::move(sourceLayerData));
 
-                        controller.Restore(std::move(undoPayload));
+                        controller.RestoreForUndo(std::move(undoPayload));
                     }
                 });
 

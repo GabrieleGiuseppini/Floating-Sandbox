@@ -29,8 +29,8 @@ InteriorTextureMagicWandTool::InteriorTextureMagicWandTool(
         gameAssetManager)
 {}
 
-template<LayerType TLayerType>
-TextureMagicWandTool<TLayerType>::TextureMagicWandTool(
+template<LayerType TLayerType, typename TBodyRegions>
+TextureMagicWandTool<TLayerType, TBodyRegions>::TextureMagicWandTool(
     ToolType toolType,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
@@ -41,22 +41,20 @@ TextureMagicWandTool<TLayerType>::TextureMagicWandTool(
     SetCursor(WxHelpers::LoadCursorImage("magic_wand_cursor", 8, 8, gameAssetManager));
 }
 
-template<LayerType TLayerType>
-void TextureMagicWandTool<TLayerType>::OnLeftMouseDown()
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureMagicWandTool<TLayerType, TBodyRegions>::OnLeftMouseDown()
 {
     auto const mouseCoordinatesInTextureSpace = ScreenToTextureSpace(TLayerType, GetCurrentMouseCoordinates());
     if (mouseCoordinatesInTextureSpace.IsInRect(ImageRect({0, 0}, GetTextureSize())))
     {
-        // Take clone of current layer
         auto layerDirtyStateClone = mController.GetModelController().GetDirtyState();
-        auto layerClone = mController.GetModelController().template CloneExistingLayer<TLayerType>();
 
         // Do edit
 
-        std::optional<ImageRect> affectedRegion;
+        std::optional<TBodyRegions> undoPayload;
         if constexpr (TLayerType == LayerType::ExteriorTexture)
         {
-            affectedRegion = mController.GetModelController().ExteriorTextureMagicWandEraseBackground(
+            undoPayload = mController.GetModelController().ExteriorTextureMagicWandEraseBackground(
                 mouseCoordinatesInTextureSpace,
                 mController.GetWorkbenchState().GetTextureMagicWandTolerance(),
                 mController.GetWorkbenchState().GetTextureMagicWandIsAntiAliased(),
@@ -66,36 +64,23 @@ void TextureMagicWandTool<TLayerType>::OnLeftMouseDown()
         {
             static_assert(TLayerType == LayerType::InteriorTexture);
 
-            affectedRegion = mController.GetModelController().InteriorTextureMagicWandEraseBackground(
+            undoPayload = mController.GetModelController().InteriorTextureMagicWandEraseBackground(
                 mouseCoordinatesInTextureSpace,
                 mController.GetWorkbenchState().GetTextureMagicWandTolerance(),
                 mController.GetWorkbenchState().GetTextureMagicWandIsAntiAliased(),
                 mController.GetWorkbenchState().GetTextureMagicWandIsContiguous());
         }
 
-        if (affectedRegion.has_value())
+        if (undoPayload.has_value())
         {
             // Create undo action
-
-            auto clippedLayerBackup = layerClone.MakeRegionBackup(*affectedRegion);
-            auto const cloneByteSize = clippedLayerBackup.Buffer.GetByteSize();
-
             mController.StoreUndoAction(
                 _("Background Erase"),
-                cloneByteSize,
+                undoPayload->GetTotalCost(),
                 layerDirtyStateClone,
-                [clippedLayerBackup = std::move(clippedLayerBackup), origin = affectedRegion->origin](Controller & controller) mutable
+                [undoPayload = std::move(*undoPayload)](Controller & controller) mutable
                 {
-                    if constexpr (TLayerType == LayerType::ExteriorTexture)
-                    {
-                        controller.RestoreExteriorTextureLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
-                    }
-                    else
-                    {
-                        static_assert(TLayerType == LayerType::InteriorTexture);
-
-                        controller.RestoreInteriorTextureLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
-                    }
+                    controller.RestoreForUndo(std::move(undoPayload));
                 });
 
             // Epilog
@@ -104,8 +89,8 @@ void TextureMagicWandTool<TLayerType>::OnLeftMouseDown()
     }
 }
 
-template<LayerType TLayerType>
-ImageSize TextureMagicWandTool<TLayerType>::GetTextureSize() const
+template<LayerType TLayerType, typename TBodyRegions>
+ImageSize TextureMagicWandTool<TLayerType, TBodyRegions>::GetTextureSize() const
 {
     if constexpr (TLayerType == LayerType::ExteriorTexture)
     {

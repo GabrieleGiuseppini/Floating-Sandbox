@@ -597,9 +597,7 @@ typename LineTool<TLayer>::LayerMaterialType const * LineTool<TLayer>::GetFillMa
 template<LayerType TLayer>
 ShipSpaceBodyRegions::ShipSpaceBodyRegion LineTool<TLayer>::MakeWholeLayerClone() const
 {
-    return mController.GetModelController().CopyRegion(
-        ShipSpaceRect(mController.GetModelController().GetShipSize()), // Whole rect
-        LayerSelector({ TLayer }));
+    return mController.GetModelController().CopyShipSpaceWhole(LayerSelector({ TLayer }));
 }
 
 }

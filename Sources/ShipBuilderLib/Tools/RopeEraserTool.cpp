@@ -257,7 +257,7 @@ void RopeEraserTool::HideOverlay()
 
 ShipSpaceBodyRegions::ShipSpaceBodyRegion RopeEraserTool::MakeWholeLayerClone() const
 {
-    return mController.GetModelController().CopyWhole(LayerSelector({ LayerType::Ropes }));
+    return mController.GetModelController().CopyShipSpaceWhole(LayerSelector({ LayerType::Ropes }));
 }
 
 }

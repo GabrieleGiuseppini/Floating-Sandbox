@@ -245,7 +245,7 @@ void RopePencilTool::StartEngagement(
     //
 
     mEngagementData.emplace(
-        mController.GetModelController().CopyWhole(LayerSelector({ LayerType::Ropes })),
+        mController.GetModelController().CopyShipSpaceWhole(LayerSelector({ LayerType::Ropes })),
         mController.GetModelController().GetDirtyState(),
         coords,
         mController.GetModelController().GetRopeElementIndexAt(coords),

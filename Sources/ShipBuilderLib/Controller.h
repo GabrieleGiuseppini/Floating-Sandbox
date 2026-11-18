@@ -137,10 +137,6 @@ public:
     void SetStructuralLayer(
         wxString actionTitle,
         StructuralLayerData && structuralLayer);
-    void RestoreStructuralLayerRegionBackupForUndo(
-        StructuralLayerData && layerRegionBackup,
-        ShipSpaceCoordinates const & origin);
-    void RestoreStructuralLayerForUndo(std::unique_ptr<StructuralLayerData> structuralLayer);
 
     // Electrical layer
 
@@ -149,10 +145,6 @@ public:
         wxString actionTitle,
         ElectricalLayerData && electricalLayer);
     void RemoveElectricalLayer();
-    void RestoreElectricalLayerRegionBackupForUndo(
-        ElectricalLayerData && layerRegionBackup,
-        ShipSpaceCoordinates const & origin);
-    void RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerData> electricalLayer);
     void TrimElectricalParticlesWithoutSubstratum();
 
     // Ropes layer
@@ -162,10 +154,6 @@ public:
         wxString actionTitle,
         RopesLayerData && ropesLayer);
     void RemoveRopesLayer();
-    void RestoreRopesLayerRegionBackupForUndo(
-        RopesLayerData && layerRegionBackup,
-        ShipSpaceCoordinates const & origin);
-    void RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
 
     // Exterior Texture layer
 
@@ -174,12 +162,6 @@ public:
         TextureLayerData && exteriorTextureLayer,
         std::optional<std::string> textureArtCredits);
     void RemoveExteriorTextureLayer();
-    void RestoreExteriorTextureLayerRegionBackupForUndo(
-        TextureLayerData && layerRegionBackup,
-        ImageCoordinates const & origin);
-    void RestoreExteriorTextureLayerForUndo(
-        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
-        std::optional<std::string> originalTextureArtCredits);
 
     // Interior Texture layer
 
@@ -187,14 +169,36 @@ public:
         wxString actionTitle,
         TextureLayerData && interiorTextureLayer);
     void RemoveInteriorTextureLayer();
-    void RestoreInteriorTextureLayerRegionBackupForUndo(
-        TextureLayerData && layerRegionBackup,
-        ImageCoordinates const & origin);
-    void RestoreInteriorTextureLayerForUndo(std::unique_ptr<TextureLayerData> interiorTextureLayer);
 
     //
     // Misc editing
     //
+
+    void Copy() const;
+
+    void Cut();
+
+    void Paste();
+
+    void SetPasteIsTransparent(bool value);
+    void PasteRotate90CW();
+    void PasteRotate90CCW();
+    void PasteFlipH();
+    void PasteFlipV();
+    void PasteCommit();
+    void PasteAbort();
+
+    void AutoTrim();
+
+    void Flip(DirectionType direction);
+    void FlipForUndo(DirectionType direction);
+
+    void Rotate90(RotationDirectionType direction);
+    void Rotate90ForUndo(RotationDirectionType direction);
+
+    void ResizeShip(
+        ShipSpaceSize const & newSize,
+        ShipSpaceCoordinates const & originOffset);
 
     template<LayerType TLayerType, typename TMaterialUndoAction>
     void ReplaceCustomMaterials(
@@ -212,7 +216,7 @@ public:
             // Take clone of current layer
             //
 
-            auto layerClone = mModelController->CloneExistingLayer<TLayerType>();
+            auto layerClone = mModelController->CopyShipSpaceWhole(LayerSelector{ TLayerType });
 
             //
             // Do operation
@@ -224,13 +228,10 @@ public:
             // Create undo
             //
 
-            ShipSpaceCoordinates affectedRegionOrigin(0, 0);
-
             if (affectedRegion.has_value())
             {
                 // Clip region
-                layerClone = layerClone.MakeRegionBackup(*affectedRegion);
-                affectedRegionOrigin = affectedRegion->origin;
+                layerClone = ModelController::MakeShipBodyRegionClip(layerClone, *affectedRegion);
 
                 // Store
                 auto const undoCost = layerClone.Buffer.GetByteSize();
@@ -238,9 +239,9 @@ public:
                     undoActionName,
                     undoCost,
                     layerDirtyStateClone,
-                    [layerClone = std::move(layerClone), origin = affectedRegionOrigin, materialUndoAction = std::move(materialUndoAction)](Controller & controller) mutable
+                    [layerClone = std::move(layerClone), materialUndoAction = std::move(materialUndoAction)](Controller & controller) mutable
                     {
-                        controller.RestoreLayerRegionBackupForUndo<TLayerType>(std::move(layerClone), origin);
+                        controller.RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(layerClone)));
                         materialUndoAction();
                     });
             }
@@ -280,7 +281,19 @@ public:
         }
     }
 
-    void RestoreAllLayersForUndo(
+    void SelectAll();
+
+    void Deselect();
+
+    // Invoked for changes to any layer, including ephemeral viz changes (in which case
+    // no layer gets dirty)
+    void LayerChangeEpilog(LayerSelector const & dirtyLayers = {}); // Empty when for eph viz
+
+    //
+    // Undo
+    //
+
+    void RestoreAllForUndo(
         ShipSpaceSize const & shipSize,
         std::unique_ptr<StructuralLayerData> structuralLayer,
         std::unique_ptr<ElectricalLayerData> electricalLayer,
@@ -290,10 +303,10 @@ public:
         std::unique_ptr<TextureLayerData> interiorTextureLayer);
 
     template<typename TUndoPayload>
-    void Restore(TUndoPayload && undoPayload)
+    void RestoreForUndo(TUndoPayload && undoPayload)
     {
         // No layer-presence changing operations
-        mModelController->Restore(std::move(undoPayload));
+        mModelController->RestoreForUndo(std::move(undoPayload));
 
         // Notify macro properties
         NotifyModelMacroPropertiesUpdated();
@@ -303,39 +316,16 @@ public:
         mUserInterface.RefreshView();
     }
 
-    void Copy() const;
+    template<typename ... TArgs>
+    void StoreUndoAction(TArgs&& ... args)
+    {
+        mUndoStack.Push(std::forward<TArgs>(args)...);
+        mUserInterface.OnUndoStackStateChanged(mUndoStack);
+    }
 
-    void Cut();
-
-    void Paste();
-
-    void SetPasteIsTransparent(bool value);
-    void PasteRotate90CW();
-    void PasteRotate90CCW();
-    void PasteFlipH();
-    void PasteFlipV();
-    void PasteCommit();
-    void PasteAbort();
-
-    void AutoTrim();
-
-    void Flip(DirectionType direction);
-    void FlipForUndo(DirectionType direction);
-
-    void Rotate90(RotationDirectionType direction);
-    void Rotate90ForUndo(RotationDirectionType direction);
-
-    void ResizeShip(
-        ShipSpaceSize const & newSize,
-        ShipSpaceCoordinates const & originOffset);
-
-    // Invoked for changes to any layer, including ephemeral viz changes (in which case
-    // no layer gets dirty)
-    void LayerChangeEpilog(LayerSelector const & dirtyLayers = {}); // Empty when for eph viz
-
-    void SelectAll();
-
-    void Deselect();
+    void TryUndoLast();
+    void UndoLast();
+    void UndoUntil(size_t index);
 
     //
     // Visualization management
@@ -354,60 +344,6 @@ public:
 
     void EnableWaterlineMarkers(bool doEnable);
     void EnableVisualGrid(bool doEnable);
-
-    //
-    // Undo
-    //
-
-    // Convenience dispatcher
-    template<LayerType TLayerType, typename TShipCoordinates>
-    void RestoreLayerRegionBackupForUndo(
-        typename LayerTypeTraits<TLayerType>::layer_data_type && layerRegionBackup,
-        TShipCoordinates const & origin)
-    {
-        if constexpr (TLayerType == LayerType::Structural)
-        {
-            RestoreStructuralLayerRegionBackupForUndo(
-                std::move(layerRegionBackup),
-                origin);
-        }
-        else if constexpr (TLayerType == LayerType::Electrical)
-        {
-            RestoreElectricalLayerRegionBackupForUndo(
-                std::move(layerRegionBackup),
-                origin);
-        }
-        else if constexpr (TLayerType == LayerType::Ropes)
-        {
-            RestoreRopesLayerRegionBackupForUndo(
-                std::move(layerRegionBackup),
-                origin);
-        }
-        else if constexpr (TLayerType == LayerType::ExteriorTexture)
-        {
-            RestoreExteriorTextureLayerRegionBackupForUndo(
-                std::move(layerRegionBackup),
-                origin);
-        }
-        else
-        {
-            static_assert(TLayerType == LayerType::InteriorTexture);
-            RestoreInteriorTextureLayerRegionBackupForUndo(
-                std::move(layerRegionBackup),
-                origin);
-        }
-    }
-
-    template<typename ... TArgs>
-    void StoreUndoAction(TArgs&& ... args)
-    {
-        mUndoStack.Push(std::forward<TArgs>(args)...);
-        mUserInterface.OnUndoStackStateChanged(mUndoStack);
-    }
-
-    void TryUndoLast();
-    void UndoLast();
-    void UndoUntil(size_t index);
 
     //
     // View
@@ -470,6 +406,14 @@ private:
 
     template<LayerType TLayerType>
     void InternalPushUndoForWholeLayer(wxString const & title);
+
+    void InternalRestoreStructuralLayerForUndo(std::unique_ptr<StructuralLayerData> structuralLayer);
+    void InternalRestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerData> electricalLayer);
+    void InternalRestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
+    void InternalRestoreExteriorTextureLayerForUndo(
+        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
+        std::optional<std::string> originalTextureArtCredits);
+    void InternalRestoreInteriorTextureLayerForUndo(std::unique_ptr<TextureLayerData> interiorTextureLayer);
 
     template<LayerType TLayerType, typename TFunctor>
     void WrapLikelyLayerPresenceChangingOperation(TFunctor operation);

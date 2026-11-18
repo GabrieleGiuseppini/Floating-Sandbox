@@ -628,9 +628,7 @@ typename PencilTool<TLayer, IsEraser>::LayerMaterialType const * PencilTool<TLay
 template<LayerType TLayer, bool IsEraser>
 ShipSpaceBodyRegions::ShipSpaceBodyRegion PencilTool<TLayer, IsEraser>::MakeWholeLayerClone() const
 {
-    return mController.GetModelController().CopyRegion(
-        ShipSpaceRect(mController.GetModelController().GetShipSize()), // Whole rect
-        LayerSelector({ TLayer }));
+    return mController.GetModelController().CopyShipSpaceWhole(LayerSelector({ TLayer }));
 }
 
 }

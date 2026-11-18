@@ -7,11 +7,13 @@
 
 #include "Tool.h"
 
+#include "../ShipBodyRegions.h"
+
 #include <Game/GameAssetManager.h>
 
 namespace ShipBuilder {
 
-template<LayerType TLayerType>
+template<LayerType TLayerType, typename TBodyRegions>
 class TextureMagicWandTool : public Tool
 {
 public:
@@ -39,7 +41,7 @@ private:
     ImageSize GetTextureSize() const;
 };
 
-class ExteriorTextureMagicWandTool final : public TextureMagicWandTool<LayerType::ExteriorTexture>
+class ExteriorTextureMagicWandTool final : public TextureMagicWandTool<LayerType::ExteriorTexture, ExteriorTextureSpaceBodyRegions>
 {
 public:
 
@@ -48,7 +50,7 @@ public:
         GameAssetManager const & gameAssetManager);
 };
 
-class InteriorTextureMagicWandTool final : public TextureMagicWandTool<LayerType::InteriorTexture>
+class InteriorTextureMagicWandTool final : public TextureMagicWandTool<LayerType::InteriorTexture, InteriorTextureSpaceBodyRegions>
 {
 public:
 
