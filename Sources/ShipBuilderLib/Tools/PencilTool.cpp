@@ -443,15 +443,17 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
             mOriginalLayerClone,
             *mEngagementData->EditRegion);
 
+        auto const totalCost = clippedLayerBackup.GetTotalCost();
+
         mController.StoreUndoAction(
             IsEraser
-            ? (TLayer == LayerType::Structural ? _("Eraser Structural") : _("Eraser Electrical"))
-            : (TLayer == LayerType::Structural ? _("Pencil Structural") : _("Pencil Electrical")),
-            clippedLayerBackup.GetTotalCost(),
+                ? (TLayer == LayerType::Structural ? _("Eraser Structural") : _("Eraser Electrical"))
+                : (TLayer == LayerType::Structural ? _("Pencil Structural") : _("Pencil Electrical")),
+            totalCost,
             mEngagementData->OriginalDirtyState,
             [clippedLayerBackup = std::move(clippedLayerBackup)](Controller & controller) mutable
             {
-                controller.RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(clippedLayerBackup)));
+                controller.RestoreForUndo(std::move(clippedLayerBackup));
             });
     }
 

@@ -446,14 +446,15 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
             auto clippedRegionBackup = ModelController::MakeShipBodyRegionClip(
                 originalLayerClone,
                 *affectedRect);
+            auto const totalCost = clippedRegionBackup.GetTotalCost();
 
             mUndoStack.Push(
                 _("Trim Electrical"),
-                clippedRegionBackup.GetTotalCost(),
+                totalCost,
                 originalDirtyStateClone,
                 [clippedRegionBackup = std::move(clippedRegionBackup)](Controller & controller) mutable
                 {
-                    controller.RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(clippedRegionBackup)));
+                    controller.RestoreForUndo(std::move(clippedRegionBackup));
                 });
 
             mUserInterface.OnUndoStackStateChanged(mUndoStack);
@@ -627,7 +628,7 @@ void Controller::Cut()
         mModelController->GetDirtyState(),
         [undoPayload = std::move(undoPayload)](Controller & controller) mutable
         {
-            controller.RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(undoPayload)));
+            controller.RestoreForUndo(std::move(undoPayload));
         });
 
     mUserInterface.OnUndoStackStateChanged(mUndoStack);

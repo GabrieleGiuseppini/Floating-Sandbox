@@ -318,9 +318,11 @@ void TextureEraserTool<TLayerType, TBodyRegions>::EndEngagement()
             mOriginalLayerClone,
             *mEngagementData->EditRegion);
 
+        auto const totalCost = clippedLayerBackup.GetTotalCost();
+
         mController.StoreUndoAction(
             (TLayerType == LayerType::ExteriorTexture) ? _("Eraser Exterior") : _("Eraser Interior"),
-            clippedLayerBackup.GetTotalCost(),
+            totalCost,
             mEngagementData->OriginalDirtyState,
             [clippedLayerBackup = std::move(clippedLayerBackup)](Controller & controller) mutable
             {

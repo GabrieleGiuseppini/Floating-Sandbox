@@ -1644,9 +1644,8 @@
 								+ RestoreAllForUndo: used by Resize
 						+ Controller.cpp
 							+ Reordering for new .h ordering and fixing arguments
+						- See if there are obsolete Controller private's
 						- ModelController.h
-							- Think if want a RestoreForUndo overload with just a single body region, immediately forwarding by creating BodyRegions
-								- If so, scour for all calls to XYZSpaceBodyRegions::Make
 							- Remove obsolete public's
 						- ModelController.cpp
 							- Remove obsolete private's

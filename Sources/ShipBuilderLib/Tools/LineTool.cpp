@@ -295,13 +295,15 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
             mOriginalLayerClone,
             *resultantEffectiveRect);
 
+        auto const totalCost = clippedLayerBackup.GetTotalCost();
+
         mController.StoreUndoAction(
             TLayer == LayerType::Structural ? _("Line Structural") : _("Line Electrical"),
-            clippedLayerBackup.GetTotalCost(),
+            totalCost,
             mEngagementData->OriginalDirtyState,
             [clippedLayerBackup = std::move(clippedLayerBackup), origin = resultantEffectiveRect->origin](Controller & controller) mutable
             {
-                controller.RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(clippedLayerBackup)));
+                controller.RestoreForUndo(std::move(clippedLayerBackup));
             });
 
         // Display *new* sampled material (i.e. *after* our edit)

@@ -341,13 +341,15 @@ bool RopePencilTool::CommmitAndStopEngagement()
 
         // Create undo action
         {
+            auto const totalCost = mEngagementData->OriginalLayerClone.GetTotalCost();
+
             mController.StoreUndoAction(
                 _("Pencil Ropes"),
-                mEngagementData->OriginalLayerClone.GetTotalCost(),
+                totalCost,
                 mEngagementData->OriginalDirtyState,
                 [originalLayerClone = std::move(mEngagementData->OriginalLayerClone)](Controller & controller) mutable
                 {
-                    controller.RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(originalLayerClone)));
+                    controller.RestoreForUndo(std::move(originalLayerClone));
                 });
         }
 

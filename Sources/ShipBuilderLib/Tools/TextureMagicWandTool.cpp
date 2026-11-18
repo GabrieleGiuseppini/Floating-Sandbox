@@ -73,10 +73,12 @@ void TextureMagicWandTool<TLayerType, TBodyRegions>::OnLeftMouseDown()
 
         if (undoPayload.has_value())
         {
+            auto const totalCost = undoPayload->GetTotalCost();
+
             // Create undo action
             mController.StoreUndoAction(
                 _("Background Erase"),
-                undoPayload->GetTotalCost(),
+                totalCost,
                 layerDirtyStateClone,
                 [undoPayload = std::move(*undoPayload)](Controller & controller) mutable
                 {

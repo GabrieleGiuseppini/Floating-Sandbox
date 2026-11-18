@@ -248,7 +248,7 @@ public:
                     layerDirtyStateClone,
                     [layerClone = std::move(layerClone), materialUndoAction = std::move(materialUndoAction)](Controller & controller) mutable
                     {
-                        controller.RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(layerClone)));
+                        controller.RestoreForUndo(std::move(layerClone));
                         materialUndoAction();
                     });
             }
@@ -299,6 +299,12 @@ public:
     //
     // Undo
     //
+
+    // Convenience helper for one single region
+    void RestoreForUndo(ShipSpaceBodyRegions::ShipSpaceBodyRegion && undoPayload)
+    {
+        RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(undoPayload)));
+    }
 
     // Main restore functionality
     // Exposed to Undo callbacks

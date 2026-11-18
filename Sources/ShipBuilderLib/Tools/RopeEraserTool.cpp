@@ -214,13 +214,15 @@ void RopeEraserTool::StopEngagement()
         // Create undo action
         //
 
+        auto const totalCost = mOriginalLayerClone.GetTotalCost();
+
         mController.StoreUndoAction(
             _("Eraser Ropes"),
-            mOriginalLayerClone.GetTotalCost(),
+            totalCost,
             mEngagementData->OriginalDirtyState,
             [originalLayerClone = std::move(mOriginalLayerClone)](Controller & controller) mutable
             {
-                controller.RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(originalLayerClone)));
+                controller.RestoreForUndo(std::move(originalLayerClone));
             });
 
         // Take new orig clone

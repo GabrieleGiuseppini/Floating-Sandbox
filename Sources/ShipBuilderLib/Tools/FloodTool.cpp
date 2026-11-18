@@ -103,9 +103,11 @@ void FloodTool<TLayer>::DoEdit(
         // Create undo action
         //
 
+        auto const totalCost = undoPayload->GetTotalCost();
+
         mController.StoreUndoAction(
             TLayer == LayerType::Structural ? _("Flood Structural") : _("Flood Electrical"),
-            undoPayload->GetTotalCost(),
+            totalCost,
             layerDirtyStateClone,
             [undoPayload = std::move(*undoPayload)](Controller & controller) mutable
             {
