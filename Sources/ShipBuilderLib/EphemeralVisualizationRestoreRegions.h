@@ -17,41 +17,41 @@
 namespace ShipBuilder {
 
 /*
- * Generic backup data to restore an ephemeral visualization.
+ * Backup data to restore an ephemeral visualization.
  */
 
 template<CoordinatesSpaceType TCoordinatesSpace>
-class GenericEphemeralVisualizationRestorePayload final
+class EphemeralVisualizationRestoreRegions final
 {
 public:
 
-	class ShipSpaceRegionPayload final
+	class ShipSpaceRestoreRegion final
 	{
 	public:
-		ShipSpaceCoordinates Origin;
+		ShipSpaceRect OriginatingRegion; // Region in whatever the source of this is, from which we got this extract; size matches size of our regions (when they're not full)
 
 		std::optional<typename LayerTypeTraits<LayerType::Structural>::buffer_type> StructuralLayerBufferRegion;
 		std::optional<typename LayerTypeTraits<LayerType::Electrical>::buffer_type> ElectricalLayerBufferRegion;
-		std::optional<typename LayerTypeTraits<LayerType::Ropes>::buffer_type> RopesLayerBufferRegion;
+		std::optional<typename LayerTypeTraits<LayerType::Ropes>::buffer_type> RopesLayerBuffer; // Whole, for "hanging rope endpoints"
 		std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> ExteriorTextureLayerBufferRegion;
 		std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> InteriorTextureLayerBufferRegion;
 
-		ShipSpaceRegionPayload(ShipSpaceCoordinates const & origin)
-			: Origin(origin)
+		ShipSpaceRestoreRegion(ShipSpaceRect const & originatingRegion)
+			: OriginatingRegion(originatingRegion)
 		{
 		}
 
-		ShipSpaceRegionPayload(
-			ShipSpaceCoordinates const & origin,
+		ShipSpaceRestoreRegion(
+			ShipSpaceRect const & originatingRegion,
 			std::optional<typename LayerTypeTraits<LayerType::Structural>::buffer_type> && structuralLayerBufferRegion,
 			std::optional<typename LayerTypeTraits<LayerType::Electrical>::buffer_type > && electricalLayerBufferRegion,
-			std::optional<typename LayerTypeTraits<LayerType::Ropes>::buffer_type> && ropesLayerBufferRegion,
+			std::optional<typename LayerTypeTraits<LayerType::Ropes>::buffer_type> && ropesLayerBuffer,
 			std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> && exteriorTextureLayerBufferRegion,
 			std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> && interiorTextureLayerBufferRegion)
-			: Origin(origin)
+			: OriginatingRegion(originatingRegion)
 			, StructuralLayerBufferRegion(std::move(structuralLayerBufferRegion))
 			, ElectricalLayerBufferRegion(std::move(electricalLayerBufferRegion))
-			, RopesLayerBufferRegion(std::move(ropesLayerBufferRegion))
+			, RopesLayerBuffer(std::move(ropesLayerBuffer))
 			, ExteriorTextureLayerBufferRegion(std::move(exteriorTextureLayerBufferRegion))
 			, InteriorTextureLayerBufferRegion(std::move(interiorTextureLayerBufferRegion))
 		{
@@ -71,7 +71,7 @@ public:
 				affectedLayers.emplace_back(LayerType::Electrical);
 			}
 
-			if (RopesLayerBufferRegion.has_value())
+			if (RopesLayerBuffer.has_value())
 			{
 				affectedLayers.emplace_back(LayerType::Ropes);
 			}
@@ -90,35 +90,28 @@ public:
 		}
 	};
 
-	class TextureSpaceRegionPayload final
+	class TextureSpaceRestoreRegion final
 	{
 	public:
 
-		ImageCoordinates Origin;
+		ImageRect OriginatingRegion; // Region in whatever the source of this is, from which we got this extract; size matches size of our regions (when they're not full)
 
 		std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> ExteriorTextureLayerBufferRegion;
 		std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> InteriorTextureLayerBufferRegion;
 
-		TextureSpaceRegionPayload(ImageCoordinates const & origin)
-			: Origin(origin)
+		TextureSpaceRestoreRegion(ImageRect const & originatingRegion)
+			: OriginatingRegion(originatingRegion)
 		{
 		}
 
-		TextureSpaceRegionPayload(
-			ImageCoordinates const & origin,
+		TextureSpaceRestoreRegion(
+			ImageRect const & originatingRegion,
 			std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> && exteriorTextureLayerBufferRegion,
 			std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> && interiorTextureLayerBufferRegion)
-			: Origin(origin)
+			: OriginatingRegion(originatingRegion)
 			, ExteriorTextureLayerBufferRegion(std::move(exteriorTextureLayerBufferRegion))
 			, InteriorTextureLayerBufferRegion(std::move(interiorTextureLayerBufferRegion))
 		{
-		}
-
-		size_t GetTotalCost() const
-		{
-			return
-				(ExteriorTextureLayerBufferRegion ? ExteriorTextureLayerBufferRegion->Buffer.GetByteSize() : 0)
-				+ (InteriorTextureLayerBufferRegion ? InteriorTextureLayerBufferRegion->Buffer.GetByteSize() : 0);
 		}
 	};
 
@@ -131,21 +124,21 @@ public:
 	struct CoordinatesSpaceTraits<CoordinatesSpaceType::Ship>
 	{
 		using integral_coords_tag = ShipSpaceTag;
-		using payload_type = ShipSpaceRegionPayload;
+		using payload_type = ShipSpaceRestoreRegion;
 	};
 
 	template <>
 	struct CoordinatesSpaceTraits<CoordinatesSpaceType::ExteriorTexture>
 	{
 		using integral_coords_tag = ImageSpaceTag;
-		using payload_type = TextureSpaceRegionPayload;
+		using payload_type = TextureSpaceRestoreRegion;
 	};
 
 	template <>
 	struct CoordinatesSpaceTraits<CoordinatesSpaceType::InteriorTexture>
 	{
 		using integral_coords_tag = ImageSpaceTag;
-		using payload_type = TextureSpaceRegionPayload;
+		using payload_type = TextureSpaceRestoreRegion;
 	};
 
 	using TPayload = typename CoordinatesSpaceTraits<TCoordinatesSpace>::payload_type;
@@ -153,36 +146,39 @@ public:
 
 public:
 
+	EphemeralVisualizationRestoreRegions(EphemeralVisualizationRestoreRegions const & other) = delete;
+	EphemeralVisualizationRestoreRegions & operator=(EphemeralVisualizationRestoreRegions const & other) = delete;
+
 	template<typename... TArgs>
-	static GenericEphemeralVisualizationRestorePayload Make(TArgs &&... args)
+	static EphemeralVisualizationRestoreRegions Make(TArgs &&... args)
 	{
-		GenericEphemeralVisualizationRestorePayload payload;
-		payload.AddRegion(std::forward<TArgs>(args)...);
-		return payload;
+		EphemeralVisualizationRestoreRegions regions;
+		regions.AddRegion(std::forward<TArgs>(args)...);
+		return regions;
 	}
 
 	template <typename TFunctor>
 	void ConsumeAll(TFunctor f)
 	{
-		for (size_t i = 0; i < mPayloads.size(); ++i)
+		for (size_t i = 0; i < mRegions.size(); ++i)
 		{
-			f(std::move(mPayloads[i]));
+			f(std::move(mRegions[i]));
 		}
 	}
 
 	template<typename... TArgs>
 	void AddRegion(TArgs &&... args)
 	{
-		mPayloads.emplace_back(std::forward<TArgs>(args)...);
+		mRegions.emplace_back(std::forward<TArgs>(args)...);
 	}
 
 private:
 
-	std::vector<TPayload> mPayloads;
+	std::vector<TPayload> mRegions;
 };
 
-using GenericShipSpaceEphemeralVisualizationRestorePayload = GenericEphemeralVisualizationRestorePayload<CoordinatesSpaceType::Ship>;
-using GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload = GenericEphemeralVisualizationRestorePayload<CoordinatesSpaceType::ExteriorTexture>;
-using GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload = GenericEphemeralVisualizationRestorePayload<CoordinatesSpaceType::InteriorTexture>;
+using ShipSpaceEphemeralVisualizationRestoreRegions = EphemeralVisualizationRestoreRegions<CoordinatesSpaceType::Ship>;
+using ExteriorTextureSpaceEphemeralVisualizationRestoreRegions = EphemeralVisualizationRestoreRegions<CoordinatesSpaceType::ExteriorTexture>;
+using InteriorTextureSpaceEphemeralVisualizationRestoreRegions = EphemeralVisualizationRestoreRegions<CoordinatesSpaceType::InteriorTexture>;
 
 }

@@ -8,8 +8,7 @@ set (SHIPBUILDER_LIB_SOURCES
 	CombinedRegions.h
 	Controller.cpp
 	Controller.h
-	GenericEphemeralVisualizationRestorePayload.h
-	GenericUndoPayload.h
+	EphemeralVisualizationRestoreRegions.h
 	IModelObservable.h
 	InstancedElectricalElementSet.h
 	IUserInterface.h
@@ -25,6 +24,7 @@ set (SHIPBUILDER_LIB_SOURCES
 	ModelValidationSession.h
 	OpenGLManager.h	
 	SelectionManager.h
+	ShipBodyRegions.h
 	ShipBuilderShaderSets.cpp
 	ShipBuilderShaderSets.h
 	ShipBuilderTextureDatabases.h

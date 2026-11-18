@@ -220,18 +220,14 @@ struct RopesLayerData
         return RopesLayerData(Buffer.CloneRegion(region));
     }
 
-    RopesLayerData MakeRegionBackup(ShipSpaceRect const & region) const
+    RopesLayerData MakeBackup() const
     {
-        (void)region;
         return RopesLayerData(Buffer.Clone()); // Buffer is whole
     }
 
-    void RestoreRegionBackup(
-        RopesLayerData && sourceRegionBackup,
-        ShipSpaceCoordinates const & position)
+    void RestoreBackup(RopesLayerData && sourceBackup)
     {
-        (void)position;
-        Buffer = std::move(sourceRegionBackup.Buffer); // Buffer is whole
+        Buffer = std::move(sourceBackup.Buffer); // Buffer is whole
     }
 
     void Trim(ShipSpaceRect const & rect)

@@ -18,86 +18,84 @@
 namespace ShipBuilder {
 
 /*
- * Generic undo payload for multiple regions of the ship. Rules:
- * - Does *not* change the presence of layers
- * - Does *not* change the size of layers
+ * Container of an extract of a region from the ship.
  */
 
 template<CoordinatesSpaceType TCoordinatesSpace>
-class GenericUndoPayload final
+class ShipBodyRegions final
 {
 public:
 
-	class ShipSpaceRegionPayload final
+	class ShipSpaceBodyRegion final
 	{
 	public:
 
-		ShipSpaceCoordinates Origin;
+		ShipSpaceRect OriginatingRegion; // Region in whatever the source of this is, from which we got this extract; size matches size of our regions (when they're not full)
 
-		std::optional<StructuralLayerData> StructuralLayerRegionBackup;
-		std::optional<ElectricalLayerData> ElectricalLayerRegionBackup;
-		std::optional<RopesLayerData> RopesLayerRegionBackup;
-		std::optional<TextureLayerData> ExteriorTextureLayerRegionBackup;
-		std::optional<TextureLayerData> InteriorTextureLayerRegionBackup;
+		std::optional<StructuralLayerData> StructuralLayerRegion;
+		std::optional<ElectricalLayerData> ElectricalLayerRegion; // Panel is whole
+		std::optional<RopesLayerData> RopesLayer; // Whole, for "hanging rope endpoints"
+		std::optional<TextureLayerData> ExteriorTextureLayerRegion;
+		std::optional<TextureLayerData> InteriorTextureLayerRegion;
 
 		// Futurework: if needed, one day may add other elements, e.g. metadata
 
-		ShipSpaceRegionPayload(ShipSpaceCoordinates const & origin)
-			: Origin(origin)
+		ShipSpaceBodyRegion(ShipSpaceRect const & originatingRegion)
+			: OriginatingRegion(originatingRegion)
 		{
 		}
 
-		ShipSpaceRegionPayload(
-			ShipSpaceCoordinates const & origin,
-			std::optional<StructuralLayerData> && structuralLayerRegionBackup,
-			std::optional<ElectricalLayerData > && electricalLayerRegionBackup,
-			std::optional<RopesLayerData> && ropesLayerRegionBackup,
-			std::optional<TextureLayerData> && exteriorTextureLayerRegionBackup,
-			std::optional<TextureLayerData> && interiorTextureLayerRegionBackup)
-			: Origin(origin)
-			, StructuralLayerRegionBackup(std::move(structuralLayerRegionBackup))
-			, ElectricalLayerRegionBackup(std::move(electricalLayerRegionBackup))
-			, RopesLayerRegionBackup(std::move(ropesLayerRegionBackup))
-			, ExteriorTextureLayerRegionBackup(std::move(exteriorTextureLayerRegionBackup))
-			, InteriorTextureLayerRegionBackup(std::move(interiorTextureLayerRegionBackup))
+		ShipSpaceBodyRegion(
+			ShipSpaceRect const & originatingRegion,
+			std::optional<StructuralLayerData> && structuralLayerRegion,
+			std::optional<ElectricalLayerData > && electricalLayerRegion,
+			std::optional<RopesLayerData> && ropesLayer,
+			std::optional<TextureLayerData> && exteriorTextureLayerRegion,
+			std::optional<TextureLayerData> && interiorTextureLayerRegion)
+			: OriginatingRegion(originatingRegion)
+			, StructuralLayerRegion(std::move(structuralLayerRegion))
+			, ElectricalLayerRegion(std::move(electricalLayerRegion))
+			, RopesLayer(std::move(ropesLayer))
+			, ExteriorTextureLayerRegion(std::move(exteriorTextureLayerRegion))
+			, InteriorTextureLayerRegion(std::move(interiorTextureLayerRegion))
 		{
 		}
 
 		size_t GetTotalCost() const
 		{
 			return
-				(StructuralLayerRegionBackup ? StructuralLayerRegionBackup->Buffer.GetByteSize() : 0)
-				+ (ElectricalLayerRegionBackup ? ElectricalLayerRegionBackup->Buffer.GetByteSize() : 0)
-				+ (RopesLayerRegionBackup ? RopesLayerRegionBackup->Buffer.GetByteSize() : 0)
-				+ (ExteriorTextureLayerRegionBackup ? ExteriorTextureLayerRegionBackup->Buffer.GetByteSize() : 0)
-				+ (InteriorTextureLayerRegionBackup ? InteriorTextureLayerRegionBackup->Buffer.GetByteSize() : 0);
+				(StructuralLayerRegion ? StructuralLayerRegion->Buffer.GetByteSize() : 0)
+				+ (ElectricalLayerRegion ? ElectricalLayerRegion->Buffer.GetByteSize() : 0)
+				+ (RopesLayer ? RopesLayer->Buffer.GetByteSize() : 0)
+				+ (ExteriorTextureLayerRegion ? ExteriorTextureLayerRegion->Buffer.GetByteSize() : 0)
+				+ (InteriorTextureLayerRegion ? InteriorTextureLayerRegion->Buffer.GetByteSize() : 0);
 		}
 
 		std::vector<LayerType> GetAffectedLayers() const
 		{
 			std::vector<LayerType> affectedLayers;
 
-			if (StructuralLayerRegionBackup.has_value())
+			if (StructuralLayerRegion.has_value())
 			{
 				affectedLayers.emplace_back(LayerType::Structural);
 			}
 
-			if (ElectricalLayerRegionBackup.has_value())
+			if (ElectricalLayerRegion.has_value())
 			{
 				affectedLayers.emplace_back(LayerType::Electrical);
 			}
 
-			if (RopesLayerRegionBackup.has_value())
+			if (RopesLayer.has_value())
 			{
 				affectedLayers.emplace_back(LayerType::Ropes);
 			}
 
-			if (ExteriorTextureLayerRegionBackup.has_value())
+			if (ExteriorTextureLayerRegion.has_value())
 			{
 				affectedLayers.emplace_back(LayerType::ExteriorTexture);
 			}
 
-			if (InteriorTextureLayerRegionBackup.has_value())
+			if (InteriorTextureLayerRegion.has_value())
 			{
 				affectedLayers.emplace_back(LayerType::InteriorTexture);
 			}
@@ -106,35 +104,35 @@ public:
 		}
 	};
 
-	class TextureSpaceRegionPayload final
+	class TextureSpaceBodyRegion final
 	{
 	public:
 
-		ImageCoordinates Origin;
+		ImageRect OriginatingRegion; // Region in whatever the source of this is, from which we got this extract; size matches size of our regions (when they're not full)
 
-		std::optional<TextureLayerData> ExteriorTextureLayerRegionBackup;
-		std::optional<TextureLayerData> InteriorTextureLayerRegionBackup;
+		std::optional<TextureLayerData> ExteriorTextureLayerRegion;
+		std::optional<TextureLayerData> InteriorTextureLayerRegion;
 
-		TextureSpaceRegionPayload(ImageCoordinates const & origin)
-			: Origin(origin)
+		TextureSpaceBodyRegion(ImageRect const & originatingRegion)
+			: OriginatingRegion(originatingRegion)
 		{
 		}
 
-		TextureSpaceRegionPayload(
-			ImageCoordinates const & origin,
-			std::optional<TextureLayerData> && exteriorTextureLayerRegionBackup,
-			std::optional<TextureLayerData> && interiorTextureLayerRegionBackup)
-			: Origin(origin)
-			, ExteriorTextureLayerRegionBackup(std::move(exteriorTextureLayerRegionBackup))
-			, InteriorTextureLayerRegionBackup(std::move(interiorTextureLayerRegionBackup))
+		TextureSpaceBodyRegion(
+			ImageRect const & originatingRegion,
+			std::optional<TextureLayerData> && exteriorTextureLayerRegion,
+			std::optional<TextureLayerData> && interiorTextureLayerRegion)
+			: OriginatingRegion(originatingRegion)
+			, ExteriorTextureLayerRegion(std::move(exteriorTextureLayerRegion))
+			, InteriorTextureLayerRegion(std::move(interiorTextureLayerRegion))
 		{
 		}
 
 		size_t GetTotalCost() const
 		{
 			return
-				(ExteriorTextureLayerRegionBackup ? ExteriorTextureLayerRegionBackup->Buffer.GetByteSize() : 0)
-				+ (InteriorTextureLayerRegionBackup ? InteriorTextureLayerRegionBackup->Buffer.GetByteSize() : 0);
+				(ExteriorTextureLayerRegion ? ExteriorTextureLayerRegion->Buffer.GetByteSize() : 0)
+				+ (InteriorTextureLayerRegion ? InteriorTextureLayerRegion->Buffer.GetByteSize() : 0);
 		}
 	};
 
@@ -147,21 +145,21 @@ public:
 	struct CoordinatesSpaceTraits<CoordinatesSpaceType::Ship>
 	{
 		using integral_coords_tag = ShipSpaceTag;
-		using payload_type = ShipSpaceRegionPayload;
+		using payload_type = ShipSpaceBodyRegion;
 	};
 
 	template <>
 	struct CoordinatesSpaceTraits<CoordinatesSpaceType::ExteriorTexture>
 	{
 		using integral_coords_tag = ImageSpaceTag;
-		using payload_type = TextureSpaceRegionPayload;
+		using payload_type = TextureSpaceBodyRegion;
 	};
 
 	template <>
 	struct CoordinatesSpaceTraits<CoordinatesSpaceType::InteriorTexture>
 	{
 		using integral_coords_tag = ImageSpaceTag;
-		using payload_type = TextureSpaceRegionPayload;
+		using payload_type = TextureSpaceBodyRegion;
 	};
 
 	using TPayload = typename CoordinatesSpaceTraits<TCoordinatesSpace>::payload_type;
@@ -170,33 +168,33 @@ public:
 public:
 
 	template<typename... TArgs>
-	static GenericUndoPayload Make(TArgs &&... args)
+	static ShipBodyRegions Make(TArgs &&... args)
 	{
-		GenericUndoPayload payload;
-		payload.AddRegion(std::forward<TArgs>(args)...);
-		return payload;
+		ShipBodyRegions regions;
+		regions.AddRegion(std::forward<TArgs>(args)...);
+		return regions;
 	}
 
 	template <typename TFunctor>
 	void ConsumeAll(TFunctor f)
 	{
-		for (size_t i = 0; i < mPayloads.size(); ++i)
+		for (size_t i = 0; i < mRegions.size(); ++i)
 		{
-			f(std::move(mPayloads[i]));
+			f(std::move(mRegions[i]));
 		}
 	}
 
 	template<typename... TArgs>
 	void AddRegion(TArgs &&... args)
 	{
-		mPayloads.emplace_back(std::forward<TArgs>(args)...);
+		mRegions.emplace_back(std::forward<TArgs>(args)...);
 	}
 
 	size_t GetTotalCost() const
 	{
 		return std::accumulate(
-			mPayloads.cbegin(),
-			mPayloads.cend(),
+			mRegions.cbegin(),
+			mRegions.cend(),
 			0,
 			[](size_t a, TPayload const & b) -> size_t
 			{
@@ -206,11 +204,11 @@ public:
 
 private:
 
-	std::vector<TPayload> mPayloads;
+	std::vector<TPayload> mRegions;
 };
 
-using GenericShipSpaceUndoPayload = GenericUndoPayload<CoordinatesSpaceType::Ship>;
-using GenericExteriorTextureSpaceUndoPayload = GenericUndoPayload<CoordinatesSpaceType::ExteriorTexture>;
-using GenericInteriorTextureSpaceUndoPayload = GenericUndoPayload<CoordinatesSpaceType::InteriorTexture>;
+using ShipSpaceBodyRegions = ShipBodyRegions<CoordinatesSpaceType::Ship>;
+using ExteriorTextureSpaceBodyRegions = ShipBodyRegions<CoordinatesSpaceType::ExteriorTexture>;
+using InteriorTextureSpaceBodyRegions = ShipBodyRegions<CoordinatesSpaceType::InteriorTexture>;
 
 }
