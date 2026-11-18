@@ -137,6 +137,7 @@ public:
     void SetStructuralLayer(
         wxString actionTitle,
         StructuralLayerData && structuralLayer);
+    void RestoreStructuralLayerPresenceForUndo(std::unique_ptr<StructuralLayerData> structuralLayer); // Exposed to Undo callbacks
 
     // Electrical layer
 
@@ -145,6 +146,7 @@ public:
         wxString actionTitle,
         ElectricalLayerData && electricalLayer);
     void RemoveElectricalLayer();
+    void RestoreElectricalLayerPresenceForUndo(std::unique_ptr<ElectricalLayerData> electricalLayer); // Exposed to Undo callbacks
     void TrimElectricalParticlesWithoutSubstratum();
 
     // Ropes layer
@@ -154,6 +156,7 @@ public:
         wxString actionTitle,
         RopesLayerData && ropesLayer);
     void RemoveRopesLayer();
+    void RestoreRopesLayerPresenceForUndo(std::unique_ptr<RopesLayerData> ropesLayer); // Exposed to Undo callbacks
 
     // Exterior Texture layer
 
@@ -162,6 +165,9 @@ public:
         TextureLayerData && exteriorTextureLayer,
         std::optional<std::string> textureArtCredits);
     void RemoveExteriorTextureLayer();
+    void RestoreExteriorTextureLayerPresenceForUndo( // Exposed to Undo callbacks
+        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
+        std::optional<std::string> originalTextureArtCredits);
 
     // Interior Texture layer
 
@@ -169,6 +175,7 @@ public:
         wxString actionTitle,
         TextureLayerData && interiorTextureLayer);
     void RemoveInteriorTextureLayer();
+    void RestoreInteriorTextureLayerPresenceForUndo(std::unique_ptr<TextureLayerData> interiorTextureLayer); // Exposed to Undo callbacks
 
     //
     // Misc editing
@@ -293,15 +300,8 @@ public:
     // Undo
     //
 
-    void RestoreAllForUndo(
-        ShipSpaceSize const & shipSize,
-        std::unique_ptr<StructuralLayerData> structuralLayer,
-        std::unique_ptr<ElectricalLayerData> electricalLayer,
-        std::unique_ptr<RopesLayerData> ropesLayer,
-        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
-        std::optional<std::string> originalExteriorTextureArtCredits,
-        std::unique_ptr<TextureLayerData> interiorTextureLayer);
-
+    // Main restore functionality
+    // Exposed to Undo callbacks
     template<typename TUndoPayload>
     void RestoreForUndo(TUndoPayload && undoPayload)
     {
@@ -315,6 +315,17 @@ public:
         mModelController->UpdateVisualizations(*mView, mGameAssetManager);
         mUserInterface.RefreshView();
     }
+
+    // Special-case restore
+    // Exposed to Undo callbacks
+    void RestoreAllForUndo(
+        ShipSpaceSize const & shipSize,
+        std::unique_ptr<StructuralLayerData> structuralLayer,
+        std::unique_ptr<ElectricalLayerData> electricalLayer,
+        std::unique_ptr<RopesLayerData> ropesLayer,
+        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
+        std::optional<std::string> originalExteriorTextureArtCredits,
+        std::unique_ptr<TextureLayerData> interiorTextureLayer);
 
     template<typename ... TArgs>
     void StoreUndoAction(TArgs&& ... args)
@@ -405,15 +416,7 @@ private:
     void InternalRemoveLayer();
 
     template<LayerType TLayerType>
-    void InternalPushUndoForWholeLayer(wxString const & title);
-
-    void InternalRestoreStructuralLayerForUndo(std::unique_ptr<StructuralLayerData> structuralLayer);
-    void InternalRestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerData> electricalLayer);
-    void InternalRestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
-    void InternalRestoreExteriorTextureLayerForUndo(
-        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
-        std::optional<std::string> originalTextureArtCredits);
-    void InternalRestoreInteriorTextureLayerForUndo(std::unique_ptr<TextureLayerData> interiorTextureLayer);
+    void InternalPushUndoForLayerPresenceChange(wxString const & title);
 
     template<LayerType TLayerType, typename TFunctor>
     void WrapLikelyLayerPresenceChangingOperation(TFunctor operation);

@@ -1558,7 +1558,7 @@
 								+ Then, use its size in PasteTool
 
 						+ Do all .h first
-						= Do tools
+						+ Do tools
 							+ FloodTool
 							+ LineTool
 								! Old pattern: 1
@@ -1583,20 +1583,22 @@
 							+ PencilTool
 								! Old pattern: 1
 								+ Follow new pattern 1
-							- RopeEraseTool
+							+ RopeEraserTool
 								! Old pattern: 1b
 									- Cctor - and after each commit - takes full layer clone, as whole RopesLayerData
 									- Undo restore: via C::RestoreRopesLayerForUndo, passing whole RopesLayerData from clone
 									- No EphViz
-								- New pattern 1b:
-									- TODOHERE
-							- RopePencilTool
+								+ New pattern 1b: follow new pattern 1, without clipping
+							+ RopePencilTool
 								! Old pattern:
 									- Takes clone: via MC::CloneExistingLayer
 									- Undo restore: via C::RestoreRopesLayerForUndo
 									- MendTempViz: via MC::RestoreRopesLayerEphemeralVisualization
-								- New pattern:
-									- TODOHERE
+								+ New pattern:
+									! ~1 and ~1b, w/no clipping
+									+ Takes clone: via MC::CopyRegion(whole ship) -> SingleRegion
+									+ Undo restore: C::RestoreForUndo
+									+ MendTempViz: via MC::RestoreRopesLayerEphemeralVisualization(whole cloned layer buffer) // no region
 							+ SelectAndTranslateTool
 								! Old pattern/new pattern:
 									- Commit: does op and gets back ShipSpaceBodyRegions, storing in Undo lambda
@@ -1614,36 +1616,46 @@
 									- Does op, gets ShipSpaceBodyRegions
 									- Undo restore: C::RestoreForUndo
 									- No eph viz
-							- TextureEraserTool
+							+ TextureEraserTool
 								! Old pattern: 1
-								- Follow new pattern 1
-							- TextureMagicWandTool
+								+ Follow new pattern 1
+							+ TextureMagicWandTool
 								! Old pattern: 1c
 									- At op: take full layer clone, do op getting back affected rect, clip clone, store in Undo
 									- Undo restore: RestoreExteriorTextureLayerRegionBackupForUndo
 									- No eph viz
-								- New pattern 1c:
-									- MC::Op returning UndoPayload directly, like others
-							- TextureTranslateTool
+								+ New pattern 1c:
+									+ MC::Op returning UndoPayload directly, like others
+							+ TextureTranslateTool
 								! Old pattern:
 									- At beginning of op: take full layer clone
 									- At commit: do op (MC::MakeExteriorLayerFromImage, only caller), store (copy) full layer clone into Undo lambda
 									- Undo restore: via C::Restore(synthetic undo payload built on clone)
 									- No eph viz
-								- New pattern:
-									- MC::Op returning UndoPayload directly, like others
+								+ New pattern
 
+						+ Controller.h:
+							+ Remove obsolete public's
+								+ ReplaceCustomMaterials: use ShipRegions: whole, then clip
+								+ See if can rename those Restore<full layer>: "Whole", "~PresenceChanging"
+									+ Used only for LayerAdd/Remove
+										+ Only caller: InternalPushUndoForWholeLayer
+											+ Its callers: InternalSetLayer/InternalRemoveLAyer
+								+ RestoreAllForUndo: used by Resize
+						+ Controller.cpp
+							+ Reordering for new .h ordering and fixing arguments
+						- ModelController.h
+							- Think if want a RestoreForUndo overload with just a single body region, immediately forwarding by creating BodyRegions
+								- If so, scour for all calls to XYZSpaceBodyRegions::Make
+							- Remove obsolete public's
+						- ModelController.cpp
+							- Remove obsolete private's
 
-						- Finalize .h, removing obsolete public's
-							- ModelController
-							- Controller							
-						- Do .cpp, reordering for new .h ordering and fixing arguments
-							- ModelController
-								- Also remove obsolete private's 
+						- Cleanup ShipSpaceRegion, EphVizRegions
 
 
 						= ModelController:
-							- Copy(region, layers)X3 (*1) - WAS: MakeGenericShipSpaceUndoPayload
+							- CopyRegion(region, layers)X3 (*1) - WAS: MakeGenericShipSpaceUndoPayload
 								- Asserts not in eph viz for any layer
 								- IntersectWithLayerPresence
 								- Uses XYZLayer::Make[Region]Backup X N
@@ -1676,7 +1688,7 @@
 
 
 			- ClipboardManager:
-				- Takes ShipBodyRegions::Region
+				+ Takes ShipBodyRegions::Region
 				- MC::Copy, Cut: makes ShipBodyRegion for ClipboardManager, from (*1)
 				- MC::Paste, etc.: tales ShipBodyRegion from ClipboardManager
 

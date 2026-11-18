@@ -6,16 +6,14 @@
 #pragma once
 
 #include "IUserInterface.h"
-#include "ShipBuilderTypes.h"
-
-#include <Simulation/Layers.h>
+#include "ShipBodyRegions.h"
 
 #include <optional>
 
 namespace ShipBuilder {
 
 /*
- * Just a glorified optional<LayersRegion>, maintaining current clipboard and notifying of state changes.
+ * Just a glorified optional<ShipSpaceBodyRegions::ShipSpaceBodyRegion>, maintaining current clipboard and notifying of state changes.
  */
 class ClipboardManager final
 {
@@ -30,12 +28,12 @@ public:
         return !mClipboard.has_value();
     }
 
-    std::optional<ShipLayers> const & GetContent() const
+    std::optional<ShipSpaceBodyRegions::ShipSpaceBodyRegion> const & GetContent() const
     {
         return mClipboard;
     }
 
-    void SetContent(std::optional<ShipLayers> && content)
+    void SetContent(std::optional<ShipSpaceBodyRegions::ShipSpaceBodyRegion> && content)
     {
         mClipboard = std::move(content);
         mUserInterface.OnClipboardChanged(mClipboard.has_value());
@@ -43,7 +41,7 @@ public:
 
 protected:
 
-    std::optional<ShipLayers> mClipboard;
+    std::optional<ShipSpaceBodyRegions::ShipSpaceBodyRegion> mClipboard;
 
     IUserInterface & mUserInterface;
 };
