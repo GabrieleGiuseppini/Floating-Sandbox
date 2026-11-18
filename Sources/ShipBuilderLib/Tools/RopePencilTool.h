@@ -7,9 +7,10 @@
 
 #include "Tool.h"
 
+#include "../ShipBodyRegions.h"
+
 #include <Game/GameAssetManager.h>
 
-#include <Simulation/Layers.h>
 #include <Simulation/Materials.h>
 
 #include <Core/GameTypes.h>
@@ -73,7 +74,7 @@ private:
     struct EngagementData
     {
         // Original layer
-        RopesLayerData OriginalLayerClone;
+        ShipSpaceBodyRegions::ShipSpaceBodyRegion OriginalLayerClone;
 
         // Original dirty state
         ModelDirtyState OriginalDirtyState;
@@ -88,7 +89,7 @@ private:
         MaterialPlaneType Plane;
 
         EngagementData(
-            RopesLayerData && originalLayerClone,
+            ShipSpaceBodyRegions::ShipSpaceBodyRegion && originalLayerClone,
             ModelDirtyState const & dirtyState,
             ShipSpaceCoordinates const & startCoords,
             std::optional<size_t> const & existingRopeElementIndex,

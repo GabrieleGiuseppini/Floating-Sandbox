@@ -8,8 +8,8 @@
 #include "Tool.h"
 
 #include "../EphemeralVisualizationRestoreRegions.h"
-#include "../ShipBodyRegions.h"
 #include "../LayerSelector.h"
+#include "../ShipBodyRegions.h"
 
 #include <Simulation/Layers.h>
 

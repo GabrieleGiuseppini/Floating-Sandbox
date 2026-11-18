@@ -245,7 +245,7 @@ void RopePencilTool::StartEngagement(
     //
 
     mEngagementData.emplace(
-        mController.GetModelController().CloneExistingLayer<LayerType::Ropes>(),
+        mController.GetModelController().CopyWhole(LayerSelector({ LayerType::Ropes })),
         mController.GetModelController().GetDirtyState(),
         coords,
         mController.GetModelController().GetRopeElementIndexAt(coords),
@@ -291,9 +291,9 @@ void RopePencilTool::MendTempVisualization()
     assert(mHasTempVisualization);
 
     assert(mEngagementData.has_value());
+    assert(mEngagementData->OriginalLayerClone.LayerRegions.RopesLayer);
 
-    mController.GetModelController().RestoreRopesLayerEphemeralVisualization(
-        mEngagementData->OriginalLayerClone.Buffer);
+    mController.GetModelController().RestoreRopesLayerEphemeralVisualization(mEngagementData->OriginalLayerClone.LayerRegions.RopesLayer->Buffer);
 
     mHasTempVisualization = false;
 }
@@ -343,11 +343,11 @@ bool RopePencilTool::CommmitAndStopEngagement()
         {
             mController.StoreUndoAction(
                 _("Pencil Ropes"),
-                mEngagementData->OriginalLayerClone.Buffer.GetByteSize(),
+                mEngagementData->OriginalLayerClone.GetTotalCost(),
                 mEngagementData->OriginalDirtyState,
                 [originalLayerClone = std::move(mEngagementData->OriginalLayerClone)](Controller & controller) mutable
                 {
-                    controller.RestoreRopesLayerForUndo(std::make_unique<RopesLayerData>(std::move(originalLayerClone)));
+                    controller.RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(originalLayerClone)));
                 });
         }
 

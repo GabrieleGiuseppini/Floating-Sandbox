@@ -19,7 +19,7 @@ RopeEraserTool::RopeEraserTool(
     : Tool(
         ToolType::RopeEraser,
         controller)
-    , mOriginalLayerClone(mController.GetModelController().CloneExistingLayer<LayerType::Ropes>())
+    , mOriginalLayerClone(MakeWholeLayerClone())
     , mHasOverlay(false)
     , mEngagementData()
 {
@@ -216,15 +216,15 @@ void RopeEraserTool::StopEngagement()
 
         mController.StoreUndoAction(
             _("Eraser Ropes"),
-            mOriginalLayerClone.Buffer.GetByteSize(),
+            mOriginalLayerClone.GetTotalCost(),
             mEngagementData->OriginalDirtyState,
             [originalLayerClone = std::move(mOriginalLayerClone)](Controller & controller) mutable
             {
-                controller.RestoreRopesLayerForUndo(std::make_unique<RopesLayerData>(std::move(originalLayerClone)));
+                controller.RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(originalLayerClone)));
             });
 
         // Take new orig clone
-        mOriginalLayerClone = mController.GetModelController().CloneExistingLayer<LayerType::Ropes>();
+        mOriginalLayerClone = MakeWholeLayerClone();
     }
 
     // Stop engagement
@@ -253,6 +253,11 @@ void RopeEraserTool::HideOverlay()
     mController.GetUserInterface().RefreshView();
 
     mHasOverlay = false;
+}
+
+ShipSpaceBodyRegions::ShipSpaceBodyRegion RopeEraserTool::MakeWholeLayerClone() const
+{
+    return mController.GetModelController().CopyWhole(LayerSelector({ LayerType::Ropes }));
 }
 
 }

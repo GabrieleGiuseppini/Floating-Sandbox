@@ -33,15 +33,15 @@ InteriorTextureEraserTool::InteriorTextureEraserTool(
         gameAssetManager)
 {}
 
-template<LayerType TLayerType>
-TextureEraserTool<TLayerType>::TextureEraserTool(
+template<LayerType TLayerType, typename TBodyRegions>
+TextureEraserTool<TLayerType, TBodyRegions>::TextureEraserTool(
     ToolType toolType,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : Tool(
         toolType,
         controller)
-    , mOriginalLayerClone(mController.GetModelController().template CloneExistingLayer<TLayerType>())
+    , mOriginalLayerClone(MakeWholeLayerClone())
     , mTempVisualizationDirtyTextureRegion()
     , mEngagementData()
     , mIsShiftDown(false)
@@ -66,14 +66,14 @@ TextureEraserTool<TLayerType>::TextureEraserTool(
     }
 }
 
-template<LayerType TLayerType>
-TextureEraserTool<TLayerType>::~TextureEraserTool()
+template<LayerType TLayerType, typename TBodyRegions>
+TextureEraserTool<TLayerType, TBodyRegions>::~TextureEraserTool()
 {
     Leave();
 }
 
-template<LayerType TLayerType>
-void TextureEraserTool<TLayerType>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureEraserTool<TLayerType, TBodyRegions>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
     // Assuming L/R button transitions already communicated
 
@@ -115,8 +115,8 @@ void TextureEraserTool<TLayerType>::OnMouseMove(DisplayLogicalCoordinates const 
     }
 }
 
-template<LayerType TLayerType>
-void TextureEraserTool<TLayerType>::OnLeftMouseDown()
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureEraserTool<TLayerType, TBodyRegions>::OnLeftMouseDown()
 {
     auto const mouseCoordinatesInTextureSpace = ScreenToTextureSpace(TLayerType, GetCurrentMouseCoordinates());
 
@@ -138,8 +138,8 @@ void TextureEraserTool<TLayerType>::OnLeftMouseDown()
     DoEdit(mouseCoordinatesInTextureSpace);
 }
 
-template<LayerType TLayerType>
-void TextureEraserTool<TLayerType>::OnLeftMouseUp()
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureEraserTool<TLayerType, TBodyRegions>::OnLeftMouseUp()
 {
     if (mEngagementData)
     {
@@ -152,8 +152,8 @@ void TextureEraserTool<TLayerType>::OnLeftMouseUp()
     // already has the edit (as permanent)
 }
 
-template<LayerType TLayerType>
-void TextureEraserTool<TLayerType>::OnShiftKeyDown()
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureEraserTool<TLayerType, TBodyRegions>::OnShiftKeyDown()
 {
     mIsShiftDown = true;
 
@@ -165,8 +165,8 @@ void TextureEraserTool<TLayerType>::OnShiftKeyDown()
     }
 }
 
-template<LayerType TLayerType>
-void TextureEraserTool<TLayerType>::OnShiftKeyUp()
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureEraserTool<TLayerType, TBodyRegions>::OnShiftKeyUp()
 {
     mIsShiftDown = false;
 
@@ -179,16 +179,16 @@ void TextureEraserTool<TLayerType>::OnShiftKeyUp()
     }
 }
 
-template<LayerType TLayerType>
-void TextureEraserTool<TLayerType>::OnMouseLeft()
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureEraserTool<TLayerType, TBodyRegions>::OnMouseLeft()
 {
     Leave();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<LayerType TLayerType>
-void TextureEraserTool<TLayerType>::Leave()
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureEraserTool<TLayerType, TBodyRegions>::Leave()
 {
     // Mend our temporary visualization, if any
     if (mTempVisualizationDirtyTextureRegion)
@@ -201,8 +201,8 @@ void TextureEraserTool<TLayerType>::Leave()
     }
 }
 
-template<LayerType TLayerType>
-void TextureEraserTool<TLayerType>::StartEngagement(ImageCoordinates const & mouseCoordinates)
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureEraserTool<TLayerType, TBodyRegions>::StartEngagement(ImageCoordinates const & mouseCoordinates)
 {
     assert(!mEngagementData);
 
@@ -211,8 +211,8 @@ void TextureEraserTool<TLayerType>::StartEngagement(ImageCoordinates const & mou
         mIsShiftDown ? mouseCoordinates : std::optional<ImageCoordinates>());
 }
 
-template<LayerType TLayerType>
-void TextureEraserTool<TLayerType>::DoEdit(ImageCoordinates const & mouseCoordinates)
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureEraserTool<TLayerType, TBodyRegions>::DoEdit(ImageCoordinates const & mouseCoordinates)
 {
     assert(mEngagementData);
 
@@ -303,8 +303,8 @@ void TextureEraserTool<TLayerType>::DoEdit(ImageCoordinates const & mouseCoordin
     mController.LayerChangeEpilog({ TLayerType });
 }
 
-template<LayerType TLayerType>
-void TextureEraserTool<TLayerType>::EndEngagement()
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureEraserTool<TLayerType, TBodyRegions>::EndEngagement()
 {
     assert(mEngagementData);
 
@@ -314,16 +314,17 @@ void TextureEraserTool<TLayerType>::EndEngagement()
         // Create undo action
         //
 
-        auto clippedLayerBackup = mOriginalLayerClone.MakeRegionBackup(*mEngagementData->EditRegion);
-        auto const clipByteSize = clippedLayerBackup.Buffer.GetByteSize();
+        auto clippedLayerBackup = ModelController::MakeShipBodyRegionClip(
+            mOriginalLayerClone,
+            *mEngagementData->EditRegion);
 
         mController.StoreUndoAction(
             (TLayerType == LayerType::ExteriorTexture) ? _("Eraser Exterior") : _("Eraser Interior"),
-            clipByteSize,
+            clippedLayerBackup.GetTotalCost(),
             mEngagementData->OriginalDirtyState,
-            [clippedLayerBackup = std::move(clippedLayerBackup), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
+            [clippedLayerBackup = std::move(clippedLayerBackup)](Controller & controller) mutable
             {
-                controller.RestoreLayerRegionBackupForUndo<TLayerType>(std::move(clippedLayerBackup), origin);
+                controller.RestoreForUndo(TBodyRegions::Make(std::move(clippedLayerBackup)));
             });
     }
 
@@ -340,15 +341,15 @@ void TextureEraserTool<TLayerType>::EndEngagement()
     assert(!mTempVisualizationDirtyTextureRegion);
 
     // Re-take original layer clone
-    mOriginalLayerClone = mController.GetModelController().template CloneExistingLayer<TLayerType>();
+    mOriginalLayerClone = MakeWholeLayerClone();
 }
 
-template<LayerType TLayerType>
-void TextureEraserTool<TLayerType>::DoTempVisualization(ImageRect const & affectedRect)
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureEraserTool<TLayerType, TBodyRegions>::DoTempVisualization(ImageRect const & affectedRect)
 {
     if constexpr (TLayerType == LayerType::ExteriorTexture)
     {
-        mController.GetModelController().ExteriorTextureRegionEraseForEphemeralVisualization(affectedRect);
+        mController.GetModelController().EraseExteriorTextureRegionForEphemeralVisualization(affectedRect);
 
         mController.GetView().UploadRectOverlayExteriorTexture(
             affectedRect,
@@ -358,7 +359,7 @@ void TextureEraserTool<TLayerType>::DoTempVisualization(ImageRect const & affect
     {
         static_assert(TLayerType == LayerType::InteriorTexture);
 
-        mController.GetModelController().InteriorTextureRegionEraseForEphemeralVisualization(affectedRect);
+        mController.GetModelController().EraseInteriorTextureRegionForEphemeralVisualization(affectedRect);
 
         mController.GetView().UploadRectOverlayInteriorTexture(
             affectedRect,
@@ -368,26 +369,30 @@ void TextureEraserTool<TLayerType>::DoTempVisualization(ImageRect const & affect
     mTempVisualizationDirtyTextureRegion = affectedRect;
 }
 
-template<LayerType TLayerType>
-void TextureEraserTool<TLayerType>::MendTempVisualization()
+template<LayerType TLayerType, typename TBodyRegions>
+void TextureEraserTool<TLayerType, TBodyRegions>::MendTempVisualization()
 {
     assert(mTempVisualizationDirtyTextureRegion);
 
+    CombinedTextureSpaceRegions dirtyRegions;
+    dirtyRegions.AddRegion(*mTempVisualizationDirtyTextureRegion);
+
     if constexpr (TLayerType == LayerType::ExteriorTexture)
     {
-        mController.GetModelController().RestoreExteriorTextureLayerRegionEphemeralVisualization(
-            mOriginalLayerClone.Buffer,
-            *mTempVisualizationDirtyTextureRegion,
-            mTempVisualizationDirtyTextureRegion->origin);
+        assert(mOriginalLayerClone.ExteriorTextureLayerRegion);
+
+        mController.GetModelController().RestoreExteriorTextureLayerRegionsEphemeralVisualization(
+            mOriginalLayerClone.ExteriorTextureLayerRegion->Buffer,
+            dirtyRegions);
     }
     else
     {
         static_assert(TLayerType == LayerType::InteriorTexture);
+        assert(mOriginalLayerClone.InteriorTextureLayerRegion);
 
-        mController.GetModelController().RestoreInteriorTextureLayerRegionEphemeralVisualization(
-            mOriginalLayerClone.Buffer,
-            *mTempVisualizationDirtyTextureRegion,
-            mTempVisualizationDirtyTextureRegion->origin);
+        mController.GetModelController().RestoreInteriorTextureLayerRegionsEphemeralVisualization(
+            mOriginalLayerClone.InteriorTextureLayerRegion->Buffer,
+            dirtyRegions);
     }
 
     mController.GetView().RemoveRectOverlay();
@@ -395,8 +400,8 @@ void TextureEraserTool<TLayerType>::MendTempVisualization()
     mTempVisualizationDirtyTextureRegion.reset();
 }
 
-template<LayerType TLayerType>
-std::optional<ImageRect> TextureEraserTool<TLayerType>::CalculateApplicableRect(ImageCoordinates const & coords) const
+template<LayerType TLayerType, typename TBodyRegions>
+std::optional<ImageRect> TextureEraserTool<TLayerType, TBodyRegions>::CalculateApplicableRect(ImageCoordinates const & coords) const
 {
     // Anchor in the middle, and vertically from top
 
@@ -419,6 +424,21 @@ std::optional<ImageRect> TextureEraserTool<TLayerType>::CalculateApplicableRect(
 
     return ImageRect(origin - ImageSize(topLeftPencilSize, -topLeftPencilSize), ImageSize(pencilSize, pencilSize))
         .MakeIntersectionWith(textureRect);
+}
+
+template<LayerType TLayerType, typename TBodyRegions>
+typename TBodyRegions::payload_type TextureEraserTool<TLayerType, TBodyRegions>::MakeWholeLayerClone() const
+{
+    if constexpr (TLayerType == LayerType::ExteriorTexture)
+    {
+        return mController.GetModelController().CopyExteriorTextureSpaceWhole(LayerSelector{ TLayerType });
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::InteriorTexture);
+
+        return mController.GetModelController().CopyInteriorTextureSpaceWhole(LayerSelector{ TLayerType });
+    }
 }
 
 }

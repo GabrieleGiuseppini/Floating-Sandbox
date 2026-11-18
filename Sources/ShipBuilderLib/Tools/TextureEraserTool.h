@@ -7,6 +7,8 @@
 
 #include "Tool.h"
 
+#include "../ShipBodyRegions.h"
+
 #include <Game/GameAssetManager.h>
 
 #include <Simulation/Layers.h>
@@ -19,7 +21,7 @@
 
 namespace ShipBuilder {
 
-template<LayerType TLayerType>
+template<LayerType TLayerType, typename TBodyRegions>
 class TextureEraserTool : public Tool
 {
 public:
@@ -58,10 +60,12 @@ private:
 
     std::optional<ImageRect> CalculateApplicableRect(ImageCoordinates const & coords) const;
 
+    typename TBodyRegions::payload_type MakeWholeLayerClone() const;
+
 private:
 
     // Original layer
-    TextureLayerData mOriginalLayerClone;
+    typename TBodyRegions::payload_type mOriginalLayerClone;
 
     // Texture region dirtied so far with temporary visualization
     std::optional<ImageRect> mTempVisualizationDirtyTextureRegion;
@@ -101,7 +105,7 @@ private:
     bool mIsShiftDown;
 };
 
-class ExteriorTextureEraserTool final : public TextureEraserTool<LayerType::ExteriorTexture>
+class ExteriorTextureEraserTool final : public TextureEraserTool<LayerType::ExteriorTexture, ExteriorTextureSpaceBodyRegions>
 {
 public:
 
@@ -110,7 +114,7 @@ public:
         GameAssetManager const & gameAssetManager);
 };
 
-class InteriorTextureEraserTool final : public TextureEraserTool<LayerType::InteriorTexture>
+class InteriorTextureEraserTool final : public TextureEraserTool<LayerType::InteriorTexture, InteriorTextureSpaceBodyRegions>
 {
 public:
 

@@ -7,6 +7,8 @@
 
 #include "Tool.h"
 
+#include "../ShipBodyRegions.h"
+
 #include <Game/GameAssetManager.h>
 
 #include <Simulation/Layers.h>
@@ -55,10 +57,12 @@ private:
 
     void HideOverlay();
 
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion MakeWholeLayerClone() const;
+
 private:
 
     // Original layer
-    RopesLayerData mOriginalLayerClone;
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion mOriginalLayerClone;
 
     // When set, we have an overlay
     bool mHasOverlay;
