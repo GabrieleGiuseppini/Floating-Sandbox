@@ -7,7 +7,7 @@
 
 #include "Tool.h"
 
-#include "../GenericEphemeralVisualizationRestorePayload.h"
+#include "../EphemeralVisualizationRestoreRegions.h"
 
 #include <Game/GameAssetManager.h>
 
@@ -45,7 +45,7 @@ private:
 
     ShipSpaceRect CalculateRect(ShipSpaceCoordinates const & cornerCoordinates) const;
 
-    GenericShipSpaceEphemeralVisualizationRestorePayload DrawEphemeralRectangle(ShipSpaceRect const & rect);
+    ShipSpaceEphemeralVisualizationRestoreRegions DrawEphemeralRectangle(ShipSpaceRect const & rect);
 
     void UndoEphemeralRectangle();
 
@@ -60,7 +60,7 @@ private:
     struct EngagementData
     {
         ShipSpaceCoordinates StartCorner;
-        std::optional<GenericShipSpaceEphemeralVisualizationRestorePayload> EphVizRestorePayload;
+        std::optional<ShipSpaceEphemeralVisualizationRestoreRegions> EphVizRestorePayload;
 
         EngagementData(ShipSpaceCoordinates const & startCorner)
             : StartCorner(startCorner)

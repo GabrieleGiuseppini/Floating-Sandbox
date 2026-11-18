@@ -7,8 +7,8 @@
 
 #include "Tool.h"
 
-#include "../GenericEphemeralVisualizationRestorePayload.h"
-#include "../GenericUndoPayload.h"
+#include "../EphemeralVisualizationRestoreRegions.h"
+#include "../ShipBodyRegions.h"
 #include "../LayerSelector.h"
 
 #include <Simulation/Layers.h>
@@ -24,7 +24,7 @@
 
 namespace ShipBuilder {
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
 class SelectAndTranslateTool : public Tool
 {
 public:
@@ -58,7 +58,7 @@ private:
     void InternalDoMoveForEphemeralVisualization(TCoords const & newPasteCoords);
 
     void Commit();
-    virtual TUndoPayload InternalCommit(
+    virtual TBodyRegion InternalCommit(
         TRect const & sourceRegion,
         TCoords const & targetPos,
         LayerSelector const & layerSelection,
@@ -167,7 +167,7 @@ private:
 
 // Specialization for Structural/Electrical/Ropes layers, which work on ship space coords
 template<LayerType TLayer>
-class SelectAndTranslateTool_ShipSpace : public SelectAndTranslateTool<TLayer, GenericShipSpaceUndoPayload, GenericShipSpaceEphemeralVisualizationRestorePayload, ShipSpaceTag>
+class SelectAndTranslateTool_ShipSpace : public SelectAndTranslateTool<TLayer, ShipSpaceBodyRegions, ShipSpaceEphemeralVisualizationRestoreRegions, ShipSpaceTag>
 {
 protected:
 
@@ -176,13 +176,13 @@ protected:
         Controller & controller,
         GameAssetManager const & gameAssetManager);
 
-    GenericShipSpaceUndoPayload InternalCommit(
+    ShipSpaceBodyRegions InternalCommit(
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetPos,
         LayerSelector const & layerSelection,
         bool isTransparent) override;
 
-    GenericShipSpaceEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
+    ShipSpaceEphemeralVisualizationRestoreRegions InternalDrawEphemeralVisualization(
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetPos,
         LayerSelector const & layerSelection,
@@ -236,7 +236,7 @@ public:
     }
 };
 
-class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, GenericExteriorTextureSpaceUndoPayload, GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageSpaceTag>
+class ExteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::ExteriorTexture, ExteriorTextureSpaceBodyRegions, ExteriorTextureSpaceEphemeralVisualizationRestoreRegions, ImageSpaceTag>
 {
 public:
 
@@ -251,13 +251,13 @@ public:
 
 protected:
 
-    GenericExteriorTextureSpaceUndoPayload InternalCommit(
+    ExteriorTextureSpaceBodyRegions InternalCommit(
         ImageRect const & sourceRegion,
         ImageCoordinates const & targetPos,
         LayerSelector const & layerSelection,
         bool isTransparent) override;
 
-    GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
+    ExteriorTextureSpaceEphemeralVisualizationRestoreRegions InternalDrawEphemeralVisualization(
         ImageRect const & sourceRegion,
         ImageCoordinates const & targetPos,
         LayerSelector const & layerSelection,
@@ -269,7 +269,7 @@ protected:
     ImageSize GetSpaceSize() const override;
 };
 
-class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, GenericInteriorTextureSpaceUndoPayload, GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload, ImageSpaceTag>
+class InteriorSelectAndTranslateTool final : public SelectAndTranslateTool<LayerType::InteriorTexture, InteriorTextureSpaceBodyRegions, InteriorTextureSpaceEphemeralVisualizationRestoreRegions, ImageSpaceTag>
 {
 public:
 
@@ -284,13 +284,13 @@ public:
 
 protected:
 
-    GenericInteriorTextureSpaceUndoPayload InternalCommit(
+    InteriorTextureSpaceBodyRegions InternalCommit(
         ImageRect const & sourceRegion,
         ImageCoordinates const & targetPos,
         LayerSelector const & layerSelection,
         bool isTransparent) override;
 
-    GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload InternalDrawEphemeralVisualization(
+    InteriorTextureSpaceEphemeralVisualizationRestoreRegions InternalDrawEphemeralVisualization(
         ImageRect const & sourceRegion,
         ImageCoordinates const & targetPos,
         LayerSelector const & layerSelection,

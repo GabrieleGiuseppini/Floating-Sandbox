@@ -14,7 +14,7 @@
 namespace ShipBuilder {
 
 StructuralPasteTool::StructuralPasteTool(
-    ShipLayers && pasteRegion,
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
     bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
@@ -27,7 +27,7 @@ StructuralPasteTool::StructuralPasteTool(
 {}
 
 ElectricalPasteTool::ElectricalPasteTool(
-    ShipLayers && pasteRegion,
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
     bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
@@ -40,7 +40,7 @@ ElectricalPasteTool::ElectricalPasteTool(
 {}
 
 RopePasteTool::RopePasteTool(
-    ShipLayers && pasteRegion,
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
     bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
@@ -53,7 +53,7 @@ RopePasteTool::RopePasteTool(
 {}
 
 ExteriorTexturePasteTool::ExteriorTexturePasteTool(
-    ShipLayers && pasteRegion,
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
     bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
@@ -66,7 +66,7 @@ ExteriorTexturePasteTool::ExteriorTexturePasteTool(
 {}
 
 InteriorTexturePasteTool::InteriorTexturePasteTool(
-    ShipLayers && pasteRegion,
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
     bool isTransparent,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
@@ -79,7 +79,7 @@ InteriorTexturePasteTool::InteriorTexturePasteTool(
 {}
 
 PasteTool::PasteTool(
-    ShipLayers && pasteRegion,
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
     bool isTransparent,
     ToolType toolType,
     Controller & controller,
@@ -173,16 +173,16 @@ void PasteTool::Commit()
 
     // Calculate affected layers
 
-    auto const affectedLayers = mController.GetModelController().IntersectLayerPresence(mPendingSessionData->PasteRegion);
+    auto const affectedLayers = mController.GetModelController().IntersectLayerPresence(mPendingSessionData->PasteRegion.LayerRegions);
     if (!affectedLayers.IsEmpty())
     {
         // Commit
 
         ShipSpaceCoordinates const pasteOrigin = MousePasteCoordsToActualPasteOrigin(
             mPendingSessionData->MousePasteCoords,
-            mPendingSessionData->PasteRegion.Size);
+            mPendingSessionData->PasteRegion.GetSize());
 
-        GenericUndoPayload undoPayload = mController.GetModelController().Paste(
+        auto undoPayload = mController.GetModelController().Paste(
             mPendingSessionData->PasteRegion,
             pasteOrigin,
             mPendingSessionData->IsTransparent);
@@ -197,7 +197,7 @@ void PasteTool::Commit()
             mController.GetModelController().GetDirtyState(),
             [undoPayload = std::move(undoPayload)](Controller & controller) mutable
             {
-                controller.Restore(std::move(undoPayload));
+                controller.RestoreForUndo(std::move(undoPayload));
             });
     }
 
@@ -340,7 +340,7 @@ void PasteTool::UpdateEphemeralVisualization(ShipSpaceCoordinates const & mouseC
     // Move mouse coords
     mPendingSessionData->MousePasteCoords = ClampMousePasteCoords(
         mPendingSessionData->MousePasteCoords + (newMouseCoordinates - mDragSessionData->LastMousePosition),
-        mPendingSessionData->PasteRegion.Size);
+        mPendingSessionData->PasteRegion.GetSize());
 
     // Draw eph viz
     DrawEphemeralVisualization();
@@ -357,16 +357,16 @@ void PasteTool::DrawEphemeralVisualization()
 
     ShipSpaceCoordinates const pasteOrigin = MousePasteCoordsToActualPasteOrigin(
         mPendingSessionData->MousePasteCoords,
-        mPendingSessionData->PasteRegion.Size);
+        mPendingSessionData->PasteRegion.GetSize());
 
-    GenericEphemeralVisualizationRestorePayload pasteEphVizRestore = mController.GetModelController().PasteForEphemeralVisualization(
+    auto pasteEphVizRestore = mController.GetModelController().PasteForEphemeralVisualization(
         mPendingSessionData->PasteRegion,
         pasteOrigin,
         mPendingSessionData->IsTransparent);
 
     mController.GetView().UploadDashedRectangleOverlay(
         pasteOrigin,
-        pasteOrigin + mPendingSessionData->PasteRegion.Size);
+        pasteOrigin + mPendingSessionData->PasteRegion.GetSize());
 
     mPendingSessionData->EphemeralVisualization.emplace(std::move(pasteEphVizRestore));
 }
@@ -394,7 +394,7 @@ void PasteTool::ModifyPasteRegion(TModifier && modifier)
         assert(!mPendingSessionData->EphemeralVisualization);
     }
 
-    modifier(mPendingSessionData->PasteRegion);
+    modifier(mPendingSessionData->PasteRegion.LayerRegions);
 
     DrawEphemeralVisualization();
 

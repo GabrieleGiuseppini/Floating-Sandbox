@@ -1555,12 +1555,13 @@
 
 						- ShipBodyRegion: members are ShipLayers
 							- Allows for using pre-baked ops on all layers
+								- Then, use its size in PasteTool
 
 						+ Do all .h first
 						= Do tools
 							+ FloodTool
-							= LineTool
-								! Old pattern 1:
+							- LineTool
+								! Old pattern: 1
 									- Cctor - and after each commit - takes full layer clone
 									- Undo restore: via C::RestoreLayer[Region]BackupForUndo, after clipping on whole rect
 									- EphViz restore: via MC::RestoreStructuralLayer[Region]EphemeralVisualization, passing whole clone and dirty regions
@@ -1569,13 +1570,66 @@
 									- Undo restore: via clipping of a ShipBodyRegion region, via XYZSpaceBodyRegion::MakeClip(region) -> XYZSpaceBodyRegion, and C::RestoreForUndo making whole ShipBodyRegion
 									- EphViz restore: via MC::RestoreXYZLayerRegionsForEphemeralVisualization, passing whole clone member and dirty regions
 										- Finalize signature for MC::RestoreXYZLayerRegionsForEphemeralVisualization
-							- PasteTool:
-								- Given ShipSpaceBodyRegions (don't need texture spaces nnow)
+							+ PasteTool
+								+ Given ShipSpaceBodyRegions (don't need texture spaces nnow)
+								! Old pattern/new pattern:
+									- Commit: does op and gets back ShipSpaceBodyRegions, storing in Undo lambda
+									- Undo restore: via C::RestoreForUndo
+									- EphViz do: does eph viz op and gets back ShipSpaceEphemeralVisualizationRestoreRegions, storing in mEphViz
+									- EphViz restore: MC::RestoreEphemeralVisualization
+							- PencilTool
+								! Old pattern: 1
+								- Follow new pattern 1
+							- RopeEraseTool
+								! Old pattern: 1b
+									- Cctor - and after each commit - takes full layer clone, as whole RopesLayerData
+									- Undo restore: via C::RestoreRopesLayerForUndo, passing whole RopesLayerData from clone
+									- No EphViz
+								- New pattern 1b:
+									- TODOHERE
+							- RopePencilTool
+								! Old pattern:
+									- Takes clone: via MC::CloneExistingLayer
+									- Undo restore: via C::RestoreRopesLayerForUndo
+									- MendTempViz: via MC::RestoreRopesLayerEphemeralVisualization
+								- New pattern:
+									- TODOHERE
+							+ SelectAndTranslateTool
+								! Old pattern/new pattern:
+									- Commit: does op and gets back ShipSpaceBodyRegions, storing in Undo lambda
+									- Undo restore: via C::RestoreForUndo
+									- EphViz do: does eph viz op and gets back ShipSpaceEphemeralVisualizationRestoreRegions, storing in mEphViz
+									- EphViz restore: MC::RestoreEphemeralVisualization
+							+ StructuralRectangleTool
 								! Old pattern:
 									- Commit: does op and gets back ShipSpaceBodyRegions, storing in Undo lambda
 									- Undo restore: via C::RestoreForUndo
 									- EphViz do: does eph viz op and gets back ShipSpaceEphemeralVisualizationRestoreRegions, storing in mEphViz
-									- EphViz restore: MC::EphemeralVisualization
+									- EphViz restore: MC::RestoreEphemeralVisualization
+							+ StructureTracerTool
+								! Old pattern:
+									- Does op, gets ShipSpaceBodyRegions
+									- Undo restore: C::RestoreForUndo
+									- No eph viz
+							- TextureEraserTool
+								! Old pattern: 1
+								- Follow new pattern 1
+							- TextureMagicWandTool
+								! Old pattern: 1c
+									- At op: take full layer clone, do op getting back affected rect, clip clone, store in Undo
+									- Undo restore: RestoreExteriorTextureLayerRegionBackupForUndo
+									- No eph viz
+								- New pattern 1c:
+									- TODOHERE
+							- TextureTranslateTool
+								! Old pattern:
+									- At beginning of op: take full layer clone
+									- At commit: store (copy) full layer clone into Undo lambda
+									- Undo restore: via C::Restore(synthetic undo payload built on clone)
+									- No eph viz
+								- New pattern:
+									- TODO
+
 
 						- Finalize .h
 							- ModelController

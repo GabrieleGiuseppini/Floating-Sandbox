@@ -146,9 +146,6 @@ public:
 
 public:
 
-	EphemeralVisualizationRestoreRegions(EphemeralVisualizationRestoreRegions const & other) = delete;
-	EphemeralVisualizationRestoreRegions & operator=(EphemeralVisualizationRestoreRegions const & other) = delete;
-
 	template<typename... TArgs>
 	static EphemeralVisualizationRestoreRegions Make(TArgs &&... args)
 	{

@@ -7,14 +7,12 @@
 
 #include "Tool.h"
 
-#include "../GenericEphemeralVisualizationRestorePayload.h"
-#include "../GenericUndoPayload.h"
+#include "../ShipBodyRegions.h"
+#include "../EphemeralVisualizationRestoreRegions.h"
 
 #include <UILib/WxHelpers.h>
 
 #include <Game/GameAssetManager.h>
-
-#include <Simulation/Layers.h>
 
 #include <Core/GameTypes.h>
 
@@ -55,7 +53,7 @@ public:
 protected:
 
     PasteTool(
-        ShipLayers && pasteRegion,
+        ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
         bool isTransparent,
         ToolType toolType,
         Controller & controller,
@@ -88,16 +86,16 @@ private:
 
     struct PendingSessionData
     {
-        ShipLayers PasteRegion;
+        ShipSpaceBodyRegions::ShipSpaceBodyRegion PasteRegion;
         bool IsTransparent;
 
         ShipSpaceCoordinates MousePasteCoords;
 
         // When set we have an ephemeral visualization
-        std::optional<GenericShipSpaceEphemeralVisualizationRestorePayload> EphemeralVisualization;
+        std::optional<ShipSpaceEphemeralVisualizationRestoreRegions> EphemeralVisualization;
 
         PendingSessionData(
-            ShipLayers && pasteRegion,
+            ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
             bool isTransparent,
             ShipSpaceCoordinates const & mousePasteCoords)
             : PasteRegion(std::move(pasteRegion))
@@ -132,7 +130,7 @@ class StructuralPasteTool : public PasteTool
 public:
 
     StructuralPasteTool(
-        ShipLayers && pasteRegion,
+        ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
         bool isTransparent,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
@@ -143,7 +141,7 @@ class ElectricalPasteTool : public PasteTool
 public:
 
     ElectricalPasteTool(
-        ShipLayers && pasteRegion,
+        ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
         bool isTransparent,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
@@ -154,7 +152,7 @@ class RopePasteTool : public PasteTool
 public:
 
     RopePasteTool(
-        ShipLayers && pasteRegion,
+        ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
         bool isTransparent,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
@@ -165,7 +163,7 @@ class ExteriorTexturePasteTool : public PasteTool
 public:
 
     ExteriorTexturePasteTool(
-        ShipLayers && pasteRegion,
+        ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
         bool isTransparent,
         Controller & controller,
         GameAssetManager const & gameAssetManager);
@@ -176,7 +174,7 @@ class InteriorTexturePasteTool : public PasteTool
 public:
 
     InteriorTexturePasteTool(
-        ShipLayers && pasteRegion,
+        ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,
         bool isTransparent,
         Controller & controller,
         GameAssetManager const & gameAssetManager);

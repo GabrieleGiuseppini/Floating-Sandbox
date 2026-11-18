@@ -68,7 +68,7 @@ SelectAndTranslateTool_ShipSpace<TLayer>::SelectAndTranslateTool_ShipSpace(
     ToolType toolType,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
-    : SelectAndTranslateTool<TLayer, GenericShipSpaceUndoPayload, GenericShipSpaceEphemeralVisualizationRestorePayload, ShipSpaceTag>(
+    : SelectAndTranslateTool<TLayer, ShipSpaceBodyRegions, ShipSpaceEphemeralVisualizationRestoreRegions, ShipSpaceTag>(
         toolType,
         controller,
         gameAssetManager)
@@ -76,8 +76,8 @@ SelectAndTranslateTool_ShipSpace<TLayer>::SelectAndTranslateTool_ShipSpace(
     static_assert(TLayer == LayerType::Structural || TLayer == LayerType::Electrical || TLayer == LayerType::Ropes);
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::SelectAndTranslateTool(
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::SelectAndTranslateTool(
     ToolType toolType,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
@@ -94,8 +94,8 @@ SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePaylo
     InternalSetCursor(mPointerCursor);
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnDestroy()
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnDestroy()
 {
     if (mEngagementData)
     {
@@ -108,8 +108,8 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
     }
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnMouseMove(DisplayLogicalCoordinates const & /*mouseCoordinates*/)
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnMouseMove(DisplayLogicalCoordinates const & /*mouseCoordinates*/)
 {
     if (!mEngagementData)
     {
@@ -169,8 +169,8 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
     }
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnLeftMouseDown()
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnLeftMouseDown()
 {
     auto const clickSpaceCoords = GetMouseSelectionCoords();
 
@@ -248,8 +248,8 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
     }
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnLeftMouseUp()
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnLeftMouseUp()
 {
     if (!mEngagementData)
     {
@@ -310,8 +310,8 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
     }
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnShiftKeyDown()
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnShiftKeyDown()
 {
     mIsShiftDown = true;
 
@@ -327,8 +327,8 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
     }
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnShiftKeyUp()
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::OnShiftKeyUp()
 {
     mIsShiftDown = false;
 
@@ -346,8 +346,8 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::InternalDoMoveForEphemeralVisualization(TCoords const & newPasteCoords)
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::InternalDoMoveForEphemeralVisualization(TCoords const & newPasteCoords)
 {
     assert(mEngagementData);
     assert(mEngagementData->CurrentMoveState);
@@ -445,8 +445,8 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
     }
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::Commit()
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::Commit()
 {
     assert(mEngagementData);
 
@@ -484,7 +484,7 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
             mController.GetModelController().GetDirtyState(),
             [undoPayload = std::move(undoPayload)](Controller & controller) mutable
             {
-                controller.Restore(std::move(undoPayload));
+                controller.RestoreForUndo(std::move(undoPayload));
             });
     }
 
@@ -493,8 +493,8 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
     mController.LayerChangeEpilog(layerSelection);
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::DrawEphemeralVisualization()
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::DrawEphemeralVisualization()
 {
     // Assumption: NOT in eph viz
     assert(!mEphemeralVisualization);
@@ -516,8 +516,8 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
         });
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::UpdateSelectionViz()
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::UpdateSelectionViz()
 {
     assert(mEngagementData);
 
@@ -550,8 +550,8 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
             std::abs(mEngagementData->PasteRect.size.height)));
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::StopSelectionViz()
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::StopSelectionViz()
 {
     // Remove overlay
     mController.GetView().RemoveDashedRectangleOverlay();
@@ -560,8 +560,8 @@ void SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestore
     mController.GetUserInterface().OnMeasuredSelectionSizeChanged();
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-typename SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::TCoords SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::GetMouseSelectionCoords() const
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+typename SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::TCoords SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::GetMouseSelectionCoords() const
 {
     auto const mouseCoordinates = GetCurrentMouseCoordinates();
     auto const spaceSize = GetSpaceSize();
@@ -580,8 +580,8 @@ typename SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRes
     }
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-std::optional<typename SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::TCoords> SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::GetMouseSelectionCoordsIfInSpace() const
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+std::optional<typename SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::TCoords> SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::GetMouseSelectionCoordsIfInSpace() const
 {
     auto const mouseCoordinates = GetCurrentMouseCoordinates();
     auto const spaceSize = GetSpaceSize();
@@ -622,8 +622,8 @@ std::optional<typename SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVi
     }
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-typename SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::TCoords SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::GetMouseSelectionCoordsClamped() const
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+typename SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::TCoords SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::GetMouseSelectionCoordsClamped() const
 {
     auto const mouseCoordinates = GetCurrentMouseCoordinates();
 
@@ -643,15 +643,15 @@ typename SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRes
     }
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-typename SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::TCoords SelectAndTranslateTool<TLayer, TUndoPayload, TEphemeralVisualizationRestorePayload, TCoordsTag>::ClampSelectionCoords(TCoords const & coords) const
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+typename SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::TCoords SelectAndTranslateTool<TLayer, TBodyRegion, TEphemeralVisualizationRestorePayload, TCoordsTag>::ClampSelectionCoords(TCoords const & coords) const
 {
     auto const spaceSize = GetSpaceSize();
     return coords.Clamp(spaceSize);
 }
 
 template<LayerType TLayer>
-GenericShipSpaceUndoPayload SelectAndTranslateTool_ShipSpace<TLayer>::InternalCommit(
+ShipSpaceBodyRegions SelectAndTranslateTool_ShipSpace<TLayer>::InternalCommit(
     ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetPos,
     LayerSelector const & layerSelection,
@@ -665,7 +665,7 @@ GenericShipSpaceUndoPayload SelectAndTranslateTool_ShipSpace<TLayer>::InternalCo
 }
 
 template<LayerType TLayer>
-GenericShipSpaceEphemeralVisualizationRestorePayload SelectAndTranslateTool_ShipSpace<TLayer>::InternalDrawEphemeralVisualization(
+ShipSpaceEphemeralVisualizationRestoreRegions SelectAndTranslateTool_ShipSpace<TLayer>::InternalDrawEphemeralVisualization(
     ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetPos,
     LayerSelector const & layerSelection,
@@ -698,7 +698,7 @@ ShipSpaceSize SelectAndTranslateTool_ShipSpace<TLayer>::GetSpaceSize() const
     return this->mController.GetModelController().GetShipSize();
 }
 
-GenericExteriorTextureSpaceUndoPayload ExteriorSelectAndTranslateTool::InternalCommit(
+ExteriorTextureSpaceBodyRegions ExteriorSelectAndTranslateTool::InternalCommit(
     ImageRect const & sourceRegion,
     ImageCoordinates const & targetPos,
     LayerSelector const & layerSelection,
@@ -711,7 +711,7 @@ GenericExteriorTextureSpaceUndoPayload ExteriorSelectAndTranslateTool::InternalC
         isTransparent);
 }
 
-GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ExteriorSelectAndTranslateTool::InternalDrawEphemeralVisualization(
+ExteriorTextureSpaceEphemeralVisualizationRestoreRegions ExteriorSelectAndTranslateTool::InternalDrawEphemeralVisualization(
     ImageRect const & sourceRegion,
     ImageCoordinates const & targetPos,
     LayerSelector const & layerSelection,
@@ -746,7 +746,7 @@ ImageSize ExteriorSelectAndTranslateTool::GetSpaceSize() const
     return mController.GetModelController().GetExteriorTextureSize();
 }
 
-GenericInteriorTextureSpaceUndoPayload InteriorSelectAndTranslateTool::InternalCommit(
+InteriorTextureSpaceBodyRegions InteriorSelectAndTranslateTool::InternalCommit(
     ImageRect const & sourceRegion,
     ImageCoordinates const & targetPos,
     LayerSelector const & layerSelection,
@@ -759,7 +759,7 @@ GenericInteriorTextureSpaceUndoPayload InteriorSelectAndTranslateTool::InternalC
         isTransparent);
 }
 
-GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload InteriorSelectAndTranslateTool::InternalDrawEphemeralVisualization(
+InteriorTextureSpaceEphemeralVisualizationRestoreRegions InteriorSelectAndTranslateTool::InternalDrawEphemeralVisualization(
     ImageRect const & sourceRegion,
     ImageCoordinates const & targetPos,
     LayerSelector const & layerSelection,
@@ -794,8 +794,8 @@ ImageSize InteriorSelectAndTranslateTool::GetSpaceSize() const
     return mController.GetModelController().GetInteriorTextureSize();
 }
 
-template<LayerType TLayer, typename TUndoPayload, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
-void SelectAndTranslateTool<TLayer, TUndoPayload,TEphemeralVisualizationRestorePayload, TCoordsTag>::InternalSetCursor(wxImage const & cursorImage)
+template<LayerType TLayer, typename TBodyRegion, typename TEphemeralVisualizationRestorePayload, typename TCoordsTag>
+void SelectAndTranslateTool<TLayer, TBodyRegion,TEphemeralVisualizationRestorePayload, TCoordsTag>::InternalSetCursor(wxImage const & cursorImage)
 {
     if (mCurrentCursor != &cursorImage)
     {

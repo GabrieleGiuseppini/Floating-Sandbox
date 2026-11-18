@@ -83,34 +83,33 @@ void FloodTool<TLayer>::DoEdit(
     ShipSpaceCoordinates const & mouseCoordinates,
     StrongTypedBool<struct IsRightMouseButton> isRightButton)
 {
-    // Take clone of current layer
     auto layerDirtyStateClone = mController.GetModelController().GetDirtyState();
-    auto layerClone = mController.GetModelController().template CloneExistingLayer<TLayer>();
 
+    //
     // Do edit
+    //
 
     LayerMaterialType const * const floodMaterial = GetFloodMaterial(isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground);
 
     static_assert(TLayer == LayerType::Structural); // At this moment this is only structural
-    std::optional<ShipSpaceRect> affectedRegion = mController.GetModelController().StructuralFlood(
+    auto undoPayload = mController.GetModelController().StructuralFlood(
         mouseCoordinates,
         floodMaterial,
         mController.GetWorkbenchState().GetStructuralFloodToolIsContiguous());
 
-    if (affectedRegion.has_value())
+    if (undoPayload.has_value())
     {
+        //
         // Create undo action
-
-        auto clippedLayerBackup = layerClone.MakeRegionBackup(*affectedRegion);
-        auto const clippedLayerByteSize = clippedLayerBackup.Buffer.GetByteSize();
+        //
 
         mController.StoreUndoAction(
             TLayer == LayerType::Structural ? _("Flood Structural") : _("Flood Electrical"),
-            clippedLayerByteSize,
+            undoPayload->GetTotalCost(),
             layerDirtyStateClone,
-            [clippedLayerBackup = std::move(clippedLayerBackup), origin = affectedRegion->origin](Controller & controller) mutable
+            [undoPayload = std::move(*undoPayload)](Controller & controller) mutable
             {
-                controller.RestoreLayerRegionBackupForUndo<TLayer>(std::move(clippedLayerBackup), origin);
+                controller.RestoreForUndo(std::move(undoPayload));
             });
 
         // Display sampled material

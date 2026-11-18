@@ -153,7 +153,7 @@ ShipSpaceRect StructuralRectangleTool::CalculateRect(ShipSpaceCoordinates const 
     return rect;
 }
 
-GenericShipSpaceEphemeralVisualizationRestorePayload StructuralRectangleTool::DrawEphemeralRectangle(ShipSpaceRect const & rect)
+ShipSpaceEphemeralVisualizationRestoreRegions StructuralRectangleTool::DrawEphemeralRectangle(ShipSpaceRect const & rect)
 {
     auto const [lineMaterial, fillMaterial] = GetMaterials();
 
@@ -220,7 +220,7 @@ void StructuralRectangleTool::DrawFinalRectangle(ShipSpaceRect const & rect)
         mController.GetModelController().GetDirtyState(),
         [undoPayload = std::move(undoPayload)](Controller & controller) mutable
         {
-            controller.Restore(std::move(undoPayload));
+            controller.RestoreForUndo(std::move(undoPayload));
         });
 }
 

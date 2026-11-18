@@ -125,7 +125,7 @@ void StructureTracerTool::DoTracing(ImageRect const & textureRect)
         mController.GetModelController().GetDirtyState(),
         [undoPayload = std::move(undoPayload)](Controller & controller) mutable
         {
-            controller.Restore(std::move(undoPayload));
+            controller.RestoreForUndo(std::move(undoPayload));
         });
 
     // Epilog
