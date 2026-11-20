@@ -3474,184 +3474,6 @@ std::optional<ShipSpaceRect> ModelController::ReplaceCustomMaterials<LayerType::
 // Visualizations
 //
 
-
-
-
-
-
-
-// TODOHERE
-
-
-//
-// Misc
-//
-
-ShipSpaceBodyRegions::ShipSpaceBodyRegion ModelController::MakeShipBodyRegionClip(
-    ShipSpaceBodyRegions::ShipSpaceBodyRegion const & source,
-    ShipSpaceRect const & clipRegion)
-{
-    assert(clipRegion.IsContainedInRect(source.OriginatingRegion));
-    assert(clipRegion.IsContainedInRect(ShipSpaceRect(source.LayerRegions.Size)));
-
-    // Clip regions
-
-    std::unique_ptr<StructuralLayerData> clippedStructuralLayerData;
-    if (source.LayerRegions.StructuralLayer)
-    {
-        clippedStructuralLayerData = std::make_unique<StructuralLayerData>(source.LayerRegions.StructuralLayer->MakeRegionBackup(clipRegion));
-    }
-
-    std::unique_ptr<ElectricalLayerData> clippedElectricalLayerData;
-    if (source.LayerRegions.ElectricalLayer)
-    {
-        clippedElectricalLayerData = std::make_unique<ElectricalLayerData>(source.LayerRegions.ElectricalLayer->MakeRegionBackup(clipRegion)); // Panel is whole
-    }
-
-    std::unique_ptr<RopesLayerData> clippedRopesLayerData;
-    if (source.LayerRegions.RopesLayer)
-    {
-        clippedRopesLayerData = std::make_unique<RopesLayerData>(source.LayerRegions.RopesLayer->MakeBackup()); // Whole
-    }
-
-    std::unique_ptr<TextureLayerData> clippedExteriorTextureLayerData;
-    if (source.LayerRegions.ExteriorTextureLayer)
-    {
-        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(source.GetSize(), source.LayerRegions.ExteriorTextureLayer->Buffer.Size);
-        ImageRect const exteriorTextureClipRegion = ImageRect(
-            ImageCoordinates::FromFloatFloor(clipRegion.origin.ToFloat().scale(shipToTexture)),
-            ImageSize::FromFloatFloor(clipRegion.size.ToFloat<vec2f>().scale(shipToTexture)));
-
-        clippedExteriorTextureLayerData = std::make_unique<TextureLayerData>(source.LayerRegions.ExteriorTextureLayer->MakeRegionBackup(exteriorTextureClipRegion));
-    }
-
-    std::unique_ptr<TextureLayerData> clippedInteriorTextureLayerData;
-    if (source.LayerRegions.InteriorTextureLayer)
-    {
-        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(source.GetSize(), source.LayerRegions.InteriorTextureLayer->Buffer.Size);
-        ImageRect const interiorTextureClipRegion = ImageRect(
-            ImageCoordinates::FromFloatFloor(clipRegion.origin.ToFloat().scale(shipToTexture)),
-            ImageSize::FromFloatFloor(clipRegion.size.ToFloat<vec2f>().scale(shipToTexture)));
-
-        clippedInteriorTextureLayerData = std::make_unique<TextureLayerData>(source.LayerRegions.InteriorTextureLayer->MakeRegionBackup(interiorTextureClipRegion));
-    }
-
-    // Calculate new "absolute" originating region
-    ShipSpaceRect newOriginatingRegion = ShipSpaceRect(
-        ShipSpaceCoordinates(
-            source.OriginatingRegion.origin.x + clipRegion.origin.x,
-            source.OriginatingRegion.origin.y + clipRegion.origin.y),
-        clipRegion.size); // ClipRegion is smaller anyway
-
-    return ShipSpaceBodyRegions::ShipSpaceBodyRegion(
-        newOriginatingRegion,
-        std::move(clippedStructuralLayerData),
-        std::move(clippedElectricalLayerData),
-        std::move(clippedRopesLayerData),
-        std::move(clippedExteriorTextureLayerData),
-        std::move(clippedExteriorTextureLayerData));
-}
-
-LayerSelector ModelController::IntersectLayerPresence(ShipLayers const & otherSource) const
-{
-    LayerSelector layers;
-
-    if (otherSource.StructuralLayer && mModel.HasLayer(LayerType::Structural))
-    {
-        layers.Add(LayerType::Structural);
-    }
-
-    if (otherSource.ElectricalLayer && mModel.HasLayer(LayerType::Electrical))
-    {
-        layers.Add(LayerType::Electrical);
-    }
-
-    if (otherSource.RopesLayer && mModel.HasLayer(LayerType::Ropes))
-    {
-        layers.Add(LayerType::Ropes);
-    }
-
-    if (otherSource.ExteriorTextureLayer && mModel.HasLayer(LayerType::ExteriorTexture))
-    {
-        layers.Add(LayerType::ExteriorTexture);
-    }
-
-    if (otherSource.InteriorTextureLayer && mModel.HasLayer(LayerType::InteriorTexture))
-    {
-        layers.Add(LayerType::InteriorTexture);
-    }
-
-    return layers;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Structural
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-void ModelController::RestoreStructuralLayerRegionBackup(
-    StructuralLayerData && sourceLayerRegionBackup,
-    ShipSpaceRect const & originatingRegion)
-{
-    InternalRestoreStructuralLayerRegionBackup(
-        std::move(sourceLayerRegionBackup),
-        originatingRegion);
-
-    InitializeStructuralLayerAnalysis();
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Electrical
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-void ModelController::RestoreElectricalLayerRegionBackup(
-    ElectricalLayerData && sourceLayerRegionBackup,
-    ShipSpaceRect const & originatingRegion)
-{
-    InternalRestoreElectricalLayerRegionBackup(
-        std::move(sourceLayerRegionBackup),
-        originatingRegion);
-
-    InitializeElectricalLayerAnalysis();
-
-    VerifyElectricalLayerInvariants();
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Ropes
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-void ModelController::RestoreRopesLayerBackup(
-    RopesLayerData && sourceLayerBackup,
-    ShipSpaceRect const & originatingRegion)
-{
-    InternalRestoreRopesLayerBackup(
-        std::move(sourceLayerBackup),
-        originatingRegion);
-
-    InitializeRopesLayerAnalysis();
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Exterior Texture
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Interior Texture
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Visualizations
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 void ModelController::SetGameVisualizationMode(GameVisualizationModeType mode)
 {
     if (mode == mGameVisualizationMode)
@@ -4095,6 +3917,10 @@ void ModelController::UpdateVisualizations(
     mDirtyInteriorTextureLayerVisualizationRegions.Reset();
 }
 
+//
+// Coords
+//
+
 ShipSpaceRect ModelController::ImageRectToContainingShipSpaceRect(
     ImageRect const & imageRect,
     vec2f const & shipToImageFactor) const
@@ -4155,6 +3981,185 @@ vec2f ModelController::GetTextureSpaceToTextureSpaceFactor(
     return vec2f(
         static_cast<float>(targetTextureSize.width) / static_cast<float>(sourceTextureSize.width),
         static_cast<float>(targetTextureSize.height) / static_cast<float>(sourceTextureSize.height));
+}
+
+//
+// Misc
+//
+
+ShipSpaceBodyRegions::ShipSpaceBodyRegion ModelController::MakeShipBodyRegionClip(
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion const & source,
+    ShipSpaceRect const & clipRegion)
+{
+    assert(clipRegion.IsContainedInRect(source.OriginatingRegion));
+    assert(clipRegion.IsContainedInRect(ShipSpaceRect(source.LayerRegions.Size)));
+
+    // Clip regions
+
+    std::unique_ptr<StructuralLayerData> clippedStructuralLayerData;
+    if (source.LayerRegions.StructuralLayer)
+    {
+        clippedStructuralLayerData = std::make_unique<StructuralLayerData>(source.LayerRegions.StructuralLayer->MakeRegionBackup(clipRegion));
+    }
+
+    std::unique_ptr<ElectricalLayerData> clippedElectricalLayerData;
+    if (source.LayerRegions.ElectricalLayer)
+    {
+        clippedElectricalLayerData = std::make_unique<ElectricalLayerData>(source.LayerRegions.ElectricalLayer->MakeRegionBackup(clipRegion)); // Panel is whole
+    }
+
+    std::unique_ptr<RopesLayerData> clippedRopesLayerData;
+    if (source.LayerRegions.RopesLayer)
+    {
+        clippedRopesLayerData = std::make_unique<RopesLayerData>(source.LayerRegions.RopesLayer->MakeBackup()); // Whole
+    }
+
+    std::unique_ptr<TextureLayerData> clippedExteriorTextureLayerData;
+    if (source.LayerRegions.ExteriorTextureLayer)
+    {
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(source.GetSize(), source.LayerRegions.ExteriorTextureLayer->Buffer.Size);
+        ImageRect const exteriorTextureClipRegion = ImageRect(
+            ImageCoordinates::FromFloatFloor(clipRegion.origin.ToFloat().scale(shipToTexture)),
+            ImageSize::FromFloatFloor(clipRegion.size.ToFloat<vec2f>().scale(shipToTexture)));
+
+        clippedExteriorTextureLayerData = std::make_unique<TextureLayerData>(source.LayerRegions.ExteriorTextureLayer->MakeRegionBackup(exteriorTextureClipRegion));
+    }
+
+    std::unique_ptr<TextureLayerData> clippedInteriorTextureLayerData;
+    if (source.LayerRegions.InteriorTextureLayer)
+    {
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(source.GetSize(), source.LayerRegions.InteriorTextureLayer->Buffer.Size);
+        ImageRect const interiorTextureClipRegion = ImageRect(
+            ImageCoordinates::FromFloatFloor(clipRegion.origin.ToFloat().scale(shipToTexture)),
+            ImageSize::FromFloatFloor(clipRegion.size.ToFloat<vec2f>().scale(shipToTexture)));
+
+        clippedInteriorTextureLayerData = std::make_unique<TextureLayerData>(source.LayerRegions.InteriorTextureLayer->MakeRegionBackup(interiorTextureClipRegion));
+    }
+
+    // Calculate new "absolute" originating region
+    ShipSpaceRect newOriginatingRegion = ShipSpaceRect(
+        ShipSpaceCoordinates(
+            source.OriginatingRegion.origin.x + clipRegion.origin.x,
+            source.OriginatingRegion.origin.y + clipRegion.origin.y),
+        clipRegion.size); // ClipRegion is smaller anyway
+
+    return ShipSpaceBodyRegions::ShipSpaceBodyRegion(
+        newOriginatingRegion,
+        std::move(clippedStructuralLayerData),
+        std::move(clippedElectricalLayerData),
+        std::move(clippedRopesLayerData),
+        std::move(clippedExteriorTextureLayerData),
+        std::move(clippedExteriorTextureLayerData));
+}
+
+ExteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion ModelController::MakeShipBodyRegionClip(
+    ExteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion const & source,
+    ImageRect const & clipRegion)
+{
+    assert(clipRegion.IsContainedInRect(source.OriginatingRegion));
+    assert(clipRegion.IsContainedInRect(ImageRect(source.GetSize())));
+
+    // Clip regions
+
+    std::unique_ptr<TextureLayerData> clippedExteriorTextureLayerData;
+    if (source.ExteriorTextureLayerRegion)
+    {
+        clippedExteriorTextureLayerData = std::make_unique<TextureLayerData>(source.ExteriorTextureLayerRegion->MakeRegionBackup(clipRegion));
+    }
+
+    std::unique_ptr<TextureLayerData> clippedInteriorTextureLayerData;
+    if (source.InteriorTextureLayerRegion)
+    {
+        vec2f const externalToInternal = GetTextureSpaceToTextureSpaceFactor(source.GetSize(), source.InteriorTextureLayerRegion->Buffer.Size);
+        ImageRect const interiorTextureClipRegion = ImageRect(
+            ImageCoordinates::FromFloatFloor(clipRegion.origin.ToFloat().scale(externalToInternal)),
+            ImageSize::FromFloatFloor(clipRegion.size.ToFloat<vec2f>().scale(externalToInternal)));
+
+        clippedInteriorTextureLayerData = std::make_unique<TextureLayerData>(source.InteriorTextureLayerRegion->MakeRegionBackup(interiorTextureClipRegion));
+    }
+
+    // Calculate new "absolute" originating region
+    ImageRect newOriginatingRegion = ImageRect(
+        ImageCoordinates(
+            source.OriginatingRegion.origin.x + clipRegion.origin.x,
+            source.OriginatingRegion.origin.y + clipRegion.origin.y),
+        clipRegion.size); // ClipRegion is smaller anyway
+
+    return ExteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion(
+        newOriginatingRegion,
+        std::move(clippedExteriorTextureLayerData),
+        std::move(clippedInteriorTextureLayerData));
+}
+
+InteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion ModelController::MakeShipBodyRegionClip(
+    InteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion const & source,
+    ImageRect const & clipRegion)
+{
+    assert(clipRegion.IsContainedInRect(source.OriginatingRegion));
+    assert(clipRegion.IsContainedInRect(ImageRect(source.GetSize())));
+
+    // Clip regions
+
+    std::unique_ptr<TextureLayerData> clippedExteriorTextureLayerData;
+    if (source.ExteriorTextureLayerRegion)
+    {
+        vec2f const internalToExternal = GetTextureSpaceToTextureSpaceFactor(source.GetSize(), source.ExteriorTextureLayerRegion->Buffer.Size);
+        ImageRect const exteriorTextureClipRegion = ImageRect(
+            ImageCoordinates::FromFloatFloor(clipRegion.origin.ToFloat().scale(internalToExternal)),
+            ImageSize::FromFloatFloor(clipRegion.size.ToFloat<vec2f>().scale(internalToExternal)));
+
+        clippedExteriorTextureLayerData = std::make_unique<TextureLayerData>(source.ExteriorTextureLayerRegion->MakeRegionBackup(exteriorTextureClipRegion));
+    }
+
+    std::unique_ptr<TextureLayerData> clippedInteriorTextureLayerData;
+    if (source.InteriorTextureLayerRegion)
+    {
+        clippedInteriorTextureLayerData = std::make_unique<TextureLayerData>(source.InteriorTextureLayerRegion->MakeRegionBackup(clipRegion));
+    }
+
+    // Calculate new "absolute" originating region
+    ImageRect newOriginatingRegion = ImageRect(
+        ImageCoordinates(
+            source.OriginatingRegion.origin.x + clipRegion.origin.x,
+            source.OriginatingRegion.origin.y + clipRegion.origin.y),
+        clipRegion.size); // ClipRegion is smaller anyway
+
+    return InteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion(
+        newOriginatingRegion,
+        std::move(clippedExteriorTextureLayerData),
+        std::move(clippedInteriorTextureLayerData));
+}
+
+LayerSelector ModelController::IntersectLayerPresence(ShipLayers const & otherSource) const
+{
+    LayerSelector layers;
+
+    if (otherSource.StructuralLayer && mModel.HasLayer(LayerType::Structural))
+    {
+        layers.Add(LayerType::Structural);
+    }
+
+    if (otherSource.ElectricalLayer && mModel.HasLayer(LayerType::Electrical))
+    {
+        layers.Add(LayerType::Electrical);
+    }
+
+    if (otherSource.RopesLayer && mModel.HasLayer(LayerType::Ropes))
+    {
+        layers.Add(LayerType::Ropes);
+    }
+
+    if (otherSource.ExteriorTextureLayer && mModel.HasLayer(LayerType::ExteriorTexture))
+    {
+        layers.Add(LayerType::ExteriorTexture);
+    }
+
+    if (otherSource.InteriorTextureLayer && mModel.HasLayer(LayerType::InteriorTexture))
+    {
+        layers.Add(LayerType::InteriorTexture);
+    }
+
+    return layers;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4847,6 +4852,10 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
 }
 
 // TODOHERE
+
+
+
+
 ShipSpaceBodyRegions::payload_type ModelController::MakeGenericShipSpaceUndoPayload(
     std::optional<ShipSpaceRect> const & region,
     LayerSelector const & layerSelection) const
