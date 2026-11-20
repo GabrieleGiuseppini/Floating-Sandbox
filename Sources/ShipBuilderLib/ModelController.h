@@ -875,48 +875,31 @@ private:
         ImageRect const & sourceRegion,
         ImageCoordinates const & targetOrigin);
 
-    // Undo
+    struct EphemeralVisualizationLayerState;
 
-    // TODOHERE
-
-    ShipSpaceBodyRegions::payload_type MakeShipSpaceBodyRegion(
-        std::optional<ShipSpaceRect> const & region,
-        LayerSelector const & layerSelection) const;
-
-    ExteriorTextureSpaceBodyRegions::payload_type MakeExteriorTextureSpaceBodyRegion(
-        std::optional<ImageRect> const & region,
-        LayerSelector const & layerSelection) const;
-
-    InteriorTextureSpaceBodyRegions::payload_type MakeInteriorTextureSpaceBodyRegion(
-        std::optional<ImageRect> const & region,
-        LayerSelector const & layerSelection) const;
-
-    // No post-restore analysis
-    void InternalRestoreStructuralLayerRegionBackup(
-        StructuralLayerData && sourceLayerRegionBackup,
-        ShipSpaceRect const & originatingRegion);
-
-    // No post-restore analysis/cleanup
-    void InternalRestoreElectricalLayerRegionBackup(
-        ElectricalLayerData && sourceLayerRegionBackup,
-        ShipSpaceRect const & originatingRegion);
-
-    // No post-restore analysis
-    void InternalRestoreRopesLayerBackup(
-        RopesLayerData && sourceLayerBackup,
-        ShipSpaceRect const & originatingRegion);
-
-    // No post-restore analysis
     void InternalRestoreExteriorTextureLayerBackup(
         TextureLayerData && sourceLayerBackup,
         ImageRect const & originatingRegion);
 
-    // No post-restore analysis
+    void InternalRestoreExteriorTextureLayerEphemeralVisualizationRegion(
+        typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & backupBuffer,
+        ImageRect const & backupBufferRegion,
+        ImageCoordinates const & targetOrigin,
+        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
+
     void InternalRestoreInteriorTextureLayerBackup(
         TextureLayerData && sourceLayerBackup,
         ImageRect const & originatingRegion);
 
+    void InternalRestoreInteriorTextureLayerEphemeralVisualizationRegion(
+        typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & backupBuffer,
+        ImageRect const & backupBufferRegion,
+        ImageCoordinates const & targetOrigin,
+        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
+
+    //
     // Eph Viz
+    //
 
     ShipSpaceEphemeralVisualizationRestoreRegions::payload_type MakeShipSpaceEphemeralVisualizationRestoreRegion(
         ShipSpaceRect const & region,
@@ -928,37 +911,9 @@ private:
         ImageRect const & region,
         LayerSelector const & layerSelection) const;
 
-    struct EphemeralVisualizationLayerState;
-
-    void InternalRestoreStructuralLayerEphemeralVisualizationRegion(
-        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
-        ShipSpaceRect const & backupBufferRegion,
-        ShipSpaceCoordinates const & targetOrigin,
-        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
-
-    void InternalRestoreElectricalLayerEphemeralVisualizationRegion(
-        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
-        ShipSpaceRect const & backupBufferRegion,
-        ShipSpaceCoordinates const & targetOrigin,
-        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
-
-    void InternalRestoreRopesLayerEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer,
-        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
-
-    void InternalRestoreExteriorTextureLayerEphemeralVisualizationRegion(
-        typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & backupBuffer,
-        ImageRect const & backupBufferRegion,
-        ImageCoordinates const & targetOrigin,
-        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
-
-    void InternalRestoreInteriorTextureLayerEphemeralVisualizationRegion(
-        typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & backupBuffer,
-        ImageRect const & backupBufferRegion,
-        ImageCoordinates const & targetOrigin,
-        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
-
+    //
     // Viz
+    //
 
     template<VisualizationType TVisualization, typename TRect>
     void RegisterDirtyVisualization(TRect const & region);
