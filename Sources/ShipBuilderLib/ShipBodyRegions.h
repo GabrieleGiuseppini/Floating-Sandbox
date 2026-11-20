@@ -137,11 +137,6 @@ public:
 		std::unique_ptr<TextureLayerData> ExteriorTextureLayerRegion;
 		std::unique_ptr<TextureLayerData> InteriorTextureLayerRegion;
 
-		//TextureSpaceBodyRegion(ImageRect const & originatingRegion)
-		//	: OriginatingRegion(originatingRegion)
-		//{
-		//}
-
 		TextureSpaceBodyRegion(
 			ImageRect const & originatingRegion,
 			std::unique_ptr<TextureLayerData> && exteriorTextureLayerRegion,

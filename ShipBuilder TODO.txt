@@ -1471,7 +1471,7 @@
 					+ Comments, naming
 				+ Rename to "EphemeralVisualizationRestorePayload" (-Generic) 
 					
-			= Backup/Restore chains rearc:
+			+ Backup/Restore chains rearc:
 
 				! Current chains:
 
@@ -1531,7 +1531,7 @@
 							- LayerXYZ::RestoreRegionBackup
 							- Update dirty viz
 
-				= New:
+				+ New:
 					! Gist:
 						! Tools's undo's guidelines (not necessarily all of them):
 							- Make Undo via (new) MC::MakeXYZSpaceBodyRegion(region, ...) -> SingleBodyRegion or via MC::<Operation> -> BodyRegions
@@ -1547,7 +1547,7 @@
 						- TODO: RestoreXXX method names: (*2)
 						- TODO: RestoreXXX arg names: (*2)
 
-					= Impl:
+					+ Impl:
 						+ Branch: shipbuilder_translate_tool__undo_rearc
 
 						+ Rename ephviz payload above
@@ -1671,10 +1671,8 @@
 							+ InternalPaste facts:
 								+ These methods have to calc affected area for marking dirty eph viz, plus operator for transparency
 
-						- Cleanup ShipBodyRegions.h, EphVizRegions.h, ShipLayers, Layers
-
-
-						= ModelController:
+						+ Cleanup ShipBodyRegions.h, EphVizRegions.h, ShipLayers, Layers
+						+ ModelController:
 							+ CopyRegion(region, layers)X3 (*1) - WAS: MakeGenericShipSpaceUndoPayload
 								+ Asserts not in eph viz for any layer
 								~ IntersectWithLayerPresence
@@ -1682,35 +1680,29 @@
 									+ Does whole elec panel, whole ropes buffer
 							+ RestoreXYZLayer(layer): stays as-is, where it is
 								+ Used by C::RestoreAllLayersForUndo, special
-							= Undo (code area) interface to Controller:
+							+ Undo (code area) interface to Controller:
 								+ RestoreForUndo (was: Restore)
 								- RestoreXYZLayer[Region]BackupForUndo (was: RestoreXYZLayer[Region]Backup)
-							= EphViz Undo (code area) interface to Tools
+							+ EphViz Undo (code area) interface to Tools
 								- RestoreEphemeralVisualization(X 3)
 								- RestoreXYZLayerRegionsEphemeralVisualization(layer_buffer "source", regions): LineTool, PencilTool, RopePencilTool, TextureEraserTool (was: RestoreXYZLayer[Region]EphemeralVisualization) (*4)
 									- buffer assumed to contain all regions; regions assumed to be relative to buffer
 
 
-							- private:
+							+ private:
 								- Restore payloads (code area) -- TODO: depending on what we decide for tools; eventually tools do via these, but made public
 									- MakeXYZSpaceUndoPayload (new: CloneXYZSpaceShipRegion)
 										- assert not in eph viz for any layer
 									- MakeXYZSpaceEphemeralVisualizationRestorePayload
-						- Controller:
-							- Undo (code area) interface to Tools:
+						+ Controller:
+							+ Undo (code area) interface to Tools:
 								+ RestoreAllForUndo(...various stuff...) (was: RestoreAllLayersForUndo)
 								+ RestoreForUndo(XYZShipBodyRegion &&)
 
-								- TODO: below: remove "Layer/Backup" from names? (*2)
-								- RestoreLayerRegionBackup<TLayer>(LayerData &&) -- TODO: if needed, if not all tools converted to one standard form
-								- RestoreXYZLayer[Region]Backup(LayerData &&) -- TODO: if needed, if not all tools converted to one standard form
-
-
-
-			- ClipboardManager:
+			+ ClipboardManager:
 				+ Takes ShipBodyRegions::Region
-				- MC::Copy, Cut: makes ShipBodyRegion for ClipboardManager, from (*1)
-				- MC::Paste, etc.: tales ShipBodyRegion from ClipboardManager
+				+ MC::Copy, Cut: makes ShipBodyRegion for ClipboardManager, from (*1)
+				+ MC::Paste, etc.: tales ShipBodyRegion from ClipboardManager
 
 			- RopesBuffer::BlitFromRegion
 				- Args:
