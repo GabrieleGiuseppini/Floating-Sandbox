@@ -36,8 +36,8 @@ public:
 		std::optional<typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type> ExteriorTextureLayerBufferRegion;
 		std::optional<typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type> InteriorTextureLayerBufferRegion;
 
-		ShipSpaceRestoreRegion(ShipSpaceRect const & originatingRegion)
-			: OriginatingRegion(originatingRegion)
+		ShipSpaceRestoreRegion() // Empty
+			: OriginatingRegion(ShipSpaceSize(0, 0))
 		{
 		}
 

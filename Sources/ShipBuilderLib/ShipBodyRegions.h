@@ -11,14 +11,19 @@
 
 #include <Core/GameTypes.h>
 
+#include <cassert>
+#include <memory>
 #include <numeric>
-#include <optional>
 #include <vector>
 
 namespace ShipBuilder {
 
 /*
  * Container of an extract of a region from the ship.
+ *
+ * Suitable for full restore:
+ * - Contains whole original ElectricalPanel
+ * - Contains whole RopesBuffer, for "hangin rope endpoint"
  */
 
 template<CoordinatesSpaceType TCoordinatesSpace>
@@ -32,75 +37,94 @@ public:
 
 		ShipSpaceRect OriginatingRegion; // Region in whatever the source of this is, from which we got this extract; size matches size of our regions (when they're not full)
 
-		std::optional<StructuralLayerData> StructuralLayerRegion;
-		std::optional<ElectricalLayerData> ElectricalLayerRegion; // Panel is whole
-		std::optional<RopesLayerData> RopesLayer; // Whole, for "hanging rope endpoints"
-		std::optional<TextureLayerData> ExteriorTextureLayerRegion;
-		std::optional<TextureLayerData> InteriorTextureLayerRegion;
+		ShipLayers LayerRegions; // ElectricalPanel is whole; RopeLayer is whole
 
 		// Futurework: if needed, one day may add other elements, e.g. metadata
 
-		ShipSpaceBodyRegion(ShipSpaceRect const & originatingRegion)
+		ShipSpaceBodyRegion() // Empty
+			: OriginatingRegion(ShipSpaceSize(0, 0))
+			, LayerRegions(ShipSpaceSize(0, 0))
+		{ }
+
+		ShipSpaceBodyRegion(
+			ShipSpaceRect const & originatingRegion,
+			ShipLayers && layerRegions)
 			: OriginatingRegion(originatingRegion)
+			, LayerRegions(std::move(layerRegions))
 		{
 		}
 
 		ShipSpaceBodyRegion(
 			ShipSpaceRect const & originatingRegion,
-			std::optional<StructuralLayerData> && structuralLayerRegion,
-			std::optional<ElectricalLayerData > && electricalLayerRegion,
-			std::optional<RopesLayerData> && ropesLayer,
-			std::optional<TextureLayerData> && exteriorTextureLayerRegion,
-			std::optional<TextureLayerData> && interiorTextureLayerRegion)
+			std::unique_ptr<StructuralLayerData> && structuralLayerRegion,
+			std::unique_ptr<ElectricalLayerData > && electricalLayerRegion,
+			std::unique_ptr<RopesLayerData> && ropesLayer,
+			std::unique_ptr<TextureLayerData> && exteriorTextureLayerRegion,
+			std::unique_ptr<TextureLayerData> && interiorTextureLayerRegion)
 			: OriginatingRegion(originatingRegion)
-			, StructuralLayerRegion(std::move(structuralLayerRegion))
-			, ElectricalLayerRegion(std::move(electricalLayerRegion))
-			, RopesLayer(std::move(ropesLayer))
-			, ExteriorTextureLayerRegion(std::move(exteriorTextureLayerRegion))
-			, InteriorTextureLayerRegion(std::move(interiorTextureLayerRegion))
+			, LayerRegions(
+				originatingRegion.size,
+				std::move(structuralLayerRegion),
+				std::move(electricalLayerRegion),
+				std::move(ropesLayer),
+				std::move(exteriorTextureLayerRegion),
+				std::move(interiorTextureLayerRegion))
 		{
+		}
+
+		ShipSpaceSize GetSize() const
+		{
+			assert(OriginatingRegion.size == LayerRegions.Size);
+			return OriginatingRegion.size;
 		}
 
 		size_t GetTotalCost() const
 		{
 			return
-				(StructuralLayerRegion ? StructuralLayerRegion->Buffer.GetByteSize() : 0)
-				+ (ElectricalLayerRegion ? ElectricalLayerRegion->Buffer.GetByteSize() : 0)
-				+ (RopesLayer ? RopesLayer->Buffer.GetByteSize() : 0)
-				+ (ExteriorTextureLayerRegion ? ExteriorTextureLayerRegion->Buffer.GetByteSize() : 0)
-				+ (InteriorTextureLayerRegion ? InteriorTextureLayerRegion->Buffer.GetByteSize() : 0);
+				(LayerRegions.StructuralLayer ? LayerRegions.StructuralLayer->Buffer.GetByteSize() : 0)
+				+ (LayerRegions.ElectricalLayer ? LayerRegions.ElectricalLayer->Buffer.GetByteSize() : 0)
+				+ (LayerRegions.RopesLayer ? LayerRegions.RopesLayer->Buffer.GetByteSize() : 0)
+				+ (LayerRegions.ExteriorTextureLayer ? LayerRegions.ExteriorTextureLayer->Buffer.GetByteSize() : 0)
+				+ (LayerRegions.InteriorTextureLayer ? LayerRegions.InteriorTextureLayer->Buffer.GetByteSize() : 0);
 		}
 
 		std::vector<LayerType> GetAffectedLayers() const
 		{
 			std::vector<LayerType> affectedLayers;
 
-			if (StructuralLayerRegion.has_value())
+			if (LayerRegions.StructuralLayer)
 			{
 				affectedLayers.emplace_back(LayerType::Structural);
 			}
 
-			if (ElectricalLayerRegion.has_value())
+			if (LayerRegions.ElectricalLayer)
 			{
 				affectedLayers.emplace_back(LayerType::Electrical);
 			}
 
-			if (RopesLayer.has_value())
+			if (LayerRegions.RopesLayer)
 			{
 				affectedLayers.emplace_back(LayerType::Ropes);
 			}
 
-			if (ExteriorTextureLayerRegion.has_value())
+			if (LayerRegions.ExteriorTextureLayer)
 			{
 				affectedLayers.emplace_back(LayerType::ExteriorTexture);
 			}
 
-			if (InteriorTextureLayerRegion.has_value())
+			if (LayerRegions.InteriorTextureLayer)
 			{
 				affectedLayers.emplace_back(LayerType::InteriorTexture);
 			}
 
 			return affectedLayers;
+		}
+
+		ShipSpaceBodyRegion Clone() const
+		{
+			return ShipSpaceBodyRegion(
+				OriginatingRegion,
+				LayerRegions.Clone());
 		}
 	};
 
@@ -110,22 +134,27 @@ public:
 
 		ImageRect OriginatingRegion; // Region in whatever the source of this is, from which we got this extract; size matches size of our regions (when they're not full)
 
-		std::optional<TextureLayerData> ExteriorTextureLayerRegion;
-		std::optional<TextureLayerData> InteriorTextureLayerRegion;
+		std::unique_ptr<TextureLayerData> ExteriorTextureLayerRegion;
+		std::unique_ptr<TextureLayerData> InteriorTextureLayerRegion;
 
-		TextureSpaceBodyRegion(ImageRect const & originatingRegion)
-			: OriginatingRegion(originatingRegion)
-		{
-		}
+		//TextureSpaceBodyRegion(ImageRect const & originatingRegion)
+		//	: OriginatingRegion(originatingRegion)
+		//{
+		//}
 
 		TextureSpaceBodyRegion(
 			ImageRect const & originatingRegion,
-			std::optional<TextureLayerData> && exteriorTextureLayerRegion,
-			std::optional<TextureLayerData> && interiorTextureLayerRegion)
+			std::unique_ptr<TextureLayerData> && exteriorTextureLayerRegion,
+			std::unique_ptr<TextureLayerData> && interiorTextureLayerRegion)
 			: OriginatingRegion(originatingRegion)
 			, ExteriorTextureLayerRegion(std::move(exteriorTextureLayerRegion))
 			, InteriorTextureLayerRegion(std::move(interiorTextureLayerRegion))
 		{
+		}
+
+		ImageSize GetSize() const
+		{
+			return OriginatingRegion.size;
 		}
 
 		size_t GetTotalCost() const

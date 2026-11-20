@@ -215,10 +215,10 @@ struct RopesLayerData
         return RopesLayerData(Buffer.Clone());
     }
 
-    RopesLayerData CloneRegion(ShipSpaceRect const & region) const
-    {
-        return RopesLayerData(Buffer.CloneRegion(region));
-    }
+    //RopesLayerData CloneRegion(ShipSpaceRect const & region) const
+    //{
+    //    return RopesLayerData(Buffer.CloneRegion(region));
+    //}
 
     RopesLayerData MakeBackup() const
     {
@@ -329,6 +329,10 @@ struct ShipLayers
     std::unique_ptr<RopesLayerData> RopesLayer;
     std::unique_ptr<TextureLayerData> ExteriorTextureLayer;
     std::unique_ptr<TextureLayerData> InteriorTextureLayer;
+
+    ShipLayers(ShipSpaceSize const & size)
+        : Size(size)
+    { }
 
     ShipLayers(
         ShipSpaceSize const & size,
