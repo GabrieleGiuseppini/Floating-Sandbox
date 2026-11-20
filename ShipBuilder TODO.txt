@@ -1644,13 +1644,14 @@
 								+ RestoreAllForUndo: used by Resize
 						+ Controller.cpp
 							+ Reordering for new .h ordering and fixing arguments
-						- See if there are obsolete Controller private's
+						X See if there are obsolete Controller private's
 						- ModelController.h
 							- Remove obsolete public's
+								- CloneExistingLayer? Search on GitHub
 						- ModelController.cpp
 							- Remove obsolete private's
 
-						- Cleanup ShipSpaceRegion, EphVizRegions
+						- Cleanup EphVizRegions
 
 
 						= ModelController:

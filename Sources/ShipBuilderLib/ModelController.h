@@ -5,14 +5,14 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GenericEphemeralVisualizationRestorePayload.h"
-#include "GenericUndoPayload.h"
+#include "CombinedRegions.h"
+#include "EphemeralVisualizationRestoreRegions.h"
 #include "IModelObservable.h"
 #include "InstancedElectricalElementSet.h"
 #include "LayerSelector.h"
 #include "Model.h"
 #include "ModelValidationSession.h"
-#include "CombinedRegions.h"
+#include "ShipBodyRegions.h"
 #include "ShipBuilderTypes.h"
 #include "View.h"
 
@@ -41,6 +41,9 @@ namespace ShipBuilder {
  * This class implements operations on the model.
  *
  * The ModelController does not maintain the model's dirtyness; that is managed by the Controller.
+ *
+ * Some rules:
+ *  - Operations return ShipBodyRegions/ShipEphVizRestoreRegions
  */
 class ModelController : public IModelObservable
 {
@@ -224,65 +227,100 @@ public:
         return mModel.CloneExistingLayer<TLayer>();
     }
 
-    ShipLayers Copy(
+    //
+    // Copy
+    //
+    // - Copiers: return copied region; whole electrical panel, whole ropes layer
+    //
+
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion CopyShipSpaceWhole(LayerSelector const & layerSelection) const
+    {
+        return CopyShipSpaceRegion(GetWholeShipRect(), layerSelection);
+    }
+
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion CopyShipSpaceRegion(
         ShipSpaceRect const & region,
         LayerSelector const & layerSelection) const;
 
-    GenericShipSpaceUndoPayload EraseRegion(
+    ExteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion CopyExteriorTextureSpaceWhole(LayerSelector const & layerSelection) const
+    {
+        return CopyExteriorTextureSpaceRegion(GetWholeExteriorTextureRect(), layerSelection);
+    }
+
+    ExteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion CopyExteriorTextureSpaceRegion(
+        ImageRect const & region,
+        LayerSelector const & layerSelection) const;
+
+    InteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion CopyInteriorTextureSpaceWhole(LayerSelector const & layerSelection) const
+    {
+        return CopyInteriorTextureSpaceRegion(GetWholeInteriorTextureRect(), layerSelection);
+    }
+
+    InteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion CopyInteriorTextureSpaceRegion(
+        ImageRect const & region,
+        LayerSelector const & layerSelection) const;
+
+    //
+    // Cut / Paste
+    //
+
+    // Returns erased region, e.g. for Cut()
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion EraseRegion(
         ShipSpaceRect const & region,
         LayerSelector const & layerSelection);
 
-    GenericShipSpaceUndoPayload Paste(
-        ShipLayers const & sourcePayload,
+    // Returns Undo
+    ShipSpaceBodyRegions Paste(
+        ShipSpaceBodyRegions::ShipSpaceBodyRegion const & sourceRegion,
         ShipSpaceCoordinates const & pasteOrigin,
         bool isTransparent);
 
-    GenericShipSpaceEphemeralVisualizationRestorePayload PasteForEphemeralVisualization(
-        ShipLayers const & sourcePayload,
+    // Resturns Restore
+    ShipSpaceEphemeralVisualizationRestoreRegions PasteForEphemeralVisualization(
+        ShipSpaceBodyRegions::ShipSpaceBodyRegion const & sourceRegion,
         ShipSpaceCoordinates const & pasteOrigin,
         bool isTransparent);
 
-    GenericShipSpaceUndoPayload ShipSpaceRegionTransfer(
-        ShipSpaceRect const & sourceRegion, // In current model
-        ShipSpaceCoordinates const & destinationPos,
-        LayerSelector const & layerSelection,
-        bool isTransparent);
-    GenericExteriorTextureSpaceUndoPayload ExteriorTextureSpaceRegionTransfer(
-        ImageRect const & sourceRegion, // In current model
-        ImageCoordinates const & destinationPos,
-        LayerSelector const & layerSelection,
-        bool isTransparent);
-    GenericInteriorTextureSpaceUndoPayload InteriorTextureSpaceRegionTransfer(
-        ImageRect const & sourceRegion, // In current model
-        ImageCoordinates const & destinationPos,
-        LayerSelector const & layerSelection,
-        bool isTransparent);
+    //
+    // Undo
+    //
+    // - Interface to Controller
+    //
 
-    GenericShipSpaceEphemeralVisualizationRestorePayload ShipSpaceRegionTransferForEphemeralVisualization(
-        ShipSpaceRect const & sourceRegion, // In current model
-        ShipSpaceCoordinates const & destinationPos,
-        LayerSelector const & layerSelection,
-        bool isTransparent);
-    GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ExteriorTextureSpaceRegionTransferForEphemeralVisualization(
-        ImageRect const & sourceRegion, // In current model
-        ImageCoordinates const & destinationPos,
-        LayerSelector const & layerSelection,
-        bool isTransparent);
-    GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload InteriorTextureSpaceRegionTransferForEphemeralVisualization(
-        ImageRect const & sourceRegion, // In current model
-        ImageCoordinates const & destinationPos,
-        LayerSelector const & layerSelection,
-        bool isTransparent);
+    void RestoreForUndo(ShipSpaceBodyRegions && undoRegions);
+    void RestoreForUndo(ExteriorTextureSpaceBodyRegions && undoRegions);
+    void RestoreForUndo(InteriorTextureSpaceBodyRegions && undoRegions);
 
-    void Restore(GenericShipSpaceUndoPayload && undoPayload);
-    void Restore(GenericExteriorTextureSpaceUndoPayload && undoPayload);
-    void Restore(GenericInteriorTextureSpaceUndoPayload && undoPayload);
+    //
+    // Eph viz
+    //
+    // - Interface to Tools
+    //
 
-    void RestoreEphemeralVisualization(GenericShipSpaceEphemeralVisualizationRestorePayload && restorePayload);
-    void RestoreEphemeralVisualization(GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload && restorePayload);
-    void RestoreEphemeralVisualization(GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload && restorePayload);
+    void RestoreEphemeralVisualization(ShipSpaceEphemeralVisualizationRestoreRegions && restoreRegions);
+    void RestoreEphemeralVisualization(ExteriorTextureSpaceEphemeralVisualizationRestoreRegions && restoreRegions);
+    void RestoreEphemeralVisualization(InteriorTextureSpaceEphemeralVisualizationRestoreRegions && restoreRegions);
 
-    LayerSelector IntersectLayerPresence(ShipLayers const & otherSource) const;
+    // For tools with peculiar needs
+
+    void RestoreStructuralLayerRegionsEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
+        CombinedShipSpaceRegions const & regions);
+
+    void RestoreElectricalLayerRegionsEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
+        CombinedShipSpaceRegions const & regions);
+
+    void RestoreRopesLayerEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer);
+
+    void RestoreExteriorTextureLayerRegionsEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & backupBuffer,
+        CombinedTextureSpaceRegions const & regions);
+
+    void RestoreInteriorTextureLayerRegionsEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & backupBuffer,
+        CombinedTextureSpaceRegions const & regions);
 
     //
     // Structural
@@ -302,47 +340,34 @@ public:
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
 
-    GenericShipSpaceUndoPayload StructuralRectangle(
+    void StructuralRegionFillForEphemeralVisualization(
+        ShipSpaceRect const & region,
+        StructuralMaterial const * material);
+
+    ShipSpaceBodyRegions StructuralRectangle(
         ShipSpaceRect const & rect,
         std::uint32_t lineSize,
         StructuralMaterial const * lineMaterial,
         std::optional<StructuralMaterial const *> fillMaterial);
 
-    GenericShipSpaceUndoPayload StructureTrace(
+    ShipSpaceEphemeralVisualizationRestoreRegions StructuralRectangleForEphemeralVisualization(
+        ShipSpaceRect const & rect,
+        std::uint32_t lineSize,
+        StructuralMaterial const * lineMaterial,
+        std::optional<StructuralMaterial const *> fillMaterial);
+
+    ShipSpaceBodyRegions StructureTrace(
         ImageRect const & textureRect,
         StructuralMaterial const * edgeMaterial,
         StructuralMaterial const * fillMaterial,
         std::uint8_t alphaThreshold);
 
-    std::optional<ShipSpaceRect> StructuralFlood(
+    std::optional<ShipSpaceBodyRegions> StructuralFlood(
         ShipSpaceCoordinates const & start,
         StructuralMaterial const * material,
         bool doContiguousOnly);
 
-    void RestoreStructuralLayerRegionBackup(
-        StructuralLayerData && sourceLayerRegionBackup,
-        ShipSpaceCoordinates const & targetOrigin);
-
-    void RestoreStructuralLayer(std::unique_ptr<StructuralLayerData> sourceLayer);
-
-    void StructuralRegionFillForEphemeralVisualization(
-        ShipSpaceRect const & region,
-        StructuralMaterial const * material);
-
-    GenericShipSpaceEphemeralVisualizationRestorePayload StructuralRectangleForEphemeralVisualization(
-        ShipSpaceRect const & rect,
-        std::uint32_t lineSize,
-        StructuralMaterial const * lineMaterial,
-        std::optional<StructuralMaterial const *> fillMaterial);
-
-    void RestoreStructuralLayerRegionEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
-        ShipSpaceRect const & backupBufferRegion,
-        ShipSpaceCoordinates const & targetOrigin);
-
-    void RestoreStructuralLayerRegionEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
-        CombinedShipSpaceRegions const & regions);
+    void RestoreStructuralLayerComplete(std::unique_ptr<StructuralLayerData> sourceLayer);
 
     //
     // Electrical
@@ -368,24 +393,11 @@ public:
         ShipSpaceRect const & region,
         ElectricalMaterial const * material);
 
-    void RestoreElectricalLayerRegionBackup(
-        ElectricalLayerData && sourceLayerRegionBackup,
-        ShipSpaceCoordinates const & targetOrigin);
-
-    void RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData> sourceLayer);
-
     void ElectricalRegionFillForEphemeralVisualization(
         ShipSpaceRect const & region,
         ElectricalMaterial const * material);
 
-    void RestoreElectricalLayerRegionEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
-        ShipSpaceRect const & backupBufferRegion,
-        ShipSpaceCoordinates const & targetOrigin);
-
-    void RestoreElectricalLayerRegionEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
-        CombinedShipSpaceRegions const & regions);
+    void RestoreElectricalLayerComplete(std::unique_ptr<ElectricalLayerData> sourceLayer);
 
     //
     // Ropes
@@ -408,7 +420,17 @@ public:
         ShipSpaceCoordinates const & endCoords,
         StructuralMaterial const * material);
 
+    void AddRopeForEphemeralVisualization(
+        ShipSpaceCoordinates const & startCoords,
+        ShipSpaceCoordinates const & endCoords,
+        StructuralMaterial const * material);
+
     void MoveRopeEndpoint(
+        size_t ropeElementIndex,
+        ShipSpaceCoordinates const & oldCoords,
+        ShipSpaceCoordinates const & newCoords);
+
+    void MoveRopeEndpointForEphemeralVisualization(
         size_t ropeElementIndex,
         ShipSpaceCoordinates const & oldCoords,
         ShipSpaceCoordinates const & newCoords);
@@ -417,24 +439,7 @@ public:
 
     void EraseRopesRegion(ShipSpaceRect const & region);
 
-    void RestoreRopesLayerRegionBackup(
-        RopesLayerData && sourceLayerRegionBackup,
-        ShipSpaceCoordinates const & targetOrigin);
-
-    void RestoreRopesLayer(std::unique_ptr<RopesLayerData> sourceLayer);
-
-    void AddRopeForEphemeralVisualization(
-        ShipSpaceCoordinates const & startCoords,
-        ShipSpaceCoordinates const & endCoords,
-        StructuralMaterial const * material);
-
-    void MoveRopeEndpointForEphemeralVisualization(
-        size_t ropeElementIndex,
-        ShipSpaceCoordinates const & oldCoords,
-        ShipSpaceCoordinates const & newCoords);
-
-    void RestoreRopesLayerEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer);
+    void RestoreRopesLayerComplete(std::unique_ptr<RopesLayerData> sourceLayer);
 
     //
     // Exterior Texture
@@ -448,6 +453,131 @@ public:
 
         return mModel.GetExteriorTextureLayer().Buffer.Size;
     }
+
+    void SetExteriorTextureLayer(
+        TextureLayerData && exteriorTextureLayer,
+        std::optional<std::string> originalTextureArtCredits);
+    void RemoveExteriorTextureLayer();
+
+    std::unique_ptr<TextureLayerData> CloneExteriorTextureLayer() const;
+
+    void EraseExteriorTextureRegion(ImageRect const & region);
+
+    void EraseExteriorTextureRegionForEphemeralVisualization(ImageRect const & region);
+
+    std::optional<ExteriorTextureSpaceBodyRegions> ExteriorTextureMagicWandEraseBackground(
+        ImageCoordinates const & start,
+        unsigned int tolerance,
+        bool isAntiAlias,
+        bool doContiguousOnly);
+
+    void RestoreExteriorTextureLayerComplete(
+        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
+        std::optional<std::string> originalTextureArtCredits);
+
+    void MakeExteriorLayerFromImage(
+        TextureLayerData const & source,
+        ImageRect const & sourceRegion,
+        ImageCoordinates const & targetOrigin);
+
+    //
+    // Interior Texture
+    //
+
+    TextureLayerData const & GetInteriorTextureLayer() const;
+
+    ImageSize const & GetInteriorTextureSize() const
+    {
+        assert(mModel.HasLayer(LayerType::InteriorTexture));
+
+        return mModel.GetInteriorTextureLayer().Buffer.Size;
+    }
+
+    void SetInteriorTextureLayer(TextureLayerData && interiorTextureLayer);
+    void RemoveInteriorTextureLayer();
+
+    std::unique_ptr<TextureLayerData> CloneInteriorTextureLayer() const;
+
+    void EraseInteriorTextureRegion(ImageRect const & region);
+
+    void EraseInteriorTextureRegionForEphemeralVisualization(ImageRect const & region);
+
+    std::optional<InteriorTextureSpaceBodyRegions> InteriorTextureMagicWandEraseBackground(
+        ImageCoordinates const & start,
+        unsigned int tolerance,
+        bool isAntiAlias,
+        bool doContiguousOnly);
+
+    void RestoreInteriorTextureLayerComplete(std::unique_ptr<TextureLayerData> interiorTextureLayer);
+
+    void MakeInteriorLayerFromImage(
+        TextureLayerData const & source,
+        ImageRect const & sourceRegion,
+        ImageCoordinates const & targetOrigin);
+
+    //
+    // Multi
+    //
+
+    ShipSpaceBodyRegions ShipSpaceRegionTransfer(
+        ShipSpaceRect const & sourceRegion, // In current model
+        ShipSpaceCoordinates const & destinationPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent);
+    ExteriorTextureSpaceBodyRegions ExteriorTextureSpaceRegionTransfer(
+        ImageRect const & sourceRegion, // In current model
+        ImageCoordinates const & destinationPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent);
+    InteriorTextureSpaceBodyRegions InteriorTextureSpaceRegionTransfer(
+        ImageRect const & sourceRegion, // In current model
+        ImageCoordinates const & destinationPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent);
+
+    ShipSpaceEphemeralVisualizationRestoreRegions ShipSpaceRegionTransferForEphemeralVisualization(
+        ShipSpaceRect const & sourceRegion, // In current model
+        ShipSpaceCoordinates const & destinationPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent);
+    ExteriorTextureSpaceEphemeralVisualizationRestoreRegions ExteriorTextureSpaceRegionTransferForEphemeralVisualization(
+        ImageRect const & sourceRegion, // In current model
+        ImageCoordinates const & destinationPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent);
+    InteriorTextureSpaceEphemeralVisualizationRestoreRegions InteriorTextureSpaceRegionTransferForEphemeralVisualization(
+        ImageRect const & sourceRegion, // In current model
+        ImageCoordinates const & destinationPos,
+        LayerSelector const & layerSelection,
+        bool isTransparent);
+
+    template<LayerType TLayerType>
+    std::optional<ShipSpaceRect> ReplaceCustomMaterials(std::map<typename LayerTypeTraits<TLayerType>::material_type const *, typename LayerTypeTraits<TLayerType>::material_type const *> const & replacementMap);
+
+    //
+    // Visualizations
+    //
+
+    void SetGameVisualizationMode(GameVisualizationModeType mode);
+    void ForceWholeGameVisualizationRefresh();
+
+    void SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode);
+
+    void SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode);
+
+    void SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode);
+
+    void SetExteriorTextureLayerVisualizationMode(ExteriorTextureLayerVisualizationModeType mode);
+
+    void SetInteriorTextureLayerVisualizationMode(InteriorTextureLayerVisualizationModeType mode);
+
+    void UpdateVisualizations(
+        View & view,
+        GameAssetManager const & gameAssetManager);
+
+    //
+    // Coords
+    //
 
     ImageCoordinates ShipSpaceToExteriorTextureSpace(ShipSpaceCoordinates const & shipCoordinates) const
     {
@@ -495,54 +625,6 @@ public:
             GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetExteriorTextureSize()));
     }
 
-    void SetExteriorTextureLayer(
-        TextureLayerData && exteriorTextureLayer,
-        std::optional<std::string> originalTextureArtCredits);
-    void RemoveExteriorTextureLayer();
-
-    std::unique_ptr<TextureLayerData> CloneExteriorTextureLayer() const;
-
-    void EraseExteriorTextureRegion(ImageRect const & region);
-
-    std::optional<ImageRect> ExteriorTextureMagicWandEraseBackground(
-        ImageCoordinates const & start,
-        unsigned int tolerance,
-        bool isAntiAlias,
-        bool doContiguousOnly);
-
-    void RestoreExteriorTextureLayerRegionBackup(
-        TextureLayerData && sourceLayerRegionBackup,
-        ImageCoordinates const & targetOrigin);
-
-    void RestoreExteriorTextureLayer(
-        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
-        std::optional<std::string> originalTextureArtCredits);
-
-    void ExteriorTextureRegionEraseForEphemeralVisualization(ImageRect const & region);
-
-    void MakeExteriorLayerFromImage(
-        TextureLayerData const & source,
-        ImageRect const & sourceRegion,
-        ImageCoordinates const & targetOrigin);
-
-    void RestoreExteriorTextureLayerRegionEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & backupBuffer,
-        ImageRect const & backupBufferRegion,
-        ImageCoordinates const & targetOrigin);
-
-    //
-    // Interior Texture
-    //
-
-    TextureLayerData const & GetInteriorTextureLayer() const;
-
-    ImageSize const & GetInteriorTextureSize() const
-    {
-        assert(mModel.HasLayer(LayerType::InteriorTexture));
-
-        return mModel.GetInteriorTextureLayer().Buffer.Size;
-    }
-
     ImageCoordinates ShipSpaceToInteriorTextureSpace(ShipSpaceCoordinates const & shipCoordinates) const
     {
         vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetInteriorTextureSize());
@@ -582,69 +664,6 @@ public:
             GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetInteriorTextureSize()));
     }
 
-    void SetInteriorTextureLayer(TextureLayerData && interiorTextureLayer);
-    void RemoveInteriorTextureLayer();
-
-    std::unique_ptr<TextureLayerData> CloneInteriorTextureLayer() const;
-
-    void EraseInteriorTextureRegion(ImageRect const & region);
-
-    std::optional<ImageRect> InteriorTextureMagicWandEraseBackground(
-        ImageCoordinates const & start,
-        unsigned int tolerance,
-        bool isAntiAlias,
-        bool doContiguousOnly);
-
-    void RestoreInteriorTextureLayerRegionBackup(
-        TextureLayerData && sourceLayerRegionBackup,
-        ImageCoordinates const & targetOrigin);
-
-    void RestoreInteriorTextureLayer(std::unique_ptr<TextureLayerData> interiorTextureLayer);
-
-    void InteriorTextureRegionEraseForEphemeralVisualization(ImageRect const & region);
-
-    void MakeInteriorLayerFromImage(
-        TextureLayerData const & source,
-        ImageRect const & sourceRegion,
-        ImageCoordinates const & targetOrigin);
-
-    void RestoreInteriorTextureLayerRegionEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & backupBuffer,
-        ImageRect const & backupBufferRegion,
-        ImageCoordinates const & targetOrigin);
-
-    //
-    // Templated
-    //
-
-    template<LayerType TLayerType>
-    std::optional<ShipSpaceRect> ReplaceCustomMaterials(std::map<typename LayerTypeTraits<TLayerType>::material_type const *, typename LayerTypeTraits<TLayerType>::material_type const *> const & replacementMap);
-
-    //
-    // Visualizations
-    //
-
-    void SetGameVisualizationMode(GameVisualizationModeType mode);
-    void ForceWholeGameVisualizationRefresh();
-
-    void SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode);
-
-    void SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode);
-
-    void SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode);
-
-    void SetExteriorTextureLayerVisualizationMode(ExteriorTextureLayerVisualizationModeType mode);
-
-    void SetInteriorTextureLayerVisualizationMode(InteriorTextureLayerVisualizationModeType mode);
-
-    void UpdateVisualizations(
-        View & view,
-        GameAssetManager const & gameAssetManager);
-
-    //
-    // Coords
-    //
-
     ShipSpaceRect ImageRectToContainingShipSpaceRect(
         ImageRect const & imageRect,
         vec2f const & shipToImageFactor) const;
@@ -660,6 +679,33 @@ public:
     static vec2f GetTextureSpaceToTextureSpaceFactor(
         ImageSize const & sourceTextureSize,
         ImageSize const & targetTextureSize);
+
+    //
+    // Misc
+    //
+
+    /*
+     * Creates a smaller version of a region within the specified clip region, assumed to be relative
+     * to the source's OriginatingRegion (i.e. (0,0) is the source's OriginatingRegion.origin), and fully contained in it.
+     *
+     * ElectricalPanel is still whole, RopesBuffer is still whole.
+     *
+     * Adjusts OriginatingRegion accordingly, so that it is still relative to the original "whatever" source.
+     */
+
+    static ShipSpaceBodyRegions::ShipSpaceBodyRegion MakeShipBodyRegionClip(
+        ShipSpaceBodyRegions::ShipSpaceBodyRegion const & source,
+        ShipSpaceRect const & clipRegion);
+
+    static ExteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion MakeShipBodyRegionClip(
+        ExteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion const & source,
+        ImageRect const & clipRegion);
+
+    static InteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion MakeShipBodyRegionClip(
+        InteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion const & source,
+        ImageRect const & clipRegion);
+
+    LayerSelector IntersectLayerPresence(ShipLayers const & otherSource) const;
 
 private:
 
@@ -740,73 +786,6 @@ private:
         bool doContiguousOnly,
         TextureLayerData & layer);
 
-    GenericShipSpaceUndoPayload::payload_type MakeGenericShipSpaceUndoPayload(
-        std::optional<ShipSpaceRect> const & region,
-        LayerSelector const & layerSelection) const;
-
-    GenericExteriorTextureSpaceUndoPayload::payload_type MakeGenericExteriorTextureSpaceUndoPayload(
-        std::optional<ImageRect> const & region,
-        LayerSelector const & layerSelection) const;
-
-    GenericInteriorTextureSpaceUndoPayload::payload_type MakeGenericInteriorTextureSpaceUndoPayload(
-        std::optional<ImageRect> const & region,
-        LayerSelector const & layerSelection) const;
-
-    // No post-restore analysis
-    void InternalRestoreStructuralLayerRegionBackup(
-        StructuralLayerData && sourceLayerRegionBackup,
-        ShipSpaceCoordinates const & targetOrigin);
-
-    // No post-restore analysis/cleanup
-    void InternalRestoreElectricalLayerRegionBackup(
-        ElectricalLayerData && sourceLayerRegionBackup,
-        ShipSpaceCoordinates const & targetOrigin);
-
-    // No post-restore analysis/cleanup
-    void InternalRestoreRopesLayerRegionBackup(
-        RopesLayerData && sourceLayerRegionBackup,
-        ShipSpaceCoordinates const & targetOrigin);
-
-    GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type MakeGenericShipSpaceEphemeralVisualizationRestorePayload(
-        ShipSpaceRect const & region,
-        LayerSelector const & layerSelection) const;
-    GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type MakeGenericExteriorTextureSpaceEphemeralVisualizationRestorePayload(
-        ImageRect const & region,
-        LayerSelector const & layerSelection) const;
-    GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type MakeGenericInteriorTextureSpaceEphemeralVisualizationRestorePayload(
-        ImageRect const & region,
-        LayerSelector const & layerSelection) const;
-
-    struct EphemeralVisualizationLayerState;
-
-    void InternalRestoreStructuralLayerRegionEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
-        ShipSpaceRect const & backupBufferRegion,
-        ShipSpaceCoordinates const & targetOrigin,
-        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
-
-    void InternalRestoreElectricalLayerRegionEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
-        ShipSpaceRect const & backupBufferRegion,
-        ShipSpaceCoordinates const & targetOrigin,
-        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
-
-    void InternalRestoreRopesLayerEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer,
-        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
-
-    void InternalRestoreExteriorTextureLayerRegionEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & backupBuffer,
-        ImageRect const & backupBufferRegion,
-        ImageCoordinates const & targetOrigin,
-        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
-
-    void InternalRestoreInteriorTextureLayerRegionEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & backupBuffer,
-        ImageRect const & backupBufferRegion,
-        ImageCoordinates const & targetOrigin,
-        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
-
     // Raw
     void DoStructuralRegionFill(
         ShipSpaceRect const & region,
@@ -885,6 +864,77 @@ private:
         TextureLayerData const & source,
         ImageRect const & sourceRegion,
         ImageCoordinates const & targetOrigin);
+
+    // Undo
+
+    ShipSpaceBodyRegions::payload_type MakeShipSpaceBodyRegion(
+        std::optional<ShipSpaceRect> const & region,
+        LayerSelector const & layerSelection) const;
+
+    ExteriorTextureSpaceBodyRegions::payload_type MakeExteriorTextureSpaceBodyRegion(
+        std::optional<ImageRect> const & region,
+        LayerSelector const & layerSelection) const;
+
+    InteriorTextureSpaceBodyRegions::payload_type MakeInteriorTextureSpaceBodyRegion(
+        std::optional<ImageRect> const & region,
+        LayerSelector const & layerSelection) const;
+
+    // No post-restore analysis
+    void InternalRestoreStructuralLayerRegionBackup(
+        StructuralLayerData && sourceLayerRegionBackup,
+        ShipSpaceRect const & originatingRegion);
+
+    // No post-restore analysis/cleanup
+    void InternalRestoreElectricalLayerRegionBackup(
+        ElectricalLayerData && sourceLayerRegionBackup,
+        ShipSpaceRect const & originatingRegion);
+
+    // No post-restore analysis/cleanup
+    void InternalRestoreRopesLayerBackup(
+        RopesLayerData && sourceLayerBackup,
+        ShipSpaceRect const & originatingRegion);
+
+    // Eph Viz
+
+    ShipSpaceEphemeralVisualizationRestoreRegions::payload_type MakeShipSpaceEphemeralVisualizationRestoreRegion(
+        ShipSpaceRect const & region,
+        LayerSelector const & layerSelection) const;
+    ExteriorTextureSpaceEphemeralVisualizationRestoreRegions::payload_type MakeExteriorTextureSpaceEphemeralVisualizationRestoreRegion(
+        ImageRect const & region,
+        LayerSelector const & layerSelection) const;
+    InteriorTextureSpaceEphemeralVisualizationRestoreRegions::payload_type MakeInteriorTextureSpaceEphemeralVisualizationRestoreRegion(
+        ImageRect const & region,
+        LayerSelector const & layerSelection) const;
+
+    struct EphemeralVisualizationLayerState;
+
+    void InternalRestoreStructuralLayerEphemeralVisualizationRegion(
+        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
+        ShipSpaceRect const & backupBufferRegion,
+        ShipSpaceCoordinates const & targetOrigin,
+        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
+
+    void InternalRestoreElectricalLayerEphemeralVisualizationRegion(
+        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
+        ShipSpaceRect const & backupBufferRegion,
+        ShipSpaceCoordinates const & targetOrigin,
+        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
+
+    void InternalRestoreRopesLayerEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer,
+        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
+
+    void InternalRestoreExteriorTextureLayerEphemeralVisualizationRegion(
+        typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & backupBuffer,
+        ImageRect const & backupBufferRegion,
+        ImageCoordinates const & targetOrigin,
+        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
+
+    void InternalRestoreInteriorTextureLayerEphemeralVisualizationRegion(
+        typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & backupBuffer,
+        ImageRect const & backupBufferRegion,
+        ImageCoordinates const & targetOrigin,
+        EphemeralVisualizationLayerState & finalEphemeralVisualizationLayerState);
 
     // Viz
 
