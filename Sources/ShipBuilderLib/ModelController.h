@@ -230,7 +230,7 @@ public:
     //
     // Copy
     //
-    // - Copiers: return copied region; whole electrical panel, whole ropes layer
+    // - Copiers: return copied region, suitable for Undo; whole electrical panel, whole ropes layer
     //
 
     ShipSpaceBodyRegions::ShipSpaceBodyRegion CopyShipSpaceWhole(LayerSelector const & layerSelection) const
@@ -270,15 +270,17 @@ public:
         LayerSelector const & layerSelection);
 
     // Returns Undo
-    ShipSpaceBodyRegions Paste(
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion Paste(
         ShipSpaceBodyRegions::ShipSpaceBodyRegion const & sourceRegion,
         ShipSpaceCoordinates const & pasteOrigin,
+        LayerSelector const & layerSelection,
         bool isTransparent);
 
     // Resturns Restore
     ShipSpaceEphemeralVisualizationRestoreRegions PasteForEphemeralVisualization(
         ShipSpaceBodyRegions::ShipSpaceBodyRegion const & sourceRegion,
         ShipSpaceCoordinates const & pasteOrigin,
+        LayerSelector const & layerSelection,
         bool isTransparent);
 
     //
@@ -294,31 +296,35 @@ public:
     //
     // Eph viz
     //
-    // - Interface to Tools
+
+    //
+    // Interface to Tools that receive restore payloads from ops
     //
 
     void RestoreEphemeralVisualization(ShipSpaceEphemeralVisualizationRestoreRegions && restoreRegions);
     void RestoreEphemeralVisualization(ExteriorTextureSpaceEphemeralVisualizationRestoreRegions && restoreRegions);
     void RestoreEphemeralVisualization(InteriorTextureSpaceEphemeralVisualizationRestoreRegions && restoreRegions);
 
-    // For tools with peculiar needs
+    //
+    // Interface to Tools that already have a layer buffer backup by any other means
+    //
 
-    void RestoreStructuralLayerRegionsEphemeralVisualization(
+    void RestoreStructuralLayerEphemeralVisualizationRegions(
         typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
         CombinedShipSpaceRegions const & regions);
 
-    void RestoreElectricalLayerRegionsEphemeralVisualization(
+    void RestoreElectricalLayerEphemeralVisualizationRegions(
         typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
         CombinedShipSpaceRegions const & regions);
 
     void RestoreRopesLayerEphemeralVisualization(
         typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer);
 
-    void RestoreExteriorTextureLayerRegionsEphemeralVisualization(
+    void RestoreExteriorTextureLayerEphemeralVisualizationRegions(
         typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & backupBuffer,
         CombinedTextureSpaceRegions const & regions);
 
-    void RestoreInteriorTextureLayerRegionsEphemeralVisualization(
+    void RestoreInteriorTextureLayerEphemeralVisualizationRegions(
         typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & backupBuffer,
         CombinedTextureSpaceRegions const & regions);
 
@@ -362,7 +368,7 @@ public:
         StructuralMaterial const * fillMaterial,
         std::uint8_t alphaThreshold);
 
-    std::optional<ShipSpaceBodyRegions> StructuralFlood(
+    std::optional<ShipSpaceBodyRegions::ShipSpaceBodyRegion> StructuralFlood(
         ShipSpaceCoordinates const & start,
         StructuralMaterial const * material,
         bool doContiguousOnly);
@@ -471,14 +477,14 @@ public:
         bool isAntiAlias,
         bool doContiguousOnly);
 
-    void RestoreExteriorTextureLayerComplete(
-        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
-        std::optional<std::string> originalTextureArtCredits);
-
     void MakeExteriorLayerFromImage(
         TextureLayerData const & source,
         ImageRect const & sourceRegion,
         ImageCoordinates const & targetOrigin);
+
+    void RestoreExteriorTextureLayerComplete(
+        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
+        std::optional<std::string> originalTextureArtCredits);
 
     //
     // Interior Texture
@@ -508,12 +514,12 @@ public:
         bool isAntiAlias,
         bool doContiguousOnly);
 
-    void RestoreInteriorTextureLayerComplete(std::unique_ptr<TextureLayerData> interiorTextureLayer);
-
     void MakeInteriorLayerFromImage(
         TextureLayerData const & source,
         ImageRect const & sourceRegion,
         ImageCoordinates const & targetOrigin);
+
+    void RestoreInteriorTextureLayerComplete(std::unique_ptr<TextureLayerData> interiorTextureLayer);
 
     //
     // Multi
@@ -773,7 +779,7 @@ private:
     bool InternalEraseRopeAt(ShipSpaceCoordinates const & coords);
 
     template<LayerType TLayer>
-    std::optional<ShipSpaceRect> DoFlood(
+    std::optional<ShipSpaceBodyRegions::ShipSpaceBodyRegion> DoFlood(
         ShipSpaceCoordinates const & start,
         typename LayerTypeTraits<TLayer>::material_type const * material,
         bool doContiguousOnly,
@@ -807,20 +813,20 @@ private:
         ImageRect const & region);
 
     // Raw
-    void DoStructuralRegionBufferPaste(
+    void DoStructuralBlit(
         typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceBuffer,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetCoordinates,
         bool isTransparent);
 
     // Raw
-    void DoElectricalRegionBufferPaste_Raw(
+    void DoElectricalBlit_Raw(
         typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetCoordinates,
         bool isTransparent)
     {
-        DoElectricalRegionBufferPaste(
+        DoElectricalBlit(
             sourceBuffer,
             sourceRegion,
             targetCoordinates,
@@ -837,35 +843,37 @@ private:
             });
     }
 
-    void DoElectricalRegionBufferPaste(
+    void DoElectricalBlit(
         typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetCoordinates,
         std::function<ElectricalElement(ElectricalElement const &, ElectricalElement const &)> elementOperator);
 
-    void DoRopesRegionBufferPaste(
+    void DoRopesBlit(
         typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceBuffer,
         ShipSpaceCoordinates const & targetCoordinates, // Unclipped
         bool isTransparent);
 
-    void DoExteriorTextureRegionBufferPaste(
+    void DoExteriorTextureBlit(
         typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & sourceBuffer,
         ImageRect const & sourceRegion,
-        ImageRect const & targetRegion,
+        ImageCoordinates const & targetCoordinates,
         bool isTransparent);
 
-    void DoInteriorTextureRegionBufferPaste(
+    void DoInteriorTextureBlit(
         typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & sourceBuffer,
         ImageRect const & sourceRegion,
-        ImageRect const & targetRegion,
+        ImageCoordinates const & targetCoordinates,
         bool isTransparent);
 
-    TextureLayerData MakeTextureLayerFromImage(
+    TextureLayerData DoMakeTextureLayerFromImage(
         TextureLayerData const & source,
         ImageRect const & sourceRegion,
         ImageCoordinates const & targetOrigin);
 
     // Undo
+
+    // TODOHERE
 
     ShipSpaceBodyRegions::payload_type MakeShipSpaceBodyRegion(
         std::optional<ShipSpaceRect> const & region,
@@ -889,10 +897,20 @@ private:
         ElectricalLayerData && sourceLayerRegionBackup,
         ShipSpaceRect const & originatingRegion);
 
-    // No post-restore analysis/cleanup
+    // No post-restore analysis
     void InternalRestoreRopesLayerBackup(
         RopesLayerData && sourceLayerBackup,
         ShipSpaceRect const & originatingRegion);
+
+    // No post-restore analysis
+    void InternalRestoreExteriorTextureLayerBackup(
+        TextureLayerData && sourceLayerBackup,
+        ImageRect const & originatingRegion);
+
+    // No post-restore analysis
+    void InternalRestoreInteriorTextureLayerBackup(
+        TextureLayerData && sourceLayerBackup,
+        ImageRect const & originatingRegion);
 
     // Eph Viz
 
