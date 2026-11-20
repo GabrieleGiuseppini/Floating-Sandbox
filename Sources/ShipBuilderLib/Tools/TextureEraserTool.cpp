@@ -383,7 +383,7 @@ void TextureEraserTool<TLayerType, TBodyRegions>::MendTempVisualization()
     {
         assert(mOriginalLayerClone.ExteriorTextureLayerRegion);
 
-        mController.GetModelController().RestoreExteriorTextureLayerRegionsEphemeralVisualization(
+        mController.GetModelController().RestoreExteriorTextureLayerEphemeralVisualizationRegions(
             mOriginalLayerClone.ExteriorTextureLayerRegion->Buffer,
             dirtyRegions);
     }
@@ -392,7 +392,7 @@ void TextureEraserTool<TLayerType, TBodyRegions>::MendTempVisualization()
         static_assert(TLayerType == LayerType::InteriorTexture);
         assert(mOriginalLayerClone.InteriorTextureLayerRegion);
 
-        mController.GetModelController().RestoreInteriorTextureLayerRegionsEphemeralVisualization(
+        mController.GetModelController().RestoreInteriorTextureLayerEphemeralVisualizationRegions(
             mOriginalLayerClone.InteriorTextureLayerRegion->Buffer,
             dirtyRegions);
     }

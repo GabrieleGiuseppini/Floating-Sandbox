@@ -241,7 +241,7 @@ public:
                 layerClone = ModelController::MakeShipBodyRegionClip(layerClone, *affectedRegion);
 
                 // Store
-                auto const undoCost = layerClone.Buffer.GetByteSize();
+                auto const undoCost = layerClone.GetTotalCost();
                 StoreUndoAction(
                     undoActionName,
                     undoCost,
@@ -304,6 +304,14 @@ public:
     void RestoreForUndo(ShipSpaceBodyRegions::ShipSpaceBodyRegion && undoPayload)
     {
         RestoreForUndo(ShipSpaceBodyRegions::Make(std::move(undoPayload)));
+    }
+    void RestoreForUndo(ExteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion && undoPayload)
+    {
+        RestoreForUndo(ExteriorTextureSpaceBodyRegions::Make(std::move(undoPayload)));
+    }
+    void RestoreForUndo(InteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion && undoPayload)
+    {
+        RestoreForUndo(InteriorTextureSpaceBodyRegions::Make(std::move(undoPayload)));
     }
 
     // Main restore functionality

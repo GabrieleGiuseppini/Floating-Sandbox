@@ -216,8 +216,8 @@ void TextureTranslateTool<TLayer>::DoTranslate(ImageCoordinates const & endPosit
                         ExteriorTextureSpaceBodyRegions undoPayload;
                         undoPayload.AddRegion(
                             ImageRect(sourceLayerData.Buffer.Size),
-                            std::move(sourceLayerData),
-                            std::nullopt);
+                            std::make_unique<TextureLayerData>(std::move(sourceLayerData)),
+                            nullptr);
 
                         controller.RestoreForUndo(std::move(undoPayload));
                     }
@@ -228,8 +228,8 @@ void TextureTranslateTool<TLayer>::DoTranslate(ImageCoordinates const & endPosit
                         InteriorTextureSpaceBodyRegions undoPayload;
                         undoPayload.AddRegion(
                             ImageRect(sourceLayerData.Buffer.Size),
-                            std::nullopt,
-                            std::move(sourceLayerData));
+                            nullptr,
+                            std::make_unique<TextureLayerData>(std::move(sourceLayerData)));
 
                         controller.RestoreForUndo(std::move(undoPayload));
                     }

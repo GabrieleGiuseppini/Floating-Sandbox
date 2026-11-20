@@ -29,8 +29,8 @@ InteriorTextureMagicWandTool::InteriorTextureMagicWandTool(
         gameAssetManager)
 {}
 
-template<LayerType TLayerType, typename TBodyRegions>
-TextureMagicWandTool<TLayerType, TBodyRegions>::TextureMagicWandTool(
+template<LayerType TLayerType, typename TBodyRegion>
+TextureMagicWandTool<TLayerType, TBodyRegion>::TextureMagicWandTool(
     ToolType toolType,
     Controller & controller,
     GameAssetManager const & gameAssetManager)
@@ -41,8 +41,8 @@ TextureMagicWandTool<TLayerType, TBodyRegions>::TextureMagicWandTool(
     SetCursor(WxHelpers::LoadCursorImage("magic_wand_cursor", 8, 8, gameAssetManager));
 }
 
-template<LayerType TLayerType, typename TBodyRegions>
-void TextureMagicWandTool<TLayerType, TBodyRegions>::OnLeftMouseDown()
+template<LayerType TLayerType, typename TBodyRegion>
+void TextureMagicWandTool<TLayerType, TBodyRegion>::OnLeftMouseDown()
 {
     auto const mouseCoordinatesInTextureSpace = ScreenToTextureSpace(TLayerType, GetCurrentMouseCoordinates());
     if (mouseCoordinatesInTextureSpace.IsInRect(ImageRect({0, 0}, GetTextureSize())))
@@ -51,7 +51,7 @@ void TextureMagicWandTool<TLayerType, TBodyRegions>::OnLeftMouseDown()
 
         // Do edit
 
-        std::optional<TBodyRegions> undoPayload;
+        std::optional<TBodyRegion> undoPayload;
         if constexpr (TLayerType == LayerType::ExteriorTexture)
         {
             undoPayload = mController.GetModelController().ExteriorTextureMagicWandEraseBackground(
@@ -91,8 +91,8 @@ void TextureMagicWandTool<TLayerType, TBodyRegions>::OnLeftMouseDown()
     }
 }
 
-template<LayerType TLayerType, typename TBodyRegions>
-ImageSize TextureMagicWandTool<TLayerType, TBodyRegions>::GetTextureSize() const
+template<LayerType TLayerType, typename TBodyRegion>
+ImageSize TextureMagicWandTool<TLayerType, TBodyRegion>::GetTextureSize() const
 {
     if constexpr (TLayerType == LayerType::ExteriorTexture)
     {

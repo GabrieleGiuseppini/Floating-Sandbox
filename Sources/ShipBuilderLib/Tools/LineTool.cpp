@@ -375,7 +375,7 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                 {
                     assert(mOriginalLayerClone.LayerRegions.StructuralLayer);
 
-                    mController.GetModelController().RestoreStructuralLayerRegionsEphemeralVisualization(
+                    mController.GetModelController().RestoreStructuralLayerEphemeralVisualizationRegions(
                         mOriginalLayerClone.LayerRegions.StructuralLayer->Buffer,
                         dirtyRegions);
                 }
@@ -384,7 +384,7 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                     static_assert(TLayer == LayerType::Electrical);
                     assert(mOriginalLayerClone.LayerRegions.ElectricalLayer);
 
-                    mController.GetModelController().RestoreElectricalLayerRegionsEphemeralVisualization(
+                    mController.GetModelController().RestoreElectricalLayerEphemeralVisualizationRegions(
                         mOriginalLayerClone.LayerRegions.ElectricalLayer->Buffer,
                         dirtyRegions);
                 }
@@ -422,7 +422,7 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                         {
                             assert(mOriginalLayerClone.LayerRegions.StructuralLayer);
 
-                            mController.GetModelController().RestoreStructuralLayerRegionsEphemeralVisualization(
+                            mController.GetModelController().RestoreStructuralLayerEphemeralVisualizationRegions(
                                 mOriginalLayerClone.LayerRegions.StructuralLayer->Buffer,
                                 dirtyRegions);
                         }
@@ -431,7 +431,7 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                             static_assert(TLayer == LayerType::Electrical);
                             assert(mOriginalLayerClone.LayerRegions.ElectricalLayer);
 
-                            mController.GetModelController().RestoreElectricalLayerRegionsEphemeralVisualization(
+                            mController.GetModelController().RestoreElectricalLayerEphemeralVisualizationRegions(
                                 mOriginalLayerClone.LayerRegions.ElectricalLayer->Buffer,
                                 dirtyRegions);
                         }

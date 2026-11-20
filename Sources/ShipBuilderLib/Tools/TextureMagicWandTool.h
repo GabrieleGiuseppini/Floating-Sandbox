@@ -13,7 +13,7 @@
 
 namespace ShipBuilder {
 
-template<LayerType TLayerType, typename TBodyRegions>
+template<LayerType TLayerType, typename TBodyRegion>
 class TextureMagicWandTool : public Tool
 {
 public:
@@ -41,7 +41,7 @@ private:
     ImageSize GetTextureSize() const;
 };
 
-class ExteriorTextureMagicWandTool final : public TextureMagicWandTool<LayerType::ExteriorTexture, ExteriorTextureSpaceBodyRegions>
+class ExteriorTextureMagicWandTool final : public TextureMagicWandTool<LayerType::ExteriorTexture, ExteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion>
 {
 public:
 
@@ -50,7 +50,7 @@ public:
         GameAssetManager const & gameAssetManager);
 };
 
-class InteriorTextureMagicWandTool final : public TextureMagicWandTool<LayerType::InteriorTexture, InteriorTextureSpaceBodyRegions>
+class InteriorTextureMagicWandTool final : public TextureMagicWandTool<LayerType::InteriorTexture, InteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion>
 {
 public:
 

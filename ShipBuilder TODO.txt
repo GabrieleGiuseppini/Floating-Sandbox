@@ -1645,23 +1645,43 @@
 						+ Controller.cpp
 							+ Reordering for new .h ordering and fixing arguments
 						X See if there are obsolete Controller private's
-						- ModelController.h
-							- Remove obsolete public's
-								- CloneExistingLayer? Search on GitHub
-						- ModelController.cpp
-							- Remove obsolete private's
+						+ ModelController.h
+							+ Remove obsolete public's
+								X CloneExistingLayer (replaced by CopyShipSpaceWhole)
+								+ Continue searching from here
+						+ ModelController.cpp
+							+ cpp
+								! Substitution reminders:
+									! MakeGenericShipSpaceUndoPayload -> CopyShipSpaceRegion
+									! MakeGenericShipSpaceEphemeralVisualizationRestorePayload -> MakeXYZSpaceEphemeralVisualizationRestoreRegion
+								+ Paste: 
+									+ Refactor code to calc affected source rect first, and reuse for texture layers,
+									  like @ transfer
+									+ Refactor code to take undo all at once
+								+ PasteForEphemeralVisualization
+									+ Copy from Paste, but merge with old implementation
+								+ ...
+								+ Transfer X 3
+								+ TransferForEphViz
+								+ ...
+								+ MakeXYZSpaceEphemeralVisualizationRestoreRegion
+									+ Copy from (now obsolete) MakeGenericShipSpaceEphemeralVisualizationRestorePayload X 3, using pattern from CopyRegion
+							+ Remove obsolete private's
 
-						- Cleanup EphVizRegions
+							+ InternalPaste facts:
+								+ These methods have to calc affected area for marking dirty eph viz, plus operator for transparency
+
+						- Cleanup ShipBodyRegions.h, EphVizRegions.h, ShipLayers, Layers
 
 
 						= ModelController:
-							- CopyRegion(region, layers)X3 (*1) - WAS: MakeGenericShipSpaceUndoPayload
-								- Asserts not in eph viz for any layer
-								- IntersectWithLayerPresence
-								- Uses XYZLayer::Make[Region]Backup X N
-									- Does whole elec panel, whole ropes buffer
-							- RestoreXYZLayer(layer): stays as-is, where it is
-								- Used by C::RestoreAllLayersForUndo, special
+							+ CopyRegion(region, layers)X3 (*1) - WAS: MakeGenericShipSpaceUndoPayload
+								+ Asserts not in eph viz for any layer
+								~ IntersectWithLayerPresence
+								+ Uses XYZLayer::Make[Region]Backup X N
+									+ Does whole elec panel, whole ropes buffer
+							+ RestoreXYZLayer(layer): stays as-is, where it is
+								+ Used by C::RestoreAllLayersForUndo, special
 							= Undo (code area) interface to Controller:
 								+ RestoreForUndo (was: Restore)
 								- RestoreXYZLayer[Region]BackupForUndo (was: RestoreXYZLayer[Region]Backup)
@@ -1716,6 +1736,15 @@
 							- MC::PasteForEphemeralVisualization
 							- MC::ShipSpaceRegionTransfer
 							- MC::ShipSpaceRegionTransferForEphemeralVisualization
+
+			- Tests:
+				- Paste:
+					- EphViz
+					- Undo
+					- Undo for empty paste (all outside)
+				- SelectAndTranslate:
+					- EphViz
+					- Undo
 
 			- Merge back into shipbuilder_translate_tool
 
