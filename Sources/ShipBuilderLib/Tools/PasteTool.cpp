@@ -185,6 +185,7 @@ void PasteTool::Commit()
         auto undoPayload = mController.GetModelController().Paste(
             mPendingSessionData->PasteRegion,
             pasteOrigin,
+            affectedLayers,
             mPendingSessionData->IsTransparent);
 
         // Store undo
@@ -355,20 +356,25 @@ void PasteTool::DrawEphemeralVisualization()
     assert(mPendingSessionData);
     assert(!mPendingSessionData->EphemeralVisualization);
 
-    ShipSpaceCoordinates const pasteOrigin = MousePasteCoordsToActualPasteOrigin(
-        mPendingSessionData->MousePasteCoords,
-        mPendingSessionData->PasteRegion.GetSize());
+    auto const affectedLayers = mController.GetModelController().IntersectLayerPresence(mPendingSessionData->PasteRegion.LayerRegions);
+    if (!affectedLayers.IsEmpty())
+    {
+        ShipSpaceCoordinates const pasteOrigin = MousePasteCoordsToActualPasteOrigin(
+            mPendingSessionData->MousePasteCoords,
+            mPendingSessionData->PasteRegion.GetSize());
 
-    auto pasteEphVizRestore = mController.GetModelController().PasteForEphemeralVisualization(
-        mPendingSessionData->PasteRegion,
-        pasteOrigin,
-        mPendingSessionData->IsTransparent);
+        auto pasteEphVizRestore = mController.GetModelController().PasteForEphemeralVisualization(
+            mPendingSessionData->PasteRegion,
+            pasteOrigin,
+            affectedLayers,
+            mPendingSessionData->IsTransparent);
 
-    mController.GetView().UploadDashedRectangleOverlay(
-        pasteOrigin,
-        pasteOrigin + mPendingSessionData->PasteRegion.GetSize());
+        mController.GetView().UploadDashedRectangleOverlay(
+            pasteOrigin,
+            pasteOrigin + mPendingSessionData->PasteRegion.GetSize());
 
-    mPendingSessionData->EphemeralVisualization.emplace(std::move(pasteEphVizRestore));
+        mPendingSessionData->EphemeralVisualization.emplace(std::move(pasteEphVizRestore));
+    }
 }
 
 void PasteTool::UndoEphemeralVisualization()

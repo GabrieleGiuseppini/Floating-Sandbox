@@ -1583,26 +1583,44 @@ std::optional<ShipSpaceBodyRegions::ShipSpaceBodyRegion> ModelController::Struct
     assert(!mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization);
 
     //
+    // Prepare Undo
+    //
+
+    auto wholeLayerClone = mModel.GetStructuralLayer().Clone();
+
+    //
     // Update model
     //
 
-    auto undoPayload = DoFlood<LayerType::Structural>(
+    std::optional<ShipSpaceRect> affectedRect = DoFlood<LayerType::Structural>(
         start,
         material,
         doContiguousOnly,
         mModel.GetStructuralLayer());
 
-    if (undoPayload.has_value())
+    if (affectedRect.has_value())
     {
         //
         // Update visualization
         //
 
-        RegisterDirtyVisualization<VisualizationType::Game>(undoPayload->OriginatingRegion);
-        RegisterDirtyVisualization<VisualizationType::StructuralLayer>(undoPayload->OriginatingRegion);
+        RegisterDirtyVisualization<VisualizationType::Game>(*affectedRect);
+        RegisterDirtyVisualization<VisualizationType::StructuralLayer>(*affectedRect);
+
+        //
+        // Create Undo
+        //
+
+        return ShipSpaceBodyRegions::ShipSpaceBodyRegion(
+            *affectedRect,
+            std::make_unique<StructuralLayerData>(wholeLayerClone.MakeRegionBackup(*affectedRect)),
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr);
     }
 
-    return undoPayload;
+    return std::nullopt;
 }
 
 void ModelController::RestoreStructuralLayerComplete(std::unique_ptr<StructuralLayerData> sourceLayer)
@@ -1845,20 +1863,622 @@ void ModelController::RestoreElectricalLayerComplete(std::unique_ptr<ElectricalL
 // Ropes
 //
 
-// TODOHERE
+void ModelController::SetRopesLayer(RopesLayerData && ropesLayer)
+{
+    mModel.SetRopesLayer(std::move(ropesLayer));
+
+    InitializeRopesLayerAnalysis();
+
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+
+    mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization = false;
+}
+
+void ModelController::RemoveRopesLayer()
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    mModel.RemoveRopesLayer();
+
+    InitializeRopesLayerAnalysis();
+
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+
+    mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization = false;
+}
+
+std::unique_ptr<RopesLayerData> ModelController::CloneRopesLayer() const
+{
+    return mModel.CloneRopesLayer();
+}
+
+StructuralMaterial const * ModelController::SampleRopesMaterialAt(ShipSpaceCoordinates const & coords) const
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
+
+    assert(coords.IsInSize(mModel.GetShipSize()));
+
+    return mModel.GetRopesLayer().Buffer.SampleMaterialEndpointAt(coords);
+}
+
+std::set<StructuralMaterial const *> ModelController::GetRopesMaterialsInUse(std::vector<StructuralMaterial const *> const & candidates) const
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
+
+    std::set<StructuralMaterial const *> materialsInUse;
+
+    // Make set for faster lookup
+    std::set<StructuralMaterial const *> candidateSet(
+        candidates.cbegin(),
+        candidates.cend());
+
+    // Lookup
+    auto const & ropesLayerBuffer = mModel.GetRopesLayer().Buffer;
+    for (size_t i = 0; i < ropesLayerBuffer.GetElementCount(); ++i)
+    {
+        auto const * layerMaterial = ropesLayerBuffer[i].Material;
+        if (candidateSet.find(layerMaterial) != candidateSet.end())
+        {
+            materialsInUse.insert(layerMaterial);
+        }
+    }
+
+    return materialsInUse;
+}
+
+std::optional<size_t> ModelController::GetRopeElementIndexAt(ShipSpaceCoordinates const & coords) const
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
+
+    auto const searchIt = std::find_if(
+        mModel.GetRopesLayer().Buffer.cbegin(),
+        mModel.GetRopesLayer().Buffer.cend(),
+        [&coords](RopeElement const & e)
+        {
+            return coords == e.StartCoords
+                || coords == e.EndCoords;
+        });
+
+    if (searchIt != mModel.GetRopesLayer().Buffer.cend())
+    {
+        return std::distance(mModel.GetRopesLayer().Buffer.cbegin(), searchIt);
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+void ModelController::AddRope(
+    ShipSpaceCoordinates const & startCoords,
+    ShipSpaceCoordinates const & endCoords,
+    StructuralMaterial const * material)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
+
+    //
+    // Update model
+    //
+
+    InternalAppendRope(
+        startCoords,
+        endCoords,
+        material);
+
+    InitializeRopesLayerAnalysis();
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+}
+
+void ModelController::AddRopeForEphemeralVisualization(
+    ShipSpaceCoordinates const & startCoords,
+    ShipSpaceCoordinates const & endCoords,
+    StructuralMaterial const * material)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    //
+    // Update model with just material - no analyses
+    //
+
+    InternalAppendRope(
+        startCoords,
+        endCoords,
+        material);
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+
+    // Remember we are in temp visualization now
+    mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization = true;
+}
+
+void ModelController::MoveRopeEndpoint(
+    size_t ropeElementIndex,
+    ShipSpaceCoordinates const & oldCoords,
+    ShipSpaceCoordinates const & newCoords)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
+
+    //
+    // Update model
+    //
+
+    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.GetElementCount());
+
+    InternalMoveRopeEndpoint(
+        mModel.GetRopesLayer().Buffer[ropeElementIndex],
+        oldCoords,
+        newCoords);
+
+    InitializeRopesLayerAnalysis();
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+}
+
+void ModelController::ModelController::MoveRopeEndpointForEphemeralVisualization(
+    size_t ropeElementIndex,
+    ShipSpaceCoordinates const & oldCoords,
+    ShipSpaceCoordinates const & newCoords)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    //
+    // Update model with jsut movement - no analyses
+    //
+
+    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.GetElementCount());
+
+    InternalMoveRopeEndpoint(
+        mModel.GetRopesLayer().Buffer[ropeElementIndex],
+        oldCoords,
+        newCoords);
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+
+    // Remember we are in temp visualization now
+    mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization = true;
+}
+
+bool ModelController::EraseRopeAt(ShipSpaceCoordinates const & coords)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
+
+    //
+    // Update model
+    //
+
+    bool const hasRemoved = InternalEraseRopeAt(coords);
+
+    if (hasRemoved)
+    {
+        // Update visualization
+        RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void ModelController::EraseRopesRegion(ShipSpaceRect const & region)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
+
+    DoRopesRegionErase(region);
+}
+
+void ModelController::RestoreRopesLayerComplete(std::unique_ptr<RopesLayerData> sourceLayer)
+{
+    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
+
+    //
+    // Restore model
+    //
+
+    mModel.RestoreRopesLayer(std::move(sourceLayer));
+
+    //
+    // Re-initialize layer analysis
+    //
+
+    InitializeRopesLayerAnalysis();
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+}
+
+//
+// Exterior Texture
+//
+
+TextureLayerData const & ModelController::GetExteriorTextureLayer() const
+{
+    assert(mModel.HasLayer(LayerType::ExteriorTexture));
+
+    return mModel.GetExteriorTextureLayer();
+}
+
+void ModelController::SetExteriorTextureLayer(
+    TextureLayerData && exteriorTextureLayer,
+    std::optional<std::string> originalTextureArtCredits)
+{
+    mModel.SetExteriorTextureLayer(std::move(exteriorTextureLayer));
+    mModel.GetShipMetadata().ArtCredits = std::move(originalTextureArtCredits);
+
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(GetWholeExteriorTextureRect());
+
+    mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization = false;
+}
+
+void ModelController::RemoveExteriorTextureLayer()
+{
+    assert(mModel.HasLayer(LayerType::ExteriorTexture));
+
+    auto const oldWholeTextureRect = GetWholeExteriorTextureRect();
+
+    mModel.RemoveExteriorTextureLayer();
+    mModel.GetShipMetadata().ArtCredits.reset();
+
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(oldWholeTextureRect);
+
+    mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization = false;
+}
+
+std::unique_ptr<TextureLayerData> ModelController::CloneExteriorTextureLayer() const
+{
+    return mModel.CloneExteriorTextureLayer();
+}
+
+void ModelController::EraseExteriorTextureRegion(ImageRect const & region)
+{
+    assert(mModel.HasLayer(LayerType::ExteriorTexture));
+
+    assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
+
+    DoExteriorTextureRegionErase(region);
+}
+
+void ModelController::EraseExteriorTextureRegionForEphemeralVisualization(ImageRect const & region)
+{
+    assert(mModel.HasLayer(LayerType::ExteriorTexture));
+
+    //
+    // Update model
+    //
+
+    auto & textureLayerBuffer = mModel.GetExteriorTextureLayer().Buffer;
+
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    {
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+        {
+            textureLayerBuffer[{x, y}].a = 0;
+        }
+    }
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::Game>(ExteriorImageRectToContainingShipSpaceRect(region));
+    RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(region);
+
+    // Remember we are in temp visualization now
+    mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization = true;
+}
+
+std::optional<ExteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion> ModelController::ExteriorTextureMagicWandEraseBackground(
+    ImageCoordinates const & start,
+    unsigned int tolerance,
+    bool isAntiAlias,
+    bool doContiguousOnly)
+{
+    assert(mModel.HasLayer(LayerType::ExteriorTexture));
+
+    assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
+
+    //
+    // Prepare Undo
+    //
+
+    auto wholeLayerClone = mModel.GetExteriorTextureLayer().Clone();
+
+    //
+    // Update model
+    //
+
+    std::optional<ImageRect> affectedRect = DoTextureMagicWandEraseBackground(
+        start,
+        tolerance,
+        isAntiAlias,
+        doContiguousOnly,
+        mModel.GetExteriorTextureLayer());
+
+    if (affectedRect.has_value())
+    {
+        //
+        // Update visualization
+        //
+
+        RegisterDirtyVisualization<VisualizationType::Game>(ExteriorImageRectToContainingShipSpaceRect(*affectedRect));
+        RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(*affectedRect);
+
+        //
+        // Create Undo
+        //
+
+        return ExteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion(
+            *affectedRect,
+            std::make_unique<TextureLayerData>(wholeLayerClone.MakeRegionBackup(*affectedRect)),
+            nullptr);
+    }
+
+    return std::nullopt;
+}
+
+void ModelController::MakeExteriorLayerFromImage(
+    TextureLayerData const & source,
+    ImageRect const & sourceRegion,
+    ImageCoordinates const & targetOrigin)
+{
+    assert(mModel.HasLayer(LayerType::ExteriorTexture));
+    assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
+
+    mModel.SetExteriorTextureLayer(
+        DoMakeTextureLayerFromImage(
+            source,
+            sourceRegion,
+            targetOrigin));
+
+    //
+    // Update visualization
+    //
+
+    mGameVisualizationTexture.reset();
+    mGameVisualizationAutoTexturizationTexture.release();
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(GetWholeExteriorTextureRect());
+}
+
+void ModelController::RestoreExteriorTextureLayerComplete(
+    std::unique_ptr<TextureLayerData> exteriorTextureLayer,
+    std::optional<std::string> originalTextureArtCredits)
+{
+    assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
+
+    //
+    // Restore model
+    //
+
+    mModel.RestoreExteriorTextureLayer(std::move(exteriorTextureLayer));
+    mModel.GetShipMetadata().ArtCredits = std::move(originalTextureArtCredits);
+
+    //
+    // Update visualization
+    //
+
+    mGameVisualizationTexture.reset();
+    mGameVisualizationAutoTexturizationTexture.release();
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    if (mModel.HasLayer(LayerType::ExteriorTexture))
+    {
+        RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(GetWholeExteriorTextureRect());
+    }
+    else
+    {
+        // We've just removed the texture layer; we rely now on texture viz mode being set to None
+        // before we UpdateVisualizations(), causing the View texture to be removed
+    }
+}
+
+//
+// Interior Texture
+//
+
+TextureLayerData const & ModelController::GetInteriorTextureLayer() const
+{
+    assert(mModel.HasLayer(LayerType::InteriorTexture));
+
+    return mModel.GetInteriorTextureLayer();
+}
+
+void ModelController::SetInteriorTextureLayer(TextureLayerData && textureLayer)
+{
+    mModel.SetInteriorTextureLayer(std::move(textureLayer));
+
+    RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(GetWholeInteriorTextureRect());
+
+    mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization = false;
+}
+
+void ModelController::RemoveInteriorTextureLayer()
+{
+    assert(mModel.HasLayer(LayerType::InteriorTexture));
+
+    auto const oldWholeTextureRect = GetWholeInteriorTextureRect();
+
+    mModel.RemoveInteriorTextureLayer();
+
+    RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(oldWholeTextureRect);
+
+    mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization = false;
+}
+
+std::unique_ptr<TextureLayerData> ModelController::CloneInteriorTextureLayer() const
+{
+    return mModel.CloneInteriorTextureLayer();
+}
+
+void ModelController::EraseInteriorTextureRegion(ImageRect const & region)
+{
+    assert(mModel.HasLayer(LayerType::InteriorTexture));
+
+    assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
+
+    DoInteriorTextureRegionErase(region);
+}
+
+void ModelController::EraseInteriorTextureRegionForEphemeralVisualization(ImageRect const & region)
+{
+    assert(mModel.HasLayer(LayerType::InteriorTexture));
+
+    //
+    // Update model
+    //
+
+    auto & textureLayerBuffer = mModel.GetInteriorTextureLayer().Buffer;
+
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    {
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+        {
+            textureLayerBuffer[{x, y}].a = 0;
+        }
+    }
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(region);
+
+    // Remember we are in temp visualization now
+    mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization = true;
+}
 
 
+std::optional<InteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion> ModelController::InteriorTextureMagicWandEraseBackground(
+    ImageCoordinates const & start,
+    unsigned int tolerance,
+    bool isAntiAlias,
+    bool doContiguousOnly)
+{
+    assert(mModel.HasLayer(LayerType::InteriorTexture));
 
+    assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
 
+    //
+    // Prepare Undo
+    //
 
+    auto wholeLayerClone = mModel.GetInteriorTextureLayer().Clone();
 
+    //
+    // Update model
+    //
 
+    std::optional<ImageRect> affectedRect = DoTextureMagicWandEraseBackground(
+        start,
+        tolerance,
+        isAntiAlias,
+        doContiguousOnly,
+        mModel.GetInteriorTextureLayer());
 
+    if (affectedRect.has_value())
+    {
+        //
+        // Update visualization
+        //
 
+        RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(*affectedRect);
 
+        //
+        // Create Undo
+        //
 
+        return InteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion(
+            *affectedRect,
+            nullptr,
+            std::make_unique<TextureLayerData>(wholeLayerClone.MakeRegionBackup(*affectedRect)));
+    }
 
+    return std::nullopt;
+}
 
+void ModelController::MakeInteriorLayerFromImage(
+    TextureLayerData const & source,
+    ImageRect const & sourceRegion,
+    ImageCoordinates const & targetOrigin)
+{
+    assert(mModel.HasLayer(LayerType::InteriorTexture));
+    assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
+
+    mModel.SetInteriorTextureLayer(
+        DoMakeTextureLayerFromImage(
+            source,
+            sourceRegion,
+            targetOrigin));
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(GetWholeInteriorTextureRect());
+}
+
+void ModelController::RestoreInteriorTextureLayerComplete(std::unique_ptr<TextureLayerData> interiorTextureLayer)
+{
+    assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
+
+    //
+    // Restore model
+    //
+
+    mModel.RestoreInteriorTextureLayer(std::move(interiorTextureLayer));
+
+    //
+    // Update visualization
+    //
+
+    if (mModel.HasLayer(LayerType::InteriorTexture))
+    {
+        RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(GetWholeInteriorTextureRect());
+    }
+    else
+    {
+        // We've just removed the texture layer; we rely now on texture viz mode being set to None
+        // before we UpdateVisualizations(), causing the View texture to be remove
+    }
+}
+
+//
+// Multi
+//
 
 ShipSpaceBodyRegions ModelController::ShipSpaceRegionTransfer(
     ShipSpaceRect const & sourceRegion, // In current model
@@ -1967,7 +2587,6 @@ ShipSpaceBodyRegions ModelController::ShipSpaceRegionTransfer(
         if (adjustedDestinationRegion.has_value())
         {
             // Paste - including ropes with endpoints outside of copied region
-            //
             assert(sourceUndoPayload.LayerRegions.RopesLayer);
             // TODO: args will change
             DoRopesBlit(
@@ -2279,9 +2898,7 @@ InteriorTextureSpaceBodyRegions ModelController::InteriorTextureSpaceRegionTrans
     return undoPayload;
 }
 
-// TODOHERE
-
-GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceRegionTransferForEphemeralVisualization(
+ShipSpaceEphemeralVisualizationRestoreRegions ModelController::ShipSpaceRegionTransferForEphemeralVisualization(
     ShipSpaceRect const & sourceRegion, // In current model
     ShipSpaceCoordinates const & destinationPos,
     LayerSelector const & layerSelection,
@@ -2291,43 +2908,46 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
     assert(sourceRegion.IsContainedInRect(GetWholeShipRect()));
 
     // Prepare restore for erase
-    auto sourceRestorePayload = MakeGenericShipSpaceEphemeralVisualizationRestorePayload(sourceRegion, layerSelection);
+    auto sourceRestorePayload = MakeShipSpaceEphemeralVisualizationRestoreRegion(sourceRegion, layerSelection);
 
-    // Calculate destination region - won't have one if target outside
+    // Clamp destination region to ship - won't have one if target outside
     // of ship
     std::optional<ShipSpaceRect> const adjustedDestinationRegion =
         ShipSpaceRect(destinationPos, sourceRegion.size)
         .MakeIntersectionWith(GetWholeShipRect());
 
-    assert(!adjustedDestinationRegion.has_value() || !adjustedDestinationRegion->IsEmpty());
+    std::optional<ShipSpaceEphemeralVisualizationRestoreRegions::payload_type> destinationRestorePayload;
+    std::optional<ShipSpaceRect> clippedSourceRegion;
 
-    std::optional<ShipSpaceRect> adjustedPasteSourceRegion;
-    std::optional<GenericShipSpaceEphemeralVisualizationRestorePayload::payload_type> destinationRestorePayload;
     if (adjustedDestinationRegion.has_value())
     {
         // Prepare paste restore
-        destinationRestorePayload = MakeGenericShipSpaceEphemeralVisualizationRestorePayload(*adjustedDestinationRegion, layerSelection);
+        destinationRestorePayload = MakeShipSpaceEphemeralVisualizationRestoreRegion(
+            *adjustedDestinationRegion,
+            layerSelection);
 
-        // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-        adjustedPasteSourceRegion = ShipSpaceRect(
+        // Calculate clipped paste source region - expected to fit in ship once translated to target pos
+        clippedSourceRegion = ShipSpaceRect(
             ShipSpaceCoordinates(0, 0) + (adjustedDestinationRegion->origin - destinationPos),
             adjustedDestinationRegion->size);
     }
+
+    assert(!adjustedDestinationRegion.has_value() || clippedSourceRegion.has_value());
 
     if (layerSelection.IsSet(LayerType::Structural))
     {
         assert(!mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization);
 
-        // Erase
+        // Erase - no analyses
         DoStructuralRegionFill(sourceRegion, nullptr);
 
         if (adjustedDestinationRegion.has_value())
         {
-            // Paste
+            // Paste - no analyses
             assert(sourceRestorePayload.StructuralLayerBufferRegion);
-            DoStructuralRegionBufferPaste(
+            DoStructuralBlit(
                 *sourceRestorePayload.StructuralLayerBufferRegion,
-                *adjustedPasteSourceRegion,
+                *clippedSourceRegion,
                 adjustedDestinationRegion->origin,
                 isTransparent);
         }
@@ -2340,16 +2960,16 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
     {
         assert(!mEphemeralVisualizationLayerState.IsElectricalLayerInEphemeralVisualization);
 
-        // Erase
+        // Erase - raw (no instance IDs, no panel, etc.)
         DoElectricalRegionFill(sourceRegion, nullptr);
 
         if (adjustedDestinationRegion.has_value())
         {
-            // Paste
+            // Paste - raw (no instance IDs, no panel, etc.)
             assert(sourceRestorePayload.ElectricalLayerBufferRegion);
-            DoElectricalRegionBufferPaste_Raw(
+            DoElectricalBlit_Raw(
                 *sourceRestorePayload.ElectricalLayerBufferRegion,
-                *adjustedPasteSourceRegion,
+                *clippedSourceRegion,
                 adjustedDestinationRegion->origin,
                 isTransparent);
         }
@@ -2362,16 +2982,18 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
     {
         assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
 
-        // Erase
+        // Erase - all ropes with at least one endpoint in region
         DoRopesRegionErase(sourceRegion);
 
         if (adjustedDestinationRegion.has_value())
         {
-            // Paste
-            assert(sourceRestorePayload.RopesLayerBufferRegion);
-            DoRopesRegionBufferPaste(
-                sourceRestorePayload.RopesLayerBufferRegion->CloneRegion(sourceRegion), // Source restore payload is _whole_ ropes buffer, thus endpoints are not shifted; we shift them here
-                destinationPos,
+            // Paste - including ropes with endpoints outside of copied region
+            assert(sourceRestorePayload.RopesLayerBuffer);
+            // TODO: args will change
+            DoRopesBlit(
+                // TODOHERE!
+                *sourceRestorePayload.RopesLayerBuffer, // TODOOLD: WAS: ->CloneRegion(sourceRegion), // Source restore payload is _whole_ ropes buffer, thus endpoints are not shifted; we shift them here
+                destinationPos, // Unclipped! For "hanging ropes"
                 isTransparent);
         }
 
@@ -2400,16 +3022,16 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
 
         if (adjustedDestinationRegionTexture.has_value())
         {
-            // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-            ImageRect const adjustedPasteSourceRegionTexture(
+            // Calculate clipped source region - expected to fit in ship once translated to target pos
+            ImageRect const clippedPasteSourceRegionTexture(
                 ImageCoordinates(0, 0) + (adjustedDestinationRegionTexture->origin - destinationPosTexture),
                 adjustedDestinationRegionTexture->size);
 
             // Paste
-            DoExteriorTextureRegionBufferPaste(
+            DoExteriorTextureBlit(
                 *sourceRestorePayload.ExteriorTextureLayerBufferRegion,
-                adjustedPasteSourceRegionTexture,
-                *adjustedDestinationRegionTexture,
+                clippedPasteSourceRegionTexture,
+                adjustedDestinationRegionTexture->origin,
                 isTransparent);
         }
 
@@ -2438,16 +3060,16 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
 
         if (adjustedDestinationRegionTexture.has_value())
         {
-            // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-            ImageRect const adjustedPasteSourceRegionTexture(
+            // Calculate clipped source region - expected to fit in ship once translated to target pos
+            ImageRect const clippedPasteSourceRegionTexture(
                 ImageCoordinates(0, 0) + (adjustedDestinationRegionTexture->origin - destinationPosTexture),
                 adjustedDestinationRegionTexture->size);
 
             // Paste
-            DoInteriorTextureRegionBufferPaste(
+            DoInteriorTextureBlit(
                 *sourceRestorePayload.InteriorTextureLayerBufferRegion,
-                adjustedPasteSourceRegionTexture,
-                *adjustedDestinationRegionTexture,
+                clippedPasteSourceRegionTexture,
+                adjustedDestinationRegionTexture->origin,
                 isTransparent);
         }
 
@@ -2459,7 +3081,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
     // Finalize restore
     //
 
-    GenericShipSpaceEphemeralVisualizationRestorePayload restorePayload;
+    ShipSpaceEphemeralVisualizationRestoreRegions restorePayload;
 
     restorePayload.AddRegion(std::move(sourceRestorePayload));
 
@@ -2471,7 +3093,7 @@ GenericShipSpaceEphemeralVisualizationRestorePayload ModelController::ShipSpaceR
     return restorePayload;
 }
 
-GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController::ExteriorTextureSpaceRegionTransferForEphemeralVisualization(
+ExteriorTextureSpaceEphemeralVisualizationRestoreRegions ModelController::ExteriorTextureSpaceRegionTransferForEphemeralVisualization(
     ImageRect const & sourceRegion, // In current model
     ImageCoordinates const & destinationPos,
     LayerSelector const & layerSelection,
@@ -2481,28 +3103,31 @@ GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
     assert(sourceRegion.IsContainedInRect(GetWholeExteriorTextureRect()));
 
     // Prepare restore for erase
-    auto sourceRestorePayload = MakeGenericExteriorTextureSpaceEphemeralVisualizationRestorePayload(sourceRegion, layerSelection);
+    auto sourceRestorePayload = MakeExteriorTextureSpaceEphemeralVisualizationRestoreRegion(sourceRegion, layerSelection);
 
-    // Calculate destination region - won't have one if target outside
+    // Clamp destination region to ship - won't have one if target outside
     // of ship
     std::optional<ImageRect> const adjustedDestinationRegion =
         ImageRect(destinationPos, sourceRegion.size)
         .MakeIntersectionWith(GetWholeExteriorTextureRect());
 
-    assert(!adjustedDestinationRegion.has_value() || !adjustedDestinationRegion->IsEmpty());
+    std::optional<ExteriorTextureSpaceEphemeralVisualizationRestoreRegions::payload_type> destinationRestorePayload;
+    std::optional<ImageRect> clippedSourceRegion;
 
-    std::optional<ImageRect> adjustedPasteSourceRegion;
-    std::optional<GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type> destinationRestorePayload;
     if (adjustedDestinationRegion.has_value())
     {
         // Prepare paste restore
-        destinationRestorePayload = MakeGenericExteriorTextureSpaceEphemeralVisualizationRestorePayload(*adjustedDestinationRegion, layerSelection);
+        destinationRestorePayload = MakeExteriorTextureSpaceEphemeralVisualizationRestoreRegion(
+            *adjustedDestinationRegion,
+            layerSelection);
 
-        // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-        adjustedPasteSourceRegion = ImageRect(
+        // Calculate clipped paste source region - expected to fit in ship once translated to target pos
+        clippedSourceRegion = ImageRect(
             ImageCoordinates(0, 0) + (adjustedDestinationRegion->origin - destinationPos),
             adjustedDestinationRegion->size);
     }
+
+    assert(!adjustedDestinationRegion.has_value() || clippedSourceRegion.has_value());
 
     if (layerSelection.IsSet(LayerType::ExteriorTexture))
     {
@@ -2515,10 +3140,10 @@ GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
         {
             // Paste
             assert(sourceRestorePayload.ExteriorTextureLayerBufferRegion);
-            DoExteriorTextureRegionBufferPaste(
+            DoExteriorTextureBlit(
                 *sourceRestorePayload.ExteriorTextureLayerBufferRegion,
-                *adjustedPasteSourceRegion,
-                *adjustedDestinationRegion,
+                *clippedSourceRegion,
+                adjustedDestinationRegion->origin,
                 isTransparent);
         }
 
@@ -2547,16 +3172,16 @@ GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
 
         if (adjustedDestinationRegionInterior.has_value())
         {
-            // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-            ImageRect const adjustedPasteSourceRegionInterior(
+            // Calculate clipped source region - expected to fit in ship once translated to target pos
+            ImageRect const clippedPasteSourceRegionInterior(
                 ImageCoordinates(0, 0) + (adjustedDestinationRegionInterior->origin - destinationPosInterior),
                 adjustedDestinationRegionInterior->size);
 
             // Paste
-            DoInteriorTextureRegionBufferPaste(
+            DoInteriorTextureBlit(
                 *sourceRestorePayload.InteriorTextureLayerBufferRegion,
-                adjustedPasteSourceRegionInterior,
-                *adjustedDestinationRegionInterior,
+                clippedPasteSourceRegionInterior,
+                adjustedDestinationRegionInterior->origin,
                 isTransparent);
         }
 
@@ -2568,7 +3193,7 @@ GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
     // Finalize restore
     //
 
-    GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload restorePayload;
+    ExteriorTextureSpaceEphemeralVisualizationRestoreRegions restorePayload;
 
     restorePayload.AddRegion(std::move(sourceRestorePayload));
 
@@ -2580,7 +3205,7 @@ GenericExteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
     return restorePayload;
 }
 
-GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController::InteriorTextureSpaceRegionTransferForEphemeralVisualization(
+InteriorTextureSpaceEphemeralVisualizationRestoreRegions ModelController::InteriorTextureSpaceRegionTransferForEphemeralVisualization(
     ImageRect const & sourceRegion, // In current model
     ImageCoordinates const & destinationPos,
     LayerSelector const & layerSelection,
@@ -2590,28 +3215,31 @@ GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
     assert(sourceRegion.IsContainedInRect(GetWholeInteriorTextureRect()));
 
     // Prepare restore for erase
-    auto sourceRestorePayload = MakeGenericInteriorTextureSpaceEphemeralVisualizationRestorePayload(sourceRegion, layerSelection);
+    auto sourceRestorePayload = MakeInteriorTextureSpaceEphemeralVisualizationRestoreRegion(sourceRegion, layerSelection);
 
-    // Calculate destination region - won't have one if target outside
+    // Clamp destination region to ship - won't have one if target outside
     // of ship
     std::optional<ImageRect> const adjustedDestinationRegion =
         ImageRect(destinationPos, sourceRegion.size)
         .MakeIntersectionWith(GetWholeInteriorTextureRect());
 
-    assert(!adjustedDestinationRegion.has_value() || !adjustedDestinationRegion->IsEmpty());
+    std::optional<InteriorTextureSpaceEphemeralVisualizationRestoreRegions::payload_type> destinationRestorePayload;
+    std::optional<ImageRect> clippedSourceRegion;
 
-    std::optional<ImageRect> adjustedPasteSourceRegion;
-    std::optional<GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload::payload_type> destinationRestorePayload;
     if (adjustedDestinationRegion.has_value())
     {
         // Prepare paste restore
-        destinationRestorePayload = MakeGenericInteriorTextureSpaceEphemeralVisualizationRestorePayload(*adjustedDestinationRegion, layerSelection);
+        destinationRestorePayload = MakeInteriorTextureSpaceEphemeralVisualizationRestoreRegion(
+            *adjustedDestinationRegion,
+            layerSelection);
 
-        // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-        adjustedPasteSourceRegion = ImageRect(
+        // Calculate clipped paste source region - expected to fit in ship once translated to target pos
+        clippedSourceRegion = ImageRect(
             ImageCoordinates(0, 0) + (adjustedDestinationRegion->origin - destinationPos),
             adjustedDestinationRegion->size);
     }
+
+    assert(!adjustedDestinationRegion.has_value() || clippedSourceRegion.has_value());
 
     if (layerSelection.IsSet(LayerType::ExteriorTexture))
     {
@@ -2634,16 +3262,16 @@ GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
 
         if (adjustedDestinationRegionExterior.has_value())
         {
-            // Calculate adjusted paste source region - expected to fit in ship once translated to target pos
-            ImageRect const adjustedPasteSourceRegionExterior(
+            // Calculate clipped source region - expected to fit in ship once translated to target pos
+            ImageRect const clippedPasteSourceRegionExterior(
                 ImageCoordinates(0, 0) + (adjustedDestinationRegionExterior->origin - destinationPosExterior),
                 adjustedDestinationRegionExterior->size);
 
             // Paste
-            DoExteriorTextureRegionBufferPaste(
+            DoExteriorTextureBlit(
                 *sourceRestorePayload.ExteriorTextureLayerBufferRegion,
-                adjustedPasteSourceRegionExterior,
-                *adjustedDestinationRegionExterior,
+                clippedPasteSourceRegionExterior,
+                adjustedDestinationRegionExterior->origin,
                 isTransparent);
         }
 
@@ -2662,10 +3290,10 @@ GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
         {
             // Paste
             assert(sourceRestorePayload.InteriorTextureLayerBufferRegion);
-            DoInteriorTextureRegionBufferPaste(
+            DoInteriorTextureBlit(
                 *sourceRestorePayload.InteriorTextureLayerBufferRegion,
-                *adjustedPasteSourceRegion,
-                *adjustedDestinationRegion,
+                *clippedSourceRegion,
+                adjustedDestinationRegion->origin,
                 isTransparent);
         }
 
@@ -2677,7 +3305,7 @@ GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
     // Finalize restore
     //
 
-    GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload restorePayload;
+    InteriorTextureSpaceEphemeralVisualizationRestoreRegions restorePayload;
 
     restorePayload.AddRegion(std::move(sourceRestorePayload));
 
@@ -2688,7 +3316,6 @@ GenericInteriorTextureSpaceEphemeralVisualizationRestorePayload ModelController:
 
     return restorePayload;
 }
-
 
 template<>
 std::optional<ShipSpaceRect> ModelController::ReplaceCustomMaterials<LayerType::Structural>(std::map<StructuralMaterial const *, StructuralMaterial const *> const & replacementMap)
@@ -2843,7 +3470,17 @@ std::optional<ShipSpaceRect> ModelController::ReplaceCustomMaterials<LayerType::
     return affectedRect;
 }
 
+//
+// Visualizations
+//
 
+
+
+
+
+
+
+// TODOHERE
 
 
 //
@@ -2988,181 +3625,6 @@ void ModelController::RestoreElectricalLayerRegionBackup(
 // Ropes
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ModelController::SetRopesLayer(RopesLayerData && ropesLayer)
-{
-    mModel.SetRopesLayer(std::move(ropesLayer));
-
-    InitializeRopesLayerAnalysis();
-
-    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
-
-    mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization = false;
-}
-
-void ModelController::RemoveRopesLayer()
-{
-    assert(mModel.HasLayer(LayerType::Ropes));
-
-    mModel.RemoveRopesLayer();
-
-    InitializeRopesLayerAnalysis();
-
-    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
-
-    mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization = false;
-}
-
-std::unique_ptr<RopesLayerData> ModelController::CloneRopesLayer() const
-{
-    return mModel.CloneRopesLayer();
-}
-
-StructuralMaterial const * ModelController::SampleRopesMaterialAt(ShipSpaceCoordinates const & coords) const
-{
-    assert(mModel.HasLayer(LayerType::Ropes));
-    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
-
-    assert(coords.IsInSize(mModel.GetShipSize()));
-
-    return mModel.GetRopesLayer().Buffer.SampleMaterialEndpointAt(coords);
-}
-
-std::set<StructuralMaterial const *> ModelController::GetRopesMaterialsInUse(std::vector<StructuralMaterial const *> const & candidates) const
-{
-    assert(mModel.HasLayer(LayerType::Ropes));
-    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
-
-    std::set<StructuralMaterial const *> materialsInUse;
-
-    // Make set for faster lookup
-    std::set<StructuralMaterial const *> candidateSet(
-        candidates.cbegin(),
-        candidates.cend());
-
-    // Lookup
-    auto const & ropesLayerBuffer = mModel.GetRopesLayer().Buffer;
-    for (size_t i = 0; i < ropesLayerBuffer.GetElementCount(); ++i)
-    {
-        auto const * layerMaterial = ropesLayerBuffer[i].Material;
-        if (candidateSet.find(layerMaterial) != candidateSet.end())
-        {
-            materialsInUse.insert(layerMaterial);
-        }
-    }
-
-    return materialsInUse;
-}
-
-std::optional<size_t> ModelController::GetRopeElementIndexAt(ShipSpaceCoordinates const & coords) const
-{
-    assert(mModel.HasLayer(LayerType::Ropes));
-
-    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
-
-    auto const searchIt = std::find_if(
-        mModel.GetRopesLayer().Buffer.cbegin(),
-        mModel.GetRopesLayer().Buffer.cend(),
-        [&coords](RopeElement const & e)
-        {
-            return coords == e.StartCoords
-                || coords == e.EndCoords;
-        });
-
-    if (searchIt != mModel.GetRopesLayer().Buffer.cend())
-    {
-        return std::distance(mModel.GetRopesLayer().Buffer.cbegin(), searchIt);
-    }
-    else
-    {
-        return std::nullopt;
-    }
-}
-
-void ModelController::AddRope(
-    ShipSpaceCoordinates const & startCoords,
-    ShipSpaceCoordinates const & endCoords,
-    StructuralMaterial const * material)
-{
-    assert(mModel.HasLayer(LayerType::Ropes));
-
-    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
-
-    //
-    // Update model
-    //
-
-    AppendRope(
-        startCoords,
-        endCoords,
-        material);
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
-}
-
-void ModelController::MoveRopeEndpoint(
-    size_t ropeElementIndex,
-    ShipSpaceCoordinates const & oldCoords,
-    ShipSpaceCoordinates const & newCoords)
-{
-    assert(mModel.HasLayer(LayerType::Ropes));
-
-    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
-
-    //
-    // Update model
-    //
-
-    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.GetElementCount());
-
-    MoveRopeEndpoint(
-        mModel.GetRopesLayer().Buffer[ropeElementIndex],
-        oldCoords,
-        newCoords);
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
-}
-
-bool ModelController::EraseRopeAt(ShipSpaceCoordinates const & coords)
-{
-    assert(mModel.HasLayer(LayerType::Ropes));
-
-    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
-
-    //
-    // Update model
-    //
-
-    bool const hasRemoved = InternalEraseRopeAt(coords);
-
-    if (hasRemoved)
-    {
-        // Update visualization
-        RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
-
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-void ModelController::EraseRopesRegion(ShipSpaceRect const & region)
-{
-    assert(mModel.HasLayer(LayerType::Ropes));
-
-    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
-
-    DoRopesRegionErase(region);
-}
 
 void ModelController::RestoreRopesLayerBackup(
     RopesLayerData && sourceLayerBackup,
@@ -3175,463 +3637,14 @@ void ModelController::RestoreRopesLayerBackup(
     InitializeRopesLayerAnalysis();
 }
 
-void ModelController::RestoreRopesLayerComplete(std::unique_ptr<RopesLayerData> sourceLayer)
-{
-    assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
-
-    //
-    // Restore model
-    //
-
-    mModel.RestoreRopesLayer(std::move(sourceLayer));
-
-    //
-    // Re-initialize layer analysis
-    //
-
-    InitializeRopesLayerAnalysis();
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
-}
-
-void ModelController::AddRopeForEphemeralVisualization(
-    ShipSpaceCoordinates const & startCoords,
-    ShipSpaceCoordinates const & endCoords,
-    StructuralMaterial const * material)
-{
-    assert(mModel.HasLayer(LayerType::Ropes));
-
-    //
-    // Update model with just material - no analyses
-    //
-
-    AppendRope(
-        startCoords,
-        endCoords,
-        material);
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
-
-    // Remember we are in temp visualization now
-    mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization = true;
-}
-
-void ModelController::ModelController::MoveRopeEndpointForEphemeralVisualization(
-    size_t ropeElementIndex,
-    ShipSpaceCoordinates const & oldCoords,
-    ShipSpaceCoordinates const & newCoords)
-{
-    assert(mModel.HasLayer(LayerType::Ropes));
-
-    //
-    // Update model with jsut movement - no analyses
-    //
-
-    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.GetElementCount());
-
-    MoveRopeEndpoint(
-        mModel.GetRopesLayer().Buffer[ropeElementIndex],
-        oldCoords,
-        newCoords);
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
-
-    // Remember we are in temp visualization now
-    mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization = true;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Exterior Texture
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TextureLayerData const & ModelController::GetExteriorTextureLayer() const
-{
-    assert(mModel.HasLayer(LayerType::ExteriorTexture));
-
-    return mModel.GetExteriorTextureLayer();
-}
-
-void ModelController::SetExteriorTextureLayer(
-    TextureLayerData && exteriorTextureLayer,
-    std::optional<std::string> originalTextureArtCredits)
-{
-    mModel.SetExteriorTextureLayer(std::move(exteriorTextureLayer));
-    mModel.GetShipMetadata().ArtCredits = std::move(originalTextureArtCredits);
-
-    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
-    RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(GetWholeExteriorTextureRect());
-
-    mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization = false;
-}
-
-void ModelController::RemoveExteriorTextureLayer()
-{
-    assert(mModel.HasLayer(LayerType::ExteriorTexture));
-
-    auto const oldWholeTextureRect = GetWholeExteriorTextureRect();
-
-    mModel.RemoveExteriorTextureLayer();
-    mModel.GetShipMetadata().ArtCredits.reset();
-
-    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
-    RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(oldWholeTextureRect);
-
-    mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization = false;
-}
-
-std::unique_ptr<TextureLayerData> ModelController::CloneExteriorTextureLayer() const
-{
-    return mModel.CloneExteriorTextureLayer();
-}
-
-void ModelController::EraseExteriorTextureRegion(ImageRect const & region)
-{
-    assert(mModel.HasLayer(LayerType::ExteriorTexture));
-
-    assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
-
-    DoExteriorTextureRegionErase(region);
-}
-
-std::optional<ImageRect> ModelController::ExteriorTextureMagicWandEraseBackground(
-    ImageCoordinates const & start,
-    unsigned int tolerance,
-    bool isAntiAlias,
-    bool doContiguousOnly)
-{
-    assert(mModel.HasLayer(LayerType::ExteriorTexture));
-
-    assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
-
-    //
-    // Update model
-    //
-
-    std::optional<ImageRect> affectedRect = DoTextureMagicWandEraseBackground(
-        start,
-        tolerance,
-        isAntiAlias,
-        doContiguousOnly,
-        mModel.GetExteriorTextureLayer());
-
-    if (affectedRect.has_value())
-    {
-        //
-        // Update visualization
-        //
-
-        RegisterDirtyVisualization<VisualizationType::Game>(ExteriorImageRectToContainingShipSpaceRect(*affectedRect));
-        RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(*affectedRect);
-    }
-
-    return affectedRect;
-}
-
-void ModelController::RestoreExteriorTextureLayerRegionBackup(
-    TextureLayerData && sourceLayerRegionBackup,
-    ImageRect const & originatingRegion)
-{
-    assert(mModel.HasLayer(LayerType::ExteriorTexture));
-
-    assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
-
-    //
-    // Restore model
-    //
-
-    auto const affectedRegion = ImageRect(
-        originatingRegion.origin,
-        sourceLayerRegionBackup.Buffer.Size);
-
-    mModel.GetExteriorTextureLayer().RestoreRegionBackup(
-        std::move(sourceLayerRegionBackup),
-        originatingRegion.origin);
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::Game>(ExteriorImageRectToContainingShipSpaceRect(affectedRegion));
-    RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(affectedRegion);
-}
-
-void ModelController::RestoreExteriorTextureLayerComplete(
-    std::unique_ptr<TextureLayerData> exteriorTextureLayer,
-    std::optional<std::string> originalTextureArtCredits)
-{
-    assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
-
-    //
-    // Restore model
-    //
-
-    mModel.RestoreExteriorTextureLayer(std::move(exteriorTextureLayer));
-    mModel.GetShipMetadata().ArtCredits = std::move(originalTextureArtCredits);
-
-    //
-    // Update visualization
-    //
-
-    mGameVisualizationTexture.reset();
-    mGameVisualizationAutoTexturizationTexture.release();
-    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
-    if (mModel.HasLayer(LayerType::ExteriorTexture))
-    {
-        RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(GetWholeExteriorTextureRect());
-    }
-    else
-    {
-        // We've just removed the texture layer; we rely now on texture viz mode being set to None
-        // before we UpdateVisualizations(), causing the View texture to be removed
-    }
-}
-
-void ModelController::ExteriorTextureRegionEraseForEphemeralVisualization(ImageRect const & region)
-{
-    assert(mModel.HasLayer(LayerType::ExteriorTexture));
-
-    //
-    // Update model
-    //
-
-    auto & textureLayerBuffer = mModel.GetExteriorTextureLayer().Buffer;
-
-    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
-    {
-        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
-        {
-            textureLayerBuffer[{x, y}].a = 0;
-        }
-    }
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::Game>(ExteriorImageRectToContainingShipSpaceRect(region));
-    RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(region);
-
-    // Remember we are in temp visualization now
-    mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization = true;
-}
-
-void ModelController::MakeExteriorLayerFromImage(
-    TextureLayerData const & source,
-    ImageRect const & sourceRegion,
-    ImageCoordinates const & targetOrigin)
-{
-    assert(mModel.HasLayer(LayerType::ExteriorTexture));
-    assert(!mEphemeralVisualizationLayerState.IsExteriorTextureLayerInEphemeralVisualization);
-
-    mModel.SetExteriorTextureLayer(
-        DoMakeTextureLayerFromImage(
-            source,
-            sourceRegion,
-            targetOrigin));
-
-    //
-    // Update visualization
-    //
-
-    mGameVisualizationTexture.reset();
-    mGameVisualizationAutoTexturizationTexture.release();
-    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
-    RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(GetWholeExteriorTextureRect());
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Interior Texture
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-TextureLayerData const & ModelController::GetInteriorTextureLayer() const
-{
-    assert(mModel.HasLayer(LayerType::InteriorTexture));
-
-    return mModel.GetInteriorTextureLayer();
-}
-
-void ModelController::SetInteriorTextureLayer(TextureLayerData && textureLayer)
-{
-    mModel.SetInteriorTextureLayer(std::move(textureLayer));
-
-    RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(GetWholeInteriorTextureRect());
-
-    mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization = false;
-}
-
-void ModelController::RemoveInteriorTextureLayer()
-{
-    assert(mModel.HasLayer(LayerType::InteriorTexture));
-
-    auto const oldWholeTextureRect = GetWholeInteriorTextureRect();
-
-    mModel.RemoveInteriorTextureLayer();
-
-    RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(oldWholeTextureRect);
-
-    mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization = false;
-}
-
-std::unique_ptr<TextureLayerData> ModelController::CloneInteriorTextureLayer() const
-{
-    return mModel.CloneInteriorTextureLayer();
-}
-
-void ModelController::EraseInteriorTextureRegion(ImageRect const & region)
-{
-    assert(mModel.HasLayer(LayerType::InteriorTexture));
-
-    assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
-
-    DoInteriorTextureRegionErase(region);
-}
-
-std::optional<ImageRect> ModelController::InteriorTextureMagicWandEraseBackground(
-    ImageCoordinates const & start,
-    unsigned int tolerance,
-    bool isAntiAlias,
-    bool doContiguousOnly)
-{
-    assert(mModel.HasLayer(LayerType::InteriorTexture));
-
-    assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
-
-    //
-    // Update model
-    //
-
-    std::optional<ImageRect> affectedRect = DoTextureMagicWandEraseBackground(
-        start,
-        tolerance,
-        isAntiAlias,
-        doContiguousOnly,
-        mModel.GetInteriorTextureLayer());
-
-    if (affectedRect.has_value())
-    {
-        //
-        // Update visualization
-        //
-
-        RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(*affectedRect);
-    }
-
-    return affectedRect;
-}
-
-void ModelController::RestoreInteriorTextureLayerRegionBackup(
-    TextureLayerData && sourceLayerRegionBackup,
-    ImageRect const & originatingRegion)
-{
-    assert(mModel.HasLayer(LayerType::InteriorTexture));
-
-    assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
-
-    //
-    // Restore model
-    //
-
-    auto const affectedRegion = ImageRect(
-        originatingRegion.origin,
-        sourceLayerRegionBackup.Buffer.Size);
-
-    mModel.GetInteriorTextureLayer().RestoreRegionBackup(
-        std::move(sourceLayerRegionBackup),
-        originatingRegion.origin);
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(affectedRegion);
-}
-
-void ModelController::RestoreInteriorTextureLayerComplete(std::unique_ptr<TextureLayerData> interiorTextureLayer)
-{
-    assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
-
-    //
-    // Restore model
-    //
-
-    mModel.RestoreInteriorTextureLayer(std::move(interiorTextureLayer));
-
-    //
-    // Update visualization
-    //
-
-    if (mModel.HasLayer(LayerType::InteriorTexture))
-    {
-        RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(GetWholeInteriorTextureRect());
-    }
-    else
-    {
-        // We've just removed the texture layer; we rely now on texture viz mode being set to None
-        // before we UpdateVisualizations(), causing the View texture to be remove
-    }
-}
-
-void ModelController::InteriorTextureRegionEraseForEphemeralVisualization(ImageRect const & region)
-{
-    assert(mModel.HasLayer(LayerType::InteriorTexture));
-
-    //
-    // Update model
-    //
-
-    auto & textureLayerBuffer = mModel.GetInteriorTextureLayer().Buffer;
-
-    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
-    {
-        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
-        {
-            textureLayerBuffer[{x, y}].a = 0;
-        }
-    }
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(region);
-
-    // Remember we are in temp visualization now
-    mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization = true;
-}
-
-void ModelController::MakeInteriorLayerFromImage(
-    TextureLayerData const & source,
-    ImageRect const & sourceRegion,
-    ImageCoordinates const & targetOrigin)
-{
-    assert(mModel.HasLayer(LayerType::InteriorTexture));
-    assert(!mEphemeralVisualizationLayerState.IsInteriorTextureLayerInEphemeralVisualization);
-
-    mModel.SetInteriorTextureLayer(
-        DoMakeTextureLayerFromImage(
-            source,
-            sourceRegion,
-            targetOrigin));
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(GetWholeInteriorTextureRect());
-}
 
 
 
@@ -4522,7 +4535,7 @@ void ModelController::WriteParticle(
     electricalLayerBuffer[coords] = ElectricalElement(material, instanceIndex);
 }
 
-void ModelController::AppendRope(
+void ModelController::InternalAppendRope(
     ShipSpaceCoordinates const & startCoords,
     ShipSpaceCoordinates const & endCoords,
     StructuralMaterial const * material)
@@ -4536,7 +4549,7 @@ void ModelController::AppendRope(
         material->RenderColor);
 }
 
-void ModelController::MoveRopeEndpoint(
+void ModelController::InternalMoveRopeEndpoint(
     RopeElement & ropeElement,
     ShipSpaceCoordinates const & oldCoords,
     ShipSpaceCoordinates const & newCoords)

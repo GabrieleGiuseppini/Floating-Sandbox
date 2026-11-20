@@ -42,8 +42,10 @@ namespace ShipBuilder {
  *
  * The ModelController does not maintain the model's dirtyness; that is managed by the Controller.
  *
- * Some rules:
+ * Some geenral rules, trying to stick to these:
  *  - Operations return ShipBodyRegions/ShipEphVizRestoreRegions
+ *  - Undo backups created/restored with Layers::Make[Region]Backup/Layers::Restore[Region]Backup
+ *  - Eph viz restore payloads created/restored with Layers::Clone[Region]/Buffers::Blit
  */
 class ModelController : public IModelObservable
 {
@@ -463,6 +465,7 @@ public:
     void SetExteriorTextureLayer(
         TextureLayerData && exteriorTextureLayer,
         std::optional<std::string> originalTextureArtCredits);
+
     void RemoveExteriorTextureLayer();
 
     std::unique_ptr<TextureLayerData> CloneExteriorTextureLayer() const;
@@ -471,7 +474,7 @@ public:
 
     void EraseExteriorTextureRegionForEphemeralVisualization(ImageRect const & region);
 
-    std::optional<ExteriorTextureSpaceBodyRegions> ExteriorTextureMagicWandEraseBackground(
+    std::optional<ExteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion> ExteriorTextureMagicWandEraseBackground(
         ImageCoordinates const & start,
         unsigned int tolerance,
         bool isAntiAlias,
@@ -500,6 +503,7 @@ public:
     }
 
     void SetInteriorTextureLayer(TextureLayerData && interiorTextureLayer);
+
     void RemoveInteriorTextureLayer();
 
     std::unique_ptr<TextureLayerData> CloneInteriorTextureLayer() const;
@@ -508,7 +512,7 @@ public:
 
     void EraseInteriorTextureRegionForEphemeralVisualization(ImageRect const & region);
 
-    std::optional<InteriorTextureSpaceBodyRegions> InteriorTextureMagicWandEraseBackground(
+    std::optional<InteriorTextureSpaceBodyRegions::TextureSpaceBodyRegion> InteriorTextureMagicWandEraseBackground(
         ImageCoordinates const & start,
         unsigned int tolerance,
         bool isAntiAlias,
@@ -766,12 +770,12 @@ private:
         ShipSpaceCoordinates const & coords,
         ElectricalMaterial const * material);
 
-    inline void AppendRope(
+    inline void InternalAppendRope(
         ShipSpaceCoordinates const & startCoords,
         ShipSpaceCoordinates const & endCoords,
         StructuralMaterial const * material);
 
-    void MoveRopeEndpoint(
+    void InternalMoveRopeEndpoint(
         RopeElement & ropeElement,
         ShipSpaceCoordinates const & oldCoords,
         ShipSpaceCoordinates const & newCoords);
@@ -779,7 +783,7 @@ private:
     bool InternalEraseRopeAt(ShipSpaceCoordinates const & coords);
 
     template<LayerType TLayer>
-    std::optional<ShipSpaceBodyRegions::ShipSpaceBodyRegion> DoFlood(
+    std::optional<ShipSpaceRect> DoFlood(
         ShipSpaceCoordinates const & start,
         typename LayerTypeTraits<TLayer>::material_type const * material,
         bool doContiguousOnly,
