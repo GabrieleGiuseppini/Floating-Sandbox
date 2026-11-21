@@ -329,6 +329,8 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
 template<LayerType TLayer>
 void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mouseCoordinates)
 {
+    assert(!mEphemeralVisualization);
+
     if (mEngagementData)
     {
         //

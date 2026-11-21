@@ -1708,13 +1708,20 @@
 				= Tools: for all: EphViz, Undo
 					= StructuralRectangle
 						- See perf
-					+ Pencil
+							- color::default cctor: poison it first, then make with uninit'd vals
+							- Avoid when rect == prev
+								- Would be nice to use rect in eph viz, but then it has to become single region
+									- StructuralRectangle ops returns single region
+					= Pencil
 						+ S
-						+ E
-					- Flood
+						= E
+							+ Base
+							- When can't write (same issue as with line - empty dirty regions)
+					+ Flood
 					- Line
-						- S
+						+ S
 						- E
+							- FIX: assert when no dirty regions
 					
 					- MeasuringTape
 					- Sampler
