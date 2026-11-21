@@ -1704,6 +1704,47 @@
 				+ MC::Copy, Cut: makes ShipBodyRegion for ClipboardManager, from (*1)
 				+ MC::Paste, etc.: tales ShipBodyRegion from ClipboardManager
 
+			= Tests:
+				= Tools: for all: EphViz, Undo
+					= StructuralRectangle
+						- See perf
+					+ Pencil
+						+ S
+						+ E
+					- Flood
+					- Line
+						- S
+						- E
+					
+					- MeasuringTape
+					- Sampler
+					- Selection
+
+					- StructureTracer
+					- TextureEraser
+					- TextureMagicWand
+					- TextureTranslate
+
+					- RopeEraser
+					- RopePencil
+					- SelectAndTranslate
+
+				- Cut 
+					- Undo
+					- May paste -- right clipboard content
+				- Copy
+					- May paste -- right clipboard content
+				- Paste
+					- Eph viz -- translating
+					- Commit
+					- Abort
+					- Undo
+
+				- Add/Remove Layers & Undo -- all layers
+				- Resize ship & Undo -- some layers, all layers
+				- 
+
+
 			- RopesBuffer::BlitFromRegion
 				- Args:
 					- source: takes whole RopesBuffer

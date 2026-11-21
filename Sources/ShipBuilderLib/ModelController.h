@@ -938,9 +938,7 @@ private:
 
     // Debugging
 
-#ifdef _DEBUG
     void VerifyElectricalLayerInvariants() const;
-#endif
 
 private:
 
