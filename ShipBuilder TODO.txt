@@ -1418,8 +1418,7 @@
 				+ Remove log lines
 				+ Remove old code
 
-	= TODO: rethink: fixing bug with unoffseted coords becoming "in size":
-
+	+ Rethink: fixing bug with unoffseted coords becoming "in size":
 		! Gist:
 			! ShipBodyRegion:
 				! Whole ElecPanel, whole RopesLayer
@@ -1432,7 +1431,7 @@
 				- Source ropes backup is always whole buffer
 			! Paste, SelectAndTranslate shifts: act on XYZBuffer::BlitFromRegion, via MC::XYZRegionPaste
 
-		= Impl:
+		+ Impl:
 
 			+ Undo all current uncommitted changes, once we're sure we're doing this
 
@@ -1774,14 +1773,15 @@
 				+ Unit tests
 					+ Also cover clamp
 
-			- Merge back into shipbuilder_translate_tool
+			+ Merge back into shipbuilder_translate_tool
 
 	- Perf test
-		- Copy old release ShipBuilder.exe first
+		+ Copy old release ShipBuilder.exe first
 		- See auto-texturization with integers
 
-	- Merge into master with PR
-	- Changelist
+	+ Merge into master
+	- Clean this plan
+	+ Changelist
 
 
 
