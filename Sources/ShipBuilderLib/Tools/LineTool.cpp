@@ -373,22 +373,25 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
         mEphemeralVisualization.emplace(
             [this, dirtyRegions = std::move(dirtyRegions)]()
             {
-                if constexpr (TLayer == LayerType::Structural)
+                if (!dirtyRegions.IsEmpty())
                 {
-                    assert(mOriginalLayerClone.LayerRegions.StructuralLayer);
+                    if constexpr (TLayer == LayerType::Structural)
+                    {
+                        assert(mOriginalLayerClone.LayerRegions.StructuralLayer);
 
-                    mController.GetModelController().RestoreStructuralLayerEphemeralVisualizationRegions(
-                        mOriginalLayerClone.LayerRegions.StructuralLayer->Buffer,
-                        dirtyRegions);
-                }
-                else
-                {
-                    static_assert(TLayer == LayerType::Electrical);
-                    assert(mOriginalLayerClone.LayerRegions.ElectricalLayer);
+                        mController.GetModelController().RestoreStructuralLayerEphemeralVisualizationRegions(
+                            mOriginalLayerClone.LayerRegions.StructuralLayer->Buffer,
+                            dirtyRegions);
+                    }
+                    else
+                    {
+                        static_assert(TLayer == LayerType::Electrical);
+                        assert(mOriginalLayerClone.LayerRegions.ElectricalLayer);
 
-                    mController.GetModelController().RestoreElectricalLayerEphemeralVisualizationRegions(
-                        mOriginalLayerClone.LayerRegions.ElectricalLayer->Buffer,
-                        dirtyRegions);
+                        mController.GetModelController().RestoreElectricalLayerEphemeralVisualizationRegions(
+                            mOriginalLayerClone.LayerRegions.ElectricalLayer->Buffer,
+                            dirtyRegions);
+                    }
                 }
 
                 mController.GetView().RemoveDashedLineOverlay();
