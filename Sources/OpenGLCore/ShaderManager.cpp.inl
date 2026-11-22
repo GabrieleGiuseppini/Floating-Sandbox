@@ -461,6 +461,13 @@ std::set<std::string> ShaderManager<TShaderSet>::ExtractParameterNames(GameOpenG
             nameBuffer);
         CheckOpenGLError();
 
+#ifdef __EMSCRIPTEN__
+        if (strncmp(nameBuffer, "glweb", 5) == 0)
+        {
+            continue;
+        }
+#endif
+
         if (static_cast<size_t>(nameLength) < sizeof(ParamPrefix) || strncmp(nameBuffer, ParamPrefix, sizeof(ParamPrefix)))
         {
             throw GameException("Uniform name \"" + std::string(nameBuffer, nameLength) + "\" does not follow the expected name structure: missing \"param\" prefix");
