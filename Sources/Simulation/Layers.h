@@ -31,7 +31,7 @@ struct StructuralLayerData
     Buffer2D<StructuralElement, ShipSpaceTag> Buffer;
 
     explicit StructuralLayerData(ShipSpaceSize shipSize)
-        : Buffer(shipSize)
+        : Buffer(shipSize, StructuralElement())
     {}
 
     explicit StructuralLayerData(Buffer2D<StructuralElement, ShipSpaceTag> && buffer)
@@ -102,14 +102,14 @@ struct ElectricalLayerData
     ElectricalPanel Panel;
 
     explicit ElectricalLayerData(ShipSpaceSize shipSize)
-        : Buffer(shipSize)
+        : Buffer(shipSize, ElectricalElement())
         , Panel()
     {}
 
     ElectricalLayerData(
         ShipSpaceSize shipSize,
         ElectricalPanel && panel)
-        : Buffer(shipSize)
+        : Buffer(shipSize, ElectricalElement())
         , Panel(std::move(panel))
     {}
 
@@ -214,11 +214,6 @@ struct RopesLayerData
     {
         return RopesLayerData(Buffer.Clone());
     }
-
-    //RopesLayerData CloneRegion(ShipSpaceRect const & region) const
-    //{
-    //    return RopesLayerData(Buffer.CloneRegion(region));
-    //}
 
     RopesLayerData MakeBackup() const
     {

@@ -67,14 +67,12 @@ BffFont BffFont::Load(
     std::memcpy(&(glyphWidths[0]), &(header[20]), 256);
 
     // Read texture image
-    size_t const textureByteSize = textureSize.GetLinearSize() * sizeof(rgbaColor);
-    std::unique_ptr<rgbaColor[]> textureData = std::make_unique<rgbaColor[]>(textureByteSize);
-    szRead = readStream->Read(reinterpret_cast<uint8_t *>(textureData.get()), textureByteSize);
-    if (szRead != textureByteSize)
+    RgbaImageData texture(textureSize);
+    szRead = readStream->Read(reinterpret_cast<uint8_t *>(texture.Data.get()), texture.GetByteSize());
+    if (szRead != texture.GetByteSize())
     {
         throw GameException("Font \"" + fontSetName + "::" + fontRelativePath + "\" is not a valid font");
     }
-    RgbaImageData texture(textureSize, std::move(textureData));
 
     return BffFont(
         baseTextureCharacter,

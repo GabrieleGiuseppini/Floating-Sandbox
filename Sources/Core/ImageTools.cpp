@@ -334,7 +334,7 @@ void ImageTools::Transform(
 
 RgbaImageData ImageTools::MakeGreyscale(RgbaImageData const & imageData)
 {
-    std::unique_ptr<rgbaColor[]> newImageData = std::make_unique<rgbaColor[]>(imageData.Size.GetLinearSize());
+    RgbaImageData newImage(imageData.Size);
 
     int const h = imageData.Size.height;
     int const w = imageData.Size.width;
@@ -345,11 +345,11 @@ RgbaImageData ImageTools::MakeGreyscale(RgbaImageData const & imageData)
         {
             auto const & src = imageData.Data[rowStartIndex + c];
             rgbaColor::data_type const grey = static_cast<rgbaColor::data_type>((static_cast<int>(src.r) + static_cast<int>(src.g) + static_cast<int>(src.b)) / 3);
-            newImageData[rowStartIndex + c] = rgbaColor(grey, grey, grey, src.a);
+            newImage.Data[rowStartIndex + c] = rgbaColor(grey, grey, grey, src.a);
         }
     }
 
-    return RgbaImageData(imageData.Size, std::move(newImageData));
+    return newImage;
 }
 
 RgbaImageData ImageTools::MakeVerticalGradient(
@@ -357,7 +357,7 @@ RgbaImageData ImageTools::MakeVerticalGradient(
         rgbColor const & endColor,
         ImageSize imageSize)
 {
-    std::unique_ptr<rgbaColor[]> newImageData = std::make_unique<rgbaColor[]>(imageSize.GetLinearSize());
+    RgbaImageData newImage(imageSize);
 
     if (imageSize.height > 0)
     {
@@ -374,12 +374,12 @@ RgbaImageData ImageTools::MakeVerticalGradient(
             auto const rowStartIndex = r * w;
             for (int c = 0; c < w; ++c)
             {
-                newImageData[rowStartIndex + c] = color;
+                newImage.Data[rowStartIndex + c] = color;
             }
         }
     }
 
-    return RgbaImageData(imageSize, std::move(newImageData));
+    return newImage;
 }
 
 void ImageTools::AlphaPreMultiply(RgbaImageData & imageData)
@@ -439,7 +439,7 @@ RgbaImageData ImageTools::Truncate(
 {
     ImageSize const finalImageSize = imageSize.Intersection(imageData.Size);
 
-    std::unique_ptr<rgbaColor[]> newImageData = std::make_unique<rgbaColor[]>(finalImageSize.GetLinearSize());
+    RgbaImageData newImage(finalImageSize);
 
     for (int r = 0; r < finalImageSize.height; ++r)
     {
@@ -447,27 +447,27 @@ RgbaImageData ImageTools::Truncate(
         auto const writeRowStartIndex = r * finalImageSize.width;
         for (int c = 0; c < finalImageSize.width; ++c)
         {
-            newImageData[writeRowStartIndex + c] = imageData.Data[readRowStartIndex + c];
+            newImage.Data[writeRowStartIndex + c] = imageData.Data[readRowStartIndex + c];
         }
     }
 
-    return RgbaImageData(finalImageSize, std::move(newImageData));
+    return newImage;
 }
 
 RgbImageData ImageTools::ToRgb(RgbaImageData const & imageData)
 {
-    std::unique_ptr<rgbColor[]> newImageData = std::make_unique<rgbColor[]>(imageData.Size.GetLinearSize());
+    RgbImageData newImage(imageData.Size);
 
     for (int r = 0; r < imageData.Size.height; ++r)
     {
         auto const rowStartIndex = r * imageData.Size.width;
         for (int c = 0; c < imageData.Size.width; ++c)
         {
-            newImageData[rowStartIndex + c] = imageData.Data[rowStartIndex + c].toRgbColor();
+            newImage.Data[rowStartIndex + c] = imageData.Data[rowStartIndex + c].toRgbColor();
         }
     }
 
-    return RgbImageData(imageData.Size, std::move(newImageData));
+    return newImage;
 }
 
 //////////////////////////////////////////////////////////////////////////

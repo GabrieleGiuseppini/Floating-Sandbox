@@ -6,10 +6,10 @@
 #pragma once
 
 #include "GameTypes.h"
+#include "SysSpecifics.h"
 
 #include <algorithm>
 #include <cstring>
-#include <memory>
 
 template <typename TElement, typename TIntegralSpaceTag>
 struct Buffer2D
@@ -17,13 +17,19 @@ struct Buffer2D
 public:
 
     using element_type = TElement;
+    using buffer_type = unique_aligned_buffer<TElement>;
     using coordinates_type = _IntegralCoordinates<TIntegralSpaceTag>;
     using size_type = _IntegralSize<TIntegralSpaceTag>;
 
 public:
 
     size_type Size;
-    std::unique_ptr<TElement[]> Data;
+    buffer_type Data;
+
+    static buffer_type alloc_buffer(size_t linearSize)
+    {
+        return make_unique_buffer_aligned_to_vectorization_word<TElement>(linearSize);
+    }
 
     explicit Buffer2D(size_type size)
         : Buffer2D(
@@ -38,7 +44,10 @@ public:
         : Size(width, height)
         , mLinearSize(static_cast<size_t>(width) * static_cast<size_t>(height))
     {
-        Data = std::make_unique<TElement[]>(mLinearSize);
+        if (mLinearSize > 0)
+        {
+            Data = alloc_buffer(mLinearSize);
+        }
     }
 
     Buffer2D(
@@ -58,13 +67,13 @@ public:
         : Size(width, height)
         , mLinearSize(width * height)
     {
-        Data = std::make_unique<TElement[]>(mLinearSize);
+        Data = alloc_buffer(mLinearSize);
         Fill(defaultValue);
     }
 
     Buffer2D(
         size_type size,
-        std::unique_ptr<TElement[]> data)
+        buffer_type data)
         : Buffer2D(
             size.width,
             size.height,
@@ -75,7 +84,7 @@ public:
     Buffer2D(
         int width,
         int height,
-        std::unique_ptr<TElement[]> data)
+        buffer_type data)
         : Size(width, height)
         , Data(std::move(data))
         , mLinearSize(width * height)
@@ -146,7 +155,7 @@ public:
 
     Buffer2D Clone() const
     {
-        auto newData = std::make_unique<TElement[]>(mLinearSize);
+        auto newData = alloc_buffer(mLinearSize);
 
         std::memcpy(newData.get(), Data.get(), mLinearSize * sizeof(TElement));
 
@@ -167,7 +176,7 @@ public:
         // The requested region is entirely within this buffer
         assert(regionRect.IsContainedInRect(_IntegralRect<TIntegralSpaceTag>(_IntegralCoordinates<TIntegralSpaceTag>(0, 0), Size)));
 
-        auto newData = std::make_unique<TElement[]>(regionRect.size.width * regionRect.size.height);
+        auto newData = alloc_buffer(regionRect.size.width * regionRect.size.height);
 
         for (int targetY = 0; targetY < regionRect.size.height; ++targetY)
         {
@@ -284,7 +293,7 @@ public:
         _IntegralCoordinates<TIntegralSpaceTag> const & originOffset, // Position in final buffer of original {0, 0}
         TElement const & fillerValue) const
     {
-        auto newData = std::make_unique<TElement[]>(newSize.width * newSize.height);
+        auto newData = alloc_buffer(newSize.width * newSize.height);
 
         int const leftFillerWRange = originOffset.x;
         int const rightFillerWRange = std::min(originOffset.x + Size.width, newSize.width);
@@ -354,16 +363,14 @@ public:
     template<typename TNewElement, typename TFunctor>
     Buffer2D<TNewElement, TIntegralSpaceTag> Transform(TFunctor const & elementOperator) const
     {
-        auto newData = std::make_unique<TNewElement[]>(mLinearSize);
+        Buffer2D<TNewElement, TIntegralSpaceTag> newBuffer(Size);
 
         for (size_t i = 0; i < mLinearSize; ++i)
         {
-            newData[i] = elementOperator(Data[i]);
+            newBuffer.Data[i] = elementOperator(Data[i]);
         }
 
-        return Buffer2D<TNewElement, TIntegralSpaceTag>(
-            Size,
-            std::move(newData));
+        return newBuffer;
     }
 
     template<typename TFunctor>
@@ -409,7 +416,7 @@ private:
     {
         size_type const newSize(Size.height, Size.width);
 
-        auto newData = std::make_unique<TElement[]>(mLinearSize);
+        auto newData = alloc_buffer(mLinearSize);
 
         for (int srcY = 0; srcY < Size.height; ++srcY)
         {

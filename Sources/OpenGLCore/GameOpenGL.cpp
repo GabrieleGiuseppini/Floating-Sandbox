@@ -315,8 +315,8 @@ void GameOpenGL::UploadMipmappedTexture(
 
     ImageSize readImageSize(baseTexture.Size);
 
-    std::unique_ptr<rgbaColor[]> readBuffer(std::move(baseTexture.Data));
-    std::unique_ptr<rgbaColor[]> writeBuffer = std::make_unique<rgbaColor[]>(
+    typename RgbaImageData::buffer_type readBuffer(std::move(baseTexture.Data));
+    typename RgbaImageData::buffer_type writeBuffer = RgbaImageData::alloc_buffer(
         std::max(
             1,
             (readImageSize.width / 2) * (readImageSize.height / 2)));
@@ -418,8 +418,8 @@ void GameOpenGL::UploadMipmappedAtlasTexture(
     // Create minified textures
     //
 
-    std::unique_ptr<rgbaColor const[]> readBuffer(std::move(baseTexture.Data));
-    std::unique_ptr<rgbaColor[]> writeBuffer;
+    typename RgbaImageData::buffer_type readBuffer(std::move(baseTexture.Data));
+    typename RgbaImageData::buffer_type writeBuffer;
 
     GLint lastUploadedTextureLevel = 0;
     for (int divisor = 2; maxDimension / divisor >= 1; divisor *= 2)
@@ -429,7 +429,7 @@ void GameOpenGL::UploadMipmappedAtlasTexture(
         int newHeight = std::max(1, baseTexture.Size.height / divisor);
 
         // Allocate new write buffer
-        writeBuffer.reset(new rgbaColor[newWidth * newHeight]);
+        writeBuffer = RgbaImageData::alloc_buffer(newWidth * newHeight);
 
         // Populate write buffer
         rgbaColor const * rp = readBuffer.get();
@@ -487,8 +487,8 @@ void GameOpenGL::UpdateMipmappedAtlasTextureRegion(
     // Create minified textures and update them
     //
 
-    std::unique_ptr<rgbaColor const []> readBuffer(std::move(baseTexture.Data));
-    std::unique_ptr<rgbaColor[]> writeBuffer;
+    typename RgbaImageData::buffer_type readBuffer(std::move(baseTexture.Data));
+    typename RgbaImageData::buffer_type writeBuffer;
 
     GLint lastUploadedTextureLevel = 0;
     for (int divisor = 2; maxDimension / divisor >= 1; divisor *= 2)
@@ -498,7 +498,7 @@ void GameOpenGL::UpdateMipmappedAtlasTextureRegion(
         int newHeight = std::max(1, baseTexture.Size.height / divisor);
 
         // Allocate new write buffer
-        writeBuffer.reset(new rgbaColor[newWidth * newHeight]);
+        writeBuffer = RgbaImageData::alloc_buffer(newWidth * newHeight);
 
         // Populate write buffer
         rgbaColor const * rp = readBuffer.get();

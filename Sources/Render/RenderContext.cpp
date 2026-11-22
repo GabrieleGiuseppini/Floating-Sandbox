@@ -394,7 +394,7 @@ RgbImageData RenderContext::TakeScreenshot()
 
     auto const canvasPhysicalSize = mRenderParameters.View.GetCanvasPhysicalSize();
 
-    auto pixelBuffer = std::make_unique<rgbColor[]>(canvasPhysicalSize.GetLinearSize());
+    RgbImageData screenshotImage(ImageSize(canvasPhysicalSize.width, canvasPhysicalSize.height));
 
     //
     // Take screnshot - synchronously
@@ -416,13 +416,11 @@ RgbImageData RenderContext::TakeScreenshot()
             CheckOpenGLError();
 
             // Read
-            glReadPixels(0, 0, canvasPhysicalSize.width, canvasPhysicalSize.height, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
+            glReadPixels(0, 0, canvasPhysicalSize.width, canvasPhysicalSize.height, GL_RGB, GL_UNSIGNED_BYTE, screenshotImage.Data.get());
             CheckOpenGLError();
         });
 
-    return RgbImageData(
-        ImageSize(canvasPhysicalSize.width, canvasPhysicalSize.height),
-        std::move(pixelBuffer));
+    return screenshotImage;
 }
 
 //////////////////////////////////////////////////////////////////////////////////

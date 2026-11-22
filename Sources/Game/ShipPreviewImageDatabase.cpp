@@ -100,7 +100,7 @@ RgbaImageData ShipPreviewImageDatabase::DeserializePreviewImage(
     ImageSize dimensions)
 {
     // Alloc buffer
-    std::unique_ptr<rgbaColor[]> buffer = std::make_unique<rgbaColor[]>(size);
+    auto buffer = RgbaImageData::alloc_buffer(size);
 
     // Read
     inputFile.Read(reinterpret_cast<std::uint8_t *>(buffer.get()), size);

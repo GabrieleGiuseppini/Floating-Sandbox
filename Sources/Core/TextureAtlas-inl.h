@@ -620,11 +620,10 @@ TextureAtlas<TTextureDatabase> TextureAtlasBuilder<TTextureDatabase>::InternalBu
     float const dy = 0.5f / static_cast<float>(specification.AtlasSize.height);
 
     // Allocate atlas image
-    size_t const imagePoints = specification.AtlasSize.width * specification.AtlasSize.height;
-    std::unique_ptr<rgbaColor[]> atlasImage(new rgbaColor[imagePoints]);
+    RgbaImageData atlasImage(specification.AtlasSize);
 
     // Fill atlas image - transparent black
-    std::fill_n(atlasImage.get(), imagePoints, rgbaColor::zero());
+    std::fill_n(atlasImage.Data.get(), atlasImage.GetLinearSize(), rgbaColor::zero());
 
     //
     // Copy all textures into image, building metadata at the same time
@@ -665,7 +664,7 @@ TextureAtlas<TTextureDatabase> TextureAtlasBuilder<TTextureDatabase>::InternalBu
         // Copy frame
         CopyImage(
             std::move(textureImageData),
-            atlasImage.get(),
+            atlasImage.Data.get(),
             specification.AtlasSize,
             frameActualPosition);
 
@@ -720,18 +719,13 @@ TextureAtlas<TTextureDatabase> TextureAtlasBuilder<TTextureDatabase>::InternalBu
 
     progressCallback(1.0f);
 
-    // Create atlas image
-    RgbaImageData atlasImageData(
-        specification.AtlasSize,
-        std::move(atlasImage));
-
     // Return atlas
     return TextureAtlas<TTextureDatabase>(
         TextureAtlasMetadata<TTextureDatabase>(
             specification.AtlasSize,
             options,
             std::move(allAtlasFrameMetadata)),
-        std::move(atlasImageData));
+        std::move(atlasImage));
 }
 
 template <typename TTextureDatabase>

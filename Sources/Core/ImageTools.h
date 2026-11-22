@@ -199,9 +199,7 @@ private:
         // If empty, return empty image
         if (minY == imageData.Size.height)
         {
-            return ImageData<TColor>(
-                ImageSize(0, 0),
-                std::unique_ptr<TColor[]>(new TColor[0]));
+            return ImageData<TColor>(ImageSize(0, 0));
         }
 
         int maxY;

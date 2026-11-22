@@ -658,7 +658,8 @@ RgbaImageData ShipTexturizer::MakeMaterialTextureSample(
         : *settings;
 
     // Create output image
-    auto sampleData = std::make_unique<rgbaColor[]>(sampleSize.GetLinearSize());
+    RgbaImageData sampleImage(sampleSize);
+    auto sampleData = sampleImage.Data.get();
 
     // Get bump map texture and render color
     MaterialImageData const & materialTexture = GetMaterialTexture(textureName, assetManager);
@@ -699,7 +700,7 @@ RgbaImageData ShipTexturizer::MakeMaterialTextureSample(
         }
     }
 
-    return RgbaImageData(sampleSize, std::move(sampleData));
+    return sampleImage;
 }
 
 ShipTexturizer::MaterialImageData const & ShipTexturizer::GetMaterialTexture(
