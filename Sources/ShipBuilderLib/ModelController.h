@@ -862,6 +862,7 @@ private:
 
     void DoRopesBlit(
         typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceBuffer,
+        ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetCoordinates, // Unclipped
         bool isTransparent);
 

@@ -362,6 +362,8 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                 }
             });
 
+        assert((!dirtyRegions.IsEmpty()) == mController.GetModelController().IsInEphemeralVisualization());
+
         // Note: we don't clip here - we allow line to be visible on background;
         // kind of cool
         mController.GetView().UploadDashedLineOverlay(

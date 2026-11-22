@@ -2181,7 +2181,10 @@
 
 	= ShipBuilder
 		+ Marge it back into master
+		- Duplicate material
 		- Changelist
+
+	- Talk to maple about ship
 
 	- Fork repo and start working on private
 

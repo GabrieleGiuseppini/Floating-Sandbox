@@ -746,9 +746,9 @@ ShipSpaceBodyRegions::ShipSpaceBodyRegion ModelController::Paste(
             assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
 
             // Paste
-            // TODO: args will change
             DoRopesBlit(
                 sourceRegion.LayerRegions.RopesLayer->Buffer,
+                sourceRegion.OriginatingRegion,
                 pasteOrigin, // Unclipped! For "hanging ropes"
                 isTransparent);
 
@@ -875,9 +875,9 @@ ShipSpaceEphemeralVisualizationRestoreRegions::ShipSpaceRestoreRegion ModelContr
             assert(!mEphemeralVisualizationLayerState.IsRopesLayerInEphemeralVisualization);
 
             // Paste
-            // TODO: args will change
             DoRopesBlit(
                 sourceRegion.LayerRegions.RopesLayer->Buffer,
+                sourceRegion.OriginatingRegion,
                 pasteOrigin, // Unclipped! For "hanging ropes"
                 isTransparent);
 
@@ -2670,10 +2670,9 @@ ShipSpaceBodyRegions ModelController::ShipSpaceRegionTransfer(
         {
             // Paste - including ropes with endpoints outside of copied region
             assert(sourceUndoPayload.LayerRegions.RopesLayer);
-            // TODO: args will change
             DoRopesBlit(
-                // TODOHERE!
-                sourceUndoPayload.LayerRegions.RopesLayer->Buffer, // TODOOLD: WAS: .CloneRegion(sourceRegion), // Source undo payload is _whole_ ropes buffer, thus endpoints are not shifted; we shift them here
+                sourceUndoPayload.LayerRegions.RopesLayer->Buffer,
+                sourceUndoPayload.OriginatingRegion,
                 destinationPos, // Unclipped! For "hanging ropes"
                 isTransparent);
         }
@@ -3071,10 +3070,9 @@ ShipSpaceEphemeralVisualizationRestoreRegions ModelController::ShipSpaceRegionTr
         {
             // Paste - including ropes with endpoints outside of copied region
             assert(sourceRestorePayload.RopesLayerBuffer);
-            // TODO: args will change
             DoRopesBlit(
-                // TODOHERE!
-                *sourceRestorePayload.RopesLayerBuffer, // TODOOLD: WAS: ->CloneRegion(sourceRegion), // Source restore payload is _whole_ ropes buffer, thus endpoints are not shifted; we shift them here
+                *sourceRestorePayload.RopesLayerBuffer,
+                sourceRestorePayload.OriginatingRegion,
                 destinationPos, // Unclipped! For "hanging ropes"
                 isTransparent);
         }
@@ -5139,6 +5137,7 @@ void ModelController::DoElectricalBlit(
 
 void ModelController::DoRopesBlit(
     typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceBuffer,
+    ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetCoordinates, // Unclipped
     bool isTransparent)
 {
@@ -5146,6 +5145,7 @@ void ModelController::DoRopesBlit(
 
     mModel.GetRopesLayer().Buffer.BlitFromRegion(
         sourceBuffer,
+        sourceRegion,
         targetCoordinates,
         isTransparent);
 

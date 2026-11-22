@@ -1436,14 +1436,14 @@
 
 			+ Undo all current uncommitted changes, once we're sure we're doing this
 
-			= GenericUndoPayload => ShipBodyRegion
+			+ GenericUndoPayload => ShipBodyRegion
 				+ Also contains OriginatingRegion, whose origin replaces current Origin
 				+ RopesBuffer is whole
 					+ Comments, naming
 				! Naming:
 					! UndoPayload methods: make "backup"
 					! Restore methods: take "backup"
-				- Creators:
+				+ Creators:
 					- MC::MakeGenericShipSpaceUndoPayload (*1)
 						- Rename: MakeXYZSpaceBodyRegion
 						- Uses XYZLayer::MakeRegionBackup X N
@@ -1457,8 +1457,8 @@
 							- See if can be replaced by new (*1)
 					- MC::MakeGenericXYZSpaceUndoPayload
 						- Uses XYZLayer::MakeRegionBackup X N
-				- Consumers:
-					- MC::Restore(XYZ)
+				+ Consumers:
+					+ MC::Restore(XYZ) -> RestoreForUndo
 						- Uses MC::InternalRestoreXYZLayerRegionBackup
 							- Must use XYZLayer::RestoreRegionBackup
 							+ See callers - will all they pass OriginatingRegion and not misuse it for glorified paste/transfer? Y
@@ -1755,15 +1755,15 @@
 				- 
 
 
-			- RopesBuffer::BlitFromRegion
-				- Args:
-					- source: takes whole RopesBuffer
-					- sourceRegion (rect): in source rect; contained in it
-					- targetPos (coods): absolute, possibly outside of source rect
-				- Impl:
-					- Erase target
-					- Blit
-						- Clamp coords that end up outside
+			= RopesBuffer::BlitFromRegion
+				+ Args:
+					+ source: takes whole RopesBuffer
+					+ sourceRegion (rect): in source rect; contained in it
+					+ targetPos (coods): absolute, possibly outside of source rect
+				+ Impl:
+					+ Erase target
+					+ Blit
+						+ Clamp coords that end up outside
 				! Can repurpose existing one, callers all want new behavior:
 					- Callers:
 						- MC::DoRopesRegionBufferPaste
@@ -1771,7 +1771,9 @@
 							- MC::PasteForEphemeralVisualization
 							- MC::ShipSpaceRegionTransfer
 							- MC::ShipSpaceRegionTransferForEphemeralVisualization
-				- Unit tests
+				+ Unit tests
+					+ Also cover clamp
+				- TODO: clamp or cut when both outside?
 
 			- All users - direct and indirect - of RopesBuffer::BlitFromRegion:
 						- MC::DoRopesRegionBufferPaste

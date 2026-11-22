@@ -150,17 +150,20 @@ struct RopeBuffer
      * Maintains coords of endpoints outside the blitted region.
      */
     void BlitFromRegion(
-        RopeBuffer const & source, // Might lay outside of ship space
-        ShipSpaceCoordinates const & targetPos, // Might lay outside of ship space
+        RopeBuffer const & source,
+        ShipSpaceRect const & sourceRegion, // Region in source that we want to blit; fully contained in source
+        ShipSpaceCoordinates const & targetPos, // Absolute, might lay outside of ship space
         bool isTransparent)
     {
+        assert(sourceRegion.IsContainedInRect(ShipSpaceRect(source.GetSize())));
+
         // Clear affected region first, if requested
         if (!isTransparent)
         {
             auto const targetPasteRegion =
                 ShipSpaceRect(
                     targetPos,
-                    source.GetSize())
+                    sourceRegion.size)
                 .MakeIntersectionWith(ShipSpaceRect(mSize));
 
             if (targetPasteRegion)
@@ -183,42 +186,44 @@ struct RopeBuffer
         for (auto const & r : source.mBuffer)
         {
             // Only copy source ropes that have at least one endpoint in source region
-            if (r.StartCoords.IsInSize(source.GetSize()) || r.EndCoords.IsInSize(source.GetSize()))
+            if (r.StartCoords.IsInRect(sourceRegion) || r.EndCoords.IsInRect(sourceRegion))
             {
-                // Translate coords
-                ShipSpaceCoordinates const startCoordsInTarget = r.StartCoords.IsInSize(source.GetSize())
-                    ? r.StartCoords + ShipSpaceSize(targetPos.x, targetPos.y)
-                    : r.StartCoords;
-                ShipSpaceCoordinates const endCoordsInTarget = r.EndCoords.IsInSize(source.GetSize())
-                    ? r.EndCoords + ShipSpaceSize(targetPos.x, targetPos.y)
-                    : r.EndCoords;
+                // Translate coords:
+                //  - Endpoint inside source region: translate to new pos, and clamp to our space
+                //  - Endpoint outside source region: maintain their value, but clamp to our space
 
-                // Make sure translated coords are inside our size
-                if (startCoordsInTarget.IsInSize(mSize) && endCoordsInTarget.IsInSize(mSize))
+                ShipSpaceCoordinates const startCoordsInTarget = (
+                    r.StartCoords.IsInRect(sourceRegion)
+                    ? (r.StartCoords - ShipSpaceSize(sourceRegion.origin.x, sourceRegion.origin.y) + ShipSpaceSize(targetPos.x, targetPos.y))
+                    : r.StartCoords).Clamp(mSize);
+
+                ShipSpaceCoordinates const endCoordsInTarget = (
+                    r.EndCoords.IsInRect(sourceRegion)
+                    ? (r.EndCoords - ShipSpaceSize(sourceRegion.origin.x, sourceRegion.origin.y) + ShipSpaceSize(targetPos.x, targetPos.y))
+                    : r.EndCoords).Clamp(mSize);
+
+                // Remove all ropes in target that share an endpoint with this rope
+                for (auto tgtIt = mBuffer.begin(); tgtIt != mBuffer.end(); )
                 {
-                    // Remove all ropes in target that share an endpoint with this rope
-                    for (auto tgtIt = mBuffer.begin(); tgtIt != mBuffer.end(); )
+                    if (tgtIt->StartCoords == startCoordsInTarget
+                        || tgtIt->StartCoords == endCoordsInTarget
+                        || tgtIt->EndCoords == startCoordsInTarget
+                        || tgtIt->EndCoords == endCoordsInTarget)
                     {
-                        if (tgtIt->StartCoords == startCoordsInTarget
-                            || tgtIt->StartCoords == endCoordsInTarget
-                            || tgtIt->EndCoords == startCoordsInTarget
-                            || tgtIt->EndCoords == endCoordsInTarget)
-                        {
-                            tgtIt = mBuffer.erase(tgtIt);
-                        }
-                        else
-                        {
-                            ++tgtIt;
-                        }
+                        tgtIt = mBuffer.erase(tgtIt);
                     }
-
-                    // Store
-                    mBuffer.emplace_back(
-                        startCoordsInTarget,
-                        endCoordsInTarget,
-                        r.Material,
-                        r.RenderColor);
+                    else
+                    {
+                        ++tgtIt;
+                    }
                 }
+
+                // Store
+                mBuffer.emplace_back(
+                    startCoordsInTarget,
+                    endCoordsInTarget,
+                    r.Material,
+                    r.RenderColor);
             }
         }
     }
