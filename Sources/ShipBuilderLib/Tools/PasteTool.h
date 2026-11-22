@@ -92,7 +92,7 @@ private:
         ShipSpaceCoordinates MousePasteCoords;
 
         // When set we have an ephemeral visualization
-        std::optional<ShipSpaceEphemeralVisualizationRestoreRegions> EphemeralVisualization;
+        std::optional<ShipSpaceEphemeralVisualizationRestoreRegions::ShipSpaceRestoreRegion> EphemeralVisualization;
 
         PendingSessionData(
             ShipSpaceBodyRegions::ShipSpaceBodyRegion && pasteRegion,

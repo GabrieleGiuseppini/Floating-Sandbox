@@ -1706,15 +1706,15 @@
 
 			= Tests:
 				= Tools: for all: EphViz, Undo
-					= StructuralRectangle
-						- See perf
+					+ StructuralRectangle
+						+ See perf
 							+ Buffer2D allocation: Buffer2D uses "linear allocation" borrowed from Buffer, instead of uq_ptr[]
 								+ Do changes
 								+ Compile all
 								+ UTs
-							- Avoid when rect == prev
-								- Would be nice to use rect in eph viz, but then it has to become single region
-									- StructuralRectangle ops returns single region
+							+ Avoid when rect == prev
+								+ Would be nice to use rect in eph viz, but then it has to become single region
+									+ StructuralRectangle ops returns single region
 					= Pencil
 						+ S
 						= E

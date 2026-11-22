@@ -816,7 +816,7 @@ ShipSpaceBodyRegions::ShipSpaceBodyRegion ModelController::Paste(
     return undoPayload;
 }
 
-ShipSpaceEphemeralVisualizationRestoreRegions ModelController::PasteForEphemeralVisualization(
+ShipSpaceEphemeralVisualizationRestoreRegions::ShipSpaceRestoreRegion ModelController::PasteForEphemeralVisualization(
     ShipSpaceBodyRegions::ShipSpaceBodyRegion const & sourceRegion,
     ShipSpaceCoordinates const & pasteOrigin,
     LayerSelector const & layerSelection,
@@ -952,7 +952,7 @@ ShipSpaceEphemeralVisualizationRestoreRegions ModelController::PasteForEphemeral
     // Finalize restore
     //
 
-    return ShipSpaceEphemeralVisualizationRestoreRegions::Make(std::move(restorePayload));
+    return restorePayload;
 }
 
 
@@ -1514,7 +1514,7 @@ void ModelController::StructuralRegionFillForEphemeralVisualization(
     mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization = true;
 }
 
-ShipSpaceBodyRegions ModelController::StructuralRectangle(
+ShipSpaceBodyRegions::ShipSpaceBodyRegion ModelController::StructuralRectangle(
     ShipSpaceRect const & rect,
     std::uint32_t lineSize,
     StructuralMaterial const * lineMaterial,
@@ -1546,7 +1546,7 @@ ShipSpaceBodyRegions ModelController::StructuralRectangle(
     RegisterDirtyVisualization<VisualizationType::Game>(rect);
     RegisterDirtyVisualization<VisualizationType::StructuralLayer>(rect);
 
-    return ShipSpaceBodyRegions::Make(
+    return ShipSpaceBodyRegions::ShipSpaceBodyRegion(
         rect,
         std::move(structuralLayerRegionBackup),
         nullptr,
@@ -1555,7 +1555,7 @@ ShipSpaceBodyRegions ModelController::StructuralRectangle(
         nullptr);
 }
 
-ShipSpaceEphemeralVisualizationRestoreRegions ModelController::StructuralRectangleForEphemeralVisualization(
+ShipSpaceEphemeralVisualizationRestoreRegions::ShipSpaceRestoreRegion ModelController::StructuralRectangleForEphemeralVisualization(
     ShipSpaceRect const & rect,
     std::uint32_t lineSize,
     StructuralMaterial const * lineMaterial,
@@ -1589,7 +1589,7 @@ ShipSpaceEphemeralVisualizationRestoreRegions ModelController::StructuralRectang
     // Remember we are in temp visualization now
     mEphemeralVisualizationLayerState.IsStructuralLayerInEphemeralVisualization = true;
 
-    return ShipSpaceEphemeralVisualizationRestoreRegions::Make(
+    return ShipSpaceEphemeralVisualizationRestoreRegions::ShipSpaceRestoreRegion(
         rect,
         std::move(structuralLayerRestoreRegion),
         std::nullopt,

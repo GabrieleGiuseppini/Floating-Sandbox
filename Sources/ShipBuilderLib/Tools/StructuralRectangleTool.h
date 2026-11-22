@@ -45,7 +45,7 @@ private:
 
     ShipSpaceRect CalculateRect(ShipSpaceCoordinates const & cornerCoordinates) const;
 
-    ShipSpaceEphemeralVisualizationRestoreRegions DrawEphemeralRectangle(ShipSpaceRect const & rect);
+    ShipSpaceEphemeralVisualizationRestoreRegions::ShipSpaceRestoreRegion DrawEphemeralRectangle(ShipSpaceRect const & rect);
 
     void UndoEphemeralRectangle();
 
@@ -60,7 +60,7 @@ private:
     struct EngagementData
     {
         ShipSpaceCoordinates StartCorner;
-        std::optional<ShipSpaceEphemeralVisualizationRestoreRegions> EphVizRestorePayload;
+        std::optional<ShipSpaceEphemeralVisualizationRestoreRegions::ShipSpaceRestoreRegion> EphVizRestorePayload;
 
         EngagementData(ShipSpaceCoordinates const & startCorner)
             : StartCorner(startCorner)

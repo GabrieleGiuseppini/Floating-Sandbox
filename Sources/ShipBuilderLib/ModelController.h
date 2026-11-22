@@ -279,7 +279,7 @@ public:
         bool isTransparent);
 
     // Resturns Restore
-    ShipSpaceEphemeralVisualizationRestoreRegions PasteForEphemeralVisualization(
+    ShipSpaceEphemeralVisualizationRestoreRegions::ShipSpaceRestoreRegion PasteForEphemeralVisualization(
         ShipSpaceBodyRegions::ShipSpaceBodyRegion const & sourceRegion,
         ShipSpaceCoordinates const & pasteOrigin,
         LayerSelector const & layerSelection,
@@ -303,8 +303,15 @@ public:
     // Interface to Tools that receive restore payloads from ops
     //
 
+    void RestoreEphemeralVisualization(ShipSpaceEphemeralVisualizationRestoreRegions::ShipSpaceRestoreRegion && restoreRegion)
+    {
+        return RestoreEphemeralVisualization(ShipSpaceEphemeralVisualizationRestoreRegions::Make(std::move(restoreRegion)));
+    }
+
     void RestoreEphemeralVisualization(ShipSpaceEphemeralVisualizationRestoreRegions && restoreRegions);
+
     void RestoreEphemeralVisualization(ExteriorTextureSpaceEphemeralVisualizationRestoreRegions && restoreRegions);
+
     void RestoreEphemeralVisualization(InteriorTextureSpaceEphemeralVisualizationRestoreRegions && restoreRegions);
 
     //
@@ -352,13 +359,13 @@ public:
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
 
-    ShipSpaceBodyRegions StructuralRectangle(
+    ShipSpaceBodyRegions::ShipSpaceBodyRegion StructuralRectangle(
         ShipSpaceRect const & rect,
         std::uint32_t lineSize,
         StructuralMaterial const * lineMaterial,
         std::optional<StructuralMaterial const *> fillMaterial);
 
-    ShipSpaceEphemeralVisualizationRestoreRegions StructuralRectangleForEphemeralVisualization(
+    ShipSpaceEphemeralVisualizationRestoreRegions::ShipSpaceRestoreRegion StructuralRectangleForEphemeralVisualization(
         ShipSpaceRect const & rect,
         std::uint32_t lineSize,
         StructuralMaterial const * lineMaterial,
