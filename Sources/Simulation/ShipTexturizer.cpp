@@ -1066,6 +1066,8 @@ rgbaColor ShipTexturizer::SampleTextureBilinearConstrained(
     //
     // Bilinear
     //
+    // Adapted from https://fastcpp.blogspot.com/2011/06/bilinear-pixel-interpolation-using-sse.html
+    //
 
     auto const nextPixelXI = pixelXI + 1;
     auto const nextPixelYI = pixelYI + 1;
@@ -1073,24 +1075,30 @@ rgbaColor ShipTexturizer::SampleTextureBilinearConstrained(
     assert(nextPixelXI < texture.Size.width);
     assert(nextPixelYI < texture.Size.height);
 
-    // Linear interpolation between x samples at bottom
-    vec4f const interpolatedXColorBottom = Mix(
-        texture.Data[pixelXI + pixelYI * texture.Size.width].toVec4f(),
-        texture.Data[nextPixelXI + pixelYI * texture.Size.width].toVec4f(),
-        pixelDx);
+    float const pixelDx1 = 1.0f - pixelDx;
+    float const pixelDy1 = 1.0f - pixelDy;
 
-    // Linear interpolation between x samples at top
-    vec4f const interpolatedXColorTop = Mix(
-        texture.Data[pixelXI + nextPixelYI * texture.Size.width].toVec4f(),
-        texture.Data[nextPixelXI + nextPixelYI * texture.Size.width].toVec4f(),
-        pixelDx);
+    int const w1 = static_cast<int>(pixelDx1 * pixelDy1 * 256.0f);
+    int const w2 = static_cast<int>(pixelDx * pixelDy1 * 256.0f);
+    int const w3 = static_cast<int>(pixelDx1 * pixelDy * 256.0f);
+    int const w4 = static_cast<int>(pixelDx * pixelDy * 256.0f);
 
-    // Linear interpolation between two vertical samples
+    rgbaColor const c1 = texture.Data[pixelXI + pixelYI * texture.Size.width];
+    rgbaColor const c2 = texture.Data[nextPixelXI + pixelYI * texture.Size.width];
+    rgbaColor const c3 = texture.Data[pixelXI + nextPixelYI * texture.Size.width];
+    rgbaColor const c4 = texture.Data[nextPixelXI + nextPixelYI * texture.Size.width];
+
+    // Calculate the weighted sum of pixels (for each color channel)
+    int outR = c1.r * w1 + c2.r * w2 + c3.r * w3 + c4.r * w4;
+    int outG = c1.g * w1 + c2.g * w2 + c3.g * w3 + c4.g * w4;
+    int outB = c1.b * w1 + c2.b * w2 + c3.b * w3 + c4.b * w4;
+    int outA = c1.a * w1 + c2.a * w2 + c3.a * w3 + c4.a * w4;
+
     return rgbaColor(
-        Mix(
-            interpolatedXColorBottom,
-            interpolatedXColorTop,
-            pixelDy));
+        static_cast<rgbaColor::data_type>(outR / 256),
+        static_cast<rgbaColor::data_type>(outG / 256),
+        static_cast<rgbaColor::data_type>(outB / 256),
+        static_cast<rgbaColor::data_type>(outA / 256));
 }
 
 vec2f ShipTexturizer::SampleMaterialTexture(

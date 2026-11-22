@@ -2182,7 +2182,9 @@
 	= ShipBuilder
 		+ Marge it back into master
 		- Duplicate material
-		- Changelist
+			- Only on User materials: '+' button @ same place as ship overlay
+				- But keep Cell rect members separate - even though they are mutex
+		- Changelist: custom materials
 
 	- Talk to maple about ship
 

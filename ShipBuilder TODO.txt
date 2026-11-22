@@ -1775,9 +1775,9 @@
 
 			+ Merge back into shipbuilder_translate_tool
 
-	- Perf test
+	= Perf test
 		+ Copy old release ShipBuilder.exe first
-		- See auto-texturization with integers
+		= See auto-texturization with integers
 
 	+ Merge into master
 	- Clean this plan
