@@ -2187,6 +2187,11 @@
 	- Talk to maple about ship
 
 	- Fork repo and start working on private
+		- README @ public repo:
+			- TODO
+
+
+
 
 	- New electrical elements: 
 		- Electrical material for explosions when powered

@@ -1704,8 +1704,8 @@
 				+ MC::Copy, Cut: makes ShipBodyRegion for ClipboardManager, from (*1)
 				+ MC::Paste, etc.: tales ShipBodyRegion from ClipboardManager
 
-			= Tests:
-				= Tools: for all: EphViz, Undo
+			+ Tests:
+				+ Tools: for all: EphViz, Undo
 					+ StructuralRectangle
 						+ See perf
 							+ Buffer2D allocation: Buffer2D uses "linear allocation" borrowed from Buffer, instead of uq_ptr[]
@@ -1735,27 +1735,27 @@
 					+ TextureMagicWand
 					+ TextureTranslate
 
-					- RopeEraser
-					- RopePencil
-					- SelectAndTranslate
+					+ RopeEraser
+					+ RopePencil
+					+ SelectAndTranslate: incl EphViz, Undo
+						+ ShipSpace
+							+ Verify original ropes bug is gone
+						+ TextureSpace
+				+ Cut 
+					+ Undo
+					+ May paste -- right clipboard content
+				+ Copy
+					+ May paste -- right clipboard content
+				+ Paste
+					+ Eph viz -- translating
+					+ Commit
+					+ Abort
+					+ Undo
+				+ Add/Remove Layers & Undo -- all layers
+				+ Resize ship & Undo -- some layers, all layers
+				+ Elec panel
 
-				- Cut 
-					- Undo
-					- May paste -- right clipboard content
-				- Copy
-					- May paste -- right clipboard content
-				- Paste
-					- Eph viz -- translating
-					- Commit
-					- Abort
-					- Undo
-
-				- Add/Remove Layers & Undo -- all layers
-				- Resize ship & Undo -- some layers, all layers
-				- 
-
-
-			= RopesBuffer::BlitFromRegion
+			+ RopesBuffer::BlitFromRegion
 				+ Args:
 					+ source: takes whole RopesBuffer
 					+ sourceRegion (rect): in source rect; contained in it
@@ -1773,53 +1773,12 @@
 							- MC::ShipSpaceRegionTransferForEphemeralVisualization
 				+ Unit tests
 					+ Also cover clamp
-				- TODO: clamp or cut when both outside?
-
-			- All users - direct and indirect - of RopesBuffer::BlitFromRegion:
-						- MC::DoRopesRegionBufferPaste
-							- MC::Paste
-							- MC::PasteForEphemeralVisualization
-							- MC::ShipSpaceRegionTransfer
-							- MC::ShipSpaceRegionTransferForEphemeralVisualization
-
-			- Tests:
-				- Paste:
-					- EphViz
-					- Undo
-					- Undo for empty paste (all outside)
-				- SelectAndTranslate:
-					- EphViz
-					- Undo
 
 			- Merge back into shipbuilder_translate_tool
 
-		- TODOOLD
-		- SelectionManager can keep whole RopeBuffer
-			! SelectionManager only holds ShipSpaceRect
-			! Then Controller copies Layers into Clipboard, via ModelController::Copy(region) => various CopyRegion
-			- Change ModelController::Copy(region) to do full RopesBuffer
-				! Only affects Copy and Cut => InternalCopySelectionToClipboard => ModelController::Copy(region)
-		- BlitFrom becomes again BlitFromRegion, taking whatever buffer, and a source region in it
-			- TODOHERE: do geometry math; do we need to carry rect of copy/cut? Yes...
-				- Can carry it in ClipboardManager, and make it travel to PasteTool
-				- SelectAndTranslate, instead, has source region by default
-			- BlitFromRegion args:
-				- source: takes whole RopesBuffer
-				- sourceRegion (rect): in source rect; contained in it
-				- targetPos (coods): absolute, possibly outside of source rect
-				- TODO: see if need to add a new overload for this, or all uses are ok with changes -- NO, can repurpose existing one, callers all want new behavior:
-					- Callers:
-						- MC::DoRopesRegionBufferPaste
-							- MC::Paste
-							- MC::PasteForEphemeralVisualization
-							- MC::ShipSpaceRegionTransfer
-							- MC::ShipSpaceRegionTransferForEphemeralVisualization
-
-	- RopesBufferTests
-		- TODO: do we need to exclude endpoints outside source size? 
-			- If we remove the exclusion, fix unit tests
 	- Perf test
 		- Copy old release ShipBuilder.exe first
+		- See auto-texturization with integers
 
 	- Merge into master with PR
 	- Changelist
