@@ -28,6 +28,10 @@ struct IMaterialPalettesController
     virtual void OnNewUserCustomElectricalMaterial(ElectricalMaterial const * baseMaterial) = 0;
     virtual void OnNewUserCustomRopesMaterial(StructuralMaterial const * baseMaterial) = 0;
 
+    virtual void OnDuplicateStructuralMaterial(StructuralMaterial const * material) = 0;
+    virtual void OnDuplicateElectricalMaterial(ElectricalMaterial const * material) = 0;
+    virtual void OnDuplicateRopesMaterial(StructuralMaterial const * material) = 0;
+
     virtual void OnEditCustomStructuralMaterial(StructuralMaterial const * customMaterial) = 0;
     virtual void OnEditCustomElectricalMaterial(ElectricalMaterial const * customMaterial) = 0;
     virtual void OnEditCustomRopesMaterial(StructuralMaterial const * customMaterial) = 0;

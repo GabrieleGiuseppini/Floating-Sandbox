@@ -216,6 +216,21 @@ void MaterialPalettesController::OnEditCustomRopesMaterial(StructuralMaterial co
     OnEditCustomMaterial<LayerType::Ropes>(customMaterial);
 }
 
+void MaterialPalettesController::OnDuplicateStructuralMaterial(StructuralMaterial const * material)
+{
+    OnDuplicateMaterial<LayerType::Structural>(material);
+}
+
+void MaterialPalettesController::OnDuplicateElectricalMaterial(ElectricalMaterial const * material)
+{
+    OnDuplicateMaterial<LayerType::Electrical>(material);
+}
+
+void MaterialPalettesController::OnDuplicateRopesMaterial(StructuralMaterial const * material)
+{
+    OnDuplicateMaterial<LayerType::Ropes>(material);
+}
+
 void MaterialPalettesController::OnRemoveCustomStructuralMaterials(std::vector<StructuralMaterial const *> customMaterials)
 {
     OnRemoveCustomMaterials<LayerType::Structural>(std::move(customMaterials));
@@ -441,7 +456,7 @@ void MaterialPalettesController::OnImportExternalCustomMaterials()
         filteredElectricalPtrs = std::move(filteredElectricalPtrs),
         filteredRopesPtrs = std::move(filteredRopesPtrs)](Controller &) mutable
         {
-            RestoreCustomMaterialsImportForUndo(
+            RestoreCustomMaterialsAdditionForUndo(
                 std::move(filteredStructuralPtrs),
                 std::move(filteredElectricalPtrs),
                 std::move(filteredRopesPtrs));
@@ -504,7 +519,114 @@ void MaterialPalettesController::OnNewUserCustomMaterial(typename LayerTypeTrait
 
         TMaterial const * customMaterialPtr = GetDatabase<TLayerType>().AddUserCustomMaterial(std::move(customMaterial));
         GetPaletteBrowser<TLayerType>().AddUserCustomMaterials({ customMaterialPtr });
+
+        //
+        // Prepare undo
+        //
+
+        std::vector<StructuralMaterial const *> filteredStructuralPtrs;
+        std::vector<ElectricalMaterial const *> filteredElectricalPtrs;
+        std::vector<StructuralMaterial const *> filteredRopesPtrs;
+
+        if constexpr (TLayerType == LayerType::Structural)
+        {
+            filteredStructuralPtrs.push_back(customMaterialPtr);
+        }
+        else if constexpr (TLayerType == LayerType::Electrical)
+        {
+            filteredElectricalPtrs.push_back(customMaterialPtr);
+        }
+        else
+        {
+            static_assert(TLayerType == LayerType::Ropes);
+
+            filteredRopesPtrs.push_back(customMaterialPtr);
+        }
+
+        auto materialUndoAction = [
+            this,
+            filteredStructuralPtrs = std::move(filteredStructuralPtrs),
+            filteredElectricalPtrs = std::move(filteredElectricalPtrs),
+            filteredRopesPtrs = std::move(filteredRopesPtrs)](Controller &) mutable
+            {
+                RestoreCustomMaterialsAdditionForUndo(
+                    std::move(filteredStructuralPtrs),
+                    std::move(filteredElectricalPtrs),
+                    std::move(filteredRopesPtrs));
+            };
+
+        auto & controller = mControllerGetter();
+
+        controller.StoreUndoAction(
+            _("New Material"),
+            sizeof(StructuralMaterial *),
+            controller.GetModelController().GetDirtyState(),
+            std::move(materialUndoAction));
     }
+}
+
+template<LayerType TLayerType>
+void MaterialPalettesController::OnDuplicateMaterial(typename LayerTypeTraits<TLayerType>::material_type const * material)
+{
+    using TMaterial = typename LayerTypeTraits<TLayerType>::material_type;
+    using TVariantOverridesType = typename TMaterial::VariantOverridesType;
+
+    //
+    // Make material
+    //
+
+    std::unique_ptr<TMaterial> newCustomMaterial = std::make_unique<TMaterial>(*material);
+    newCustomMaterial->Name = "(*)" + (newCustomMaterial->Name.empty() ? "" : (" " + newCustomMaterial->Name));
+
+    //
+    // Store material in DB and add to palette
+    //
+
+    TMaterial const * newCustomMaterialPtr = GetDatabase<TLayerType>().AddUserCustomMaterial(std::move(newCustomMaterial));
+    GetPaletteBrowser<TLayerType>().AddUserCustomMaterials({ newCustomMaterialPtr });
+
+    //
+    // Prepare undo
+    //
+
+    std::vector<StructuralMaterial const *> filteredStructuralPtrs;
+    std::vector<ElectricalMaterial const *> filteredElectricalPtrs;
+    std::vector<StructuralMaterial const *> filteredRopesPtrs;
+
+    if constexpr (TLayerType == LayerType::Structural)
+    {
+        filteredStructuralPtrs.push_back(newCustomMaterialPtr);
+    }
+    else if constexpr (TLayerType == LayerType::Electrical)
+    {
+        filteredElectricalPtrs.push_back(newCustomMaterialPtr);
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::Ropes);
+
+        filteredRopesPtrs.push_back(newCustomMaterialPtr);
+    }
+
+    auto materialUndoAction = [
+        this,
+        filteredStructuralPtrs = std::move(filteredStructuralPtrs),
+        filteredElectricalPtrs = std::move(filteredElectricalPtrs),
+        filteredRopesPtrs = std::move(filteredRopesPtrs)](Controller &) mutable
+        {
+            RestoreCustomMaterialsAdditionForUndo(
+                std::move(filteredStructuralPtrs),
+                std::move(filteredElectricalPtrs),
+                std::move(filteredRopesPtrs));
+        };
+
+    auto & controller = mControllerGetter();
+
+    controller.StoreUndoAction(
+        _("Duplicate Material"),
+        sizeof(StructuralMaterial *),
+        controller.GetModelController().GetDirtyState(),
+        std::move(materialUndoAction));
 }
 
 template<LayerType TLayerType>
@@ -791,7 +913,7 @@ void MaterialPalettesController::OnImportCustomShipMaterials(std::vector<typenam
     GetPaletteBrowser<TLayerType>().MoveCustomMaterialsRegister(customMaterials, CustomMaterialRegisterKindType::User);
 }
 
-void MaterialPalettesController::RestoreCustomMaterialsImportForUndo(
+void MaterialPalettesController::RestoreCustomMaterialsAdditionForUndo(
     std::vector<StructuralMaterial const *> && structuralMaterialsImported,
     std::vector<ElectricalMaterial const *> && electricalMaterialsImported,
     std::vector<StructuralMaterial const *> && ropesMaterialsImported)

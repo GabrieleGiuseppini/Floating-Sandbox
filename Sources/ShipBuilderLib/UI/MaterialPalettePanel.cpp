@@ -85,8 +85,9 @@ MaterialPalettePanel<TLayer>::MaterialPalettePanel(
     , mFreeMaterialSampleBitmapIndices()
     // Resources
     , mShipOverlayImage(mGameAssetManager.LoadPngImageRgba(mGameAssetManager.GetPngImageFilePath("ship_overlay_small")))
-    , mCheckboxOffImage(mGameAssetManager.LoadPngImageRgba(mGameAssetManager.GetPngImageFilePath("checkbox_off_small")))
+    , mDuplicateButtonImage(mGameAssetManager.LoadPngImageRgba(mGameAssetManager.GetPngImageFilePath("plus_icon_small")))
     , mEditButtonImage(mGameAssetManager.LoadPngImageRgba(mGameAssetManager.GetPngImageFilePath("edit_icon_small")))
+    , mCheckboxOffImage(mGameAssetManager.LoadPngImageRgba(mGameAssetManager.GetPngImageFilePath("checkbox_off_small")))
     // State
     , mCurrentSelectedCellId(NoneCellId)
     , mNextCellId(0)
@@ -377,7 +378,7 @@ void MaterialPalettePanel<TLayer>::ReplaceCustomMaterial(TMaterial const * oldMa
     // Replace material sample image
     //
 
-    auto [materialSampleBitmap, editButtonRect, checkboxRect] = MakeMaterialSample(newMaterial, cell->CustomRegisterKind);
+    auto [materialSampleBitmap, duplicateButtonRect, editButtonRect, checkboxRect] = MakeMaterialSample(newMaterial, cell->CustomRegisterKind);
 
     mMaterialSampleBitmaps.Replace(cell->MaterialSampleBitmapIndex, materialSampleBitmap);
 
@@ -386,6 +387,7 @@ void MaterialPalettePanel<TLayer>::ReplaceCustomMaterial(TMaterial const * oldMa
     //
 
     cell->Material = newMaterial;
+    cell->DuplicateButtonRect = duplicateButtonRect;
     cell->EditButtonRect = editButtonRect;
     cell->CheckboxRect = checkboxRect;
 
@@ -570,9 +572,14 @@ void MaterialPalettePanel<TLayer>::OnMouseLeftDown(wxMouseEvent & event)
 
             case Cell::KindType::Material:
             {
-                // Check if edit button
+                // Check if a button
                 clickAbsoluteCoords -= wxSize(cell->Rect.x, cell->Rect.y);
-                if (cell->EditButtonRect.has_value()
+                if (cell->DuplicateButtonRect.has_value()
+                    && cell->DuplicateButtonRect->Contains(clickAbsoluteCoords))
+                {
+                    OnDuplicateButton(*cell);
+                }
+                else if (cell->EditButtonRect.has_value()
                     && cell->EditButtonRect->Contains(clickAbsoluteCoords))
                 {
                     OnEditButton(*cell);
@@ -642,6 +649,37 @@ void MaterialPalettePanel<TLayer>::OnCreateNewButton(Cell & cell)
             {
                 static_assert(TLayer == LayerType::Ropes);
                 mMaterialPalettesController.OnNewUserCustomRopesMaterial(material);
+            }
+        });
+}
+
+template<LayerType TLayer>
+void MaterialPalettePanel<TLayer>::OnDuplicateButton(Cell & cell)
+{
+    assert(cell.Material != nullptr);
+    auto const * material = cell.Material;
+
+    //
+    // From WX: this is useful when processing some events as certain actions typically can't be performed inside their handlers,
+    // e.g. you shouldn't show a modal dialog from a mouse click event handler as this would break the mouse capture state
+    //
+
+    wxTheApp->CallAfter(
+        [material, this]
+        {
+            // Call up
+            if constexpr (TLayer == LayerType::Structural)
+            {
+                mMaterialPalettesController.OnDuplicateStructuralMaterial(material);
+            }
+            else if constexpr (TLayer == LayerType::Electrical)
+            {
+                mMaterialPalettesController.OnDuplicateElectricalMaterial(material);
+            }
+            else
+            {
+                static_assert(TLayer == LayerType::Ropes);
+                mMaterialPalettesController.OnDuplicateRopesMaterial(material);
             }
         });
 }
@@ -761,7 +799,7 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
     // Make material sample
     //
 
-    auto [materialSampleBitmap, editButtonRect, checkboxRect] = MakeMaterialSample(material, customRegisterKind);
+    auto [materialSampleBitmap, duplicateButtonRect, editButtonRect, checkboxRect] = MakeMaterialSample(material, customRegisterKind);
 
     //
     // Insert cell
@@ -816,6 +854,7 @@ size_t MaterialPalettePanel<TLayer>::AppendMaterialCell(
                 MaterialCellSize.width,
                 MaterialCellSize.height)));
 
+    cell.DuplicateButtonRect = duplicateButtonRect;
     cell.EditButtonRect = editButtonRect;
     cell.CheckboxRect = checkboxRect;
 
@@ -1377,7 +1416,7 @@ void MaterialPalettePanel<TLayer>::FinalizeMaterialCell(Cell & cell)
 }
 
 template<LayerType TLayer>
-std::tuple<wxBitmap, std::optional<wxRect>, std::optional<wxRect>> MaterialPalettePanel<TLayer>::MakeMaterialSample(
+std::tuple<wxBitmap, std::optional<wxRect>, std::optional<wxRect>, std::optional<wxRect>> MaterialPalettePanel<TLayer>::MakeMaterialSample(
     TMaterial const * material,
     std::optional<CustomMaterialRegisterKindType> customRegisterKind)
 {
@@ -1393,6 +1432,16 @@ std::tuple<wxBitmap, std::optional<wxRect>, std::optional<wxRect>> MaterialPalet
             MaterialSampleOverlayMargin,
             mShipOverlayImage.Size.width,
             mShipOverlayImage.Size.height);
+    }
+
+    std::optional<wxRect> duplicateButtonRect;
+    if (customRegisterKind == CustomMaterialRegisterKindType::User)
+    {
+        duplicateButtonRect = wxRect(
+            MaterialSampleOverlayMargin,
+            MaterialSampleOverlayMargin,
+            mDuplicateButtonImage.Size.width,
+            mDuplicateButtonImage.Size.height);
     }
 
     std::optional<wxRect> editButtonRect;
@@ -1453,6 +1502,16 @@ std::tuple<wxBitmap, std::optional<wxRect>, std::optional<wxRect>> MaterialPalet
             MaterialSampleSize.height - mShipOverlayImage.Size.height - shipOverlayRect->y);
     }
 
+    if (duplicateButtonRect.has_value())
+    {
+        // Apply duplicate button overlay
+        ImageTools::Overlay(
+            *sampleImageData,
+            mDuplicateButtonImage,
+            duplicateButtonRect->x,
+            MaterialSampleSize.height - mDuplicateButtonImage.Size.height - duplicateButtonRect->y);
+    }
+
     if (editButtonRect.has_value())
     {
         // Apply edit button overlay
@@ -1478,6 +1537,7 @@ std::tuple<wxBitmap, std::optional<wxRect>, std::optional<wxRect>> MaterialPalet
 
     return std::make_tuple(
         WxHelpers::MakeBitmap(*sampleImageData),
+        duplicateButtonRect,
         editButtonRect,
         checkboxRect);
 }

@@ -111,6 +111,10 @@ public:
     void OnNewUserCustomElectricalMaterial(ElectricalMaterial const * baseMaterial) override;
     void OnNewUserCustomRopesMaterial(StructuralMaterial const * baseMaterial) override;
 
+    void OnDuplicateStructuralMaterial(StructuralMaterial const * material) override;
+    void OnDuplicateElectricalMaterial(ElectricalMaterial const * material) override;
+    void OnDuplicateRopesMaterial(StructuralMaterial const * material) override;
+
     void OnEditCustomStructuralMaterial(StructuralMaterial const * customMaterial) override;
     void OnEditCustomElectricalMaterial(ElectricalMaterial const * customMaterial) override;
     void OnEditCustomRopesMaterial(StructuralMaterial const * customMaterial) override;
@@ -135,6 +139,9 @@ private:
     void OnNewUserCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * baseMaterial);
 
     template<LayerType TLayerType>
+    void OnDuplicateMaterial(typename LayerTypeTraits<TLayerType>::material_type const * material);
+
+    template<LayerType TLayerType>
     void OnEditCustomMaterial(typename LayerTypeTraits<TLayerType>::material_type const * customMaterial);
 
     template<LayerType TLayerType>
@@ -143,7 +150,7 @@ private:
     template<LayerType TLayerType>
     void OnImportCustomShipMaterials(std::vector<typename LayerTypeTraits<TLayerType>::material_type const *> customMaterials);
 
-    void RestoreCustomMaterialsImportForUndo(
+    void RestoreCustomMaterialsAdditionForUndo(
         std::vector<StructuralMaterial const *> && structuralMaterialsImported,
         std::vector<ElectricalMaterial const *> && electricalMaterialsImported,
         std::vector<StructuralMaterial const *> && ropesMaterialsImported);

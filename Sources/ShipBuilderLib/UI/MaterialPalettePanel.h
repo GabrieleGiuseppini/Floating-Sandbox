@@ -172,6 +172,7 @@ private:
     void OnMouseLeftDown(wxMouseEvent & event);
 
     void OnCreateNewButton(Cell & cell);
+    void OnDuplicateButton(Cell & cell);
     void OnEditButton(Cell & cell);
     void OnCheckboxToggled(Cell & cell);
 
@@ -229,7 +230,7 @@ private:
 
     void FinalizeMaterialCell(Cell & cell);
 
-    std::tuple<wxBitmap, std::optional<wxRect>, std::optional<wxRect>> MakeMaterialSample(
+    std::tuple<wxBitmap, std::optional<wxRect>, std::optional<wxRect>, std::optional<wxRect>> MakeMaterialSample(
         TMaterial const * material,
         std::optional<CustomMaterialRegisterKindType> customRegisterKind);
 
@@ -286,6 +287,7 @@ private:
         wxString Data;
         int DataWidth;
         int DataYTopOffset; // Relative to cell
+        std::optional<wxRect> DuplicateButtonRect; // Iff customRegisterKind=User; Relative to cell + margin (relative to sample thumbnail)
         std::optional<wxRect> EditButtonRect; // Iff customRegisterKind!=None; Relative to cell + margin (relative to sample thumbnail)
         std::optional<wxRect> CheckboxRect; // Iff customRegisterKind!=None; Relative to cell + margin (relative to sample thumbnail)
         bool IsChecked; // Iff customRegisterKind!=None
@@ -437,8 +439,9 @@ private:
     //
 
     RgbaImageData const mShipOverlayImage;
-    RgbaImageData const mCheckboxOffImage;
+    RgbaImageData const mDuplicateButtonImage;
     RgbaImageData const mEditButtonImage;
+    RgbaImageData const mCheckboxOffImage;
 
     //
     // Render style

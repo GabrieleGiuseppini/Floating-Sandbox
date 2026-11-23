@@ -1,1788 +1,3 @@
-+ Material palette takes forever to open (*), + crashes	
-	! problem is large number of GDI objects (running out of mem), plus Freeze/Thaw: wx visits the entire graph
-	! Fix gist:
-		! User-drawn panel
-		! As a reusable class, that we'll use also for selecting materials for import/export
-		! Two users: palette browsing, and multi-selection for import
-			! Palette browing: operations on a material are: Mark (-> ClearAll, SelectAll, DeleteMarked @ user), Edit
-			! Multi-selection: operations on a material are: Mark (-> ClearAll, SelectAll @ user)
-		! Pallete browsing user also adds "add" meta-material "buttons"
-	+ Impl:		
-		+ "MaterialPalettePanel" class: wxPanel; is given shape and exposes methods to add entries
-			! Builds internal buffer for DC all rendered, using method that draws on a DC
-			+ Row, Cell contain Layout info, which is calc'd at EndBuild
-				+ Absolute vals (origin and size) for rect containing anything inside - used to determine overlaps with dirty regions
-				+ Private layout info for e.g. text, checkboxes, etc.
-					+ In relative coords
-			+ cctor:
-				+ Invokes wxPanel cctor
-			+ StartBuild()
-			+ Add(TMaterial const * material, bool startNewRow): create:
-				+ wxBitmap with material sample (via MakeMaterialSample)
-				+ All pieces of text, already snipped
-					+ Heuristics based on size.width constant, and font sizes
-				+ Layout info: only private relative's, no absolute's 
-			+ AddSeparator()
-			+ AddCreateNewButton() -- empty noe
-			+ EndBuild()
-				+ Layout:
-					+ Calculates size
-					+ Assign absolute coords, etc. to cells
-						+ Margins here
-					+ Set size in all separators
-				+ Sets size on self
-				+ Creates DC buffer
-				+ Renders DC buffer: RenderPanel(region == whole, ...)
-					+ In here, clipping rect == whole
-			+ SetSelected(material *)
-				+ Visit all cells, deselect non-matching and select matching
-				+ Force redraw of two quads into buffer
-				+ Any cell may be selected
-					+ FindCellAt might return any kind cell, hence handle at caller
-						+ FindCell(material) only returns Material cells
-					+ mCurrentlySelected cannot be TMaterial but rather cell - which is dangerous; introduce CellID
-
-					+ SetSelected(material)
-						+ Guaranteed by def'n to only select Material cells; finds by Material and returns Cell *
-					+ Move, Leave:
-						+ Can be any cell
-							+ Careful at calling render - make it RenderCell
-				+ Cleanup implementations of selection kung-fu
-					+ ToggleSelectionTo(Cell &)
-					+ ToggleSelectionToNone()
-					
-			+ RenderPanel(region, ...)
-				+ Clear region
-				+ For each row/cell intersecting region:
-					+ Cells: 
-						+ Material: via RenderMaterialCell(cell, dc)
-							+ Just draws bitmaps, text
-								+ Do calculation of cell size @ material cell creation, to include real text
-								+ And since you're doing this, also do name ellipsis at cell creation
-								+ And since you're doing this, also store labels' widths and (cell-relative) topY
-
-								+ Remove font size stuff and go back to original code
-								+ Use wxWindow::GetTextExtent @ cell creation, setting fonts
-								+ Store what needs to be stored
-
-								+ Change Render()
-							+ ...and selection
-						+ CreateNewButton: (empty stub now)
-					+ Separators
-
-			+ Replace wxBitmap's (they are still GDI objects) with wxImageList and its DrawTo
-			+ Paint event: blit from DC buffer
-			+ Try with MemoryDC https://docs.wxwidgets.org/3.3/classwx_memory_d_c.html
-			+ Exposes events:
-				+ Hook mouse events
-					+ Leave:
-						+ Selection feedback
-						+ Send MouseHoveredOut
-					+ Move:
-						+ Selection feedback
-						+ Send MaterialHoveredOut (eventually)
-						+ Send MaterialHoveredIn (eventually)
-					+ LeftDown:
-						+ Find
-						+ Send MaterialClicked (eventually)
-				+ MaterialHoveredIn/Out (material)
-					+ Impl
-					+ Subscribe
-				+ MaterialClicked (material)
-					+ Impl
-					+ Subscribe
-				+ See if browser's mCurrrentlyHoveredOn is needed
-
-		! "MaterialPaletteBrowser" class: wxWhateveNow; use MaterialPalettePanel and has logic for its shape and building of it
-			+ Category buttons
-			= Scrollable window
-				- Finalize blitting only visible portion of panel
-			+ Property grid
-
-		+ Tests:
-			+ Click on non-material
-			+ Hover on non-material
-
-		+ Test with Longhorn's
-			+ Before and after
-
-		+ Cleanup:
-			+ Remove _NEW from names X 2
-			+ See if browser still needs sstream
-			+ See if panel still needs double buffering (needs to test with scrolling)
-
-		+ Test on Ubuntu
-		+ Test on old Dell
-
-		+ Merge back into master
-
-		+ Release
-
-+ Custom materials:
-	! Gist:
-		! SB: materials created and their pointers just used in structural layer
-		! Deser: returns custom materials just for lifetime; structural layer populated with pointers to those
-		! MaterialDatabase is basically "Standard" materials database
-		! Placement: sub_ordinal ignored and made up by palette logic
-			! After all custom materials' sub_ordinals might become stale when we change ordinals in default materials
-
-		! SB's material palette:
-			- At any given moment, the palette shows default + user's custom materials + ship's custom materials
-				- These three are also the life pod of all materials
-				- Only contains pointers, without owning them
-					- Come from MaterialDatabase (new SB class, aggregate of three - default, user, ship) (*)
-			- Layout:
-				! Facts:
-					! Category: pages
-					! Group: groups of rows (e.g. Iron)
-					! Sub-categories: rows
-					! PaletteKey: Category, SubCategory, SubCategoryOrdinal
-					! All materials - including custom - have PaletteSubCategoryBaseMaterialOrdinal
-			- Can add custom, remove custom, or edit custom materials
-				- Custom ones and control to add appear for each base material, last in the series
-					- Their palette coordinates - with the exclusion of ordinal - dictate where
-					- Ordinal is basically made up with logic here, laying out both custom sets
-				- Edit, Remove are small buttons on custom ones (which also helps distinguish them from "standard" materials)
-				- A custom material is cloned from the base material, and contains StructuralMaterial::VariantOverridesType overrides
-				- Removal: if material is in use, pops up dialog
-				- If it's from ship only (i.e. not from custom set), there's button to import into user's (CustomMaterialPalette)
-					- Only distinct are imported; feedback to user with # of "imported ~new"
-					- No need to remove it from ship's afterwards, we can live with dupes among the two custom sets
-			- Ranges on customizable physical properties are very narrow and don't allow crazy values
-			- User custom materials:
-				- Always loaded/saved at startup/shutdown
-				- Backup mechanism to avoid loss, with clear involvement of user if has to fallback
-			- Modifications happen on user or ship custom materials
-				- Changes to materials (user's or ship's own) done by user in ShipBuilder must be undoable via Undo
-					- Undo action: only material
-				- Deletes to materials (user's or ship's own) done by user in ShipBuilder must be undoable via Undo
-					- Undo action: whole structural layer (iff modified)
-						- Deletion could have resulted in a removal of particles
-				- Changing a material currently in the ship (from user's or ship's own) should mark the ship as dirty
-					- Marks corresponding layer as dirty
-			- When ship is loaded, its materials are pruned by lookup in user's custom materials
-				- This is to avoid load of ship just saved with user's custom materials to duplicate custom materials
-			- Can also merge another user custom material set into it, or import from ship
-				- Checks for dupes
-				- Then shows user list with checkboxes to choose which ones, and which shows which are dupe's and won't be imported
-			
-		! SB can simply store StructuralMaterial* from user and/or ship custom materials when it populates StructuralLayer 
-
-		! Undo
-			! For palette changes and for palette + ship changes
-			! Watch out: deleted materials also need to be saved in undo and put back into database, or else pointers won't exist anymore
-			! Gist:
-				! All ops required (mostly material replacement) fully implemented by Controller
-					! To stay with "tradition" - no business logic above Controller
-				! These Controller ops bake Undo action, just like Controller already does for non-tool ops - like in our case - for example @ Flip()
-					! Note that for tool ops, tools themselves bake Undo action, and ask Controller to store it - but this is not our case
-					! Since undo action requires interaction with MaterialPalettesController, MaterialPalettesController bakes a lambda
-					  that it moves into Controller's ops, and Controller ops bake move lambda into own lambda
-
-	====
-
-	+ Workflows:
-		+ Adding new custom material
-			+ User clicks on "+" button
-			+ When committed:
-				+ Add to user's
-					+ Save DB
-				+ Update palette
-				X Populate Undo with material
-		+ Editing existing user/ship custom material
-			+ User clicks on "edit" button
-			+ When committed:
-				+ Update in DB
-					+ Save DB if it's user's
-				+ Replace in ship (eventually)
-				+ Populate Undo with material and eventually ship's
-				+ Force ship re-analysis and re-visualization
-				+ Mark ship as dirty
-				+ Update palette				
-		+ Deleting user's or ship's custom materials
-			! ASSUMPTION: only applies to current Category, thus to current layer
-			+ User checks boxes, and then "Delete Selected"
-			+ Check for in-use by ship; answer is none-in-use_or_at-least-one-in-use
-			+ If at-least-one-in-use:
-				+ Ask user if remove from ship or not
-				+ If abort => abort
-			+ If at-least-one-in-use:
-				+ Remove from ship
-				+ Force ship re-analysis and re-visualization
-				+ Mark ship as dirty
-				+ Do Undo with material + ship
-			+ Else:
-				+ Do Undo with just material
-			+ Remove from DB // Delayed to here, as to-be-deleted pointer must be addressable
-			+ Update palette
-		+ Loading ship
-			+ With custom materials:
-				+ Prune set of ship's custom materials with user's custom materials, producing a material replacement map
-				+ Apply material replacement map to ship
-					+ Without marking it as dirty, this is a pre-model construction operation
-				+ Replace ship's custom materials in palette with pruned
-				+ Re-draw palette
-			+ Without custom materials:
-				+ Nuke ship's custom materials in palette
-				+ Re-draw palette
-		+ Importing custom materials from ship's into user's
-			+ User checks boxes, and then "Import Selected"
-			+ Check boxes filtered for ship's only (user might have selected user's as well); would not continue if no ship's
-			! We keep eventual dupes, to avoid complexity with changing ship
-			+ DB: move materials from Ship DB to User DB
-				+ Save User DB
-			+ Bake Undo
-				+ Just set of pointers to be moved back in DB from User to Ship
-					+ Save User DB
-			+ Update palette
-		+ Export custom user and/or ship materials to ad-hoc json
-			! Works on all layers, all categories - so enabled iff at least one material checked in in any layer, any category
-			+ User checks boxes, and then "Export All Selected"
-			+ File SaveAs dialog for .json
-			+ If ok:
-				+ Call DB::Export(materials, file_path)
-		+ Importing custom materials from a json or from a ship into user's
-			+ User chooses from list, filtered by distincting with user's
-				+ If none available, popup message
-			+ When committed:
-				+ Add to DB
-					+ Save DB
-				+ Update palette
-				+ Populate Undo with materials 			
-
-	! Arch:
-		+ MaterialDatabase<TLayer>: aggregation of three sets (Default, User, Ship)
-			- Only place where all material uq_ptr's live
-				- Model doesn't have Ship's
-			- Takes care of ser/deser of user custom materials
-				- parent color_key and VariantOverridesType
-					- Materialization from json takes DefaultMaterialDatabase and produces variants
-			- Takes care of distincting where needed
-			- Unit tests for ops
-		+ MVC:
-			- MaterialPalettesController: single controller for all layer types
-				- Owned by MainFrame
-				- Owns 3 MaterialDatabase<TLayer> and 3 MaterialPalette<TLayer>
-					- Supersedes and replaces CompositeMaterialPalette
-			- MaterialPalettesController implements 3 IMaterialPaletteController<TLayer> for callbacks from view(business ops)
-			- Model is the 3 MaterialDatabase<TLayer>
-			- View is the 3 MaterialPalette<TLayer>
-				- The API MaterialPalette<TLayer> exposes to the outside for managing material changes (e.g. removal, addition, replace, etc.)
-				  is ad-hoc; for example, when loading a ship, the API takes new ship's; on the other hand, if one material changes, the API
-				  takes the pointer of that one
-				- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
-		
-	+ Impl:
-		+ Make custom_materials branch
-
-		=== Simulation ===
-
-		+ Simulation::MaterialDatabase becomes "DefaultMaterialDatabase"
-			+ File
-			+ Class
-			+ json
-
-		+ Structural, Electrical Material:
-			+ opt<struct VariantOverridesType>
-				+ Contains:
-					+ Structural, Rope:
-						- RenderColor
-						- Name
-						- Density						
-						- Strength
-						- IgnitionTemperature
-						- MeltingTemperature
-						- Advanced:
-							- RotReceptivity
-							- RustReceptivity
-							- Water solubility
-					+ Electrical:
-						- Name
-						- HeatGenerated
-						- Advanced:
-							- Luminiscence
-							- LightSpread
-							- EnginePower
-							- WaterPumpNominalForce
-							- TimerDurationSeconds
-					+ json Ser/Deser
-					+ Comparison, Equality, and hash
-				+ Only populated for variants; values of material are already from variants though, so this is only for Serialization (see below)
-				+ VariantOverrides.has_value() <=> it's a custom material
-			+ PaletteSubCategoryBaseMaterialOrdinal: populated for default materials at deser time
-			+ uq_ptr<Structural|ElectricalMaterial> TMaterial::MakeCustomMaterial(VariantOverridesType const &)
-				+ Clones all, then overrides, and then stores VariantOverridesType (asserts ! there already)
-					+ ColorKey is the same from the base (parent)
-						! .shp2 Ser/Deser will store additional (local) Index deambiguitor, see below
-						! These dupe ColorKey's pose a problem:
-							! ShipFactory doesn't use ColorKey's at all (anymore)
-				+ Also copies palette coordinates, but overrides sub_ordinal as 0 as it's not used
-				+ Sets PaletteSubCategoryBaseMaterialOrdinal to same as base
-			+ Unit tests:
-				+ Comparison, Equality, hash
-				+ Ser/Deser
-				+ MakeMaterialVariant
-					+ PaletteSubCategoryBaseMaterialOrdinal
-
-		+ CustomMaterialsPod defined @ own .cc/.h
-
-		+ Ship De/Serialize:
-			+ First off, verify current behavior with unrecognized tags
-				+ Worst case we bump file format version (hopefully exists, and check is already done!)
-			+ New structural, electrical, rope layer set of tags:
-				+ CustomMaterialPalette: custom materials used in Buffer
-					+ Ignore ones in definition
-						+ assert empty
-					+ (Implicitly) pruned @ Serialize to only contain used ones
-						+ Key: base + overrides
-					+ Stores (parent) color_key and content of VariantOverridesType
-					+ Assigned local indices for new Buffer to address (see below)
-					+ Come up with a way to be able to add more overrides in the future, so that older version and newer versions digest both
-				+ Buffer: color_key + local index in MaterialPalette
-					+ Index=-1 for standard materials
-				! Ser Algo:
-					! @ (Structural, Electrical, Ropes):
-						! ExtractCustomMaterialMap(Layer/data) -> map<CustomMaterialKey -> index>
-							! Check against limits
-						! If empty:
-							! Save_1(...)
-						! Else:
-							! Save2(..., custom_material_map):
-								! Save palette (writes own section)
-								! Save buffer
-									! No encode <whatever> for custom materials
-
-				! Deser Algo:
-					! @ (Structural, Electrical, Ropes):
-						! If V2 tag:
-							! Deser "deser" material map -> vector<std::uq_ptr<TMaterial *>>
-							! Deser layer (reads raw)
-
-				+ AppendCustomMaterialMap/Structural
-				+ ReadCustomMaterialMap/Structural
-				+ UTs: read+write
-
-				+ AppendCustomMaterialMap/Electrical
-				+ ReadCustomMaterialMap/Electrical
-				+ UTs: read+write
-
-				+ Structural layer					
-					+ ExtractCustomMaterialMap
-					+ Ser
-						+ Rename save chain
-						+ Custom material map
-						+ Structural layer					
-					+ Deser
-						+ Rename read chain (plumb up)
-							+ Populate pod
-						+ Custom material map
-						+ Structural layer
-					+ Unit tests for structural layer V2
-						+ Add checks to Roundtrip_V2
-				+ Electrical layer
-					+ ExtractCustomMaterialMap
-					+ Ser
-						+ Rename save chain
-						+ Custom material map
-						+ AppendElectricalLayer_V2
-					+ Deser
-						+ Rename read chain (plumb up)
-						+ ReadElectricalLayer_V2
-							+ Factor out panel reading into helper, probably needs offset
-					+ Unit tests for electrical layer V2
-						+ Basic
-						+ Add checks to Roundtrip_V2
-				+ Ropes layer
-					+ ExtractCustomMaterialMap
-					+ Ser
-						+ Rename save chain
-						+ Custom material map
-						+ Append_V2
-					+ Deser
-						+ Rename read chain (plumb up)
-						+ Read_V2
-					+ Unit tests for ropes layer V2
-						+ Add checks to Roundtrip_V2
-
-				+ Plug final Save() and Load() for all layers
-
-				+ Do E2E test via FloatingSandbox: create material, use in ship, save ship, load ship in game
-					+ Structural
-					+ Electrical
-					+ Ropes
-				+ Do E2E test via ShipBuilder: loading ship with new materials altogether
-					+ Structural
-					+ Electrical
-					+ Ropes
-
-			+ Deserialize() returns CustomMaterialsPod (3x vector<uq_ptr<TMaterial>> for each TMaterial) in ShipDefinition, just for lifetime extension
-				+ Might group all layers' vectors in a single CustomMaterialsPod, for convenience
-				+ Will be stored by Ship, given by ShipFactory
-			+ If no custom materials are present, ships should be loadable by older FS versions; only if custom materials are present, the load should fail with "newer version" error
-				+ So file format version should be conditional on presence of custom materials
-				+ Test: save ship in dev version with no custom materials, and verify it's loadable by released FS
-			+ Legacy deserializer: empty pod
-
-		+ ShipFactory:
-			+ Passes (via std::move) CustomMaterialsPod for custom materials to Ship ("shipSpecificCustomMaterials", and const private member), just for extending their lifetime
-
-		=== ShipBuilder ===
-
-		+ MaterialDatabase<TLayer>
-			+ Members:
-				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase // for color_hey lookups
-				+ vec<uq> from user
-				+ vec<uq> from ship
-			+ cctor:
-				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase
-				+ Loads users's
-			+ Ops:
-				+ AddUser
-					+ Store
-					+ Save DB
-				+ ExtractCustomMaterials(vector<TMaterial const *>) -> std::tuple<SinglePod, SinglePod> // User's, Ship's
-					+ Find among user's and ship's
-					+ Extract into respective SinglePod
-					+ Save DB for user's
-					+ Return SinglePod's
-				+ SetShipCustomMaterials(vector<uq_ptr<TMaterial const>>):
-					+ Merge and build replacement map
-					+ Return replacement map
-				+ ReplaceCustomMaterial(TMaterial const * old, uq_ptr<TMaterial const> && new) -> uq_ptr<TMaterial const>
-					+ Find
-					+ Swap materials
-					+ Save DB
-					+ Return old
-				+ MoveShipCustomMaterialsToUser(vector<TMaterial const *>)
-					+ Find and move
-					+ Save DB
-				+ MoveUserCustomMaterialsToShip(vector<TMaterial const *>)
-					+ Find and move
-					+ Save DB
-				+ ExportCustomMaterials(vector<TMaterial const *> X 3, file_path)
-					+ Make helpers to decompose SaveUserMaterials
-				+ DetectEquivalentUserCustomMaterials(single pod) -> vector<bool>
-					+ Refactor DB's SetShipCustomMaterials: export equivalency comparison ("IsEquivalentCustomMaterial")
-				+ RemoveUserCustomMaterials(vector<TMaterial const *>)
-				+ Base::CustomMaterialsPod LoadCustomMaterialsFile(filepaht)
-
-			+ Ser/Deset for user custom materials
-				+ parent color_key and VariantOverridesType
-					+ Materialization from json uses MaterialColorMap<TLayer> and produces variants
-
-			+ Merge DB files into one
-				+ One DB loads whole (object w/3 members), replaces own node
-			+ Backup mechanism
-				+ @ Save:
-					+ If DB exists:
-						+ If DB.backup exists:
-							+ Delete DB.backup
-						+ Copy DB as DB.backup
-					+ Save DB
-				+ @ Load:
-					+ If DB does not exist, or exception loading:
-						+ If DB.backup exists:
-							+ Load DB.backup
-			+ Deser: only ones that are present
-
-			+ Unit tests
-				+ SetShipCustomMaterials: verify pruned (inside DB) and returned replacement map
-
-		+ IMaterialPaletteController<TLayer>: for UI to talk back to controller
-			+ IsAnyCustomMaterialChecked() -> bool
-			+ OnMaterialSelected
-			+ OnNewUserCustomXYZMaterial(XYZMaterial * baseMaterial)
-				+ Create overrides
-				+ Run dialog
-				+ If OK:
-					+ Add to user DB
-					+ Add to palette (vector of one)
-			+ OnEditCustomXYZMaterial(XYZMaterial * material, RegisterKind)
-			+ OnRemoveCustomXYZMaterials(...)
-			+ OnImportCustomXYZShipMaterials(...)
-			+ OnExportCheckedCustomMaterials()
-			+ OnImportExternalCustomMaterials()
-
-		+ MaterialPalettePanel<TLayer>: HEAVY REDESIGN
-			! Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
-			+ cctor:
-				+ IMaterialPaletteController<TLayer> (for workflows)
-			+ Hierarchy: 
-				+ SubCategoryRow: type=SubCategory|Separator
-					+ Meta:
-						+ SubCategory (str)
-							+ @ default DB deser: verify unique
-					+ MaterialStride: made of N1 default materials, 1 AddNewButton, N2 user custom materials, N3 ship custom materials
-						+ All kept in single vector<Cell>, but maintaining counters: startUser, startShip
-						+ Meta:
-							+ SubCategoryBaseMaterialOrdinal
-						+ Cell: type=Material|AddNewButton
-							+ Meta:
-								+ Material TMaterial*
-								+ CustomKind // Material only; CustomTypeKind: None, User, Ship
-									+ Used for drawing checkbox overlay and edit button overlay
-									+ Used for drawing ship icon overlay
-								+ IsChecked // Material only
-									+ Invariant: iff CustomType!=None
-
-			! Lookups:
-				! <CustomMaterial *, User|Ship>:
-					+ Find SubCategoryRow such that type=MaterialGroups and SubCategory=CustomMaterial->SubCategory
-					+ Find MaterialStride such that SubCategoryBaseMaterialOrdinal=CustomMaterial->PaletteSubCategoryBaseMaterialOrdinal
-					- In stride's User|Ship vector, find cell such that type=Material and Material*=CustomMaterial*
-			+ API for layout:
-				+ Initial:
-					+ StartDefaultMaterialsLayout()
-						+ Cleanup all
-					+ ...all methods...
-						+ Includes adding buttons, separator, etc.
-					+ EndDefaultMaterialsLayout()
-						+ Calc panel width						
-						+ Assign cell coords
-						+ Make buffer bitmap on size
-						+ Render cells onto buffer
-
-				+ LayoutSession struct, appears as std::any on API
-					+ Is map<rowIndex, <leftmost strideIndex, leftmost cellIndex>>
-						+ Use tuple, has less-than
-					+ Comment: kind=Strides only
-					+ Make it a struct with helper for recording
-
-				+ Extract layout to helper on LayoutSession
-					+ Call from EndDefaultMaterialsLayout() with full LayoutSession
-
-				+ ReplaceCustomMaterial(TMaterial const *, TMaterial const *)
-					+ Update material sample in ImageList (wxImageList::Replace)
-					+ Render own cell
-					+ Refresh(false)
-
-				+ All subsequent ones (custom):
-					+ StartCustomMaterialsLayout() -> LayoutSession
-					+ All atomic ops, taking LayoutSession and returning LayoutSession - naming as "...CustomMaterial..."
-						! Op does op on cell, then calcs LayoutSession
-						+ Ops (all take lookup args as args)
-							+ Add user/ship custom (one)
-								+ Lookup row, stride
-								+ Add to stride, at end
-									+ Factor out creation of material @ AddDefaultMaterial into a new helper
-								+ Update LayoutSession accordingly
-							+ RemoveAllShipCustomMaterials(LayoutSession)- > LayoutSession
-								+ Visit all rows:
-									+ Visit all strides
-										+ Prune ship region
-											+ Store image indices in "free list"
-										+ Keep LayoutSession updated for this row - first cell in first stride, if any
-											+ Just Register iff stride had ship's
-								+ Test:
-									+ Go from ship with many to ship with less - verify layout adjusts
-									+ Go from ship with a few to ship with more - verify layout adjusts
-							+ RemoveCustomMaterial(TMaterial const *, [User|Ship], LayoutSession) -> LayoutSession
-								+ Remove from stride
-									+ Refactor out cell deletion logic (image list index, checked cell count, etc.) from RemoveAllShipCustomMaterials
-								+ Update LayoutSession accordingly
-
-					+ EndCustomMaterialsLayout(LayoutSession)
-						+ Do all of the below at new LayoutAndRender(); this one just becomes calling that with LayoutSession
-						+ (Re-)Calc panel width
-						+ Assign cell coords
-						+ Rescale buffer bitmap on size
-							+ Create new bitmap with new size
-							+ Create two MemoryDc's and Blit old->new
-							+ Clear new part of new (if any)
-							+ Replace old bitmap with new						
-						+ Render cells onto buffer
-						+ Refresh(false)
-
-			+ Make black frame around sample materials, for white materials
-				+ And while you're at it, simplify all: work on rgbaImage, and only @ end make it into a wxBitmap
-
-			+ ShipOverlay, EditButton, Checkbox:
-				+ Ship: set on sample material at cell creation time
-					+ Icon
-					+ Code: iff custom is ship
-				+ EditButton, Checkbox:
-					+ All std::optional<wxRect>
-					+ Set at Layout, passed to MakeMaterialSample
-						+ ShipOverlay: iff CustomKind=Ship
-						+ EditButton, Checkbox: iff CustomKind!=None
-					+ Honor checkbox at RenderCell
-					+ Handling of clicks:
-						+ EditButton:
-							+ Start workflow via PalettesController - copy from AddNewButton
-								+ Both: watch out for re-entrantness
-						+ Checkbox:
-							+ OnCheckboxToggled
-								+ Maintain counter
-									+ Zero counter at cctor & default layout start
-								+ Fire event for browser, it'll reconciliate via panel::IsAnyChecked()
-				
-			+ All cells have exact same width - constant
-			+ All cells in a row have the same height - constant
-			+ There's a H separator between MaterialStride's
-			+ SetAllCustomMaterialsIsChecked(bool value=true)
-				+ Navigate hierarchy and change
-					+ Maintain count
-					+ Render cell
-				+ Refresh(false)
-				+ Fire event for browser, it'll reconciliate via panel::IsAnyChecked()
-			+ GetCheckedMaterials() const -> vector<TMaterial *>
-				+ Navigate hierarchy and fetch selected ones
-			+ GetCheckedShipMaterials const -> vector<TMaterial *>
-			+ FindCellFor: can speedup with lookups
-			
-		+ MaterialPaletteBrowser<TLayer> : IMaterialPalette
-			! Owns only its own tiles
-			+ Replace selected events with calls into IMaterialPaletteController
-			+ cctor:
-				+ Palette<TLayer> const & from DefaultMaterialDatabase
-				+ User's custom materials (from DB)
-				+ IMaterialPalettesController &
-				+ Create default category panel
-				+ Add User's (via existing AddUserCustom[vector])
-
-			+ vector<TMaterial const *> GetAllCustomMaterialsChecked() const
-
-			+ Initial layout:
-				+ Kinda as now, using InitialLayout APIs
-
-			+ Ops exposed (all forwarded to panel, most with layout guards):
-				! Browser provides larger ops, as it's browser who orchestrates layout
-				+ AddCustomMaterials(vector<TMaterial*>, RegistryKind)
-					+ Organize materials by category
-					+ For each category:
-						+ Find panel for category
-						+ panel-> Start custom layout
-						+ panel-> Add material
-						+ panel-> End custom layout
-						+ Layout() // for H scrollbar
-					+ Test:
-						+ Single stride
-							+ FIX: iShipCustomStartIndex is 1
-							+ FIX: make H scrollbar appear if needed
-						+ Multi stride
-							+ FIX: different spacing between strides makes ugly; either remove it or make same as material
-				+ ReplaceCustomMaterial(TMaterial const *, TMaterial const *)
-					! No layout guard for this one
-					+ Find panel for category
-					+ panel-> ReplaceCustomMaterial(old, new)
-				+ SetShipCustomMaterials(vector<uq_ptr<>>)
-					+ Organize materials by category
-					+ For each _our_ category:
-						+ Find panel for category
-						+ panel-> Start custom layout
-						+ panel-> Remove all ship [RemoveAllShipCustomMaterials()]
-						+ panel-> Add ship one by one, if any
-						+ panel-> End custom layout
-						+ Layout() // for H scrollbar
-				+ RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
-					+ Organize materials by category
-					+ For each _delenda_ category:
-						+ Find panel for category
-						+ panel-> Start custom layout
-						+ panel-> RemoveCustomMaterial
-						+ panel-> End custom layout
-						+ Layout() // for H scrollbar
-				+ MoveCustomMaterialsRegister(vector<TMaterial const *>, targetRegister)
-					+ Organize materials by category
-					+ For each _movenda_ category:
-						+ Find panel for category
-						+ panel-> Start custom layout
-						+ panel-> RemoveCustomMaterial
-						+ panel-> AddCustomMaterial(targetRegister)
-						+ panel-> End custom layout
-						+ Layout() // for H scrollbar
-
-			+ Handle events from Panel:
-				+ fsCheckedStateChange
-					+ ReconciliateUIWithCheckedItems()
-						+ Check current_panel->IsAnyChecked and reconciliate
-
-			+ Multi-element ops:
-				+ Prelim:
-					+ private helper: GetCurrentlyShownPanel() -> panel *
-						+ Goes through mCategoryPanelsContainerSizer and finds the (only) one that's shown
-					+ When we change selection, re-run Reconciliation - for new panel
-				+ Select All
-					+ Layout
-					! Selects all visible ones - i.e. current Layer, current Category
-					+ GetCurrentlyShownPanel()->SetAllCustomMaterialsIsChecked(true)
-						+ Will fire event that will recon UI
-				+ Clear Selection
-					+ Layout
-					! Unselects all visible ones - i.e. current Layer, current Category
-					+ GetCurrentlyShownPanel()->SetAllCustomMaterialsIsChecked(false)
-						+ Will fire event that will recon UI
-					+ Recon: enabled==any checked
-				+ Delete Selected
-					+ Layout
-					! Deletes only from current Layer, current Category -- otherwise dangerous
-					+ Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedMaterials()
-					+ Call onto controller with that vector
-					+ Recon: enabled==any checked
-				+ Import Selected Ship
-					+ Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedShipMaterials()
-					+ Call onto controller with that vector
-					+ Recon: enabled==any *ship* checked
-				+ Export All Selected
-					+ Call onto controller with no args - OnExportCheckedCustomMaterials()
-					+ Recon: enabled iff palettesController::IsAnyCustomMaterialChecked
-				+ Import:
-					+ Call onto controller with no args - OnImportExternalCustomMaterials()
-					+ Recon: nop
-
-			+ Make it dockable
-				! When docked:
-					- Fixed pos and size (based off referenceRect)
-						- Have to store referenceRect in order to dock again
-					- Losing focus (still) closes it
-				! When undocked:
-					- Gains close button, move bar, and resizing controls
-						- Requires Layout()
-					- MainFrame trying to open palette (controller): checks first if already open 
-					- MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
-					- Losing focus never closes it
-				+ Impl:
-					+ Need an icon
-					+ Docking button: BitmappedCheckbox
-						+ Icons
-						+ Handling:
-							+ SetDocked(true/false)
-							+ Refresh()
-					+ Frame itself (browser) needs to not set max size, needs to set a reasonable min size, and set the right size (off referenceRect)
-					+ Member for tracking current docked state: bool mIsDocked
-					+ Close event:
-						+ ! docked: if can veto: veto + hide, like @ losing focus
-						+ docked: if can veto: veto
-					+ KillFocus event:
-						+ ! docked: completely ignored
-						+ docked: like now
-
-					+ void SetDocked(bool isDocked)
-						+ To-docked:
-							+ SetWindowStyle -- like cctor
-								+ Use constants for both styles
-							+ Dock into docking rect (position, size)
-							+ Set focus
-							+ Set internal state as docked
-						+ To-undocked:
-							+ SetWindowStyle(wxMAXIMIZE_BOX | wxCLOSE_BOX | wxRESIZE_BORDER | wxFRAME_FLOAT_ON_PARENT);
-								+ Use constants for both styles
-							+ Set internal state as non-docked
-					+ @ Open():
-						+ Store docking rect
-						+ Begin as docked: MakeDocked()
-						+ Set BimapCheckbox state
-					+ @ Selection: no close/hide if not docked
-					+ MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
-						+ Expose member tracking docking status
-						+ Actually, might expose logic as GetCanLoseFocus:
-							+ if docked: return !IsOpen
-							+ if undocked: return true
-					X MainFrame trying to open palette (controller): checks first if already open
-						X TODOHERE: and if so?
-					X At change of plane, need to close palette browser if it's open
-						X See if this is really needed though
-					+ At change of layer, need to close palette browser if it's open
-				+ Clear this work item somewhere else in the plan
-
-		+ MaterialPalettesController
-			+ Replaces CompositeMaterialPalette
-			+ Replace event-based args in inline callbacks with vals
-				+ mOnXXXLayerMaterialSelected callbacks: take same args as interface
-			+ Implements IMaterialPaletteController
-			+ cctor: 
-				+ Controller getter [for reaching ship model, e.g. for replacing materials]
-				+ WorkbenchState const & (for currently-selected materials)
-				+ DefaultMaterialDatabase [to boot 3 MaterialDatabase<T>'s]
-				+ Callback for material selected
-			+ OnShipLoaded(CustomMaterialsPod &&) -> MaterialsReplacementMap
-				+ if currently-picked material(s) (both planes) are among ship's delenda, synthesize selection of nullptr for the plane
-					+ WorkbenchState helper to get material given <LayerType, Plane>
-						+ Refactor out of MainFrame::OpenMaterialPalette
-				+ // Replace ship custom materials on both model & view
-				+ MaterialDatabase<TLayer X 3>::SetShipCustomMaterials(pod member) -> MaterialsReplacementMap
-					+ Define MaterialsReplacementMap @ ShipBuilderTypes
-					+ -> merges, material_map
-				+ MaterialPaletteBrowser<TLayer X 3>::SetShipCustomMaterials(from DB, result of pruning) [Replace all ship custom [vector]]
-				+ return MaterialsReplacementMap
-				+ Caller (MainFrame) uses MaterialsReplacementMap to mess with layers in-place within definition, using layers' helpers (or AllLayers/?), before giving definition to new controller
-			+ OnNewUserCustomXYZMaterial(XYZMaterial * baseMaterial)
-				+ Create overrides
-				+ Run dialog
-				+ If OK:
-					+ Add to user DB
-					+ Add to palette (vector of one)
-			+ OnEditCustomStructural/Electrical/RopesMaterial(TMaterial const *, registerKind)
-				+ Run dialog
-				+ If ok:
-					+ Make new material
-					+ Replace material in DB, via ReplaceCustomMaterial(move(new material)) -> uq_ptr<old material>
-					+ Call PreCustomMaterialUpdated on old and new pointers
-					+ Bake Undo material-specific lambda, moving old material into it
-						+ private MaterialPalettesController::RestoreMaterial(TMaterial const *, uq_ptr<TMaterial const>)
-							+ Database::ReplaceCustomMaterial: replace new material with old uq_ptr
-							+ PreCustomMaterialUpdated 
-							+ Update material in palette via Browser::UpdateCustomMaterial(...)
-					+ Ask controller if old in use, via Get[Structural|Electrical|Ropes]MaterialsInUse
-					+ If in-use:
-						+ Replace in ship, via Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials(map with old<->new, Undo material-specific lambda)
-					+ Else:
-						+ Controller::StoreUndoAction()
-					+ Update material in palette via Browser::UpdateCustomMaterial(...)
-
-				+ Tests:
-					+ Edit is reflected in palette's text
-					+ Swaths change to new - x2x3
-					+ Undo w/no ship:
-						+ Swaths change to old - x2x3
-					+ Undo w/ship:
-						+ Swaths change to old - x2x3
-						+ Center of mass, total mass changes with material edit
-						+ Sampled material under cursor
-					+ FIX: we see both materials after editing material in ship
-						+ It's the ephemeral; tools have temp viz which is a clone of before
-						+ Need to reset tools' state at material amend; assuming not in temp viz
-							+ Should SuspendTool before replacing materials
-			+ OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
-				! For "Delete checked"
-				+ Ask controller if any in use, via Get[Structural|Electrical|Ropes]MaterialsInUse(...) -> std::set<XXXMaterial const *> (-> shipSet)
-				+ If at-least-one-in-use:
-					+ Ask user if a) Remove from ship, b) Remove from delenda, c) abort
-					+ If a: <nop>; continue
-					+ If b: prune delenda; zero shipSet; continue
-					+ If c: abort
-				+ If delenda empty: done
-				+ Remove from DB via ExtractCustomMaterials, and get back two SinglePod's with those - user and ship
-				+ Call PreCustomMaterialDeleted on each delenda pointer
-					+ Like at SetShipCustomMaterials: if currently-picked materials among those being deleted, select null in WorkbenchState and browser
-				+ Bake Undo material-specific lambda, moving SinglePods into it
-					+ Add both to DB, user vs ship
-					+ Add both to palette, user vs ship
-				+ Call Controller.ReplaceMaterials
-				+ Update palette, via Browser::RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
-				+ Tests:
-					+ Layout:
-						+ One in-between
-						+ Different strides
-					+ Delete when used by ship
-						+ Verify new stride's StartShipIndex
-					+ Undo w/out ship: 
-						+ User's and ship's reappear in palette & in user DB
-					+ Undo w/ ship: 
-						+ User's and ship's reappear in palette & in user DB
-						+ Ship's deleted reappear in ship, properly 
-					+ Both user and ship, but choosing to keep ship:
-						+ Verify just user
-						+ Undo
-			+ OnImportCustom[Structural|Electrical|Ropes]ShipMaterials(vector<TMaterial const *>)
-				+ User checks boxes, and then "Import Selected Ship"
-				! vector<TMaterial const *> guaranteed to be ship's only
-				+ DB: MoveShipCustomMaterialsToUser(vector<TMaterial const *>)
-					+ Save DB
-				+ Bake Undo:
-					+ DB: MoveUserCustomMaterialsToShip(vector<TMaterial const *>)
-						+ Save DB
-					+ Update palette: Browser.MoveUserCustomMaterialsToShip(vector<TMaterial const *>)
-				+ Update palette: Browser.MoveShipCustomMaterialsToUser(vector<TMaterial const *>)
-			+ OnExportCheckedCustomMaterials()
-				+ Get three vector<TMaterial const *> from three browsers - GetAllCustomMaterialsChecked()
-				+ File SaveAs dialog for .json
-				+ If ok:
-					+ Call DB::ExportCustomMaterials(materials X 3, file_path)
-			+ OnImportExternalCustomMaterials()
-				+ File Open dialog for .json
-					+ Refactor creation of dialog
-				+ If ok:
-					+ CustomMaterialsPod loadedPod;
-					+ Load
-						+ From ship:
-							+ Deserializer::Load
-							+ If error:
-								+ Popup error
-									+ See localization
-								+ return
-							+ If loadedPod empty:
-								+ Message: "The TODO ship has no custom materials."
-								+ return
-							+ Steal pod
-						+ From DB:
-							+ BaseDB::LoadCustomMaterialsFile(filepath) -> CustomMaterialsPod
-							+ Steal pod
-					+ Filter distinct from DB
-						+ Call x3 DB<LayerType>::DetectEquivalentUserCustomMaterials(single pod) -> vector<bool>							
-					+ If none after filtering:
-						+ Message: "TODO"
-						+ return
-					+ Create & open dialog for choosing
-						+ Dialog has 3 lists, checkboxes with materials, dupes are disabled and say "(DUPLICATED)"
-						+ Dialog has OK and Cancel, and Select All and Clear All
-							+ Have a vector of vector iterators next to chk vector
-						+ Dialog returns vector<bool> with chosen marked
-					+ If aborted:
-						+ return
-					+ If none:
-						+ return
-					+ Add to DB
-						+ Save DB
-					+ Update palette
-					+ Populate Undo with materials
-						+ Need just pointers for plain removal
-						+ Remove from DB
-						+ Remove from palette
-
-		+ MaterialEditDialog: 
-			+ Two dialogs, two classes, one base with common code
-			+ Hook NewButton->IMaterialPalettesController
-			+ FIX: Edit opening makes palette close - because it's wxTransientPopupWindow, closes at focus lost
-				- Option 1: Browser is wxTransientPopupWindow
-					- Yes close on click outside
-					- No close on focus lost
-				+ Option 2: Browser is wxFrame
-					+ wxFRAME_FLOAT_ON_PARENT
-					+ OnFocus handler detects losing focus and closes
-					+ When about to open dialog, remembers to disable focus check
-						+ Change: Controller asks Browser to run dialog
-						+ Clear flag at Open()
-					+ Do we still need MainFrame checking IsOpen()? YES: it's for mouse entering WorkCanvas
-
-			+ Contains overrides, and ctrl event handlers populate that overrides instance
-			+ Structural:
-				+ Run() also needs nominal
-				+ Notebook
-					+ Basic:
-						+ ColorPicker: button + picker
-						+ Name
-						+ Sliders: Mass, Strength
-							X Option 1: static, global limits
-								= SimulationProperties: new "MaterialLimits" section with constants
-									+ Mass: 0.0813
-									+ Strength: 0.02-7.5
-									- Ignition: 353-1e06
-									- ...
-								- Enforce at default load time
-
-							+ Option 2: limits between 0.1 and 10 of value, except fo truly capped ones
-								X Caps still required at SimulationProperties, or not? They're always 1.0
-									+ Enforce at default load time
-								+ Run():
-									+ Sync values and reset slider limits
-										+ Slider limits values based off base material's value, conveniently via MakeStartingOverrides()
-									+ SliderControl: substitution of slider core								
-					+ Advanced:
-						+ 5
-
-			+ Electrical:
-				+ N panels, one per-type; selects right one at Run()
-				+ Add ThermalSwitch, overrides and all
-				+ Only electrical elements of certain types (the overridable ones, or those that emit heat) should have a button at all
-					+ ElectricalElementEditDialog static private helper w/base material argument and returns PanelKind
-						+ See if all to which we give heat, do heat
-							! Generator
-							! Lamp, OtherSink, WaterPump, Engine,
-					+ ElectricalElementEditDialog static public helper w/base material argument and uses private
-						+ Use at layout when deciding to add CreateNewButton
-					+ Run(): populate all values/limits, use private helper to show panel	
-					
-				+ Final cleanups
-
-			+ Normalize name (@ Utils, with unit tests)
-				+ Algo
-				+ Use
-			
-			+ MaterialPalettesController instantiates and owns two MaterialEditDialog instances (Structural and Electrical)
-
-			+ Disallow empty name
-
-		+ Controller/Model/ModelController/Undo:
-			+ std::set<XXXMaterial const *> ModelController::Get[Structural|Electrical|Ropes]MaterialsInUse(std::vector<XXXMaterial const *> materials) const 
-				! Used by "delete checked" - ASSUMPTION: "delete checked" only applies to a given Category - and thus to a given LayerType
-			+ void Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials:
-				+ Args:
-					+ map: TMaterial const * -> TMaterial const *|null (for removal)
-					+ std::function for material restore
-				+ Impl:
-					+ ModelController::ReplaceCustom[Structural|Electrical|Ropes]Materials(map) -> AffectedRect
-						+ Update model
-							+ Using WriteParticle for analysis
-								+ Watch out: for ropes, we also have to set RopeElement.RenderColor - to material's color
-						+ Update visualization
-					+ Undo payload:
-						+ Move material restore call into lambda
-					+ Mark ship as dirty
-				+ Structural
-				+ Electrical
-					+ Test, incl. Undo
-				+ Ropes
-					+ Test, incl. Undo
-
-	+ PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
-
-	+ Finalize layout of "Checking/Selected" buttons' area in Browser
-
-	+ Add RGB code to property grid
-		+ Get rid of thermal expansion coefficient
-
-	+ Merge into master
-
-=======
-
-- Translate (aka move)
-	! Structural, Electrical, Ropes, External, Internal
-	! Does not use Selection tool nor SelectionManager: does own overlay, just like selection tool
-	! Tool-specific setting: all layers, all layers except texture, just this layer
-	! Two-state: drawing selection, then translating
-		- Traslating only if second-time click *in* selection; otherwise, restarts selection
-	! Shift lock:
-		! Move phase: constrain to straight H or V line from origin
-	! Undo strategy: like TextureTranslate: At first move, sets undo and dirties model, then remembers "IsDirty" to prevent if from pushing undo again
-	! No ephemeral viz; each move is the real thing - like TextureTranslate
-
-	! Analysis of current/possible impl:
-		- Tool is single (non-templated) type, just like PasteTool; but there are N derived, each pinning down layer from which tool was selected
-			- Note: we need N derived as it is a constraint in the current framework that each tool must be associated with one layer only
-			- This is where the similarities with PasteTool end; for the rest, it's just like a normal tool
-		- Phase 1 doesn't care about layers
-		- At beginning of phase 2 (first move), tool takes layers region, exactly like @ Controller::InternalCopySelectionToClipboard(), depending on layer settings from WorkbenchState
-			- Also see Controller::Copy(): if not all layers, it's primary viz -- not the "tool's layer" which is never used for action logic
-	! Analysis 2: catering to texture or ship
-		- Base tool is also templated on coords type - ship or image
-			- Internal, specialized helpers provide coords
-		- S/E/R tools' settings are on Ship coords; if layers include texture layers, they're rounded to ship
-		- E/I tools' settings only allow "This layer" and "All texture layers"
-			- The primary layer dictates how we calc coords for other layer
-
-	+ Impl:
-		+ ShipBuilderTypes: N tool types, one for each layer
-		+ Tool:
-			+ Copy from TextureTranslateTool, but not templated
-			+ Make N derived
-			+ State:
-				+ Selection state machine
-				+ Move state machine
-					X FIX: shift & total_move_offset: when pressing shift after having moved already, we pickup total_move already and thus we decide same as before
-						= Fixed by remembering start pos (RAW mouse coords) when we reset constraint detection state machine
-							+ MovingState has DisplayWhatever StartMouseCoords, passed in cctor
-							+ Reset at shift down
-							+ InternalMove: @ constraint detection: get mouse pos (raw) and calc own offset wrt constraint detection start pos
-					+ Restructure state machine
-						! Goals:
-							! Undo only created at beginning of first ever move for a given selection; subsequent moves do not create undo
-							! At that same time, we take snapshot of tool settings - which are in fact used for undo
-							! At beginning of each move after "that time", and at shift down/up, we reset Shift constraints
-							! SelectionMoves remembers last pasted selection corner pos
-								! Init when we create SelectionMoves @ start move with current selection corner pos
-								! Updated at end of each move with final paste corner pos
-						+ Do:
-							+ EngagementData has opt PreliminaryMoveStartCoords
-								+ Init'd @ MouseDown @ Selected (when in), i.e. @ -> Moving
-								+ DeInit @ MouseUp @ Moving, i.e. @ Moving -> Selected
-									+ @ same time we nuke SelectionMoves->MoveState (if any)
-									+ Remember last pasted selection corner pos @ SelectionMoves
-							+ MouseDown @ Selected:
-								+ Remember start coords @ EngagementData
-								+ -> Moving
-							+ MouseMove @ Moving:
-								+ If non-empty move offset wrt EngagementData:
-									+ If no SelectionMoves:									
-										+ Create SelectionMoves w/ tool settings & copy of SelectionCorner from EngagementData
-											+ Move code from MouseDown
-										+ InitMove() (->"InitSelectionMoves")
-											+ Store stuff @ SelectionMoves
-									+ If no MoveState inside SelectionMoves:
-										+ Create MoveState()
-									+ Do move
-							+ Moving:
-								+ Update MovingState->CurrentSelectionPasteCornerCoords										
-						+ Undo base tool/tool class/Controller setters
-
-						+ Change for selectionrect/overlay:
-							+ EngagementData has:
-								+ opt<TRect> OriginalSelectionRect
-									+ Set once and for all @ -> Selected
-								+ opt<TRect> CurrentPastedSelectionRect;
-									+ Set @ -> Selected
-									+ Updated @ each move
-
-				+ Eph viz and final commit doing thing for real (repeating last eph viz); undo @ end
-					! Rationale:
-						! We do want eph viz, otherwise perf sucks
-						! We do want undo @ end, to limit memory
-							! Hence, we need pristine conditions before end
-
-					! Current dynamics:
-						- Dynamics for elec panel:
-							- ElecRegionFill, Erase: forget panel elements
-
-						- Dynamics of eph viz:
-							- At each change:
-								- If have eph viz:
-									- Undo eph viz
-										- ModelController::RestoreEphemeralVisualization
-											- Forget layer::isInEph
-										- Forget we are in eph viz
-									- mController.LayerChangeEpilog()
-								- Draw eph viz
-									- Get eph viz restore payload from ModelController
-									- ModelController::DoThingForEphemeralVisualization
-										- Remember layer::isInEph
-									- Store eph viz restore payload, remembering we are in eph viz
-								- mController.LayerChangeEpilog()
-							- At commit (also @ leave):
-								- If have eph viz:
-									- Undo eph viz
-										- ...
-								- ModelController::DoThing
-								- Store undo
-								- mController.LayerChangeEpilog(affectedLayers);
-
-					+ ShipBuilder::RegionCombiner
-						+ Templated
-							+ See if can do that "struct ShipSpaceTag" once and for all
-						+ Unit tests
-
-					+ Make multi-region GenericUndoPayload<T>, and make it coords-free
-						+ New enum @ GameTypes (CoordinatesSpaceType) and templated on that
-							+ Enum:
-								+ ShipSpace
-								+ ExteriorTextureSpace
-								+ InteriorTextureSpace
-							+ Traits
-						+ Replace GenericUndoPayload<T> altogether
-						+ Current GenericUndoPayloadX2 becomes public element
-						+ Visitor API and Add API
-						+ Make 3 explicit classes using enum naming
-						+ Uses:
-							+ All methods that return or take, return or take one of the three explicit classes
-								+ And at this moment return one single region
-								+ TextureTranslateTool
-							+ Restore API is overloaded for three types, and code runs in loop
-								+ ExteriorTextureSpaceToInteriorTextureSpace/other
-								+ Do we need "AffectedLayers" - can just check for presence? so no switches
-									+ remove from @ texture payloads only
-
-						+ Tests: 
-							+ TextureTranslateTool
-							+ structural rectangle
-							+ paste all layers
-
-
-					+ Same for GenericEphemeralVisualizationRestorePayload
-						+ Tests: 
-							+ TextureTranslateTool
-							+ structural rectangle
-							+ paste all layers
-							+ line
-
-					+ Might also need multi-region dirty viz tracking, for perf
-						+ Pre-perf for line
-						+ Change dirty region to RegionCombiner
-						+ Line improvements:
-							+ FIX: Undo of eph dirties whole region
-						+ Post-perf for line
-						+ Nuke logs
-						+ Cleanup RegionCombiner
-						+ If we do this, nuke redundant LayerChangeEpilog's at tools when we undo eph viz and redo it
-
-					+ See if can get rid of those "struct ShipSpaceTag" and define structs once
-						+ Also other tags: "space"
-
-
-
-					+ Call InternalCommit @:
-						+ dctor - iff needs to commit
-						+ Creation of new selection
-					+ @ InitSelectionMoves:
-						+ Nuke
-					+ Use finalizer for eph viz
-						+ No need for UndoEphViz; shove in finalizer
-					+ @ each move (for eph viz):
-						+ If have eph viz:
-							+ Undo eph viz - via finalizer
-						+ Change coords
-						+ Draw eph viz:
-							+ ModelController::ShipSpaceRegionTransferForEphViz -> GenericEphemeralVisualizationRestorePayload
-								+ This one called by base, as one of three ModelController overloads (SER, Ext, Int)
-								+ Args:
-									+ SourceRegion
-									+ TargetPos
-									+ set<LayerType>
-										+ Replaces bool in SelectionMoves -- calcd at SelectionMoves creation time
-									+ IsTransparent
-								+ Impl: (trace PasteForEphemeralVisualization)
-									+ Calc affected source and target rect in ShipSpace
-									+ If region ! empty:
-										+ Call new MakeGenericShipSpaceEphemeralVisualizationRestorePayload
-											+ Returns ShipSpaceRegionPayload
-												+ make public
-											+ Takes set<LayerType> instead of bools
-												+ Replace args of CheckLayerSelectionApplicability everywhere
-											+ For each selected layer:
-												! Selected layers guaranteed to be consistent with present layers
-												+ Take backup for payload
-													+ All applicable layers
-													+ Repeat math for texture layers
-											+ Test: Paste w/different layers combos
-											+ Do also other two spaces
-											+ Call it
-										+ For each selected layer:
-											+ Erase
-												+ DoStructuralRegionFill
-													+ Factor out code from StructuralRegionFillForEphemeralVisualization
-													+ Takes care of viz dirty region
-											+ Paste
-												+ DoStructuralRegionBufferPaste
-													+ Takes care of viz dirty region
-											+ Remember layer is in eph viz
-
-											+ Do for:
-												+ S
-												+ E
-													+ DoElectricalRegionFill
-														+ Refactor like we did for S
-													+ Test
-												+ R
-													+ DoEraseRopesRegion
-														+ Refactor like we did for S
-													+ Rethink ropes when region "cuts" a rope
-														! Current behaviors:
-															- Erase: if at least one endpoint in region
-															- Copy(Region): if at least one endpoint in region; offsets their coords afterwards
-															- BlitFromRegion (i.e. Paste): copy ropes with at least one endpoint in region; 
-															  un-offsets their coords afterwards, and deletes ropes with at least one endpoint at same places
-														+ Should match, test it - AND NOT!
-															+ Restore build up: it's in SourceRestorePayload
-															+ Paste: neither endpoint is in rect
-																+ Because we're using sourceRestorePayload (whole), which was built with RopesBuffer::Clone(), not CloneRegion() which is not offseted
-																	! What do we do at Copy()? CopyRegion
-																	+ Use CopyRegion() @ MakeGenericShipSpaceEphemeralVisualizationRestorePayload
-																		+ Check callers of MakeGenericShipSpaceEphemeralVisualizationRestorePayload, they're impacted
-																	+ Then deal with buffer being region at RestoreEphemeralVisualization
-																		+ InternalRestoreRopesLayerEphemeralVisualization
-																		+ Called also by:
-																			+ RestoreRopesLayerEphemeralVisualization:
-																				+ Called also by:
-																					+ RopePencilTool::MendTempVisualization
-																		+ Check anywhere else we use RopeBuffer::Clone() instead of CloneRegion()?
-																			+ MakeGenericShipSpaceUndoPayload: calls RopesLayerBuffer MakeRegionBackup() which calls Clone(), but also restore expects it, so okay
-																	+ Then deal with callers of RestoreEphemeralVisualization
-																		+ PasteTool, i.e. ModelController::PasteForEphemeralVisualization
-																		+ SelectAndTranslateTool
-																		X StructuralRectangleTool
-														+ Test:
-															+ Others:
-																+ RopePencilTool
-																+ PasteTool
-															+ This
-
-														+ RopesLayer changes:
-															+ Make CloneRegion behave like CopyRegion
-																+ Then nuke CopyRegion and replace with CloneRegion
-															+ Allow rope endpoint to stay anchored
-																+ RopeBuffer:
-																	+ CopyRegion: don't offset endpoint that is out of region
-																	+ BlitFromRegion: don't offset endpoint that is out of region
-																+ Test:
-																	+ RopePencilTool
-																	+ Copy->Paste X 2
-																	+ Cut->Paste X 2
-																	+ Ours X 2
-															+ UnitTests
-															
-												+ ET
-													+ Erase: refactor EraseExteriorTextureRegion: DoEraseExteriorTextureRegion, does assert hasLayer + model + register dirty
-												+ IT
-													+ Erase: refactor EraseInteriorTextureRegion: DoEraseInteriorTextureRegion, does assert hasLayer + model + register dirty
-									+ Return payload
-
-									+ FIX: when intersection of target area is zero, we do not erase
-							+ Do other two texture ones -- Exterior/InteriorTextureSpaceRegionTransferForEphViz
-								+ Test
-							+ Store eph viz restore payload in finalizer, remembering we are in eph viz
-								+ ModelController::RestoreEphemeralVisualization (one of 3)
-						+ mController.LayerChangeEpilog()
-					+ @ new selection, and @ ~dctor(): commit
-						+ If have eph viz:
-							+ Undo eph viz - via finalizer
-						+ If not empty move:
-							+ FIX: cannot move back to orig, as we check against start move
-								+ Refactor
-									+ New state
-									+ Ensure SourceRect and PasteRect are correctly origin'ed
-										+ Also InternalDoMoveForEphemeralVisualization
-									+ InternalDoMoveForEphemeralVisualization: move change detection here, undo eph viz only afterwards
-									+ UpdateSelectionViz: uses PasteRect
-									+ Commit:
-										+ Careful for no-size region
-									+ Commit broken wrt coords
-									+ Changes to workbench state after engagement: tool not notified
-										+ Freeze vals @ Engagement
-							+ ShipSpace ModelController::RegionTransfer -> multi-region undo
-								+ S
-								+ E: Need convoluted electrical panel handling:
-									+ Erase: leave elec panel elements behind
-									+ Paste: 
-										+ Can keep all insatance IDs, as they're gone (were from erased region)
-										+ It might resuscitate 1..N of the erased ones
-										+ It might kill overwritten ones
-									+ FIX: crashes after transfer
-										+ Problem is at ModelController::Restore multi-region-ness: when restoring erase we have dupes
-											+ Need to delay all re-initializations (and verification) only after all regions
-									+ Final: trim panel for those from Erase that might be gone (not pasted, i.e. not resuscitated)
-										+ Verify diagnostics would fire if we nuked an instanced, and verify both fixed after trimming
-											+ From erased region (paste outside)
-											+ From paste (overwritten)
-									+ Add elec layer diagnostics
-										+ Test:
-											+ Paste
-											+ Undo
-											+ Ours -- verify fails until we uncomment trimming orphans
-								+ R
-									+ Also careful here about which source region we use for pasting
-									+ Test:
-										+ Straddle rope
-										+ Whole rope
-										+ No rope
-								+ ET
-								+ IT							
-							+ Other 2 RegionTransfer in texture space
-								+ ET
-									+ Test
-								+ IT
-
-		+ MainFrame: reduce GDI objects via button icons
-			+ BitmapRadioButton: overload with wxBitmap
-			+ Use it via SharedUIResources
-			+ 651/656 -> 621
-		+ OnMouseMove: only do eph viz if translated coord != last, to save on refreshes (*)
-
-		+ See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
-			+ Also optimize - we do some things multiple times, once per region
-
-		+ Deep regression test:
-			+ Rope-affecting tools, incl. copy/cut/paste:
-				+ TODO: FIX: copy whole rope, paste, translate outside of ship: endpoint that's out goes random
-					! Same with SelectAndTranslate
-					! SourceRegion: contains both endpoints, offseted
-					! Then BlitFromRegion(sourceRegion): broken endpoint is out of source region, thus we keep it offseted
-					+ Fix: we currently use "endpoint in source region" to remember whether we've offseted it or not, but we're
-					  using truncated source region; should use un-truncated region
-					  + Then need unclipped paste coords
-					  + See all callers to BlitFromRegion
-				+ TODO: FIX: Paste with paste origin outside of ship, left/bottom
-				+ TODO: FIX: copy of one endpoint, paste, then undo or abort - ropes disappear
-					+ When we paste we delete old rope, then somehow we don't get it in restore nor undo buffers
-						+ We don't as target region (pasted to and overwritten) does not have rope endpoints
-							+ Is it a problem only with eph viz? 
-								+ Try with also backing up and restoring whole buffer @ eph viz
-									+ PasteForEphViz
-									+ SelectAndTranslateForViz: watch out buffer, do as with non-ephviz (full undo)
-									+ Their restore
-									+ Anything else using RopesLayerBuffer::CloneRegion
-									+ Any more users of DoRopesRegionBufferPaste?
-				+ Test cut
-				+ EphViz
-				+ Commit
-				+ Undo
-			+ TextureTranslate
-				+ EphViz
-					+ Also spring viz
-				+ Commit
-					+ Also spring viz
-				+ Undo
-					+ Also spring viz
-				+ Macro properties (center of mass) updates at:
-					+ Commit
-					+ Undo
-				+ Elec panel updates at:
-					+ Commit
-					+ Undo
-
-		+ Icon
-		+ MainFrame:
-			+ Tool selection @ each layer tools' panel
-			+ Settings for tool:
-				+ ShipSpace:
-					+ Layers
-					+ Transparent (like Paste)
-				+ TextureSpace:
-					+ Layers
-					+ Transparent (like Paste)
-				+ Workbench
-
-		+ Tests:
-			+ Undo ONLY appears AFTER sizable move
-			+ Undo ONLY appears if move ended up not being a zero move
-
-		+ Cleanup:
-			+ Tool:
-				+ Remove log lines
-				+ Remove old code
-
-	+ Rethink: fixing bug with unoffseted coords becoming "in size":
-		! Gist:
-			! ShipBodyRegion:
-				! Whole ElecPanel, whole RopesLayer
-				! Created via XYZLayers::MakeRegionBackup
-				! Restored via XYZLayers::RestoreRegionBackup
-
-			! Undo: acts on XYZLayers::Make[Region]Backup and Restore[Region]Backup
-				- Created Ropes backup is always whole buffer
-			! EphVizRestore: acts on XYZBuffer::BlitFromRegion, via MC::XYZRegionPaste
-				- Source ropes backup is always whole buffer
-			! Paste, SelectAndTranslate shifts: act on XYZBuffer::BlitFromRegion, via MC::XYZRegionPaste
-
-		+ Impl:
-
-			+ Undo all current uncommitted changes, once we're sure we're doing this
-
-			+ GenericUndoPayload => ShipBodyRegion
-				+ Also contains OriginatingRegion, whose origin replaces current Origin
-				+ RopesBuffer is whole
-					+ Comments, naming
-				! Naming:
-					! UndoPayload methods: make "backup"
-					! Restore methods: take "backup"
-				+ Creators:
-					- MC::MakeGenericShipSpaceUndoPayload (*1)
-						- Rename: MakeXYZSpaceBodyRegion
-						- Uses XYZLayer::MakeRegionBackup X N
-					- MC::Paste
-						- Uses XYZLayer::MakeRegionBackup X N 
-							- See if can be replaced by new (*1)
-					- MC::XYZSpaceRegionTransfer
-						- Uses MC::MakeGenericXYZSpaceUndoPayload (*1)
-					- MC::StructuralRectangle, StructureTrace
-						- Uses XYZLayer::MakeRegionBackup
-							- See if can be replaced by new (*1)
-					- MC::MakeGenericXYZSpaceUndoPayload
-						- Uses XYZLayer::MakeRegionBackup X N
-				+ Consumers:
-					+ MC::Restore(XYZ) -> RestoreForUndo
-						- Uses MC::InternalRestoreXYZLayerRegionBackup
-							- Must use XYZLayer::RestoreRegionBackup
-							+ See callers - will all they pass OriginatingRegion and not misuse it for glorified paste/transfer? Y
-						- See callers; if only callers are for Undo, rename as RestoreForUndo
-						- See if can then call MC::RestoreXYZLayerRegionBackup
-
-			+ GenericEphVizRestorePayload
-				+ Also contains OriginatingRegion, whose origin replaces current Origin
-				+ RopesBuffer is whole
-					+ Comments, naming
-				+ Rename to "EphemeralVisualizationRestorePayload" (-Generic) 
-					
-			+ Backup/Restore chains rearc:
-
-				! Current chains:
-
-					- Various tools (Paste/SelectAndTranslate/StructuralRectangle/StructureTracer/TextureTranslate): Undo
-						- C::Restore: callees:
-							- MC::Restore: callees:
-								- InternalRestoreXYZStructuralLayer[Region]Backup
-								- RestoreExteriorTextureLayerRegionBackup
-								- RestoreInteriorTextureLayerRegionBackup
-					- Other tools (Flood/Line/Pencil/TextureEraser): Undo
-						- C::RestoreLayerRegionBackupForUndo<TLayer>
-							- C::RestoreXYZLayer[Region]BackupForUndo
-					- Tools: RopeEraser, RopePencil: Undo
-						- C::RestoreRopesLayerForUndo
-					- Tools: TextureMagicWand: Undo
-						- C::Restore[Exterior|Interior]TextureLayerRegionBackupForUndo
-					- Cut: Undo
-						- C::Restore
-
-
-
-
-					- C::RestoreStructuralLayerRegionBackupForUndo: callees
-						- MC::RestoreStructuralLayerRegionBackup (above is only caller)
-							- MC::InternalRestoreStructuralLayerRegionBackup
-					- C::RestoreElectricalLayerRegionBackupForUndo: callees
-						- MC::RestoreElectricalLayerRegionBackup (above is only caller)
-							- MC::InternalRestoreElectricalLayerRegionBackup
-					- C::RestoreRopesLayerBackupForUndo: callees
-						- MC::RestoreRopesLayerBackup (above is only caller)
-							- MC::InternalRestoreRopesLayerBackup
-					- C::RestoreExteriorTextureLayerRegionBackup: callees
-						- MC::RestoreExteriorTextureLayerRegionBackup
-
-					- MC::RestoreExteriorTextureLayerRegionBackup: callers:
-						- C::RestoreExteriorTextureLayerRegionBackupForUndo
-						- MC::Restore X 3
-
-
-					- MC::InternalRestoreStructuralLayerRegionBackup: callers:
-						- MC::Restore
-						- MC::RestoreStructuralLayerRegionBackup
-					- MC::InternalRestoreElectricalLayerRegionBackup: callers:
-						- MC::Restore
-						- MC::RestoreElectricalLayerRegionBackup
-					- MC::InternalRestoreRopesLayerBackup: callers:
-						- MC::Restore
-						- MC::RestoreRopesLayerBackup
-
-					- Responsibilities:
-
-						- MC::RestoreXYZLayer[Region]Backup:
-							- InternalRestoreXYZLayer[Region]Backup
-							- Analysis
-						
-						- MC::InternalRestoreXYZLayer[Region]Backup:
-							- LayerXYZ::RestoreRegionBackup
-							- Update dirty viz
-
-				+ New:
-					! Gist:
-						! Tools's undo's guidelines (not necessarily all of them):
-							- Make Undo via (new) MC::MakeXYZSpaceBodyRegion(region, ...) -> SingleBodyRegion or via MC::<Operation> -> BodyRegions
-								- Restore Undo via C::RestoreForUndo(X3)
-							- Make EphViz payloads via MC::<Operation> -> EphVizRegions
-								- Restore EphViz via MC::TODOHERE
-						! Controller undo restore methods have "ForUndo"
-						! ModelController restore methods have "ForUndo" and "EphViz"
-
-						! ModelController ops return ShipBodyRegions/ShipEphVizRestoreRegions
-
-
-						- TODO: RestoreXXX method names: (*2)
-						- TODO: RestoreXXX arg names: (*2)
-
-					+ Impl:
-						+ Branch: shipbuilder_translate_tool__undo_rearc
-
-						+ Rename ephviz payload above
-						+ Layers: Ropes: backup/restore methods: remove "region"
-
-						+ ShipBodyRegion: members are ShipLayers
-							+ Allows for using pre-baked ops on all layers, e.g. for Paste tool
-								+ Then, use its size in PasteTool
-
-						+ Do all .h first
-						+ Do tools
-							+ FloodTool
-							+ LineTool
-								! Old pattern: 1
-									- Cctor - and after each commit - takes full layer clone
-									- Undo restore: via C::RestoreLayer[Region]BackupForUndo, after clipping on affected rect
-									- EphViz restore: via MC::RestoreStructuralLayer[Region]EphemeralVisualization, passing whole clone and dirty regions
-								+ New pattern 1:
-									+ Cctor - and after each commit - takes full layer clone via MC::CopyRegion(whole ship) -> SingleRegion
-									+ Undo restore: via clipping of a ShipBodyRegion region, via XYZSpaceBodyRegion::MakeClip(region) -> XYZSpaceBodyRegion, and C::RestoreForUndo making container XYZSpaceShipBodyRegions
-										+ FIX: problem: for Erase, we need to convert ShipSpaceCoords to Ext and Int Texture ImageCoords
-											+ Move Clip to static MC::Clip(ShipSpaceBodyRegion) -> ShipSpaceBodyRegion
-												+ Don't touch own coord transformation factors?
-									+ EphViz restore: via MC::RestoreXYZLayerRegionsEphemeralVisualization, passing whole cloned layer buffer and dirty regions
-										+ Finalize signature for MC::RestoreXYZLayerRegionsEphemeralVisualization (*4)
-							+ PasteTool
-								+ Given ShipSpaceBodyRegions (don't need texture spaces nnow)
-								! Old pattern/new pattern:
-									- Commit: does op and gets back ShipSpaceBodyRegions, storing in Undo lambda
-									- Undo restore: via C::RestoreForUndo
-									- EphViz do: does eph viz op and gets back ShipSpaceEphemeralVisualizationRestoreRegions, storing in mEphViz
-									- EphViz restore: MC::RestoreEphemeralVisualization
-							+ PencilTool
-								! Old pattern: 1
-								+ Follow new pattern 1
-							+ RopeEraserTool
-								! Old pattern: 1b
-									- Cctor - and after each commit - takes full layer clone, as whole RopesLayerData
-									- Undo restore: via C::RestoreRopesLayerForUndo, passing whole RopesLayerData from clone
-									- No EphViz
-								+ New pattern 1b: follow new pattern 1, without clipping
-							+ RopePencilTool
-								! Old pattern:
-									- Takes clone: via MC::CloneExistingLayer
-									- Undo restore: via C::RestoreRopesLayerForUndo
-									- MendTempViz: via MC::RestoreRopesLayerEphemeralVisualization
-								+ New pattern:
-									! ~1 and ~1b, w/no clipping
-									+ Takes clone: via MC::CopyRegion(whole ship) -> SingleRegion
-									+ Undo restore: C::RestoreForUndo
-									+ MendTempViz: via MC::RestoreRopesLayerEphemeralVisualization(whole cloned layer buffer) // no region
-							+ SelectAndTranslateTool
-								! Old pattern/new pattern:
-									- Commit: does op and gets back ShipSpaceBodyRegions, storing in Undo lambda
-									- Undo restore: via C::RestoreForUndo
-									- EphViz do: does eph viz op and gets back ShipSpaceEphemeralVisualizationRestoreRegions, storing in mEphViz
-									- EphViz restore: MC::RestoreEphemeralVisualization
-							+ StructuralRectangleTool
-								! Old pattern:
-									- Commit: does op and gets back ShipSpaceBodyRegions, storing in Undo lambda
-									- Undo restore: via C::RestoreForUndo
-									- EphViz do: does eph viz op and gets back ShipSpaceEphemeralVisualizationRestoreRegions, storing in mEphViz
-									- EphViz restore: MC::RestoreEphemeralVisualization
-							+ StructureTracerTool
-								! Old pattern:
-									- Does op, gets ShipSpaceBodyRegions
-									- Undo restore: C::RestoreForUndo
-									- No eph viz
-							+ TextureEraserTool
-								! Old pattern: 1
-								+ Follow new pattern 1
-							+ TextureMagicWandTool
-								! Old pattern: 1c
-									- At op: take full layer clone, do op getting back affected rect, clip clone, store in Undo
-									- Undo restore: RestoreExteriorTextureLayerRegionBackupForUndo
-									- No eph viz
-								+ New pattern 1c:
-									+ MC::Op returning UndoPayload directly, like others
-							+ TextureTranslateTool
-								! Old pattern:
-									- At beginning of op: take full layer clone
-									- At commit: do op (MC::MakeExteriorLayerFromImage, only caller), store (copy) full layer clone into Undo lambda
-									- Undo restore: via C::Restore(synthetic undo payload built on clone)
-									- No eph viz
-								+ New pattern
-
-						+ Controller.h:
-							+ Remove obsolete public's
-								+ ReplaceCustomMaterials: use ShipRegions: whole, then clip
-								+ See if can rename those Restore<full layer>: "Whole", "~PresenceChanging"
-									+ Used only for LayerAdd/Remove
-										+ Only caller: InternalPushUndoForWholeLayer
-											+ Its callers: InternalSetLayer/InternalRemoveLAyer
-								+ RestoreAllForUndo: used by Resize
-						+ Controller.cpp
-							+ Reordering for new .h ordering and fixing arguments
-						X See if there are obsolete Controller private's
-						+ ModelController.h
-							+ Remove obsolete public's
-								X CloneExistingLayer (replaced by CopyShipSpaceWhole)
-								+ Continue searching from here
-						+ ModelController.cpp
-							+ cpp
-								! Substitution reminders:
-									! MakeGenericShipSpaceUndoPayload -> CopyShipSpaceRegion
-									! MakeGenericShipSpaceEphemeralVisualizationRestorePayload -> MakeXYZSpaceEphemeralVisualizationRestoreRegion
-								+ Paste: 
-									+ Refactor code to calc affected source rect first, and reuse for texture layers,
-									  like @ transfer
-									+ Refactor code to take undo all at once
-								+ PasteForEphemeralVisualization
-									+ Copy from Paste, but merge with old implementation
-								+ ...
-								+ Transfer X 3
-								+ TransferForEphViz
-								+ ...
-								+ MakeXYZSpaceEphemeralVisualizationRestoreRegion
-									+ Copy from (now obsolete) MakeGenericShipSpaceEphemeralVisualizationRestorePayload X 3, using pattern from CopyRegion
-							+ Remove obsolete private's
-
-							+ InternalPaste facts:
-								+ These methods have to calc affected area for marking dirty eph viz, plus operator for transparency
-
-						+ Cleanup ShipBodyRegions.h, EphVizRegions.h, ShipLayers, Layers
-						+ ModelController:
-							+ CopyRegion(region, layers)X3 (*1) - WAS: MakeGenericShipSpaceUndoPayload
-								+ Asserts not in eph viz for any layer
-								~ IntersectWithLayerPresence
-								+ Uses XYZLayer::Make[Region]Backup X N
-									+ Does whole elec panel, whole ropes buffer
-							+ RestoreXYZLayer(layer): stays as-is, where it is
-								+ Used by C::RestoreAllLayersForUndo, special
-							+ Undo (code area) interface to Controller:
-								+ RestoreForUndo (was: Restore)
-								- RestoreXYZLayer[Region]BackupForUndo (was: RestoreXYZLayer[Region]Backup)
-							+ EphViz Undo (code area) interface to Tools
-								- RestoreEphemeralVisualization(X 3)
-								- RestoreXYZLayerRegionsEphemeralVisualization(layer_buffer "source", regions): LineTool, PencilTool, RopePencilTool, TextureEraserTool (was: RestoreXYZLayer[Region]EphemeralVisualization) (*4)
-									- buffer assumed to contain all regions; regions assumed to be relative to buffer
-
-
-							+ private:
-								- Restore payloads (code area) -- TODO: depending on what we decide for tools; eventually tools do via these, but made public
-									- MakeXYZSpaceUndoPayload (new: CloneXYZSpaceShipRegion)
-										- assert not in eph viz for any layer
-									- MakeXYZSpaceEphemeralVisualizationRestorePayload
-						+ Controller:
-							+ Undo (code area) interface to Tools:
-								+ RestoreAllForUndo(...various stuff...) (was: RestoreAllLayersForUndo)
-								+ RestoreForUndo(XYZShipBodyRegion &&)
-
-			+ ClipboardManager:
-				+ Takes ShipBodyRegions::Region
-				+ MC::Copy, Cut: makes ShipBodyRegion for ClipboardManager, from (*1)
-				+ MC::Paste, etc.: tales ShipBodyRegion from ClipboardManager
-
-			+ Tests:
-				+ Tools: for all: EphViz, Undo
-					+ StructuralRectangle
-						+ See perf
-							+ Buffer2D allocation: Buffer2D uses "linear allocation" borrowed from Buffer, instead of uq_ptr[]
-								+ Do changes
-								+ Compile all
-								+ UTs
-							+ Avoid when rect == prev
-								+ Would be nice to use rect in eph viz, but then it has to become single region
-									+ StructuralRectangle ops returns single region
-					+ Pencil
-						+ S
-						+ E
-							+ Base
-							+ When can't write (same issue as with line - empty dirty regions)
-					+ Flood
-					+ Line
-						+ S
-						+ E
-							+ FIX: assert when no dirty regions
-					
-					+ MeasuringTape
-					+ Sampler
-					+ Selection
-
-					+ StructureTracer
-					+ TextureEraser
-					+ TextureMagicWand
-					+ TextureTranslate
-
-					+ RopeEraser
-					+ RopePencil
-					+ SelectAndTranslate: incl EphViz, Undo
-						+ ShipSpace
-							+ Verify original ropes bug is gone
-						+ TextureSpace
-				+ Cut 
-					+ Undo
-					+ May paste -- right clipboard content
-				+ Copy
-					+ May paste -- right clipboard content
-				+ Paste
-					+ Eph viz -- translating
-					+ Commit
-					+ Abort
-					+ Undo
-				+ Add/Remove Layers & Undo -- all layers
-				+ Resize ship & Undo -- some layers, all layers
-				+ Elec panel
-
-			+ RopesBuffer::BlitFromRegion
-				+ Args:
-					+ source: takes whole RopesBuffer
-					+ sourceRegion (rect): in source rect; contained in it
-					+ targetPos (coods): absolute, possibly outside of source rect
-				+ Impl:
-					+ Erase target
-					+ Blit
-						+ Clamp coords that end up outside
-				! Can repurpose existing one, callers all want new behavior:
-					- Callers:
-						- MC::DoRopesRegionBufferPaste
-							- MC::Paste
-							- MC::PasteForEphemeralVisualization
-							- MC::ShipSpaceRegionTransfer
-							- MC::ShipSpaceRegionTransferForEphemeralVisualization
-				+ Unit tests
-					+ Also cover clamp
-
-			+ Merge back into shipbuilder_translate_tool
-
-	= Perf test
-		+ Copy old release ShipBuilder.exe first
-		= See auto-texturization with integers
-
-	+ Merge into master
-	- Clean this plan
-	+ Changelist
-
 
 
 - Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
@@ -4788,3 +3003,1791 @@ DONE
 + Check default Hull mode
 
 + changelist
+
+================================================================================================
+=== 1.22
+================================================================================================
+
++ Material palette takes forever to open (*), + crashes	
+	! problem is large number of GDI objects (running out of mem), plus Freeze/Thaw: wx visits the entire graph
+	! Fix gist:
+		! User-drawn panel
+		! As a reusable class, that we'll use also for selecting materials for import/export
+		! Two users: palette browsing, and multi-selection for import
+			! Palette browing: operations on a material are: Mark (-> ClearAll, SelectAll, DeleteMarked @ user), Edit
+			! Multi-selection: operations on a material are: Mark (-> ClearAll, SelectAll @ user)
+		! Pallete browsing user also adds "add" meta-material "buttons"
+	+ Impl:		
+		+ "MaterialPalettePanel" class: wxPanel; is given shape and exposes methods to add entries
+			! Builds internal buffer for DC all rendered, using method that draws on a DC
+			+ Row, Cell contain Layout info, which is calc'd at EndBuild
+				+ Absolute vals (origin and size) for rect containing anything inside - used to determine overlaps with dirty regions
+				+ Private layout info for e.g. text, checkboxes, etc.
+					+ In relative coords
+			+ cctor:
+				+ Invokes wxPanel cctor
+			+ StartBuild()
+			+ Add(TMaterial const * material, bool startNewRow): create:
+				+ wxBitmap with material sample (via MakeMaterialSample)
+				+ All pieces of text, already snipped
+					+ Heuristics based on size.width constant, and font sizes
+				+ Layout info: only private relative's, no absolute's 
+			+ AddSeparator()
+			+ AddCreateNewButton() -- empty noe
+			+ EndBuild()
+				+ Layout:
+					+ Calculates size
+					+ Assign absolute coords, etc. to cells
+						+ Margins here
+					+ Set size in all separators
+				+ Sets size on self
+				+ Creates DC buffer
+				+ Renders DC buffer: RenderPanel(region == whole, ...)
+					+ In here, clipping rect == whole
+			+ SetSelected(material *)
+				+ Visit all cells, deselect non-matching and select matching
+				+ Force redraw of two quads into buffer
+				+ Any cell may be selected
+					+ FindCellAt might return any kind cell, hence handle at caller
+						+ FindCell(material) only returns Material cells
+					+ mCurrentlySelected cannot be TMaterial but rather cell - which is dangerous; introduce CellID
+
+					+ SetSelected(material)
+						+ Guaranteed by def'n to only select Material cells; finds by Material and returns Cell *
+					+ Move, Leave:
+						+ Can be any cell
+							+ Careful at calling render - make it RenderCell
+				+ Cleanup implementations of selection kung-fu
+					+ ToggleSelectionTo(Cell &)
+					+ ToggleSelectionToNone()
+					
+			+ RenderPanel(region, ...)
+				+ Clear region
+				+ For each row/cell intersecting region:
+					+ Cells: 
+						+ Material: via RenderMaterialCell(cell, dc)
+							+ Just draws bitmaps, text
+								+ Do calculation of cell size @ material cell creation, to include real text
+								+ And since you're doing this, also do name ellipsis at cell creation
+								+ And since you're doing this, also store labels' widths and (cell-relative) topY
+
+								+ Remove font size stuff and go back to original code
+								+ Use wxWindow::GetTextExtent @ cell creation, setting fonts
+								+ Store what needs to be stored
+
+								+ Change Render()
+							+ ...and selection
+						+ CreateNewButton: (empty stub now)
+					+ Separators
+
+			+ Replace wxBitmap's (they are still GDI objects) with wxImageList and its DrawTo
+			+ Paint event: blit from DC buffer
+			+ Try with MemoryDC https://docs.wxwidgets.org/3.3/classwx_memory_d_c.html
+			+ Exposes events:
+				+ Hook mouse events
+					+ Leave:
+						+ Selection feedback
+						+ Send MouseHoveredOut
+					+ Move:
+						+ Selection feedback
+						+ Send MaterialHoveredOut (eventually)
+						+ Send MaterialHoveredIn (eventually)
+					+ LeftDown:
+						+ Find
+						+ Send MaterialClicked (eventually)
+				+ MaterialHoveredIn/Out (material)
+					+ Impl
+					+ Subscribe
+				+ MaterialClicked (material)
+					+ Impl
+					+ Subscribe
+				+ See if browser's mCurrrentlyHoveredOn is needed
+
+		! "MaterialPaletteBrowser" class: wxWhateveNow; use MaterialPalettePanel and has logic for its shape and building of it
+			+ Category buttons
+			= Scrollable window
+				- Finalize blitting only visible portion of panel
+			+ Property grid
+
+		+ Tests:
+			+ Click on non-material
+			+ Hover on non-material
+
+		+ Test with Longhorn's
+			+ Before and after
+
+		+ Cleanup:
+			+ Remove _NEW from names X 2
+			+ See if browser still needs sstream
+			+ See if panel still needs double buffering (needs to test with scrolling)
+
+		+ Test on Ubuntu
+		+ Test on old Dell
+
+		+ Merge back into master
+
+		+ Release
+
++ Custom materials:
+	! Gist:
+		! SB: materials created and their pointers just used in structural layer
+		! Deser: returns custom materials just for lifetime; structural layer populated with pointers to those
+		! MaterialDatabase is basically "Standard" materials database
+		! Placement: sub_ordinal ignored and made up by palette logic
+			! After all custom materials' sub_ordinals might become stale when we change ordinals in default materials
+
+		! SB's material palette:
+			- At any given moment, the palette shows default + user's custom materials + ship's custom materials
+				- These three are also the life pod of all materials
+				- Only contains pointers, without owning them
+					- Come from MaterialDatabase (new SB class, aggregate of three - default, user, ship) (*)
+			- Layout:
+				! Facts:
+					! Category: pages
+					! Group: groups of rows (e.g. Iron)
+					! Sub-categories: rows
+					! PaletteKey: Category, SubCategory, SubCategoryOrdinal
+					! All materials - including custom - have PaletteSubCategoryBaseMaterialOrdinal
+			- Can add custom, remove custom, or edit custom materials
+				- Custom ones and control to add appear for each base material, last in the series
+					- Their palette coordinates - with the exclusion of ordinal - dictate where
+					- Ordinal is basically made up with logic here, laying out both custom sets
+				- Edit, Remove are small buttons on custom ones (which also helps distinguish them from "standard" materials)
+				- A custom material is cloned from the base material, and contains StructuralMaterial::VariantOverridesType overrides
+				- Removal: if material is in use, pops up dialog
+				- If it's from ship only (i.e. not from custom set), there's button to import into user's (CustomMaterialPalette)
+					- Only distinct are imported; feedback to user with # of "imported ~new"
+					- No need to remove it from ship's afterwards, we can live with dupes among the two custom sets
+			- Ranges on customizable physical properties are very narrow and don't allow crazy values
+			- User custom materials:
+				- Always loaded/saved at startup/shutdown
+				- Backup mechanism to avoid loss, with clear involvement of user if has to fallback
+			- Modifications happen on user or ship custom materials
+				- Changes to materials (user's or ship's own) done by user in ShipBuilder must be undoable via Undo
+					- Undo action: only material
+				- Deletes to materials (user's or ship's own) done by user in ShipBuilder must be undoable via Undo
+					- Undo action: whole structural layer (iff modified)
+						- Deletion could have resulted in a removal of particles
+				- Changing a material currently in the ship (from user's or ship's own) should mark the ship as dirty
+					- Marks corresponding layer as dirty
+			- When ship is loaded, its materials are pruned by lookup in user's custom materials
+				- This is to avoid load of ship just saved with user's custom materials to duplicate custom materials
+			- Can also merge another user custom material set into it, or import from ship
+				- Checks for dupes
+				- Then shows user list with checkboxes to choose which ones, and which shows which are dupe's and won't be imported
+			
+		! SB can simply store StructuralMaterial* from user and/or ship custom materials when it populates StructuralLayer 
+
+		! Undo
+			! For palette changes and for palette + ship changes
+			! Watch out: deleted materials also need to be saved in undo and put back into database, or else pointers won't exist anymore
+			! Gist:
+				! All ops required (mostly material replacement) fully implemented by Controller
+					! To stay with "tradition" - no business logic above Controller
+				! These Controller ops bake Undo action, just like Controller already does for non-tool ops - like in our case - for example @ Flip()
+					! Note that for tool ops, tools themselves bake Undo action, and ask Controller to store it - but this is not our case
+					! Since undo action requires interaction with MaterialPalettesController, MaterialPalettesController bakes a lambda
+					  that it moves into Controller's ops, and Controller ops bake move lambda into own lambda
+
+	====
+
+	+ Workflows:
+		+ Adding new custom material
+			+ User clicks on "+" button
+			+ When committed:
+				+ Add to user's
+					+ Save DB
+				+ Update palette
+				X Populate Undo with material
+		+ Editing existing user/ship custom material
+			+ User clicks on "edit" button
+			+ When committed:
+				+ Update in DB
+					+ Save DB if it's user's
+				+ Replace in ship (eventually)
+				+ Populate Undo with material and eventually ship's
+				+ Force ship re-analysis and re-visualization
+				+ Mark ship as dirty
+				+ Update palette				
+		+ Deleting user's or ship's custom materials
+			! ASSUMPTION: only applies to current Category, thus to current layer
+			+ User checks boxes, and then "Delete Selected"
+			+ Check for in-use by ship; answer is none-in-use_or_at-least-one-in-use
+			+ If at-least-one-in-use:
+				+ Ask user if remove from ship or not
+				+ If abort => abort
+			+ If at-least-one-in-use:
+				+ Remove from ship
+				+ Force ship re-analysis and re-visualization
+				+ Mark ship as dirty
+				+ Do Undo with material + ship
+			+ Else:
+				+ Do Undo with just material
+			+ Remove from DB // Delayed to here, as to-be-deleted pointer must be addressable
+			+ Update palette
+		+ Loading ship
+			+ With custom materials:
+				+ Prune set of ship's custom materials with user's custom materials, producing a material replacement map
+				+ Apply material replacement map to ship
+					+ Without marking it as dirty, this is a pre-model construction operation
+				+ Replace ship's custom materials in palette with pruned
+				+ Re-draw palette
+			+ Without custom materials:
+				+ Nuke ship's custom materials in palette
+				+ Re-draw palette
+		+ Importing custom materials from ship's into user's
+			+ User checks boxes, and then "Import Selected"
+			+ Check boxes filtered for ship's only (user might have selected user's as well); would not continue if no ship's
+			! We keep eventual dupes, to avoid complexity with changing ship
+			+ DB: move materials from Ship DB to User DB
+				+ Save User DB
+			+ Bake Undo
+				+ Just set of pointers to be moved back in DB from User to Ship
+					+ Save User DB
+			+ Update palette
+		+ Export custom user and/or ship materials to ad-hoc json
+			! Works on all layers, all categories - so enabled iff at least one material checked in in any layer, any category
+			+ User checks boxes, and then "Export All Selected"
+			+ File SaveAs dialog for .json
+			+ If ok:
+				+ Call DB::Export(materials, file_path)
+		+ Importing custom materials from a json or from a ship into user's
+			+ User chooses from list, filtered by distincting with user's
+				+ If none available, popup message
+			+ When committed:
+				+ Add to DB
+					+ Save DB
+				+ Update palette
+				+ Populate Undo with materials 			
+
+	! Arch:
+		+ MaterialDatabase<TLayer>: aggregation of three sets (Default, User, Ship)
+			- Only place where all material uq_ptr's live
+				- Model doesn't have Ship's
+			- Takes care of ser/deser of user custom materials
+				- parent color_key and VariantOverridesType
+					- Materialization from json takes DefaultMaterialDatabase and produces variants
+			- Takes care of distincting where needed
+			- Unit tests for ops
+		+ MVC:
+			- MaterialPalettesController: single controller for all layer types
+				- Owned by MainFrame
+				- Owns 3 MaterialDatabase<TLayer> and 3 MaterialPalette<TLayer>
+					- Supersedes and replaces CompositeMaterialPalette
+			- MaterialPalettesController implements 3 IMaterialPaletteController<TLayer> for callbacks from view(business ops)
+			- Model is the 3 MaterialDatabase<TLayer>
+			- View is the 3 MaterialPalette<TLayer>
+				- The API MaterialPalette<TLayer> exposes to the outside for managing material changes (e.g. removal, addition, replace, etc.)
+				  is ad-hoc; for example, when loading a ship, the API takes new ship's; on the other hand, if one material changes, the API
+				  takes the pointer of that one
+				- Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
+		
+	+ Impl:
+		+ Make custom_materials branch
+
+		=== Simulation ===
+
+		+ Simulation::MaterialDatabase becomes "DefaultMaterialDatabase"
+			+ File
+			+ Class
+			+ json
+
+		+ Structural, Electrical Material:
+			+ opt<struct VariantOverridesType>
+				+ Contains:
+					+ Structural, Rope:
+						- RenderColor
+						- Name
+						- Density						
+						- Strength
+						- IgnitionTemperature
+						- MeltingTemperature
+						- Advanced:
+							- RotReceptivity
+							- RustReceptivity
+							- Water solubility
+					+ Electrical:
+						- Name
+						- HeatGenerated
+						- Advanced:
+							- Luminiscence
+							- LightSpread
+							- EnginePower
+							- WaterPumpNominalForce
+							- TimerDurationSeconds
+					+ json Ser/Deser
+					+ Comparison, Equality, and hash
+				+ Only populated for variants; values of material are already from variants though, so this is only for Serialization (see below)
+				+ VariantOverrides.has_value() <=> it's a custom material
+			+ PaletteSubCategoryBaseMaterialOrdinal: populated for default materials at deser time
+			+ uq_ptr<Structural|ElectricalMaterial> TMaterial::MakeCustomMaterial(VariantOverridesType const &)
+				+ Clones all, then overrides, and then stores VariantOverridesType (asserts ! there already)
+					+ ColorKey is the same from the base (parent)
+						! .shp2 Ser/Deser will store additional (local) Index deambiguitor, see below
+						! These dupe ColorKey's pose a problem:
+							! ShipFactory doesn't use ColorKey's at all (anymore)
+				+ Also copies palette coordinates, but overrides sub_ordinal as 0 as it's not used
+				+ Sets PaletteSubCategoryBaseMaterialOrdinal to same as base
+			+ Unit tests:
+				+ Comparison, Equality, hash
+				+ Ser/Deser
+				+ MakeMaterialVariant
+					+ PaletteSubCategoryBaseMaterialOrdinal
+
+		+ CustomMaterialsPod defined @ own .cc/.h
+
+		+ Ship De/Serialize:
+			+ First off, verify current behavior with unrecognized tags
+				+ Worst case we bump file format version (hopefully exists, and check is already done!)
+			+ New structural, electrical, rope layer set of tags:
+				+ CustomMaterialPalette: custom materials used in Buffer
+					+ Ignore ones in definition
+						+ assert empty
+					+ (Implicitly) pruned @ Serialize to only contain used ones
+						+ Key: base + overrides
+					+ Stores (parent) color_key and content of VariantOverridesType
+					+ Assigned local indices for new Buffer to address (see below)
+					+ Come up with a way to be able to add more overrides in the future, so that older version and newer versions digest both
+				+ Buffer: color_key + local index in MaterialPalette
+					+ Index=-1 for standard materials
+				! Ser Algo:
+					! @ (Structural, Electrical, Ropes):
+						! ExtractCustomMaterialMap(Layer/data) -> map<CustomMaterialKey -> index>
+							! Check against limits
+						! If empty:
+							! Save_1(...)
+						! Else:
+							! Save2(..., custom_material_map):
+								! Save palette (writes own section)
+								! Save buffer
+									! No encode <whatever> for custom materials
+
+				! Deser Algo:
+					! @ (Structural, Electrical, Ropes):
+						! If V2 tag:
+							! Deser "deser" material map -> vector<std::uq_ptr<TMaterial *>>
+							! Deser layer (reads raw)
+
+				+ AppendCustomMaterialMap/Structural
+				+ ReadCustomMaterialMap/Structural
+				+ UTs: read+write
+
+				+ AppendCustomMaterialMap/Electrical
+				+ ReadCustomMaterialMap/Electrical
+				+ UTs: read+write
+
+				+ Structural layer					
+					+ ExtractCustomMaterialMap
+					+ Ser
+						+ Rename save chain
+						+ Custom material map
+						+ Structural layer					
+					+ Deser
+						+ Rename read chain (plumb up)
+							+ Populate pod
+						+ Custom material map
+						+ Structural layer
+					+ Unit tests for structural layer V2
+						+ Add checks to Roundtrip_V2
+				+ Electrical layer
+					+ ExtractCustomMaterialMap
+					+ Ser
+						+ Rename save chain
+						+ Custom material map
+						+ AppendElectricalLayer_V2
+					+ Deser
+						+ Rename read chain (plumb up)
+						+ ReadElectricalLayer_V2
+							+ Factor out panel reading into helper, probably needs offset
+					+ Unit tests for electrical layer V2
+						+ Basic
+						+ Add checks to Roundtrip_V2
+				+ Ropes layer
+					+ ExtractCustomMaterialMap
+					+ Ser
+						+ Rename save chain
+						+ Custom material map
+						+ Append_V2
+					+ Deser
+						+ Rename read chain (plumb up)
+						+ Read_V2
+					+ Unit tests for ropes layer V2
+						+ Add checks to Roundtrip_V2
+
+				+ Plug final Save() and Load() for all layers
+
+				+ Do E2E test via FloatingSandbox: create material, use in ship, save ship, load ship in game
+					+ Structural
+					+ Electrical
+					+ Ropes
+				+ Do E2E test via ShipBuilder: loading ship with new materials altogether
+					+ Structural
+					+ Electrical
+					+ Ropes
+
+			+ Deserialize() returns CustomMaterialsPod (3x vector<uq_ptr<TMaterial>> for each TMaterial) in ShipDefinition, just for lifetime extension
+				+ Might group all layers' vectors in a single CustomMaterialsPod, for convenience
+				+ Will be stored by Ship, given by ShipFactory
+			+ If no custom materials are present, ships should be loadable by older FS versions; only if custom materials are present, the load should fail with "newer version" error
+				+ So file format version should be conditional on presence of custom materials
+				+ Test: save ship in dev version with no custom materials, and verify it's loadable by released FS
+			+ Legacy deserializer: empty pod
+
+		+ ShipFactory:
+			+ Passes (via std::move) CustomMaterialsPod for custom materials to Ship ("shipSpecificCustomMaterials", and const private member), just for extending their lifetime
+
+		=== ShipBuilder ===
+
+		+ MaterialDatabase<TLayer>
+			+ Members:
+				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase // for color_hey lookups
+				+ vec<uq> from user
+				+ vec<uq> from ship
+			+ cctor:
+				+ MaterialColorMap<TLayer> const & from DefaultMaterialDatabase
+				+ Loads users's
+			+ Ops:
+				+ AddUser
+					+ Store
+					+ Save DB
+				+ ExtractCustomMaterials(vector<TMaterial const *>) -> std::tuple<SinglePod, SinglePod> // User's, Ship's
+					+ Find among user's and ship's
+					+ Extract into respective SinglePod
+					+ Save DB for user's
+					+ Return SinglePod's
+				+ SetShipCustomMaterials(vector<uq_ptr<TMaterial const>>):
+					+ Merge and build replacement map
+					+ Return replacement map
+				+ ReplaceCustomMaterial(TMaterial const * old, uq_ptr<TMaterial const> && new) -> uq_ptr<TMaterial const>
+					+ Find
+					+ Swap materials
+					+ Save DB
+					+ Return old
+				+ MoveShipCustomMaterialsToUser(vector<TMaterial const *>)
+					+ Find and move
+					+ Save DB
+				+ MoveUserCustomMaterialsToShip(vector<TMaterial const *>)
+					+ Find and move
+					+ Save DB
+				+ ExportCustomMaterials(vector<TMaterial const *> X 3, file_path)
+					+ Make helpers to decompose SaveUserMaterials
+				+ DetectEquivalentUserCustomMaterials(single pod) -> vector<bool>
+					+ Refactor DB's SetShipCustomMaterials: export equivalency comparison ("IsEquivalentCustomMaterial")
+				+ RemoveUserCustomMaterials(vector<TMaterial const *>)
+				+ Base::CustomMaterialsPod LoadCustomMaterialsFile(filepaht)
+
+			+ Ser/Deset for user custom materials
+				+ parent color_key and VariantOverridesType
+					+ Materialization from json uses MaterialColorMap<TLayer> and produces variants
+
+			+ Merge DB files into one
+				+ One DB loads whole (object w/3 members), replaces own node
+			+ Backup mechanism
+				+ @ Save:
+					+ If DB exists:
+						+ If DB.backup exists:
+							+ Delete DB.backup
+						+ Copy DB as DB.backup
+					+ Save DB
+				+ @ Load:
+					+ If DB does not exist, or exception loading:
+						+ If DB.backup exists:
+							+ Load DB.backup
+			+ Deser: only ones that are present
+
+			+ Unit tests
+				+ SetShipCustomMaterials: verify pruned (inside DB) and returned replacement map
+
+		+ IMaterialPaletteController<TLayer>: for UI to talk back to controller
+			+ IsAnyCustomMaterialChecked() -> bool
+			+ OnMaterialSelected
+			+ OnNewUserCustomXYZMaterial(XYZMaterial * baseMaterial)
+				+ Create overrides
+				+ Run dialog
+				+ If OK:
+					+ Add to user DB
+					+ Add to palette (vector of one)
+			+ OnEditCustomXYZMaterial(XYZMaterial * material, RegisterKind)
+			+ OnRemoveCustomXYZMaterials(...)
+			+ OnImportCustomXYZShipMaterials(...)
+			+ OnExportCheckedCustomMaterials()
+			+ OnImportExternalCustomMaterials()
+
+		+ MaterialPalettePanel<TLayer>: HEAVY REDESIGN
+			! Workflows started here in UI are completely delegated to IMaterialPaletteController<TLayer>
+			+ cctor:
+				+ IMaterialPaletteController<TLayer> (for workflows)
+			+ Hierarchy: 
+				+ SubCategoryRow: type=SubCategory|Separator
+					+ Meta:
+						+ SubCategory (str)
+							+ @ default DB deser: verify unique
+					+ MaterialStride: made of N1 default materials, 1 AddNewButton, N2 user custom materials, N3 ship custom materials
+						+ All kept in single vector<Cell>, but maintaining counters: startUser, startShip
+						+ Meta:
+							+ SubCategoryBaseMaterialOrdinal
+						+ Cell: type=Material|AddNewButton
+							+ Meta:
+								+ Material TMaterial*
+								+ CustomKind // Material only; CustomTypeKind: None, User, Ship
+									+ Used for drawing checkbox overlay and edit button overlay
+									+ Used for drawing ship icon overlay
+								+ IsChecked // Material only
+									+ Invariant: iff CustomType!=None
+
+			! Lookups:
+				! <CustomMaterial *, User|Ship>:
+					+ Find SubCategoryRow such that type=MaterialGroups and SubCategory=CustomMaterial->SubCategory
+					+ Find MaterialStride such that SubCategoryBaseMaterialOrdinal=CustomMaterial->PaletteSubCategoryBaseMaterialOrdinal
+					- In stride's User|Ship vector, find cell such that type=Material and Material*=CustomMaterial*
+			+ API for layout:
+				+ Initial:
+					+ StartDefaultMaterialsLayout()
+						+ Cleanup all
+					+ ...all methods...
+						+ Includes adding buttons, separator, etc.
+					+ EndDefaultMaterialsLayout()
+						+ Calc panel width						
+						+ Assign cell coords
+						+ Make buffer bitmap on size
+						+ Render cells onto buffer
+
+				+ LayoutSession struct, appears as std::any on API
+					+ Is map<rowIndex, <leftmost strideIndex, leftmost cellIndex>>
+						+ Use tuple, has less-than
+					+ Comment: kind=Strides only
+					+ Make it a struct with helper for recording
+
+				+ Extract layout to helper on LayoutSession
+					+ Call from EndDefaultMaterialsLayout() with full LayoutSession
+
+				+ ReplaceCustomMaterial(TMaterial const *, TMaterial const *)
+					+ Update material sample in ImageList (wxImageList::Replace)
+					+ Render own cell
+					+ Refresh(false)
+
+				+ All subsequent ones (custom):
+					+ StartCustomMaterialsLayout() -> LayoutSession
+					+ All atomic ops, taking LayoutSession and returning LayoutSession - naming as "...CustomMaterial..."
+						! Op does op on cell, then calcs LayoutSession
+						+ Ops (all take lookup args as args)
+							+ Add user/ship custom (one)
+								+ Lookup row, stride
+								+ Add to stride, at end
+									+ Factor out creation of material @ AddDefaultMaterial into a new helper
+								+ Update LayoutSession accordingly
+							+ RemoveAllShipCustomMaterials(LayoutSession)- > LayoutSession
+								+ Visit all rows:
+									+ Visit all strides
+										+ Prune ship region
+											+ Store image indices in "free list"
+										+ Keep LayoutSession updated for this row - first cell in first stride, if any
+											+ Just Register iff stride had ship's
+								+ Test:
+									+ Go from ship with many to ship with less - verify layout adjusts
+									+ Go from ship with a few to ship with more - verify layout adjusts
+							+ RemoveCustomMaterial(TMaterial const *, [User|Ship], LayoutSession) -> LayoutSession
+								+ Remove from stride
+									+ Refactor out cell deletion logic (image list index, checked cell count, etc.) from RemoveAllShipCustomMaterials
+								+ Update LayoutSession accordingly
+
+					+ EndCustomMaterialsLayout(LayoutSession)
+						+ Do all of the below at new LayoutAndRender(); this one just becomes calling that with LayoutSession
+						+ (Re-)Calc panel width
+						+ Assign cell coords
+						+ Rescale buffer bitmap on size
+							+ Create new bitmap with new size
+							+ Create two MemoryDc's and Blit old->new
+							+ Clear new part of new (if any)
+							+ Replace old bitmap with new						
+						+ Render cells onto buffer
+						+ Refresh(false)
+
+			+ Make black frame around sample materials, for white materials
+				+ And while you're at it, simplify all: work on rgbaImage, and only @ end make it into a wxBitmap
+
+			+ ShipOverlay, EditButton, Checkbox:
+				+ Ship: set on sample material at cell creation time
+					+ Icon
+					+ Code: iff custom is ship
+				+ EditButton, Checkbox:
+					+ All std::optional<wxRect>
+					+ Set at Layout, passed to MakeMaterialSample
+						+ ShipOverlay: iff CustomKind=Ship
+						+ EditButton, Checkbox: iff CustomKind!=None
+					+ Honor checkbox at RenderCell
+					+ Handling of clicks:
+						+ EditButton:
+							+ Start workflow via PalettesController - copy from AddNewButton
+								+ Both: watch out for re-entrantness
+						+ Checkbox:
+							+ OnCheckboxToggled
+								+ Maintain counter
+									+ Zero counter at cctor & default layout start
+								+ Fire event for browser, it'll reconciliate via panel::IsAnyChecked()
+				
+			+ All cells have exact same width - constant
+			+ All cells in a row have the same height - constant
+			+ There's a H separator between MaterialStride's
+			+ SetAllCustomMaterialsIsChecked(bool value=true)
+				+ Navigate hierarchy and change
+					+ Maintain count
+					+ Render cell
+				+ Refresh(false)
+				+ Fire event for browser, it'll reconciliate via panel::IsAnyChecked()
+			+ GetCheckedMaterials() const -> vector<TMaterial *>
+				+ Navigate hierarchy and fetch selected ones
+			+ GetCheckedShipMaterials const -> vector<TMaterial *>
+			+ FindCellFor: can speedup with lookups
+			
+		+ MaterialPaletteBrowser<TLayer> : IMaterialPalette
+			! Owns only its own tiles
+			+ Replace selected events with calls into IMaterialPaletteController
+			+ cctor:
+				+ Palette<TLayer> const & from DefaultMaterialDatabase
+				+ User's custom materials (from DB)
+				+ IMaterialPalettesController &
+				+ Create default category panel
+				+ Add User's (via existing AddUserCustom[vector])
+
+			+ vector<TMaterial const *> GetAllCustomMaterialsChecked() const
+
+			+ Initial layout:
+				+ Kinda as now, using InitialLayout APIs
+
+			+ Ops exposed (all forwarded to panel, most with layout guards):
+				! Browser provides larger ops, as it's browser who orchestrates layout
+				+ AddCustomMaterials(vector<TMaterial*>, RegistryKind)
+					+ Organize materials by category
+					+ For each category:
+						+ Find panel for category
+						+ panel-> Start custom layout
+						+ panel-> Add material
+						+ panel-> End custom layout
+						+ Layout() // for H scrollbar
+					+ Test:
+						+ Single stride
+							+ FIX: iShipCustomStartIndex is 1
+							+ FIX: make H scrollbar appear if needed
+						+ Multi stride
+							+ FIX: different spacing between strides makes ugly; either remove it or make same as material
+				+ ReplaceCustomMaterial(TMaterial const *, TMaterial const *)
+					! No layout guard for this one
+					+ Find panel for category
+					+ panel-> ReplaceCustomMaterial(old, new)
+				+ SetShipCustomMaterials(vector<uq_ptr<>>)
+					+ Organize materials by category
+					+ For each _our_ category:
+						+ Find panel for category
+						+ panel-> Start custom layout
+						+ panel-> Remove all ship [RemoveAllShipCustomMaterials()]
+						+ panel-> Add ship one by one, if any
+						+ panel-> End custom layout
+						+ Layout() // for H scrollbar
+				+ RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
+					+ Organize materials by category
+					+ For each _delenda_ category:
+						+ Find panel for category
+						+ panel-> Start custom layout
+						+ panel-> RemoveCustomMaterial
+						+ panel-> End custom layout
+						+ Layout() // for H scrollbar
+				+ MoveCustomMaterialsRegister(vector<TMaterial const *>, targetRegister)
+					+ Organize materials by category
+					+ For each _movenda_ category:
+						+ Find panel for category
+						+ panel-> Start custom layout
+						+ panel-> RemoveCustomMaterial
+						+ panel-> AddCustomMaterial(targetRegister)
+						+ panel-> End custom layout
+						+ Layout() // for H scrollbar
+
+			+ Handle events from Panel:
+				+ fsCheckedStateChange
+					+ ReconciliateUIWithCheckedItems()
+						+ Check current_panel->IsAnyChecked and reconciliate
+
+			+ Multi-element ops:
+				+ Prelim:
+					+ private helper: GetCurrentlyShownPanel() -> panel *
+						+ Goes through mCategoryPanelsContainerSizer and finds the (only) one that's shown
+					+ When we change selection, re-run Reconciliation - for new panel
+				+ Select All
+					+ Layout
+					! Selects all visible ones - i.e. current Layer, current Category
+					+ GetCurrentlyShownPanel()->SetAllCustomMaterialsIsChecked(true)
+						+ Will fire event that will recon UI
+				+ Clear Selection
+					+ Layout
+					! Unselects all visible ones - i.e. current Layer, current Category
+					+ GetCurrentlyShownPanel()->SetAllCustomMaterialsIsChecked(false)
+						+ Will fire event that will recon UI
+					+ Recon: enabled==any checked
+				+ Delete Selected
+					+ Layout
+					! Deletes only from current Layer, current Category -- otherwise dangerous
+					+ Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedMaterials()
+					+ Call onto controller with that vector
+					+ Recon: enabled==any checked
+				+ Import Selected Ship
+					+ Get vector<TMaterial const *> from GetCurrentlyShownPanel()->GetCheckedShipMaterials()
+					+ Call onto controller with that vector
+					+ Recon: enabled==any *ship* checked
+				+ Export All Selected
+					+ Call onto controller with no args - OnExportCheckedCustomMaterials()
+					+ Recon: enabled iff palettesController::IsAnyCustomMaterialChecked
+				+ Import:
+					+ Call onto controller with no args - OnImportExternalCustomMaterials()
+					+ Recon: nop
+
+			+ Make it dockable
+				! When docked:
+					- Fixed pos and size (based off referenceRect)
+						- Have to store referenceRect in order to dock again
+					- Losing focus (still) closes it
+				! When undocked:
+					- Gains close button, move bar, and resizing controls
+						- Requires Layout()
+					- MainFrame trying to open palette (controller): checks first if already open 
+					- MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
+					- Losing focus never closes it
+				+ Impl:
+					+ Need an icon
+					+ Docking button: BitmappedCheckbox
+						+ Icons
+						+ Handling:
+							+ SetDocked(true/false)
+							+ Refresh()
+					+ Frame itself (browser) needs to not set max size, needs to set a reasonable min size, and set the right size (off referenceRect)
+					+ Member for tracking current docked state: bool mIsDocked
+					+ Close event:
+						+ ! docked: if can veto: veto + hide, like @ losing focus
+						+ docked: if can veto: veto
+					+ KillFocus event:
+						+ ! docked: completely ignored
+						+ docked: like now
+
+					+ void SetDocked(bool isDocked)
+						+ To-docked:
+							+ SetWindowStyle -- like cctor
+								+ Use constants for both styles
+							+ Dock into docking rect (position, size)
+							+ Set focus
+							+ Set internal state as docked
+						+ To-undocked:
+							+ SetWindowStyle(wxMAXIMIZE_BOX | wxCLOSE_BOX | wxRESIZE_BORDER | wxFRAME_FLOAT_ON_PARENT);
+								+ Use constants for both styles
+							+ Set internal state as non-docked
+					+ @ Open():
+						+ Store docking rect
+						+ Begin as docked: MakeDocked()
+						+ Set BimapCheckbox state
+					+ @ Selection: no close/hide if not docked
+					+ MainFrame: at OnWorkCanvasMouseEnteredWindow: if palette is open *but undocked*, can give focus to WorkCanvas
+						+ Expose member tracking docking status
+						+ Actually, might expose logic as GetCanLoseFocus:
+							+ if docked: return !IsOpen
+							+ if undocked: return true
+					X MainFrame trying to open palette (controller): checks first if already open
+						X TODOHERE: and if so?
+					X At change of plane, need to close palette browser if it's open
+						X See if this is really needed though
+					+ At change of layer, need to close palette browser if it's open
+				+ Clear this work item somewhere else in the plan
+
+		+ MaterialPalettesController
+			+ Replaces CompositeMaterialPalette
+			+ Replace event-based args in inline callbacks with vals
+				+ mOnXXXLayerMaterialSelected callbacks: take same args as interface
+			+ Implements IMaterialPaletteController
+			+ cctor: 
+				+ Controller getter [for reaching ship model, e.g. for replacing materials]
+				+ WorkbenchState const & (for currently-selected materials)
+				+ DefaultMaterialDatabase [to boot 3 MaterialDatabase<T>'s]
+				+ Callback for material selected
+			+ OnShipLoaded(CustomMaterialsPod &&) -> MaterialsReplacementMap
+				+ if currently-picked material(s) (both planes) are among ship's delenda, synthesize selection of nullptr for the plane
+					+ WorkbenchState helper to get material given <LayerType, Plane>
+						+ Refactor out of MainFrame::OpenMaterialPalette
+				+ // Replace ship custom materials on both model & view
+				+ MaterialDatabase<TLayer X 3>::SetShipCustomMaterials(pod member) -> MaterialsReplacementMap
+					+ Define MaterialsReplacementMap @ ShipBuilderTypes
+					+ -> merges, material_map
+				+ MaterialPaletteBrowser<TLayer X 3>::SetShipCustomMaterials(from DB, result of pruning) [Replace all ship custom [vector]]
+				+ return MaterialsReplacementMap
+				+ Caller (MainFrame) uses MaterialsReplacementMap to mess with layers in-place within definition, using layers' helpers (or AllLayers/?), before giving definition to new controller
+			+ OnNewUserCustomXYZMaterial(XYZMaterial * baseMaterial)
+				+ Create overrides
+				+ Run dialog
+				+ If OK:
+					+ Add to user DB
+					+ Add to palette (vector of one)
+			+ OnEditCustomStructural/Electrical/RopesMaterial(TMaterial const *, registerKind)
+				+ Run dialog
+				+ If ok:
+					+ Make new material
+					+ Replace material in DB, via ReplaceCustomMaterial(move(new material)) -> uq_ptr<old material>
+					+ Call PreCustomMaterialUpdated on old and new pointers
+					+ Bake Undo material-specific lambda, moving old material into it
+						+ private MaterialPalettesController::RestoreMaterial(TMaterial const *, uq_ptr<TMaterial const>)
+							+ Database::ReplaceCustomMaterial: replace new material with old uq_ptr
+							+ PreCustomMaterialUpdated 
+							+ Update material in palette via Browser::UpdateCustomMaterial(...)
+					+ Ask controller if old in use, via Get[Structural|Electrical|Ropes]MaterialsInUse
+					+ If in-use:
+						+ Replace in ship, via Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials(map with old<->new, Undo material-specific lambda)
+					+ Else:
+						+ Controller::StoreUndoAction()
+					+ Update material in palette via Browser::UpdateCustomMaterial(...)
+
+				+ Tests:
+					+ Edit is reflected in palette's text
+					+ Swaths change to new - x2x3
+					+ Undo w/no ship:
+						+ Swaths change to old - x2x3
+					+ Undo w/ship:
+						+ Swaths change to old - x2x3
+						+ Center of mass, total mass changes with material edit
+						+ Sampled material under cursor
+					+ FIX: we see both materials after editing material in ship
+						+ It's the ephemeral; tools have temp viz which is a clone of before
+						+ Need to reset tools' state at material amend; assuming not in temp viz
+							+ Should SuspendTool before replacing materials
+			+ OnRemoveCustom[Structural|Electrical|Ropes]Materials(vector<TMaterial const *>)
+				! For "Delete checked"
+				+ Ask controller if any in use, via Get[Structural|Electrical|Ropes]MaterialsInUse(...) -> std::set<XXXMaterial const *> (-> shipSet)
+				+ If at-least-one-in-use:
+					+ Ask user if a) Remove from ship, b) Remove from delenda, c) abort
+					+ If a: <nop>; continue
+					+ If b: prune delenda; zero shipSet; continue
+					+ If c: abort
+				+ If delenda empty: done
+				+ Remove from DB via ExtractCustomMaterials, and get back two SinglePod's with those - user and ship
+				+ Call PreCustomMaterialDeleted on each delenda pointer
+					+ Like at SetShipCustomMaterials: if currently-picked materials among those being deleted, select null in WorkbenchState and browser
+				+ Bake Undo material-specific lambda, moving SinglePods into it
+					+ Add both to DB, user vs ship
+					+ Add both to palette, user vs ship
+				+ Call Controller.ReplaceMaterials
+				+ Update palette, via Browser::RemoveCustomMaterials<TLayer>(vector<TMaterial const *>)
+				+ Tests:
+					+ Layout:
+						+ One in-between
+						+ Different strides
+					+ Delete when used by ship
+						+ Verify new stride's StartShipIndex
+					+ Undo w/out ship: 
+						+ User's and ship's reappear in palette & in user DB
+					+ Undo w/ ship: 
+						+ User's and ship's reappear in palette & in user DB
+						+ Ship's deleted reappear in ship, properly 
+					+ Both user and ship, but choosing to keep ship:
+						+ Verify just user
+						+ Undo
+			+ OnImportCustom[Structural|Electrical|Ropes]ShipMaterials(vector<TMaterial const *>)
+				+ User checks boxes, and then "Import Selected Ship"
+				! vector<TMaterial const *> guaranteed to be ship's only
+				+ DB: MoveShipCustomMaterialsToUser(vector<TMaterial const *>)
+					+ Save DB
+				+ Bake Undo:
+					+ DB: MoveUserCustomMaterialsToShip(vector<TMaterial const *>)
+						+ Save DB
+					+ Update palette: Browser.MoveUserCustomMaterialsToShip(vector<TMaterial const *>)
+				+ Update palette: Browser.MoveShipCustomMaterialsToUser(vector<TMaterial const *>)
+			+ OnExportCheckedCustomMaterials()
+				+ Get three vector<TMaterial const *> from three browsers - GetAllCustomMaterialsChecked()
+				+ File SaveAs dialog for .json
+				+ If ok:
+					+ Call DB::ExportCustomMaterials(materials X 3, file_path)
+			+ OnImportExternalCustomMaterials()
+				+ File Open dialog for .json
+					+ Refactor creation of dialog
+				+ If ok:
+					+ CustomMaterialsPod loadedPod;
+					+ Load
+						+ From ship:
+							+ Deserializer::Load
+							+ If error:
+								+ Popup error
+									+ See localization
+								+ return
+							+ If loadedPod empty:
+								+ Message: "The TODO ship has no custom materials."
+								+ return
+							+ Steal pod
+						+ From DB:
+							+ BaseDB::LoadCustomMaterialsFile(filepath) -> CustomMaterialsPod
+							+ Steal pod
+					+ Filter distinct from DB
+						+ Call x3 DB<LayerType>::DetectEquivalentUserCustomMaterials(single pod) -> vector<bool>							
+					+ If none after filtering:
+						+ Message: "TODO"
+						+ return
+					+ Create & open dialog for choosing
+						+ Dialog has 3 lists, checkboxes with materials, dupes are disabled and say "(DUPLICATED)"
+						+ Dialog has OK and Cancel, and Select All and Clear All
+							+ Have a vector of vector iterators next to chk vector
+						+ Dialog returns vector<bool> with chosen marked
+					+ If aborted:
+						+ return
+					+ If none:
+						+ return
+					+ Add to DB
+						+ Save DB
+					+ Update palette
+					+ Populate Undo with materials
+						+ Need just pointers for plain removal
+						+ Remove from DB
+						+ Remove from palette
+
+		+ MaterialEditDialog: 
+			+ Two dialogs, two classes, one base with common code
+			+ Hook NewButton->IMaterialPalettesController
+			+ FIX: Edit opening makes palette close - because it's wxTransientPopupWindow, closes at focus lost
+				- Option 1: Browser is wxTransientPopupWindow
+					- Yes close on click outside
+					- No close on focus lost
+				+ Option 2: Browser is wxFrame
+					+ wxFRAME_FLOAT_ON_PARENT
+					+ OnFocus handler detects losing focus and closes
+					+ When about to open dialog, remembers to disable focus check
+						+ Change: Controller asks Browser to run dialog
+						+ Clear flag at Open()
+					+ Do we still need MainFrame checking IsOpen()? YES: it's for mouse entering WorkCanvas
+
+			+ Contains overrides, and ctrl event handlers populate that overrides instance
+			+ Structural:
+				+ Run() also needs nominal
+				+ Notebook
+					+ Basic:
+						+ ColorPicker: button + picker
+						+ Name
+						+ Sliders: Mass, Strength
+							X Option 1: static, global limits
+								= SimulationProperties: new "MaterialLimits" section with constants
+									+ Mass: 0.0813
+									+ Strength: 0.02-7.5
+									- Ignition: 353-1e06
+									- ...
+								- Enforce at default load time
+
+							+ Option 2: limits between 0.1 and 10 of value, except fo truly capped ones
+								X Caps still required at SimulationProperties, or not? They're always 1.0
+									+ Enforce at default load time
+								+ Run():
+									+ Sync values and reset slider limits
+										+ Slider limits values based off base material's value, conveniently via MakeStartingOverrides()
+									+ SliderControl: substitution of slider core								
+					+ Advanced:
+						+ 5
+
+			+ Electrical:
+				+ N panels, one per-type; selects right one at Run()
+				+ Add ThermalSwitch, overrides and all
+				+ Only electrical elements of certain types (the overridable ones, or those that emit heat) should have a button at all
+					+ ElectricalElementEditDialog static private helper w/base material argument and returns PanelKind
+						+ See if all to which we give heat, do heat
+							! Generator
+							! Lamp, OtherSink, WaterPump, Engine,
+					+ ElectricalElementEditDialog static public helper w/base material argument and uses private
+						+ Use at layout when deciding to add CreateNewButton
+					+ Run(): populate all values/limits, use private helper to show panel	
+					
+				+ Final cleanups
+
+			+ Normalize name (@ Utils, with unit tests)
+				+ Algo
+				+ Use
+			
+			+ MaterialPalettesController instantiates and owns two MaterialEditDialog instances (Structural and Electrical)
+
+			+ Disallow empty name
+
+		+ Controller/Model/ModelController/Undo:
+			+ std::set<XXXMaterial const *> ModelController::Get[Structural|Electrical|Ropes]MaterialsInUse(std::vector<XXXMaterial const *> materials) const 
+				! Used by "delete checked" - ASSUMPTION: "delete checked" only applies to a given Category - and thus to a given LayerType
+			+ void Controller::ReplaceCustom[Structural|Electrical|Ropes]Materials:
+				+ Args:
+					+ map: TMaterial const * -> TMaterial const *|null (for removal)
+					+ std::function for material restore
+				+ Impl:
+					+ ModelController::ReplaceCustom[Structural|Electrical|Ropes]Materials(map) -> AffectedRect
+						+ Update model
+							+ Using WriteParticle for analysis
+								+ Watch out: for ropes, we also have to set RopeElement.RenderColor - to material's color
+						+ Update visualization
+					+ Undo payload:
+						+ Move material restore call into lambda
+					+ Mark ship as dirty
+				+ Structural
+				+ Electrical
+					+ Test, incl. Undo
+				+ Ropes
+					+ Test, incl. Undo
+
+	+ PaletteBrowser::SetSelected: adjust H and V scrollbars to make sure material is visible
+
+	+ Finalize layout of "Checking/Selected" buttons' area in Browser
+
+	+ Add RGB code to property grid
+		+ Get rid of thermal expansion coefficient
+
+	+ Merge into master
+
++ Translate (aka move)
+	! Structural, Electrical, Ropes, External, Internal
+	! Does not use Selection tool nor SelectionManager: does own overlay, just like selection tool
+	! Tool-specific setting: all layers, all layers except texture, just this layer
+	! Two-state: drawing selection, then translating
+		- Traslating only if second-time click *in* selection; otherwise, restarts selection
+	! Shift lock:
+		! Move phase: constrain to straight H or V line from origin
+	! Undo strategy: like TextureTranslate: At first move, sets undo and dirties model, then remembers "IsDirty" to prevent if from pushing undo again
+	! No ephemeral viz; each move is the real thing - like TextureTranslate
+
+	! Analysis of current/possible impl:
+		- Tool is single (non-templated) type, just like PasteTool; but there are N derived, each pinning down layer from which tool was selected
+			- Note: we need N derived as it is a constraint in the current framework that each tool must be associated with one layer only
+			- This is where the similarities with PasteTool end; for the rest, it's just like a normal tool
+		- Phase 1 doesn't care about layers
+		- At beginning of phase 2 (first move), tool takes layers region, exactly like @ Controller::InternalCopySelectionToClipboard(), depending on layer settings from WorkbenchState
+			- Also see Controller::Copy(): if not all layers, it's primary viz -- not the "tool's layer" which is never used for action logic
+	! Analysis 2: catering to texture or ship
+		- Base tool is also templated on coords type - ship or image
+			- Internal, specialized helpers provide coords
+		- S/E/R tools' settings are on Ship coords; if layers include texture layers, they're rounded to ship
+		- E/I tools' settings only allow "This layer" and "All texture layers"
+			- The primary layer dictates how we calc coords for other layer
+
+	+ Impl:
+		+ ShipBuilderTypes: N tool types, one for each layer
+		+ Tool:
+			+ Copy from TextureTranslateTool, but not templated
+			+ Make N derived
+			+ State:
+				+ Selection state machine
+				+ Move state machine
+					X FIX: shift & total_move_offset: when pressing shift after having moved already, we pickup total_move already and thus we decide same as before
+						= Fixed by remembering start pos (RAW mouse coords) when we reset constraint detection state machine
+							+ MovingState has DisplayWhatever StartMouseCoords, passed in cctor
+							+ Reset at shift down
+							+ InternalMove: @ constraint detection: get mouse pos (raw) and calc own offset wrt constraint detection start pos
+					+ Restructure state machine
+						! Goals:
+							! Undo only created at beginning of first ever move for a given selection; subsequent moves do not create undo
+							! At that same time, we take snapshot of tool settings - which are in fact used for undo
+							! At beginning of each move after "that time", and at shift down/up, we reset Shift constraints
+							! SelectionMoves remembers last pasted selection corner pos
+								! Init when we create SelectionMoves @ start move with current selection corner pos
+								! Updated at end of each move with final paste corner pos
+						+ Do:
+							+ EngagementData has opt PreliminaryMoveStartCoords
+								+ Init'd @ MouseDown @ Selected (when in), i.e. @ -> Moving
+								+ DeInit @ MouseUp @ Moving, i.e. @ Moving -> Selected
+									+ @ same time we nuke SelectionMoves->MoveState (if any)
+									+ Remember last pasted selection corner pos @ SelectionMoves
+							+ MouseDown @ Selected:
+								+ Remember start coords @ EngagementData
+								+ -> Moving
+							+ MouseMove @ Moving:
+								+ If non-empty move offset wrt EngagementData:
+									+ If no SelectionMoves:									
+										+ Create SelectionMoves w/ tool settings & copy of SelectionCorner from EngagementData
+											+ Move code from MouseDown
+										+ InitMove() (->"InitSelectionMoves")
+											+ Store stuff @ SelectionMoves
+									+ If no MoveState inside SelectionMoves:
+										+ Create MoveState()
+									+ Do move
+							+ Moving:
+								+ Update MovingState->CurrentSelectionPasteCornerCoords										
+						+ Undo base tool/tool class/Controller setters
+
+						+ Change for selectionrect/overlay:
+							+ EngagementData has:
+								+ opt<TRect> OriginalSelectionRect
+									+ Set once and for all @ -> Selected
+								+ opt<TRect> CurrentPastedSelectionRect;
+									+ Set @ -> Selected
+									+ Updated @ each move
+
+				+ Eph viz and final commit doing thing for real (repeating last eph viz); undo @ end
+					! Rationale:
+						! We do want eph viz, otherwise perf sucks
+						! We do want undo @ end, to limit memory
+							! Hence, we need pristine conditions before end
+
+					! Current dynamics:
+						- Dynamics for elec panel:
+							- ElecRegionFill, Erase: forget panel elements
+
+						- Dynamics of eph viz:
+							- At each change:
+								- If have eph viz:
+									- Undo eph viz
+										- ModelController::RestoreEphemeralVisualization
+											- Forget layer::isInEph
+										- Forget we are in eph viz
+									- mController.LayerChangeEpilog()
+								- Draw eph viz
+									- Get eph viz restore payload from ModelController
+									- ModelController::DoThingForEphemeralVisualization
+										- Remember layer::isInEph
+									- Store eph viz restore payload, remembering we are in eph viz
+								- mController.LayerChangeEpilog()
+							- At commit (also @ leave):
+								- If have eph viz:
+									- Undo eph viz
+										- ...
+								- ModelController::DoThing
+								- Store undo
+								- mController.LayerChangeEpilog(affectedLayers);
+
+					+ ShipBuilder::RegionCombiner
+						+ Templated
+							+ See if can do that "struct ShipSpaceTag" once and for all
+						+ Unit tests
+
+					+ Make multi-region GenericUndoPayload<T>, and make it coords-free
+						+ New enum @ GameTypes (CoordinatesSpaceType) and templated on that
+							+ Enum:
+								+ ShipSpace
+								+ ExteriorTextureSpace
+								+ InteriorTextureSpace
+							+ Traits
+						+ Replace GenericUndoPayload<T> altogether
+						+ Current GenericUndoPayloadX2 becomes public element
+						+ Visitor API and Add API
+						+ Make 3 explicit classes using enum naming
+						+ Uses:
+							+ All methods that return or take, return or take one of the three explicit classes
+								+ And at this moment return one single region
+								+ TextureTranslateTool
+							+ Restore API is overloaded for three types, and code runs in loop
+								+ ExteriorTextureSpaceToInteriorTextureSpace/other
+								+ Do we need "AffectedLayers" - can just check for presence? so no switches
+									+ remove from @ texture payloads only
+
+						+ Tests: 
+							+ TextureTranslateTool
+							+ structural rectangle
+							+ paste all layers
+
+
+					+ Same for GenericEphemeralVisualizationRestorePayload
+						+ Tests: 
+							+ TextureTranslateTool
+							+ structural rectangle
+							+ paste all layers
+							+ line
+
+					+ Might also need multi-region dirty viz tracking, for perf
+						+ Pre-perf for line
+						+ Change dirty region to RegionCombiner
+						+ Line improvements:
+							+ FIX: Undo of eph dirties whole region
+						+ Post-perf for line
+						+ Nuke logs
+						+ Cleanup RegionCombiner
+						+ If we do this, nuke redundant LayerChangeEpilog's at tools when we undo eph viz and redo it
+
+					+ See if can get rid of those "struct ShipSpaceTag" and define structs once
+						+ Also other tags: "space"
+
+
+
+					+ Call InternalCommit @:
+						+ dctor - iff needs to commit
+						+ Creation of new selection
+					+ @ InitSelectionMoves:
+						+ Nuke
+					+ Use finalizer for eph viz
+						+ No need for UndoEphViz; shove in finalizer
+					+ @ each move (for eph viz):
+						+ If have eph viz:
+							+ Undo eph viz - via finalizer
+						+ Change coords
+						+ Draw eph viz:
+							+ ModelController::ShipSpaceRegionTransferForEphViz -> GenericEphemeralVisualizationRestorePayload
+								+ This one called by base, as one of three ModelController overloads (SER, Ext, Int)
+								+ Args:
+									+ SourceRegion
+									+ TargetPos
+									+ set<LayerType>
+										+ Replaces bool in SelectionMoves -- calcd at SelectionMoves creation time
+									+ IsTransparent
+								+ Impl: (trace PasteForEphemeralVisualization)
+									+ Calc affected source and target rect in ShipSpace
+									+ If region ! empty:
+										+ Call new MakeGenericShipSpaceEphemeralVisualizationRestorePayload
+											+ Returns ShipSpaceRegionPayload
+												+ make public
+											+ Takes set<LayerType> instead of bools
+												+ Replace args of CheckLayerSelectionApplicability everywhere
+											+ For each selected layer:
+												! Selected layers guaranteed to be consistent with present layers
+												+ Take backup for payload
+													+ All applicable layers
+													+ Repeat math for texture layers
+											+ Test: Paste w/different layers combos
+											+ Do also other two spaces
+											+ Call it
+										+ For each selected layer:
+											+ Erase
+												+ DoStructuralRegionFill
+													+ Factor out code from StructuralRegionFillForEphemeralVisualization
+													+ Takes care of viz dirty region
+											+ Paste
+												+ DoStructuralRegionBufferPaste
+													+ Takes care of viz dirty region
+											+ Remember layer is in eph viz
+
+											+ Do for:
+												+ S
+												+ E
+													+ DoElectricalRegionFill
+														+ Refactor like we did for S
+													+ Test
+												+ R
+													+ DoEraseRopesRegion
+														+ Refactor like we did for S
+													+ Rethink ropes when region "cuts" a rope
+														! Current behaviors:
+															- Erase: if at least one endpoint in region
+															- Copy(Region): if at least one endpoint in region; offsets their coords afterwards
+															- BlitFromRegion (i.e. Paste): copy ropes with at least one endpoint in region; 
+															  un-offsets their coords afterwards, and deletes ropes with at least one endpoint at same places
+														+ Should match, test it - AND NOT!
+															+ Restore build up: it's in SourceRestorePayload
+															+ Paste: neither endpoint is in rect
+																+ Because we're using sourceRestorePayload (whole), which was built with RopesBuffer::Clone(), not CloneRegion() which is not offseted
+																	! What do we do at Copy()? CopyRegion
+																	+ Use CopyRegion() @ MakeGenericShipSpaceEphemeralVisualizationRestorePayload
+																		+ Check callers of MakeGenericShipSpaceEphemeralVisualizationRestorePayload, they're impacted
+																	+ Then deal with buffer being region at RestoreEphemeralVisualization
+																		+ InternalRestoreRopesLayerEphemeralVisualization
+																		+ Called also by:
+																			+ RestoreRopesLayerEphemeralVisualization:
+																				+ Called also by:
+																					+ RopePencilTool::MendTempVisualization
+																		+ Check anywhere else we use RopeBuffer::Clone() instead of CloneRegion()?
+																			+ MakeGenericShipSpaceUndoPayload: calls RopesLayerBuffer MakeRegionBackup() which calls Clone(), but also restore expects it, so okay
+																	+ Then deal with callers of RestoreEphemeralVisualization
+																		+ PasteTool, i.e. ModelController::PasteForEphemeralVisualization
+																		+ SelectAndTranslateTool
+																		X StructuralRectangleTool
+														+ Test:
+															+ Others:
+																+ RopePencilTool
+																+ PasteTool
+															+ This
+
+														+ RopesLayer changes:
+															+ Make CloneRegion behave like CopyRegion
+																+ Then nuke CopyRegion and replace with CloneRegion
+															+ Allow rope endpoint to stay anchored
+																+ RopeBuffer:
+																	+ CopyRegion: don't offset endpoint that is out of region
+																	+ BlitFromRegion: don't offset endpoint that is out of region
+																+ Test:
+																	+ RopePencilTool
+																	+ Copy->Paste X 2
+																	+ Cut->Paste X 2
+																	+ Ours X 2
+															+ UnitTests
+															
+												+ ET
+													+ Erase: refactor EraseExteriorTextureRegion: DoEraseExteriorTextureRegion, does assert hasLayer + model + register dirty
+												+ IT
+													+ Erase: refactor EraseInteriorTextureRegion: DoEraseInteriorTextureRegion, does assert hasLayer + model + register dirty
+									+ Return payload
+
+									+ FIX: when intersection of target area is zero, we do not erase
+							+ Do other two texture ones -- Exterior/InteriorTextureSpaceRegionTransferForEphViz
+								+ Test
+							+ Store eph viz restore payload in finalizer, remembering we are in eph viz
+								+ ModelController::RestoreEphemeralVisualization (one of 3)
+						+ mController.LayerChangeEpilog()
+					+ @ new selection, and @ ~dctor(): commit
+						+ If have eph viz:
+							+ Undo eph viz - via finalizer
+						+ If not empty move:
+							+ FIX: cannot move back to orig, as we check against start move
+								+ Refactor
+									+ New state
+									+ Ensure SourceRect and PasteRect are correctly origin'ed
+										+ Also InternalDoMoveForEphemeralVisualization
+									+ InternalDoMoveForEphemeralVisualization: move change detection here, undo eph viz only afterwards
+									+ UpdateSelectionViz: uses PasteRect
+									+ Commit:
+										+ Careful for no-size region
+									+ Commit broken wrt coords
+									+ Changes to workbench state after engagement: tool not notified
+										+ Freeze vals @ Engagement
+							+ ShipSpace ModelController::RegionTransfer -> multi-region undo
+								+ S
+								+ E: Need convoluted electrical panel handling:
+									+ Erase: leave elec panel elements behind
+									+ Paste: 
+										+ Can keep all insatance IDs, as they're gone (were from erased region)
+										+ It might resuscitate 1..N of the erased ones
+										+ It might kill overwritten ones
+									+ FIX: crashes after transfer
+										+ Problem is at ModelController::Restore multi-region-ness: when restoring erase we have dupes
+											+ Need to delay all re-initializations (and verification) only after all regions
+									+ Final: trim panel for those from Erase that might be gone (not pasted, i.e. not resuscitated)
+										+ Verify diagnostics would fire if we nuked an instanced, and verify both fixed after trimming
+											+ From erased region (paste outside)
+											+ From paste (overwritten)
+									+ Add elec layer diagnostics
+										+ Test:
+											+ Paste
+											+ Undo
+											+ Ours -- verify fails until we uncomment trimming orphans
+								+ R
+									+ Also careful here about which source region we use for pasting
+									+ Test:
+										+ Straddle rope
+										+ Whole rope
+										+ No rope
+								+ ET
+								+ IT							
+							+ Other 2 RegionTransfer in texture space
+								+ ET
+									+ Test
+								+ IT
+
+		+ MainFrame: reduce GDI objects via button icons
+			+ BitmapRadioButton: overload with wxBitmap
+			+ Use it via SharedUIResources
+			+ 651/656 -> 621
+		+ OnMouseMove: only do eph viz if translated coord != last, to save on refreshes (*)
+
+		+ See viz refresh & multiple regions - make sure we don't upload pieces _and_ all, and that we don't upload too many pieces
+			+ Also optimize - we do some things multiple times, once per region
+
+		+ Deep regression test:
+			+ Rope-affecting tools, incl. copy/cut/paste:
+				+ TODO: FIX: copy whole rope, paste, translate outside of ship: endpoint that's out goes random
+					! Same with SelectAndTranslate
+					! SourceRegion: contains both endpoints, offseted
+					! Then BlitFromRegion(sourceRegion): broken endpoint is out of source region, thus we keep it offseted
+					+ Fix: we currently use "endpoint in source region" to remember whether we've offseted it or not, but we're
+					  using truncated source region; should use un-truncated region
+					  + Then need unclipped paste coords
+					  + See all callers to BlitFromRegion
+				+ TODO: FIX: Paste with paste origin outside of ship, left/bottom
+				+ TODO: FIX: copy of one endpoint, paste, then undo or abort - ropes disappear
+					+ When we paste we delete old rope, then somehow we don't get it in restore nor undo buffers
+						+ We don't as target region (pasted to and overwritten) does not have rope endpoints
+							+ Is it a problem only with eph viz? 
+								+ Try with also backing up and restoring whole buffer @ eph viz
+									+ PasteForEphViz
+									+ SelectAndTranslateForViz: watch out buffer, do as with non-ephviz (full undo)
+									+ Their restore
+									+ Anything else using RopesLayerBuffer::CloneRegion
+									+ Any more users of DoRopesRegionBufferPaste?
+				+ Test cut
+				+ EphViz
+				+ Commit
+				+ Undo
+			+ TextureTranslate
+				+ EphViz
+					+ Also spring viz
+				+ Commit
+					+ Also spring viz
+				+ Undo
+					+ Also spring viz
+				+ Macro properties (center of mass) updates at:
+					+ Commit
+					+ Undo
+				+ Elec panel updates at:
+					+ Commit
+					+ Undo
+
+		+ Icon
+		+ MainFrame:
+			+ Tool selection @ each layer tools' panel
+			+ Settings for tool:
+				+ ShipSpace:
+					+ Layers
+					+ Transparent (like Paste)
+				+ TextureSpace:
+					+ Layers
+					+ Transparent (like Paste)
+				+ Workbench
+
+		+ Tests:
+			+ Undo ONLY appears AFTER sizable move
+			+ Undo ONLY appears if move ended up not being a zero move
+
+		+ Cleanup:
+			+ Tool:
+				+ Remove log lines
+				+ Remove old code
+
+	+ Rethink: fixing bug with unoffseted coords becoming "in size":
+		! Gist:
+			! ShipBodyRegion:
+				! Whole ElecPanel, whole RopesLayer
+				! Created via XYZLayers::MakeRegionBackup
+				! Restored via XYZLayers::RestoreRegionBackup
+
+			! Undo: acts on XYZLayers::Make[Region]Backup and Restore[Region]Backup
+				- Created Ropes backup is always whole buffer
+			! EphVizRestore: acts on XYZBuffer::BlitFromRegion, via MC::XYZRegionPaste
+				- Source ropes backup is always whole buffer
+			! Paste, SelectAndTranslate shifts: act on XYZBuffer::BlitFromRegion, via MC::XYZRegionPaste
+
+		+ Impl:
+
+			+ Undo all current uncommitted changes, once we're sure we're doing this
+
+			+ GenericUndoPayload => ShipBodyRegion
+				+ Also contains OriginatingRegion, whose origin replaces current Origin
+				+ RopesBuffer is whole
+					+ Comments, naming
+				! Naming:
+					! UndoPayload methods: make "backup"
+					! Restore methods: take "backup"
+				+ Creators:
+					- MC::MakeGenericShipSpaceUndoPayload (*1)
+						- Rename: MakeXYZSpaceBodyRegion
+						- Uses XYZLayer::MakeRegionBackup X N
+					- MC::Paste
+						- Uses XYZLayer::MakeRegionBackup X N 
+							- See if can be replaced by new (*1)
+					- MC::XYZSpaceRegionTransfer
+						- Uses MC::MakeGenericXYZSpaceUndoPayload (*1)
+					- MC::StructuralRectangle, StructureTrace
+						- Uses XYZLayer::MakeRegionBackup
+							- See if can be replaced by new (*1)
+					- MC::MakeGenericXYZSpaceUndoPayload
+						- Uses XYZLayer::MakeRegionBackup X N
+				+ Consumers:
+					+ MC::Restore(XYZ) -> RestoreForUndo
+						- Uses MC::InternalRestoreXYZLayerRegionBackup
+							- Must use XYZLayer::RestoreRegionBackup
+							+ See callers - will all they pass OriginatingRegion and not misuse it for glorified paste/transfer? Y
+						- See callers; if only callers are for Undo, rename as RestoreForUndo
+						- See if can then call MC::RestoreXYZLayerRegionBackup
+
+			+ GenericEphVizRestorePayload
+				+ Also contains OriginatingRegion, whose origin replaces current Origin
+				+ RopesBuffer is whole
+					+ Comments, naming
+				+ Rename to "EphemeralVisualizationRestorePayload" (-Generic) 
+					
+			+ Backup/Restore chains rearc:
+
+				! Current chains:
+
+					- Various tools (Paste/SelectAndTranslate/StructuralRectangle/StructureTracer/TextureTranslate): Undo
+						- C::Restore: callees:
+							- MC::Restore: callees:
+								- InternalRestoreXYZStructuralLayer[Region]Backup
+								- RestoreExteriorTextureLayerRegionBackup
+								- RestoreInteriorTextureLayerRegionBackup
+					- Other tools (Flood/Line/Pencil/TextureEraser): Undo
+						- C::RestoreLayerRegionBackupForUndo<TLayer>
+							- C::RestoreXYZLayer[Region]BackupForUndo
+					- Tools: RopeEraser, RopePencil: Undo
+						- C::RestoreRopesLayerForUndo
+					- Tools: TextureMagicWand: Undo
+						- C::Restore[Exterior|Interior]TextureLayerRegionBackupForUndo
+					- Cut: Undo
+						- C::Restore
+
+
+
+
+					- C::RestoreStructuralLayerRegionBackupForUndo: callees
+						- MC::RestoreStructuralLayerRegionBackup (above is only caller)
+							- MC::InternalRestoreStructuralLayerRegionBackup
+					- C::RestoreElectricalLayerRegionBackupForUndo: callees
+						- MC::RestoreElectricalLayerRegionBackup (above is only caller)
+							- MC::InternalRestoreElectricalLayerRegionBackup
+					- C::RestoreRopesLayerBackupForUndo: callees
+						- MC::RestoreRopesLayerBackup (above is only caller)
+							- MC::InternalRestoreRopesLayerBackup
+					- C::RestoreExteriorTextureLayerRegionBackup: callees
+						- MC::RestoreExteriorTextureLayerRegionBackup
+
+					- MC::RestoreExteriorTextureLayerRegionBackup: callers:
+						- C::RestoreExteriorTextureLayerRegionBackupForUndo
+						- MC::Restore X 3
+
+
+					- MC::InternalRestoreStructuralLayerRegionBackup: callers:
+						- MC::Restore
+						- MC::RestoreStructuralLayerRegionBackup
+					- MC::InternalRestoreElectricalLayerRegionBackup: callers:
+						- MC::Restore
+						- MC::RestoreElectricalLayerRegionBackup
+					- MC::InternalRestoreRopesLayerBackup: callers:
+						- MC::Restore
+						- MC::RestoreRopesLayerBackup
+
+					- Responsibilities:
+
+						- MC::RestoreXYZLayer[Region]Backup:
+							- InternalRestoreXYZLayer[Region]Backup
+							- Analysis
+						
+						- MC::InternalRestoreXYZLayer[Region]Backup:
+							- LayerXYZ::RestoreRegionBackup
+							- Update dirty viz
+
+				+ New:
+					! Gist:
+						! Tools's undo's guidelines (not necessarily all of them):
+							- Make Undo via (new) MC::MakeXYZSpaceBodyRegion(region, ...) -> SingleBodyRegion or via MC::<Operation> -> BodyRegions
+								- Restore Undo via C::RestoreForUndo(X3)
+							- Make EphViz payloads via MC::<Operation> -> EphVizRegions
+								- Restore EphViz via MC::TODOHERE
+						! Controller undo restore methods have "ForUndo"
+						! ModelController restore methods have "ForUndo" and "EphViz"
+
+						! ModelController ops return ShipBodyRegions/ShipEphVizRestoreRegions
+
+
+						- TODO: RestoreXXX method names: (*2)
+						- TODO: RestoreXXX arg names: (*2)
+
+					+ Impl:
+						+ Branch: shipbuilder_translate_tool__undo_rearc
+
+						+ Rename ephviz payload above
+						+ Layers: Ropes: backup/restore methods: remove "region"
+
+						+ ShipBodyRegion: members are ShipLayers
+							+ Allows for using pre-baked ops on all layers, e.g. for Paste tool
+								+ Then, use its size in PasteTool
+
+						+ Do all .h first
+						+ Do tools
+							+ FloodTool
+							+ LineTool
+								! Old pattern: 1
+									- Cctor - and after each commit - takes full layer clone
+									- Undo restore: via C::RestoreLayer[Region]BackupForUndo, after clipping on affected rect
+									- EphViz restore: via MC::RestoreStructuralLayer[Region]EphemeralVisualization, passing whole clone and dirty regions
+								+ New pattern 1:
+									+ Cctor - and after each commit - takes full layer clone via MC::CopyRegion(whole ship) -> SingleRegion
+									+ Undo restore: via clipping of a ShipBodyRegion region, via XYZSpaceBodyRegion::MakeClip(region) -> XYZSpaceBodyRegion, and C::RestoreForUndo making container XYZSpaceShipBodyRegions
+										+ FIX: problem: for Erase, we need to convert ShipSpaceCoords to Ext and Int Texture ImageCoords
+											+ Move Clip to static MC::Clip(ShipSpaceBodyRegion) -> ShipSpaceBodyRegion
+												+ Don't touch own coord transformation factors?
+									+ EphViz restore: via MC::RestoreXYZLayerRegionsEphemeralVisualization, passing whole cloned layer buffer and dirty regions
+										+ Finalize signature for MC::RestoreXYZLayerRegionsEphemeralVisualization (*4)
+							+ PasteTool
+								+ Given ShipSpaceBodyRegions (don't need texture spaces nnow)
+								! Old pattern/new pattern:
+									- Commit: does op and gets back ShipSpaceBodyRegions, storing in Undo lambda
+									- Undo restore: via C::RestoreForUndo
+									- EphViz do: does eph viz op and gets back ShipSpaceEphemeralVisualizationRestoreRegions, storing in mEphViz
+									- EphViz restore: MC::RestoreEphemeralVisualization
+							+ PencilTool
+								! Old pattern: 1
+								+ Follow new pattern 1
+							+ RopeEraserTool
+								! Old pattern: 1b
+									- Cctor - and after each commit - takes full layer clone, as whole RopesLayerData
+									- Undo restore: via C::RestoreRopesLayerForUndo, passing whole RopesLayerData from clone
+									- No EphViz
+								+ New pattern 1b: follow new pattern 1, without clipping
+							+ RopePencilTool
+								! Old pattern:
+									- Takes clone: via MC::CloneExistingLayer
+									- Undo restore: via C::RestoreRopesLayerForUndo
+									- MendTempViz: via MC::RestoreRopesLayerEphemeralVisualization
+								+ New pattern:
+									! ~1 and ~1b, w/no clipping
+									+ Takes clone: via MC::CopyRegion(whole ship) -> SingleRegion
+									+ Undo restore: C::RestoreForUndo
+									+ MendTempViz: via MC::RestoreRopesLayerEphemeralVisualization(whole cloned layer buffer) // no region
+							+ SelectAndTranslateTool
+								! Old pattern/new pattern:
+									- Commit: does op and gets back ShipSpaceBodyRegions, storing in Undo lambda
+									- Undo restore: via C::RestoreForUndo
+									- EphViz do: does eph viz op and gets back ShipSpaceEphemeralVisualizationRestoreRegions, storing in mEphViz
+									- EphViz restore: MC::RestoreEphemeralVisualization
+							+ StructuralRectangleTool
+								! Old pattern:
+									- Commit: does op and gets back ShipSpaceBodyRegions, storing in Undo lambda
+									- Undo restore: via C::RestoreForUndo
+									- EphViz do: does eph viz op and gets back ShipSpaceEphemeralVisualizationRestoreRegions, storing in mEphViz
+									- EphViz restore: MC::RestoreEphemeralVisualization
+							+ StructureTracerTool
+								! Old pattern:
+									- Does op, gets ShipSpaceBodyRegions
+									- Undo restore: C::RestoreForUndo
+									- No eph viz
+							+ TextureEraserTool
+								! Old pattern: 1
+								+ Follow new pattern 1
+							+ TextureMagicWandTool
+								! Old pattern: 1c
+									- At op: take full layer clone, do op getting back affected rect, clip clone, store in Undo
+									- Undo restore: RestoreExteriorTextureLayerRegionBackupForUndo
+									- No eph viz
+								+ New pattern 1c:
+									+ MC::Op returning UndoPayload directly, like others
+							+ TextureTranslateTool
+								! Old pattern:
+									- At beginning of op: take full layer clone
+									- At commit: do op (MC::MakeExteriorLayerFromImage, only caller), store (copy) full layer clone into Undo lambda
+									- Undo restore: via C::Restore(synthetic undo payload built on clone)
+									- No eph viz
+								+ New pattern
+
+						+ Controller.h:
+							+ Remove obsolete public's
+								+ ReplaceCustomMaterials: use ShipRegions: whole, then clip
+								+ See if can rename those Restore<full layer>: "Whole", "~PresenceChanging"
+									+ Used only for LayerAdd/Remove
+										+ Only caller: InternalPushUndoForWholeLayer
+											+ Its callers: InternalSetLayer/InternalRemoveLAyer
+								+ RestoreAllForUndo: used by Resize
+						+ Controller.cpp
+							+ Reordering for new .h ordering and fixing arguments
+						X See if there are obsolete Controller private's
+						+ ModelController.h
+							+ Remove obsolete public's
+								X CloneExistingLayer (replaced by CopyShipSpaceWhole)
+								+ Continue searching from here
+						+ ModelController.cpp
+							+ cpp
+								! Substitution reminders:
+									! MakeGenericShipSpaceUndoPayload -> CopyShipSpaceRegion
+									! MakeGenericShipSpaceEphemeralVisualizationRestorePayload -> MakeXYZSpaceEphemeralVisualizationRestoreRegion
+								+ Paste: 
+									+ Refactor code to calc affected source rect first, and reuse for texture layers,
+									  like @ transfer
+									+ Refactor code to take undo all at once
+								+ PasteForEphemeralVisualization
+									+ Copy from Paste, but merge with old implementation
+								+ ...
+								+ Transfer X 3
+								+ TransferForEphViz
+								+ ...
+								+ MakeXYZSpaceEphemeralVisualizationRestoreRegion
+									+ Copy from (now obsolete) MakeGenericShipSpaceEphemeralVisualizationRestorePayload X 3, using pattern from CopyRegion
+							+ Remove obsolete private's
+
+							+ InternalPaste facts:
+								+ These methods have to calc affected area for marking dirty eph viz, plus operator for transparency
+
+						+ Cleanup ShipBodyRegions.h, EphVizRegions.h, ShipLayers, Layers
+						+ ModelController:
+							+ CopyRegion(region, layers)X3 (*1) - WAS: MakeGenericShipSpaceUndoPayload
+								+ Asserts not in eph viz for any layer
+								~ IntersectWithLayerPresence
+								+ Uses XYZLayer::Make[Region]Backup X N
+									+ Does whole elec panel, whole ropes buffer
+							+ RestoreXYZLayer(layer): stays as-is, where it is
+								+ Used by C::RestoreAllLayersForUndo, special
+							+ Undo (code area) interface to Controller:
+								+ RestoreForUndo (was: Restore)
+								- RestoreXYZLayer[Region]BackupForUndo (was: RestoreXYZLayer[Region]Backup)
+							+ EphViz Undo (code area) interface to Tools
+								- RestoreEphemeralVisualization(X 3)
+								- RestoreXYZLayerRegionsEphemeralVisualization(layer_buffer "source", regions): LineTool, PencilTool, RopePencilTool, TextureEraserTool (was: RestoreXYZLayer[Region]EphemeralVisualization) (*4)
+									- buffer assumed to contain all regions; regions assumed to be relative to buffer
+
+
+							+ private:
+								- Restore payloads (code area) -- TODO: depending on what we decide for tools; eventually tools do via these, but made public
+									- MakeXYZSpaceUndoPayload (new: CloneXYZSpaceShipRegion)
+										- assert not in eph viz for any layer
+									- MakeXYZSpaceEphemeralVisualizationRestorePayload
+						+ Controller:
+							+ Undo (code area) interface to Tools:
+								+ RestoreAllForUndo(...various stuff...) (was: RestoreAllLayersForUndo)
+								+ RestoreForUndo(XYZShipBodyRegion &&)
+
+			+ ClipboardManager:
+				+ Takes ShipBodyRegions::Region
+				+ MC::Copy, Cut: makes ShipBodyRegion for ClipboardManager, from (*1)
+				+ MC::Paste, etc.: tales ShipBodyRegion from ClipboardManager
+
+			+ Tests:
+				+ Tools: for all: EphViz, Undo
+					+ StructuralRectangle
+						+ See perf
+							+ Buffer2D allocation: Buffer2D uses "linear allocation" borrowed from Buffer, instead of uq_ptr[]
+								+ Do changes
+								+ Compile all
+								+ UTs
+							+ Avoid when rect == prev
+								+ Would be nice to use rect in eph viz, but then it has to become single region
+									+ StructuralRectangle ops returns single region
+					+ Pencil
+						+ S
+						+ E
+							+ Base
+							+ When can't write (same issue as with line - empty dirty regions)
+					+ Flood
+					+ Line
+						+ S
+						+ E
+							+ FIX: assert when no dirty regions
+					
+					+ MeasuringTape
+					+ Sampler
+					+ Selection
+
+					+ StructureTracer
+					+ TextureEraser
+					+ TextureMagicWand
+					+ TextureTranslate
+
+					+ RopeEraser
+					+ RopePencil
+					+ SelectAndTranslate: incl EphViz, Undo
+						+ ShipSpace
+							+ Verify original ropes bug is gone
+						+ TextureSpace
+				+ Cut 
+					+ Undo
+					+ May paste -- right clipboard content
+				+ Copy
+					+ May paste -- right clipboard content
+				+ Paste
+					+ Eph viz -- translating
+					+ Commit
+					+ Abort
+					+ Undo
+				+ Add/Remove Layers & Undo -- all layers
+				+ Resize ship & Undo -- some layers, all layers
+				+ Elec panel
+
+			+ RopesBuffer::BlitFromRegion
+				+ Args:
+					+ source: takes whole RopesBuffer
+					+ sourceRegion (rect): in source rect; contained in it
+					+ targetPos (coods): absolute, possibly outside of source rect
+				+ Impl:
+					+ Erase target
+					+ Blit
+						+ Clamp coords that end up outside
+				! Can repurpose existing one, callers all want new behavior:
+					- Callers:
+						- MC::DoRopesRegionBufferPaste
+							- MC::Paste
+							- MC::PasteForEphemeralVisualization
+							- MC::ShipSpaceRegionTransfer
+							- MC::ShipSpaceRegionTransferForEphemeralVisualization
+				+ Unit tests
+					+ Also cover clamp
+
+			+ Merge back into shipbuilder_translate_tool
+
+	+ Perf test
+		+ Copy old release ShipBuilder.exe first
+		+ See auto-texturization with integers
+
+	+ Merge into master
+	+ Clean this plan
+	+ Changelist
+
