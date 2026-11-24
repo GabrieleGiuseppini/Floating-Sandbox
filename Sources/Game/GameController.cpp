@@ -180,6 +180,19 @@ GameController::GameController(
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
 
+    assert(mFloatParameterSmoothers.size() == NumMechanicalDynamicsIterationsAdjustmentParameterSmoother);
+    mFloatParameterSmoothers.emplace_back(
+        [this]() -> float const &
+        {
+            return this->mSimulationParameters.NumMechanicalDynamicsIterationsAdjustment;
+        },
+        [this](float const & value)
+        {
+            this->mSimulationParameters.NumMechanicalDynamicsIterationsAdjustment = value;
+        },
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
+
     assert(mFloatParameterSmoothers.size() == SeaDepthParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &

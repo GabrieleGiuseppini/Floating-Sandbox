@@ -424,8 +424,8 @@ public:
     SpringRelaxationParallelComputationModeType GetSpringRelaxationParallelComputationMode() const override { return mSimulationParameters.SpringRelaxationParallelComputationMode; }
     void SetSpringRelaxationParallelComputationMode(SpringRelaxationParallelComputationModeType value) override {mSimulationParameters.SpringRelaxationParallelComputationMode = value; }
 
-    float GetNumMechanicalDynamicsIterationsAdjustment() const override { return mSimulationParameters.NumMechanicalDynamicsIterationsAdjustment; }
-    void SetNumMechanicalDynamicsIterationsAdjustment(float value) override { mSimulationParameters.NumMechanicalDynamicsIterationsAdjustment = value; }
+    float GetNumMechanicalDynamicsIterationsAdjustment() const override { return mFloatParameterSmoothers[NumMechanicalDynamicsIterationsAdjustmentParameterSmoother].GetValue(); }
+    void SetNumMechanicalDynamicsIterationsAdjustment(float value) override { mFloatParameterSmoothers[NumMechanicalDynamicsIterationsAdjustmentParameterSmoother].SetValue(value); }
     float GetMinNumMechanicalDynamicsIterationsAdjustment() const override { return SimulationParameters::MinNumMechanicalDynamicsIterationsAdjustment; }
     float GetMaxNumMechanicalDynamicsIterationsAdjustment() const override { return SimulationParameters::MaxNumMechanicalDynamicsIterationsAdjustment; }
 
@@ -1343,15 +1343,16 @@ private:
 
     static constexpr size_t SpringStiffnessAdjustmentParameterSmoother = 0;
     static constexpr size_t SpringStrengthAdjustmentParameterSmoother = 1;
-    static constexpr size_t SeaDepthParameterSmoother = 2;
-    static constexpr size_t OceanFloorBedrockBumpinessParameterSmoother = 3;
-    static constexpr size_t OceanFloorBedrockDetailAmplificationParameterSmoother = 4;
-    static constexpr size_t OceanFloorSiltThicknessParameterSmoother = 5;
-    static constexpr size_t OceanFloorSiltBumpinessParameterSmoother = 6;
-    static constexpr size_t FlameSizeAdjustmentParameterSmoother = 7;
-    static constexpr size_t BasalWaveHeightAdjustmentParameterSmoother = 8;
-    static constexpr size_t FishSizeMultiplierParameterSmoother = 9;
-    static constexpr size_t NpcSizeMultiplierParameterSmoother = 10;
+    static constexpr size_t NumMechanicalDynamicsIterationsAdjustmentParameterSmoother = 2;
+    static constexpr size_t SeaDepthParameterSmoother = 3;
+    static constexpr size_t OceanFloorBedrockBumpinessParameterSmoother = 4;
+    static constexpr size_t OceanFloorBedrockDetailAmplificationParameterSmoother = 5;
+    static constexpr size_t OceanFloorSiltThicknessParameterSmoother = 6;
+    static constexpr size_t OceanFloorSiltBumpinessParameterSmoother = 7;
+    static constexpr size_t FlameSizeAdjustmentParameterSmoother = 8;
+    static constexpr size_t BasalWaveHeightAdjustmentParameterSmoother = 9;
+    static constexpr size_t FishSizeMultiplierParameterSmoother = 10;
+    static constexpr size_t NpcSizeMultiplierParameterSmoother = 11;
     std::vector<ParameterSmoother<float>> mFloatParameterSmoothers;
 
 
