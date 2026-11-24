@@ -505,8 +505,8 @@ void Points::InternalCreateEphemeralParticleSmoke(
     auto const pointIndex = EphemeralParticleIndexToPointIndex(ephemeralParticleIndex);
 
     // Calculate mass multiplier
-    float constexpr MaxMassMultiplier = 1.1f; // Heavier than this it sinks
-    float constexpr MinMassMultiplier = 0.8f; // Lighter than this it's tiny little clouds
+    float constexpr MaxMassMultiplier = 1.4f; // Heavier than this it sinks
+    float constexpr MinMassMultiplier = 0.65f; // Lighter than this it's tiny little clouds
     // Map 0.0..2.0 to Min/Max multipliers
     float const massMultiplier =
         MinMassMultiplier
