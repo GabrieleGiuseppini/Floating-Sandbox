@@ -2188,12 +2188,14 @@
 				+ Populate Undo with material - same as import from json
 			
 		+ Do we want to add Undo also for NewMaterial?		
-		- See bandit's issue with ship disappearing
 		- Merge into master
 		- Changelist: custom materials
 
+	= See bandit's and Kiko's issue with ship disappearing
+		- Zero out forces when recalculating ship parallelization?
+
 	- Editing ropes freezes the game
-		- Ask for screenshot of version
+		+ Ask for screenshot of version
 	- Send Beta
 
 	- Talk to maple about ships
