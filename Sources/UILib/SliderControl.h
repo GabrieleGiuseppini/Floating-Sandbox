@@ -280,7 +280,6 @@ private:
         }
     }
 
-
     void OnSliderScroll(wxScrollEvent & /*event*/)
     {
         auto const tickValue = mSlider->GetValue();

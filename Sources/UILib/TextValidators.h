@@ -47,7 +47,7 @@ struct TextValidatorFactory
 		else
 			minRange = std::numeric_limits<TValue>::lowest();
 
-		validator->SetRange(minRange, std::numeric_limits<TValue>::max());
+		validator->SetRange(minRange, std::numeric_limits<typename wxIntegerValidator<TValue>::LongestValueType>::max());
 
 		return validator;
 	}

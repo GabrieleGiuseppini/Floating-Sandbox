@@ -2175,7 +2175,7 @@
 			- Also slower damage rot
 			- Ratio: 2:1
 
-	= ShipBuilder
+	+ ShipBuilder
 		+ Marge it back into master
 		+ Duplicate material
 			+ Only on User materials: '+' button @ same place as ship overlay
@@ -2188,14 +2188,20 @@
 				+ Populate Undo with material - same as import from json
 			
 		+ Do we want to add Undo also for NewMaterial?		
-		- Merge into master
-		- Changelist: custom materials
+		+ Merge into master
+		+ Changelist: custom materials
 
 	= See bandit's and Kiko's issue with ship disappearing
-		- Zero out forces when recalculating ship parallelization?
+		- Zero out forces when recalculating iterations for SpringAlgoAdjust?
+			+ Repro first: ARCA Isla, jump SpringAlgoAdjust to 2.0 and wait a bit
+			- Try with a smoother for it; doing it slowly doesn't explode
+	+ SettingsDialog: MaxThreads and WaterDiffusionQuality have no text input
+		+ They're size_t, others are unsigned_int
+			+ Validator->SetRange
 
 	- Editing ropes freezes the game
 		+ Ask for screenshot of version
+
 	- Send Beta
 
 	- Talk to maple about ships
@@ -2207,17 +2213,34 @@
 	- Fork repo and start working on private
 		+ Create repo
 		- Pull from master again after we've merged
-		- Check .gitignore for folders/files we don't have, and copy them
+		- Check .gitignore for folders/files we don't have, and move them
 		- Close VS
 		- Nuke build dir
 		- Run CMake from new repo
 		- Reopen FS
 		- Reopen Editplus
 
+		- Run filesystem backup
+
 		- @ public repo:
 			- README @ public repo:
-				- Notice: TODO
+				- Notice
+
+NOTICE: 2026/11/TODO
+Since the inception of Floating Sandbox 8 years ago, I've been proudly sharing the source code of Floating Sandbox with the rest of my species. 
+Over the years I've taken pleasure at knowing that my development could serve as a fun way for users worldwide to learn the joys of coding, allowing like-minded people to inspect clever tricks and hopefully to get sparks for coming up with their own ideas.
+
+Unfortunately, the time has come to hide my future development from public eyes. In recent times, thanks to the proliferation of AI tools, unscrupolous figures have been flooding the Internet with cheap clones of the game, profiting commercially from 8+ years of work.
+I will leave the current repository open, frozen on its last commit, and it won't receive any more updates.
+
+I hope in your understanding, and please accept my apologies for depriving you of a nice, healthy, and imaginative learning experience.
+
+Gabe
+
+
+
 			- Remove plans (FS, NPC, ShipBuilder - all)
+			- Remove Authoring
 
 
 
