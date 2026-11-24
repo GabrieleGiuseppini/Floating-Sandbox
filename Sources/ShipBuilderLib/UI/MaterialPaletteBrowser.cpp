@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <sstream>
 
 namespace ShipBuilder {
 
@@ -1145,8 +1146,12 @@ void MaterialPaletteBrowser<TLayer>::PopulateMaterialProperties(TMaterial const 
         }
         else
         {
+            std::stringstream ssColor;
+            ssColor << int(material->RenderColor.r) << ", " << int(material->RenderColor.g) << ", " << int(material->RenderColor.b)
+                << " (" << Utils::RgbColor2Hex(material->RenderColor.toRgbColor()) << ")";
+
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Name", wxString(material->Name));
-            mStructuralMaterialPropertyGrids[0]->SetPropertyValue("RenderColor", wxString(Utils::RgbColor2Hex(material->RenderColor.toRgbColor())));
+            mStructuralMaterialPropertyGrids[0]->SetPropertyValue("RenderColor", wxString(ssColor.str()));
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Mass", material->GetMass());
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Strength", material->Strength);
             mStructuralMaterialPropertyGrids[0]->SetPropertyValue("IsHull", material->IsHull);

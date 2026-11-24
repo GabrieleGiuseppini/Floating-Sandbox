@@ -2187,23 +2187,35 @@
 				+ Update palette
 				+ Populate Undo with material - same as import from json
 			
-		+ Do we want to add Undo also for NewMaterial?
-		- Editing ropes freezes the game
+		+ Do we want to add Undo also for NewMaterial?		
+		- See bandit's issue with ship disappearing
+		- Merge into master
 		- Changelist: custom materials
 
+	- Editing ropes freezes the game
+		- Ask for screenshot of version
+	- Send Beta
 
 	- Talk to maple about ships
 
-	- See bandit's issue with ship disappearing
+	
 
 
 
 	- Fork repo and start working on private
-		- Watch out for .gitignore
+		+ Create repo
+		- Pull from master again after we've merged
+		- Check .gitignore for folders/files we don't have, and copy them
+		- Close VS
+		- Nuke build dir
+		- Run CMake from new repo
+		- Reopen FS
+		- Reopen Editplus
+
 		- @ public repo:
 			- README @ public repo:
-				- TODO
-			- Remove plans (NP, ShipBuilder, TODO)
+				- Notice: TODO
+			- Remove plans (FS, NPC, ShipBuilder - all)
 
 
 
