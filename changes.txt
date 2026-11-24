@@ -5,13 +5,15 @@
 	- NPCs are now also affected by moving air
 	- Redesigned bubbles, Flood and Inject Air tools, and sounds from water flowing and splashing inside the ship
 	- Ships now take longer to sink, as air trapped inside needs to find escape routes to let more water flow in!
- ShipBuilder:
+- ShipBuilder:
 	- Added custom materials!
 		- You can now makes copies of default materials, and edit their properties - including color, mass, and strength
 		- Custom materials are then saved with the ship - players won't need modded releases, your materials will be available right away
 		- Custom materials may also be exported and imported, allowing sharing among users
 	- Added "Translate" tool, to move around regions of a ship without having to Cut+Paste
 	- Rewritten the ShipBuilder's material palette UI to support a humongous number of materials
+- Fixed: ship explodes when changing Spring Algo Adjust too quickly
+	- Lovely - it was the mesh vibrations reaching resonance frequency!
 - Added new Water-soluble Rope material
 
 1.21.0
