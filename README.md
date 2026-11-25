@@ -86,3 +86,16 @@ At this moment I'm looking for volunteers for two specific tasks: creating new s
 If you like building ships and you are making nice models, I'd like to collect your ships - and whatever other bodies you can imagine floating and sinking in water! Just send your ships to me and you'll get a proper *thank you* in the _About_ window!
 
 Also, I'm looking for builders for non-Windows platforms. I'll also gladly accept any code contributions that may be necessary to ensure the project builds on multiple platforms.
+
+# NOTICE: 2026-11-25
+> Since the inception of Floating Sandbox 8 years ago, I've been proudly sharing the source code of Floating Sandbox with the rest of my species. 
+> Over the years I've taken pleasure at knowing that my development could serve as a fun way for users worldwide to learn the joys of coding, allowing like-minded people to inspect clever tricks and hopefully get sparks for coming up with their own ideas.
+> 
+> Unfortunately, the time has come to hide my future development from public eyes. In recent times, thanks to the proliferation of AI tools, unscrupolous individuals have been exploiting the Floating Sandbox open-source code to create clones of the game, subsequently commercializing them and unfairly profiting from 8+ years of my work.
+>
+> I will leave the current repository open, frozen on its last commit, and it won't receive any more updates while I continue working on the game away from prying eyes.
+> 
+> I hope you will understand, and please accept my apologies for depriving you of a nice, healthy, and imaginative learning experience.
+> 
+> Gabe
+
