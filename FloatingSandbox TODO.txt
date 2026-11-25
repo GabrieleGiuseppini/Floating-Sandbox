@@ -2218,7 +2218,10 @@
 		- Nuke build dir
 		- Run CMake from new repo
 		- Reopen FS
-		- Reopen Editplus
+		- Reopen Editplus and open new files
+		- Rename public fs checkout folder on my box
+
+		- Setup Discord WebHook for new repo
 
 		- Run filesystem backup
 
@@ -2228,12 +2231,12 @@
 
 NOTICE: 2026/11/TODO
 Since the inception of Floating Sandbox 8 years ago, I've been proudly sharing the source code of Floating Sandbox with the rest of my species. 
-Over the years I've taken pleasure at knowing that my development could serve as a fun way for users worldwide to learn the joys of coding, allowing like-minded people to inspect clever tricks and hopefully to get sparks for coming up with their own ideas.
+Over the years I've taken pleasure at knowing that my development could serve as a fun way for users worldwide to learn the joys of coding, allowing like-minded people to inspect clever tricks and hopefully get sparks for coming up with their own ideas.
 
-Unfortunately, the time has come to hide my future development from public eyes. In recent times, thanks to the proliferation of AI tools, unscrupolous figures have been flooding the Internet with cheap clones of the game, profiting commercially from 8+ years of work.
-I will leave the current repository open, frozen on its last commit, and it won't receive any more updates.
+Unfortunately, the time has come to hide my future development from public eyes. In recent times, thanks to the proliferation of AI tools, unscrupolous characters have been flooding the Internet with cheap clones of the game, commercially profiting from 8+ years of my work.
+I will leave the current repository open, frozen on its last commit, and it won't receive any more updates, while I continue working on the game away from privy eyes.
 
-I hope in your understanding, and please accept my apologies for depriving you of a nice, healthy, and imaginative learning experience.
+I hope you will understand, and please accept my apologies for depriving you of a nice, healthy, and imaginative learning experience.
 
 Gabe
 
@@ -2245,10 +2248,69 @@ Gabe
 
 
 	- Optimizations:
-		- 1: Split positions, velocities, and [static and/or dynamic] forces into x & y; run spring relaxation (& ocean floor collisions) and lights on it; reassemble
-		- 2: Allocations/page faults: 
-			a) _mm_prefetch: at beginning of springs & integr loops, prefetch nex
-			b) Alloc large pages: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc
+		- 1: Split positions, velocities, and static and dynamic forces into x & y; run spring relaxation (& ocean floor collisions) and lights on it; reassemble
+			! @ Spring algo: loading 4 points' positions and velocities into a vector:
+				__m128 low  = _mm_unpacklo_ps(_mm_load_ss(&f0), _mm_load_ss(&f1));
+				__m128 high = _mm_unpacklo_ps(_mm_load_ss(&f2), _mm_load_ss(&f3));
+				// Combine into [f0, f1, f2, f3]
+				return _mm_movelh_ps(low, high);
+
+				- Analysis for displacement calc'n:
+					- Old: 4xload_2 + 2xmove + 3xshf + 2xsub = 11		4x6 + 2x1 + 3x1 + 2x4 = 37  
+					- New: 8xload_1 + 4xunpack + 2xmove +1xsub = 15		4x6 + 4x1 + 2x1 + 1x4 = 34
+			- Algorithms:
+				- ExplodeCoords:
+					- In: pos, vel, static_forces, dynamic_forces (the single vec2f one)
+					- Out: all 2x
+					- Unit tests
+				- RepackCoords:
+					- In: all 2x
+					- Out: pos, vel, static_forces
+					- Unit tests
+			- Points: section with x/y buffers for:
+				- Pos
+				- Vel
+				- StaticForces
+				- DynamicForcesBuffers x N
+			- Current vec2f DynamicForcesBuffers[0] becomes vec2f DynamicForcesBuffer
+				- Populated by surface forces
+			- Ship::Update:
+				- Points::ExplodeCoords
+				- Do SpringRelax
+				- Points::RepackCoords
+			- SpringRelax:
+				- TODOHERE
+				- Unit tests
+			- Integrate:
+				- TODOHERE
+				- Unit tests
+			- IntegrateAndResetDynamicForces:
+				- TODOHERE
+				- Unit tests
+
+			- Try lights:
+				- Move LightDiffusion after SpringRelax, follwoed by RepackCoords
+				- LightDiffusion: TODOHERE
+				- Unit tests
+
+			- Android plan:
+				- All unit tests
+
+
+		- 2: Magic Squares with point reuse indicator; saves 2 position and 2 velocity loads out of current 4 and 4
+			- TODO: J=L-1, M=M-1; J=L-1, K=K-1
+			- If we're on the same row and prev one was perfect => reuse
+
+		- 3: Allocations/page faults: 
+			- _mm_prefetch: at beginning of springs & integr loops, prefetch next iteration -- FOR positions only, as they are "pointers"
+				- ARCC Isla: 7.4/7.5 -> 7.2/7.3 with:
+				#define PREFETCH_HINT 1
+				ElementIndex const nxtpointJIndex = endpointsBuffer[s + 8 + 0].PointAIndex;
+				_mm_prefetch((const char *)(positionBuffer + nxtpointJIndex), PREFETCH_HINT);
+				_mm_prefetch((const char *)(velocityBuffer + nxtpointJIndex), PREFETCH_HINT);
+
+			- Alloc large pages: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc
+				! Though page_fault_delta is 0.0
 
 
 
